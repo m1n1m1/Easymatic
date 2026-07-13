@@ -2,10 +2,11 @@ config:
   validation: true
   warningsAsErrors: false
 
-complexity:
+function-naming:
   active: true
+  ignoreAnnotated: ["Composable"]
 
-style:
+complexity:
   active: true
 
 potential-bugs:
