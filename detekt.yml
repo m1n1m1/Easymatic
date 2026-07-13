@@ -2,9 +2,10 @@ config:
   validation: true
   warningsAsErrors: false
 
-function-naming:
-  active: true
-  ignoreAnnotated: ["Composable"]
+naming:
+  FunctionNaming:
+    active: true
+    ignoreAnnotated: ['Composable', 'Preview']
 
 complexity:
   active: true
