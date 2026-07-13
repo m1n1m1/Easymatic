@@ -1,0 +1,12 @@
+config:
+  validation: true
+  warningsAsErrors: false
+
+complexity:
+  active: true
+
+style:
+  active: true
+
+potential-bugs:
+  active: true
