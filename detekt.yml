@@ -9,6 +9,15 @@ naming:
 
 complexity:
   active: true
+  LongMethod:
+    ignoreAnnotated: ['Composable', 'Preview']
+  LongParameterList:
+    ignoreAnnotated: ['Composable', 'Preview']
+
+style:
+  MagicNumber:
+    ignoreAnnotated: ['Composable', 'Preview']
+    ignorePropertyDeclaration: true
 
 potential-bugs:
   active: true

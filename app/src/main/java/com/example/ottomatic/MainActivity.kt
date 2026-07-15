@@ -1,48 +1,34 @@
 package com.example.ottomatic
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.activity.viewModels
+import com.example.ottomatic.data.WorkflowRepository
+import com.example.ottomatic.feature.grapheditor.GraphEditorScreen
+import com.example.ottomatic.feature.grapheditor.GraphEditorViewModel
 import com.example.ottomatic.ui.theme.OttomaticTheme
 
 class MainActivity : ComponentActivity() {
+
+    private val viewModel: GraphEditorViewModel by viewModels {
+        GraphEditorViewModel.factory(WorkflowRepository(filesDir))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        // The graph editor uses a fixed dark palette, so force light system bar icons.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+        )
         setContent {
-            OttomaticTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            OttomaticTheme(darkTheme = true, dynamicColor = false) {
+                GraphEditorScreen(viewModel)
             }
         }
     }
 }
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    OttomaticTheme {
-        Greeting("Android")
-    }
-}
-
