@@ -7,7 +7,9 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.ui.graphics.Color
@@ -45,6 +47,8 @@ fun nodeIcon(iconKey: String): ImageVector = when (iconKey) {
     "bolt" -> Icons.Filled.Bolt
     "schedule" -> Icons.Filled.Schedule
     "notification" -> Icons.Filled.NotificationsActive
+    "sms" -> Icons.Filled.Sms
+    "boot" -> Icons.Filled.PowerSettingsNew
     "http" -> Icons.Filled.Http
     "split" -> Icons.AutoMirrored.Filled.CallSplit
     "send" -> Icons.AutoMirrored.Filled.Send

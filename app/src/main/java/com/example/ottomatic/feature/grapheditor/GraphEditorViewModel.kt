@@ -9,12 +9,18 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.domain.model.Connection
+import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.engine.ExecutionContext
+import com.example.ottomatic.engine.WorkflowRunner
+import com.example.ottomatic.engine.trigger.ManualTrigger
+import com.example.ottomatic.engine.trigger.TriggerHost
 import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -52,11 +58,14 @@ data class GraphEditorUiState(
     val selection: Selection? = null,
     val pendingConnection: PendingConnection? = null,
     val isLoaded: Boolean = false,
+    val isRunning: Boolean = false,
 )
 
 @Suppress("TooManyFunctions") // Editor surface: transform, selection, node and connection editing.
 class GraphEditorViewModel(
     private val repository: WorkflowRepository,
+    private val triggerHost: TriggerHost,
+    private val executionContext: ExecutionContext,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GraphEditorUiState())
@@ -278,6 +287,63 @@ class GraphEditorViewModel(
         viewModelScope.launch { repository.save(workflow) }
     }
 
+    // region Workflow execution
+
+    private var runJob: Job? = null
+
+    fun runWorkflow() {
+        if (_uiState.value.isRunning) return
+        val workflow = _uiState.value.workflow
+        val firstTrigger = workflow.nodes.firstOrNull {
+            NodeTypeRegistry.byId(it.typeId)?.kind == NodeKind.TRIGGER
+        } ?: return
+        val runner = WorkflowRunner(triggerHost, executionContext)
+        _uiState.update { it.copy(isRunning = true) }
+        runJob = runner.run(viewModelScope, workflow)
+        viewModelScope.launch {
+            runJob?.join()
+            _uiState.update { it.copy(isRunning = false) }
+        }
+        if (firstTrigger.typeId == ManualTrigger.TYPE_ID) {
+            ManualTrigger.fire(firstTrigger.id)
+        }
+    }
+
+    fun stopWorkflow() {
+        runJob?.cancel()
+        runJob = null
+        _uiState.value.workflow.nodes
+            .filter { it.typeId == ManualTrigger.TYPE_ID }
+            .forEach { ManualTrigger.release(it.id) }
+        _uiState.update { it.copy(isRunning = false) }
+    }
+
+    // endregion
+
+    // region Node configuration
+
+    fun updateNodeConfig(nodeId: String, key: String, value: String) {
+        _uiState.update { state ->
+            val nodes = state.workflow.nodes.map { node ->
+                if (node.id == nodeId) node.copy(config = node.config + (key to value)) else node
+            }
+            state.copy(workflow = state.workflow.copy(nodes = nodes))
+        }
+        persist()
+    }
+
+    fun updateNodeName(nodeId: String, name: String) {
+        _uiState.update { state ->
+            val nodes = state.workflow.nodes.map { node ->
+                if (node.id == nodeId) node.copy(name = name) else node
+            }
+            state.copy(workflow = state.workflow.copy(nodes = nodes))
+        }
+        persist()
+    }
+
+    // endregion
+
     @Suppress("MagicNumber") // Hand-tuned demo layout coordinates.
     private fun sampleWorkflow(): Workflow = Workflow(
         nodes = listOf(
@@ -299,8 +365,12 @@ class GraphEditorViewModel(
         private const val FIT_PADDING = 48f
         private const val MAX_FIT_ZOOM = 1.25f
 
-        fun factory(repository: WorkflowRepository): ViewModelProvider.Factory = viewModelFactory {
-            initializer { GraphEditorViewModel(repository) }
+        fun factory(
+            repository: WorkflowRepository,
+            triggerHost: TriggerHost,
+            executionContext: ExecutionContext,
+        ): ViewModelProvider.Factory = viewModelFactory {
+            initializer { GraphEditorViewModel(repository, triggerHost, executionContext) }
         }
     }
 }

@@ -39,6 +39,24 @@ object NodeTypeRegistry {
             outputPorts = listOf("out"),
             iconKey = "notification",
         ),
+        NodeTypeDefinition(
+            typeId = "trigger.sms",
+            displayName = "SMS Received",
+            description = "Starts when an SMS arrives",
+            kind = NodeKind.TRIGGER,
+            inputPorts = emptyList(),
+            outputPorts = listOf("out"),
+            iconKey = "sms",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.boot",
+            displayName = "Device Boot",
+            description = "Starts once after the device finishes booting",
+            kind = NodeKind.TRIGGER,
+            inputPorts = emptyList(),
+            outputPorts = listOf("out"),
+            iconKey = "boot",
+        ),
     )
 
     private val actions = listOf(

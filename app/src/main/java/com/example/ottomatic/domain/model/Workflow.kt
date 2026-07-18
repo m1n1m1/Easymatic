@@ -12,6 +12,7 @@ data class WorkflowNode(
     val name: String,
     val x: Float,
     val y: Float,
+    val config: Map<String, String> = emptyMap(),
 )
 
 /**

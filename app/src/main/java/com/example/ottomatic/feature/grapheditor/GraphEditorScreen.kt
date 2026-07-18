@@ -22,13 +22,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitScreen
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
+import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.registry.ConfigSchemaRegistry
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import kotlin.math.roundToInt
 
@@ -60,6 +69,7 @@ fun GraphEditorScreen(viewModel: GraphEditorViewModel) {
     val density = LocalDensity.current.density
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     var showPalette by remember { mutableStateOf(false) }
+    var showConfig by remember { mutableStateOf(false) }
     var hasAutoFitted by remember { mutableStateOf(false) }
 
     // Center the workflow in the viewport once it is loaded and the canvas is measured.
@@ -79,6 +89,7 @@ fun GraphEditorScreen(viewModel: GraphEditorViewModel) {
             title = state.workflow.name,
             nodeCount = state.workflow.nodes.size,
             hasSelection = state.selection != null,
+            onConfigure = { showConfig = true },
             onDelete = { viewModel.deleteSelection() },
         )
         Box(modifier = Modifier.fillMaxSize()) {
@@ -116,6 +127,31 @@ fun GraphEditorScreen(viewModel: GraphEditorViewModel) {
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Add node")
             }
+            if (state.isRunning) {
+                FloatingActionButton(
+                    onClick = { viewModel.stopWorkflow() },
+                    containerColor = EditorColors.triggerAccent,
+                    contentColor = EditorColors.textPrimary,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .navigationBarsPadding()
+                        .padding(end = 88.dp, bottom = 18.dp),
+                ) {
+                    Icon(Icons.Filled.Stop, contentDescription = "Stop workflow")
+                }
+            } else {
+                FloatingActionButton(
+                    onClick = { viewModel.runWorkflow() },
+                    containerColor = EditorColors.triggerAccent,
+                    contentColor = EditorColors.textPrimary,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .navigationBarsPadding()
+                        .padding(end = 88.dp, bottom = 18.dp),
+                ) {
+                    Icon(Icons.Filled.PlayArrow, contentDescription = "Run workflow")
+                }
+            }
         }
     }
 
@@ -137,6 +173,23 @@ fun GraphEditorScreen(viewModel: GraphEditorViewModel) {
             },
         )
     }
+
+    if (showConfig) {
+        val selection = state.selection
+        val node = (selection as? Selection.Node)?.let { ref ->
+            state.workflow.node(ref.nodeId)
+        }
+        if (node != null) {
+            NodeConfigSheet(
+                node = node,
+                onDismiss = { showConfig = false },
+                onNameChange = { name -> viewModel.updateNodeName(node.id, name) },
+                onConfigChange = { key, value -> viewModel.updateNodeConfig(node.id, key, value) },
+            )
+        } else {
+            showConfig = false
+        }
+    }
 }
 
 private fun IntSize.centerPx(): Offset = Offset(width / 2f, height / 2f)
@@ -146,6 +199,7 @@ private fun EditorTopBar(
     title: String,
     nodeCount: Int,
     hasSelection: Boolean,
+    onConfigure: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Surface(color = EditorColors.chrome) {
@@ -172,6 +226,13 @@ private fun EditorTopBar(
             }
             Spacer(modifier = Modifier.weight(1f))
             if (hasSelection) {
+                IconButton(onClick = onConfigure) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Configure node",
+                        tint = EditorColors.textPrimary,
+                    )
+                }
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
@@ -319,6 +380,127 @@ private fun PaletteRow(
                 text = definition.description,
                 color = EditorColors.textSecondary,
                 fontSize = 12.sp,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NodeConfigSheet(
+    node: WorkflowNode,
+    onDismiss: () -> Unit,
+    onNameChange: (String) -> Unit,
+    onConfigChange: (String, String) -> Unit,
+) {
+    val definition = NodeTypeRegistry.byId(node.typeId)
+    val schema = ConfigSchemaRegistry.byId(node.typeId)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = EditorColors.chrome,
+    ) {
+        Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 24.dp)) {
+            Text(
+                text = "Configure",
+                color = EditorColors.textPrimary,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = definition?.displayName ?: node.typeId,
+                color = EditorColors.textSecondary,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = node.name,
+                onValueChange = onNameChange,
+                label = { Text("Name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            if (schema != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                schema.fields.forEach { field ->
+                    ConfigFieldEditor(
+                        field = field,
+                        value = node.config[field.key] ?: field.defaultValue,
+                        onValueChange = { onConfigChange(field.key, it) },
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ConfigFieldEditor(
+    field: com.example.ottomatic.domain.registry.ConfigField,
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    when (field.type) {
+        com.example.ottomatic.domain.registry.ConfigFieldType.ENUM -> {
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
+            ) {
+                OutlinedTextField(
+                    value = value,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(field.label) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                )
+                androidx.compose.material3.DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                ) {
+                    field.options.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option) },
+                            onClick = {
+                                onValueChange(option)
+                                expanded = false
+                            },
+                        )
+                    }
+                }
+            }
+        }
+        com.example.ottomatic.domain.registry.ConfigFieldType.MULTILINE -> {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                label = { Text(field.label) },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 2,
+            )
+        }
+        com.example.ottomatic.domain.registry.ConfigFieldType.INTEGER -> {
+            OutlinedTextField(
+                value = value,
+                onValueChange = { new -> if (new.all { it.isDigit() } || new.isEmpty()) onValueChange(new) },
+                label = { Text(field.label) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        else -> {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                label = { Text(field.label) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
