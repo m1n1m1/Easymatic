@@ -2,6 +2,7 @@ package com.example.ottomatic.feature.grapheditor
 
 import androidx.compose.ui.geometry.Offset
 import com.example.ottomatic.domain.model.NodeTypeDefinition
+import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.WorkflowNode
 import kotlin.math.abs
 import kotlin.math.max
@@ -36,8 +37,11 @@ object GraphGeometry {
     }
 
     /** Position of a port relative to the node's top-left corner. */
-    fun portOffset(definition: NodeTypeDefinition, index: Int, isOutput: Boolean): Offset {
-        val count = if (isOutput) definition.outputPorts.size else definition.inputPorts.size
+    fun portOffset(definition: NodeTypeDefinition, port: Port): Offset {
+        val isOutput = port.direction == com.example.ottomatic.domain.model.Direction.OUT
+        val list = if (isOutput) definition.outputPorts else definition.inputPorts
+        val index = list.indexOfFirst { it.name == port.name }.coerceAtLeast(0)
+        val count = list.size
         val width = nodeWidth(definition)
         val x = width / 2f + (index - (count - 1) / 2f) * PORT_SPACING
         val y = if (isOutput) NODE_HEIGHT else 0f
@@ -48,15 +52,13 @@ object GraphGeometry {
     fun portPosition(
         node: WorkflowNode,
         definition: NodeTypeDefinition,
-        index: Int,
-        isOutput: Boolean,
-    ): Offset = Offset(node.x, node.y) + portOffset(definition, index, isOutput)
+        port: Port,
+    ): Offset = Offset(node.x, node.y) + portOffset(definition, port)
 
     /** Control point vertical reach for the connection bezier. */
     fun bezierReach(start: Offset, end: Offset): Float {
         val dy = abs(end.y - start.y)
         val base = max(BEZIER_MIN, min(BEZIER_MAX, dy * CURVE_TENSION))
-        // When the target is above the source, widen the curve so it stays readable.
         return if (end.y < start.y) {
             max(base, min(BEZIER_MAX, abs(end.x - start.x) * BACKWARD_TENSION + BEZIER_MIN))
         } else {

@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.map
 
 /**
  * Trigger for `trigger.boot`. Fires once after the device finishes booting.
- * The [BootReceiver] pushes a sentinel event onto the bus; this trigger maps
- * it to the concrete node id.
+ * The [com.example.ottomatic.data.trigger.BootReceiver] pushes a sentinel
+ * event onto the bus; this trigger maps it to the concrete node id.
  */
 class BootTrigger : Trigger {
 

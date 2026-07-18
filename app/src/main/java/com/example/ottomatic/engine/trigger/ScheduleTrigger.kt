@@ -2,6 +2,8 @@ package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.items.ScheduleFire
+import com.example.ottomatic.domain.model.schema.Item
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
@@ -11,6 +13,8 @@ import kotlinx.coroutines.flow.map
  * Trigger for `trigger.schedule`. Arms a periodic [ScheduleWorker] via the
  * host when collection starts, surfaces matching bus events, and cancels the
  * schedule when the flow is cancelled.
+ *
+ * Produces a typed [ScheduleFire] item on the `fireTime` data port.
  */
 class ScheduleTrigger : Trigger {
 
@@ -25,7 +29,14 @@ class ScheduleTrigger : Trigger {
             try {
                 host.busEvents()
                     .filter { it.source == TriggerSource.SCHEDULE && it.triggerNodeId == node.id }
-                    .collect { emit(TriggerEvent(triggerNodeId = node.id)) }
+                    .collect { bus ->
+                        emit(
+                            TriggerEvent(
+                                triggerNodeId = node.id,
+                                dataOut = mapOf("fireTime" to Item.of(ScheduleFire(firedAt = bus.firedAtEpochMs))),
+                            ),
+                        )
+                    }
             } finally {
                 handle.cancel()
             }

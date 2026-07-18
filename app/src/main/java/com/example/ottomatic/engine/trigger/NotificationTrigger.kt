@@ -2,6 +2,8 @@ package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.items.NotificationEvent
+import com.example.ottomatic.domain.model.schema.Item
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -9,6 +11,8 @@ import kotlinx.coroutines.flow.map
 /**
  * Trigger for `trigger.notification`. Listens to the bus for notification
  * events and optionally filters by app package.
+ *
+ * Produces a typed [NotificationEvent] item on the `notification` data port.
  */
 class NotificationTrigger : Trigger {
 
@@ -22,9 +26,15 @@ class NotificationTrigger : Trigger {
                 packageFilter == null || event.payload["package"] == packageFilter
             }
             .map { event ->
+                val notification = NotificationEvent(
+                    packageName = event.payload["package"].orEmpty(),
+                    title = event.payload["title"].orEmpty(),
+                    text = event.payload["text"].orEmpty(),
+                    timestamp = event.payload["timestamp"]?.toLongOrNull() ?: event.firedAtEpochMs,
+                )
                 TriggerEvent(
                     triggerNodeId = node.id,
-                    payload = event.payload,
+                    dataOut = mapOf("notification" to Item.of(notification)),
                 )
             }
 

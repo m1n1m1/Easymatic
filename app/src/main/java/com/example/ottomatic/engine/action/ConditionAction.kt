@@ -6,20 +6,24 @@ import com.example.ottomatic.engine.ActionResult
 import com.example.ottomatic.engine.ExecutionContext
 
 /**
- * Action for `action.condition`. Evaluates a comparison and routes the
- * payload to port 0 (true) or port 1 (false).
+ * Action for `action.condition`. Evaluates a comparison against a field of the
+ * runtime data context and routes execution to port `true` or `false`.
+ *
+ * The field is read from the flattened data context built by
+ * [com.example.ottomatic.engine.WorkflowExecutor] from all data items produced
+ * upstream in the current execution chain.
  */
 class ConditionAction : Action {
 
     override val typeId: String = TYPE_ID
 
     override suspend fun execute(input: ActionInput, context: ExecutionContext): ActionResult {
-        val field = input.node.config["field"] ?: return falseResult(input)
-        val operator = input.node.config["operator"] ?: "equals"
-        val compareValue = input.node.config["value"].orEmpty()
-        val actualValue = input.payload.values[field].orEmpty()
-        val result = evaluate(operator, actualValue, compareValue)
-        return if (result) ActionResult(mapOf(0 to input.payload)) else ActionResult(mapOf(1 to input.payload))
+        val field = input.config.str("field", default = "")
+        val operator = input.config.str("operator", default = "equals")
+        val compareValue = input.config.raw("value").orEmpty()
+        val actualValue = input.dataContext[field].orEmpty()
+        val matched = evaluate(operator, actualValue, compareValue)
+        return ActionResult(execOut = if (matched) listOf("true") else listOf("false"))
     }
 
     private fun evaluate(operator: String, actual: String, expected: String): Boolean {
@@ -44,8 +48,6 @@ class ConditionAction : Action {
             else -> false
         }
     }
-
-    private fun falseResult(input: ActionInput): ActionResult = ActionResult(mapOf(1 to input.payload))
 
     companion object {
         const val TYPE_ID = "action.condition"

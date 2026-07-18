@@ -1,38 +1,53 @@
 package com.example.ottomatic.engine
 
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.schema.Item
 
 /**
- * The payload carried through the workflow when a trigger fires, and passed
- * as input to downstream actions. Each action may enrich it before forwarding.
- */
-data class WorkflowPayload(
-    val values: Map<String, String> = emptyMap(),
-) {
-    operator fun plus(extra: Map<String, String>): WorkflowPayload =
-        WorkflowPayload(values + extra)
-}
-
-/**
- * Input handed to an [Action] when it runs: the node being executed and the
- * payload accumulated so far from the trigger and preceding actions.
+ * Input handed to an [Action] when it runs.
+ *
+ * [config] gives typed access to the node's config fields, interpolating
+ * EXPR fields against [dataContext] — a flat string view of every data item
+ * produced upstream in the current execution chain (trigger + preceding
+ * actions). This preserves the n8n-style `{{field}}` templating UX while the
+ * typed data ports carry the structured items themselves.
  */
 data class ActionInput(
     val node: WorkflowNode,
-    val payload: WorkflowPayload,
+    val config: TypedConfig,
+    val dataContext: Map<String, String>,
 )
 
 /**
- * Result of running an action. [outputs] maps output-port index to the
- * payload that should flow out of that port. Ports not present in the map
- * produce nothing downstream (used by the condition node's true/false branch).
+ * Result of running an [Action].
+ *
+ * [execOut] names the EXECUTION output ports that should pulse next
+ * (e.g. `listOf("out")` for a linear action, `listOf("true")` or
+ * `listOf("false")` for the condition node). [dataOut] maps DATA output
+ * port names to the [Item]s the action produced; the executor caches them so
+ * downstream EXPR interpolation and future typed data inputs can read them.
  */
 data class ActionResult(
-    val outputs: Map<Int, WorkflowPayload> = emptyMap(),
+    val execOut: List<String> = emptyList(),
+    val dataOut: Map<String, Item> = emptyMap(),
 ) {
     companion object {
-        /** Forwards the input unchanged out of port 0 (the common "out" port). */
-        fun passthrough(input: ActionInput): ActionResult =
-            ActionResult(mapOf(0 to input.payload))
+        /** Pulses [port] (default `"out"`) and produces no data. */
+        fun passthrough(port: String = "out"): ActionResult = ActionResult(execOut = listOf(port))
     }
+}
+
+/**
+ * A unit of executable behaviour behind a node whose
+ * [com.example.ottomatic.domain.model.NodeTypeDefinition] has
+ * [com.example.ottomatic.domain.model.NodeKind.ACTION].
+ *
+ * Implementations live in `engine/action/` and are registered in
+ * [com.example.ottomatic.domain.registry.ActionRegistry].
+ */
+interface Action {
+
+    val typeId: String
+
+    suspend fun execute(input: ActionInput, context: ExecutionContext): ActionResult
 }

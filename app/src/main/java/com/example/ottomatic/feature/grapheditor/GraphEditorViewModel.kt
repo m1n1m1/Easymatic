@@ -8,8 +8,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.data.WorkflowRepository
-import com.example.ottomatic.domain.model.Connection
+import com.example.ottomatic.domain.model.DataConnection
+import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.NodeKind
+import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
@@ -33,11 +35,12 @@ data class CanvasTransform(
     val scale: Float = 1f,
 )
 
-/** Reference to a single port on a node. */
+/** Reference to a single port on a node, addressed by name and kind. */
 data class PortRef(
     val nodeId: String,
-    val portIndex: Int,
+    val portName: String,
     val isOutput: Boolean,
+    val kind: PortKind,
 )
 
 /** An in-progress connection drag from a port to the current pointer position. */
@@ -154,13 +157,17 @@ class GraphEditorViewModel(
             val updated = when (selection) {
                 is Selection.Node -> workflow.copy(
                     nodes = workflow.nodes.filterNot { it.id == selection.nodeId },
-                    connections = workflow.connections.filterNot {
+                    execConnections = workflow.execConnections.filterNot {
+                        it.fromNodeId == selection.nodeId || it.toNodeId == selection.nodeId
+                    },
+                    dataConnections = workflow.dataConnections.filterNot {
                         it.fromNodeId == selection.nodeId || it.toNodeId == selection.nodeId
                     },
                 )
 
                 is Selection.Edge -> workflow.copy(
-                    connections = workflow.connections.filterNot { it.id == selection.connectionId },
+                    execConnections = workflow.execConnections.filterNot { it.id == selection.connectionId },
+                    dataConnections = workflow.dataConnections.filterNot { it.id == selection.connectionId },
                 )
             }
             state.copy(workflow = updated, selection = null)
@@ -225,20 +232,41 @@ class GraphEditorViewModel(
         _uiState.update { it.copy(pendingConnection = null) }
         val target = pending?.hoverPort ?: return
         val (output, input) = if (pending.from.isOutput) pending.from to target else target to pending.from
-        val exists = _uiState.value.workflow.connections.any {
-            it.fromNodeId == output.nodeId && it.fromPortIndex == output.portIndex &&
-                it.toNodeId == input.nodeId && it.toPortIndex == input.portIndex
+        require(output.kind == input.kind) { "Cannot connect exec port to data port" }
+        val alreadyExists = when (output.kind) {
+            PortKind.EXECUTION -> _uiState.value.workflow.execConnections.any {
+                it.fromNodeId == output.nodeId && it.fromPort == output.portName &&
+                    it.toNodeId == input.nodeId && it.toPort == input.portName
+            }
+            PortKind.DATA -> _uiState.value.workflow.dataConnections.any {
+                it.fromNodeId == output.nodeId && it.fromPort == output.portName &&
+                    it.toNodeId == input.nodeId && it.toPort == input.portName
+            }
         }
-        if (exists) return
-        val connection = Connection(
-            id = UUID.randomUUID().toString(),
-            fromNodeId = output.nodeId,
-            fromPortIndex = output.portIndex,
-            toNodeId = input.nodeId,
-            toPortIndex = input.portIndex,
-        )
+        if (alreadyExists) return
         _uiState.update { state ->
-            state.copy(workflow = state.workflow.copy(connections = state.workflow.connections + connection))
+            val workflow = state.workflow
+            val updated = when (output.kind) {
+                PortKind.EXECUTION -> workflow.copy(
+                    execConnections = workflow.execConnections + ExecConnection(
+                        id = UUID.randomUUID().toString(),
+                        fromNodeId = output.nodeId,
+                        fromPort = output.portName,
+                        toNodeId = input.nodeId,
+                        toPort = input.portName,
+                    ),
+                )
+                PortKind.DATA -> workflow.copy(
+                    dataConnections = workflow.dataConnections + DataConnection(
+                        id = UUID.randomUUID().toString(),
+                        fromNodeId = output.nodeId,
+                        fromPort = output.portName,
+                        toNodeId = input.nodeId,
+                        toPort = input.portName,
+                    ),
+                )
+            }
+            state.copy(workflow = updated)
         }
         persist()
     }
@@ -253,8 +281,9 @@ class GraphEditorViewModel(
     fun portPosition(ref: PortRef): Offset? {
         val node = _uiState.value.workflow.node(ref.nodeId)
         val definition = node?.let { NodeTypeRegistry.byId(it.typeId) }
-        return if (node != null && definition != null) {
-            GraphGeometry.portPosition(node, definition, ref.portIndex, ref.isOutput)
+        val port = definition?.port(ref.portName)?.takeIf { it.kind == ref.kind }
+        return if (node != null && definition != null && port != null) {
+            GraphGeometry.portPosition(node, definition, port)
         } else {
             null
         }
@@ -270,12 +299,13 @@ class GraphEditorViewModel(
             .forEach { node ->
                 val definition = NodeTypeRegistry.byId(node.typeId) ?: return@forEach
                 val ports = if (wantOutput) definition.outputPorts else definition.inputPorts
-                for (index in ports.indices) {
-                    val portPos = GraphGeometry.portPosition(node, definition, index, wantOutput)
+                for (port in ports) {
+                    if (port.kind != from.kind) continue
+                    val portPos = GraphGeometry.portPosition(node, definition, port)
                     val distance = (portPos - positionGraph).getDistance()
                     if (distance < bestDistance) {
                         bestDistance = distance
-                        best = PortRef(node.id, index, wantOutput)
+                        best = PortRef(node.id, port.name, wantOutput, port.kind)
                     }
                 }
             }
@@ -353,11 +383,11 @@ class GraphEditorViewModel(
             WorkflowNode("n4", "action.notify", "Show Notification", 90f, 540f),
             WorkflowNode("n5", "action.delay", "Wait", 410f, 540f),
         ),
-        connections = listOf(
-            Connection("c1", "n1", 0, "n2", 0),
-            Connection("c2", "n2", 0, "n3", 0),
-            Connection("c3", "n3", 0, "n4", 0),
-            Connection("c4", "n3", 1, "n5", 0),
+        execConnections = listOf(
+            ExecConnection("c1", "n1", "out", "n2", "in"),
+            ExecConnection("c2", "n2", "out", "n3", "in"),
+            ExecConnection("c3", "n3", "true", "n4", "in"),
+            ExecConnection("c4", "n3", "false", "n5", "in"),
         ),
     )
 

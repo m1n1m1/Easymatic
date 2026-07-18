@@ -8,15 +8,15 @@ import kotlinx.coroutines.delay
 
 /**
  * Action for `action.delay`. Pauses execution for the configured duration
- * without blocking, then forwards the payload unchanged.
+ * without blocking, then pulses the `out` execution port.
  */
 class DelayAction : Action {
 
     override val typeId: String = TYPE_ID
 
     override suspend fun execute(input: ActionInput, context: ExecutionContext): ActionResult {
-        val duration = input.node.config["duration"]?.toLongOrNull() ?: DEFAULT_DURATION
-        val unit = input.node.config["unit"] ?: "seconds"
+        val duration = input.config.int("duration", default = DEFAULT_DURATION).toLong()
+        val unit = input.config.str("unit", default = "seconds")
         val millis = when (unit) {
             "seconds" -> duration * SECONDS_TO_MS
             "minutes" -> duration * MINUTES_TO_MS
@@ -24,12 +24,12 @@ class DelayAction : Action {
             else -> duration * SECONDS_TO_MS
         }
         delay(millis)
-        return ActionResult.passthrough(input)
+        return ActionResult.passthrough("out")
     }
 
     companion object {
         const val TYPE_ID = "action.delay"
-        private const val DEFAULT_DURATION = 5L
+        private const val DEFAULT_DURATION = 5
         private const val SECONDS_TO_MS = 1000L
         private const val MINUTES_TO_MS = 60_000L
         private const val HOURS_TO_MS = 3_600_000L

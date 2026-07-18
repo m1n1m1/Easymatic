@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -33,6 +34,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
+import com.example.ottomatic.domain.model.Port
+import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.WorkflowNode
 import kotlin.math.roundToInt
 
@@ -165,21 +168,21 @@ private fun NodeBody(
 @Composable
 private fun OutputLabels(definition: NodeTypeDefinition, density: Float) {
     if (definition.outputPorts.size < 2) return
-    definition.outputPorts.forEachIndexed { index, label ->
-        val port = GraphGeometry.portOffset(definition, index, isOutput = true)
+    definition.outputPorts.forEach { port ->
+        val portOffset = GraphGeometry.portOffset(definition, port)
         Box(
             modifier = Modifier
                 .offset {
                     IntOffset(
-                        ((port.x - 35f) * density).roundToInt(),
-                        ((port.y + 10f) * density).roundToInt(),
+                        ((portOffset.x - 35f) * density).roundToInt(),
+                        ((portOffset.y + 10f) * density).roundToInt(),
                     )
                 }
                 .width(70.dp),
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = label,
+                text = port.label,
                 color = EditorColors.textSecondary,
                 fontSize = 10.sp,
                 maxLines = 1,
@@ -199,11 +202,12 @@ private fun Ports(
     onPortDragEnd: () -> Unit,
     onPortDragCancel: () -> Unit,
 ) {
-    definition.inputPorts.forEachIndexed { index, _ ->
+    definition.inputPorts.forEach { port ->
         PortHandle(
-            ref = PortRef(node.id, index, isOutput = false),
-            center = GraphGeometry.portOffset(definition, index, isOutput = false),
-            isSnapTarget = hoverPort == PortRef(node.id, index, isOutput = false),
+            ref = PortRef(node.id, port.name, isOutput = false, port.kind),
+            port = port,
+            center = GraphGeometry.portOffset(definition, port),
+            isSnapTarget = hoverPort == PortRef(node.id, port.name, isOutput = false, port.kind),
             density = density,
             onDragStart = onPortDragStart,
             onDrag = onPortDrag,
@@ -211,11 +215,12 @@ private fun Ports(
             onDragCancel = onPortDragCancel,
         )
     }
-    definition.outputPorts.forEachIndexed { index, _ ->
+    definition.outputPorts.forEach { port ->
         PortHandle(
-            ref = PortRef(node.id, index, isOutput = true),
-            center = GraphGeometry.portOffset(definition, index, isOutput = true),
-            isSnapTarget = hoverPort == PortRef(node.id, index, isOutput = true),
+            ref = PortRef(node.id, port.name, isOutput = true, port.kind),
+            port = port,
+            center = GraphGeometry.portOffset(definition, port),
+            isSnapTarget = hoverPort == PortRef(node.id, port.name, isOutput = true, port.kind),
             density = density,
             onDragStart = onPortDragStart,
             onDrag = onPortDrag,
@@ -228,6 +233,7 @@ private fun Ports(
 @Composable
 private fun PortHandle(
     ref: PortRef,
+    port: Port,
     center: Offset,
     isSnapTarget: Boolean,
     density: Float,
@@ -237,6 +243,8 @@ private fun PortHandle(
     onDragCancel: () -> Unit,
 ) {
     val half = PORT_HANDLE_SIZE / 2f
+    val ring = portColor(port, isSnapTarget)
+    val fill = if (isSnapTarget) EditorColors.portSnap else EditorColors.canvasBackground
     Box(
         modifier = Modifier
             .offset {
@@ -259,8 +267,6 @@ private fun PortHandle(
             },
         contentAlignment = Alignment.Center,
     ) {
-        val fill = if (isSnapTarget) EditorColors.portSnap else EditorColors.canvasBackground
-        val ring = if (isSnapTarget) EditorColors.portSnap else EditorColors.port
         Box(
             modifier = Modifier
                 .size((GraphGeometry.PORT_RADIUS * 2).dp)
@@ -270,3 +276,9 @@ private fun PortHandle(
         )
     }
 }
+
+private fun portColor(port: Port, isSnapTarget: Boolean): Color =
+    if (isSnapTarget) EditorColors.portSnap else when (port.kind) {
+        PortKind.EXECUTION -> EditorColors.execPort
+        PortKind.DATA -> EditorColors.dataPort
+    }

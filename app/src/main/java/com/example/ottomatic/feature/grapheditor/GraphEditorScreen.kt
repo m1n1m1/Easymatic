@@ -442,9 +442,10 @@ private fun ConfigFieldEditor(
     value: String,
     onValueChange: (String) -> Unit,
 ) {
+    val type = field.type
     var expanded by remember { mutableStateOf(false) }
-    when (field.type) {
-        com.example.ottomatic.domain.registry.ConfigFieldType.ENUM -> {
+    when (type) {
+        is com.example.ottomatic.domain.registry.ConfigFieldType.ENUM -> {
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = it },
@@ -464,7 +465,7 @@ private fun ConfigFieldEditor(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                 ) {
-                    field.options.forEach { option ->
+                    type.options.forEach { option ->
                         DropdownMenuItem(
                             text = { Text(option) },
                             onClick = {
@@ -485,7 +486,7 @@ private fun ConfigFieldEditor(
                 minLines = 2,
             )
         }
-        com.example.ottomatic.domain.registry.ConfigFieldType.INTEGER -> {
+        com.example.ottomatic.domain.registry.ConfigFieldType.INT -> {
             OutlinedTextField(
                 value = value,
                 onValueChange = { new -> if (new.all { it.isDigit() } || new.isEmpty()) onValueChange(new) },
@@ -494,7 +495,45 @@ private fun ConfigFieldEditor(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-        else -> {
+        com.example.ottomatic.domain.registry.ConfigFieldType.DOUBLE -> {
+            OutlinedTextField(
+                value = value,
+                onValueChange = { new ->
+                    if (new.matches(Regex("-?\\d*\\.?\\d*")) || new.isEmpty()) onValueChange(new)
+                },
+                label = { Text(field.label) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        com.example.ottomatic.domain.registry.ConfigFieldType.BOOL -> {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                androidx.compose.material3.Switch(
+                    checked = value.toBooleanStrictOrNull() == true,
+                    onCheckedChange = { onValueChange(it.toString()) },
+                )
+                Text(
+                    text = field.label,
+                    color = EditorColors.textPrimary,
+                    fontSize = 14.sp,
+                )
+            }
+        }
+        is com.example.ottomatic.domain.registry.ConfigFieldType.EXPR -> {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                label = { Text(field.label) },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = if (type.multiline) 2 else 1,
+                singleLine = !type.multiline,
+            )
+        }
+        com.example.ottomatic.domain.registry.ConfigFieldType.STR -> {
             OutlinedTextField(
                 value = value,
                 onValueChange = onValueChange,

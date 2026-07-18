@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.example.ottomatic.feature.grapheditor
 
 import androidx.compose.foundation.Canvas
@@ -22,6 +24,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 
@@ -71,22 +74,8 @@ private fun BackgroundLayer(state: GraphEditorUiState, viewModel: GraphEditorVie
                     val current = viewModel.uiState.value
                     val t = current.transform
                     val graphPos = (positionPx - t.offset) / (t.scale * density)
-                    val hit = current.workflow.connections
-                        .mapNotNull { connection ->
-                            val start = portPositionOf(
-                                current.workflow,
-                                PortRef(connection.fromNodeId, connection.fromPortIndex, true),
-                            )
-                            val end = portPositionOf(
-                                current.workflow,
-                                PortRef(connection.toNodeId, connection.toPortIndex, false),
-                            )
-                            if (start == null || end == null) return@mapNotNull null
-                            connection.id to GraphGeometry.distanceToEdge(start, end, graphPos)
-                        }
-                        .filter { it.second <= GraphGeometry.EDGE_HIT_RADIUS }
-                        .minByOrNull { it.second }
-                    if (hit != null) viewModel.selectConnection(hit.first) else viewModel.clearSelection()
+                    val hit = edgeHitTest(current.workflow, graphPos)
+                    if (hit != null) viewModel.selectConnection(hit) else viewModel.clearSelection()
                 }
             }
             .pointerInput(viewModel) {
@@ -175,21 +164,50 @@ private fun DrawScope.drawGrid(transform: CanvasTransform) {
 private fun DrawScope.drawConnections(state: GraphEditorUiState) {
     val workflow = state.workflow
     val selectedEdgeId = (state.selection as? Selection.Edge)?.connectionId
-    workflow.connections.forEach { connection ->
-        val start = portPositionOf(
-            workflow,
-            PortRef(connection.fromNodeId, connection.fromPortIndex, true),
-        ) ?: return@forEach
-        val end = portPositionOf(
-            workflow,
-            PortRef(connection.toNodeId, connection.toPortIndex, false),
-        ) ?: return@forEach
+    workflow.execConnections.forEach { connection ->
+        val from = execRef(connection.fromNodeId, connection.fromPort, isOutput = true)
+        val to = execRef(connection.toNodeId, connection.toPort, isOutput = false)
+        val start = portPositionOf(workflow, from) ?: return@forEach
+        val end = portPositionOf(workflow, to) ?: return@forEach
         val isSelected = connection.id == selectedEdgeId
-        val color = if (isSelected) EditorColors.edgeSelected else EditorColors.edge
+        val color = if (isSelected) EditorColors.execEdgeSelected else EditorColors.execEdge
         val width = if (isSelected) EDGE_SELECTED_WIDTH else EDGE_WIDTH
-        drawEdge(start, end, color, width)
+        drawEdge(start, end, color, width, dashed = false)
         drawArrow(start, end, color)
     }
+    workflow.dataConnections.forEach { connection ->
+        val from = dataRef(connection.fromNodeId, connection.fromPort, isOutput = true)
+        val to = dataRef(connection.toNodeId, connection.toPort, isOutput = false)
+        val start = portPositionOf(workflow, from) ?: return@forEach
+        val end = portPositionOf(workflow, to) ?: return@forEach
+        val isSelected = connection.id == selectedEdgeId
+        val color = if (isSelected) EditorColors.dataEdgeSelected else EditorColors.dataEdge
+        val width = if (isSelected) EDGE_SELECTED_WIDTH else EDGE_WIDTH
+        drawEdge(start, end, color, width, dashed = true)
+        drawArrow(start, end, color)
+    }
+}
+
+private fun edgeHitTest(workflow: Workflow, graphPos: Offset): String? {
+    var bestId: String? = null
+    var bestDist = GraphGeometry.EDGE_HIT_RADIUS
+    workflow.execConnections.forEach { connection ->
+        val from = execRef(connection.fromNodeId, connection.fromPort, isOutput = true)
+        val to = execRef(connection.toNodeId, connection.toPort, isOutput = false)
+        val start = portPositionOf(workflow, from) ?: return@forEach
+        val end = portPositionOf(workflow, to) ?: return@forEach
+        val d = GraphGeometry.distanceToEdge(start, end, graphPos)
+        if (d < bestDist) { bestDist = d; bestId = connection.id }
+    }
+    workflow.dataConnections.forEach { connection ->
+        val from = dataRef(connection.fromNodeId, connection.fromPort, isOutput = true)
+        val to = dataRef(connection.toNodeId, connection.toPort, isOutput = false)
+        val start = portPositionOf(workflow, from) ?: return@forEach
+        val end = portPositionOf(workflow, to) ?: return@forEach
+        val d = GraphGeometry.distanceToEdge(start, end, graphPos)
+        if (d < bestDist) { bestDist = d; bestId = connection.id }
+    }
+    return bestId
 }
 
 private fun DrawScope.drawEdge(start: Offset, end: Offset, color: Color, width: Float, dashed: Boolean = false) {
@@ -228,7 +246,8 @@ private fun DrawScope.drawPendingConnection(state: GraphEditorUiState) {
     val fromPos = portPositionOf(state.workflow, pending.from) ?: return
     val target = pending.hoverPort?.let { portPositionOf(state.workflow, it) } ?: pending.currentPos
     val (start, end) = if (pending.from.isOutput) fromPos to target else target to fromPos
-    drawEdge(start, end, EditorColors.edgePending, EDGE_WIDTH, dashed = true)
+    val color = if (pending.from.kind == PortKind.DATA) EditorColors.dataEdge else EditorColors.execEdge
+    drawEdge(start, end, color, EDGE_WIDTH, dashed = true)
     if (pending.hoverPort != null) {
         drawCircle(EditorColors.portSnap.copy(alpha = SNAP_HIGHLIGHT_ALPHA), SNAP_HIGHLIGHT_RADIUS, target)
     }
@@ -237,9 +256,16 @@ private fun DrawScope.drawPendingConnection(state: GraphEditorUiState) {
 internal fun portPositionOf(workflow: Workflow, ref: PortRef): Offset? {
     val node = workflow.node(ref.nodeId)
     val definition = node?.let { NodeTypeRegistry.byId(it.typeId) }
-    return if (node != null && definition != null) {
-        GraphGeometry.portPosition(node, definition, ref.portIndex, ref.isOutput)
+    val port = definition?.port(ref.portName)?.takeIf { it.kind == ref.kind }
+    return if (node != null && definition != null && port != null) {
+        GraphGeometry.portPosition(node, definition, port)
     } else {
         null
     }
 }
+
+private fun execRef(nodeId: String, portName: String, isOutput: Boolean): PortRef =
+    PortRef(nodeId, portName, isOutput, PortKind.EXECUTION)
+
+private fun dataRef(nodeId: String, portName: String, isOutput: Boolean): PortRef =
+    PortRef(nodeId, portName, isOutput, PortKind.DATA)

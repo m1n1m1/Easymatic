@@ -8,12 +8,11 @@ import com.example.ottomatic.engine.trigger.TriggerEvent
 import com.example.ottomatic.engine.trigger.TriggerHost
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
  * Drives a workflow: activates every trigger node and, on each trigger event,
- * dispatches the payload through the [ActionExecutor].
+ * dispatches the typed [TriggerEvent] through the [WorkflowExecutor].
  *
  * Each trigger runs in its own coroutine; cancelling the returned [Job]
  * tears down all trigger flows and (for schedule triggers) their armed work.
@@ -24,7 +23,7 @@ class WorkflowRunner(
 ) {
 
     fun run(scope: CoroutineScope, workflow: Workflow): Job {
-        val executor = ActionExecutor(context)
+        val executor = WorkflowExecutor(context)
         val triggers = workflow.nodes.filter {
             NodeTypeRegistry.byId(it.typeId)?.kind == NodeKind.TRIGGER
         }
@@ -54,12 +53,11 @@ class WorkflowRunner(
     )
 
     private suspend fun onTriggerFired(
-        executor: ActionExecutor,
+        executor: WorkflowExecutor,
         workflow: Workflow,
         event: TriggerEvent,
     ) {
         val triggerNode = workflow.node(event.triggerNodeId) ?: return
-        val payload = WorkflowPayload(event.payload)
-        executor.executeFrom(workflow, triggerNode, payload)
+        executor.executeFrom(workflow, triggerNode, event)
     }
 }

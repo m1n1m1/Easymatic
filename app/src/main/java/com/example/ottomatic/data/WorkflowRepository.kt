@@ -1,5 +1,6 @@
 package com.example.ottomatic.data
 
+import com.example.ottomatic.data.migration.WorkflowMigrator
 import com.example.ottomatic.domain.model.Workflow
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -8,6 +9,10 @@ import kotlinx.serialization.json.Json
 
 /**
  * Persists the current workflow as a JSON file in the app's files directory.
+ *
+ * On load, workflows written by older schema versions are migrated forward
+ * by [WorkflowMigrator] before being returned. Saving always writes the
+ * current schema version.
  */
 class WorkflowRepository(private val directory: File) {
 
@@ -20,7 +25,9 @@ class WorkflowRepository(private val directory: File) {
 
     suspend fun load(): Workflow? = withContext(Dispatchers.IO) {
         runCatching {
-            if (file.exists()) json.decodeFromString<Workflow>(file.readText()) else null
+            if (!file.exists()) return@runCatching null
+            val raw = file.readText()
+            WorkflowMigrator.migrate(raw)
         }.getOrNull()
     }
 
