@@ -34,6 +34,27 @@ class AndroidTriggerHost(
         return ScheduleHandle { workManager.cancelUniqueWork(workName) }
     }
 
+    override fun armBatteryLevelPoll(
+        nodeId: String,
+        intervalMinutes: Long,
+        direction: String,
+        threshold: Int,
+    ): ScheduleHandle {
+        val minutes = intervalMinutes.coerceAtLeast(MIN_INTERVAL_MINUTES)
+        val request = PeriodicWorkRequestBuilder<BatteryLevelWorker>(minutes, TimeUnit.MINUTES)
+            .setInputData(
+                workDataOf(
+                    BatteryLevelWorker.KEY_NODE_ID to nodeId,
+                    BatteryLevelWorker.KEY_DIRECTION to direction,
+                    BatteryLevelWorker.KEY_LEVEL to threshold,
+                ),
+            )
+            .build()
+        val workName = BatteryLevelWorker.WORK_NAME_PREFIX + nodeId
+        workManager.enqueueUniquePeriodicWork(workName, ExistingPeriodicWorkPolicy.UPDATE, request)
+        return ScheduleHandle { workManager.cancelUniqueWork(workName) }
+    }
+
     private companion object {
         const val MIN_INTERVAL_MINUTES = 15L
     }

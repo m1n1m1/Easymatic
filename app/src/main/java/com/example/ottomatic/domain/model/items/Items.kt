@@ -52,6 +52,26 @@ data class WifiState(
     val changed: Boolean,
 )
 
+/**
+ * Battery state reported by `trigger.charging` and `trigger.battery_level`
+ * on their `state` data port.
+ *
+ * - [isCharging]: whether the device is currently charging.
+ * - [level]: battery percentage 0-100.
+ * - [plugged]: power source — `"ac"`, `"usb"`, `"wireless"` or `null`.
+ * - [event]: discriminator — `"charging_started"`, `"charging_stopped"` or
+ *   `"level_poll"`.
+ * - [timestamp]: when the event was produced.
+ */
+@Serializable
+data class BatteryState(
+    val isCharging: Boolean,
+    val level: Int,
+    val plugged: String?,
+    val event: String,
+    val timestamp: Long,
+)
+
 /** A duration value, in milliseconds, flowing into `action.delay`'s `duration` port. */
 @Serializable
 data class DurationMillis(

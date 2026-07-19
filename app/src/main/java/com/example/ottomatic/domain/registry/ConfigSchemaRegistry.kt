@@ -112,6 +112,40 @@ object ConfigSchemaRegistry {
             ),
         ),
         NodeConfigSchema(
+            typeId = "trigger.charging",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Event",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "started", "stopped")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.battery_level",
+            fields = listOf(
+                ConfigField(
+                    key = "direction",
+                    label = "Direction",
+                    type = ConfigFieldType.ENUM(options = listOf("below", "above")),
+                    defaultValue = "below",
+                ),
+                ConfigField(
+                    key = "level",
+                    label = "Threshold (0-100)",
+                    type = ConfigFieldType.INT,
+                    defaultValue = "20",
+                ),
+                ConfigField(
+                    key = "intervalMinutes",
+                    label = "Poll interval (minutes, minimum 15)",
+                    type = ConfigFieldType.INT,
+                    defaultValue = "15",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
             typeId = "action.condition",
             fields = listOf(
                 ConfigField(

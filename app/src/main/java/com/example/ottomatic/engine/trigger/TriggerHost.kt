@@ -30,6 +30,26 @@ interface TriggerHost {
         intervalMinutes: Long,
         cron: String?,
     ): ScheduleHandle
+
+    /**
+     * Arms a periodic battery-level poll for [nodeId]. Emits a bus event
+     * (source `BATTERY`, payload `event = "level_poll"`) when the level
+     * crosses [threshold] in [direction] (`"above"` or `"below"`).
+     *
+     * Polling is WorkManager-backed and clamped to the 15-minute floor, so
+     * it runs even when the app is killed. Hysteresis is applied so a level
+     * hovering near the threshold does not flap — an event is emitted only on
+     * the transition into the satisfied state.
+     *
+     * Returns a [ScheduleHandle] whose [ScheduleHandle.cancel] tears the
+     * poll down when the trigger flow is cancelled.
+     */
+    fun armBatteryLevelPoll(
+        nodeId: String,
+        intervalMinutes: Long,
+        direction: String,
+        threshold: Int,
+    ): ScheduleHandle
 }
 
 /** Allows a trigger to tear down its armed schedule on flow cancellation. */

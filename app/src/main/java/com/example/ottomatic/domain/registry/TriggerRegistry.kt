@@ -16,6 +16,8 @@ object TriggerRegistry {
         add(com.example.ottomatic.engine.trigger.SmsTrigger())
         add(com.example.ottomatic.engine.trigger.NotificationTrigger())
         add(com.example.ottomatic.engine.trigger.BootTrigger())
+        add(com.example.ottomatic.engine.trigger.ChargingTrigger())
+        add(com.example.ottomatic.engine.trigger.BatteryLevelTrigger())
     }
 
     private val byId: Map<String, Trigger> = triggers.associateBy { it.typeId }
