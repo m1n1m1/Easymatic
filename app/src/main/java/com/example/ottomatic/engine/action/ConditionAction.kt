@@ -1,29 +1,55 @@
 package com.example.ottomatic.engine.action
 
+import com.example.ottomatic.domain.model.schema.Item
+import com.example.ottomatic.domain.model.schema.ItemSchema
+import com.example.ottomatic.domain.registry.CONDITION_SOURCE_IN
+import com.example.ottomatic.domain.registry.CONDITION_TYPE_AUTO
+import com.example.ottomatic.domain.registry.CONDITION_TYPE_CONFIG_KEY
 import com.example.ottomatic.engine.Action
 import com.example.ottomatic.engine.ActionInput
 import com.example.ottomatic.engine.ActionResult
 import com.example.ottomatic.engine.ExecutionContext
 
 /**
- * Action for `action.condition`. Evaluates a comparison against a field of the
- * runtime data context and routes execution to port `true` or `false`.
+ * Action for `action.condition`. Reads a typed [Item] on its [CONDITION_SOURCE_IN]
+ * DATA input and compares it (or a selected field of it, when the source is a
+ * struct and `type` is `"auto"`) against the typed `value` config literal
+ * using the configured `operator`. Routes execution to port `true` or `false`.
  *
- * The field is read from the flattened data context built by
- * [com.example.ottomatic.engine.WorkflowExecutor] from all data items produced
- * upstream in the current execution chain.
+ * The comparison type is determined by the `type` config field
+ * (see [com.example.ottomatic.domain.registry.effectiveConfigSchema]):
+ *  - `"auto"`: infer from the connected item's schema. A struct source exposes
+ *    a `field` picker; a primitive source is compared directly.
+ *  - a specific primitive (`"int"`, `"string"`, ...): compare the whole item
+ *    value as that primitive type. The `source` port is locked to that schema
+ *    at design time so the validator enforces the match.
  */
 class ConditionAction : Action {
 
     override val typeId: String = TYPE_ID
 
     override suspend fun execute(input: ActionInput, context: ExecutionContext): ActionResult {
-        val field = input.config.str("field", default = "")
+        val typeConfig = input.config.str(CONDITION_TYPE_CONFIG_KEY, default = CONDITION_TYPE_AUTO)
         val operator = input.config.str("operator", default = "equals")
         val compareValue = input.config.raw("value").orEmpty()
-        val actualValue = input.dataContext[field].orEmpty()
+        val item = input.dataIn[CONDITION_SOURCE_IN]
+        // When `source` is exposed and wired, use the typed Item; otherwise fall
+        // back to the `source` config literal (the form field value).
+        val actualValue = if (item != null) {
+            actualFieldValue(typeConfig, item, input)
+        } else {
+            input.config.raw(CONDITION_SOURCE_IN).orEmpty()
+        }
         val matched = evaluate(operator, actualValue, compareValue)
         return ActionResult(execOut = if (matched) listOf("true") else listOf("false"))
+    }
+
+    private fun actualFieldValue(typeConfig: String, item: Item, input: ActionInput): String {
+        if (typeConfig == CONDITION_TYPE_AUTO && item.schema is ItemSchema.Object) {
+            val field = input.config.str("field", default = "")
+            return item.flat[field] ?: ""
+        }
+        return item.value?.toString() ?: ""
     }
 
     private fun evaluate(operator: String, actual: String, expected: String): Boolean {

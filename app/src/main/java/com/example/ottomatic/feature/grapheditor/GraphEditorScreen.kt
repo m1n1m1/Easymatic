@@ -59,8 +59,8 @@ import androidx.compose.ui.unit.sp
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.WorkflowNode
-import com.example.ottomatic.domain.registry.ConfigSchemaRegistry
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.domain.registry.effectiveConfigSchema
 import kotlin.math.roundToInt
 
 @Composable
@@ -181,6 +181,7 @@ fun GraphEditorScreen(viewModel: GraphEditorViewModel) {
         }
         if (node != null) {
             NodeConfigSheet(
+                workflow = state.workflow,
                 node = node,
                 onDismiss = { showConfig = false },
                 onNameChange = { name -> viewModel.updateNodeName(node.id, name) },
@@ -389,6 +390,7 @@ private fun PaletteRow(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun NodeConfigSheet(
+    workflow: com.example.ottomatic.domain.model.Workflow,
     node: WorkflowNode,
     onDismiss: () -> Unit,
     onNameChange: (String) -> Unit,
@@ -396,7 +398,7 @@ private fun NodeConfigSheet(
     onToggleExpose: (String) -> Unit,
 ) {
     val definition = NodeTypeRegistry.byId(node.typeId)
-    val schema = ConfigSchemaRegistry.byId(node.typeId)
+    val schema = definition?.let { effectiveConfigSchema(it, workflow, node) }
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = EditorColors.chrome,
@@ -440,6 +442,7 @@ private fun NodeConfigSheet(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Suppress("CyclomaticComplexMethod") // Inherent: one branch per ConfigFieldType.
 @Composable
 private fun ConfigFieldEditor(
     field: com.example.ottomatic.domain.registry.ConfigField,
@@ -550,6 +553,7 @@ private fun ConfigFieldEditor(
             )
         }
     }
+    if (field.exposable) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -568,4 +572,6 @@ private fun ConfigFieldEditor(
             )
         }
     }
+    }
 }
+

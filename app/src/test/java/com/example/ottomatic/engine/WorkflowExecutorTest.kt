@@ -3,9 +3,12 @@ package com.example.ottomatic.engine
 import com.example.ottomatic.core.service.HttpRequest
 import com.example.ottomatic.core.service.HttpResponse
 import com.example.ottomatic.core.service.SystemServices
+import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.items.BatteryState
+import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.engine.trigger.TriggerEvent
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -80,13 +83,13 @@ class WorkflowExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode(
-                    "n1", "trigger.manual", "Manual", 0f, 0f,
-                    config = mapOf("field" to "level", "operator" to "greaterThan", "value" to "5"),
-                ),
+                WorkflowNode("n1", "trigger.charging", "Charging", 0f, 0f),
                 WorkflowNode(
                     "cond", "action.condition", "If", 0f, 100f,
-                    config = mapOf("field" to "level", "operator" to "greaterThan", "value" to "5"),
+                    config = mapOf(
+                        "type" to "auto", "field" to "level", "operator" to "greaterThan", "value" to "5",
+                    ),
+                    exposedInputs = setOf("source"),
                 ),
                 WorkflowNode("yes", "action.notify", "Yes", 0f, 200f, config = mapOf("text" to "yes")),
                 WorkflowNode("no", "action.notify", "No", 200f, 200f, config = mapOf("text" to "no")),
@@ -96,11 +99,59 @@ class WorkflowExecutorTest {
                 ExecConnection("c2", "cond", "true", "yes", "in"),
                 ExecConnection("c3", "cond", "false", "no", "in"),
             ),
+            dataConnections = listOf(
+                DataConnection("d1", "n1", "state", "cond", "source"),
+            ),
         )
-        // No data context "level" -> actualValue empty -> "5" > "5" is false -> no branch.
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerEvent(triggerNodeId = "n1"))
-        // operator is greaterThan; empty.toDoubleOrNull() == null -> compareNumbers returns false
-        // So the false branch should fire.
+        // BatteryState.level = 50 > 5 -> true branch.
+        val battery = BatteryState(
+            isCharging = true, level = 50, plugged = "usb", event = "charging_started", timestamp = 1L,
+        )
+        executor.executeFrom(
+            workflow,
+            workflow.node("n1")!!,
+            TriggerEvent(triggerNodeId = "n1", dataOut = mapOf("state" to Item.of(battery))),
+        )
+        assertEquals(1, services.notifications.size)
+        assertEquals("yes", services.notifications.first().second)
+    }
+
+    @Test
+    fun `condition false branch fires when comparison does not match`() = runBlocking {
+        val services = RecordingSystemServices()
+        val context = DefaultExecutionContext(services) {}
+        val executor = WorkflowExecutor(context)
+        val workflow = Workflow(
+            nodes = listOf(
+                WorkflowNode("n1", "trigger.charging", "Charging", 0f, 0f),
+                WorkflowNode(
+                    "cond", "action.condition", "If", 0f, 100f,
+                    config = mapOf(
+                        "type" to "auto", "field" to "level", "operator" to "lessThan", "value" to "20",
+                    ),
+                    exposedInputs = setOf("source"),
+                ),
+                WorkflowNode("yes", "action.notify", "Yes", 0f, 200f, config = mapOf("text" to "yes")),
+                WorkflowNode("no", "action.notify", "No", 200f, 200f, config = mapOf("text" to "no")),
+            ),
+            execConnections = listOf(
+                ExecConnection("c1", "n1", "out", "cond", "in"),
+                ExecConnection("c2", "cond", "true", "yes", "in"),
+                ExecConnection("c3", "cond", "false", "no", "in"),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", "n1", "state", "cond", "source"),
+            ),
+        )
+        // BatteryState.level = 50 < 20 is false -> false branch.
+        val battery = BatteryState(
+            isCharging = true, level = 50, plugged = "usb", event = "charging_started", timestamp = 1L,
+        )
+        executor.executeFrom(
+            workflow,
+            workflow.node("n1")!!,
+            TriggerEvent(triggerNodeId = "n1", dataOut = mapOf("state" to Item.of(battery))),
+        )
         assertEquals(1, services.notifications.size)
         assertEquals("no", services.notifications.first().second)
     }

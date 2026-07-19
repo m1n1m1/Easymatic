@@ -115,11 +115,15 @@ object NodeTypeRegistry {
             iconKey = "http",
         ),
         NodeTypeDefinition(
-            typeId = "action.condition",
+            typeId = CONDITION_TYPE_ID,
             displayName = "If / Condition",
-            description = "Routes execution based on a comparison",
+            description = "Routes execution based on a typed comparison of a field of the connected data input",
             kind = NodeKind.ACTION,
-            ports = listOf(execIn(), execOut("true"), execOut("false")),
+            ports = listOf(
+                execIn(),
+                execOut("true"),
+                execOut("false"),
+            ),
             iconKey = "split",
         ),
         NodeTypeDefinition(

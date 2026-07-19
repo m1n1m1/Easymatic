@@ -110,6 +110,69 @@ class GraphValidatorTest {
         assertFalse(GraphValidator(wf).isValid())
     }
 
+    @Test
+    fun `condition without a source data edge is flagged as an error when source is exposed`() {
+        val wf = Workflow(
+            nodes = listOf(
+                WorkflowNode("n1", "trigger.manual", "Manual", 0f, 0f),
+                WorkflowNode(
+                    "c", "action.condition", "If", 0f, 100f,
+                    exposedInputs = setOf("source"),
+                ),
+            ),
+            execConnections = listOf(
+                ExecConnection("e1", "n1", "out", "c", "in"),
+            ),
+        )
+        val issues = GraphValidator(wf).validate()
+        assertTrue(
+            "expected a 'source' error, got: ${issues.map { it.message }}",
+            issues.any { it.severity == Severity.ERROR && it.message.contains("source") },
+        )
+    }
+
+    @Test
+    fun `condition with source not exposed is not flagged for the source check`() {
+        val wf = Workflow(
+            nodes = listOf(
+                WorkflowNode("n1", "trigger.manual", "Manual", 0f, 0f),
+                WorkflowNode("c", "action.condition", "If", 0f, 100f),
+            ),
+            execConnections = listOf(
+                ExecConnection("e1", "n1", "out", "c", "in"),
+            ),
+        )
+        val issues = GraphValidator(wf).validate()
+        assertFalse(
+            "un-exposed source should not trigger the check, got: ${issues.map { it.message }}",
+            issues.any { it.severity == Severity.ERROR && it.message.contains("source") },
+        )
+    }
+
+    @Test
+    fun `condition with a source data edge is not flagged for the source check`() {
+        val wf = Workflow(
+            nodes = listOf(
+                WorkflowNode("n1", "trigger.charging", "Charging", 0f, 0f),
+                WorkflowNode(
+                    "c", "action.condition", "If", 0f, 100f,
+                    exposedInputs = setOf("source"),
+                ),
+            ),
+            execConnections = listOf(
+                ExecConnection("e1", "n1", "out", "c", "in"),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", "n1", "state", "c", "source"),
+            ),
+        )
+        val issues = GraphValidator(wf).validate()
+        assertFalse(
+            "expected no source-related error, got: ${issues.map { it.message }}",
+            issues.any { it.severity == Severity.ERROR && it.message.contains("source") },
+        )
+    }
+
     @Suppress("unused")
     private fun portKindUnused(): PortKind = PortKind.EXECUTION
 

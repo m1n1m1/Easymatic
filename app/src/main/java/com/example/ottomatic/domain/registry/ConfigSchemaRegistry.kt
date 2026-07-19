@@ -36,12 +36,18 @@ sealed interface ConfigFieldType<out T> {
 /**
  * Describes a single configurable field on a node, so the UI can render a
  * schema-driven form without knowing each node type individually.
+ *
+ * [exposable] controls whether the "Expose as data input" toggle is rendered
+ * for this field. Structural fields (e.g. a type/operator picker that selects
+ * which comparison to run) should set this to false; only fields whose value
+ * is meaningfully overridable by an upstream data item should expose it.
  */
 data class ConfigField(
     val key: String,
     val label: String,
     val type: ConfigFieldType<*>,
     val defaultValue: String = "",
+    val exposable: Boolean = true,
 )
 
 /**
@@ -142,34 +148,6 @@ object ConfigSchemaRegistry {
                     label = "Poll interval (minutes, minimum 15)",
                     type = ConfigFieldType.INT,
                     defaultValue = "15",
-                ),
-            ),
-        ),
-        NodeConfigSchema(
-            typeId = "action.condition",
-            fields = listOf(
-                ConfigField(
-                    key = "field",
-                    label = "Field name (from data context)",
-                    type = ConfigFieldType.STR,
-                    defaultValue = "level",
-                ),
-                ConfigField(
-                    key = "operator",
-                    label = "Operator",
-                    type = ConfigFieldType.ENUM(
-                        options = listOf(
-                            "equals", "notEquals", "greaterThan", "lessThan",
-                            "greaterThanOrEqual", "lessThanOrEqual", "contains", "matchesRegex",
-                        ),
-                    ),
-                    defaultValue = "lessThan",
-                ),
-                ConfigField(
-                    key = "value",
-                    label = "Compare against",
-                    type = ConfigFieldType.STR,
-                    defaultValue = "20",
                 ),
             ),
         ),
