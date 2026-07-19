@@ -14,7 +14,10 @@ import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.domain.registry.effectiveInputPorts
+import com.example.ottomatic.domain.registry.effectiveOutputPorts
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.WorkflowRunner
 import com.example.ottomatic.engine.trigger.ManualTrigger
@@ -104,7 +107,8 @@ class GraphEditorViewModel(
     }
 
     fun fitToContent(viewportSizePx: Size, density: Float) {
-        val nodes = _uiState.value.workflow.nodes
+        val workflow = _uiState.value.workflow
+        val nodes = workflow.nodes
         if (nodes.isEmpty() || viewportSizePx.minDimension <= 0f) {
             _uiState.update { it.copy(transform = CanvasTransform()) }
             return
@@ -115,9 +119,11 @@ class GraphEditorViewModel(
         var maxY = -Float.MAX_VALUE
         for (node in nodes) {
             val def = NodeTypeRegistry.byId(node.typeId) ?: continue
+            val inputPorts = effectiveInputPorts(def, workflow, node)
+            val outputPorts = effectiveOutputPorts(def, workflow, node)
             minX = min(minX, node.x)
             minY = min(minY, node.y)
-            maxX = max(maxX, node.x + GraphGeometry.nodeWidth(def))
+            maxX = max(maxX, node.x + GraphGeometry.nodeWidth(inputPorts.size, outputPorts.size))
             maxY = max(maxY, node.y + GraphGeometry.NODE_HEIGHT)
         }
         val padding = FIT_PADDING
@@ -233,22 +239,41 @@ class GraphEditorViewModel(
         val target = pending?.hoverPort ?: return
         val (output, input) = if (pending.from.isOutput) pending.from to target else target to pending.from
         require(output.kind == input.kind) { "Cannot connect exec port to data port" }
-        val alreadyExists = when (output.kind) {
-            PortKind.EXECUTION -> _uiState.value.workflow.execConnections.any {
+        val workflow = _uiState.value.workflow
+        if (output.kind == PortKind.DATA && !isTypeCompatible(workflow, output, input)) return
+        if (!connectionExists(workflow, output, input)) addConnection(output, input)
+    }
+
+    /**
+     * Compose-time schema subtyping check for a candidate DATA edge
+     * [output] → [input], mirroring [GraphValidator] so incompatible edges are
+     * silently rejected at drop time (Blueprint-style). Wildcard ports (e.g.
+     * `action.break`'s `struct` input) accept anything.
+     */
+    private fun isTypeCompatible(workflow: Workflow, output: PortRef, input: PortRef): Boolean {
+        val sourceSchema = resolvePort(workflow, output)?.schema ?: ItemSchema.Wildcard
+        val targetSchema = resolvePort(workflow, input)?.schema ?: ItemSchema.Wildcard
+        return targetSchema.isAssignableFrom(sourceSchema)
+    }
+
+    private fun connectionExists(workflow: Workflow, output: PortRef, input: PortRef): Boolean =
+        when (output.kind) {
+            PortKind.EXECUTION -> workflow.execConnections.any {
                 it.fromNodeId == output.nodeId && it.fromPort == output.portName &&
                     it.toNodeId == input.nodeId && it.toPort == input.portName
             }
-            PortKind.DATA -> _uiState.value.workflow.dataConnections.any {
+            PortKind.DATA -> workflow.dataConnections.any {
                 it.fromNodeId == output.nodeId && it.fromPort == output.portName &&
                     it.toNodeId == input.nodeId && it.toPort == input.portName
             }
         }
-        if (alreadyExists) return
+
+    private fun addConnection(output: PortRef, input: PortRef) {
         _uiState.update { state ->
-            val workflow = state.workflow
+            val wf = state.workflow
             val updated = when (output.kind) {
-                PortKind.EXECUTION -> workflow.copy(
-                    execConnections = workflow.execConnections + ExecConnection(
+                PortKind.EXECUTION -> wf.copy(
+                    execConnections = wf.execConnections + ExecConnection(
                         id = UUID.randomUUID().toString(),
                         fromNodeId = output.nodeId,
                         fromPort = output.portName,
@@ -256,8 +281,8 @@ class GraphEditorViewModel(
                         toPort = input.portName,
                     ),
                 )
-                PortKind.DATA -> workflow.copy(
-                    dataConnections = workflow.dataConnections + DataConnection(
+                PortKind.DATA -> wf.copy(
+                    dataConnections = wf.dataConnections + DataConnection(
                         id = UUID.randomUUID().toString(),
                         fromNodeId = output.nodeId,
                         fromPort = output.portName,
@@ -279,13 +304,16 @@ class GraphEditorViewModel(
 
     /** Absolute graph position of a port, or null if the node/type is unknown. */
     fun portPosition(ref: PortRef): Offset? {
-        val node = _uiState.value.workflow.node(ref.nodeId)
-        val definition = node?.let { NodeTypeRegistry.byId(it.typeId) }
-        val port = definition?.port(ref.portName)?.takeIf { it.kind == ref.kind }
-        return if (node != null && definition != null && port != null) {
-            GraphGeometry.portPosition(node, definition, port)
-        } else {
-            null
+        val workflow = _uiState.value.workflow
+        return workflow.node(ref.nodeId)?.let { node ->
+            NodeTypeRegistry.byId(node.typeId)?.let { definition ->
+                val inputPorts = effectiveInputPorts(definition, workflow, node)
+                val outputPorts = effectiveOutputPorts(definition, workflow, node)
+                val width = GraphGeometry.nodeWidth(inputPorts.size, outputPorts.size)
+                (if (ref.isOutput) outputPorts else inputPorts)
+                    .firstOrNull { it.name == ref.portName && it.kind == ref.kind }
+                    ?.let { GraphGeometry.portPosition(node, inputPorts, outputPorts, width, it) }
+            }
         }
     }
 
@@ -298,10 +326,17 @@ class GraphEditorViewModel(
             .filter { it.id != from.nodeId }
             .forEach { node ->
                 val definition = NodeTypeRegistry.byId(node.typeId) ?: return@forEach
-                val ports = if (wantOutput) definition.outputPorts else definition.inputPorts
+                val ports = if (wantOutput) {
+                    effectiveOutputPorts(definition, workflow, node)
+                } else {
+                    effectiveInputPorts(definition, workflow, node)
+                }
                 for (port in ports) {
                     if (port.kind != from.kind) continue
-                    val portPos = GraphGeometry.portPosition(node, definition, port)
+                    val inputPorts = effectiveInputPorts(definition, workflow, node)
+                    val outputPorts = effectiveOutputPorts(definition, workflow, node)
+                    val width = GraphGeometry.nodeWidth(inputPorts.size, outputPorts.size)
+                    val portPos = GraphGeometry.portPosition(node, inputPorts, outputPorts, width, port)
                     val distance = (portPos - positionGraph).getDistance()
                     if (distance < bestDistance) {
                         bestDistance = distance
@@ -356,6 +391,31 @@ class GraphEditorViewModel(
         _uiState.update { state ->
             val nodes = state.workflow.nodes.map { node ->
                 if (node.id == nodeId) node.copy(config = node.config + (key to value)) else node
+            }
+            state.copy(workflow = state.workflow.copy(nodes = nodes))
+        }
+        persist()
+    }
+
+    /**
+     * Toggles whether the config field [fieldKey] on [nodeId] is exposed as a
+     * typed DATA input port (see [WorkflowNode.exposedInputs]). When exposed,
+     * the node gains a DATA IN port named [fieldKey]; an incoming edge's item
+     * overrides the static form value for that field at runtime.
+     */
+    fun toggleNodeExposedInput(nodeId: String, fieldKey: String) {
+        _uiState.update { state ->
+            val nodes = state.workflow.nodes.map { node ->
+                if (node.id != nodeId) {
+                    node
+                } else {
+                    val next = if (fieldKey in node.exposedInputs) {
+                        node.exposedInputs - fieldKey
+                    } else {
+                        node.exposedInputs + fieldKey
+                    }
+                    node.copy(exposedInputs = next)
+                }
             }
             state.copy(workflow = state.workflow.copy(nodes = nodes))
         }

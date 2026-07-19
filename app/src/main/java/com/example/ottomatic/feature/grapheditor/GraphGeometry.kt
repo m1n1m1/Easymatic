@@ -36,24 +36,64 @@ object GraphGeometry {
         return max(NODE_MIN_WIDTH, portCount * PORT_SPACING + HORIZONTAL_PADDING)
     }
 
-    /** Position of a port relative to the node's top-left corner. */
+    /**
+     * Width for a placed node, computed from its **effective** port counts
+     * (which may differ from the static [NodeTypeDefinition] for dynamic-port
+     * nodes like `action.break` / `action.make`).
+     */
+    fun nodeWidth(inputPortCount: Int, outputPortCount: Int): Float {
+        val portCount = max(inputPortCount, outputPortCount)
+        return max(NODE_MIN_WIDTH, portCount * PORT_SPACING + HORIZONTAL_PADDING)
+    }
+
+    /** Position of a port relative to the node's top-left corner (static definition). */
     fun portOffset(definition: NodeTypeDefinition, port: Port): Offset {
         val isOutput = port.direction == com.example.ottomatic.domain.model.Direction.OUT
         val list = if (isOutput) definition.outputPorts else definition.inputPorts
+        return portOffsetIn(list, port, nodeWidth(definition))
+    }
+
+    /**
+     * Position of a port relative to the node's top-left corner, using the
+     * placed node's **effective** port lists (for dynamic-port nodes).
+     */
+    fun portOffset(
+        inputPorts: List<Port>,
+        outputPorts: List<Port>,
+        width: Float,
+        port: Port,
+    ): Offset {
+        val isOutput = port.direction == com.example.ottomatic.domain.model.Direction.OUT
+        val list = if (isOutput) outputPorts else inputPorts
+        return portOffsetIn(list, port, width)
+    }
+
+    private fun portOffsetIn(list: List<Port>, port: Port, width: Float): Offset {
         val index = list.indexOfFirst { it.name == port.name }.coerceAtLeast(0)
         val count = list.size
-        val width = nodeWidth(definition)
         val x = width / 2f + (index - (count - 1) / 2f) * PORT_SPACING
-        val y = if (isOutput) NODE_HEIGHT else 0f
+        val y = if (port.direction == com.example.ottomatic.domain.model.Direction.OUT) NODE_HEIGHT else 0f
         return Offset(x, y)
     }
 
-    /** Absolute position of a port in graph coordinates. */
+    /** Absolute position of a port in graph coordinates (static definition). */
     fun portPosition(
         node: WorkflowNode,
         definition: NodeTypeDefinition,
         port: Port,
     ): Offset = Offset(node.x, node.y) + portOffset(definition, port)
+
+    /**
+     * Absolute position of a port in graph coordinates, using the placed
+     * node's **effective** port lists and width (for dynamic-port nodes).
+     */
+    fun portPosition(
+        node: WorkflowNode,
+        inputPorts: List<Port>,
+        outputPorts: List<Port>,
+        width: Float,
+        port: Port,
+    ): Offset = Offset(node.x, node.y) + portOffset(inputPorts, outputPorts, width, port)
 
     /** Control point vertical reach for the connection bezier. */
     fun bezierReach(start: Offset, end: Offset): Float {

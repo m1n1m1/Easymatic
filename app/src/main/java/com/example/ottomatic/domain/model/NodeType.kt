@@ -50,6 +50,13 @@ data class Port(
  * which ports (execution and data) it exposes.
  *
  * [iconKey] is a platform-agnostic identifier that the UI layer maps to an icon.
+ *
+ * [hasDynamicPorts] marks node types whose effective port set depends on the
+ * placed node's connections (e.g. `action.break` derives its field output ports
+ * from the schema of whatever is connected to its `struct` input). Callers
+ * that need a placed node's actual ports must use
+ * [com.example.ottomatic.domain.registry.effectivePorts] instead of reading
+ * [ports] directly.
  */
 data class NodeTypeDefinition(
     val typeId: String,
@@ -58,6 +65,7 @@ data class NodeTypeDefinition(
     val kind: NodeKind,
     val ports: List<Port>,
     val iconKey: String,
+    val hasDynamicPorts: Boolean = false,
 ) {
     /** All input ports (any kind). */
     val inputPorts: List<Port> get() = ports.filter { it.direction == Direction.IN }

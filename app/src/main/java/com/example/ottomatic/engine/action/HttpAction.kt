@@ -36,6 +36,7 @@ class HttpAction : Action {
             HttpResponseItem(
                 statusCode = response.statusCode,
                 body = response.body,
+                headers = response.headers,
             ),
         )
         return ActionResult(execOut = listOf("out"), dataOut = mapOf("response" to item))

@@ -26,4 +26,5 @@ data class HttpRequest(
 data class HttpResponse(
     val statusCode: Int,
     val body: String,
+    val headers: Map<String, String> = emptyMap(),
 )

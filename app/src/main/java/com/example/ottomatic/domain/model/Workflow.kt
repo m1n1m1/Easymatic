@@ -8,6 +8,15 @@ import kotlinx.serialization.Serializable
  * [config] is a flat string-keyed map of *typed* config values: each value is
  * encoded as its string form by the editor and parsed back according to the
  * node's [com.example.ottomatic.domain.registry.NodeConfigSchema] at runtime.
+ *
+ * [exposedInputs] names the [config] keys that the user has toggled to be
+ * exposed as typed DATA input ports on this placed node (see
+ * [com.example.ottomatic.domain.registry.effectivePorts]). When an incoming
+ * data edge carries an item on such a port, that item's value overrides the
+ * static [config] entry for the same key at execution time (see
+ * [com.example.ottomatic.engine.WorkflowExecutor]). This replaces the former
+ * batch `config` map DATA input port and the `action.make` struct node: a
+ * node's individual fields are wired directly from upstream data.
  */
 @Serializable
 data class WorkflowNode(
@@ -17,6 +26,7 @@ data class WorkflowNode(
     val x: Float,
     val y: Float,
     val config: Map<String, String> = emptyMap(),
+    val exposedInputs: Set<String> = emptySet(),
 )
 
 /**

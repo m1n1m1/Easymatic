@@ -1,6 +1,5 @@
 package com.example.ottomatic.domain.registry
 
-import com.example.ottomatic.domain.model.Cardinality
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
@@ -11,6 +10,7 @@ import com.example.ottomatic.domain.model.items.NotificationEvent
 import com.example.ottomatic.domain.model.items.ScheduleFire
 import com.example.ottomatic.domain.model.items.SmsMessage
 import com.example.ottomatic.domain.model.items.WifiState
+import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.model.schema.schemaOf
 
 /** EXECUTION input port. */
@@ -24,7 +24,7 @@ private fun execOut(name: String = "out"): Port =
 /** DATA output port with a schema derived from a `@Serializable` type [T]. */
 private inline fun <reified T : Any> dataOut(
     name: String,
-    cardinality: Cardinality = Cardinality.ONE,
+    cardinality: com.example.ottomatic.domain.model.Cardinality = com.example.ottomatic.domain.model.Cardinality.ONE,
 ): Port = Port(
     name = name,
     kind = PortKind.DATA,
@@ -131,7 +131,36 @@ object NodeTypeRegistry {
         ),
     )
 
-    val all: List<NodeTypeDefinition> = triggers + actions
+    /**
+     * Adaptive break-struct node. `action.break` splits a struct into its
+     * fields and is the only node with [hasDynamicPorts] = true: its field
+     * output ports are resolved at design time from the schema of whatever is
+     * connected to its `struct` input (see [effectivePorts]). The former
+     * `action.make` node has been removed — per-field data inputs are now
+     * exposed directly on each node via [WorkflowNode.exposedInputs].
+     */
+    private val structNodes: List<NodeTypeDefinition> = listOf(
+        NodeTypeDefinition(
+            typeId = BREAK_TYPE_ID,
+            displayName = "Break Struct",
+            description = "Splits a struct into its individual fields (auto-detects the struct from the input)",
+            kind = NodeKind.ACTION,
+            ports = listOf(
+                execIn(),
+                execOut(),
+                Port(
+                    name = BREAK_STRUCT_IN,
+                    kind = PortKind.DATA,
+                    direction = Direction.IN,
+                    schema = ItemSchema.Wildcard,
+                ),
+            ),
+            iconKey = "split",
+            hasDynamicPorts = true,
+        ),
+    )
+
+    val all: List<NodeTypeDefinition> = triggers + actions + structNodes
 
     private val byId: Map<String, NodeTypeDefinition> = all.associateBy { it.typeId }
 

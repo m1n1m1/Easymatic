@@ -24,9 +24,12 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.domain.registry.effectiveInputPorts
+import com.example.ottomatic.domain.registry.effectiveOutputPorts
 
 private const val GRID_SPACING = 26f
 private const val MIN_GRID_SPACING_PX = 16f
@@ -121,6 +124,7 @@ private fun NodeLayer(state: GraphEditorUiState, viewModel: GraphEditorViewModel
                 NodeCard(
                     node = node,
                     definition = definition,
+                    workflow = state.workflow,
                     isSelected = node.id == selectedNodeId,
                     hoverPort = state.pendingConnection?.hoverPort,
                     onSelect = { viewModel.selectNode(node.id) },
@@ -181,7 +185,8 @@ private fun DrawScope.drawConnections(state: GraphEditorUiState) {
         val start = portPositionOf(workflow, from) ?: return@forEach
         val end = portPositionOf(workflow, to) ?: return@forEach
         val isSelected = connection.id == selectedEdgeId
-        val color = if (isSelected) EditorColors.dataEdgeSelected else EditorColors.dataEdge
+        val typeColor = portTypeColor(resolvePort(workflow, from)?.schema)
+        val color = if (isSelected) EditorColors.dataEdgeSelected else typeColor
         val width = if (isSelected) EDGE_SELECTED_WIDTH else EDGE_WIDTH
         drawEdge(start, end, color, width, dashed = true)
         drawArrow(start, end, color)
@@ -246,23 +251,45 @@ private fun DrawScope.drawPendingConnection(state: GraphEditorUiState) {
     val fromPos = portPositionOf(state.workflow, pending.from) ?: return
     val target = pending.hoverPort?.let { portPositionOf(state.workflow, it) } ?: pending.currentPos
     val (start, end) = if (pending.from.isOutput) fromPos to target else target to fromPos
-    val color = if (pending.from.kind == PortKind.DATA) EditorColors.dataEdge else EditorColors.execEdge
+    val color = if (pending.from.kind == PortKind.DATA) {
+        portTypeColor(resolvePort(state.workflow, pending.from)?.schema)
+    } else {
+        EditorColors.execEdge
+    }
     drawEdge(start, end, color, EDGE_WIDTH, dashed = true)
     if (pending.hoverPort != null) {
         drawCircle(EditorColors.portSnap.copy(alpha = SNAP_HIGHLIGHT_ALPHA), SNAP_HIGHLIGHT_RADIUS, target)
     }
 }
 
-internal fun portPositionOf(workflow: Workflow, ref: PortRef): Offset? {
-    val node = workflow.node(ref.nodeId)
-    val definition = node?.let { NodeTypeRegistry.byId(it.typeId) }
-    val port = definition?.port(ref.portName)?.takeIf { it.kind == ref.kind }
-    return if (node != null && definition != null && port != null) {
-        GraphGeometry.portPosition(node, definition, port)
-    } else {
-        null
+internal fun portPositionOf(workflow: Workflow, ref: PortRef): Offset? =
+    resolvePort(workflow, ref)?.let { port ->
+        workflow.node(ref.nodeId)?.let { node ->
+            NodeTypeRegistry.byId(node.typeId)?.let { definition ->
+                val inputPorts = effectiveInputPorts(definition, workflow, node)
+                val outputPorts = effectiveOutputPorts(definition, workflow, node)
+                val width = GraphGeometry.nodeWidth(inputPorts.size, outputPorts.size)
+                GraphGeometry.portPosition(node, inputPorts, outputPorts, width, port)
+            }
+        }
     }
-}
+
+/**
+ * Resolves the placed [Port] for [ref] (honouring dynamic + exposed ports).
+ * Used to read a port's [ItemSchema] for type-coloured data edges and for
+ * compose-time schema subtyping checks.
+ */
+internal fun resolvePort(workflow: Workflow, ref: PortRef): Port? =
+    workflow.node(ref.nodeId)?.let { node ->
+        NodeTypeRegistry.byId(node.typeId)?.let { definition ->
+            val ports = if (ref.isOutput) {
+                effectiveOutputPorts(definition, workflow, node)
+            } else {
+                effectiveInputPorts(definition, workflow, node)
+            }
+            ports.firstOrNull { it.name == ref.portName && it.kind == ref.kind }
+        }
+    }
 
 private fun execRef(nodeId: String, portName: String, isOutput: Boolean): PortRef =
     PortRef(nodeId, portName, isOutput, PortKind.EXECUTION)

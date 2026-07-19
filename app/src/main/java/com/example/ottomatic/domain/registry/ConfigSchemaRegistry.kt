@@ -45,6 +45,21 @@ data class ConfigField(
 )
 
 /**
+ * The [ItemSchema] of the typed DATA input port exposed for [field] when the
+ * user toggles it as an exposed input. Maps each [ConfigFieldType] to the
+ * primitive Kotlin type the field parses to, so the graph validator can
+ * type-check incoming edges and the executor can feed the value back into the
+ * node's config.
+ */
+fun ConfigField.portSchema(): ItemSchema = when (type) {
+    ConfigFieldType.STR, ConfigFieldType.MULTILINE, is ConfigFieldType.ENUM, is ConfigFieldType.EXPR ->
+        ItemSchema.Primitive(String::class)
+    ConfigFieldType.INT -> ItemSchema.Primitive(Int::class)
+    ConfigFieldType.BOOL -> ItemSchema.Primitive(Boolean::class)
+    ConfigFieldType.DOUBLE -> ItemSchema.Primitive(Double::class)
+}
+
+/**
  * Schema for a node type's configuration form. Looked up by [typeId].
  */
 data class NodeConfigSchema(

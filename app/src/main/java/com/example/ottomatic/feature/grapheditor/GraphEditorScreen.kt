@@ -185,6 +185,7 @@ fun GraphEditorScreen(viewModel: GraphEditorViewModel) {
                 onDismiss = { showConfig = false },
                 onNameChange = { name -> viewModel.updateNodeName(node.id, name) },
                 onConfigChange = { key, value -> viewModel.updateNodeConfig(node.id, key, value) },
+                onToggleExpose = { key -> viewModel.toggleNodeExposedInput(node.id, key) },
             )
         } else {
             showConfig = false
@@ -392,6 +393,7 @@ private fun NodeConfigSheet(
     onDismiss: () -> Unit,
     onNameChange: (String) -> Unit,
     onConfigChange: (String, String) -> Unit,
+    onToggleExpose: (String) -> Unit,
 ) {
     val definition = NodeTypeRegistry.byId(node.typeId)
     val schema = ConfigSchemaRegistry.byId(node.typeId)
@@ -426,7 +428,9 @@ private fun NodeConfigSheet(
                     ConfigFieldEditor(
                         field = field,
                         value = node.config[field.key] ?: field.defaultValue,
+                        exposed = field.key in node.exposedInputs,
                         onValueChange = { onConfigChange(field.key, it) },
+                        onToggleExpose = { onToggleExpose(field.key) },
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                 }
@@ -440,11 +444,14 @@ private fun NodeConfigSheet(
 private fun ConfigFieldEditor(
     field: com.example.ottomatic.domain.registry.ConfigField,
     value: String,
+    exposed: Boolean,
     onValueChange: (String) -> Unit,
+    onToggleExpose: () -> Unit,
 ) {
     val type = field.type
     var expanded by remember { mutableStateOf(false) }
-    when (type) {
+    Column {
+        when (type) {
         is com.example.ottomatic.domain.registry.ConfigFieldType.ENUM -> {
             ExposedDropdownMenuBox(
                 expanded = expanded,
@@ -540,6 +547,24 @@ private fun ConfigFieldEditor(
                 label = { Text(field.label) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            androidx.compose.material3.Switch(
+                checked = exposed,
+                onCheckedChange = { onToggleExpose() },
+            )
+            Text(
+                text = "Expose as data input",
+                color = EditorColors.textSecondary,
+                fontSize = 12.sp,
             )
         }
     }

@@ -8,6 +8,7 @@ import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.domain.registry.effectivePort
 
 /**
  * One finding produced by validating a [Workflow] graph.
@@ -85,8 +86,13 @@ class GraphValidator(private val workflow: Workflow) {
                 out += ValidationIssue(Severity.ERROR, "Unknown node type in data connection", conn.id)
                 continue
             }
-            val fromPort = fromDef.port(conn.fromPort)
-            val toPort = toDef.port(conn.toPort)
+            // Always resolve via effectivePort: any action may have gained
+            // exposed-config DATA input ports (see WorkflowNode.exposedInputs),
+            // and `action.break` derives its field output ports dynamically.
+            val fromPort = effectivePort(fromDef, workflow, fromNode, conn.fromPort, Direction.OUT)
+                ?: fromDef.port(conn.fromPort)
+            val toPort = effectivePort(toDef, workflow, toNode, conn.toPort, Direction.IN)
+                ?: toDef.port(conn.toPort)
             val fromBad = fromPort == null || fromPort.kind != PortKind.DATA || fromPort.direction != Direction.OUT
             if (fromBad) {
                 out += ValidationIssue(

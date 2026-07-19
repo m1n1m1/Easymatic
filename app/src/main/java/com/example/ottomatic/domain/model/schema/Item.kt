@@ -6,10 +6,15 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.floatOrNull
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
 
@@ -85,6 +90,60 @@ internal fun jsonElementToString(element: JsonElement): String = when (element) 
     is JsonNull -> ""
     else -> element.toString()
 }
+
+/**
+ * Converts a [JsonElement] to its typed Kotlin value according to [schema].
+ *
+ * Used by the adaptive struct node ([com.example.ottomatic.engine.action.BreakStructAction])
+ * to decode a struct's JSON form into the per-field typed values its DATA
+ * output ports carry. Primitives become String/Long/Int/Boolean/Double/Float;
+ * lists recurse element-wise; maps of string-keyed string-valued entries
+ * become `Map<String,String>`; nested objects/unions/wildcards stay as
+ * [JsonElement] (their kClass is not always resolvable, and round-tripping
+ * through JSON is the documented contract for these schemas).
+ */
+@Suppress("CyclomaticComplexMethod", "ComplexMethod")
+internal fun jsonElementToValue(element: JsonElement, schema: ItemSchema): Any? = when (schema) {
+    is ItemSchema.Primitive -> when (schema.kClass) {
+        String::class -> (element as? JsonPrimitive)?.contentOrNull ?: ""
+        Int::class -> (element as? JsonPrimitive)?.intOrNull ?: 0
+        Long::class -> (element as? JsonPrimitive)?.contentOrNull?.toLongOrNull() ?: 0L
+        Boolean::class -> (element as? JsonPrimitive)?.contentOrNull?.toBooleanStrictOrNull() ?: false
+        Double::class -> (element as? JsonPrimitive)?.doubleOrNull ?: 0.0
+        Float::class -> (element as? JsonPrimitive)?.floatOrNull ?: 0f
+        else -> (element as? JsonPrimitive)?.contentOrNull ?: ""
+    }
+    is ItemSchema.MapSchema -> decodeStringMap(element)
+    is ItemSchema.ListSchema -> {
+        (element as? JsonArray)?.map { jsonElementToValue(it, schema.element) } ?: emptyList<Any>()
+    }
+    is ItemSchema.Object -> element
+    is ItemSchema.Wildcard -> element
+    is ItemSchema.Unit -> kotlin.Unit
+    is ItemSchema.Union -> element
+}
+
+/** Decodes a JSON object of string-keyed string-valued entries to a `Map<String,String>`. */
+private fun decodeStringMap(element: JsonElement): Map<String, String> {
+    val obj = element as? JsonObject ?: return emptyMap()
+    return buildMap {
+        obj.forEach { (k, v) -> put(k, (v as? JsonPrimitive)?.contentOrNull ?: "") }
+    }
+}
+
+/**
+ * Builds the EXPR `flat` view for a single field [value] described by [schema].
+ * Only `Map<String,String>` values carry a flat view (their entries become
+ * EXPR-addressable keys); all other field types resolve via [Item.value]'s
+ * `toString()` in the executor's interpolation context.
+ */
+internal fun flatViewFor(value: Any?, schema: ItemSchema): Map<String, String> =
+    if (schema is ItemSchema.MapSchema && value is Map<*, *>) {
+        @Suppress("UNCHECKED_CAST")
+        value as Map<String, String>
+    } else {
+        emptyMap()
+    }
 
 /** Builds an [ItemSchema] from a kotlinx-serialization [descriptor][SerialDescriptor]. */
 @PublishedApi

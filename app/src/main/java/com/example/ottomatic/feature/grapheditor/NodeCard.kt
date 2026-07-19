@@ -36,7 +36,10 @@ import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.registry.effectiveInputPorts
+import com.example.ottomatic.domain.registry.effectiveOutputPorts
 import kotlin.math.roundToInt
 
 private val NodeShape = RoundedCornerShape(14.dp)
@@ -46,6 +49,7 @@ private const val PORT_HANDLE_SIZE = 26f
 fun NodeCard(
     node: WorkflowNode,
     definition: NodeTypeDefinition,
+    workflow: Workflow,
     isSelected: Boolean,
     hoverPort: PortRef?,
     onSelect: () -> Unit,
@@ -57,7 +61,9 @@ fun NodeCard(
     onPortDragCancel: () -> Unit,
 ) {
     val density = LocalDensity.current.density
-    val width = GraphGeometry.nodeWidth(definition)
+    val inputPorts = effectiveInputPorts(definition, workflow, node)
+    val outputPorts = effectiveOutputPorts(definition, workflow, node)
+    val width = GraphGeometry.nodeWidth(inputPorts.size, outputPorts.size)
 
     Box(
         modifier = Modifier
@@ -74,10 +80,12 @@ fun NodeCard(
             onDragEnd = onDragEnd,
             density = density,
         )
-        OutputLabels(definition, density)
+        OutputLabels(outputPorts, width, density)
         Ports(
             node = node,
-            definition = definition,
+            inputPorts = inputPorts,
+            outputPorts = outputPorts,
+            width = width,
             hoverPort = hoverPort,
             density = density,
             onPortDragStart = onPortDragStart,
@@ -166,10 +174,10 @@ private fun NodeBody(
 }
 
 @Composable
-private fun OutputLabels(definition: NodeTypeDefinition, density: Float) {
-    if (definition.outputPorts.size < 2) return
-    definition.outputPorts.forEach { port ->
-        val portOffset = GraphGeometry.portOffset(definition, port)
+private fun OutputLabels(outputPorts: List<Port>, width: Float, density: Float) {
+    if (outputPorts.size < 2) return
+    outputPorts.forEach { port ->
+        val portOffset = GraphGeometry.portOffset(emptyList(), outputPorts, width, port)
         Box(
             modifier = Modifier
                 .offset {
@@ -194,7 +202,9 @@ private fun OutputLabels(definition: NodeTypeDefinition, density: Float) {
 @Composable
 private fun Ports(
     node: WorkflowNode,
-    definition: NodeTypeDefinition,
+    inputPorts: List<Port>,
+    outputPorts: List<Port>,
+    width: Float,
     hoverPort: PortRef?,
     density: Float,
     onPortDragStart: (PortRef) -> Unit,
@@ -202,11 +212,11 @@ private fun Ports(
     onPortDragEnd: () -> Unit,
     onPortDragCancel: () -> Unit,
 ) {
-    definition.inputPorts.forEach { port ->
+    inputPorts.forEach { port ->
         PortHandle(
             ref = PortRef(node.id, port.name, isOutput = false, port.kind),
             port = port,
-            center = GraphGeometry.portOffset(definition, port),
+            center = GraphGeometry.portOffset(inputPorts, outputPorts, width, port),
             isSnapTarget = hoverPort == PortRef(node.id, port.name, isOutput = false, port.kind),
             density = density,
             onDragStart = onPortDragStart,
@@ -215,11 +225,11 @@ private fun Ports(
             onDragCancel = onPortDragCancel,
         )
     }
-    definition.outputPorts.forEach { port ->
+    outputPorts.forEach { port ->
         PortHandle(
             ref = PortRef(node.id, port.name, isOutput = true, port.kind),
             port = port,
-            center = GraphGeometry.portOffset(definition, port),
+            center = GraphGeometry.portOffset(inputPorts, outputPorts, width, port),
             isSnapTarget = hoverPort == PortRef(node.id, port.name, isOutput = true, port.kind),
             density = density,
             onDragStart = onPortDragStart,
@@ -280,5 +290,5 @@ private fun PortHandle(
 private fun portColor(port: Port, isSnapTarget: Boolean): Color =
     if (isSnapTarget) EditorColors.portSnap else when (port.kind) {
         PortKind.EXECUTION -> EditorColors.execPort
-        PortKind.DATA -> EditorColors.dataPort
+        PortKind.DATA -> portTypeColor(port.schema)
     }

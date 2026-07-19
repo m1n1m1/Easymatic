@@ -11,11 +11,17 @@ import com.example.ottomatic.domain.model.schema.Item
  * produced upstream in the current execution chain (trigger + preceding
  * actions). This preserves the n8n-style `{{field}}` templating UX while the
  * typed data ports carry the structured items themselves.
+ *
+ * [dataIn] carries the typed [Item]s arriving on the action's DATA input
+ * ports, keyed by input port name. Populated by [WorkflowExecutor] from its
+ * data cache following [com.example.ottomatic.domain.model.DataConnection]s.
+ * Empty when the action has no incoming data edges.
  */
 data class ActionInput(
     val node: WorkflowNode,
     val config: TypedConfig,
     val dataContext: Map<String, String>,
+    val dataIn: Map<String, Item> = emptyMap(),
 )
 
 /**
