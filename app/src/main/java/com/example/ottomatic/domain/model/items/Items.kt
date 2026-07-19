@@ -77,3 +77,24 @@ data class BatteryState(
 data class DurationMillis(
     val millis: Long,
 )
+
+/**
+ * A geofence transition reported by `trigger.geofence` on its `event` data port.
+ *
+ * - [triggerNodeId]: the geofence trigger node that fired (matches the geofence
+ *   `requestId` set by `AndroidTriggerHost.armGeofence`).
+ * - [transition]: discriminator — `"enter"`, `"exit"` or `"dwell"`.
+ * - [latitude], [longitude]: the triggering location.
+ * - [accuracyMeters]: estimated accuracy of the triggering fix, or `0f` if
+ *   unavailable.
+ * - [timestamp]: when the transition was produced (epoch ms).
+ */
+@Serializable
+data class GeofenceEvent(
+    val triggerNodeId: String,
+    val transition: String,
+    val latitude: Double,
+    val longitude: Double,
+    val accuracyMeters: Float,
+    val timestamp: Long,
+)

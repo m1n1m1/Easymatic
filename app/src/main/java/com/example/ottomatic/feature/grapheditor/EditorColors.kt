@@ -6,6 +6,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Http
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Schedule
@@ -97,5 +98,6 @@ fun nodeIcon(iconKey: String): ImageVector = when (iconKey) {
     "send" -> Icons.AutoMirrored.Filled.Send
     "timer" -> Icons.Filled.Timer
     "wifi" -> Icons.Filled.Wifi
+    "location" -> Icons.Filled.LocationOn
     else -> Icons.Filled.Extension
 }

@@ -6,6 +6,7 @@ import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.items.BatteryState
+import com.example.ottomatic.domain.model.items.GeofenceEvent
 import com.example.ottomatic.domain.model.items.HttpResponseItem
 import com.example.ottomatic.domain.model.items.NotificationEvent
 import com.example.ottomatic.domain.model.items.ScheduleFire
@@ -102,6 +103,14 @@ object NodeTypeRegistry {
             kind = NodeKind.TRIGGER,
             ports = listOf(execOut(), dataOut<BatteryState>("state")),
             iconKey = "battery_level",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.geofence",
+            displayName = "Geofence",
+            description = "Starts when the device enters, exits or dwells inside a circular area",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<GeofenceEvent>("event")),
+            iconKey = "location",
         ),
     )
 

@@ -152,6 +152,42 @@ object ConfigSchemaRegistry {
             ),
         ),
         NodeConfigSchema(
+            typeId = "trigger.geofence",
+            fields = listOf(
+                ConfigField(
+                    key = "latitude",
+                    label = "Latitude",
+                    type = ConfigFieldType.DOUBLE,
+                ),
+                ConfigField(
+                    key = "longitude",
+                    label = "Longitude",
+                    type = ConfigFieldType.DOUBLE,
+                ),
+                ConfigField(
+                    key = "radiusMeters",
+                    label = "Radius (metres)",
+                    type = ConfigFieldType.INT,
+                    defaultValue = "100",
+                ),
+                ConfigField(
+                    key = "event",
+                    label = "Events",
+                    type = ConfigFieldType.ENUM(
+                        options = listOf("enter", "exit", "dwell", "enter,exit", "enter,exit,dwell"),
+                    ),
+                    defaultValue = "enter",
+                ),
+                ConfigField(
+                    key = "dwellDelayMs",
+                    label = "Dwell delay (ms, only when dwell is armed)",
+                    type = ConfigFieldType.INT,
+                    defaultValue = "30000",
+                    exposable = false,
+                ),
+            ),
+        ),
+        NodeConfigSchema(
             typeId = "action.delay",
             fields = listOf(
                 ConfigField(

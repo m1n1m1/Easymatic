@@ -50,7 +50,62 @@ interface TriggerHost {
         direction: String,
         threshold: Int,
     ): ScheduleHandle
+
+    /**
+     * Arms a geofence for [nodeId] centred at ([latitude], [longitude]) with a
+     * radius of [radiusMeters] metres. When the device undergoes any of the
+     * transitions in [transitions] (enter / exit / dwell), the implementation
+     * pushes a bus event with source `GEOFENCE` and `triggerNodeId = nodeId`.
+     *
+     * [dwellDelayMs] is forwarded to the platform as the loitering delay
+     * (only effective when [transitions] contains [GeofenceTransition.DWELL]).
+     *
+     * Geofences are monitored by the OS in the background and persist across
+     * app process death and device reboot, so the manifest-registered
+     * `GeofenceReceiver` keeps firing without the runner being active.
+     *
+     * Returns a [ScheduleHandle] whose [ScheduleHandle.cancel] removes the
+     * geofence when the trigger flow is cancelled.
+     */
+    @Suppress("LongParameterList") // Mirrors the GMS Geofence.Builder API surface.
+    fun armGeofence(
+        nodeId: String,
+        latitude: Double,
+        longitude: Double,
+        radiusMeters: Float,
+        transitions: Set<GeofenceTransition>,
+        dwellDelayMs: Int = DEFAULT_DWELL_DELAY_MS,
+    ): ScheduleHandle
 }
+
+/** Geofence transition kinds, mirroring `com.google.android.gms.location.Geofence`. */
+enum class GeofenceTransition {
+    ENTER,
+    EXIT,
+    DWELL,
+    ;
+
+    companion object {
+        /** Parses a comma-separated string of `"enter"`, `"exit"`, `"dwell"`. */
+        fun parse(raw: String?): Set<GeofenceTransition> {
+            if (raw.isNullOrBlank()) return setOf(ENTER)
+            return raw.split(',')
+                .mapNotNull { token ->
+                    when (token.trim().lowercase()) {
+                        "enter" -> ENTER
+                        "exit" -> EXIT
+                        "dwell" -> DWELL
+                        else -> null
+                    }
+                }
+                .toSet()
+                .ifEmpty { setOf(ENTER) }
+        }
+    }
+}
+
+/** Default loitering delay (ms) forwarded to the platform when DWELL is armed. */
+const val DEFAULT_DWELL_DELAY_MS = 30_000
 
 /** Allows a trigger to tear down its armed schedule on flow cancellation. */
 fun interface ScheduleHandle {

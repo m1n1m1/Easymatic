@@ -15,6 +15,7 @@ enum class TriggerSource {
     NOTIFICATION,
     BATTERY,
     BOOT,
+    GEOFENCE,
 }
 
 /**

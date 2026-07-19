@@ -18,6 +18,7 @@ object TriggerRegistry {
         add(com.example.ottomatic.engine.trigger.BootTrigger())
         add(com.example.ottomatic.engine.trigger.ChargingTrigger())
         add(com.example.ottomatic.engine.trigger.BatteryLevelTrigger())
+        add(com.example.ottomatic.engine.trigger.GeofenceTrigger())
     }
 
     private val byId: Map<String, Trigger> = triggers.associateBy { it.typeId }
