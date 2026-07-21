@@ -12,21 +12,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -52,6 +58,8 @@ fun NodeCard(
     workflow: Workflow,
     isSelected: Boolean,
     hoverPort: PortRef?,
+    revealedLabel: PortRef?,
+    pendingFrom: PortRef?,
     onSelect: () -> Unit,
     onDrag: (Offset) -> Unit,
     onDragEnd: () -> Unit,
@@ -59,11 +67,14 @@ fun NodeCard(
     onPortDrag: (Offset) -> Unit,
     onPortDragEnd: () -> Unit,
     onPortDragCancel: () -> Unit,
+    onToggleRevealedLabel: (PortRef) -> Unit,
 ) {
     val density = LocalDensity.current.density
     val inputPorts = effectiveInputPorts(definition, workflow, node)
     val outputPorts = effectiveOutputPorts(definition, workflow, node)
     val width = GraphGeometry.nodeWidth(inputPorts.size, outputPorts.size)
+    val labelToShow =
+        pendingFrom?.takeIf { it.nodeId == node.id && it.isOutput } ?: revealedLabel
 
     Box(
         modifier = Modifier
@@ -80,7 +91,7 @@ fun NodeCard(
             onDragEnd = onDragEnd,
             density = density,
         )
-        OutputLabels(outputPorts, width, density)
+        OutputLabels(node.id, outputPorts, width, density, labelToShow)
         Ports(
             node = node,
             inputPorts = inputPorts,
@@ -92,6 +103,7 @@ fun NodeCard(
             onPortDrag = onPortDrag,
             onPortDragEnd = onPortDragEnd,
             onPortDragCancel = onPortDragCancel,
+            onToggleRevealedLabel = onToggleRevealedLabel,
         )
     }
 }
@@ -173,30 +185,39 @@ private fun NodeBody(
     }
 }
 
+@OptIn(ExperimentalTextApi::class)
 @Composable
-private fun OutputLabels(outputPorts: List<Port>, width: Float, density: Float) {
+private fun OutputLabels(
+    nodeId: String,
+    outputPorts: List<Port>,
+    width: Float,
+    density: Float,
+    revealedLabel: PortRef?,
+) {
     if (outputPorts.size < 2) return
-    outputPorts.forEach { port ->
-        val portOffset = GraphGeometry.portOffset(emptyList(), outputPorts, width, port)
-        Box(
-            modifier = Modifier
-                .offset {
-                    IntOffset(
-                        ((portOffset.x - 35f) * density).roundToInt(),
-                        ((portOffset.y + 10f) * density).roundToInt(),
-                    )
-                }
-                .width(70.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = port.label,
-                color = EditorColors.textSecondary,
-                fontSize = 10.sp,
-                maxLines = 1,
-            )
-        }
+    val revealedPort = revealedLabel
+        ?.takeIf { it.nodeId == nodeId && it.isOutput }
+        ?.let { ref -> outputPorts.firstOrNull { it.name == ref.portName && it.kind == ref.kind } }
+        ?: return
+    val portOffset = GraphGeometry.portOffset(emptyList(), outputPorts, width, revealedPort)
+    val textMeasurer = rememberTextMeasurer()
+    val layout = remember(revealedPort.label) {
+        textMeasurer.measure(
+            AnnotatedString(revealedPort.label),
+            style = TextStyle(fontSize = 10.sp, color = EditorColors.textSecondary),
+        )
     }
+    Box(
+        modifier = Modifier
+            .offset {
+                IntOffset(
+                    (portOffset.x * density - layout.size.width / 2f).roundToInt(),
+                    ((portOffset.y + 10f) * density).roundToInt(),
+                )
+            }
+            .size(width = (layout.size.width / density).dp, height = (layout.size.height / density).dp)
+            .drawBehind { drawText(layout) },
+    )
 }
 
 @Composable
@@ -211,6 +232,7 @@ private fun Ports(
     onPortDrag: (Offset) -> Unit,
     onPortDragEnd: () -> Unit,
     onPortDragCancel: () -> Unit,
+    onToggleRevealedLabel: (PortRef) -> Unit,
 ) {
     inputPorts.forEach { port ->
         PortHandle(
@@ -236,6 +258,7 @@ private fun Ports(
             onDrag = onPortDrag,
             onDragEnd = onPortDragEnd,
             onDragCancel = onPortDragCancel,
+            onTap = { onToggleRevealedLabel(PortRef(node.id, port.name, isOutput = true, port.kind)) },
         )
     }
 }
@@ -251,10 +274,18 @@ private fun PortHandle(
     onDrag: (Offset) -> Unit,
     onDragEnd: () -> Unit,
     onDragCancel: () -> Unit,
+    onTap: (() -> Unit)? = null,
 ) {
     val half = PORT_HANDLE_SIZE / 2f
     val ring = portColor(port, isSnapTarget)
     val fill = if (isSnapTarget) EditorColors.portSnap else EditorColors.canvasBackground
+    val tapModifier = if (onTap != null) {
+        Modifier.pointerInput(ref) {
+            detectTapGestures(onTap = { onTap() })
+        }
+    } else {
+        Modifier
+    }
     Box(
         modifier = Modifier
             .offset {
@@ -274,7 +305,8 @@ private fun PortHandle(
                     onDragEnd = onDragEnd,
                     onDragCancel = onDragCancel,
                 )
-            },
+            }
+            .then(tapModifier),
         contentAlignment = Alignment.Center,
     ) {
         Box(

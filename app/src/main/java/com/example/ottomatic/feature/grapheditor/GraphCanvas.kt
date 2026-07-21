@@ -78,7 +78,12 @@ private fun BackgroundLayer(state: GraphEditorUiState, viewModel: GraphEditorVie
                     val t = current.transform
                     val graphPos = (positionPx - t.offset) / (t.scale * density)
                     val hit = edgeHitTest(current.workflow, graphPos)
-                    if (hit != null) viewModel.selectConnection(hit) else viewModel.clearSelection()
+                    if (hit != null) {
+                        viewModel.selectConnection(hit)
+                    } else {
+                        viewModel.clearSelection()
+                    }
+                    viewModel.clearRevealedLabel()
                 }
             }
             .pointerInput(viewModel) {
@@ -127,6 +132,8 @@ private fun NodeLayer(state: GraphEditorUiState, viewModel: GraphEditorViewModel
                     workflow = state.workflow,
                     isSelected = node.id == selectedNodeId,
                     hoverPort = state.pendingConnection?.hoverPort,
+                    revealedLabel = state.revealedLabel,
+                    pendingFrom = state.pendingConnection?.from,
                     onSelect = { viewModel.selectNode(node.id) },
                     onDrag = { delta -> viewModel.moveNode(node.id, delta) },
                     onDragEnd = { viewModel.onNodeDragEnd() },
@@ -134,6 +141,7 @@ private fun NodeLayer(state: GraphEditorUiState, viewModel: GraphEditorViewModel
                     onPortDrag = { delta -> viewModel.updatePortDrag(delta) },
                     onPortDragEnd = { viewModel.endPortDrag() },
                     onPortDragCancel = { viewModel.cancelPortDrag() },
+                    onToggleRevealedLabel = { ref -> viewModel.toggleRevealedLabel(ref) },
                 )
             }
         }

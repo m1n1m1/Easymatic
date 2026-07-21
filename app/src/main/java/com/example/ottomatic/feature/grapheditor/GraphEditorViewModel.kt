@@ -66,6 +66,7 @@ data class GraphEditorUiState(
     val transform: CanvasTransform = CanvasTransform(),
     val selection: Selection? = null,
     val pendingConnection: PendingConnection? = null,
+    val revealedLabel: PortRef? = null,
     val isLoaded: Boolean = false,
     val isRunning: Boolean = false,
 )
@@ -157,6 +158,22 @@ class GraphEditorViewModel(
 
     fun clearSelection() {
         _uiState.update { it.copy(selection = null) }
+    }
+
+    /**
+     * Toggles whether the label of port [ref] is revealed on the canvas. Only
+     * one port label is shown at a time: tapping a different port swaps the
+     * revealed label, tapping the same port again hides it. Mobile-friendly
+     * replacement for hover-to-reveal (no hover on touch screens).
+     */
+    fun toggleRevealedLabel(ref: PortRef) {
+        _uiState.update { state ->
+            state.copy(revealedLabel = if (state.revealedLabel == ref) null else ref)
+        }
+    }
+
+    fun clearRevealedLabel() {
+        _uiState.update { it.copy(revealedLabel = null) }
     }
 
     fun deleteSelection() {
