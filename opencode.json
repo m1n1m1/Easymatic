@@ -1,0 +1,29 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "serena": {
+      "type": "local",
+      "command": [
+        "C:/Users/Mathi/.local/bin/serena.exe",
+        "start-mcp-server",
+        "--context",
+        "ide",
+        "--project",
+        "C:/Users/Mathi/AndroidStudioProjects/Ottomatic"
+      ],
+      "enabled": true
+    },
+    "codegraph": {
+      "type": "local",
+      "command": [
+        "codegraph",
+        "serve",
+        "--mcp"
+      ],
+      "enabled": true
+    }
+  },
+  "experimental": {
+    "mcp_timeout": 60000
+  }
+}

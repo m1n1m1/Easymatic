@@ -1,8 +1,10 @@
 package com.example.ottomatic
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.graphics.Color
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -47,11 +49,18 @@ class MainActivity : ComponentActivity() {
             // Result is ignored; the user can grant it later via Settings.
         }
 
+    private val requestDndPolicyAccess =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
+            // Result is ignored; the user grants access in the system Settings
+            // page and returns. They can always re-open it via the DND node.
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         ServiceLocator.init(applicationContext)
         super.onCreate(savedInstanceState)
         requestNotificationPermissionIfNeeded()
         requestForegroundLocationPermissionIfNeeded()
+        requestDndPermissionIfNeeded()
         // The graph editor uses a fixed dark palette, so force light system bar icons.
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
@@ -90,5 +99,12 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
         if (permissionChecker.status(Permissions.ACCESS_BACKGROUND_LOCATION) is PermissionStatus.Granted) return
         requestBackgroundLocation.launch(Permissions.ACCESS_BACKGROUND_LOCATION.manifest)
+    }
+
+    private fun requestDndPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
+        if (permissionChecker.status(Permissions.ACCESS_NOTIFICATION_POLICY) is PermissionStatus.Granted) return
+        val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+        requestDndPolicyAccess.launch(intent)
     }
 }

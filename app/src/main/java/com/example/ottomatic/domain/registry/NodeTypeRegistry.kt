@@ -6,11 +6,13 @@ import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.items.BatteryState
+import com.example.ottomatic.domain.model.items.DndState
 import com.example.ottomatic.domain.model.items.GeofenceEvent
 import com.example.ottomatic.domain.model.items.HttpResponseItem
 import com.example.ottomatic.domain.model.items.NotificationEvent
 import com.example.ottomatic.domain.model.items.ScheduleFire
 import com.example.ottomatic.domain.model.items.SmsMessage
+import com.example.ottomatic.domain.model.items.VolumeState
 import com.example.ottomatic.domain.model.items.WifiState
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.model.schema.schemaOf
@@ -158,6 +160,22 @@ object NodeTypeRegistry {
             kind = NodeKind.ACTION,
             ports = listOf(execIn(), execOut(), dataOut<WifiState>("state")),
             iconKey = "wifi",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.volume",
+            displayName = "Set Volume",
+            description = "Adjusts an audio stream's volume (up, down, set, mute or unmute)",
+            kind = NodeKind.ACTION,
+            ports = listOf(execIn(), execOut(), dataOut<VolumeState>("state")),
+            iconKey = "volume",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.dnd",
+            displayName = "Do Not Disturb",
+            description = "Toggles Do-Not-Disturb on or off with a chosen policy level",
+            kind = NodeKind.ACTION,
+            ports = listOf(execIn(), execOut(), dataOut<DndState>("state")),
+            iconKey = "dnd",
         ),
     )
 

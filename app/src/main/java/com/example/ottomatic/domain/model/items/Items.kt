@@ -53,6 +53,41 @@ data class WifiState(
 )
 
 /**
+ * Volume state reported by the volume action on its `state` data port.
+ *
+ * - [stream]: which audio stream was adjusted — `"media"`, `"ring"`,
+ *   `"alarm"`, `"notification"` or `"system"`.
+ * - [mode]: what was done — `"up"`, `"down"`, `"set"`, `"mute"` or `"unmute"`.
+ * - [volume]: resulting volume index (0..[maxVolume]).
+ * - [maxVolume]: maximum index for the stream.
+ * - [changed]: whether the system accepted the change.
+ */
+@Serializable
+data class VolumeState(
+    val stream: String,
+    val mode: String,
+    val volume: Int,
+    val maxVolume: Int,
+    val changed: Boolean,
+)
+
+/**
+ * Do-Not-Disturb state reported by the DND action on its `state` data port.
+ *
+ * - [enabled]: whether DND is now active.
+ * - [level]: DND policy in effect — `"priority"`, `"alarms"` or `"silence"`
+ *   when enabled, or `"all"` when disabled.
+ * - [changed]: whether the system accepted the change (requires the
+ *   `ACCESS_NOTIFICATION_POLICY` permission).
+ */
+@Serializable
+data class DndState(
+    val enabled: Boolean,
+    val level: String,
+    val changed: Boolean,
+)
+
+/**
  * Battery state reported by `trigger.charging` and `trigger.battery_level`
  * on their `state` data port.
  *

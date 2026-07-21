@@ -3,6 +3,8 @@ package com.example.ottomatic.engine
 import com.example.ottomatic.core.service.HttpRequest
 import com.example.ottomatic.core.service.HttpResponse
 import com.example.ottomatic.core.service.SystemServices
+import com.example.ottomatic.core.service.VolumeResult
+import com.example.ottomatic.core.service.DndResult
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
@@ -186,5 +188,7 @@ class WorkflowExecutorTest {
         }
         override fun setWifi(enabled: Boolean): Boolean? = null
         override fun httpRequest(request: HttpRequest): HttpResponse = HttpResponse(200, "")
+        override fun setVolume(stream: String, mode: String, value: Int): VolumeResult? = null
+        override fun setDnd(enabled: Boolean, level: String): DndResult? = null
     }
 }

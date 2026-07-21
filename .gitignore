@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# AI tooling indexes (local to each machine)
+.codegraph/
+opencode.json.bak-*

@@ -3,7 +3,9 @@ package com.example.ottomatic.feature.grapheditor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.DoNotDisturb
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.LocationOn
@@ -99,5 +101,7 @@ fun nodeIcon(iconKey: String): ImageVector = when (iconKey) {
     "timer" -> Icons.Filled.Timer
     "wifi" -> Icons.Filled.Wifi
     "location" -> Icons.Filled.LocationOn
+    "volume" -> Icons.AutoMirrored.Filled.VolumeUp
+    "dnd" -> Icons.Filled.DoNotDisturb
     else -> Icons.Filled.Extension
 }

@@ -4,8 +4,10 @@ import com.example.ottomatic.engine.Action
 import com.example.ottomatic.engine.action.BreakStructAction
 import com.example.ottomatic.engine.action.ConditionAction
 import com.example.ottomatic.engine.action.DelayAction
+import com.example.ottomatic.engine.action.DndAction
 import com.example.ottomatic.engine.action.HttpAction
 import com.example.ottomatic.engine.action.NotifyAction
+import com.example.ottomatic.engine.action.VolumeAction
 import com.example.ottomatic.engine.action.WifiAction
 
 /**
@@ -22,8 +24,10 @@ object ActionRegistry {
     private val actions: List<Action> = listOf(
         ConditionAction(),
         DelayAction(),
+        DndAction(),
         HttpAction(),
         NotifyAction(),
+        VolumeAction(),
         WifiAction(),
         BreakStructAction(),
     )

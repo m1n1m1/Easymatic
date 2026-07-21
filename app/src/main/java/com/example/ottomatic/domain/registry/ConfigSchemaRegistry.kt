@@ -259,6 +259,48 @@ object ConfigSchemaRegistry {
                 ),
             ),
         ),
+        NodeConfigSchema(
+            typeId = "action.volume",
+            fields = listOf(
+                ConfigField(
+                    key = "stream",
+                    label = "Stream",
+                    type = ConfigFieldType.ENUM(
+                        options = listOf("media", "ring", "alarm", "notification", "system"),
+                    ),
+                    defaultValue = "media",
+                ),
+                ConfigField(
+                    key = "mode",
+                    label = "Mode",
+                    type = ConfigFieldType.ENUM(options = listOf("up", "down", "set", "mute", "unmute")),
+                    defaultValue = "up",
+                ),
+                ConfigField(
+                    key = "value",
+                    label = "Value (0-100, only when mode = set)",
+                    type = ConfigFieldType.INT,
+                    defaultValue = "50",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.dnd",
+            fields = listOf(
+                ConfigField(
+                    key = "state",
+                    label = "State",
+                    type = ConfigFieldType.ENUM(options = listOf("on", "off")),
+                    defaultValue = "on",
+                ),
+                ConfigField(
+                    key = "level",
+                    label = "Level (when on)",
+                    type = ConfigFieldType.ENUM(options = listOf("priority", "alarms", "silence")),
+                    defaultValue = "priority",
+                ),
+            ),
+        ),
     )
 
     private val byId: Map<String, NodeConfigSchema> = schemas.associateBy { it.typeId }

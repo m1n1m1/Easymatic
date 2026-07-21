@@ -22,4 +22,13 @@ object Permissions {
     val ACCESS_FINE_LOCATION = Permission("android.permission.ACCESS_FINE_LOCATION")
     val ACCESS_COARSE_LOCATION = Permission("android.permission.ACCESS_COARSE_LOCATION")
     val ACCESS_BACKGROUND_LOCATION = Permission("android.permission.ACCESS_BACKGROUND_LOCATION")
+
+    /**
+     * Do-Not-Disturb policy access. Not a standard runtime permission — the
+     * user must grant it on the `ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS`
+     * page (see `MainActivity.requestDndPermissionIfNeeded`). The
+     * [PermissionChecker] handles this name specially via
+     * `NotificationManager.isNotificationPolicyAccessGranted`.
+     */
+    val ACCESS_NOTIFICATION_POLICY = Permission("android.permission.ACCESS_NOTIFICATION_POLICY")
 }
