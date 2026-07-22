@@ -16,6 +16,15 @@ enum class TriggerSource {
     BATTERY,
     BOOT,
     GEOFENCE,
+    MACRO,
+    APP,
+    VARIABLE,
+    CONNECTIVITY,
+    HARDWARE,
+    DISPLAY,
+    SYSTEM,
+    PACKAGE,
+    MEDIA,
 }
 
 /**

@@ -1,0 +1,48 @@
+package com.example.ottomatic.engine
+
+import com.example.ottomatic.core.permissions.Permission
+import com.example.ottomatic.core.permissions.PermissionChecker
+import com.example.ottomatic.core.permissions.PermissionRequirement
+import com.example.ottomatic.core.permissions.PermissionStatus
+import com.example.ottomatic.core.permissions.PrerequisiteType
+import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.registry.NodeTypeRegistry
+
+/**
+ * Computes the permission requirements that are not yet satisfied for a given
+ * set of workflow nodes, so the editor / runner can gate macro activation on
+ * them and the UI can drive the grant flow.
+ *
+ * The [checker] reports the current status of each [Permission]; callers
+ * (typically an Activity) are responsible for launching the request flow for
+ * the returned unsatisfied requirements.
+ */
+class PermissionController(
+    private val checker: PermissionChecker,
+) {
+
+    /**
+     * Returns the [PermissionRequirement]s that are not satisfied for the
+     * trigger nodes in [nodes]. Non-[PrerequisiteType.RUNTIME] requirements
+     * (e.g. accessibility, notification listener) are always reported — their
+     * satisfied state is determined by the caller via system APIs, since they
+     * do not flow through [PermissionChecker].
+     */
+    fun unsatisfiedFor(nodes: List<WorkflowNode>): List<PermissionRequirement> {
+        val requirements = nodes.mapNotNull { node ->
+            NodeTypeRegistry.byId(node.typeId)?.permissionRequirements
+        }.flatten()
+        return requirements.filter { requirement ->
+            val permission = requirement.manifestPermission
+            if (permission == null) {
+                true
+            } else {
+                checker.status(Permission(permission)) !is PermissionStatus.Granted
+            }
+        }.distinct()
+    }
+
+    /** True when every requirement for [nodes] is satisfied. */
+    fun allSatisfied(nodes: List<WorkflowNode>): Boolean =
+        unsatisfiedFor(nodes).isEmpty()
+}

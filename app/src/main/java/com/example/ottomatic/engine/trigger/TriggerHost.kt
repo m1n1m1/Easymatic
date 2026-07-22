@@ -1,6 +1,7 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerBus
+import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
 import kotlinx.coroutines.flow.Flow
 
@@ -76,6 +77,42 @@ interface TriggerHost {
         transitions: Set<GeofenceTransition>,
         dwellDelayMs: Int = DEFAULT_DWELL_DELAY_MS,
     ): ScheduleHandle
+
+    /**
+     * Stream of engine-internal macro lifecycle events
+     * ([TriggerSource.MACRO]). Emits when a macro is enabled (its
+     * [com.example.ottomatic.engine.WorkflowRunner.run] starts) and when a
+     * triggered execution finishes. The default implementation reads from the
+     * process-wide [MacroEventBus] so no Android backing is required.
+     *
+     * Payload contract:
+     * - `event` ∈ `"enabled"`, `"finished"`
+     * - `macroId` — the workflow id
+     */
+    fun macroLifecycleEvents(): Flow<TriggerEvent> = MacroEventBus.events
+
+    /**
+     * Stream of app-lifecycle events ([TriggerSource.APP]) — app initialisation
+     * and device/UI mode changes. The default implementation is empty; the
+     * Android-backed implementation wires a [android.app.UiModeManager] listener
+     * and the app initialisation signal.
+     *
+     * Payload contract:
+     * - `event` ∈ `"init"`, `"mode"`
+     * - `mode` (only for `mode`) — the new night-mode state (`"normal"` / `"night"`)
+     */
+    fun appLifecycleEvents(): Flow<TriggerEvent> = kotlinx.coroutines.flow.emptyFlow()
+
+    /**
+     * Stream of variable-change events ([TriggerSource.VARIABLE]) for the
+     * variable named [name]. The default implementation is empty; the
+     * Android-backed implementation reads from a process-wide variable store.
+     *
+     * Payload contract:
+     * - `name` — the variable name
+     * - `value` — the new string value
+     */
+    fun variableChanges(name: String): Flow<TriggerEvent> = kotlinx.coroutines.flow.emptyFlow()
 }
 
 /** Geofence transition kinds, mirroring `com.google.android.gms.location.Geofence`. */

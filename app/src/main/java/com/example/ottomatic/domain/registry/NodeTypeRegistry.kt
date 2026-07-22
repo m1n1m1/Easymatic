@@ -9,9 +9,15 @@ import com.example.ottomatic.domain.model.items.BatteryState
 import com.example.ottomatic.domain.model.items.DndState
 import com.example.ottomatic.domain.model.items.GeofenceEvent
 import com.example.ottomatic.domain.model.items.HttpResponseItem
+import com.example.ottomatic.domain.model.items.MediaEvent
+import com.example.ottomatic.domain.model.items.ModeChange
 import com.example.ottomatic.domain.model.items.NotificationEvent
+import com.example.ottomatic.domain.model.items.PackageEvent
 import com.example.ottomatic.domain.model.items.ScheduleFire
 import com.example.ottomatic.domain.model.items.SmsMessage
+import com.example.ottomatic.domain.model.items.StopwatchTick
+import com.example.ottomatic.domain.model.items.SystemState
+import com.example.ottomatic.domain.model.items.VariableChange
 import com.example.ottomatic.domain.model.items.VolumeState
 import com.example.ottomatic.domain.model.items.WifiState
 import com.example.ottomatic.domain.model.schema.ItemSchema
@@ -113,6 +119,232 @@ object NodeTypeRegistry {
             kind = NodeKind.TRIGGER,
             ports = listOf(execOut(), dataOut<GeofenceEvent>("event")),
             iconKey = "location",
+        ),
+        // Tier 0 — engine-internal triggers.
+        NodeTypeDefinition(
+            typeId = "trigger.empty",
+            displayName = "Empty Trigger",
+            description = "Fires immediately when the workflow starts (no external event)",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut()),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.app_init",
+            displayName = "App Initialised",
+            description = "Fires when the app is initialised and running",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut()),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.macro_finished",
+            displayName = "Macro Finished",
+            description = "Fires when a macro finishes executing after being triggered",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut()),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.macro_enabled",
+            displayName = "Macro Enabled",
+            description = "Fires when this macro is enabled (its triggers are armed)",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut()),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.mode_change",
+            displayName = "Dark Theme Change",
+            description = "Fires when the device's UI / night mode changes",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<ModeChange>("mode")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.variable_change",
+            displayName = "Variable Change",
+            description = "Fires when a named variable changes value",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<VariableChange>("variable")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.stopwatch",
+            displayName = "Stopwatch",
+            description = "Ticks on a fixed interval, reporting elapsed time",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<StopwatchTick>("tick")),
+            iconKey = "timer",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.sleep",
+            displayName = "Sleep",
+            description = "Ticks repeatedly but only during a configured daily time window",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut()),
+            iconKey = "timer",
+        ),
+        // Tier 1 — broadcast-receiver triggers.
+        NodeTypeDefinition(
+            typeId = "trigger.wifi_state",
+            displayName = "Wi-Fi State Change",
+            description = "Starts when Wi-Fi is enabled or disabled",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "wifi",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.bluetooth",
+            displayName = "Bluetooth State Change",
+            description = "Starts when Bluetooth is turned on or off",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bluetooth",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.bluetooth_connect",
+            displayName = "Bluetooth Device Connected",
+            description = "Starts when a Bluetooth device connects or disconnects",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bluetooth",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.airplane_mode",
+            displayName = "Airplane Mode Changed",
+            description = "Starts when airplane mode is toggled",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.call_state",
+            displayName = "Incoming Call State",
+            description = "Starts when the phone call state changes (ringing, offhook, idle)",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.headset",
+            displayName = "Headset Plugged",
+            description = "Starts when a wired headset is plugged or unplugged",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.usb_device",
+            displayName = "USB Device Connected",
+            description = "Starts when a USB device is connected or disconnected",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.dock",
+            displayName = "Device Docked",
+            description = "Starts when the device is docked or undocked",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.screen",
+            displayName = "Screen On / Off",
+            description = "Starts when the screen turns on or off",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.user_present",
+            displayName = "Device Unlocked",
+            description = "Starts when the user unlocks the device",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.ringer_mode",
+            displayName = "Ringer Mode Changed",
+            description = "Starts when the ringer mode changes (normal, silent, vibrate)",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.power_save",
+            displayName = "Power Save Mode Changed",
+            description = "Starts when power-save mode is toggled on or off",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.timezone_change",
+            displayName = "Timezone Changed",
+            description = "Starts when the device timezone changes",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.locale_change",
+            displayName = "Locale Changed",
+            description = "Starts when the device locale changes",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.date_change",
+            displayName = "Date Changed",
+            description = "Starts when the device date changes (midnight rollover)",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.shutdown",
+            displayName = "Device Shutting Down",
+            description = "Starts when the device is shutting down",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.time_tick",
+            displayName = "Regular Time Tick",
+            description = "Fires roughly every minute while the device is awake",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<SystemState>("state")),
+            iconKey = "timer",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.app_installed",
+            displayName = "App Installed / Removed",
+            description = "Starts when an app is installed, removed or replaced",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<PackageEvent>("package")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.media_button",
+            displayName = "Media Button Pressed",
+            description = "Starts when a media button is pressed (play, pause, next, etc.)",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<MediaEvent>("media")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "trigger.media_mount",
+            displayName = "Media Mounted / Unmounted",
+            description = "Starts when external media is mounted, unmounted or ejected",
+            kind = NodeKind.TRIGGER,
+            ports = listOf(execOut(), dataOut<MediaEvent>("media")),
+            iconKey = "bolt",
         ),
     )
 

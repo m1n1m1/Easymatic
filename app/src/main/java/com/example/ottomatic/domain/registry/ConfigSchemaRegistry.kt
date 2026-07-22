@@ -301,6 +301,170 @@ object ConfigSchemaRegistry {
                 ),
             ),
         ),
+        // Tier 1 trigger configs.
+        NodeConfigSchema(
+            typeId = "trigger.wifi_state",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Event",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "enabled", "disabled")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.bluetooth",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Event",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "on", "off")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.bluetooth_connect",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Event",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "connected", "disconnected")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.airplane_mode",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Event",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "on", "off")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.call_state",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "State",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "ringing", "offhook", "idle")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.headset",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Event",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "plugged", "unplugged")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.usb_device",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Event",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "connected", "disconnected")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.dock",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Event",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "docked", "undocked")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.screen",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Event",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "on", "off")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.ringer_mode",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Mode",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "normal", "silent", "vibrate")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.power_save",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Event",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "on", "off")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.app_installed",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Action",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "installed", "removed", "replaced")),
+                    defaultValue = "any",
+                ),
+                ConfigField(
+                    key = "package",
+                    label = "Package filter (e.g. com.example.app, optional)",
+                    type = ConfigFieldType.STR,
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.media_button",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Button",
+                    type = ConfigFieldType.ENUM(
+                        options = listOf(
+                            "any", "play", "pause", "play_pause", "next", "previous", "stop", "headset_hook",
+                        ),
+                    ),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "trigger.media_mount",
+            fields = listOf(
+                ConfigField(
+                    key = "event",
+                    label = "Event",
+                    type = ConfigFieldType.ENUM(options = listOf("any", "mounted", "unmounted", "ejected")),
+                    defaultValue = "any",
+                ),
+            ),
+        ),
     )
 
     private val byId: Map<String, NodeConfigSchema> = schemas.associateBy { it.typeId }

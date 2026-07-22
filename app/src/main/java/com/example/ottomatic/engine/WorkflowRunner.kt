@@ -1,9 +1,11 @@
 package com.example.ottomatic.engine
 
+import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.TriggerRegistry
+import com.example.ottomatic.engine.trigger.MacroEventBus
 import com.example.ottomatic.engine.trigger.TriggerEvent
 import com.example.ottomatic.engine.trigger.TriggerHost
 import kotlinx.coroutines.CoroutineScope
@@ -27,6 +29,18 @@ class WorkflowRunner(
         val triggers = workflow.nodes.filter {
             NodeTypeRegistry.byId(it.typeId)?.kind == NodeKind.TRIGGER
         }
+        // Signal that this macro has been enabled (its triggers are being armed).
+        MacroEventBus.emit(
+            com.example.ottomatic.core.trigger.TriggerEvent(
+                source = TriggerSource.MACRO,
+                triggerNodeId = "*",
+                payload = mapOf(
+                    "event" to "enabled",
+                    "macroId" to workflow.id,
+                    "timestamp" to System.currentTimeMillis().toString(),
+                ),
+            ),
+        )
         // Activate all triggers synchronously so their flows are registered
         // before this method returns. Otherwise a caller that fires a manual
         // trigger immediately after run() would race with coroutine startup.
@@ -59,5 +73,17 @@ class WorkflowRunner(
     ) {
         val triggerNode = workflow.node(event.triggerNodeId) ?: return
         executor.executeFrom(workflow, triggerNode, event)
+        // Signal that this macro's execution has finished.
+        MacroEventBus.emit(
+            com.example.ottomatic.core.trigger.TriggerEvent(
+                source = TriggerSource.MACRO,
+                triggerNodeId = "*",
+                payload = mapOf(
+                    "event" to "finished",
+                    "macroId" to workflow.id,
+                    "timestamp" to System.currentTimeMillis().toString(),
+                ),
+            ),
+        )
     }
 }

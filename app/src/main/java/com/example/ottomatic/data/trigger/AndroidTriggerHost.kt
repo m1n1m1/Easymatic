@@ -15,6 +15,7 @@ import com.example.ottomatic.engine.trigger.TriggerHost
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.TimeUnit
 
 /**
@@ -28,6 +29,10 @@ class AndroidTriggerHost(
     private val appContext = context.applicationContext
     private val workManager = WorkManager.getInstance(appContext)
     private val geofencingClient = LocationServices.getGeofencingClient(appContext)
+    private val lifecycleBridge = AppLifecycleBridge(appContext)
+
+    @Suppress("UnusedPrivateProperty") // Kept alive so its receiver stays registered.
+    private val screenBridge = ScreenBroadcastBridge(appContext)
 
     override fun armSchedule(
         nodeId: String,
@@ -98,6 +103,12 @@ class AndroidTriggerHost(
                 .addOnFailureListener { e -> Log.w(TAG, "removeGeofences failed for node $nodeId: $e") }
         }
     }
+
+    override fun appLifecycleEvents(): Flow<com.example.ottomatic.core.trigger.TriggerEvent> =
+        lifecycleBridge.events
+
+    override fun variableChanges(name: String): Flow<com.example.ottomatic.core.trigger.TriggerEvent> =
+        VariableStore.changesFor(name)
 
     private fun geofencePendingIntent(nodeId: String): PendingIntent {
         val intent = Intent(appContext, GeofenceReceiver::class.java).apply {

@@ -133,3 +133,87 @@ data class GeofenceEvent(
     val accuracyMeters: Float,
     val timestamp: Long,
 )
+
+/**
+ * A stopwatch tick reported by `trigger.stopwatch` on its `tick` data port.
+ *
+ * - [elapsedMs]: milliseconds elapsed since the stopwatch was started.
+ * - [tickAt]: epoch ms at which this tick fired.
+ */
+@Serializable
+data class StopwatchTick(
+    val elapsedMs: Long,
+    val tickAt: Long,
+)
+
+/**
+ * A variable change reported by `trigger.variable_change` on its `variable` data port.
+ *
+ * - [name]: the variable name.
+ * - [value]: the new string value.
+ * - [timestamp]: when the change was produced (epoch ms).
+ */
+@Serializable
+data class VariableChange(
+    val name: String,
+    val value: String,
+    val timestamp: Long,
+)
+
+/**
+ * A device/UI mode change reported by `trigger.mode_change` on its `mode` data port.
+ *
+ * - [mode]: the new mode — `"normal"` or `"night"`.
+ * - [timestamp]: when the change was produced (epoch ms).
+ */
+@Serializable
+data class ModeChange(
+    val mode: String,
+    val timestamp: Long,
+)
+
+/**
+ * Generic system-state event reported by Tier 1 broadcast-receiver triggers
+ * (wifi, bluetooth, airplane, headset, usb, dock, screen, ringer, power-save,
+ * timezone, locale, date, shutdown, time-tick, call) on their `state` data port.
+ *
+ * - [event]: discriminator — `"enabled"`, `"disabled"`, `"connected"`,
+ *   `"disconnected"`, `"on"`, `"off"`, `"plugged"`, `"unplugged"`, etc.
+ * - [detail]: optional extra context (device name, dock type, timezone id, …).
+ * - [timestamp]: when the event was produced (epoch ms).
+ */
+@Serializable
+data class SystemState(
+    val event: String,
+    val detail: String = "",
+    val timestamp: Long,
+)
+
+/**
+ * Package event reported by `trigger.app_installed` on its `package` data port.
+ *
+ * - [action]: `"installed"`, `"removed"` or `"replaced"`.
+ * - [packageName]: the affected package, e.g. `com.example.app`.
+ * - [timestamp]: when the event was produced (epoch ms).
+ */
+@Serializable
+data class PackageEvent(
+    val action: String,
+    val packageName: String,
+    val timestamp: Long,
+)
+
+/**
+ * Media event reported by `trigger.media_button` and `trigger.media_mount`
+ * on their `media` data port.
+ *
+ * - [event]: `"button"`, `"mounted"`, `"unmounted"` or `"ejected"`.
+ * - [detail]: optional extra (media key name, mount path, …).
+ * - [timestamp]: when the event was produced (epoch ms).
+ */
+@Serializable
+data class MediaEvent(
+    val event: String,
+    val detail: String = "",
+    val timestamp: Long,
+)

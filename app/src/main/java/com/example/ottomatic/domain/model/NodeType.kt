@@ -1,5 +1,6 @@
 package com.example.ottomatic.domain.model
 
+import com.example.ottomatic.core.permissions.PermissionRequirement
 import com.example.ottomatic.domain.model.schema.ItemSchema
 
 /**
@@ -66,6 +67,7 @@ data class NodeTypeDefinition(
     val ports: List<Port>,
     val iconKey: String,
     val hasDynamicPorts: Boolean = false,
+    val permissionRequirements: List<PermissionRequirement> = emptyList(),
 ) {
     /** All input ports (any kind). */
     val inputPorts: List<Port> get() = ports.filter { it.direction == Direction.IN }
