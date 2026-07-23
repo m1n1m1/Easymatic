@@ -64,7 +64,12 @@ import com.example.ottomatic.domain.registry.effectiveConfigSchema
 import kotlin.math.roundToInt
 
 @Composable
-fun GraphEditorScreen(viewModel: GraphEditorViewModel) {
+fun GraphEditorScreen(
+    viewModel: GraphEditorViewModel,
+    showBatteryPrompt: Boolean = false,
+    onDismissBatteryPrompt: () -> Unit = {},
+    onConfirmBatteryPrompt: () -> Unit = {},
+) {
     val state by viewModel.uiState.collectAsState()
     val density = LocalDensity.current.density
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
@@ -89,6 +94,8 @@ fun GraphEditorScreen(viewModel: GraphEditorViewModel) {
             title = state.workflow.name,
             nodeCount = state.workflow.nodes.size,
             hasSelection = state.selection != null,
+            isMacroEnabled = state.isMacroEnabled,
+            onToggleEnabled = { viewModel.setMacroEnabled(it) },
             onConfigure = { showConfig = true },
             onDelete = { viewModel.deleteSelection() },
         )
@@ -192,6 +199,32 @@ fun GraphEditorScreen(viewModel: GraphEditorViewModel) {
             showConfig = false
         }
     }
+
+    if (showBatteryPrompt) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = onDismissBatteryPrompt,
+            title = { Text("Disable battery optimisation") },
+            text = {
+                Text(
+                    "Ottomatic couldn't resume your macros in the background after the last reboot. " +
+                        "To keep automation running without intervention, allow Ottomatic to run " +
+                        "without battery restrictions.",
+                    color = EditorColors.textPrimary,
+                    fontSize = 14.sp,
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = onConfirmBatteryPrompt) {
+                    Text("Allow")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = onDismissBatteryPrompt) {
+                    Text("Not now")
+                }
+            },
+        )
+    }
 }
 
 private fun IntSize.centerPx(): Offset = Offset(width / 2f, height / 2f)
@@ -201,6 +234,8 @@ private fun EditorTopBar(
     title: String,
     nodeCount: Int,
     hasSelection: Boolean,
+    isMacroEnabled: Boolean,
+    onToggleEnabled: (Boolean) -> Unit,
     onConfigure: () -> Unit,
     onDelete: () -> Unit,
 ) {
@@ -227,6 +262,16 @@ private fun EditorTopBar(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
+            androidx.compose.material3.Switch(
+                checked = isMacroEnabled,
+                onCheckedChange = onToggleEnabled,
+            )
+            Text(
+                text = "Enabled",
+                color = EditorColors.textSecondary,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 6.dp, end = 8.dp),
+            )
             if (hasSelection) {
                 IconButton(onClick = onConfigure) {
                     Icon(

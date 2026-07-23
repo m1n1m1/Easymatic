@@ -110,4 +110,40 @@ class WorkflowMigratorTest {
         assertTrue(migrated.execConnections.isEmpty())
         assertTrue(migrated.dataConnections.isEmpty())
     }
+
+    @Test
+    fun `v2 payload without enabled field loads with enabled false`() {
+        // A v2 file (schemaVersion 2) predates the `enabled` flag. It must load
+        // without error and default `enabled` to false (macros disabled until the
+        // user opts in), and re-save at the current schema version.
+        val v2Json = """
+            {
+              "id":"default",
+              "name":"Legacy v2",
+              "schemaVersion":2,
+              "nodes":[
+                {"id":"n1","typeId":"trigger.manual","name":"Manual","x":0.0,"y":0.0,"config":{}}
+              ],
+              "execConnections":[],
+              "dataConnections":[]
+            }
+        """.trimIndent()
+        val migrated = WorkflowMigrator.migrate(v2Json)
+        assertEquals(false, migrated.enabled)
+        assertEquals("default", migrated.id)
+        assertEquals(1, migrated.nodes.size)
+    }
+
+    @Test
+    fun `current-version payload with enabled true round trips`() {
+        val workflow = Workflow(
+            id = "w",
+            enabled = true,
+            nodes = listOf(com.example.ottomatic.domain.model.WorkflowNode("n1", "trigger.manual", "M", 0f, 0f)),
+        )
+        val encoded = json.encodeToString(Workflow.serializer(), workflow)
+        val decoded = WorkflowMigrator.migrate(encoded)
+        assertEquals(true, decoded.enabled)
+        assertEquals(Workflow.CURRENT_SCHEMA_VERSION, decoded.schemaVersion)
+    }
 }

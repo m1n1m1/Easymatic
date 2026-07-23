@@ -69,6 +69,7 @@ data class GraphEditorUiState(
     val revealedLabel: PortRef? = null,
     val isLoaded: Boolean = false,
     val isRunning: Boolean = false,
+    val isMacroEnabled: Boolean = false,
 )
 
 @Suppress("TooManyFunctions") // Editor surface: transform, selection, node and connection editing.
@@ -76,6 +77,7 @@ class GraphEditorViewModel(
     private val repository: WorkflowRepository,
     private val triggerHost: TriggerHost,
     private val executionContext: ExecutionContext,
+    private val appContext: android.content.Context,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GraphEditorUiState())
@@ -84,7 +86,9 @@ class GraphEditorViewModel(
     init {
         viewModelScope.launch {
             val workflow = repository.load() ?: sampleWorkflow()
-            _uiState.update { it.copy(workflow = workflow, isLoaded = true) }
+            _uiState.update {
+                it.copy(workflow = workflow, isLoaded = true, isMacroEnabled = workflow.enabled)
+            }
         }
     }
 
@@ -380,9 +384,37 @@ class GraphEditorViewModel(
 
     private var runJob: Job? = null
 
-    fun runWorkflow() {
-        if (_uiState.value.isRunning) return
+    /**
+     * Persists the macro's armed state and starts/stops the background engine
+     * service accordingly. Distinct from [runWorkflow]: enabling arms the macro
+     * in the long-lived service scope so it keeps running after the UI is gone.
+     */
+    fun setMacroEnabled(enabled: Boolean) {
         val workflow = _uiState.value.workflow
+        _uiState.update { it.copy(isMacroEnabled = enabled) }
+        viewModelScope.launch { repository.setEnabled(enabled) }
+        if (enabled) {
+            com.example.ottomatic.engine.service.MacroEngineService.start(
+                appContext,
+                com.example.ottomatic.engine.service.MacroEngineService.ACTION_ENABLE,
+                workflow.id,
+            )
+        } else {
+            com.example.ottomatic.engine.service.MacroEngineService.start(
+                appContext,
+                com.example.ottomatic.engine.service.MacroEngineService.ACTION_DISABLE,
+                workflow.id,
+            )
+        }
+    }
+
+    fun runWorkflow() {
+        val state = _uiState.value
+        // Skip the one-shot preview if it is already running, or if the macro is
+        // armed in the background service — double-arming would arm trigger
+        // sources (schedule, geofence) a second time.
+        if (state.isRunning || state.isMacroEnabled) return
+        val workflow = state.workflow
         val firstTrigger = workflow.nodes.firstOrNull {
             NodeTypeRegistry.byId(it.typeId)?.kind == NodeKind.TRIGGER
         } ?: return
@@ -496,8 +528,9 @@ class GraphEditorViewModel(
             repository: WorkflowRepository,
             triggerHost: TriggerHost,
             executionContext: ExecutionContext,
+            appContext: android.content.Context,
         ): ViewModelProvider.Factory = viewModelFactory {
-            initializer { GraphEditorViewModel(repository, triggerHost, executionContext) }
+            initializer { GraphEditorViewModel(repository, triggerHost, executionContext, appContext) }
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.ottomatic
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.graphics.Color
@@ -11,12 +12,19 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.lifecycleScope
 import com.example.ottomatic.core.permissions.PermissionStatus
 import com.example.ottomatic.core.permissions.Permissions
+import com.example.ottomatic.data.BootFailureStore
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
+import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.feature.grapheditor.GraphEditorScreen
 import com.example.ottomatic.feature.grapheditor.GraphEditorViewModel
 import com.example.ottomatic.ui.theme.OttomaticTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -25,10 +33,15 @@ class MainActivity : ComponentActivity() {
             repository = ServiceLocator.workflowRepository,
             triggerHost = ServiceLocator.triggerHost,
             executionContext = ServiceLocator.executionContext,
+            appContext = applicationContext,
         )
     }
 
     private val permissionChecker by lazy { AndroidPermissionChecker(this, this) }
+
+    // Set in onResume when BootFailureStore has a pending flag and a macro is
+    // enabled. The GraphEditorScreen renders a battery-optimisation dialog.
+    private var showBatteryPrompt by mutableStateOf(false)
 
     private val requestForegroundLocation =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
@@ -55,8 +68,14 @@ class MainActivity : ComponentActivity() {
             // page and returns. They can always re-open it via the DND node.
         }
 
+    private val requestIgnoreBatteryOptimizations =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
+            // Result is ignored; the user grants or denies in the system dialog.
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        ServiceLocator.init(applicationContext)
+        // ServiceLocator is initialised in OttomaticApplication.onCreate(), which
+        // runs before any Activity or manifest receiver, so it is ready here.
         super.onCreate(savedInstanceState)
         requestNotificationPermissionIfNeeded()
         requestForegroundLocationPermissionIfNeeded()
@@ -68,9 +87,42 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             OttomaticTheme(darkTheme = true, dynamicColor = false) {
-                GraphEditorScreen(viewModel)
+                GraphEditorScreen(
+                    viewModel = viewModel,
+                    showBatteryPrompt = showBatteryPrompt,
+                    onDismissBatteryPrompt = { showBatteryPrompt = false },
+                    onConfirmBatteryPrompt = {
+                        showBatteryPrompt = false
+                        requestBatteryOptimizationExemption()
+                    },
+                )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Surface the battery-optimisation prompt only when a background start
+        // actually failed AND a macro is enabled (no point prompting if there
+        // is nothing to arm). Consume the flag so it shows at most once per
+        // failure. Also reached when the user taps the BootFailureNotifier.
+        lifecycleScope.launch {
+            val needsPrompt = BootFailureStore.consume(this@MainActivity)
+            if (needsPrompt && ServiceLocator.workflowRepository.load()?.enabled == true) {
+                showBatteryPrompt = true
+            }
+        }
+    }
+
+    private fun requestBatteryOptimizationExemption() {
+        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+            data = Uri.parse("package:$packageName")
+        }
+        requestIgnoreBatteryOptimizations.launch(intent)
+        // We are now in the foreground, so this session's re-arm will succeed
+        // regardless of the exemption outcome. The exemption above helps the
+        // *next* reboot succeed without intervention.
+        MacroEngineService.start(this, MacroEngineService.ACTION_REARM_ALL)
     }
 
     private fun requestNotificationPermissionIfNeeded() {

@@ -60,6 +60,11 @@ data class DataConnection(
 /**
  * A complete workflow graph: nodes plus two disjoint edge sets (execution and
  * data). The [schemaVersion] field gates one-time migrations on load.
+ *
+ * [enabled] is the user's persisted intent to keep this macro armed in the
+ * background (driven by [com.example.ottomatic.engine.service.MacroEngineService]).
+ * It is orthogonal to the in-editor "Run" preview, which executes the workflow
+ * once on the ViewModel scope without persisting this flag.
  */
 @Serializable
 data class Workflow(
@@ -69,6 +74,7 @@ data class Workflow(
     val nodes: List<WorkflowNode> = emptyList(),
     val execConnections: List<ExecConnection> = emptyList(),
     val dataConnections: List<DataConnection> = emptyList(),
+    val enabled: Boolean = false,
 ) {
     fun node(id: String): WorkflowNode? = nodes.firstOrNull { it.id == id }
 
@@ -93,6 +99,6 @@ data class Workflow(
         dataConnections.filter { it.toNodeId == nodeId && it.toPort == port }
 
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 2
+        const val CURRENT_SCHEMA_VERSION = 3
     }
 }
