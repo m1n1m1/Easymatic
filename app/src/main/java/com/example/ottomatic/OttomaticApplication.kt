@@ -24,7 +24,7 @@ class OttomaticApplication : Application() {
         super.onCreate()
         ServiceLocator.init(this)
         appScope.launch {
-            if (ServiceLocator.workflowRepository.load()?.enabled == true) {
+            if (ServiceLocator.workflowRepository.list().any { it.enabled }) {
                 MacroEngineService.start(this@OttomaticApplication, MacroEngineService.ACTION_REARM_ALL)
             }
         }

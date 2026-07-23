@@ -1,5 +1,12 @@
 package com.example.ottomatic.feature.grapheditor
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,14 +23,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FitScreen
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.DropdownMenuItem
@@ -34,6 +43,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -48,6 +58,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onSizeChanged
@@ -57,6 +68,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ottomatic.domain.model.NodeKind
+import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
@@ -358,20 +370,118 @@ private fun NodePaletteSheet(
     onDismiss: () -> Unit,
     onPick: (NodeTypeDefinition) -> Unit,
 ) {
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = EditorColors.chrome,
-    ) {
-        LazyColumn(
-            modifier = Modifier.padding(bottom = 24.dp),
-        ) {
-            item { PaletteHeader("Triggers") }
-            items(NodeTypeRegistry.byKind(NodeKind.TRIGGER), key = { it.typeId }) { definition ->
-                PaletteRow(definition, onPick)
-            }
-            item { PaletteHeader("Actions") }
-            items(NodeTypeRegistry.byKind(NodeKind.ACTION), key = { it.typeId }) { definition ->
-                PaletteRow(definition, onPick)
+    var query by remember { mutableStateOf("") }
+    var collapsedCategories by remember { mutableStateOf(emptySet<NodeCategory>()) }
+    val searchTerm = query.trim()
+    val searching = searchTerm.isNotEmpty()
+    val matchingDefinitions = NodeTypeRegistry.all.filter { definition ->
+        searchTerm.isEmpty() || listOf(
+            definition.displayName,
+            definition.description,
+            definition.typeId,
+            definition.category.displayName,
+        ).any { it.contains(searchTerm, ignoreCase = true) }
+    }
+
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(modifier = Modifier.padding(bottom = 24.dp)) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                label = { Text("Search nodes") },
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (searching) {
+                        IconButton(onClick = { query = "" }) {
+                            Icon(Icons.Filled.Close, contentDescription = "Clear search")
+                        }
+                    }
+                },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+            )
+            LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
+                if (matchingDefinitions.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No nodes match your search",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(20.dp),
+                        )
+                    }
+                } else {
+                    listOf(NodeKind.TRIGGER, NodeKind.ACTION).forEach { kind ->
+                        val categoryGroups = NodeTypeRegistry.categoriesFor(kind).map { category ->
+                            category to matchingDefinitions.filter { it.category == category }
+                        }.filter { (_, definitions) -> definitions.isNotEmpty() }
+                        if (categoryGroups.isNotEmpty()) {
+                            item(key = "kind-${kind.name}") {
+                                PaletteHeader(if (kind == NodeKind.TRIGGER) "Triggers" else "Actions")
+                            }
+                            categoryGroups.forEach { (category, definitions) ->
+                                val isCollapsed = !searching && category in collapsedCategories
+                                item(key = "category-${category.name}") {
+                                    val chevronRotation by animateFloatAsState(
+                                        targetValue = if (isCollapsed) 0f else 180f,
+                                        animationSpec = tween(220),
+                                        label = "chevronRotation",
+                                    )
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                collapsedCategories = if (category in collapsedCategories) {
+                                                    collapsedCategories - category
+                                                } else {
+                                                    collapsedCategories + category
+                                                }
+                                            }
+                                            .padding(start = 20.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Text(
+                                            text = category.displayName,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            fontWeight = FontWeight.SemiBold,
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                        Text(
+                                            text = definitions.size.toString(),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.padding(end = 8.dp),
+                                        )
+                                        Icon(
+                                            imageVector = Icons.Filled.ExpandMore,
+                                            contentDescription = if (isCollapsed) {
+                                                "Expand ${category.displayName}"
+                                            } else {
+                                                "Collapse ${category.displayName}"
+                                            },
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.rotate(chevronRotation),
+                                        )
+                                    }
+                                    AnimatedVisibility(
+                                        visible = !isCollapsed,
+                                        enter = expandVertically(tween(220)) + fadeIn(tween(180)),
+                                        exit = shrinkVertically(tween(220)) + fadeOut(tween(180)),
+                                    ) {
+                                        Column {
+                                            definitions.forEach { definition ->
+                                                PaletteRow(definition, onPick)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -381,10 +491,10 @@ private fun NodePaletteSheet(
 private fun PaletteHeader(text: String) {
     Text(
         text = text,
-        color = EditorColors.textSecondary,
-        fontSize = 12.sp,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(start = 20.dp, top = 12.dp, bottom = 6.dp),
+        modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp),
     )
 }
 
@@ -398,14 +508,14 @@ private fun PaletteRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onPick(definition) }
-            .padding(horizontal = 20.dp, vertical = 10.dp),
+            .padding(horizontal = 20.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .clip(RoundedCornerShape(12.dp))
                 .background(accent.copy(alpha = 0.16f)),
             contentAlignment = Alignment.Center,
         ) {
@@ -419,14 +529,14 @@ private fun PaletteRow(
         Column {
             Text(
                 text = definition.displayName,
-                color = EditorColors.textPrimary,
-                fontSize = 14.sp,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Medium,
             )
             Text(
                 text = definition.description,
-                color = EditorColors.textSecondary,
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -619,4 +729,3 @@ private fun ConfigFieldEditor(
     }
     }
 }
-

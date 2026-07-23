@@ -1,15 +1,20 @@
 package com.example.ottomatic.data
 
+import com.example.ottomatic.domain.model.Workflow
+import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.WorkflowSummary
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 /**
- * Verifies [WorkflowRepository.setEnabled] persists the armed flag independently
- * of the graph and round-trips through [WorkflowRepository.load].
+ * Verifies the id-scoped multi-workflow persistence: create/list/load/delete and
+ * per-workflow [WorkflowRepository.setEnabled].
  */
 class WorkflowRepositoryTest {
 
@@ -19,36 +24,95 @@ class WorkflowRepositoryTest {
     private fun newRepo(): WorkflowRepository = WorkflowRepository(tempFolder.newFolder())
 
     @Test
-    fun `setEnabled true then load reports enabled true`() = runBlocking {
+    fun `list is empty for a fresh repository`() = runBlocking {
+        assertEquals(emptyList<WorkflowSummary>(), newRepo().list())
+    }
+
+    @Test
+    fun `create persists a workflow that load returns`() = runBlocking {
         val repo = newRepo()
-        repo.setEnabled(true)
-        val loaded = repo.load()
+        val workflow = repo.create("My Workflow")
+        assertEquals("My Workflow", workflow.name)
+        val loaded = repo.load(workflow.id)
         assertNotNull(loaded)
-        assertEquals(true, loaded!!.enabled)
+        assertEquals(workflow.id, loaded!!.id)
+        assertEquals("My Workflow", loaded.name)
+    }
+
+    @Test
+    fun `list returns all created summaries sorted by name`() = runBlocking {
+        val repo = newRepo()
+        repo.create("Beta")
+        repo.create("Alpha")
+        repo.create("Gamma")
+        val names = repo.list().map { it.name }
+        assertEquals(listOf("Alpha", "Beta", "Gamma"), names)
+    }
+
+    @Test
+    fun `delete removes a workflow`() = runBlocking {
+        val repo = newRepo()
+        val workflow = repo.create("To Delete")
+        repo.delete(workflow.id)
+        assertNull(repo.load(workflow.id))
+        assertTrue(repo.list().isEmpty())
+    }
+
+    @Test
+    fun `rename updates only the name`() = runBlocking {
+        val repo = newRepo()
+        val workflow = repo.create("Old")
+        repo.rename(workflow.id, "New")
+        val loaded = repo.load(workflow.id)!!
+        assertEquals("New", loaded.name)
+        assertEquals(workflow.id, loaded.id)
+    }
+
+    @Test
+    fun `setEnabled true then list reports enabled true`() = runBlocking {
+        val repo = newRepo()
+        val workflow = repo.create("Armed")
+        repo.setEnabled(workflow.id, true)
+        val summary = repo.list().first { it.id == workflow.id }
+        assertEquals(true, summary.enabled)
+        assertEquals(true, repo.load(workflow.id)!!.enabled)
     }
 
     @Test
     fun `setEnabled false overrides a previously enabled workflow`() = runBlocking {
         val repo = newRepo()
-        repo.setEnabled(true)
-        repo.setEnabled(false)
-        assertEquals(false, repo.load()!!.enabled)
+        val workflow = repo.create("Armed")
+        repo.setEnabled(workflow.id, true)
+        repo.setEnabled(workflow.id, false)
+        assertEquals(false, repo.load(workflow.id)!!.enabled)
     }
 
     @Test
     fun `setEnabled preserves a previously saved graph`() = runBlocking {
         val repo = newRepo()
-        val graph = com.example.ottomatic.domain.model.Workflow(
-            id = "default",
-            nodes = listOf(
-                com.example.ottomatic.domain.model.WorkflowNode("n1", "trigger.manual", "M", 0f, 0f),
-            ),
+        val workflow = repo.create("Graph")
+        val graph = Workflow(
+            id = workflow.id,
+            name = "Graph",
+            nodes = listOf(WorkflowNode("n1", "trigger.manual", "M", 0f, 0f)),
         )
         repo.save(graph)
-        repo.setEnabled(true)
-        val loaded = repo.load()!!
+        repo.setEnabled(workflow.id, true)
+        val loaded = repo.load(workflow.id)!!
         assertEquals(true, loaded.enabled)
         assertEquals(1, loaded.nodes.size)
         assertEquals("n1", loaded.nodes.first().id)
+    }
+
+    @Test
+    fun `enabled states are independent per workflow`() = runBlocking {
+        val repo = newRepo()
+        val a = repo.create("A")
+        val b = repo.create("B")
+        repo.setEnabled(a.id, true)
+        repo.setEnabled(b.id, false)
+        val summaries = repo.list().associateBy { it.id }
+        assertEquals(true, summaries[a.id]!!.enabled)
+        assertEquals(false, summaries[b.id]!!.enabled)
     }
 }

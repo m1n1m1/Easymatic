@@ -2,62 +2,123 @@ package com.example.ottomatic.data
 
 import com.example.ottomatic.data.migration.WorkflowMigrator
 import com.example.ottomatic.domain.model.Workflow
+import com.example.ottomatic.domain.model.WorkflowSummary
 import java.io.File
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 /**
- * Persists the current workflow as a JSON file in the app's files directory.
+ * Persists workflows as individual JSON files under a `workflows/` directory in
+ * the app's files directory: one file per workflow, named `<id>.json`.
  *
- * On load, workflows written by older schema versions are migrated forward
- * by [WorkflowMigrator] before being returned. Saving always writes the
- * current schema version.
+ * On load, workflows written by older schema versions are migrated forward by
+ * [WorkflowMigrator] before being returned. Saving always writes the current
+ * schema version.
+ *
+ * The list screen uses [list] which only deserialises the lightweight
+ * [WorkflowSummary] fields (id/name/enabled) per file, avoiding the cost of
+ * decoding every full graph.
  */
-class WorkflowRepository(private val directory: File) {
+class WorkflowRepository(directory: File) {
 
     private val json = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
     }
 
-    private val file: File get() = File(directory, FILE_NAME)
+    // Lenient decoder used by [list]: decodes only the [WorkflowSummary] fields
+    // and silently ignores the rest of the workflow JSON.
+    private val summaryJson = Json { ignoreUnknownKeys = true }
 
-    suspend fun load(): Workflow? = withContext(Dispatchers.IO) {
+    private val workflowsDir = File(directory, DIR_NAME).apply { mkdirs() }
+
+    /**
+     * Returns a lightweight summary of every persisted workflow, sorted by name
+     * (case-insensitive). Files that fail to decode are skipped rather than
+     * throwing — a corrupt file should not prevent the list from rendering.
+     */
+    suspend fun list(): List<WorkflowSummary> = withContext(Dispatchers.IO) {
+        workflowsDir.listFiles { f -> f.isFile && f.name.endsWith(SUFFIX) }
+            .orEmpty()
+            .mapNotNull { file ->
+                runCatching { summaryJson.decodeFromString(WorkflowSummary.serializer(), file.readText()) }
+                    .getOrNull()
+            }
+            .sortedBy { it.name.lowercase() }
+    }
+
+    suspend fun load(id: String): Workflow? = withContext(Dispatchers.IO) {
         runCatching {
+            val file = fileFor(id)
             if (!file.exists()) return@runCatching null
-            val raw = file.readText()
-            WorkflowMigrator.migrate(raw)
+            WorkflowMigrator.migrate(file.readText()).copy(id = id)
         }.getOrNull()
     }
 
     suspend fun save(workflow: Workflow) {
         withContext(Dispatchers.IO) {
             runCatching {
-                file.writeText(json.encodeToString(Workflow.serializer(), workflow))
+                fileFor(workflow.id).writeText(json.encodeToString(Workflow.serializer(), workflow))
             }
         }
     }
 
+    suspend fun delete(id: String) {
+        withContext(Dispatchers.IO) {
+            runCatching { fileFor(id).delete() }
+        }
+    }
+
     /**
-     * Toggles the persisted [Workflow.enabled] flag without touching the graph.
-     * Reads-modifies-writes the single file, so it serialises against itself
-     * via [flagMutex]; concurrent graph [save]s from the editor are rare and
-     * last-writer-wins is acceptable for this toggle.
+     * Creates a brand-new empty workflow with a fresh id and the given [name],
+     * persists it, and returns it.
      */
-    suspend fun setEnabled(enabled: Boolean) {
+    suspend fun create(name: String): Workflow {
+        val workflow = Workflow(id = UUID.randomUUID().toString(), name = name)
+        save(workflow)
+        return workflow
+    }
+
+    /**
+     * Read-modify-write of the [Workflow.name] field only. Serialises against
+     * itself via [flagMutex] so concurrent [setEnabled] toggles on the same
+     * workflow do not clobber each other.
+     */
+    suspend fun rename(id: String, name: String) {
         flagMutex.lock()
         try {
-            val current = load() ?: Workflow()
+            val current = load(id) ?: return
+            save(current.copy(name = name, schemaVersion = Workflow.CURRENT_SCHEMA_VERSION))
+        } finally {
+            flagMutex.unlock()
+        }
+    }
+
+    /**
+     * Toggles the persisted [Workflow.enabled] flag for [id] without touching
+     * the graph. Read-modifies-writes the single file, so it serialises against
+     * itself (and [rename]) via [flagMutex]; concurrent graph [save]s from the
+     * editor are rare and last-writer-wins is acceptable for this toggle.
+     */
+    suspend fun setEnabled(id: String, enabled: Boolean) {
+        flagMutex.lock()
+        try {
+            val current = load(id) ?: return
             save(current.copy(enabled = enabled, schemaVersion = Workflow.CURRENT_SCHEMA_VERSION))
         } finally {
             flagMutex.unlock()
         }
     }
 
-    private val flagMutex = kotlinx.coroutines.sync.Mutex()
+    private fun fileFor(id: String): File = File(workflowsDir, "$id$SUFFIX")
+
+    private val flagMutex = Mutex()
 
     private companion object {
-        const val FILE_NAME = "workflow.json"
+        const val DIR_NAME = "workflows"
+        const val SUFFIX = ".json"
     }
 }

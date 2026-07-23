@@ -89,19 +89,20 @@ fun portTypeColor(schema: ItemSchema?): Color = when (schema) {
     is ItemSchema.Wildcard, is ItemSchema.Union, is ItemSchema.Unit, null -> EditorColors.wildcardPort
 }
 
-fun nodeIcon(iconKey: String): ImageVector = when (iconKey) {
-    "bolt" -> Icons.Filled.Bolt
-    "schedule" -> Icons.Filled.Schedule
-    "notification" -> Icons.Filled.NotificationsActive
-    "sms" -> Icons.Filled.Sms
-    "boot" -> Icons.Filled.PowerSettingsNew
-    "http" -> Icons.Filled.Http
-    "split" -> Icons.AutoMirrored.Filled.CallSplit
-    "send" -> Icons.AutoMirrored.Filled.Send
-    "timer" -> Icons.Filled.Timer
-    "wifi" -> Icons.Filled.Wifi
-    "location" -> Icons.Filled.LocationOn
-    "volume" -> Icons.AutoMirrored.Filled.VolumeUp
-    "dnd" -> Icons.Filled.DoNotDisturb
-    else -> Icons.Filled.Extension
-}
+fun nodeIcon(iconKey: String): ImageVector = ICONS[iconKey] ?: Icons.Filled.Extension
+
+private val ICONS: Map<String, ImageVector> = mapOf(
+    "bolt" to Icons.Filled.Bolt,
+    "schedule" to Icons.Filled.Schedule,
+    "notification" to Icons.Filled.NotificationsActive,
+    "sms" to Icons.Filled.Sms,
+    "boot" to Icons.Filled.PowerSettingsNew,
+    "http" to Icons.Filled.Http,
+    "split" to Icons.AutoMirrored.Filled.CallSplit,
+    "send" to Icons.AutoMirrored.Filled.Send,
+    "timer" to Icons.Filled.Timer,
+    "wifi" to Icons.Filled.Wifi,
+    "location" to Icons.Filled.LocationOn,
+    "volume" to Icons.AutoMirrored.Filled.VolumeUp,
+    "dnd" to Icons.Filled.DoNotDisturb,
+)

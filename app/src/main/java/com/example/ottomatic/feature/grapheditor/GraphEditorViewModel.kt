@@ -78,6 +78,7 @@ class GraphEditorViewModel(
     private val triggerHost: TriggerHost,
     private val executionContext: ExecutionContext,
     private val appContext: android.content.Context,
+    private val workflowId: String,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GraphEditorUiState())
@@ -85,7 +86,7 @@ class GraphEditorViewModel(
 
     init {
         viewModelScope.launch {
-            val workflow = repository.load() ?: sampleWorkflow()
+            val workflow = repository.load(workflowId) ?: Workflow(id = workflowId)
             _uiState.update {
                 it.copy(workflow = workflow, isLoaded = true, isMacroEnabled = workflow.enabled)
             }
@@ -392,7 +393,7 @@ class GraphEditorViewModel(
     fun setMacroEnabled(enabled: Boolean) {
         val workflow = _uiState.value.workflow
         _uiState.update { it.copy(isMacroEnabled = enabled) }
-        viewModelScope.launch { repository.setEnabled(enabled) }
+        viewModelScope.launch { repository.setEnabled(workflow.id, enabled) }
         if (enabled) {
             com.example.ottomatic.engine.service.MacroEngineService.start(
                 appContext,
@@ -503,23 +504,6 @@ class GraphEditorViewModel(
 
     // endregion
 
-    @Suppress("MagicNumber") // Hand-tuned demo layout coordinates.
-    private fun sampleWorkflow(): Workflow = Workflow(
-        nodes = listOf(
-            WorkflowNode("n1", "trigger.manual", "Manual Trigger", 250f, 60f),
-            WorkflowNode("n2", "action.http", "HTTP Request", 250f, 220f),
-            WorkflowNode("n3", "action.condition", "If / Condition", 242f, 380f),
-            WorkflowNode("n4", "action.notify", "Show Notification", 90f, 540f),
-            WorkflowNode("n5", "action.delay", "Wait", 410f, 540f),
-        ),
-        execConnections = listOf(
-            ExecConnection("c1", "n1", "out", "n2", "in"),
-            ExecConnection("c2", "n2", "out", "n3", "in"),
-            ExecConnection("c3", "n3", "true", "n4", "in"),
-            ExecConnection("c4", "n3", "false", "n5", "in"),
-        ),
-    )
-
     companion object {
         private const val FIT_PADDING = 48f
         private const val MAX_FIT_ZOOM = 1.25f
@@ -529,8 +513,11 @@ class GraphEditorViewModel(
             triggerHost: TriggerHost,
             executionContext: ExecutionContext,
             appContext: android.content.Context,
+            workflowId: String,
         ): ViewModelProvider.Factory = viewModelFactory {
-            initializer { GraphEditorViewModel(repository, triggerHost, executionContext, appContext) }
+            initializer {
+                GraphEditorViewModel(repository, triggerHost, executionContext, appContext, workflowId)
+            }
         }
     }
 }

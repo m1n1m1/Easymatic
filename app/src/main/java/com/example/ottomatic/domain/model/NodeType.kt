@@ -11,6 +11,29 @@ enum class NodeKind {
     ACTION,
 }
 
+/** A user-facing group for a [NodeTypeDefinition] in the node palette. */
+enum class NodeCategory(
+    val kind: NodeKind,
+    val displayName: String,
+) {
+    MANUAL(NodeKind.TRIGGER, "Manual"),
+    TIME_SCHEDULE(NodeKind.TRIGGER, "Time & Schedule"),
+    MESSAGING(NodeKind.TRIGGER, "Messaging"),
+    POWER_BATTERY(NodeKind.TRIGGER, "Power & Battery"),
+    LOCATION(NodeKind.TRIGGER, "Location"),
+    AUTOMATION(NodeKind.TRIGGER, "Automation"),
+    VARIABLES(NodeKind.TRIGGER, "Variables"),
+    CONNECTIVITY(NodeKind.TRIGGER, "Connectivity"),
+    PHONE_MEDIA(NodeKind.TRIGGER, "Phone & Media"),
+    DEVICE_STATE(NodeKind.TRIGGER, "Device State"),
+    FLOW_CONTROL(NodeKind.ACTION, "Flow Control"),
+    NETWORK(NodeKind.ACTION, "Network"),
+    NOTIFICATIONS(NodeKind.ACTION, "Notifications"),
+    TIMING(NodeKind.ACTION, "Timing"),
+    DEVICE_SETTINGS(NodeKind.ACTION, "Device Settings"),
+    DATA(NodeKind.ACTION, "Data"),
+}
+
 /** Whether a port carries control-flow pulse or a typed data value. */
 enum class PortKind {
     EXECUTION,
@@ -64,6 +87,7 @@ data class NodeTypeDefinition(
     val displayName: String,
     val description: String,
     val kind: NodeKind,
+    val category: NodeCategory,
     val ports: List<Port>,
     val iconKey: String,
     val hasDynamicPorts: Boolean = false,

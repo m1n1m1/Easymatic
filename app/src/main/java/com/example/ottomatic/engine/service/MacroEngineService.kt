@@ -74,13 +74,13 @@ class MacroEngineService : Service() {
             ACTION_REARM_ALL -> scope.launch { rearmAll() }
             ACTION_ENABLE -> intent.getStringExtra(EXTRA_WORKFLOW_ID)?.let { id ->
                 scope.launch {
-                    repository.setEnabled(true)
+                    repository.setEnabled(id, true)
                     arm(id)
                 }
             }
             ACTION_DISABLE -> intent.getStringExtra(EXTRA_WORKFLOW_ID)?.let { id ->
                 scope.launch {
-                    repository.setEnabled(false)
+                    repository.setEnabled(id, false)
                     disarm(id)
                 }
             }
@@ -96,14 +96,17 @@ class MacroEngineService : Service() {
     }
 
     private suspend fun rearmAll() {
-        val workflow = repository.load() ?: return
-        if (workflow.enabled) arm(workflow.id)
-        else if (activeJobs.isEmpty()) stopSelf()
+        val enabled = repository.list().filter { it.enabled }
+        if (enabled.isEmpty()) {
+            if (activeJobs.isEmpty()) stopSelf()
+            return
+        }
+        enabled.forEach { arm(it.id) }
     }
 
     private suspend fun arm(workflowId: String) {
         activeJobs.remove(workflowId)?.cancel()
-        val workflow = repository.load() ?: return
+        val workflow = repository.load(workflowId) ?: return
         if (!workflow.enabled || workflow.id != workflowId) return
         val runner = WorkflowRunner(host, executionContext)
         activeJobs[workflowId] = runner.run(scope, workflow)
