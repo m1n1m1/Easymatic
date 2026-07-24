@@ -6,15 +6,15 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.TriggerRegistry
 import com.example.ottomatic.engine.trigger.MacroEventBus
-import com.example.ottomatic.engine.trigger.TriggerEvent
 import com.example.ottomatic.engine.trigger.TriggerHost
+import com.example.ottomatic.engine.trigger.TriggerOutput
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
  * Drives a workflow: activates every trigger node and, on each trigger event,
- * dispatches the typed [TriggerEvent] through the [WorkflowExecutor].
+ * dispatches the unified [NodeOutput] through the [WorkflowExecutor].
  *
  * Each trigger runs in its own coroutine; cancelling the returned [Job]
  * tears down all trigger flows and (for schedule triggers) their armed work.
@@ -46,14 +46,14 @@ class WorkflowRunner(
         // trigger immediately after run() would race with coroutine startup.
         val activeTriggers = triggers.mapNotNull { node ->
             val trigger = TriggerRegistry.byId(node.typeId) ?: return@mapNotNull null
-            val flow = trigger.activate(node, host)
-            ActiveTrigger(node, flow, trigger)
+            val flow = trigger.activateEncoded(node, host)
+            ActiveTrigger(node, flow)
         }
         return scope.launch {
             for (active in activeTriggers) {
                 launch {
-                    active.flow.collect { event ->
-                        onTriggerFired(executor, workflow, event)
+                    active.flow.collect { output ->
+                        onTriggerFired(executor, workflow, active.node, output)
                     }
                 }
             }
@@ -62,17 +62,16 @@ class WorkflowRunner(
 
     private data class ActiveTrigger(
         val node: com.example.ottomatic.domain.model.WorkflowNode,
-        val flow: kotlinx.coroutines.flow.Flow<TriggerEvent>,
-        val trigger: com.example.ottomatic.engine.trigger.Trigger,
+        val flow: kotlinx.coroutines.flow.Flow<TriggerOutput>,
     )
 
     private suspend fun onTriggerFired(
         executor: WorkflowExecutor,
         workflow: Workflow,
-        event: TriggerEvent,
+        triggerNode: com.example.ottomatic.domain.model.WorkflowNode,
+        output: TriggerOutput,
     ) {
-        val triggerNode = workflow.node(event.triggerNodeId) ?: return
-        executor.executeFrom(workflow, triggerNode, event)
+        executor.executeFrom(workflow, triggerNode, output)
         // Signal that this macro's execution has finished.
         MacroEventBus.emit(
             com.example.ottomatic.core.trigger.TriggerEvent(

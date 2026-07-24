@@ -1,16 +1,20 @@
 package com.example.ottomatic.domain.registry
 
-import com.example.ottomatic.engine.trigger.Trigger
+import com.example.ottomatic.engine.trigger.ExecutableTrigger
 
 /**
- * Central registry mapping a trigger [typeId] to its executable [Trigger].
+ * Central registry mapping a trigger [typeId] to its executable
+ * [ExecutableTrigger].
  *
- * Mirrors [NodeTypeRegistry] which holds only metadata. This object holds
- * the behaviour. New [Trigger] implementations must be added here.
+ * This list is the *only* registration step for a new trigger: the trigger's
+ * own file declares everything else (metadata, ports, config fields and
+ * output encoder) in its single
+ * [com.example.ottomatic.engine.TriggerNodeDefinition]. [NodeTypeRegistry]
+ * and [ConfigSchemaRegistry] derive their views from these definitions.
  */
 object TriggerRegistry {
 
-    private val triggers: List<Trigger> = buildList {
+    private val triggers: List<ExecutableTrigger> = buildList {
         add(com.example.ottomatic.engine.trigger.ManualTrigger())
         add(com.example.ottomatic.engine.trigger.ScheduleTrigger())
         add(com.example.ottomatic.engine.trigger.SmsTrigger())
@@ -51,9 +55,9 @@ object TriggerRegistry {
         add(com.example.ottomatic.engine.trigger.MediaMountTrigger())
     }
 
-    private val byId: Map<String, Trigger> = triggers.associateBy { it.typeId }
+    private val byId: Map<String, ExecutableTrigger> = triggers.associateBy { it.typeId }
 
-    fun byId(typeId: String): Trigger? = byId[typeId]
+    fun byId(typeId: String): ExecutableTrigger? = byId[typeId]
 
-    fun all(): List<Trigger> = triggers
+    fun all(): List<ExecutableTrigger> = triggers
 }

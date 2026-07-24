@@ -1,11 +1,18 @@
 package com.example.ottomatic.engine.action
 
+import com.example.ottomatic.domain.model.NodeCategory
+import com.example.ottomatic.domain.model.dataInPort
+import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.CallInitiated
 import com.example.ottomatic.domain.model.schema.Item
+import com.example.ottomatic.domain.registry.ConfigField
+import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.engine.Action
-import com.example.ottomatic.engine.ActionInput
-import com.example.ottomatic.engine.ActionResult
 import com.example.ottomatic.engine.ExecutionContext
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.actionNode
+
+data class CallInput(val number: String)
 
 /**
  * Action for `action.call`. Initiates a phone call to `number` via
@@ -13,18 +20,30 @@ import com.example.ottomatic.engine.ExecutionContext
  * data or set as a static literal. Reports [CallInitiated] on its `state`
  * data port.
  */
-class CallAction : Action {
+class CallAction : Action<CallInput, CallInitiated> {
 
-    override val typeId: String = TYPE_ID
+    override val definition = actionNode<CallInput, CallInitiated>(
+        typeId = "action.call",
+        displayName = "Make Call",
+        description = "Initiates a phone call to a number",
+        category = NodeCategory.NOTIFICATIONS,
+        iconKey = "bolt",
+        dataInputs = listOf(dataInPort<String>("number")),
+        dataOutputs = listOf(dataOut<CallInitiated>("state")),
+        configFields = listOf(
+            ConfigField(
+                key = "number",
+                label = "Number",
+                type = ConfigFieldType.STR,
+                defaultValue = "",
+            ),
+        ),
+        decode = { input -> CallInput(input.text("number")) },
+        encodeData = { state -> mapOf("state" to Item.of(state)) },
+    )
 
-    override suspend fun execute(input: ActionInput, context: ExecutionContext): ActionResult {
-        val number = input.string("number", default = "")
-        val ok = context.systemServices.call(number)
-        val state = CallInitiated(number = number, initiated = ok)
-        return ActionResult(execOut = listOf("out"), dataOut = mapOf("state" to Item.of(state)))
-    }
-
-    companion object {
-        const val TYPE_ID = "action.call"
+    override suspend fun execute(input: CallInput, context: ExecutionContext): NodeOutput<CallInitiated> {
+        val ok = context.systemServices.call(input.number)
+        return NodeOutput(CallInitiated(number = input.number, initiated = ok))
     }
 }

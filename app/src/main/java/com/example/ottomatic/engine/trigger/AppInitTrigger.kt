@@ -1,6 +1,9 @@
 package com.example.ottomatic.engine.trigger
 
+import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -13,14 +16,17 @@ import kotlinx.coroutines.flow.flowOf
  * persistent background daemon is introduced in a later tier, this trigger
  * will instead subscribe to the real app-init lifecycle event.
  */
-class AppInitTrigger : Trigger {
+class AppInitTrigger : Trigger<Unit> {
 
-    override val typeId: String = TYPE_ID
+    override val definition = triggerNode<Unit>(
+        typeId = "trigger.app_init",
+        displayName = "App Initialised",
+        description = "Fires when the app is initialised and running",
+        category = NodeCategory.AUTOMATION,
+        iconKey = "bolt",
+        encodeData = { emptyMap() },
+    )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<TriggerEvent> =
-        flowOf(TriggerEvent(triggerNodeId = node.id))
-
-    companion object {
-        const val TYPE_ID = "trigger.app_init"
-    }
+    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<Unit>> =
+        flowOf(NodeOutput(Unit))
 }

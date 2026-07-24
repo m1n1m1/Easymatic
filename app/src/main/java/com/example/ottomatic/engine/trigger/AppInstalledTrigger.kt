@@ -1,9 +1,15 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.PackageEvent
 import com.example.ottomatic.domain.model.schema.Item
+import com.example.ottomatic.domain.registry.ConfigField
+import com.example.ottomatic.domain.registry.ConfigFieldType
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -14,11 +20,32 @@ import kotlinx.coroutines.flow.map
  *
  * Produces a typed [PackageEvent] item on the `package` data port.
  */
-class AppInstalledTrigger : Trigger {
+class AppInstalledTrigger : Trigger<PackageEvent> {
 
-    override val typeId: String = TYPE_ID
+    override val definition = triggerNode<PackageEvent>(
+        typeId = "trigger.app_installed",
+        displayName = "App Installed / Removed",
+        description = "Starts when an app is installed, removed or replaced",
+        category = NodeCategory.AUTOMATION,
+        iconKey = "bolt",
+        dataOutputs = listOf(dataOut<PackageEvent>("package")),
+        configFields = listOf(
+            ConfigField(
+                key = CONFIG_EVENT,
+                label = "Action",
+                type = ConfigFieldType.ENUM(options = listOf("any", "installed", "removed", "replaced")),
+                defaultValue = DEFAULT_EVENT,
+            ),
+            ConfigField(
+                key = CONFIG_PACKAGE,
+                label = "Package filter (e.g. com.example.app, optional)",
+                type = ConfigFieldType.STR,
+            ),
+        ),
+        encodeData = { event -> mapOf("package" to Item.of(event)) },
+    )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<TriggerEvent> =
+    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<PackageEvent>> =
         host.busEvents()
             .filter { it.source == TriggerSource.PACKAGE }
             .filter { it.payload[KEY_TRIGGER_TYPE] == "app_installed" }
@@ -31,19 +58,16 @@ class AppInstalledTrigger : Trigger {
                 pkgFilter == null || event.payload[KEY_PACKAGE_NAME] == pkgFilter
             }
             .map { event ->
-                val packageEvent = PackageEvent(
-                    action = event.payload[KEY_EVENT].orEmpty(),
-                    packageName = event.payload[KEY_PACKAGE_NAME].orEmpty(),
-                    timestamp = event.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: event.firedAtEpochMs,
-                )
-                TriggerEvent(
-                    triggerNodeId = node.id,
-                    dataOut = mapOf("package" to Item.of(packageEvent)),
+                NodeOutput(
+                    PackageEvent(
+                        action = event.payload[KEY_EVENT].orEmpty(),
+                        packageName = event.payload[KEY_PACKAGE_NAME].orEmpty(),
+                        timestamp = event.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: event.firedAtEpochMs,
+                    ),
                 )
             }
 
     companion object {
-        const val TYPE_ID = "trigger.app_installed"
         const val CONFIG_PACKAGE = "package"
     }
 }

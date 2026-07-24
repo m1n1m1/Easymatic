@@ -11,7 +11,7 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.items.GeofenceEvent
 import com.example.ottomatic.domain.model.schema.Item
-import com.example.ottomatic.engine.trigger.TriggerEvent
+import com.example.ottomatic.engine.trigger.TriggerOutput
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -19,7 +19,7 @@ import org.junit.Test
 
 /**
  * Mirrors [WorkflowExecutorTest] — builds a workflow with a `trigger.geofence`
- * node and feeds a hand-constructed [TriggerEvent] carrying a typed
+ * node and feeds a hand-constructed [TriggerOutput] carrying a typed
  * [GeofenceEvent] item into [WorkflowExecutor.executeFrom]. Asserts that
  * geofence fields reach downstream actions via break-struct + DATA wiring.
  */
@@ -59,7 +59,7 @@ class GeofenceTriggerExecutorTest {
         executor.executeFrom(
             workflow,
             workflow.node("n1")!!,
-            TriggerEvent(triggerNodeId = "n1", dataOut = mapOf("event" to Item.of(event))),
+            TriggerOutput(mapOf("event" to Item.of(event))),
         )
         assertEquals(1, services.notifications.size)
         assertEquals("enter", services.notifications.first().second)
@@ -86,7 +86,7 @@ class GeofenceTriggerExecutorTest {
         executor.executeFrom(
             workflow,
             workflow.node("n1")!!,
-            TriggerEvent(triggerNodeId = "n1", dataOut = mapOf("event" to Item.of(event))),
+            TriggerOutput(mapOf("event" to Item.of(event))),
         )
         assertTrue(services.notifications.isEmpty())
     }

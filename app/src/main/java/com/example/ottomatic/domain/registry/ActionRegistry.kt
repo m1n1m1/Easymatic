@@ -1,6 +1,6 @@
 package com.example.ottomatic.domain.registry
 
-import com.example.ottomatic.engine.Action
+import com.example.ottomatic.engine.ExecutableAction
 import com.example.ottomatic.engine.action.AutoRotateAction
 import com.example.ottomatic.engine.action.BluetoothAction
 import com.example.ottomatic.engine.action.BreakStructAction
@@ -27,18 +27,21 @@ import com.example.ottomatic.engine.action.VolumeAction
 import com.example.ottomatic.engine.action.WifiAction
 
 /**
- * Central registry mapping an action [typeId] to its executable [Action].
+ * Central registry mapping an action [typeId] to its executable implementation.
  *
- * Mirrors [NodeTypeRegistry] which holds only metadata. New [Action]
- * implementations must be added here. The single adaptive
- * [BreakStructAction] splits any `@Serializable` struct into its fields at
- * runtime; per-field data outputs are exposed directly on each node via
+ * This list is the *only* registration step for a new [Action]: the action's
+ * own file declares everything else (metadata, ports, config fields and
+ * contract) in its single [com.example.ottomatic.engine.ActionNodeDefinition].
+ * [NodeTypeRegistry] and [ConfigSchemaRegistry] derive their views from these
+ * definitions. The single adaptive [BreakStructAction] splits any
+ * `@Serializable` struct into its fields at runtime; per-field data outputs
+ * are exposed directly on each node via
  * [com.example.ottomatic.domain.registry.effectivePorts] (no dedicated
  * make-struct action is needed).
  */
 object ActionRegistry {
 
-    private val actions: List<Action> = listOf(
+    private val actions: List<ExecutableAction> = listOf(
         AutoRotateAction(),
         BluetoothAction(),
         BrightnessAction(),
@@ -65,9 +68,9 @@ object ActionRegistry {
         BreakStructAction(),
     )
 
-    private val byId: Map<String, Action> = actions.associateBy { it.typeId }
+    private val byId: Map<String, ExecutableAction> = actions.associateBy { it.typeId }
 
-    fun byId(typeId: String): Action? = byId[typeId]
+    fun byId(typeId: String): ExecutableAction? = byId[typeId]
 
-    fun all(): List<Action> = actions
+    fun all(): List<ExecutableAction> = actions
 }

@@ -1,7 +1,10 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
@@ -22,11 +25,18 @@ import java.util.Calendar
  *
  * Produces no typed data output — only the EXECUTION pulse.
  */
-class SleepTrigger : Trigger {
+class SleepTrigger : Trigger<Unit> {
 
-    override val typeId: String = TYPE_ID
+    override val definition = triggerNode<Unit>(
+        typeId = "trigger.sleep",
+        displayName = "Sleep",
+        description = "Ticks repeatedly but only during a configured daily time window",
+        category = NodeCategory.TIME_SCHEDULE,
+        iconKey = "timer",
+        encodeData = { emptyMap() },
+    )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<TriggerEvent> {
+    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<Unit>> {
         val startTime = node.config[CONFIG_START_TIME]?.takeIf { it.isNotBlank() } ?: DEFAULT_START_TIME
         val endTime = node.config[CONFIG_END_TIME]?.takeIf { it.isNotBlank() } ?: DEFAULT_END_TIME
         val intervalMinutes = node.config[CONFIG_INTERVAL]?.toLongOrNull() ?: DEFAULT_INTERVAL_MINUTES
@@ -40,8 +50,8 @@ class SleepTrigger : Trigger {
                         it.source == TriggerSource.SCHEDULE && it.triggerNodeId == node.id
                     }
                     .filter { isInWindow(it.firedAtEpochMs, start, end) }
-                    .collect { bus ->
-                        emit(TriggerEvent(triggerNodeId = node.id))
+                    .collect {
+                        emit(NodeOutput(Unit))
                     }
             } finally {
                 handle.cancel()
@@ -67,8 +77,6 @@ class SleepTrigger : Trigger {
     }
 
     companion object {
-        const val TYPE_ID = "trigger.sleep"
-
         const val CONFIG_START_TIME = "startTime"
         const val CONFIG_END_TIME = "endTime"
         const val CONFIG_INTERVAL = "intervalMinutes"

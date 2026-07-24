@@ -1,14 +1,28 @@
 package com.example.ottomatic.engine.action
 
+import com.example.ottomatic.domain.model.NodeCategory
+import com.example.ottomatic.domain.model.execOut
 import com.example.ottomatic.domain.model.schema.Item
-import com.example.ottomatic.domain.model.schema.ItemSchema
+import com.example.ottomatic.domain.model.wildcardDataIn
 import com.example.ottomatic.domain.registry.CONDITION_SOURCE_IN
 import com.example.ottomatic.domain.registry.CONDITION_TYPE_AUTO
 import com.example.ottomatic.domain.registry.CONDITION_TYPE_CONFIG_KEY
+import com.example.ottomatic.domain.registry.CONDITION_TYPE_ID
 import com.example.ottomatic.engine.Action
-import com.example.ottomatic.engine.ActionInput
-import com.example.ottomatic.engine.ActionResult
 import com.example.ottomatic.engine.ExecutionContext
+import com.example.ottomatic.engine.ExecutionRoute
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.actionNode
+import com.example.ottomatic.domain.model.schema.ItemSchema
+
+data class ConditionInput(
+    val type: String,
+    val operator: String,
+    val source: Item?,
+    val sourceFallback: String,
+    val compareValue: String,
+    val field: String,
+)
 
 /**
  * Action for `action.condition`. Reads a typed [Item] on its [CONDITION_SOURCE_IN]
@@ -27,30 +41,52 @@ import com.example.ottomatic.engine.ExecutionContext
  *
  * Both `source` and `value` are DATA input ports; when either is unwired, the
  * static config form value for the same key is used as a fallback.
+ *
+ * The config form is fully dynamic ([com.example.ottomatic.domain.registry.effectiveConfigSchema]),
+ * so this definition declares no static config fields.
  */
-class ConditionAction : Action {
+class ConditionAction : Action<ConditionInput, Boolean> {
 
-    override val typeId: String = TYPE_ID
+    override val definition = actionNode<ConditionInput, Boolean>(
+        typeId = CONDITION_TYPE_ID,
+        displayName = "If / Condition",
+        description = "Routes execution based on a typed comparison of a field of the connected data input",
+        category = NodeCategory.FLOW_CONTROL,
+        iconKey = "split",
+        dataInputs = listOf(
+            wildcardDataIn(CONDITION_SOURCE_IN),
+            wildcardDataIn("value"),
+        ),
+        execOutputs = listOf(execOut("true"), execOut("false")),
+        hasDynamicPorts = true,
+        encodeRoute = { route -> listOf(if (route == ExecutionRoute.True) "true" else "false") },
+        decode = { input ->
+            ConditionInput(
+                type = input.configString(CONDITION_TYPE_CONFIG_KEY, CONDITION_TYPE_AUTO),
+                operator = input.configString("operator", "equals"),
+                source = input.item(CONDITION_SOURCE_IN),
+                sourceFallback = input.configString(CONDITION_SOURCE_IN),
+                compareValue = input.text("value"),
+                field = input.configString("field"),
+            )
+        },
+        encodeData = { emptyMap() },
+    )
 
-    override suspend fun execute(input: ActionInput, context: ExecutionContext): ActionResult {
-        val typeConfig = input.config.str(CONDITION_TYPE_CONFIG_KEY, default = CONDITION_TYPE_AUTO)
-        val operator = input.config.str("operator", default = "equals")
-        val item = input.dataIn[CONDITION_SOURCE_IN]
-        val compareValue = input.string("value")
+    override suspend fun execute(input: ConditionInput, context: ExecutionContext): NodeOutput<Boolean> {
         // When `source` is wired, use the typed Item; otherwise fall back to
         // the `source` config literal (the form field value).
-        val actualValue = if (item != null) {
-            actualFieldValue(typeConfig, item, input)
+        val actualValue = if (input.source != null) {
+            actualFieldValue(input.type, input.source, input.field)
         } else {
-            input.config.raw(CONDITION_SOURCE_IN).orEmpty()
+            input.sourceFallback
         }
-        val matched = evaluate(operator, actualValue, compareValue)
-        return ActionResult(execOut = if (matched) listOf("true") else listOf("false"))
+        val matched = evaluate(input.operator, actualValue, input.compareValue)
+        return NodeOutput(matched, if (matched) ExecutionRoute.True else ExecutionRoute.False)
     }
 
-    private fun actualFieldValue(typeConfig: String, item: Item, input: ActionInput): String {
+    private fun actualFieldValue(typeConfig: String, item: Item, field: String): String {
         if (typeConfig == CONDITION_TYPE_AUTO && item.schema is ItemSchema.Object) {
-            val field = input.config.str("field", default = "")
             return item.flat[field] ?: ""
         }
         return item.value?.toString() ?: ""
@@ -77,9 +113,5 @@ class ConditionAction : Action {
             "lessThanOrEqual" -> actual <= expected
             else -> false
         }
-    }
-
-    companion object {
-        const val TYPE_ID = "action.condition"
     }
 }

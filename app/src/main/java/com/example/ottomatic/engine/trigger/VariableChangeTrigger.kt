@@ -1,10 +1,15 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.VariableChange
 import com.example.ottomatic.domain.model.schema.Item
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
@@ -20,33 +25,34 @@ import kotlinx.coroutines.flow.map
  * - `name` — the variable name
  * - `value` — the new string value
  */
-class VariableChangeTrigger : Trigger {
+class VariableChangeTrigger : Trigger<VariableChange> {
 
-    override val typeId: String = TYPE_ID
+    override val definition = triggerNode<VariableChange>(
+        typeId = "trigger.variable_change",
+        displayName = "Variable Change",
+        description = "Fires when a named variable changes value",
+        category = NodeCategory.VARIABLES,
+        iconKey = "bolt",
+        dataOutputs = listOf(dataOut<VariableChange>("variable")),
+        encodeData = { variable -> mapOf("variable" to Item.of(variable)) },
+    )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<TriggerEvent> {
-        val name = node.config[CONFIG_NAME]?.takeIf { it.isNotBlank() } ?: return kotlinx.coroutines.flow.emptyFlow()
+    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<VariableChange>> {
+        val name = node.config[CONFIG_NAME]?.takeIf { it.isNotBlank() } ?: return emptyFlow()
         return host.variableChanges(name)
             .filter { it.source == TriggerSource.VARIABLE }
             .map { bus ->
-                TriggerEvent(
-                    triggerNodeId = node.id,
-                    dataOut = mapOf(
-                        "variable" to Item.of(
-                            VariableChange(
-                                name = bus.payload[KEY_NAME].orEmpty(),
-                                value = bus.payload[KEY_VALUE].orEmpty(),
-                                timestamp = bus.firedAtEpochMs,
-                            ),
-                        ),
+                NodeOutput(
+                    VariableChange(
+                        name = bus.payload[KEY_NAME].orEmpty(),
+                        value = bus.payload[KEY_VALUE].orEmpty(),
+                        timestamp = bus.firedAtEpochMs,
                     ),
                 )
             }
     }
 
     companion object {
-        const val TYPE_ID = "trigger.variable_change"
-
         const val CONFIG_NAME = "name"
 
         const val KEY_NAME = "name"

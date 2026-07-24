@@ -14,8 +14,14 @@
 
 ## Architecture Compliance
 - Read `ARCHITECTURE.md` before writing new code.
-- All new `Trigger` and `Action` implementations must be registered in the central registries under `domain/`.
+- New nodes are declared once in their own file: `actionNode<I, O>(...)` for
+  actions, `triggerNode<O>(...)` for triggers (see `engine/NodeDefinition.kt`),
+  then registered with one line in `domain/registry/ActionRegistry.kt` or
+  `TriggerRegistry.kt`. `NodeTypeRegistry`/`ConfigSchemaRegistry` derive from
+  these definitions — do not edit them to add nodes.
 - Run `./gradlew detekt` regularly (currently configured as warnings).
+- Note: `lintDebug` has pre-existing errors unrelated to the node system;
+  use `assembleDebug test detekt` for verification.
 
 <!-- CODEGRAPH_START -->
 ## CodeGraph

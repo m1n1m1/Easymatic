@@ -633,7 +633,7 @@ private fun NodeConfigSheet(
 @Suppress("CyclomaticComplexMethod") // Inherent: one branch per ConfigFieldType.
 @Composable
 private fun ConfigFieldEditor(
-    field: com.example.ottomatic.domain.registry.ConfigField,
+    field: com.example.ottomatic.domain.registry.ConfigField<*>,
     value: String,
     onValueChange: (String) -> Unit,
 ) {

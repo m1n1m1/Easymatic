@@ -1,9 +1,13 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.StopwatchTick
 import com.example.ottomatic.domain.model.schema.Item
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
@@ -19,11 +23,19 @@ import kotlinx.coroutines.flow.flow
  *
  * Produces a typed [StopwatchTick] item on the `tick` data port.
  */
-class StopwatchTrigger : Trigger {
+class StopwatchTrigger : Trigger<StopwatchTick> {
 
-    override val typeId: String = TYPE_ID
+    override val definition = triggerNode<StopwatchTick>(
+        typeId = "trigger.stopwatch",
+        displayName = "Stopwatch",
+        description = "Ticks on a fixed interval, reporting elapsed time",
+        category = NodeCategory.TIME_SCHEDULE,
+        iconKey = "timer",
+        dataOutputs = listOf(dataOut<StopwatchTick>("tick")),
+        encodeData = { tick -> mapOf("tick" to Item.of(tick)) },
+    )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<TriggerEvent> {
+    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<StopwatchTick>> {
         val intervalMinutes = node.config[CONFIG_INTERVAL]?.toLongOrNull() ?: DEFAULT_INTERVAL_MINUTES
         return flow {
             val handle = host.armSchedule(node.id, intervalMinutes, cron = null)
@@ -35,15 +47,10 @@ class StopwatchTrigger : Trigger {
                     }
                     .collect { bus ->
                         emit(
-                            TriggerEvent(
-                                triggerNodeId = node.id,
-                                dataOut = mapOf(
-                                    "tick" to Item.of(
-                                        StopwatchTick(
-                                            elapsedMs = bus.firedAtEpochMs - startedAt,
-                                            tickAt = bus.firedAtEpochMs,
-                                        ),
-                                    ),
+                            NodeOutput(
+                                StopwatchTick(
+                                    elapsedMs = bus.firedAtEpochMs - startedAt,
+                                    tickAt = bus.firedAtEpochMs,
                                 ),
                             ),
                         )
@@ -55,8 +62,6 @@ class StopwatchTrigger : Trigger {
     }
 
     companion object {
-        const val TYPE_ID = "trigger.stopwatch"
-
         const val CONFIG_INTERVAL = "intervalMinutes"
         const val DEFAULT_INTERVAL_MINUTES = 15L
     }

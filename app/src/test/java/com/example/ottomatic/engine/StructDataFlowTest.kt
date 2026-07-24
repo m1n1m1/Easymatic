@@ -11,7 +11,7 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.items.SmsMessage
 import com.example.ottomatic.domain.model.schema.Item
-import com.example.ottomatic.engine.trigger.TriggerEvent
+import com.example.ottomatic.engine.trigger.TriggerOutput
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -56,7 +56,7 @@ class StructDataFlowTest {
         executor.executeFrom(
             workflow,
             workflow.node("n1")!!,
-            TriggerEvent(triggerNodeId = "n1", dataOut = mapOf("sms" to Item.of(sms))),
+            TriggerOutput(mapOf("sms" to Item.of(sms))),
         )
         assertEquals(1, services.notifications.size)
         assertEquals("hello", services.notifications.first().second)
@@ -89,7 +89,7 @@ class StructDataFlowTest {
         executor.executeFrom(
             workflow,
             workflow.node("n1")!!,
-            TriggerEvent(triggerNodeId = "n1", dataOut = mapOf("sms" to Item.of(sms))),
+            TriggerOutput(mapOf("sms" to Item.of(sms))),
         )
         assertEquals(1, services.notifications.size)
         assertEquals("Form Title", services.notifications.first().first)
@@ -115,7 +115,7 @@ class StructDataFlowTest {
             // No data edge into 'text': static value must win.
             dataConnections = emptyList(),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerEvent(triggerNodeId = "n1"))
+        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
         assertEquals(1, services.notifications.size)
         assertEquals("fallback", services.notifications.first().second)
     }
@@ -150,7 +150,7 @@ class StructDataFlowTest {
         executor.executeFrom(
             workflow,
             workflow.node("n1")!!,
-            TriggerEvent(triggerNodeId = "n1", dataOut = mapOf("sms" to Item.of(sms))),
+            TriggerOutput(mapOf("sms" to Item.of(sms))),
         )
         assertEquals(1, services.notifications.size)
         assertEquals("matched", services.notifications.first().second)
@@ -184,7 +184,7 @@ class StructDataFlowTest {
             // No data edge into 'source' or 'value': static config values are used.
             dataConnections = emptyList(),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerEvent(triggerNodeId = "n1"))
+        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
         // source "hello" equals value "hello" -> true branch.
         assertEquals(1, services.notifications.size)
         assertEquals("yes", services.notifications.first().second)
@@ -223,7 +223,7 @@ class StructDataFlowTest {
         executor.executeFrom(
             workflow,
             workflow.node("n1")!!,
-            TriggerEvent(triggerNodeId = "n1", dataOut = mapOf("sms" to Item.of(sms))),
+            TriggerOutput(mapOf("sms" to Item.of(sms))),
         )
         assertEquals(1, services.notifications.size)
         assertEquals("matched", services.notifications.first().second)

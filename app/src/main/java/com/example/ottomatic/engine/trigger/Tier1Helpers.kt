@@ -1,12 +1,59 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.SystemState
 import com.example.ottomatic.domain.model.schema.Item
+import com.example.ottomatic.domain.registry.ConfigField
+import com.example.ottomatic.domain.registry.ConfigFieldType
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.TriggerNodeDefinition
+import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+
+/**
+ * Shared single declaration for Tier 1 broadcast-receiver triggers that
+ * produce a [SystemState] data item on their `state` DATA output port.
+ *
+ * @param eventFilterLabel label of the optional `event` config field. When
+ *   non-null, an ENUM config field is declared with options
+ *   `"any" + eventFilterOptions`; the runtime filter in [systemStateFlow]
+ *   treats `"any"` (or a blank value) as "fire on every event".
+ */
+@Suppress("LongParameterList")
+internal fun systemStateDefinition(
+    typeId: String,
+    displayName: String,
+    description: String,
+    category: NodeCategory,
+    iconKey: String = "bolt",
+    eventFilterLabel: String? = null,
+    eventFilterOptions: List<String> = emptyList(),
+): TriggerNodeDefinition<SystemState> = triggerNode(
+    typeId = typeId,
+    displayName = displayName,
+    description = description,
+    category = category,
+    iconKey = iconKey,
+    dataOutputs = listOf(dataOut<SystemState>("state")),
+    configFields = if (eventFilterLabel != null) {
+        listOf(
+            ConfigField(
+                key = CONFIG_EVENT,
+                label = eventFilterLabel,
+                type = ConfigFieldType.ENUM(options = listOf(DEFAULT_EVENT) + eventFilterOptions),
+                defaultValue = DEFAULT_EVENT,
+            ),
+        )
+    } else {
+        emptyList()
+    },
+    encodeData = { state -> mapOf("state" to Item.of(state)) },
+)
 
 /**
  * Shared logic for Tier 1 broadcast-receiver triggers that produce a
@@ -29,7 +76,7 @@ internal fun systemStateFlow(
     node: WorkflowNode,
     host: TriggerHost,
     eventOptions: List<String>? = listOf("any"),
-): Flow<TriggerEvent> {
+): Flow<NodeOutput<SystemState>> {
     val base = host.busEvents()
         .filter { it.source == source }
         .filter { it.payload[KEY_TRIGGER_TYPE] == triggerType }
@@ -44,14 +91,12 @@ internal fun systemStateFlow(
     }
 
     return filtered.map { event ->
-        val state = SystemState(
-            event = event.payload[KEY_EVENT].orEmpty(),
-            detail = event.payload[KEY_DETAIL].orEmpty(),
-            timestamp = event.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: event.firedAtEpochMs,
-        )
-        TriggerEvent(
-            triggerNodeId = node.id,
-            dataOut = mapOf("state" to Item.of(state)),
+        NodeOutput(
+            SystemState(
+                event = event.payload[KEY_EVENT].orEmpty(),
+                detail = event.payload[KEY_DETAIL].orEmpty(),
+                timestamp = event.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: event.firedAtEpochMs,
+            ),
         )
     }
 }

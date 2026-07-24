@@ -1,7 +1,10 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.items.SystemState
+import com.example.ottomatic.engine.NodeOutput
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -9,22 +12,23 @@ import kotlinx.coroutines.flow.Flow
  * (ACTION_TIME_TICK). Produced by the runtime-registered
  * [com.example.ottomatic.data.trigger.ScreenBroadcastBridge].
  *
- * Produces a typed [com.example.ottomatic.domain.model.items.SystemState] item
- * on the `state` data port.
+ * Produces a typed [SystemState] item on the `state` data port.
  */
-class TimeTickTrigger : Trigger {
+class TimeTickTrigger : Trigger<SystemState> {
 
-    override val typeId: String = TYPE_ID
+    override val definition = systemStateDefinition(
+        typeId = "trigger.time_tick",
+        displayName = "Regular Time Tick",
+        description = "Fires roughly every minute while the device is awake",
+        category = NodeCategory.TIME_SCHEDULE,
+        iconKey = "timer",
+    )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<TriggerEvent> =
+    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<SystemState>> =
         systemStateFlow(
             source = TriggerSource.SYSTEM,
             triggerType = "time_tick",
             node = node,
             host = host,
         )
-
-    companion object {
-        const val TYPE_ID = "trigger.time_tick"
-    }
 }

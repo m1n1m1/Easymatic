@@ -46,4 +46,29 @@ class NodeTypeRegistryTest {
             )
         }
     }
+
+    @Test
+    fun `every node type id is unique`() {
+        val ids = NodeTypeRegistry.all.map { it.typeId }
+        assertEquals(ids, ids.distinct())
+    }
+
+    @Test
+    fun `every registered action and trigger exposes exactly one node type`() {
+        val behaviourIds = TriggerRegistry.all().map { it.typeId } + ActionRegistry.all().map { it.typeId }
+        val nodeTypeIds = NodeTypeRegistry.all.map { it.typeId }
+        assertEquals(behaviourIds.toSet(), nodeTypeIds.toSet())
+        assertEquals(behaviourIds.size, nodeTypeIds.size)
+    }
+
+    @Test
+    fun `node type ids match their kind prefix`() {
+        NodeTypeRegistry.all.forEach { definition ->
+            val expectedPrefix = if (definition.kind == NodeKind.TRIGGER) "trigger." else "action."
+            assertTrue(
+                "${definition.typeId} should start with $expectedPrefix",
+                definition.typeId.startsWith(expectedPrefix),
+            )
+        }
+    }
 }

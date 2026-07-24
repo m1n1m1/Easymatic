@@ -35,8 +35,8 @@ import com.example.ottomatic.domain.model.schema.ItemSchema
  *
  * All other DATA input ports (url, text, to, body, ...) are declared
  * statically on the node type in [NodeTypeRegistry] and are always present;
- * the action reads them via [com.example.ottomatic.engine.ActionInput.string],
- * falling back to the static config form value when no edge is wired.
+ * the owning action contract decodes them, falling back to the static config
+ * form value when no edge is wired.
  */
 
 /** EXECUTION input port. */
@@ -164,7 +164,7 @@ private fun conditionConfigSchema(workflow: Workflow, node: WorkflowNode): NodeC
     val typeConfig = node.config[CONDITION_TYPE_CONFIG_KEY]?.ifEmpty { CONDITION_TYPE_AUTO }
         ?: CONDITION_TYPE_AUTO
 
-    val fields = mutableListOf(
+    val fields = mutableListOf<ConfigField<*>>(
         ConfigField(
             key = CONDITION_TYPE_CONFIG_KEY,
             label = "Type",

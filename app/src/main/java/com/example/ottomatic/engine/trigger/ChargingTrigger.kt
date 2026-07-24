@@ -1,9 +1,15 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.BatteryState
 import com.example.ottomatic.domain.model.schema.Item
+import com.example.ottomatic.domain.registry.ConfigField
+import com.example.ottomatic.domain.registry.ConfigFieldType
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -20,11 +26,27 @@ import kotlinx.coroutines.flow.map
  * - `event` ∈ `"charging_started"`, `"charging_stopped"`
  * - `level`, `isCharging`, `plugged`, `timestamp`
  */
-class ChargingTrigger : Trigger {
+class ChargingTrigger : Trigger<BatteryState> {
 
-    override val typeId: String = TYPE_ID
+    override val definition = triggerNode<BatteryState>(
+        typeId = "trigger.charging",
+        displayName = "Charging",
+        description = "Starts when the device starts or stops charging",
+        category = NodeCategory.POWER_BATTERY,
+        iconKey = "battery_charging",
+        dataOutputs = listOf(dataOut<BatteryState>("state")),
+        configFields = listOf(
+            ConfigField(
+                key = CONFIG_EVENT,
+                label = "Event",
+                type = ConfigFieldType.ENUM(options = listOf("any", "started", "stopped")),
+                defaultValue = DEFAULT_EVENT,
+            ),
+        ),
+        encodeData = { state -> mapOf("state" to Item.of(state)) },
+    )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<TriggerEvent> =
+    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<BatteryState>> =
         host.busEvents()
             .filter { it.source == TriggerSource.BATTERY }
             .filter { event ->
@@ -36,22 +58,18 @@ class ChargingTrigger : Trigger {
                 filter == DEFAULT_EVENT || filter == event.payload[KEY_EVENT]
             }
             .map { event ->
-                val state = BatteryState(
-                    isCharging = event.payload[KEY_IS_CHARGING]?.toBooleanStrictOrNull() ?: false,
-                    level = event.payload[KEY_LEVEL]?.toIntOrNull() ?: -1,
-                    plugged = event.payload[KEY_PLUGGED]?.takeIf { it.isNotBlank() },
-                    event = event.payload[KEY_EVENT].orEmpty(),
-                    timestamp = event.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: event.firedAtEpochMs,
-                )
-                TriggerEvent(
-                    triggerNodeId = node.id,
-                    dataOut = mapOf("state" to Item.of(state)),
+                NodeOutput(
+                    BatteryState(
+                        isCharging = event.payload[KEY_IS_CHARGING]?.toBooleanStrictOrNull() ?: false,
+                        level = event.payload[KEY_LEVEL]?.toIntOrNull() ?: -1,
+                        plugged = event.payload[KEY_PLUGGED]?.takeIf { it.isNotBlank() },
+                        event = event.payload[KEY_EVENT].orEmpty(),
+                        timestamp = event.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: event.firedAtEpochMs,
+                    ),
                 )
             }
 
     companion object {
-        const val TYPE_ID = "trigger.charging"
-
         const val CONFIG_EVENT = "event"
         const val DEFAULT_EVENT = "any"
 

@@ -1,7 +1,10 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -14,19 +17,24 @@ import kotlinx.coroutines.flow.map
  *
  * Produces no typed data output — only the EXECUTION pulse.
  */
-class MacroEnabledTrigger : Trigger {
+class MacroEnabledTrigger : Trigger<Unit> {
 
-    override val typeId: String = TYPE_ID
+    override val definition = triggerNode<Unit>(
+        typeId = "trigger.macro_enabled",
+        displayName = "Macro Enabled",
+        description = "Fires when this macro is enabled (its triggers are armed)",
+        category = NodeCategory.AUTOMATION,
+        iconKey = "bolt",
+        encodeData = { emptyMap() },
+    )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<TriggerEvent> =
+    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<Unit>> =
         host.macroLifecycleEvents()
             .filter { it.source == TriggerSource.MACRO }
             .filter { it.payload[KEY_EVENT] == EVENT_ENABLED }
-            .map { TriggerEvent(triggerNodeId = node.id) }
+            .map { NodeOutput(Unit) }
 
     companion object {
-        const val TYPE_ID = "trigger.macro_enabled"
-
         const val KEY_EVENT = "event"
         const val EVENT_ENABLED = "enabled"
     }

@@ -2,18 +2,24 @@
 
 package com.example.ottomatic.engine.action
 
+import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.model.schema.flatViewFor
 import com.example.ottomatic.domain.model.schema.jsonElementToValue
+import com.example.ottomatic.domain.model.wildcardDataIn
+import com.example.ottomatic.domain.registry.BREAK_STRUCT_IN
+import com.example.ottomatic.domain.registry.BREAK_TYPE_ID
 import com.example.ottomatic.engine.Action
-import com.example.ottomatic.engine.ActionInput
-import com.example.ottomatic.engine.ActionResult
 import com.example.ottomatic.engine.ExecutionContext
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.actionNode
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
+
+data class BreakStructInput(val struct: Item?)
 
 /**
  * Action for `action.break`. Reads a typed struct on its `struct` DATA input
@@ -32,20 +38,33 @@ import kotlin.reflect.KClass
  *
  * If no item arrives on `struct` (no edge, or source produced nothing), the
  * action pulses `out` without producing any field items.
+ *
+ * This is intentionally the sole dynamic-output contract: its encode step
+ * passes the per-field item map straight through.
  */
-class BreakStructAction : Action {
+class BreakStructAction : Action<BreakStructInput, Map<String, Item>> {
 
-    override val typeId: String = TYPE_ID
+    override val definition = actionNode<BreakStructInput, Map<String, Item>>(
+        typeId = BREAK_TYPE_ID,
+        displayName = "Break Struct",
+        description = "Splits a struct into its individual fields (auto-detects the struct from the input)",
+        category = NodeCategory.DATA,
+        iconKey = "split",
+        dataInputs = listOf(wildcardDataIn(BREAK_STRUCT_IN)),
+        hasDynamicPorts = true,
+        decode = { input -> BreakStructInput(input.item(BREAK_STRUCT_IN)) },
+        encodeData = { fields -> fields },
+    )
 
-    override suspend fun execute(input: ActionInput, context: ExecutionContext): ActionResult {
-        val item = input.dataIn[STRUCT_PORT] ?: return ActionResult.passthrough("out")
+    override suspend fun execute(input: BreakStructInput, context: ExecutionContext): NodeOutput<Map<String, Item>> {
+        val item = input.struct ?: return NodeOutput(emptyMap())
         val schema = item.schema as? ItemSchema.Object
         val fields = if (schema != null && schema.kClass != null) {
             extractFields(item.value, schema.kClass!!, schema)
         } else {
             emptyMap()
         }
-        return ActionResult(execOut = listOf("out"), dataOut = fields)
+        return NodeOutput(fields)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -68,10 +87,5 @@ class BreakStructAction : Action {
             )
         }
         return result
-    }
-
-    companion object {
-        const val TYPE_ID = "action.break"
-        const val STRUCT_PORT = "struct"
     }
 }

@@ -1,13 +1,18 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.ScheduleFire
 import com.example.ottomatic.domain.model.schema.Item
+import com.example.ottomatic.domain.registry.ConfigField
+import com.example.ottomatic.domain.registry.ConfigFieldType
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import java.util.Calendar
 
 /**
@@ -25,11 +30,33 @@ import java.util.Calendar
  *
  * Produces a typed [ScheduleFire] item on the `fireTime` data port.
  */
-class ScheduleTrigger : Trigger {
+class ScheduleTrigger : Trigger<ScheduleFire> {
 
-    override val typeId: String = TYPE_ID
+    override val definition = triggerNode<ScheduleFire>(
+        typeId = "trigger.schedule",
+        displayName = "Schedule",
+        description = "Starts the workflow on a fixed schedule",
+        category = NodeCategory.TIME_SCHEDULE,
+        iconKey = "schedule",
+        dataOutputs = listOf(dataOut<ScheduleFire>("fireTime")),
+        configFields = listOf(
+            ConfigField(
+                key = "interval",
+                label = "Interval",
+                type = ConfigFieldType.ENUM(options = listOf("15", "30", "60", "360", "720", "1440", "cron")),
+                defaultValue = "15",
+            ),
+            ConfigField(
+                key = "cron",
+                label = "Cron expression (when interval = cron)",
+                type = ConfigFieldType.STR,
+                defaultValue = "*/15 * * * *",
+            ),
+        ),
+        encodeData = { fire -> mapOf("fireTime" to Item.of(fire)) },
+    )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<TriggerEvent> {
+    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<ScheduleFire>> {
         val intervalRaw = node.config["interval"]
         val cron = if (intervalRaw == "cron") node.config["cron"] else null
         val intervalMinutes = intervalRaw?.toLongOrNull() ?: DEFAULT_INTERVAL_MINUTES
@@ -45,12 +72,7 @@ class ScheduleTrigger : Trigger {
                     .filter { matchesDayFilter(it.firedAtEpochMs, daysOfWeek, daysOfMonth) }
                     .filter { matchesTimeFilter(it.firedAtEpochMs, timeOfDay, endTimeOfDay) }
                     .collect { bus ->
-                        emit(
-                            TriggerEvent(
-                                triggerNodeId = node.id,
-                                dataOut = mapOf("fireTime" to Item.of(ScheduleFire(firedAt = bus.firedAtEpochMs))),
-                            ),
-                        )
+                        emit(NodeOutput(ScheduleFire(firedAt = bus.firedAtEpochMs)))
                     }
             } finally {
                 handle.cancel()
@@ -102,7 +124,6 @@ class ScheduleTrigger : Trigger {
     }
 
     companion object {
-        const val TYPE_ID = "trigger.schedule"
         private const val DEFAULT_INTERVAL_MINUTES = 15L
         private const val MINUTES_PER_HOUR = 60
         private const val MINUTES_PER_DAY = 24 * 60

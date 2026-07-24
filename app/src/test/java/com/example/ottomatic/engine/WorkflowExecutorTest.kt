@@ -18,7 +18,7 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.items.BatteryState
 import com.example.ottomatic.domain.model.schema.Item
-import com.example.ottomatic.engine.trigger.TriggerEvent
+import com.example.ottomatic.engine.trigger.TriggerOutput
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -47,7 +47,7 @@ class WorkflowExecutorTest {
                 ExecConnection("c1", "n1", "out", "n2", "in"),
             ),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerEvent(triggerNodeId = "n1"))
+        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
         assertEquals(1, services.notifications.size)
         assertEquals("T", services.notifications.first().first)
         assertEquals("Hello", services.notifications.first().second)
@@ -82,9 +82,8 @@ class WorkflowExecutorTest {
         executor.executeFrom(
             workflow,
             workflow.node("n1")!!,
-            TriggerEvent(
-                triggerNodeId = "n1",
-                dataOut = mapOf("sms" to com.example.ottomatic.domain.model.schema.Item.of(sms)),
+            TriggerOutput(
+                mapOf("sms" to com.example.ottomatic.domain.model.schema.Item.of(sms)),
             ),
         )
         assertEquals(1, services.notifications.size)
@@ -124,7 +123,7 @@ class WorkflowExecutorTest {
         executor.executeFrom(
             workflow,
             workflow.node("n1")!!,
-            TriggerEvent(triggerNodeId = "n1", dataOut = mapOf("state" to Item.of(battery))),
+            TriggerOutput(mapOf("state" to Item.of(battery))),
         )
         assertEquals(1, services.notifications.size)
         assertEquals("yes", services.notifications.first().second)
@@ -163,7 +162,7 @@ class WorkflowExecutorTest {
         executor.executeFrom(
             workflow,
             workflow.node("n1")!!,
-            TriggerEvent(triggerNodeId = "n1", dataOut = mapOf("state" to Item.of(battery))),
+            TriggerOutput(mapOf("state" to Item.of(battery))),
         )
         assertEquals(1, services.notifications.size)
         assertEquals("no", services.notifications.first().second)
@@ -186,7 +185,7 @@ class WorkflowExecutorTest {
                 ExecConnection("c2", "n2", "out", "n1", "in"),
             ),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerEvent(triggerNodeId = "n1"))
+        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
         assertTrue(services.notifications.isEmpty())
         assertTrue(logs.any { it.contains("Workflow invalid") })
     }
@@ -218,9 +217,8 @@ class WorkflowExecutorTest {
         executor.executeFrom(
             workflow,
             workflow.node("n1")!!,
-            TriggerEvent(
-                triggerNodeId = "n1",
-                dataOut = mapOf("sms" to com.example.ottomatic.domain.model.schema.Item.of(sms)),
+            TriggerOutput(
+                mapOf("sms" to com.example.ottomatic.domain.model.schema.Item.of(sms)),
             ),
         )
         assertTrue(logs.contains("hi"))
@@ -244,7 +242,7 @@ class WorkflowExecutorTest {
                 ExecConnection("c2", "n2", "out", "n3", "in"),
             ),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerEvent(triggerNodeId = "n1"))
+        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
         assertTrue(services.notifications.isEmpty())
         assertTrue(logs.any { it.contains("Stop: done") })
         assertTrue(logs.any { it.contains("halted") })
@@ -265,7 +263,7 @@ class WorkflowExecutorTest {
                 ExecConnection("c1", "n1", "out", "n2", "in"),
             ),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerEvent(triggerNodeId = "n1"))
+        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
         assertEquals(listOf("abc-123"), macroControl.enabled)
         assertTrue(macroControl.disabled.isEmpty())
     }
@@ -297,9 +295,8 @@ class WorkflowExecutorTest {
         executor.executeFrom(
             workflow,
             workflow.node("n1")!!,
-            TriggerEvent(
-                triggerNodeId = "n1",
-                dataOut = mapOf("sms" to com.example.ottomatic.domain.model.schema.Item.of(sms)),
+            TriggerOutput(
+                mapOf("sms" to com.example.ottomatic.domain.model.schema.Item.of(sms)),
             ),
         )
         assertEquals(listOf("+1555" to "Got it"), services.smsSent)
@@ -317,7 +314,7 @@ class WorkflowExecutorTest {
             ),
             execConnections = listOf(ExecConnection("c1", "n1", "out", "n2", "in")),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerEvent(triggerNodeId = "n1"))
+        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
         assertEquals(false, services.bluetoothEnabled)
     }
 
@@ -336,7 +333,7 @@ class WorkflowExecutorTest {
             ),
             execConnections = listOf(ExecConnection("c1", "n1", "out", "n2", "in")),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerEvent(triggerNodeId = "n1"))
+        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
         assertEquals(listOf<String?>(null), services.clipboard)
     }
 

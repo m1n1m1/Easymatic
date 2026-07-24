@@ -12,11 +12,9 @@ import kotlinx.serialization.Serializable
  * Dynamic values that can be wired from upstream data are declared as DATA
  * input ports on the node type in
  * [com.example.ottomatic.domain.registry.NodeTypeRegistry] (first-class ports,
- * always present). When an incoming data edge carries an item on such a port,
- * the action reads it via [com.example.ottomatic.engine.ActionInput.dataIn];
- * when no edge is wired, the action falls back to the static [config] value
- * for the same key. [visibleDataInputs] controls which DATA input handles are
- * shown in the graph editor.
+ * always present). The owning action contract decodes a wired item or its
+ * static configuration fallback into the action's typed input model.
+ * [visibleDataInputs] controls which DATA input handles are shown in the graph editor.
  */
 @Serializable
 data class WorkflowNode(
