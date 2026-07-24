@@ -6,23 +6,38 @@ import com.example.ottomatic.domain.model.schema.Item
 /**
  * Input handed to an [Action] when it runs.
  *
- * [config] gives typed access to the node's config fields, interpolating
- * EXPR fields against [dataContext] — a flat string view of every data item
- * produced upstream in the current execution chain (trigger + preceding
- * actions). This preserves the n8n-style `{{field}}` templating UX while the
- * typed data ports carry the structured items themselves.
+ * [config] gives typed access to the node's static form fields (literals the
+ * user typed in the configure form — never data).
  *
  * [dataIn] carries the typed [Item]s arriving on the action's DATA input
  * ports, keyed by input port name. Populated by [WorkflowExecutor] from its
  * data cache following [com.example.ottomatic.domain.model.DataConnection]s.
- * Empty when the action has no incoming data edges.
+ * Empty when the action has no incoming data edges. Each port that can be
+ * wired is declared on the node type in
+ * [com.example.ottomatic.domain.registry.NodeTypeRegistry].
+ *
+ * Use [string] to read a value that may be either wired from upstream data or
+ * set as a static form literal: it returns the wired item's string form when
+ * the port is connected, otherwise the static [config] value for [key].
  */
 data class ActionInput(
     val node: WorkflowNode,
     val config: TypedConfig,
-    val dataContext: Map<String, String>,
     val dataIn: Map<String, Item> = emptyMap(),
-)
+) {
+
+    /**
+     * Reads the string form of the item arriving on the DATA input port named
+     * [key]; when no edge is wired to that port, falls back to the static
+     * [config] value for [key] (or [default] when blank/missing).
+     *
+     * This is the single way to read a value that is "either wired or typed":
+     * the action knows nothing about the producer — only the name of its own
+     * input port, which matches the config field key.
+     */
+    fun string(key: String, default: String = ""): String =
+        dataIn[key]?.value?.toString()?.takeIf { it.isNotEmpty() } ?: config.str(key, default)
+}
 
 /**
  * Result of running an [Action].
@@ -31,7 +46,7 @@ data class ActionInput(
  * (e.g. `listOf("out")` for a linear action, `listOf("true")` or
  * `listOf("false")` for the condition node). [dataOut] maps DATA output
  * port names to the [Item]s the action produced; the executor caches them so
- * downstream EXPR interpolation and future typed data inputs can read them.
+ * downstream data inputs can read them.
  */
 data class ActionResult(
     val execOut: List<String> = emptyList(),

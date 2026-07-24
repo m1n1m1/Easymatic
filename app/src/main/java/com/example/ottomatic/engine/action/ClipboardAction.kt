@@ -7,7 +7,8 @@ import com.example.ottomatic.engine.ExecutionContext
 
 /**
  * Action for `action.clipboard`. Sets the clipboard primary clip to `text`
- * (EXPR-interpolated) or clears it when `mode = "clear"`. Passthrough on exec.
+ * (wired from upstream data or a static literal) or clears it when
+ * `mode = "clear"`. Passthrough on exec.
  */
 class ClipboardAction : Action {
 
@@ -18,7 +19,7 @@ class ClipboardAction : Action {
         if (mode == "clear") {
             context.systemServices.clearClipboard()
         } else {
-            val text = input.config.expr("text", default = "")
+            val text = input.string("text", default = "")
             context.systemServices.setClipboard(text)
         }
         return ActionResult.passthrough("out")

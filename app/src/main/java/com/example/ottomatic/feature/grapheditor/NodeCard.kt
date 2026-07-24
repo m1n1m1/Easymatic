@@ -70,9 +70,10 @@ fun NodeCard(
     onToggleRevealedLabel: (PortRef) -> Unit,
 ) {
     val density = LocalDensity.current.density
-    val inputPorts = effectiveInputPorts(definition, workflow, node)
+    val layoutInputPorts = effectiveInputPorts(definition, workflow, node)
+    val visibleInputPorts = visibleInputPorts(definition, workflow, node)
     val outputPorts = effectiveOutputPorts(definition, workflow, node)
-    val width = GraphGeometry.nodeWidth(inputPorts.size, outputPorts.size)
+    val width = GraphGeometry.nodeWidth(layoutInputPorts.size, outputPorts.size)
     val labelToShow =
         pendingFrom?.takeIf { it.nodeId == node.id && it.isOutput } ?: revealedLabel
 
@@ -94,7 +95,8 @@ fun NodeCard(
         OutputLabels(node.id, outputPorts, width, density, labelToShow)
         Ports(
             node = node,
-            inputPorts = inputPorts,
+            layoutInputPorts = layoutInputPorts,
+            visibleInputPorts = visibleInputPorts,
             outputPorts = outputPorts,
             width = width,
             hoverPort = hoverPort,
@@ -223,7 +225,8 @@ private fun OutputLabels(
 @Composable
 private fun Ports(
     node: WorkflowNode,
-    inputPorts: List<Port>,
+    layoutInputPorts: List<Port>,
+    visibleInputPorts: List<Port>,
     outputPorts: List<Port>,
     width: Float,
     hoverPort: PortRef?,
@@ -234,11 +237,11 @@ private fun Ports(
     onPortDragCancel: () -> Unit,
     onToggleRevealedLabel: (PortRef) -> Unit,
 ) {
-    inputPorts.forEach { port ->
+    visibleInputPorts.forEach { port ->
         PortHandle(
             ref = PortRef(node.id, port.name, isOutput = false, port.kind),
             port = port,
-            center = GraphGeometry.portOffset(inputPorts, outputPorts, width, port),
+            center = GraphGeometry.portOffset(layoutInputPorts, outputPorts, width, port),
             isSnapTarget = hoverPort == PortRef(node.id, port.name, isOutput = false, port.kind),
             density = density,
             onDragStart = onPortDragStart,
@@ -251,7 +254,7 @@ private fun Ports(
         PortHandle(
             ref = PortRef(node.id, port.name, isOutput = true, port.kind),
             port = port,
-            center = GraphGeometry.portOffset(inputPorts, outputPorts, width, port),
+            center = GraphGeometry.portOffset(layoutInputPorts, outputPorts, width, port),
             isSnapTarget = hoverPort == PortRef(node.id, port.name, isOutput = true, port.kind),
             density = density,
             onDragStart = onPortDragStart,

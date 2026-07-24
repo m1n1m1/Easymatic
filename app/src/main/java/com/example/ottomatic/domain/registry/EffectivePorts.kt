@@ -3,7 +3,6 @@
 package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.domain.model.Direction
-import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
@@ -15,31 +14,29 @@ import com.example.ottomatic.domain.model.schema.ItemSchema
  * Resolves the *effective* port set and config schema of a placed [WorkflowNode].
  *
  * Most node types have a static port list ([NodeTypeDefinition.ports]) and a
- * static config schema ([ConfigSchemaRegistry]). Three independent mechanisms
- * extend or rewrite those static sets on a *placed* node:
+ * static config schema ([ConfigSchemaRegistry]). Two independent mechanisms
+ * rewrite those static sets on a *placed* node:
  *
- *  1. **Exposed config inputs** — any ACTION node whose
- *     [WorkflowNode.exposedInputs] is non-empty gains one typed DATA input
- *     port per exposed config field (see [effectiveConfigSchema]). This is the
- *     primary way upstream data feeds into a node's configurable fields: the
- *     user toggles "Expose as data input" on a field in the configure sheet,
- *     wires an edge into the new port, and the incoming item overrides the
- *     static config value for that field at runtime.
- *
- *  2. **Dynamic struct ports** — `action.break` ([hasDynamicPorts] = true)
+ *  1. **Dynamic struct ports** — `action.break` ([hasDynamicPorts] = true)
  *     derives one DATA output port per field of the struct connected to its
  *     `struct` input, by following the incoming edge back to its source port
  *     and reading that source's [ItemSchema]. Recursion through other dynamic
  *     nodes is safe because the graph validator guarantees data-edge
  *     acyclicity.
  *
- *  3. **Dynamic config schema** — `action.condition` rewrites its
- *     `field` / `operator` / `value` config fields from the schema of the
- *     data item connected to its [CONDITION_SOURCE_IN] port (see
+ *  2. **Dynamic condition ports + config** — `action.condition`
+ *     ([hasDynamicPorts] = true) rewrites its `source`/`value` DATA input port
+ *     schemas and its `field` / `operator` / `value` config fields from the
+ *     schema of the data item connected to its [CONDITION_SOURCE_IN] port (see
  *     [effectiveConfigSchema]): the field picker becomes a typed dropdown of
  *     the struct's fields, the operator list narrows to those valid for the
  *     selected field's primitive type, and the compare-against literal is
  *     typed to match.
+ *
+ * All other DATA input ports (url, text, to, body, ...) are declared
+ * statically on the node type in [NodeTypeRegistry] and are always present;
+ * the action reads them via [com.example.ottomatic.engine.ActionInput.string],
+ * falling back to the static config form value when no edge is wired.
  */
 
 /** EXECUTION input port. */
@@ -68,20 +65,17 @@ const val CONDITION_SOURCE_IN = "source"
 
 /**
  * The effective ports for the placed [node] in [workflow]: the node type's
- * static [ports] (or the dynamic struct-derived ports for `action.break`),
- * plus one DATA input port per exposed config field on [node].
+ * static [ports], with dynamic rewrites for `action.break` (struct-derived
+ * output ports) and `action.condition` (dynamic `source`/`value` input schemas).
  */
 fun effectivePorts(
     definition: NodeTypeDefinition,
     workflow: Workflow,
     node: WorkflowNode,
-): List<Port> {
-    val base = if (definition.hasDynamicPorts && definition.typeId == BREAK_TYPE_ID) {
-        breakEffectivePorts(workflow, node)
-    } else {
-        definition.ports
-    }
-    return base + exposedFieldInputPorts(definition, workflow, node)
+): List<Port> = when {
+    definition.typeId == BREAK_TYPE_ID -> breakEffectivePorts(workflow, node)
+    definition.typeId == CONDITION_TYPE_ID -> conditionEffectivePorts(workflow, node)
+    else -> definition.ports
 }
 
 /** Effective input ports (convenience filter over [effectivePorts]). */
@@ -99,14 +93,11 @@ fun effectiveOutputPorts(
 ): List<Port> = effectivePorts(definition, workflow, node).filter { it.direction == Direction.OUT }
 
 /**
- * Looks up a port by [name] on the placed [node], honouring dynamic and exposed
- * ports. Use this instead of [NodeTypeDefinition.port] for any placed node.
+ * Looks up a port by [name] on the placed [node], honouring dynamic ports.
+ * Use this instead of [NodeTypeDefinition.port] for any placed node.
  *
  * [direction] is an optional filter. Supply it when the caller knows which
- * side of the node the port lives on: a node may expose a config field whose
- * key collides with a static output port name (e.g. `action.wifi` has a
- * `state` DATA output and a `state` config field that can be exposed as a
- * DATA input), so a name-only lookup is ambiguous on such nodes.
+ * side of the node the port lives on.
  */
 fun effectivePort(
     definition: NodeTypeDefinition,
@@ -164,11 +155,10 @@ val CONDITION_TYPE_OPTIONS: List<String> =
  * returns a schema (at minimum the `type` chooser), so the configure form can
  * be opened before any data edge is wired.
  *
- * Both `source` (the value to inspect) and `value` (the literal to compare
- * against) are [exposable][ConfigField.exposable]: by default they are form
- * literals, and toggling "Expose as data input" on either creates a typed
- * DATA IN port that overrides the literal at runtime. `type`, `operator`
- * and `field` are structural pickers and are never exposable.
+ * `source` (the value to inspect) and `value` (the literal to compare against)
+ * are also first-class DATA input ports on the node (declared in
+ * [NodeTypeRegistry]); when wired, the incoming item overrides the form value.
+ * `type`, `operator` and `field` are structural pickers and are config-only.
  */
 private fun conditionConfigSchema(workflow: Workflow, node: WorkflowNode): NodeConfigSchema {
     val typeConfig = node.config[CONDITION_TYPE_CONFIG_KEY]?.ifEmpty { CONDITION_TYPE_AUTO }
@@ -180,7 +170,6 @@ private fun conditionConfigSchema(workflow: Workflow, node: WorkflowNode): NodeC
             label = "Type",
             type = ConfigFieldType.ENUM(options = CONDITION_TYPE_OPTIONS),
             defaultValue = CONDITION_TYPE_AUTO,
-            exposable = false,
         ),
     )
 
@@ -195,7 +184,6 @@ private fun conditionConfigSchema(workflow: Workflow, node: WorkflowNode): NodeC
                 label = "Field",
                 type = ConfigFieldType.ENUM(options = fieldOptions),
                 defaultValue = fieldOptions.first(),
-                exposable = false,
             )
             connected.fields[selected]
         } else {
@@ -207,8 +195,7 @@ private fun conditionConfigSchema(workflow: Workflow, node: WorkflowNode): NodeC
 
     // Always expose operator + source + value, even in auto mode with no
     // connection yet (defaulting to a string comparison) so the form is fully
-    // configurable before any data edge is wired. `source` and `value` are
-    // exposable; `operator` is not.
+    // configurable before any data edge is wired.
     val effectiveSchema = comparisonSchema ?: ItemSchema.Primitive(String::class)
     val operators = operatorOptionsFor(effectiveSchema)
     val literalType = valueConfigTypeFor(effectiveSchema)
@@ -217,7 +204,6 @@ private fun conditionConfigSchema(workflow: Workflow, node: WorkflowNode): NodeC
         label = "Operator",
         type = ConfigFieldType.ENUM(options = operators),
         defaultValue = operators.first(),
-        exposable = false,
     )
     fields += ConfigField(
         key = CONDITION_SOURCE_IN,
@@ -234,8 +220,7 @@ private fun conditionConfigSchema(workflow: Workflow, node: WorkflowNode): NodeC
 }
 
 /**
- * The schema of the `source` DATA input on `action.condition` (used when the
- * `source` config field is exposed as a data port):
+ * The schema of the `source` DATA input on `action.condition`:
  *  - manual type → the chosen [ItemSchema.Primitive];
  *  - auto + connected → the connected source's schema (struct/primitive);
  *  - auto + unconnected → [ItemSchema.Wildcard] (accepts anything).
@@ -308,32 +293,19 @@ private fun breakEffectivePorts(workflow: Workflow, node: WorkflowNode): List<Po
 }
 
 /**
- * The typed DATA input ports added to [node] for each config field the user
- * has toggled as exposed ([WorkflowNode.exposedInputs]). Each port is named
- * by the field key and typed by [ConfigField.portSchema]. Returns empty for
- * non-ACTION nodes (triggers are sources, not consumers) or nodes with no
- * config schema / no exposed fields.
- *
- * `action.condition`'s `source` field is special-cased: its port schema is
- * dynamic ([conditionSourceSchema], derived from the `type` config and any
- * connected edge) rather than the field's literal [ConfigFieldType].
+ * Effective ports for `action.condition`: the static exec in/out + true/false
+ * ports, with the `source` and `value` DATA input port schemas rewritten from
+ * the `type` config and any connected edge ([conditionSourceSchema]).
  */
-private fun exposedFieldInputPorts(definition: NodeTypeDefinition, workflow: Workflow, node: WorkflowNode): List<Port> {
-    val schema = if (definition.kind == NodeKind.ACTION && node.exposedInputs.isNotEmpty()) {
-        effectiveConfigSchema(definition, workflow, node)
-    } else {
-        null
-    } ?: return emptyList()
-    return schema.fields
-        .filter { it.key in node.exposedInputs }
-        .map { field ->
-            val portSchema = if (definition.typeId == CONDITION_TYPE_ID && field.key == CONDITION_SOURCE_IN) {
-                conditionSourceSchema(workflow, node)
-            } else {
-                field.portSchema()
-            }
-            dataPort(field.key, Direction.IN, portSchema)
-        }
+private fun conditionEffectivePorts(workflow: Workflow, node: WorkflowNode): List<Port> {
+    val sourceSchema = conditionSourceSchema(workflow, node)
+    return listOf(
+        execIn(),
+        execOut("true"),
+        execOut("false"),
+        dataPort(CONDITION_SOURCE_IN, Direction.IN, sourceSchema),
+        dataPort("value", Direction.IN, sourceSchema),
+    )
 }
 
 /**

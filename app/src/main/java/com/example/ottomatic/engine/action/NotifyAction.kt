@@ -6,8 +6,8 @@ import com.example.ottomatic.engine.ActionResult
 import com.example.ottomatic.engine.ExecutionContext
 
 /**
- * Action for `action.notify`. Posts a device notification with title/text
- * that may reference data context values via `{{field}}` (EXPR config).
+ * Action for `action.notify`. Posts a device notification with title/text.
+ * `text` may be wired from an upstream data edge or set as a static literal.
  */
 class NotifyAction : Action {
 
@@ -15,7 +15,7 @@ class NotifyAction : Action {
 
     override suspend fun execute(input: ActionInput, context: ExecutionContext): ActionResult {
         val title = input.config.str("title", default = "Ottomatic")
-        val text = input.config.expr("text", default = "Workflow ran")
+        val text = input.string("text", default = "Workflow ran")
         context.systemServices.notify(title, text)
         return ActionResult.passthrough("out")
     }

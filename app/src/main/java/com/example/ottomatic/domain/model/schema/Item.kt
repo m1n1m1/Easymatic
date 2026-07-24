@@ -26,9 +26,10 @@ import kotlin.reflect.KClass
  * [value] is the actual Kotlin object (a data class instance, a primitive, a
  * list, ...); [schema] describes its shape and is used by the graph validator
  * and by the executor to type-check connections at design time and runtime.
- * [flat] is a precomputed `Map<String, String>` view of [value]'s fields, used
- * by the executor to build the EXPR interpolation context so HTTP/notify/etc.
- * can reference upstream data via `{{field}}` placeholders.
+ * [flat] is a precomputed `Map<String, String>` view of [value]'s top-level
+ * fields (for struct values), used by `action.condition` to read a selected
+ * field of a connected struct item by name. Non-struct values carry an empty
+ * flat view.
  *
  * `Item` is a *runtime* object only — it is never persisted. The persisted
  * workflow graph refers to nodes and ports; the values flowing through them
@@ -73,7 +74,7 @@ inline fun <reified T : Any> Item.asTyped(): T {
 /**
  * Flattens a `@Serializable` [value] into `Map<String, String>` by
  * serializing it to JSON and unwrapping each top-level field. Used by
- * [Item.of] to precompute the EXPR-interpolation view.
+ * [Item.of] to precompute the struct-field view consumed by `action.condition`.
  */
 @PublishedApi
 internal inline fun <reified T : Any> flattenItem(value: T): Map<String, String> {
@@ -132,10 +133,10 @@ private fun decodeStringMap(element: JsonElement): Map<String, String> {
 }
 
 /**
- * Builds the EXPR `flat` view for a single field [value] described by [schema].
- * Only `Map<String,String>` values carry a flat view (their entries become
- * EXPR-addressable keys); all other field types resolve via [Item.value]'s
- * `toString()` in the executor's interpolation context.
+ * Builds the struct-field `flat` view for a single field [value] described by
+ * [schema]. Only `Map<String,String>` values carry a flat view (their entries
+ * become addressable keys); all other field types resolve via [Item.value]'s
+ * `toString()`.
  */
 internal fun flatViewFor(value: Any?, schema: ItemSchema): Map<String, String> =
     if (schema is ItemSchema.MapSchema && value is Map<*, *>) {

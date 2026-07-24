@@ -13,16 +13,20 @@ import com.example.ottomatic.engine.ExecutionContext
 /**
  * Action for `action.condition`. Reads a typed [Item] on its [CONDITION_SOURCE_IN]
  * DATA input and compares it (or a selected field of it, when the source is a
- * struct and `type` is `"auto"`) against the typed `value` config literal
- * using the configured `operator`. Routes execution to port `true` or `false`.
+ * struct and `type` is `"auto"`) against the `value` DATA input (or its static
+ * config literal fallback) using the configured `operator`. Routes execution
+ * to port `true` or `false`.
  *
  * The comparison type is determined by the `type` config field
  * (see [com.example.ottomatic.domain.registry.effectiveConfigSchema]):
  *  - `"auto"`: infer from the connected item's schema. A struct source exposes
  *    a `field` picker; a primitive source is compared directly.
  *  - a specific primitive (`"int"`, `"string"`, ...): compare the whole item
- *    value as that primitive type. The `source` port is locked to that schema
- *    at design time so the validator enforces the match.
+ *    value as that primitive type. The `source` input port is locked to that
+ *    schema at design time so the validator enforces the match.
+ *
+ * Both `source` and `value` are DATA input ports; when either is unwired, the
+ * static config form value for the same key is used as a fallback.
  */
 class ConditionAction : Action {
 
@@ -31,10 +35,10 @@ class ConditionAction : Action {
     override suspend fun execute(input: ActionInput, context: ExecutionContext): ActionResult {
         val typeConfig = input.config.str(CONDITION_TYPE_CONFIG_KEY, default = CONDITION_TYPE_AUTO)
         val operator = input.config.str("operator", default = "equals")
-        val compareValue = input.config.raw("value").orEmpty()
         val item = input.dataIn[CONDITION_SOURCE_IN]
-        // When `source` is exposed and wired, use the typed Item; otherwise fall
-        // back to the `source` config literal (the form field value).
+        val compareValue = input.string("value")
+        // When `source` is wired, use the typed Item; otherwise fall back to
+        // the `source` config literal (the form field value).
         val actualValue = if (item != null) {
             actualFieldValue(typeConfig, item, input)
         } else {

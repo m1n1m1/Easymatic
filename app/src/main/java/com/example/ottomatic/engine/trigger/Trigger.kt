@@ -9,10 +9,9 @@ import kotlinx.coroutines.flow.Flow
  *
  * [dataOut] carries the typed data items the trigger exposes on its DATA
  * output ports (e.g. `mapOf("sms" to Item.of(SmsMessage(...)))` for
- * `trigger.sms`). The executor caches them so downstream EXPR interpolation
- * and typed data connections can read them. The trigger's EXECUTION `out`
- * port is implicitly pulsed — every trigger has a single exec output named
- * `"out"`.
+ * `trigger.sms`). The executor caches them so downstream data connections can
+ * read them. The trigger's EXECUTION `out` port is implicitly pulsed — every
+ * trigger has a single exec output named `"out"`.
  */
 data class TriggerEvent(
     val triggerNodeId: String,

@@ -11,9 +11,9 @@ import com.example.ottomatic.engine.ExecutionContext
  * Action for `action.enable_macro`. Enables another macro by id — persists the
  * `enabled` flag and arms its triggers via [com.example.ottomatic.core.service.MacroControl].
  *
- * `macroId` (EXPR) is interpolated against the runtime data context so it can
- * be selected dynamically from upstream data. The resulting [MacroControlState]
- * on the `state` data port reports whether the request was dispatched.
+ * `macroId` may be wired from upstream data or set as a static literal. The
+ * resulting [MacroControlState] on the `state` data port reports whether the
+ * request was dispatched.
  */
 class EnableMacroAction : AbstractMacroAction() {
 
@@ -45,16 +45,17 @@ class DisableMacroAction : AbstractMacroAction() {
 
 /**
  * Shared behaviour for [EnableMacroAction] and [DisableMacroAction]. Reads the
- * `macroId` EXPR config field, dispatches via [control], and reports the result
- * as a [MacroControlState] on its `state` data port. When [ExecutionContext.macroControl]
- * is unavailable (engine-only tests), [MacroControlState.changed] is `false`.
+ * `macroId` input (wired or static), dispatches via [control], and reports
+ * the result as a [MacroControlState] on its `state` data port. When
+ * [ExecutionContext.macroControl] is unavailable (engine-only tests),
+ * [MacroControlState.changed] is `false`.
  */
 abstract class AbstractMacroAction : Action {
 
     abstract fun control(macroControl: com.example.ottomatic.core.service.MacroControl, macroId: String): Boolean
 
     override suspend fun execute(input: ActionInput, context: ExecutionContext): ActionResult {
-        val macroId = input.config.expr("macroId", default = "")
+        val macroId = input.string("macroId", default = "")
         val macroControl = context.macroControl
         val changed = macroControl?.let { control(it, macroId) } ?: false
         val state = MacroControlState(macroId = macroId, changed = changed)

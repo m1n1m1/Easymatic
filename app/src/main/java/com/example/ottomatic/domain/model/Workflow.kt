@@ -9,14 +9,14 @@ import kotlinx.serialization.Serializable
  * encoded as its string form by the editor and parsed back according to the
  * node's [com.example.ottomatic.domain.registry.NodeConfigSchema] at runtime.
  *
- * [exposedInputs] names the [config] keys that the user has toggled to be
- * exposed as typed DATA input ports on this placed node (see
- * [com.example.ottomatic.domain.registry.effectivePorts]). When an incoming
- * data edge carries an item on such a port, that item's value overrides the
- * static [config] entry for the same key at execution time (see
- * [com.example.ottomatic.engine.WorkflowExecutor]). This replaces the former
- * batch `config` map DATA input port and the `action.make` struct node: a
- * node's individual fields are wired directly from upstream data.
+ * Dynamic values that can be wired from upstream data are declared as DATA
+ * input ports on the node type in
+ * [com.example.ottomatic.domain.registry.NodeTypeRegistry] (first-class ports,
+ * always present). When an incoming data edge carries an item on such a port,
+ * the action reads it via [com.example.ottomatic.engine.ActionInput.dataIn];
+ * when no edge is wired, the action falls back to the static [config] value
+ * for the same key. [visibleDataInputs] controls which DATA input handles are
+ * shown in the graph editor.
  */
 @Serializable
 data class WorkflowNode(
@@ -26,7 +26,7 @@ data class WorkflowNode(
     val x: Float,
     val y: Float,
     val config: Map<String, String> = emptyMap(),
-    val exposedInputs: Set<String> = emptySet(),
+    val visibleDataInputs: Set<String> = emptySet(),
 )
 
 /**
@@ -99,6 +99,6 @@ data class Workflow(
         dataConnections.filter { it.toNodeId == nodeId && it.toPort == port }
 
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 3
+        const val CURRENT_SCHEMA_VERSION = 4
     }
 }

@@ -25,8 +25,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Verifies [WorkflowExecutor] walks the execution graph in order and makes
- * typed data from the trigger available to downstream EXPR interpolation.
+ * Verifies [WorkflowExecutor] walks the execution graph in order and feeds
+ * typed data from upstream ports into downstream DATA input ports.
  */
 class WorkflowExecutorTest {
 
@@ -54,20 +54,26 @@ class WorkflowExecutorTest {
     }
 
     @Test
-    fun `sms trigger data is interpolated into downstream notify text`() = runBlocking {
+    fun `sms trigger data is wired into downstream notify text via break struct`() = runBlocking {
         val services = RecordingSystemServices()
         val context = DefaultExecutionContext(services) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
                 WorkflowNode("n1", "trigger.sms", "SMS", 0f, 0f),
+                WorkflowNode("brk", "action.break", "Break", 0f, 100f),
                 WorkflowNode(
-                    "n2", "action.notify", "Notify", 0f, 100f,
-                    config = mapOf("text" to "Got: {{sender}} says {{body}}"),
+                    "n2", "action.notify", "Notify", 0f, 200f,
+                    config = mapOf("title" to "T"),
                 ),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "n2", "in"),
+                ExecConnection("c1", "n1", "out", "brk", "in"),
+                ExecConnection("c2", "brk", "out", "n2", "in"),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", "n1", "sms", "brk", "struct"),
+                DataConnection("d2", "brk", "body", "n2", "text"),
             ),
         )
         val sms = com.example.ottomatic.domain.model.items.SmsMessage(
@@ -82,7 +88,7 @@ class WorkflowExecutorTest {
             ),
         )
         assertEquals(1, services.notifications.size)
-        assertEquals("Got: +1555 says hello", services.notifications.first().second)
+        assertEquals("hello", services.notifications.first().second)
     }
 
     @Test
@@ -98,7 +104,6 @@ class WorkflowExecutorTest {
                     config = mapOf(
                         "type" to "auto", "field" to "level", "operator" to "greaterThan", "value" to "5",
                     ),
-                    exposedInputs = setOf("source"),
                 ),
                 WorkflowNode("yes", "action.notify", "Yes", 0f, 200f, config = mapOf("text" to "yes")),
                 WorkflowNode("no", "action.notify", "No", 200f, 200f, config = mapOf("text" to "no")),
@@ -138,7 +143,6 @@ class WorkflowExecutorTest {
                     config = mapOf(
                         "type" to "auto", "field" to "level", "operator" to "lessThan", "value" to "20",
                     ),
-                    exposedInputs = setOf("source"),
                 ),
                 WorkflowNode("yes", "action.notify", "Yes", 0f, 200f, config = mapOf("text" to "yes")),
                 WorkflowNode("no", "action.notify", "No", 200f, 200f, config = mapOf("text" to "no")),
@@ -188,7 +192,7 @@ class WorkflowExecutorTest {
     }
 
     @Test
-    fun `log action writes interpolated message and pulses out`() = runBlocking {
+    fun `log action writes wired message and pulses out`() = runBlocking {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
         val context = DefaultExecutionContext(services) { logs += it }
@@ -196,15 +200,18 @@ class WorkflowExecutorTest {
         val workflow = Workflow(
             nodes = listOf(
                 WorkflowNode("n1", "trigger.sms", "SMS", 0f, 0f),
-                WorkflowNode(
-                    "n2", "action.log", "Log", 0f, 100f,
-                    config = mapOf("message" to "From {{sender}}: {{body}}"),
-                ),
-                WorkflowNode("n3", "action.notify", "Notify", 0f, 200f, config = mapOf("text" to "after")),
+                WorkflowNode("brk", "action.break", "Break", 0f, 100f),
+                WorkflowNode("n2", "action.log", "Log", 0f, 200f),
+                WorkflowNode("n3", "action.notify", "Notify", 0f, 300f, config = mapOf("text" to "after")),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "n2", "in"),
-                ExecConnection("c2", "n2", "out", "n3", "in"),
+                ExecConnection("c1", "n1", "out", "brk", "in"),
+                ExecConnection("c2", "brk", "out", "n2", "in"),
+                ExecConnection("c3", "n2", "out", "n3", "in"),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", "n1", "sms", "brk", "struct"),
+                DataConnection("d2", "brk", "body", "n2", "message"),
             ),
         )
         val sms = com.example.ottomatic.domain.model.items.SmsMessage("+1555", "hi", 1L)
@@ -216,7 +223,7 @@ class WorkflowExecutorTest {
                 dataOut = mapOf("sms" to com.example.ottomatic.domain.model.schema.Item.of(sms)),
             ),
         )
-        assertTrue(logs.contains("From +1555: hi"))
+        assertTrue(logs.contains("hi"))
         assertEquals(1, services.notifications.size)
     }
 
@@ -264,20 +271,26 @@ class WorkflowExecutorTest {
     }
 
     @Test
-    fun `send_sms action interpolates to and body from upstream data`() = runBlocking {
+    fun `send_sms action reads to and body from upstream data via break struct`() = runBlocking {
         val services = RecordingSystemServices()
         val context = DefaultExecutionContext(services) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
                 WorkflowNode("n1", "trigger.sms", "SMS", 0f, 0f),
+                WorkflowNode("brk", "action.break", "Break", 0f, 100f),
                 WorkflowNode(
-                    "n2", "action.send_sms", "Reply", 0f, 100f,
-                    config = mapOf("to" to "{{sender}}", "body" to "Got: {{body}}"),
+                    "n2", "action.send_sms", "Reply", 0f, 200f,
+                    config = mapOf("body" to "Got it"),
                 ),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "n2", "in"),
+                ExecConnection("c1", "n1", "out", "brk", "in"),
+                ExecConnection("c2", "brk", "out", "n2", "in"),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", "n1", "sms", "brk", "struct"),
+                DataConnection("d2", "brk", "sender", "n2", "to"),
             ),
         )
         val sms = com.example.ottomatic.domain.model.items.SmsMessage("+1555", "hello", 1L)
@@ -289,7 +302,7 @@ class WorkflowExecutorTest {
                 dataOut = mapOf("sms" to com.example.ottomatic.domain.model.schema.Item.of(sms)),
             ),
         )
-        assertEquals(listOf("+1555" to "Got: hello"), services.smsSent)
+        assertEquals(listOf("+1555" to "Got it"), services.smsSent)
     }
 
     @Test

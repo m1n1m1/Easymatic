@@ -1,12 +1,17 @@
 package com.example.ottomatic.domain.registry
 
-import com.example.ottomatic.domain.model.schema.ItemSchema
-
 /**
  * Type of a configurable field on a node. The type parameter is a phantom type
  * documenting the Kotlin type the field parses to; the field value itself is
- * always stored as a [String] in [WorkflowNode.config] and parsed back by the
- * engine according to [type].
+ * always stored as a [String] in [com.example.ottomatic.domain.model.WorkflowNode.config]
+ * and parsed back by the engine according to [type].
+ *
+ * Every config field here is a *static literal* — the user types it once in
+ * the configure form. Dynamic values that can be wired from upstream data are
+ * not config fields; they are declared as DATA input ports on the node type in
+ * [NodeTypeRegistry] and read via
+ * [com.example.ottomatic.engine.ActionInput.dataIn] (falling back to a static
+ * config value when unwired, where the field key matches the port name).
  */
 sealed interface ConfigFieldType<out T> {
     /** Single-line string. */
@@ -21,49 +26,18 @@ sealed interface ConfigFieldType<out T> {
     data object DOUBLE : ConfigFieldType<Double>
     /** One of [options], stored as the option string. */
     data class ENUM(val options: List<String>) : ConfigFieldType<String>
-    /**
-     * A `{{field}}` template expression interpolated against the runtime data
-     * context built from produced data items. [schema] is the upstream schema
-     * the editor should validate against (v1: advisory; [multiline] controls
-     * rendering).
-     */
-    data class EXPR(
-        val schema: ItemSchema = ItemSchema.Wildcard,
-        val multiline: Boolean = false,
-    ) : ConfigFieldType<String>
 }
 
 /**
  * Describes a single configurable field on a node, so the UI can render a
  * schema-driven form without knowing each node type individually.
- *
- * [exposable] controls whether the "Expose as data input" toggle is rendered
- * for this field. Structural fields (e.g. a type/operator picker that selects
- * which comparison to run) should set this to false; only fields whose value
- * is meaningfully overridable by an upstream data item should expose it.
  */
 data class ConfigField(
     val key: String,
     val label: String,
     val type: ConfigFieldType<*>,
     val defaultValue: String = "",
-    val exposable: Boolean = true,
 )
-
-/**
- * The [ItemSchema] of the typed DATA input port exposed for [field] when the
- * user toggles it as an exposed input. Maps each [ConfigFieldType] to the
- * primitive Kotlin type the field parses to, so the graph validator can
- * type-check incoming edges and the executor can feed the value back into the
- * node's config.
- */
-fun ConfigField.portSchema(): ItemSchema = when (type) {
-    ConfigFieldType.STR, ConfigFieldType.MULTILINE, is ConfigFieldType.ENUM, is ConfigFieldType.EXPR ->
-        ItemSchema.Primitive(String::class)
-    ConfigFieldType.INT -> ItemSchema.Primitive(Int::class)
-    ConfigFieldType.BOOL -> ItemSchema.Primitive(Boolean::class)
-    ConfigFieldType.DOUBLE -> ItemSchema.Primitive(Double::class)
-}
 
 /**
  * Schema for a node type's configuration form. Looked up by [typeId].
@@ -183,7 +157,6 @@ object ConfigSchemaRegistry {
                     label = "Dwell delay (ms, only when dwell is armed)",
                     type = ConfigFieldType.INT,
                     defaultValue = "30000",
-                    exposable = false,
                 ),
             ),
         ),
@@ -215,8 +188,8 @@ object ConfigSchemaRegistry {
                 ),
                 ConfigField(
                     key = "text",
-                    label = "Text (use {{field}} for data values)",
-                    type = ConfigFieldType.EXPR(multiline = true),
+                    label = "Text",
+                    type = ConfigFieldType.MULTILINE,
                     defaultValue = "Workflow ran",
                 ),
             ),
@@ -232,19 +205,19 @@ object ConfigSchemaRegistry {
                 ),
                 ConfigField(
                     key = "url",
-                    label = "URL (use {{field}} for values)",
-                    type = ConfigFieldType.EXPR(),
+                    label = "URL",
+                    type = ConfigFieldType.STR,
                     defaultValue = "https://example.com",
                 ),
                 ConfigField(
                     key = "headers",
                     label = "Headers (JSON, optional)",
-                    type = ConfigFieldType.EXPR(multiline = true),
+                    type = ConfigFieldType.MULTILINE,
                 ),
                 ConfigField(
                     key = "body",
-                    label = "Body (use {{field}} for values)",
-                    type = ConfigFieldType.EXPR(multiline = true),
+                    label = "Body",
+                    type = ConfigFieldType.MULTILINE,
                 ),
             ),
         ),
@@ -306,8 +279,8 @@ object ConfigSchemaRegistry {
             fields = listOf(
                 ConfigField(
                     key = "message",
-                    label = "Message (use {{field}} for data values)",
-                    type = ConfigFieldType.EXPR(multiline = true),
+                    label = "Message",
+                    type = ConfigFieldType.MULTILINE,
                     defaultValue = "",
                 ),
             ),
@@ -318,7 +291,7 @@ object ConfigSchemaRegistry {
                 ConfigField(
                     key = "reason",
                     label = "Reason (optional, logged before halting)",
-                    type = ConfigFieldType.EXPR(),
+                    type = ConfigFieldType.STR,
                 ),
             ),
         ),
@@ -327,8 +300,8 @@ object ConfigSchemaRegistry {
             fields = listOf(
                 ConfigField(
                     key = "macroId",
-                    label = "Macro id (use {{field}} for dynamic selection)",
-                    type = ConfigFieldType.EXPR(),
+                    label = "Macro id",
+                    type = ConfigFieldType.STR,
                     defaultValue = "",
                 ),
             ),
@@ -338,8 +311,8 @@ object ConfigSchemaRegistry {
             fields = listOf(
                 ConfigField(
                     key = "macroId",
-                    label = "Macro id (use {{field}} for dynamic selection)",
-                    type = ConfigFieldType.EXPR(),
+                    label = "Macro id",
+                    type = ConfigFieldType.STR,
                     defaultValue = "",
                 ),
             ),
@@ -437,8 +410,8 @@ object ConfigSchemaRegistry {
             fields = listOf(
                 ConfigField(
                     key = "package",
-                    label = "Package name (use {{field}} for data values)",
-                    type = ConfigFieldType.EXPR(),
+                    label = "Package name",
+                    type = ConfigFieldType.STR,
                     defaultValue = "",
                 ),
             ),
@@ -448,8 +421,8 @@ object ConfigSchemaRegistry {
             fields = listOf(
                 ConfigField(
                     key = "url",
-                    label = "URL (use {{field}} for data values)",
-                    type = ConfigFieldType.EXPR(),
+                    label = "URL",
+                    type = ConfigFieldType.STR,
                     defaultValue = "https://example.com",
                 ),
             ),
@@ -459,14 +432,14 @@ object ConfigSchemaRegistry {
             fields = listOf(
                 ConfigField(
                     key = "to",
-                    label = "To (phone number, use {{field}} for data values)",
-                    type = ConfigFieldType.EXPR(),
+                    label = "To (phone number)",
+                    type = ConfigFieldType.STR,
                     defaultValue = "",
                 ),
                 ConfigField(
                     key = "body",
-                    label = "Body (use {{field}} for data values)",
-                    type = ConfigFieldType.EXPR(multiline = true),
+                    label = "Body",
+                    type = ConfigFieldType.MULTILINE,
                     defaultValue = "",
                 ),
             ),
@@ -476,8 +449,8 @@ object ConfigSchemaRegistry {
             fields = listOf(
                 ConfigField(
                     key = "number",
-                    label = "Number (use {{field}} for data values)",
-                    type = ConfigFieldType.EXPR(),
+                    label = "Number",
+                    type = ConfigFieldType.STR,
                     defaultValue = "",
                 ),
             ),
@@ -493,8 +466,8 @@ object ConfigSchemaRegistry {
                 ),
                 ConfigField(
                     key = "text",
-                    label = "Text (use {{field}} for data values)",
-                    type = ConfigFieldType.EXPR(multiline = true),
+                    label = "Text",
+                    type = ConfigFieldType.MULTILINE,
                     defaultValue = "",
                 ),
             ),

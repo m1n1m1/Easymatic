@@ -222,7 +222,7 @@ data class MediaEvent(
  * Result of a macro enable/disable action (`action.enable_macro` /
  * `action.disable_macro`) reported on its `state` data port.
  *
- * - [macroId]: the target macro id (EXPR-interpolated).
+ * - [macroId]: the target macro id.
  * - [changed]: whether the control request was dispatched (false when the
  *   engine has no [com.example.ottomatic.core.service.MacroControl] handle).
  */
@@ -309,7 +309,7 @@ data class TorchState(
 /**
  * Result of the send-SMS action on its `state` data port.
  *
- * - [to]: the destination phone number (EXPR-interpolated).
+ * - [to]: the destination phone number.
  * - [body]: the message body sent.
  * - [sent]: whether the send call was accepted (requires SEND_SMS).
  */
@@ -323,7 +323,7 @@ data class SmsSent(
 /**
  * Result of the call action on its `state` data port.
  *
- * - [number]: the destination phone number (EXPR-interpolated).
+ * - [number]: the destination phone number.
  * - [initiated]: whether the call was placed (requires CALL_PHONE).
  */
 @Serializable

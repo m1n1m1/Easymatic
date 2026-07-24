@@ -5,6 +5,7 @@ import com.example.ottomatic.core.service.HttpResponse
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.core.service.VolumeResult
 import com.example.ottomatic.core.service.DndResult
+import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
@@ -20,25 +21,31 @@ import org.junit.Test
  * Mirrors [WorkflowExecutorTest] — builds a workflow with a `trigger.geofence`
  * node and feeds a hand-constructed [TriggerEvent] carrying a typed
  * [GeofenceEvent] item into [WorkflowExecutor.executeFrom]. Asserts that
- * EXPR interpolation on the geofence fields reaches downstream actions.
+ * geofence fields reach downstream actions via break-struct + DATA wiring.
  */
 class GeofenceTriggerExecutorTest {
 
     @Test
-    fun `geofence event fields are interpolated into downstream notify text`() = runBlocking {
+    fun `geofence event field is wired into downstream notify text via break struct`() = runBlocking {
         val services = RecordingSystemServices()
         val context = DefaultExecutionContext(services) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
                 WorkflowNode("n1", "trigger.geofence", "Geofence", 0f, 0f),
+                WorkflowNode("n2", "action.break", "Break", 0f, 100f),
                 WorkflowNode(
-                    "n2", "action.notify", "Notify", 0f, 100f,
-                    config = mapOf("text" to "{{transition}} at {{latitude}},{{longitude}}"),
+                    "n3", "action.notify", "Notify", 0f, 200f,
+                    config = mapOf("title" to "T"),
                 ),
             ),
             execConnections = listOf(
                 ExecConnection("c1", "n1", "out", "n2", "in"),
+                ExecConnection("c2", "n2", "out", "n3", "in"),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", "n1", "event", "n2", "struct"),
+                DataConnection("d2", "n2", "transition", "n3", "text"),
             ),
         )
         val event = GeofenceEvent(
@@ -55,7 +62,7 @@ class GeofenceTriggerExecutorTest {
             TriggerEvent(triggerNodeId = "n1", dataOut = mapOf("event" to Item.of(event))),
         )
         assertEquals(1, services.notifications.size)
-        assertEquals("enter at 55.6761,12.5683", services.notifications.first().second)
+        assertEquals("enter", services.notifications.first().second)
     }
 
     @Test

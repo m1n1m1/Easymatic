@@ -17,7 +17,6 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.registry.CONDITION_SOURCE_IN
 import com.example.ottomatic.domain.registry.CONDITION_TYPE_CONFIG_KEY
-import com.example.ottomatic.domain.registry.CONDITION_TYPE_ID
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.effectiveInputPorts
 import com.example.ottomatic.domain.registry.effectiveOutputPorts
@@ -212,16 +211,12 @@ class GraphEditorViewModel(
 
     fun addNode(typeId: String, positionGraph: Offset) {
         val definition = NodeTypeRegistry.byId(typeId) ?: return
-        // The condition's `source` input is exposable; default it to exposed so
-        // a freshly placed condition already shows its data input port.
-        val defaultExposed = if (typeId == CONDITION_TYPE_ID) setOf(CONDITION_SOURCE_IN) else emptySet()
         val node = WorkflowNode(
             id = UUID.randomUUID().toString(),
             typeId = typeId,
             name = definition.displayName,
             x = positionGraph.x,
             y = positionGraph.y,
-            exposedInputs = defaultExposed,
         )
         _uiState.update { state ->
             state.copy(
@@ -358,7 +353,7 @@ class GraphEditorViewModel(
                 val ports = if (wantOutput) {
                     effectiveOutputPorts(definition, workflow, node)
                 } else {
-                    effectiveInputPorts(definition, workflow, node)
+                    visibleInputPorts(definition, workflow, node)
                 }
                 for (port in ports) {
                     if (port.kind != from.kind) continue
@@ -450,13 +445,13 @@ class GraphEditorViewModel(
                 if (node.id == nodeId) node.copy(config = node.config + (key to value)) else node
             }
             val workflow = state.workflow.copy(nodes = nodes)
-            // When the condition's type chooser changes, drop any data edge wired into its
-            // `source` port: the port's schema is about to change and the old connection
-            // would likely fail the new type check.
+            // When the condition's type chooser changes, drop any data edges wired into
+            // its `source`/`value` ports: their schemas are about to change and the old
+            // connections would likely fail the new type check.
             val finalWorkflow = if (key == CONDITION_TYPE_CONFIG_KEY) {
                 workflow.copy(
                     dataConnections = workflow.dataConnections.filterNot {
-                        it.toNodeId == nodeId && it.toPort == CONDITION_SOURCE_IN
+                        it.toNodeId == nodeId && (it.toPort == CONDITION_SOURCE_IN || it.toPort == "value")
                     },
                 )
             } else {
@@ -467,27 +462,29 @@ class GraphEditorViewModel(
         persist()
     }
 
-    /**
-     * Toggles whether the config field [fieldKey] on [nodeId] is exposed as a
-     * typed DATA input port (see [WorkflowNode.exposedInputs]). When exposed,
-     * the node gains a DATA IN port named [fieldKey]; an incoming edge's item
-     * overrides the static form value for that field at runtime.
-     */
-    fun toggleNodeExposedInput(nodeId: String, fieldKey: String) {
+    fun setNodeDataInputVisible(nodeId: String, portName: String, visible: Boolean) {
         _uiState.update { state ->
-            val nodes = state.workflow.nodes.map { node ->
+            val workflow = state.workflow
+            val nodes = workflow.nodes.map { node ->
                 if (node.id != nodeId) {
                     node
                 } else {
-                    val next = if (fieldKey in node.exposedInputs) {
-                        node.exposedInputs - fieldKey
+                    val visibleInputs = if (visible) {
+                        node.visibleDataInputs + portName
                     } else {
-                        node.exposedInputs + fieldKey
+                        node.visibleDataInputs - portName
                     }
-                    node.copy(exposedInputs = next)
+                    node.copy(visibleDataInputs = visibleInputs)
                 }
             }
-            state.copy(workflow = state.workflow.copy(nodes = nodes))
+            val dataConnections = if (visible) {
+                workflow.dataConnections
+            } else {
+                workflow.dataConnections.filterNot { connection ->
+                    connection.toNodeId == nodeId && connection.toPort == portName
+                }
+            }
+            state.copy(workflow = workflow.copy(nodes = nodes, dataConnections = dataConnections))
         }
         persist()
     }

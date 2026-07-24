@@ -5,7 +5,6 @@ import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -16,9 +15,11 @@ import org.junit.Test
  *
  *  - `action.break` exposes one DATA OUT per field of the struct connected to
  *    its `struct` input (schema derived from the incoming edge);
- *  - any ACTION node with [WorkflowNode.exposedInputs] exposes one typed DATA
- *    IN per exposed config field (schema derived from
- *    [ConfigSchemaRegistry] via [ConfigField.portSchema]).
+ *  - `action.condition` rewrites its `source`/`value` DATA IN port schemas and
+ *    its config schema from the data item connected to its `source` port.
+ *
+ * All other DATA input ports (url, text, to, body, ...) are declared
+ * statically on the node type in [NodeTypeRegistry] and are always present.
  */
 class EffectivePortsTest {
 
@@ -41,14 +42,9 @@ class EffectivePortsTest {
     }
 
     @Test
-    fun `exposed config field adds a typed DATA input port on an action`() {
+    fun `notify action has a first-class text DATA input port`() {
         val workflow = Workflow(
-            nodes = listOf(
-                WorkflowNode(
-                    "n1", "action.notify", "Notify", 0f, 0f,
-                    exposedInputs = setOf("text"),
-                ),
-            ),
+            nodes = listOf(WorkflowNode("n1", "action.notify", "Notify", 0f, 0f)),
         )
         val node = workflow.node("n1")!!
         val def = NodeTypeRegistry.byId("action.notify")!!
@@ -60,34 +56,16 @@ class EffectivePortsTest {
             dataInputs.any { it.name == "text" },
         )
         assertTrue(
-            "Exposed 'text' should be a String schema, got: ${dataInputs.first { it.name == "text" }.schema}",
+            "'text' should be a String schema, got: ${dataInputs.first { it.name == "text" }.schema}",
             dataInputs.first { it.name == "text" }.schema is
                 com.example.ottomatic.domain.model.schema.ItemSchema.Primitive,
         )
     }
 
     @Test
-    fun `non-exposed action has no DATA input ports`() {
+    fun `trigger nodes have no DATA input ports`() {
         val workflow = Workflow(
-            nodes = listOf(WorkflowNode("n1", "action.notify", "Notify", 0f, 0f)),
-        )
-        val node = workflow.node("n1")!!
-        val def = NodeTypeRegistry.byId("action.notify")!!
-        val dataInputs = effectiveInputPorts(def, workflow, node).filter {
-            it.kind == com.example.ottomatic.domain.model.PortKind.DATA
-        }
-        assertTrue("Expected no DATA inputs, got: ${dataInputs.map { it.name }}", dataInputs.isEmpty())
-    }
-
-    @Test
-    fun `trigger nodes do not gain exposed input ports even if exposedInputs is set`() {
-        val workflow = Workflow(
-            nodes = listOf(
-                WorkflowNode(
-                    "n1", "trigger.sms", "SMS", 0f, 0f,
-                    exposedInputs = setOf("sender"),
-                ),
-            ),
+            nodes = listOf(WorkflowNode("n1", "trigger.sms", "SMS", 0f, 0f)),
         )
         val node = workflow.node("n1")!!
         val def = NodeTypeRegistry.byId("trigger.sms")!!
@@ -98,24 +76,6 @@ class EffectivePortsTest {
             "Triggers must not expose data inputs, got: ${dataInputs.map { it.name }}",
             dataInputs.isEmpty(),
         )
-    }
-
-    @Test
-    fun `effectivePort resolves a wifi state DATA IN and DATA OUT with the same name by direction`() {
-        val workflow = Workflow(
-            nodes = listOf(
-                WorkflowNode(
-                    "n1", "action.wifi", "Wifi", 0f, 0f,
-                    exposedInputs = setOf("state"),
-                ),
-            ),
-        )
-        val node = workflow.node("n1")!!
-        val def = NodeTypeRegistry.byId("action.wifi")!!
-        val stateIn = effectivePort(def, workflow, node, "state", Direction.IN)
-        val stateOut = effectivePort(def, workflow, node, "state", Direction.OUT)
-        assertTrue("Expected state DATA IN", stateIn?.direction == Direction.IN)
-        assertTrue("Expected state DATA OUT", stateOut?.direction == Direction.OUT)
     }
 
     @Test
@@ -131,7 +91,6 @@ class EffectivePortsTest {
                         "operator" to "greaterThan",
                         "value" to "20",
                     ),
-                    exposedInputs = setOf(CONDITION_SOURCE_IN),
                 ),
             ),
             dataConnections = listOf(
@@ -180,7 +139,6 @@ class EffectivePortsTest {
                         "operator" to "contains",
                         "value" to "",
                     ),
-                    exposedInputs = setOf(CONDITION_SOURCE_IN),
                 ),
             ),
             dataConnections = listOf(
@@ -232,7 +190,7 @@ class EffectivePortsTest {
     }
 
     @Test
-    fun `condition type operator and field are not exposable but value is`() {
+    fun `condition config schema has type operator field and value fields`() {
         val workflow = Workflow(
             nodes = listOf(
                 WorkflowNode("n1", "trigger.charging", "Charging", 0f, 0f),
@@ -252,10 +210,10 @@ class EffectivePortsTest {
         val def = NodeTypeRegistry.byId(CONDITION_TYPE_ID)!!
         val schema = effectiveConfigSchema(def, workflow, node)!!
         val fields = schema.fields.associateBy { it.key }
-        assertFalse("type must not be exposable", fields[CONDITION_TYPE_CONFIG_KEY]!!.exposable)
-        assertFalse("operator must not be exposable", fields["operator"]!!.exposable)
-        assertFalse("field must not be exposable", fields["field"]!!.exposable)
-        assertTrue("value must be exposable", fields["value"]!!.exposable)
+        assertNotNull("type chooser should be present", fields[CONDITION_TYPE_CONFIG_KEY])
+        assertNotNull("operator should be present", fields["operator"])
+        assertNotNull("field picker should be present for struct source", fields["field"])
+        assertNotNull("value should be present", fields["value"])
     }
 
     @Test
@@ -310,13 +268,12 @@ class EffectivePortsTest {
     }
 
     @Test
-    fun `condition source port schema follows the manual type`() {
+    fun `condition source and value port schemas follow the manual type`() {
         val workflow = Workflow(
             nodes = listOf(
                 WorkflowNode(
                     "cond", CONDITION_TYPE_ID, "If", 0f, 100f,
                     config = mapOf(CONDITION_TYPE_CONFIG_KEY to "int"),
-                    exposedInputs = setOf(CONDITION_SOURCE_IN),
                 ),
             ),
         )
@@ -324,22 +281,27 @@ class EffectivePortsTest {
         val def = NodeTypeRegistry.byId(CONDITION_TYPE_ID)!!
         val sourcePort = effectivePort(def, workflow, node, CONDITION_SOURCE_IN, Direction.IN)
         assertNotNull("source DATA input port should exist", sourcePort)
-        val schema = sourcePort!!.schema
+        val sourceSchema = sourcePort!!.schema
         assertTrue(
-            "manual int should type the source port as Primitive(Int), got: $schema",
-            schema is com.example.ottomatic.domain.model.schema.ItemSchema.Primitive &&
-                schema.kClass == Int::class,
+            "manual int should type the source port as Primitive(Int), got: $sourceSchema",
+            sourceSchema is com.example.ottomatic.domain.model.schema.ItemSchema.Primitive &&
+                sourceSchema.kClass == Int::class,
+        )
+        val valuePort = effectivePort(def, workflow, node, "value", Direction.IN)
+        assertNotNull("value DATA input port should exist", valuePort)
+        val valueSchema = valuePort!!.schema
+        assertTrue(
+            "manual int should type the value port as Primitive(Int), got: $valueSchema",
+            valueSchema is com.example.ottomatic.domain.model.schema.ItemSchema.Primitive &&
+                valueSchema.kClass == Int::class,
         )
     }
 
     @Test
-    fun `condition source port schema is wildcard when auto and unconnected`() {
+    fun `condition source and value port schemas are wildcard when auto and unconnected`() {
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode(
-                    "cond", CONDITION_TYPE_ID, "If", 0f, 100f,
-                    exposedInputs = setOf(CONDITION_SOURCE_IN),
-                ),
+                WorkflowNode("cond", CONDITION_TYPE_ID, "If", 0f, 100f),
             ),
         )
         val node = workflow.node("cond")!!
@@ -348,6 +310,11 @@ class EffectivePortsTest {
         assertTrue(
             "auto + unconnected source should be Wildcard, got: ${sourcePort?.schema}",
             sourcePort?.schema is com.example.ottomatic.domain.model.schema.ItemSchema.Wildcard,
+        )
+        val valuePort = effectivePort(def, workflow, node, "value", Direction.IN)
+        assertTrue(
+            "auto + unconnected value should be Wildcard, got: ${valuePort?.schema}",
+            valuePort?.schema is com.example.ottomatic.domain.model.schema.ItemSchema.Wildcard,
         )
     }
 }

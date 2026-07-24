@@ -15,9 +15,9 @@ import kotlinx.serialization.json.Json
  * Action for `action.http`. Performs an HTTP request via [SystemServices]
  * and exposes the typed [HttpResponseItem] on its `response` data port.
  *
- * The url/headers/body config fields are EXPR-typed: `{{field}}` placeholders
- * interpolate against the runtime data context (all data items produced
- * upstream in the current execution chain).
+ * `url`, `headers` and `body` are read via [ActionInput.string]: each may be
+ * wired from an upstream data edge into its DATA input port, or set as a
+ * static form literal (the form value is the fallback when no edge is wired).
  */
 class HttpAction : Action {
 
@@ -25,9 +25,9 @@ class HttpAction : Action {
 
     override suspend fun execute(input: ActionInput, context: ExecutionContext): ActionResult {
         val method = input.config.str("method", default = "GET")
-        val url = input.config.expr("url", default = "https://example.com")
-        val headersJson = input.config.expr("headers")
-        val body = input.config.expr("body")
+        val url = input.string("url", default = "https://example.com")
+        val headersJson = input.string("headers")
+        val body = input.string("body")
         val headers = parseHeaders(headersJson)
         val response = withContext(Dispatchers.IO) {
             context.systemServices.httpRequest(HttpRequest(method, url, headers, body))

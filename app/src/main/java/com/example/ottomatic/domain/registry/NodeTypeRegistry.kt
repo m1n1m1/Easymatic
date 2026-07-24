@@ -54,6 +54,19 @@ private inline fun <reified T : Any> dataOut(
 )
 
 /**
+ * DATA input port carrying a [String]. Used for dynamic values that may be
+ * wired from upstream data (the action reads them via
+ * [com.example.ottomatic.engine.ActionInput.string], falling back to the
+ * static config form value of the same key when no edge is connected).
+ */
+private fun dataInPort(name: String): Port = Port(
+    name = name,
+    kind = PortKind.DATA,
+    direction = Direction.IN,
+    schema = ItemSchema.Primitive(String::class),
+)
+
+/**
  * Central registry for all available node types (triggers and actions).
  *
  * All new [NodeTypeDefinition]s must be registered here so that the editor,
@@ -401,7 +414,14 @@ object NodeTypeRegistry {
             description = "Calls a web API and exposes the typed response",
             kind = NodeKind.ACTION,
             category = NodeCategory.NETWORK,
-            ports = listOf(execIn(), execOut(), dataOut<HttpResponseItem>("response")),
+            ports = listOf(
+                execIn(),
+                execOut(),
+                dataInPort("url"),
+                dataInPort("headers"),
+                dataInPort("body"),
+                dataOut<HttpResponseItem>("response"),
+            ),
             iconKey = "http",
         ),
         NodeTypeDefinition(
@@ -414,8 +434,21 @@ object NodeTypeRegistry {
                 execIn(),
                 execOut("true"),
                 execOut("false"),
+                Port(
+                    name = CONDITION_SOURCE_IN,
+                    kind = PortKind.DATA,
+                    direction = Direction.IN,
+                    schema = ItemSchema.Wildcard,
+                ),
+                Port(
+                    name = "value",
+                    kind = PortKind.DATA,
+                    direction = Direction.IN,
+                    schema = ItemSchema.Wildcard,
+                ),
             ),
             iconKey = "split",
+            hasDynamicPorts = true,
         ),
         NodeTypeDefinition(
             typeId = "action.notify",
@@ -423,7 +456,7 @@ object NodeTypeRegistry {
             description = "Posts a notification on this device",
             kind = NodeKind.ACTION,
             category = NodeCategory.NOTIFICATIONS,
-            ports = listOf(execIn(), execOut()),
+            ports = listOf(execIn(), execOut(), dataInPort("text")),
             iconKey = "send",
         ),
         NodeTypeDefinition(
@@ -465,10 +498,10 @@ object NodeTypeRegistry {
         NodeTypeDefinition(
             typeId = "action.log",
             displayName = "Log Message",
-            description = "Writes a message to the engine log (use {{field}} for data values)",
+            description = "Writes a message to the engine log",
             kind = NodeKind.ACTION,
             category = NodeCategory.FLOW_CONTROL,
-            ports = listOf(execIn(), execOut()),
+            ports = listOf(execIn(), execOut(), dataInPort("message")),
             iconKey = "bolt",
         ),
         NodeTypeDefinition(
@@ -477,7 +510,7 @@ object NodeTypeRegistry {
             description = "Halts the current execution chain (stops following connected actions)",
             kind = NodeKind.ACTION,
             category = NodeCategory.FLOW_CONTROL,
-            ports = listOf(execIn(), execOut()),
+            ports = listOf(execIn(), execOut(), dataInPort("reason")),
             iconKey = "bolt",
         ),
         NodeTypeDefinition(
@@ -486,7 +519,7 @@ object NodeTypeRegistry {
             description = "Enables another macro by id (persists the flag and arms its triggers)",
             kind = NodeKind.ACTION,
             category = NodeCategory.FLOW_CONTROL,
-            ports = listOf(execIn(), execOut(), dataOut<MacroControlState>("state")),
+            ports = listOf(execIn(), execOut(), dataInPort("macroId"), dataOut<MacroControlState>("state")),
             iconKey = "bolt",
         ),
         NodeTypeDefinition(
@@ -495,7 +528,7 @@ object NodeTypeRegistry {
             description = "Disables another macro by id (persists the flag and disarms its triggers)",
             kind = NodeKind.ACTION,
             category = NodeCategory.FLOW_CONTROL,
-            ports = listOf(execIn(), execOut(), dataOut<MacroControlState>("state")),
+            ports = listOf(execIn(), execOut(), dataInPort("macroId"), dataOut<MacroControlState>("state")),
             iconKey = "bolt",
         ),
         NodeTypeDefinition(
@@ -567,7 +600,7 @@ object NodeTypeRegistry {
             description = "Launches another app by package name",
             kind = NodeKind.ACTION,
             category = NodeCategory.NETWORK,
-            ports = listOf(execIn(), execOut()),
+            ports = listOf(execIn(), execOut(), dataInPort("package")),
             iconKey = "bolt",
         ),
         NodeTypeDefinition(
@@ -576,45 +609,45 @@ object NodeTypeRegistry {
             description = "Opens a URL in the default handler (browser or app)",
             kind = NodeKind.ACTION,
             category = NodeCategory.NETWORK,
-            ports = listOf(execIn(), execOut()),
+            ports = listOf(execIn(), execOut(), dataInPort("url")),
             iconKey = "bolt",
         ),
         NodeTypeDefinition(
             typeId = "action.send_sms",
             displayName = "Send SMS",
-            description = "Sends an SMS to a number with a body (use {{field}} for data values)",
+            description = "Sends an SMS to a number with a body",
             kind = NodeKind.ACTION,
             category = NodeCategory.NOTIFICATIONS,
-            ports = listOf(execIn(), execOut(), dataOut<SmsSent>("state")),
+            ports = listOf(execIn(), execOut(), dataInPort("to"), dataInPort("body"), dataOut<SmsSent>("state")),
             iconKey = "sms",
         ),
         NodeTypeDefinition(
             typeId = "action.call",
             displayName = "Make Call",
-            description = "Initiates a phone call to a number (use {{field}} for data values)",
+            description = "Initiates a phone call to a number",
             kind = NodeKind.ACTION,
             category = NodeCategory.NOTIFICATIONS,
-            ports = listOf(execIn(), execOut(), dataOut<CallInitiated>("state")),
+            ports = listOf(execIn(), execOut(), dataInPort("number"), dataOut<CallInitiated>("state")),
             iconKey = "bolt",
         ),
         NodeTypeDefinition(
             typeId = "action.clipboard",
             displayName = "Clipboard",
-            description = "Sets or clears the clipboard (use {{field}} for data values)",
+            description = "Sets or clears the clipboard",
             kind = NodeKind.ACTION,
             category = NodeCategory.DATA,
-            ports = listOf(execIn(), execOut()),
+            ports = listOf(execIn(), execOut(), dataInPort("text")),
             iconKey = "bolt",
         ),
     )
 
     /**
      * Adaptive break-struct node. `action.break` splits a struct into its
-     * fields and is the only node with [hasDynamicPorts] = true: its field
+     * fields and is one of two nodes with [hasDynamicPorts] = true: its field
      * output ports are resolved at design time from the schema of whatever is
-     * connected to its `struct` input (see [effectivePorts]). The former
-     * `action.make` node has been removed — per-field data inputs are now
-     * exposed directly on each node via [WorkflowNode.exposedInputs].
+     * connected to its `struct` input (see [effectivePorts]). `action.condition`
+     * is the other: its `source`/`value` input schemas are derived from the
+     * `type` config and any connected edge.
      */
     private val structNodes: List<NodeTypeDefinition> = listOf(
         NodeTypeDefinition(

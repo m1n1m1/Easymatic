@@ -73,7 +73,7 @@ class ItemSchemaTest {
     }
 
     @Test
-    fun `Item of captures flat field view for EXPR interpolation`() {
+    fun `Item of captures flat field view for struct field access`() {
         val sms = SmsMessage(sender = "+1", body = "hi", timestamp = 42L)
         val item = Item.of(sms)
         assertEquals("+1", item.flat["sender"])

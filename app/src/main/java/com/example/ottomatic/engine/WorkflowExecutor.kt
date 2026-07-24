@@ -13,23 +13,19 @@ import com.example.ottomatic.engine.validation.Severity
  *
  * Execution model:
  *  1. A trigger fires a [TriggerEvent]. Its [TriggerEvent.dataOut] items are
- *     cached and flattened into the [dataContext] used for `{{field}}` EXPR
- *     interpolation.
+ *     cached in [dataCache] keyed by `(nodeId, portName)`.
  *  2. The executor follows the trigger's EXECUTION `out` port, running each
- *     connected action once. Each action's [ActionResult.dataOut] is cached
- *     and merged into [dataContext]; each [ActionResult.execOut] port is
- *     followed recursively.
+ *     connected action once. Each action's [ActionResult.dataOut] is cached;
+ *     each [ActionResult.execOut] port is followed recursively.
  *  3. Failed actions log and stop their branch (matching the previous engine).
  *
- * Strict data semantics (enforced by [GraphValidator]): a data edge's source
- * must be exec-upstream of its target so the source has run by the time the
- * target executes. Actions read upstream data in two complementary ways:
- *  - EXPR interpolation via the flat [dataContext] (`{{field}}` placeholders);
- *  - typed access via [ActionInput.dataIn] (the structured [Item]s on the
- *    action's DATA input ports, collected by [collectDataIn] from [dataCache]).
- *    Each exposed config field ([WorkflowNode.exposedInputs]) is such a port:
- *    its incoming item overrides the node's static form value for that field
- *    via [mergeConfig].
+ * Data semantics: a data edge's source must be exec-upstream of its target
+ * (enforced by [GraphValidator]) so the source has run by the time the target
+ * executes. An action reads upstream data only via [ActionInput.dataIn] —
+ * [collectDataIn] follows each [com.example.ottomatic.domain.model.DataConnection]
+ * into the target and reads the source port's cached item. An unwired data
+ * input port simply yields no entry, and the action falls back to its static
+ * config form value for the same key.
  */
 class WorkflowExecutor(
     private val context: ExecutionContext,
@@ -42,12 +38,10 @@ class WorkflowExecutor(
             return
         }
         val dataCache = mutableMapOf<Pair<String, String>, Item>()
-        val dataContext = mutableMapOf<String, String>()
         event.dataOut.forEach { (port, item) ->
             dataCache[triggerNode.id to port] = item
-            mergeIntoContext(dataContext, port, item)
         }
-        pulse(workflow, triggerNode, EXEC_OUT, dataCache, dataContext)
+        pulse(workflow, triggerNode, EXEC_OUT, dataCache)
     }
 
     @Suppress("LoopWithTooManyJumpStatements")
@@ -56,62 +50,37 @@ class WorkflowExecutor(
         node: WorkflowNode,
         port: String,
         dataCache: MutableMap<Pair<String, String>, Item>,
-        dataContext: MutableMap<String, String>,
     ) {
         val outgoing = workflow.outgoingExec(node.id, port)
         for (connection in outgoing) {
             val target = workflow.node(connection.toNodeId) ?: continue
             val action = ActionRegistry.byId(target.typeId) ?: continue
             val dataIn = collectDataIn(workflow, target, dataCache)
-            val config = mergeConfig(target, dataIn, dataContext.toMap())
-            val input = ActionInput(target, config, dataContext.toMap(), dataIn)
+            val config = TypedConfig(target.config)
+            val input = ActionInput(target, config, dataIn)
             val result = runCatching { action.execute(input, context) }.getOrElse { e ->
                 context.log("Action ${target.typeId} failed: ${e.message}")
                 null
             } ?: continue
             result.dataOut.forEach { (p, item) ->
                 dataCache[target.id to p] = item
-                mergeIntoContext(dataContext, p, item)
             }
             if (result.halt) {
                 context.log("Action ${target.typeId} halted execution chain")
                 return
             }
             for (execPort in result.execOut) {
-                pulse(workflow, target, execPort, dataCache, dataContext)
+                pulse(workflow, target, execPort, dataCache)
             }
         }
     }
 
     /**
-     * Builds the [TypedConfig] for [target]. Starts from the node's static
-     * form config and, for each config field the user has exposed as a DATA
-     * input ([WorkflowNode.exposedInputs]) that carries an incoming [Item],
-     * overrides the corresponding config key with the item's string form. A
-     * field exposed but not wired keeps its static form value, so the form
-     * acts as the per-field default when no edge is connected.
-     */
-    @Suppress("UNCHECKED_CAST")
-    private fun mergeConfig(
-        target: WorkflowNode,
-        dataIn: Map<String, Item>,
-        dataContext: Map<String, String>,
-    ): TypedConfig {
-        val base = target.config
-        if (target.exposedInputs.isEmpty()) return TypedConfig(base, dataContext)
-        val merged = LinkedHashMap<String, String>(base.size + target.exposedInputs.size).apply { putAll(base) }
-        for (key in target.exposedInputs) {
-            val incoming = dataIn[key] ?: continue
-            merged[key] = incoming.value?.toString() ?: ""
-        }
-        return TypedConfig(merged, dataContext)
-    }
-
-    /**
      * Collects the typed [Item]s arriving on [target]'s DATA input ports by
-     * following each [DataConnection] into [target] and reading the source
-     * port's cached item from [dataCache]. Missing/unset sources are skipped
-     * (they produce no entry in the returned map).
+     * following each [com.example.ottomatic.domain.model.DataConnection] into
+     * [target] and reading the source port's cached item from [dataCache].
+     * Missing/unset sources are skipped (they produce no entry in the returned
+     * map); the action then falls back to its static config value.
      */
     private fun collectDataIn(
         workflow: Workflow,
@@ -126,14 +95,6 @@ class WorkflowExecutor(
             result[conn.toPort] = source
         }
         return result
-    }
-
-    private fun mergeIntoContext(ctx: MutableMap<String, String>, portName: String, item: Item) {
-        item.flat.forEach { (k, v) ->
-            ctx[k] = v
-            ctx["$portName.$k"] = v
-        }
-        ctx[portName] = item.value?.toString() ?: ""
     }
 
     companion object {

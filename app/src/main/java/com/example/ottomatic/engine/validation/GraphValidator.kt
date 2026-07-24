@@ -7,8 +7,6 @@ import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.schema.ItemSchema
-import com.example.ottomatic.domain.registry.CONDITION_SOURCE_IN
-import com.example.ottomatic.domain.registry.CONDITION_TYPE_ID
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.effectivePort
 
@@ -44,7 +42,6 @@ class GraphValidator(private val workflow: Workflow) {
         validateExecAcyclicity(issues)
         validateDataAcyclicity(issues)
         validateStrictDataSemantics(issues)
-        validateConditionSourceInput(issues)
         return issues
     }
 
@@ -89,9 +86,8 @@ class GraphValidator(private val workflow: Workflow) {
                 out += ValidationIssue(Severity.ERROR, "Unknown node type in data connection", conn.id)
                 continue
             }
-            // Always resolve via effectivePort: any action may have gained
-            // exposed-config DATA input ports (see WorkflowNode.exposedInputs),
-            // and `action.break` derives its field output ports dynamically.
+            // Always resolve via effectivePort: dynamic-port nodes
+            // (`action.break`, `action.condition`) derive ports at runtime.
             val fromPort = effectivePort(fromDef, workflow, fromNode, conn.fromPort, Direction.OUT)
                 ?: fromDef.port(conn.fromPort)
             val toPort = effectivePort(toDef, workflow, toNode, conn.toPort, Direction.IN)
@@ -225,26 +221,4 @@ class GraphValidator(private val workflow: Workflow) {
 
     @Suppress("unused")
     private fun DataConnection.describe(): String = "$fromNodeId.$fromPort -> $toNodeId.$toPort"
-
-    /**
-     * `action.condition`'s `source` input is an exposable config field. When
-     * the user has exposed it (so it is a DATA IN port) but no data edge is
-     * wired into it, the comparison has no typed target — flag it so the user
-     * knows to wire an edge (or un-expose it to use the literal form value).
-     */
-    private fun validateConditionSourceInput(out: MutableList<ValidationIssue>) {
-        for (node in workflow.nodes.filter { it.typeId == CONDITION_TYPE_ID }) {
-            if (CONDITION_SOURCE_IN !in node.exposedInputs) continue
-            val incoming = workflow.incomingData(node.id, CONDITION_SOURCE_IN)
-            if (incoming.isEmpty()) {
-                out += ValidationIssue(
-                    Severity.ERROR,
-                    "Condition node '${node.name}' has no data edge into its " +
-                        "'$CONDITION_SOURCE_IN' port; connect a data source or un-expose " +
-                        "'Source' to use the literal form value.",
-                    node.id,
-                )
-            }
-        }
-    }
 }

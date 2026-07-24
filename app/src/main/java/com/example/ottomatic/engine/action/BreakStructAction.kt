@@ -27,8 +27,8 @@ import kotlin.reflect.KClass
  * fields and extracting each field's typed value via kotlinx serialization.
  *
  * Field values are decoded to their proper Kotlin types (String/Long/Int/
- * Boolean/Double/Float/Map<String,String>/List/...) so downstream nodes and
- * EXPR interpolation see correctly-typed data, not stringified forms.
+ * Boolean/Double/Float/Map<String,String>/List/...) so downstream nodes see
+ * correctly-typed data, not stringified forms.
  *
  * If no item arrives on `struct` (no edge, or source produced nothing), the
  * action pulses `out` without producing any field items.

@@ -7,7 +7,6 @@ import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.GeofenceTrigger
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -54,7 +53,6 @@ class GeofenceRegistryTest {
         assertEquals("100", byKey["radiusMeters"]?.defaultValue)
         assertEquals("enter", byKey["event"]?.defaultValue)
         assertEquals("30000", byKey["dwellDelayMs"]?.defaultValue)
-        assertFalse("dwellDelayMs is structural, not exposable", byKey["dwellDelayMs"]!!.exposable)
     }
 
     @Test

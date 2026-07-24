@@ -70,9 +70,11 @@ import androidx.compose.ui.unit.sp
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeTypeDefinition
+import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.effectiveConfigSchema
+import com.example.ottomatic.domain.registry.effectiveInputPorts
 import kotlin.math.roundToInt
 
 @Composable
@@ -205,7 +207,9 @@ fun GraphEditorScreen(
                 onDismiss = { showConfig = false },
                 onNameChange = { name -> viewModel.updateNodeName(node.id, name) },
                 onConfigChange = { key, value -> viewModel.updateNodeConfig(node.id, key, value) },
-                onToggleExpose = { key -> viewModel.toggleNodeExposedInput(node.id, key) },
+                onDataInputVisibilityChange = { portName, visible ->
+                    viewModel.setNodeDataInputVisible(node.id, portName, visible)
+                },
             )
         } else {
             showConfig = false
@@ -550,10 +554,13 @@ private fun NodeConfigSheet(
     onDismiss: () -> Unit,
     onNameChange: (String) -> Unit,
     onConfigChange: (String, String) -> Unit,
-    onToggleExpose: (String) -> Unit,
+    onDataInputVisibilityChange: (String, Boolean) -> Unit,
 ) {
     val definition = NodeTypeRegistry.byId(node.typeId)
     val schema = definition?.let { effectiveConfigSchema(it, workflow, node) }
+    val dataInputPorts = definition?.let { effectiveInputPorts(it, workflow, node) }
+        ?.filter { it.kind == PortKind.DATA }
+        .orEmpty()
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = EditorColors.chrome,
@@ -585,11 +592,37 @@ private fun NodeConfigSheet(
                     ConfigFieldEditor(
                         field = field,
                         value = node.config[field.key] ?: field.defaultValue,
-                        exposed = field.key in node.exposedInputs,
                         onValueChange = { onConfigChange(field.key, it) },
-                        onToggleExpose = { onToggleExpose(field.key) },
                     )
                     Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
+            if (dataInputPorts.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Data inputs",
+                    color = EditorColors.textPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                dataInputPorts.forEach { port ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = port.label,
+                            color = EditorColors.textSecondary,
+                            fontSize = 13.sp,
+                            modifier = Modifier.weight(1f),
+                        )
+                        androidx.compose.material3.Switch(
+                            checked = port.name in node.visibleDataInputs,
+                            onCheckedChange = { onDataInputVisibilityChange(port.name, it) },
+                        )
+                    }
                 }
             }
         }
@@ -602,9 +635,7 @@ private fun NodeConfigSheet(
 private fun ConfigFieldEditor(
     field: com.example.ottomatic.domain.registry.ConfigField,
     value: String,
-    exposed: Boolean,
     onValueChange: (String) -> Unit,
-    onToggleExpose: () -> Unit,
 ) {
     val type = field.type
     var expanded by remember { mutableStateOf(false) }
@@ -688,16 +719,6 @@ private fun ConfigFieldEditor(
                 )
             }
         }
-        is com.example.ottomatic.domain.registry.ConfigFieldType.EXPR -> {
-            OutlinedTextField(
-                value = value,
-                onValueChange = onValueChange,
-                label = { Text(field.label) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = if (type.multiline) 2 else 1,
-                singleLine = !type.multiline,
-            )
-        }
         com.example.ottomatic.domain.registry.ConfigFieldType.STR -> {
             OutlinedTextField(
                 value = value,
@@ -705,25 +726,6 @@ private fun ConfigFieldEditor(
                 label = { Text(field.label) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-            )
-        }
-    }
-    if (field.exposable) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            androidx.compose.material3.Switch(
-                checked = exposed,
-                onCheckedChange = { onToggleExpose() },
-            )
-            Text(
-                text = "Expose as data input",
-                color = EditorColors.textSecondary,
-                fontSize = 12.sp,
             )
         }
     }

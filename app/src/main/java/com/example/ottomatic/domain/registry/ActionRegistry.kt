@@ -32,8 +32,9 @@ import com.example.ottomatic.engine.action.WifiAction
  * Mirrors [NodeTypeRegistry] which holds only metadata. New [Action]
  * implementations must be added here. The single adaptive
  * [BreakStructAction] splits any `@Serializable` struct into its fields at
- * runtime; per-field data inputs are exposed directly on each node via
- * [WorkflowNode.exposedInputs] (no dedicated make-struct action is needed).
+ * runtime; per-field data outputs are exposed directly on each node via
+ * [com.example.ottomatic.domain.registry.effectivePorts] (no dedicated
+ * make-struct action is needed).
  */
 object ActionRegistry {
 

@@ -7,15 +7,15 @@ import com.example.ottomatic.engine.ExecutionContext
 
 /**
  * Action for `action.open_url`. Opens a URL in the default handler (browser or
- * app via intent). `url` (EXPR) is interpolated against the runtime data
- * context. Pulses `out`; on failure (no handler) still pulses `out` but logs.
+ * app via intent). `url` may be wired from upstream data or set as a static
+ * literal. Pulses `out`; on failure (no handler) still pulses `out` but logs.
  */
 class OpenUrlAction : Action {
 
     override val typeId: String = TYPE_ID
 
     override suspend fun execute(input: ActionInput, context: ExecutionContext): ActionResult {
-        val url = input.config.expr("url", default = "")
+        val url = input.string("url", default = "")
         val ok = context.systemServices.openUrl(url)
         if (!ok) context.log("Open url failed: $url")
         return ActionResult.passthrough("out")
