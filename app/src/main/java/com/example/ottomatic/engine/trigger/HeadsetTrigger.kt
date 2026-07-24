@@ -6,29 +6,38 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.items.SystemState
 import com.example.ottomatic.engine.NodeOutput
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.Serializable
+
+/** The headset transitions `trigger.headset` can filter on. */
+@Serializable
+enum class HeadsetEvent {
+    PLUGGED,
+    UNPLUGGED,
+}
 
 /**
- * Trigger for `trigger.headset`. Fires when a wired headset is plugged in or
+ * Trigger for `trigger.headset`. Fires when a wired headset is plugged or
  * unplugged.
  *
  * Produces a typed [SystemState] item on the `state` data port.
  */
-class HeadsetTrigger : Trigger<SystemState> {
+class HeadsetTrigger : Trigger<EventFilter<HeadsetEvent>, SystemState> {
 
-    override val definition = systemStateDefinition(
+    override val definition = systemStateDefinition<EventFilter<HeadsetEvent>>(
         typeId = "trigger.headset",
         displayName = "Headset Plugged",
         description = "Starts when a wired headset is plugged or unplugged",
         category = NodeCategory.CONNECTIVITY,
-        eventFilterLabel = "Event",
-        eventFilterOptions = listOf("plugged", "unplugged"),
     )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<SystemState>> =
-        systemStateFlow(
-            source = TriggerSource.HARDWARE,
-            triggerType = "headset",
-            node = node,
-            host = host,
-        )
+    override fun activate(
+        config: EventFilter<HeadsetEvent>,
+        node: WorkflowNode,
+        host: TriggerHost,
+    ): Flow<NodeOutput<SystemState>> = systemStateFlow(
+        source = TriggerSource.HARDWARE,
+        triggerType = "headset",
+        host = host,
+        event = config.event,
+    )
 }

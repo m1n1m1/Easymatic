@@ -1,5 +1,6 @@
 package com.example.ottomatic.core.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -34,7 +35,7 @@ enum class TriggerSource {
  */
 data class TriggerEvent(
     val source: TriggerSource,
-    val triggerNodeId: String,
+    val triggerNodeId: NodeId,
     val payload: Map<String, String> = emptyMap(),
     val firedAtEpochMs: Long = System.currentTimeMillis(),
 )

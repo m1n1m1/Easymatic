@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -33,7 +34,7 @@ class BootReceiver : BroadcastReceiver() {
                 TriggerBus.emit(
                     TriggerEvent(
                         source = TriggerSource.BOOT,
-                        triggerNodeId = BootTriggerBridge.NODE_ID_SENTINEL,
+                        triggerNodeId = NodeId.BROADCAST,
                     ),
                 )
                 // Optimistically mark that a prompt may be needed; the engine
@@ -58,5 +59,4 @@ class BootReceiver : BroadcastReceiver() {
 
 /** Shared constants between the receiver and the engine-side BootTrigger. */
 object BootTriggerBridge {
-    const val NODE_ID_SENTINEL = "*"
 }

@@ -1,6 +1,5 @@
 package com.example.ottomatic.data
 
-import com.example.ottomatic.data.migration.WorkflowMigrator
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowSummary
 import java.io.File
@@ -14,9 +13,10 @@ import kotlinx.serialization.json.Json
  * Persists workflows as individual JSON files under a `workflows/` directory in
  * the app's files directory: one file per workflow, named `<id>.json`.
  *
- * On load, workflows written by older schema versions are migrated forward by
- * [WorkflowMigrator] before being returned. Saving always writes the current
- * schema version.
+ * Workflows written by an older [Workflow.schemaVersion] are discarded on load
+ * rather than migrated: config keys and port names are derived from node config
+ * classes, so a stale file's keys no longer address anything and silently
+ * falling back to defaults would be worse than starting clean.
  *
  * The list screen uses [list] which only deserialises the lightweight
  * [WorkflowSummary] fields (id/name/enabled) per file, avoiding the cost of
@@ -50,11 +50,17 @@ class WorkflowRepository(directory: File) {
             .sortedBy { it.name.lowercase() }
     }
 
+    /**
+     * Loads the workflow [id], or null when it does not exist, fails to decode,
+     * or was written by an older schema version.
+     */
     suspend fun load(id: String): Workflow? = withContext(Dispatchers.IO) {
         runCatching {
             val file = fileFor(id)
             if (!file.exists()) return@runCatching null
-            WorkflowMigrator.migrate(file.readText()).copy(id = id)
+            json.decodeFromString(Workflow.serializer(), file.readText())
+                .takeIf { it.schemaVersion >= Workflow.CURRENT_SCHEMA_VERSION }
+                ?.copy(id = id)
         }.getOrNull()
     }
 

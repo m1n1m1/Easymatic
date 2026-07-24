@@ -9,6 +9,8 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.engine.trigger.BatteryDirection
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.ScheduleHandle
 import com.example.ottomatic.engine.trigger.TriggerHost
@@ -35,7 +37,7 @@ class AndroidTriggerHost(
     private val screenBridge = ScreenBroadcastBridge(appContext)
 
     override fun armSchedule(
-        nodeId: String,
+        nodeId: NodeId,
         intervalMinutes: Long,
         cron: String?,
     ): ScheduleHandle {
@@ -50,9 +52,9 @@ class AndroidTriggerHost(
     }
 
     override fun armBatteryLevelPoll(
-        nodeId: String,
+        nodeId: NodeId,
         intervalMinutes: Long,
-        direction: String,
+        direction: BatteryDirection,
         threshold: Int,
     ): ScheduleHandle {
         val minutes = intervalMinutes.coerceAtLeast(MIN_INTERVAL_MINUTES)
@@ -60,7 +62,7 @@ class AndroidTriggerHost(
             .setInputData(
                 workDataOf(
                     BatteryLevelWorker.KEY_NODE_ID to nodeId,
-                    BatteryLevelWorker.KEY_DIRECTION to direction,
+                    BatteryLevelWorker.KEY_DIRECTION to direction.name,
                     BatteryLevelWorker.KEY_LEVEL to threshold,
                 ),
             )
@@ -72,7 +74,7 @@ class AndroidTriggerHost(
 
     @SuppressLint("MissingPermission")
     override fun armGeofence(
-        nodeId: String,
+        nodeId: NodeId,
         latitude: Double,
         longitude: Double,
         radiusMeters: Float,
@@ -81,7 +83,7 @@ class AndroidTriggerHost(
     ): ScheduleHandle {
         val transitionTypes = transitions.fold(0) { acc, t -> acc or t.toGmsConstant() }
         val geofence = Geofence.Builder()
-            .setRequestId(nodeId)
+            .setRequestId(nodeId.value)
             .setCircularRegion(latitude, longitude, radiusMeters)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(transitionTypes)
@@ -110,7 +112,7 @@ class AndroidTriggerHost(
     override fun variableChanges(name: String): Flow<com.example.ottomatic.core.trigger.TriggerEvent> =
         VariableStore.changesFor(name)
 
-    private fun geofencePendingIntent(nodeId: String): PendingIntent {
+    private fun geofencePendingIntent(nodeId: NodeId): PendingIntent {
         val intent = Intent(appContext, GeofenceReceiver::class.java).apply {
             action = GeofenceReceiver.ACTION_GEOFENCE_TRANSITION
         }

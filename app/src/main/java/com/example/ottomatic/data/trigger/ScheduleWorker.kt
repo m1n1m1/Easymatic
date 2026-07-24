@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -22,7 +23,7 @@ class ScheduleWorker(
         TriggerBus.emit(
             TriggerEvent(
                 source = TriggerSource.SCHEDULE,
-                triggerNodeId = nodeId,
+                triggerNodeId = NodeId(nodeId),
             ),
         )
         return Result.success()

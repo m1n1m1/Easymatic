@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import android.content.ComponentCallbacks2
 import android.content.Context
 import android.content.res.Configuration
@@ -39,7 +40,7 @@ class AppLifecycleBridge(context: Context) {
             _events.tryEmit(
                 TriggerEvent(
                     source = TriggerSource.APP,
-                    triggerNodeId = NODE_ID_SENTINEL,
+                    triggerNodeId = NodeId.BROADCAST,
                     payload = mapOf(
                         "event" to "mode",
                         "mode" to mode,
@@ -58,7 +59,7 @@ class AppLifecycleBridge(context: Context) {
         _events.tryEmit(
             TriggerEvent(
                 source = TriggerSource.APP,
-                triggerNodeId = NODE_ID_SENTINEL,
+                triggerNodeId = NodeId.BROADCAST,
                 payload = mapOf(
                     "event" to "init",
                     "timestamp" to System.currentTimeMillis().toString(),
@@ -69,7 +70,6 @@ class AppLifecycleBridge(context: Context) {
     }
 
     companion object {
-        private const val NODE_ID_SENTINEL = "*"
         private const val DEFAULT_BUFFER = 64
     }
 }

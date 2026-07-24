@@ -1,53 +1,49 @@
 package com.example.ottomatic.engine.action
 
 import com.example.ottomatic.domain.model.NodeCategory
-import com.example.ottomatic.domain.model.dataInPort
-import com.example.ottomatic.domain.registry.ConfigField
-import com.example.ottomatic.domain.registry.ConfigFieldType
+import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.Multiline
+import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.engine.Action
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.NodeOutput
-import com.example.ottomatic.engine.actionNode
+import com.example.ottomatic.engine.effectNode
+import kotlinx.serialization.Serializable
 
-data class ClipboardInput(val mode: String, val text: String)
+/** What `action.clipboard` should do. */
+@Serializable
+enum class ClipboardMode {
+    SET,
+    CLEAR,
+}
+
+/** Config for `action.clipboard`. */
+@Serializable
+data class ClipboardConfig(
+    @Label("Mode") val mode: ClipboardMode = ClipboardMode.SET,
+    @Label("Text") @Multiline @Wired val text: String = "",
+)
 
 /**
  * Action for `action.clipboard`. Sets the clipboard primary clip to `text`
- * (wired from upstream data or a static literal) or clears it when
- * `mode = "clear"`. Passthrough on exec.
+ * (wired from upstream data or typed as a literal) or clears it when the mode
+ * is [ClipboardMode.CLEAR]. Passthrough on exec.
  */
-class ClipboardAction : Action<ClipboardInput, Unit> {
+class ClipboardAction : Action<ClipboardConfig, Unit> {
 
-    override val definition = actionNode<ClipboardInput, Unit>(
+    override val definition = effectNode<ClipboardConfig>(
         typeId = "action.clipboard",
         displayName = "Clipboard",
         description = "Sets or clears the clipboard",
         category = NodeCategory.DATA,
-        iconKey = "bolt",
-        dataInputs = listOf(dataInPort<String>("text")),
-        configFields = listOf(
-            ConfigField(
-                key = "mode",
-                label = "Mode",
-                type = ConfigFieldType.ENUM(options = listOf("set", "clear")),
-                defaultValue = "set",
-            ),
-            ConfigField(
-                key = "text",
-                label = "Text",
-                type = ConfigFieldType.MULTILINE,
-                defaultValue = "",
-            ),
-        ),
-        decode = { input -> ClipboardInput(input.configString("mode", "set"), input.text("text")) },
-        encodeData = { emptyMap() },
+        icon = NodeIcon.BOLT,
     )
 
-    override suspend fun execute(input: ClipboardInput, context: ExecutionContext): NodeOutput<Unit> {
-        if (input.mode == "clear") {
-            context.systemServices.clearClipboard()
-        } else {
-            context.systemServices.setClipboard(input.text)
+    override suspend fun execute(input: ClipboardConfig, context: ExecutionContext): NodeOutput<Unit> {
+        when (input.mode) {
+            ClipboardMode.SET -> context.systemServices.setClipboard(input.text)
+            ClipboardMode.CLEAR -> context.systemServices.clearClipboard()
         }
         return NodeOutput(Unit)
     }

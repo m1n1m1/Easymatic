@@ -1,30 +1,33 @@
 package com.example.ottomatic.domain.model
 
+import com.example.ottomatic.core.model.ConfigKey
+import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.core.model.PortName
 import kotlinx.serialization.Serializable
 
 /**
  * A node placed on the workflow canvas. Position is stored in graph units (dp).
  *
- * [config] is a flat string-keyed map of *typed* config values: each value is
- * encoded as its string form by the editor and parsed back according to the
- * node's [com.example.ottomatic.domain.registry.NodeConfigSchema] at runtime.
+ * [config] is a flat map of *typed* config values keyed by [ConfigKey]: each value
+ * is encoded as its string form by the editor and parsed back according to the
+ * node's config class at runtime (see
+ * [com.example.ottomatic.domain.registry.NodeSchema]).
  *
- * Dynamic values that can be wired from upstream data are declared as DATA
- * input ports on the node type in
- * [com.example.ottomatic.domain.registry.NodeTypeRegistry] (first-class ports,
- * always present). The owning action contract decodes a wired item or its
- * static configuration fallback into the action's typed input model.
- * [visibleDataInputs] controls which DATA input handles are shown in the graph editor.
+ * Values that can be wired from upstream data are declared as `@Wired` properties
+ * on that same config class, which makes them DATA input ports as well — so a
+ * config key and its port name are the same string by construction.
+ * [visibleDataInputs] controls which DATA input handles are shown in the editor.
  */
 @Serializable
 data class WorkflowNode(
-    val id: String,
-    val typeId: String,
+    val id: NodeId,
+    val typeId: NodeTypeId,
     val name: String,
     val x: Float,
     val y: Float,
-    val config: Map<String, String> = emptyMap(),
-    val visibleDataInputs: Set<String> = emptySet(),
+    val config: Map<ConfigKey, String> = emptyMap(),
+    val visibleDataInputs: Set<PortName> = emptySet(),
 )
 
 /**
@@ -34,10 +37,10 @@ data class WorkflowNode(
 @Serializable
 data class ExecConnection(
     val id: String,
-    val fromNodeId: String,
-    val fromPort: String,
-    val toNodeId: String,
-    val toPort: String,
+    val fromNodeId: NodeId,
+    val fromPort: PortName,
+    val toNodeId: NodeId,
+    val toPort: PortName,
 )
 
 /**
@@ -49,10 +52,10 @@ data class ExecConnection(
 @Serializable
 data class DataConnection(
     val id: String,
-    val fromNodeId: String,
-    val fromPort: String,
-    val toNodeId: String,
-    val toPort: String,
+    val fromNodeId: NodeId,
+    val fromPort: PortName,
+    val toNodeId: NodeId,
+    val toPort: PortName,
 )
 
 /**
@@ -74,29 +77,29 @@ data class Workflow(
     val dataConnections: List<DataConnection> = emptyList(),
     val enabled: Boolean = false,
 ) {
-    fun node(id: String): WorkflowNode? = nodes.firstOrNull { it.id == id }
+    fun node(id: NodeId): WorkflowNode? = nodes.firstOrNull { it.id == id }
 
     /** All exec edges leaving [nodeId] from any output port. */
-    fun outgoingExec(nodeId: String): List<ExecConnection> =
+    fun outgoingExec(nodeId: NodeId): List<ExecConnection> =
         execConnections.filter { it.fromNodeId == nodeId }
 
     /** All exec edges leaving [nodeId] from the given output port. */
-    fun outgoingExec(nodeId: String, port: String): List<ExecConnection> =
+    fun outgoingExec(nodeId: NodeId, port: PortName): List<ExecConnection> =
         execConnections.filter { it.fromNodeId == nodeId && it.fromPort == port }
 
     /** All exec edges entering [nodeId] on any input port. */
-    fun incomingExec(nodeId: String): List<ExecConnection> =
+    fun incomingExec(nodeId: NodeId): List<ExecConnection> =
         execConnections.filter { it.toNodeId == nodeId }
 
     /** All data edges entering [nodeId] on any input port. */
-    fun incomingData(nodeId: String): List<DataConnection> =
+    fun incomingData(nodeId: NodeId): List<DataConnection> =
         dataConnections.filter { it.toNodeId == nodeId }
 
     /** All data edges entering [nodeId] on the given input port. */
-    fun incomingData(nodeId: String, port: String): List<DataConnection> =
+    fun incomingData(nodeId: NodeId, port: PortName): List<DataConnection> =
         dataConnections.filter { it.toNodeId == nodeId && it.toPort == port }
 
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 4
+        const val CURRENT_SCHEMA_VERSION = 5
     }
 }

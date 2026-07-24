@@ -1,0 +1,219 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
+package com.example.ottomatic.domain.registry
+
+import com.example.ottomatic.core.model.ConfigKey
+import com.example.ottomatic.domain.model.Direction
+import com.example.ottomatic.domain.model.Port
+import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.Multiline
+import com.example.ottomatic.domain.model.config.Wired
+import com.example.ottomatic.domain.model.schema.Item
+import com.example.ottomatic.domain.model.schema.ItemSchema
+import com.example.ottomatic.domain.model.schema.buildSchema
+import com.example.ottomatic.domain.model.schema.jsonElementToString
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.SerialKind
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.serializer
+
+/**
+ * The derived contract of a node's `@Serializable` config class [T].
+ *
+ * This is the single mechanism that replaces every hand-written config key,
+ * form field, default, DATA input port and decode lambda in the codebase. Given
+ * a config class, it derives:
+ *
+ *  - [fields] — the config form, one [ConfigField] per property, in declaration
+ *    order, with the form type taken from the property's Kotlin type, the label
+ *    from `@Label` (or a prettified property name) and the default from the
+ *    property's own default value;
+ *  - [wiredPorts] — one DATA input [Port] per `@Wired` property, with the
+ *    port's [ItemSchema] taken from the property's type;
+ *  - [decode] — the typed value a node's `execute` receives.
+ *
+ * Because the config key and the port name are the *same* property, the two can
+ * no longer disagree, and a value that is not declared cannot be read.
+ *
+ * @throws IllegalStateException at construction (i.e. at registry
+ *   initialisation) if [T] has a property without a default value or with a
+ *   type that cannot be rendered in a form.
+ */
+class NodeSchema<T : Any> @PublishedApi internal constructor(
+    @PublishedApi internal val serializer: KSerializer<T>,
+) {
+
+    private val descriptor: SerialDescriptor = serializer.descriptor
+
+    /** The all-defaults instance of [T]. */
+    val defaults: T = decodeDefaults()
+
+    private val elements: List<ConfigElement> = describeElements()
+
+    /** The config form for this node, in property declaration order. */
+    val fields: List<ConfigField<*>> = elements.map { it.field }
+
+    /** One DATA input port per `@Wired` property. */
+    val wiredPorts: List<Port> = elements.filter { it.wired }.map { it.port() }
+
+    /**
+     * Builds the typed config for a placed [node]. Each property resolves to the
+     * first available of: the item wired into its port (`@Wired` only), its form
+     * value in [WorkflowNode.config], or its declared default. Values that fail
+     * to parse fall back to the default rather than failing the run.
+     */
+    fun decode(node: WorkflowNode, data: Map<PortName, Item> = emptyMap()): T {
+        if (elements.isEmpty()) return defaults
+        val encoded = buildMap<String, JsonElement> {
+            for (element in elements) {
+                val wired = if (element.wired) data[PortName(element.key)]?.let { element.encode(it.value?.toString()) } else null
+                val resolved = wired ?: element.encode(node.config[ConfigKey(element.key)])
+                if (resolved != null) put(element.key, resolved)
+            }
+        }
+        return runCatching { DECODER.decodeFromJsonElement(serializer, JsonObject(encoded)) }
+            .getOrDefault(defaults)
+    }
+
+    private fun decodeDefaults(): T = runCatching {
+        DECODER.decodeFromJsonElement(serializer, JsonObject(emptyMap()))
+    }.getOrElse { cause ->
+        error(
+            "Config class '${descriptor.serialName}' must give every property a default value " +
+                "so the node can run unconfigured (${cause.message})",
+        )
+    }
+
+    private fun describeElements(): List<ConfigElement> {
+        require(descriptor.kind == StructureKind.CLASS || descriptor.kind == StructureKind.OBJECT) {
+            "Config class '${descriptor.serialName}' must be a data class or object, not ${descriptor.kind}"
+        }
+        val defaultValues = defaultValueStrings()
+        return (0 until descriptor.elementsCount).map { index ->
+            val key = descriptor.getElementName(index)
+            val annotations = descriptor.getElementAnnotations(index)
+            val element = descriptor.getElementDescriptor(index)
+            ConfigElement(
+                key = key,
+                wired = annotations.any { it is Wired },
+                elementDescriptor = element,
+                field = ConfigField(
+                    key = ConfigKey(key),
+                    label = annotations.labelOr(key),
+                    type = formTypeOf(element, multiline = annotations.any { it is Multiline }, key = key),
+                    defaultValue = defaultValues[key].orEmpty(),
+                ),
+            )
+        }
+    }
+
+    /** Default form values, read back from the encoded [defaults] instance. */
+    private fun defaultValueStrings(): Map<String, String> {
+        val encoded = ENCODER.encodeToJsonElement(serializer, defaults) as? JsonObject ?: return emptyMap()
+        return encoded.mapValues { (_, value) -> jsonElementToString(value) }
+    }
+
+    private fun formTypeOf(element: SerialDescriptor, multiline: Boolean, key: String): ConfigFieldType<*> =
+        when (element.kind) {
+            SerialKind.ENUM -> ConfigFieldType.ENUM(enumOptions(element))
+            PrimitiveKind.STRING, PrimitiveKind.CHAR ->
+                if (multiline) ConfigFieldType.MULTILINE else ConfigFieldType.STR
+            PrimitiveKind.INT, PrimitiveKind.LONG, PrimitiveKind.SHORT, PrimitiveKind.BYTE -> ConfigFieldType.INT
+            PrimitiveKind.BOOLEAN -> ConfigFieldType.BOOL
+            PrimitiveKind.DOUBLE, PrimitiveKind.FLOAT -> ConfigFieldType.DOUBLE
+            else -> error(
+                "Config property '${descriptor.serialName}.$key' of kind ${element.kind} cannot be rendered " +
+                    "in a config form; use a String, a number, a Boolean or an enum",
+            )
+        }
+
+    private fun enumOptions(element: SerialDescriptor): List<ConfigOption> {
+        val options = (0 until element.elementsCount).map { index ->
+            val name = element.getElementName(index)
+            ConfigOption(value = name, label = element.getElementAnnotations(index).labelOr(name))
+        }
+        // A nullable enum means "optional choice"; the blank option clears it.
+        return if (element.isNullable) listOf(ConfigOption(value = "", label = UNSET_LABEL)) + options else options
+    }
+
+    /** One property of the config class: its key, form field, port and parser. */
+    private inner class ConfigElement(
+        val key: String,
+        val wired: Boolean,
+        val elementDescriptor: SerialDescriptor,
+        val field: ConfigField<*>,
+    ) {
+        private val enumValues: Set<String> =
+            if (elementDescriptor.kind == SerialKind.ENUM) {
+                (0 until elementDescriptor.elementsCount).mapTo(mutableSetOf(), elementDescriptor::getElementName)
+            } else {
+                emptySet()
+            }
+
+        fun port(): Port = Port(
+            name = PortName(key),
+            kind = PortKind.DATA,
+            direction = Direction.IN,
+            schema = buildSchema(elementDescriptor, null),
+            label = field.label,
+        )
+
+        /**
+         * Parses a stored/wired string into the JSON form of this property, or
+         * null when it is absent or unparseable (so the default applies).
+         */
+        fun encode(raw: String?): JsonElement? {
+            val value = raw?.takeIf { it.isNotBlank() } ?: return null
+            return when (elementDescriptor.kind) {
+                SerialKind.ENUM -> JsonPrimitive(value).takeIf { value in enumValues }
+                PrimitiveKind.BOOLEAN -> value.toBooleanStrictOrNull()?.let { JsonPrimitive(it) }
+                PrimitiveKind.INT, PrimitiveKind.SHORT, PrimitiveKind.BYTE ->
+                    value.toIntOrNull()?.let { JsonPrimitive(it) }
+                PrimitiveKind.LONG -> value.toLongOrNull()?.let { JsonPrimitive(it) }
+                PrimitiveKind.DOUBLE, PrimitiveKind.FLOAT -> value.toDoubleOrNull()?.let { JsonPrimitive(it) }
+                else -> JsonPrimitive(value)
+            }
+        }
+    }
+
+    private companion object {
+        const val UNSET_LABEL = "Any"
+        val DECODER = Json { ignoreUnknownKeys = true; isLenient = true }
+        val ENCODER = Json { encodeDefaults = true }
+    }
+}
+
+/** Derives the [NodeSchema] of a node's `@Serializable` config class [T]. */
+inline fun <reified T : Any> nodeSchema(): NodeSchema<T> = NodeSchema(serializer())
+
+private fun List<Annotation>.labelOr(name: String): String =
+    filterIsInstance<Label>().firstOrNull()?.value ?: prettify(name)
+
+/**
+ * Turns a property or enum-entry name into a form label:
+ * `daysOfWeek` → "Days of week", `PLAY_PAUSE` → "Play pause".
+ */
+private fun prettify(name: String): String {
+    val spaced = StringBuilder(name.length + WORD_SLACK)
+    name.forEachIndexed { index, char ->
+        when {
+            char == '_' || char == '-' -> spaced.append(' ')
+            char.isUpperCase() && index > 0 && name[index - 1].isLowerCase() ->
+                spaced.append(' ').append(char.lowercaseChar())
+            else -> spaced.append(char.lowercaseChar())
+        }
+    }
+    return spaced.toString().trim().replaceFirstChar { it.uppercaseChar() }
+}
+
+private const val WORD_SLACK = 8

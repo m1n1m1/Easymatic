@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -56,14 +57,13 @@ class MediaReceiver : BroadcastReceiver() {
         TriggerBus.emit(
             TriggerEvent(
                 source = TriggerSource.MEDIA,
-                triggerNodeId = NODE_ID_SENTINEL,
+                triggerNodeId = NodeId.BROADCAST,
                 payload = payload,
             ),
         )
     }
 
     companion object {
-        const val NODE_ID_SENTINEL = "*"
 
         const val KEY_TRIGGER_TYPE = "triggerType"
         const val KEY_EVENT = "event"

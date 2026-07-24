@@ -2,79 +2,87 @@
 
 package com.example.ottomatic.domain.registry
 
+import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.domain.model.Direction
+import com.example.ottomatic.domain.model.ExecPorts
 import com.example.ottomatic.domain.model.NodeTypeDefinition
+import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.ComparisonOperator
+import com.example.ottomatic.domain.model.config.ComparisonType
+import com.example.ottomatic.domain.model.execIn
+import com.example.ottomatic.domain.model.execOut
 import com.example.ottomatic.domain.model.schema.ItemSchema
 
 /**
  * Resolves the *effective* port set and config schema of a placed [WorkflowNode].
  *
  * Most node types have a static port list ([NodeTypeDefinition.ports]) and a
- * static config schema ([ConfigSchemaRegistry]). Two independent mechanisms
- * rewrite those static sets on a *placed* node:
+ * static config schema derived from their config class ([ConfigSchemaRegistry]).
+ * Two independent mechanisms rewrite those static sets on a *placed* node:
  *
- *  1. **Dynamic struct ports** — `action.break` ([hasDynamicPorts] = true)
- *     derives one DATA output port per field of the struct connected to its
- *     `struct` input, by following the incoming edge back to its source port
- *     and reading that source's [ItemSchema]. Recursion through other dynamic
- *     nodes is safe because the graph validator guarantees data-edge
- *     acyclicity.
+ *  1. **Dynamic struct ports** — `action.break` derives one DATA output port per
+ *     field of the struct connected to its `struct` input, by following the
+ *     incoming edge back to its source port and reading that source's
+ *     [ItemSchema]. Recursion through other dynamic nodes is safe because the
+ *     graph validator guarantees data-edge acyclicity.
  *
- *  2. **Dynamic condition ports + config** — `action.condition`
- *     ([hasDynamicPorts] = true) rewrites its `source`/`value` DATA input port
- *     schemas and its `field` / `operator` / `value` config fields from the
- *     schema of the data item connected to its [CONDITION_SOURCE_IN] port (see
- *     [effectiveConfigSchema]): the field picker becomes a typed dropdown of
- *     the struct's fields, the operator list narrows to those valid for the
- *     selected field's primitive type, and the compare-against literal is
- *     typed to match.
+ *  2. **Dynamic condition ports + config** — `action.condition` rewrites its
+ *     `source`/`value` DATA input port schemas, and *narrows* the config form
+ *     derived from `ConditionConfig` (see [effectiveConfigSchema]): the field
+ *     picker becomes a typed dropdown of the struct's fields, the operator list
+ *     shrinks to those valid for the selected field's type, and the
+ *     compare-against literal is retyped to match.
  *
- * All other DATA input ports (url, text, to, body, ...) are declared
- * statically on the node type in [NodeTypeRegistry] and are always present;
- * the owning action contract decodes them, falling back to the static config
- * form value when no edge is wired.
+ * All other DATA input ports are derived from the `@Wired` properties of a
+ * node's config class and are always present; the same property supplies the
+ * static form value used when no edge is wired.
  */
 
-/** EXECUTION input port. */
-private fun execIn(name: String = "in"): Port =
-    Port(name = name, kind = PortKind.EXECUTION, direction = Direction.IN)
-
-/** EXECUTION output port. */
-private fun execOut(name: String = "out"): Port =
-    Port(name = name, kind = PortKind.EXECUTION, direction = Direction.OUT)
-
 /** A DATA port with an explicit [ItemSchema]. */
-private fun dataPort(name: String, direction: Direction, schema: ItemSchema): Port =
-    Port(name = name, kind = PortKind.DATA, direction = direction, schema = schema)
+private fun dataPort(name: PortName, direction: Direction, schema: ItemSchema, label: String = name.value): Port =
+    Port(name = name, kind = PortKind.DATA, direction = direction, schema = schema, label = label)
 
-/** The struct input port name on `action.break`. */
-const val BREAK_STRUCT_IN = "struct"
+/** The struct input port on `action.break`. */
+val BREAK_STRUCT_IN = PortName("struct")
 
 /** typeId of the adaptive break-struct node. */
-const val BREAK_TYPE_ID = "action.break"
+val BREAK_TYPE_ID = NodeTypeId("action.break")
 
 /** typeId of the adaptive condition node. */
-const val CONDITION_TYPE_ID = "action.condition"
+val CONDITION_TYPE_ID = NodeTypeId("action.condition")
 
-/** The data input port name on `action.condition` carrying the value to compare. */
-const val CONDITION_SOURCE_IN = "source"
+/** The data input port on `action.condition` carrying the value to inspect. */
+val CONDITION_SOURCE_IN = PortName("source")
+
+/** The data input port on `action.condition` carrying the value to compare against. */
+val CONDITION_VALUE_IN = PortName("value")
+
+/** The config key of `action.condition`'s field picker. */
+val CONDITION_FIELD_KEY = ConfigKey("field")
+
+/** The config key of `action.condition`'s operator picker. */
+val CONDITION_OPERATOR_KEY = ConfigKey("operator")
+
+/** The config key of `action.condition`'s type chooser. */
+val CONDITION_TYPE_CONFIG_KEY = ConfigKey("type")
 
 /**
  * The effective ports for the placed [node] in [workflow]: the node type's
- * static [ports], with dynamic rewrites for `action.break` (struct-derived
+ * static ports, with dynamic rewrites for `action.break` (struct-derived
  * output ports) and `action.condition` (dynamic `source`/`value` input schemas).
  */
 fun effectivePorts(
     definition: NodeTypeDefinition,
     workflow: Workflow,
     node: WorkflowNode,
-): List<Port> = when {
-    definition.typeId == BREAK_TYPE_ID -> breakEffectivePorts(workflow, node)
-    definition.typeId == CONDITION_TYPE_ID -> conditionEffectivePorts(workflow, node)
+): List<Port> = when (definition.typeId) {
+    BREAK_TYPE_ID -> breakEffectivePorts(workflow, node)
+    CONDITION_TYPE_ID -> conditionEffectivePorts(workflow, node)
     else -> definition.ports
 }
 
@@ -103,172 +111,115 @@ fun effectivePort(
     definition: NodeTypeDefinition,
     workflow: Workflow,
     node: WorkflowNode,
-    name: String,
+    name: PortName,
     direction: Direction? = null,
 ): Port? = effectivePorts(definition, workflow, node).firstOrNull {
     it.name == name && (direction == null || it.direction == direction)
 }
 
 /**
- * The effective [NodeConfigSchema] for the placed [node]: the static schema
- * for ordinary nodes, and a schema-derived schema for `action.condition`.
+ * The effective [NodeConfigSchema] for the placed [node]: the schema derived
+ * from the node's config class for ordinary nodes, and a graph-narrowed variant
+ * of it for `action.condition`.
  *
- * `action.condition` always exposes a `type` config field. When `type` is
- * `"auto"` (the default), the comparison type is inferred from whatever data
- * edge is wired into [CONDITION_SOURCE_IN]: a struct exposes a `field`
- * dropdown, a primitive is used directly. When `type` is a specific primitive
- * (`"int"`, `"string"`, ...), the `source` input port is locked to that
- * schema and no field picker is shown — this lets the user configure the
- * comparison without first connecting a data source.
- *
- *  - `field` (auto + struct only): ENUM of the connected struct's field names;
- *  - `operator`: narrowed to the operators valid for the selected/inferred
- *    primitive type (numeric, string, boolean);
- *  - `value` (compare-against): typed to match (INT / DOUBLE / BOOL / STR).
- *
- * Returns the static schema for any non-`action.condition` node, or null when
- * the node has no config schema.
+ * Returns null when the node has no configurable fields.
  */
 fun effectiveConfigSchema(
     definition: NodeTypeDefinition,
     workflow: Workflow,
     node: WorkflowNode,
 ): NodeConfigSchema? {
-    if (definition.typeId == CONDITION_TYPE_ID) {
-        return conditionConfigSchema(workflow, node)
-    }
-    return ConfigSchemaRegistry.byId(definition.typeId)
+    val declared = ConfigSchemaRegistry.byId(definition.typeId) ?: return null
+    if (definition.typeId != CONDITION_TYPE_ID) return declared
+    return conditionConfigSchema(declared, workflow, node)
 }
 
-/** Config key for the condition's type chooser. */
-const val CONDITION_TYPE_CONFIG_KEY = "type"
-
-/** The "auto" option value for [CONDITION_TYPE_CONFIG_KEY]. */
-const val CONDITION_TYPE_AUTO = "auto"
-
-/** All options for the condition's type chooser. */
-val CONDITION_TYPE_OPTIONS: List<String> =
-    listOf(CONDITION_TYPE_AUTO, "int", "long", "double", "float", "boolean", "string")
-
 /**
- * Builds the dynamic [NodeConfigSchema] for an `action.condition` node. Always
- * returns a schema (at minimum the `type` chooser), so the configure form can
- * be opened before any data edge is wired.
- *
- * `source` (the value to inspect) and `value` (the literal to compare against)
- * are also first-class DATA input ports on the node (declared in
- * [NodeTypeRegistry]); when wired, the incoming item overrides the form value.
- * `type`, `operator` and `field` are structural pickers and are config-only.
+ * Narrows `action.condition`'s [declared] form (derived from `ConditionConfig`)
+ * against the graph:
+ *  - the field picker is dropped unless the inspected value is a struct, and
+ *    otherwise becomes an ENUM of that struct's field names;
+ *  - the operator list shrinks to those valid for the inspected type;
+ *  - `source` and `value` are retyped to the inspected primitive.
  */
-private fun conditionConfigSchema(workflow: Workflow, node: WorkflowNode): NodeConfigSchema {
-    val typeConfig = node.config[CONDITION_TYPE_CONFIG_KEY]?.ifEmpty { CONDITION_TYPE_AUTO }
-        ?: CONDITION_TYPE_AUTO
+private fun conditionConfigSchema(
+    declared: NodeConfigSchema,
+    workflow: Workflow,
+    node: WorkflowNode,
+): NodeConfigSchema {
+    val structFields = conditionStructFields(workflow, node)
+    val inspected = inspectedSchema(workflow, node, structFields)
+    val operators = ComparisonOperator.forSchema(inspected)
+    val literal = literalTypeFor(inspected)
+    val sourceKey = ConfigKey(CONDITION_SOURCE_IN.value)
+    val valueKey = ConfigKey(CONDITION_VALUE_IN.value)
 
-    val fields = mutableListOf<ConfigField<*>>(
-        ConfigField(
-            key = CONDITION_TYPE_CONFIG_KEY,
-            label = "Type",
-            type = ConfigFieldType.ENUM(options = CONDITION_TYPE_OPTIONS),
-            defaultValue = CONDITION_TYPE_AUTO,
-        ),
-    )
-
-    val comparisonSchema: ItemSchema? = if (typeConfig == CONDITION_TYPE_AUTO) {
-        val connected = resolveInputSchema(workflow, node, CONDITION_SOURCE_IN)
-        if (connected is ItemSchema.Object && connected.fields.isNotEmpty()) {
-            val fieldOptions = connected.fields.keys.toList()
-            val selected = node.config["field"]?.ifEmpty { fieldOptions.first() }
-                ?: fieldOptions.first()
-            fields += ConfigField(
-                key = "field",
-                label = "Field",
-                type = ConfigFieldType.ENUM(options = fieldOptions),
-                defaultValue = fieldOptions.first(),
-            )
-            connected.fields[selected]
-        } else {
-            connected
+    val fields = declared.fields.mapNotNull { field ->
+        when (field.key) {
+            CONDITION_FIELD_KEY -> structFields?.let { field.asChoice(it, default = it.first()) }
+            CONDITION_OPERATOR_KEY -> field.asChoice(operators.map { it.name }, default = operators.first().name)
+            sourceKey, valueKey -> ConfigField(field.key, field.label, literal, field.defaultValue)
+            else -> field
         }
-    } else {
-        primitiveSchemaFor(typeConfig)
     }
-
-    // Always expose operator + source + value, even in auto mode with no
-    // connection yet (defaulting to a string comparison) so the form is fully
-    // configurable before any data edge is wired.
-    val effectiveSchema = comparisonSchema ?: ItemSchema.Primitive(String::class)
-    val operators = operatorOptionsFor(effectiveSchema)
-    val literalType = valueConfigTypeFor(effectiveSchema)
-    fields += ConfigField(
-        key = "operator",
-        label = "Operator",
-        type = ConfigFieldType.ENUM(options = operators),
-        defaultValue = operators.first(),
-    )
-    fields += ConfigField(
-        key = CONDITION_SOURCE_IN,
-        label = "Source",
-        type = literalType,
-    )
-    fields += ConfigField(
-        key = "value",
-        label = "Compare against",
-        type = literalType,
-    )
-
     return NodeConfigSchema(typeId = CONDITION_TYPE_ID, fields = fields)
 }
 
-/**
- * The schema of the `source` DATA input on `action.condition`:
- *  - manual type → the chosen [ItemSchema.Primitive];
- *  - auto + connected → the connected source's schema (struct/primitive);
- *  - auto + unconnected → [ItemSchema.Wildcard] (accepts anything).
- */
-private fun conditionSourceSchema(workflow: Workflow, node: WorkflowNode): ItemSchema {
-    val typeConfig = node.config[CONDITION_TYPE_CONFIG_KEY]?.ifEmpty { CONDITION_TYPE_AUTO }
-        ?: CONDITION_TYPE_AUTO
-    if (typeConfig != CONDITION_TYPE_AUTO) {
-        return primitiveSchemaFor(typeConfig) ?: ItemSchema.Wildcard
-    }
-    return resolveInputSchema(workflow, node, CONDITION_SOURCE_IN) ?: ItemSchema.Wildcard
-}
+/** Replaces a derived field's type with an ENUM over [options]. */
+private fun ConfigField<*>.asChoice(options: List<String>, default: String): ConfigField<String> = ConfigField(
+    key = key,
+    label = label,
+    type = ConfigFieldType.ENUM(options.map { ConfigOption(it, prettifyOption(it)) }),
+    defaultValue = default,
+)
 
-/** Maps a type-chooser option string to its [ItemSchema.Primitive]. */
-private fun primitiveSchemaFor(typeName: String): ItemSchema.Primitive? = when (typeName) {
-    "int" -> ItemSchema.Primitive(Int::class)
-    "long" -> ItemSchema.Primitive(Long::class)
-    "double" -> ItemSchema.Primitive(Double::class)
-    "float" -> ItemSchema.Primitive(Float::class)
-    "boolean" -> ItemSchema.Primitive(Boolean::class)
-    "string" -> ItemSchema.Primitive(String::class)
-    else -> null
-}
-
-/** Narrowed operator list for a field of the given [schema]. */
-private fun operatorOptionsFor(schema: ItemSchema?): List<String> =
-    if (schema is ItemSchema.Primitive) {
-        when (schema.kClass) {
-            Int::class, Long::class, Double::class, Float::class ->
-                listOf("equals", "notEquals", "greaterThan", "lessThan", "greaterThanOrEqual", "lessThanOrEqual")
-            String::class ->
-                listOf("equals", "notEquals", "contains", "matchesRegex")
-            Boolean::class ->
-                listOf("equals", "notEquals")
-            else -> listOf("equals", "notEquals")
-        }
+/** `GREATER_THAN` → "Greater than"; struct field names are left as they are. */
+private fun prettifyOption(value: String): String =
+    if (value.any { it.isLowerCase() }) {
+        value
     } else {
-        listOf("equals", "notEquals")
+        value.lowercase().replace('_', ' ').replaceFirstChar { it.uppercaseChar() }
     }
 
-/** Typed `value` config field for a compare-against literal of the given [schema]. */
-private fun valueConfigTypeFor(schema: ItemSchema?): ConfigFieldType<*> =
+/**
+ * The field names of the struct wired into `source`, or null when the inspected
+ * value is not a struct (or the type is pinned to a primitive).
+ */
+private fun conditionStructFields(workflow: Workflow, node: WorkflowNode): List<String>? {
+    if (conditionType(node) != ComparisonType.AUTO) return null
+    val connected = resolveInputSchema(workflow, node, CONDITION_SOURCE_IN)
+    return (connected as? ItemSchema.Object)?.fields?.keys?.toList()?.takeIf { it.isNotEmpty() }
+}
+
+/**
+ * The schema of the value the condition actually compares: the selected struct
+ * field, the connected primitive, the pinned primitive, or String as a fallback
+ * so the form is usable before anything is wired.
+ */
+private fun inspectedSchema(workflow: Workflow, node: WorkflowNode, structFields: List<String>?): ItemSchema {
+    val type = conditionType(node)
+    if (type != ComparisonType.AUTO) return type.schema ?: ItemSchema.Primitive(String::class)
+    val connected = resolveInputSchema(workflow, node, CONDITION_SOURCE_IN)
+    if (structFields != null && connected is ItemSchema.Object) {
+        val selected = node.config[CONDITION_FIELD_KEY]?.takeIf { it in structFields } ?: structFields.first()
+        return connected.fields[selected] ?: ItemSchema.Primitive(String::class)
+    }
+    return connected ?: ItemSchema.Primitive(String::class)
+}
+
+/** The condition's configured [ComparisonType], defaulting to [ComparisonType.AUTO]. */
+private fun conditionType(node: WorkflowNode): ComparisonType {
+    val raw = node.config[CONDITION_TYPE_CONFIG_KEY]?.takeIf { it.isNotBlank() } ?: return ComparisonType.AUTO
+    return runCatching { ComparisonType.valueOf(raw) }.getOrDefault(ComparisonType.AUTO)
+}
+
+/** The form type of a compare-against literal of the given [schema]. */
+private fun literalTypeFor(schema: ItemSchema?): ConfigFieldType<*> =
     if (schema is ItemSchema.Primitive) {
         when (schema.kClass) {
             Int::class -> ConfigFieldType.INT
             Long::class, Double::class, Float::class -> ConfigFieldType.DOUBLE
             Boolean::class -> ConfigFieldType.BOOL
-            String::class -> ConfigFieldType.STR
             else -> ConfigFieldType.STR
         }
     } else {
@@ -283,29 +234,38 @@ private fun breakEffectivePorts(workflow: Workflow, node: WorkflowNode): List<Po
     val base = listOf(
         execIn(),
         execOut(),
-        dataPort(BREAK_STRUCT_IN, Direction.IN, ItemSchema.Wildcard),
+        dataPort(BREAK_STRUCT_IN, Direction.IN, ItemSchema.Wildcard, label = "Struct"),
     )
-    val schema = resolveInputSchema(workflow, node, BREAK_STRUCT_IN) as? ItemSchema.Object
-        ?: return base
-    return base + schema.fields.map { (name, fieldSchema) ->
-        dataPort(name, Direction.OUT, fieldSchema)
-    }
+    val schema = resolveInputSchema(workflow, node, BREAK_STRUCT_IN) as? ItemSchema.Object ?: return base
+    return base + schema.fields.map { (name, fieldSchema) -> dataPort(PortName(name), Direction.OUT, fieldSchema) }
 }
 
 /**
- * Effective ports for `action.condition`: the static exec in/out + true/false
- * ports, with the `source` and `value` DATA input port schemas rewritten from
- * the `type` config and any connected edge ([conditionSourceSchema]).
+ * Effective ports for `action.condition`: the static exec in + true/false ports,
+ * with the `source` and `value` DATA input port schemas rewritten from the
+ * `type` config and any connected edge.
  */
 private fun conditionEffectivePorts(workflow: Workflow, node: WorkflowNode): List<Port> {
     val sourceSchema = conditionSourceSchema(workflow, node)
     return listOf(
         execIn(),
-        execOut("true"),
-        execOut("false"),
-        dataPort(CONDITION_SOURCE_IN, Direction.IN, sourceSchema),
-        dataPort("value", Direction.IN, sourceSchema),
+        execOut(ExecPorts.TRUE),
+        execOut(ExecPorts.FALSE),
+        dataPort(CONDITION_SOURCE_IN, Direction.IN, sourceSchema, label = "Source"),
+        dataPort(CONDITION_VALUE_IN, Direction.IN, sourceSchema, label = "Compare against"),
     )
+}
+
+/**
+ * The schema of the `source` DATA input on `action.condition`:
+ *  - pinned type → the chosen [ItemSchema.Primitive];
+ *  - auto + connected → the connected source's schema (struct/primitive);
+ *  - auto + unconnected → [ItemSchema.Wildcard] (accepts anything).
+ */
+private fun conditionSourceSchema(workflow: Workflow, node: WorkflowNode): ItemSchema {
+    val type = conditionType(node)
+    if (type != ComparisonType.AUTO) return type.schema ?: ItemSchema.Wildcard
+    return resolveInputSchema(workflow, node, CONDITION_SOURCE_IN) ?: ItemSchema.Wildcard
 }
 
 /**
@@ -319,7 +279,7 @@ private fun conditionEffectivePorts(workflow: Workflow, node: WorkflowNode): Lis
 private fun resolveInputSchema(
     workflow: Workflow,
     node: WorkflowNode,
-    inputPortName: String,
+    inputPortName: PortName,
 ): ItemSchema? {
     val edge = workflow.incomingData(node.id, inputPortName).firstOrNull() ?: return null
     val sourceNode = workflow.node(edge.fromNodeId) ?: return null

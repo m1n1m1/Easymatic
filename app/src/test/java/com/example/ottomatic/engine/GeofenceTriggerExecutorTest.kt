@@ -1,10 +1,9 @@
 package com.example.ottomatic.engine
 
-import com.example.ottomatic.core.service.HttpRequest
-import com.example.ottomatic.core.service.HttpResponse
-import com.example.ottomatic.core.service.SystemServices
-import com.example.ottomatic.core.service.VolumeResult
-import com.example.ottomatic.core.service.DndResult
+import com.example.ottomatic.core.model.ConfigKey
+import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
@@ -32,20 +31,20 @@ class GeofenceTriggerExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.geofence", "Geofence", 0f, 0f),
-                WorkflowNode("n2", "action.break", "Break", 0f, 100f),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.geofence"), "Geofence", 0f, 0f),
+                WorkflowNode(NodeId("n2"), NodeTypeId("action.break"), "Break", 0f, 100f),
                 WorkflowNode(
-                    "n3", "action.notify", "Notify", 0f, 200f,
-                    config = mapOf("title" to "T"),
+                    NodeId("n3"), NodeTypeId("action.notify"), "Notify", 0f, 200f,
+                    config = mapOf(ConfigKey("title") to "T"),
                 ),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "n2", "in"),
-                ExecConnection("c2", "n2", "out", "n3", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
+                ExecConnection("c2", NodeId("n2"), PortName("out"), NodeId("n3"), PortName("in")),
             ),
             dataConnections = listOf(
-                DataConnection("d1", "n1", "event", "n2", "struct"),
-                DataConnection("d2", "n2", "transition", "n3", "text"),
+                DataConnection("d1", NodeId("n1"), PortName("event"), NodeId("n2"), PortName("struct")),
+                DataConnection("d2", NodeId("n2"), PortName("transition"), NodeId("n3"), PortName("text")),
             ),
         )
         val event = GeofenceEvent(
@@ -58,8 +57,8 @@ class GeofenceTriggerExecutorTest {
         )
         executor.executeFrom(
             workflow,
-            workflow.node("n1")!!,
-            TriggerOutput(mapOf("event" to Item.of(event))),
+            workflow.node(NodeId("n1"))!!,
+            TriggerOutput(mapOf(PortName("event") to Item.of(event))),
         )
         assertEquals(1, services.notifications.size)
         assertEquals("enter", services.notifications.first().second)
@@ -72,7 +71,7 @@ class GeofenceTriggerExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.geofence", "Geofence", 0f, 0f),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.geofence"), "Geofence", 0f, 0f),
             ),
         )
         val event = GeofenceEvent(
@@ -85,34 +84,9 @@ class GeofenceTriggerExecutorTest {
         )
         executor.executeFrom(
             workflow,
-            workflow.node("n1")!!,
-            TriggerOutput(mapOf("event" to Item.of(event))),
+            workflow.node(NodeId("n1"))!!,
+            TriggerOutput(mapOf(PortName("event") to Item.of(event))),
         )
         assertTrue(services.notifications.isEmpty())
-    }
-
-    private class RecordingSystemServices : SystemServices {
-        val notifications = mutableListOf<Pair<String, String>>()
-        override fun notify(title: String, text: String): Boolean {
-            notifications += title to text
-            return true
-        }
-        override fun setWifi(enabled: Boolean): Boolean? = null
-        override fun httpRequest(request: HttpRequest): HttpResponse = HttpResponse(200, "")
-        override fun setVolume(stream: String, mode: String, value: Int): VolumeResult? = null
-        override fun setDnd(enabled: Boolean, level: String): DndResult? = null
-        override fun setBluetooth(enabled: Boolean) = null
-        override fun setRingerMode(mode: String) = null
-        override fun setBrightness(value: Int, auto: Boolean) = null
-        override fun setScreenTimeout(ms: Int) = null
-        override fun setAutoRotate(enabled: Boolean) = null
-        override fun setTorch(enabled: Boolean) = null
-        override fun vibrate(durationMs: Int, pattern: List<Long>) = false
-        override fun launchApp(packageName: String) = false
-        override fun openUrl(url: String) = false
-        override fun sendSms(to: String, body: String) = false
-        override fun call(number: String) = false
-        override fun setClipboard(text: String) = false
-        override fun clearClipboard() = false
     }
 }

@@ -67,7 +67,7 @@ class NodeTypeRegistryTest {
             val expectedPrefix = if (definition.kind == NodeKind.TRIGGER) "trigger." else "action."
             assertTrue(
                 "${definition.typeId} should start with $expectedPrefix",
-                definition.typeId.startsWith(expectedPrefix),
+                definition.typeId.value.startsWith(expectedPrefix),
             )
         }
     }

@@ -4,9 +4,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.BatteryStd
+import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.DoNotDisturb
-import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.NotificationsActive
@@ -17,6 +19,7 @@ import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.schema.ItemSchema
 
@@ -89,20 +92,25 @@ fun portTypeColor(schema: ItemSchema?): Color = when (schema) {
     is ItemSchema.Wildcard, is ItemSchema.Union, is ItemSchema.Unit, null -> EditorColors.wildcardPort
 }
 
-fun nodeIcon(iconKey: String): ImageVector = ICONS[iconKey] ?: Icons.Filled.Extension
-
-private val ICONS: Map<String, ImageVector> = mapOf(
-    "bolt" to Icons.Filled.Bolt,
-    "schedule" to Icons.Filled.Schedule,
-    "notification" to Icons.Filled.NotificationsActive,
-    "sms" to Icons.Filled.Sms,
-    "boot" to Icons.Filled.PowerSettingsNew,
-    "http" to Icons.Filled.Http,
-    "split" to Icons.AutoMirrored.Filled.CallSplit,
-    "send" to Icons.AutoMirrored.Filled.Send,
-    "timer" to Icons.Filled.Timer,
-    "wifi" to Icons.Filled.Wifi,
-    "location" to Icons.Filled.LocationOn,
-    "volume" to Icons.AutoMirrored.Filled.VolumeUp,
-    "dnd" to Icons.Filled.DoNotDisturb,
-)
+/**
+ * Maps a node type's [NodeIcon] to its vector asset. Exhaustive by construction:
+ * adding an icon to the enum is a compile error until it is drawn here.
+ */
+fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
+    NodeIcon.BOLT -> Icons.Filled.Bolt
+    NodeIcon.SPLIT -> Icons.AutoMirrored.Filled.CallSplit
+    NodeIcon.TIMER -> Icons.Filled.Timer
+    NodeIcon.SCHEDULE -> Icons.Filled.Schedule
+    NodeIcon.NOTIFICATION -> Icons.Filled.NotificationsActive
+    NodeIcon.SMS -> Icons.Filled.Sms
+    NodeIcon.SEND -> Icons.AutoMirrored.Filled.Send
+    NodeIcon.HTTP -> Icons.Filled.Http
+    NodeIcon.WIFI -> Icons.Filled.Wifi
+    NodeIcon.BLUETOOTH -> Icons.Filled.Bluetooth
+    NodeIcon.VOLUME -> Icons.AutoMirrored.Filled.VolumeUp
+    NodeIcon.DND -> Icons.Filled.DoNotDisturb
+    NodeIcon.LOCATION -> Icons.Filled.LocationOn
+    NodeIcon.BOOT -> Icons.Filled.PowerSettingsNew
+    NodeIcon.BATTERY_LEVEL -> Icons.Filled.BatteryStd
+    NodeIcon.BATTERY_CHARGING -> Icons.Filled.BatteryChargingFull
+}

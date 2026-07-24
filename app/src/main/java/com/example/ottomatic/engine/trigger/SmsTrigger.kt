@@ -2,17 +2,23 @@ package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
+import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.SmsMessage
-import com.example.ottomatic.domain.model.schema.Item
-import com.example.ottomatic.domain.registry.ConfigField
-import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.Serializable
+
+/** Config for `trigger.sms`; an empty filter matches every sender. */
+@Serializable
+data class SmsTriggerConfig(
+    @Label("Sender filter (phone number, optional)") val sender: String = "",
+)
 
 /**
  * Trigger for `trigger.sms`. Listens to the bus for SMS events (which arrive
@@ -21,39 +27,39 @@ import kotlinx.coroutines.flow.map
  *
  * Produces a typed [SmsMessage] item on the `sms` data port.
  */
-class SmsTrigger : Trigger<SmsMessage> {
+class SmsTrigger : Trigger<SmsTriggerConfig, SmsMessage> {
 
-    override val definition = triggerNode<SmsMessage>(
+    override val definition = triggerNode<SmsTriggerConfig, SmsMessage>(
         typeId = "trigger.sms",
         displayName = "SMS Received",
         description = "Starts when an SMS arrives",
         category = NodeCategory.MESSAGING,
-        iconKey = "sms",
-        dataOutputs = listOf(dataOut<SmsMessage>("sms")),
-        configFields = listOf(
-            ConfigField(
-                key = "sender",
-                label = "Sender filter (phone number, optional)",
-                type = ConfigFieldType.STR,
-            ),
-        ),
-        encodeData = { message -> mapOf("sms" to Item.of(message)) },
+        icon = NodeIcon.SMS,
+        output = dataOut<SmsMessage>("sms", label = "SMS"),
     )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<SmsMessage>> =
-        host.busEvents()
+    override fun activate(
+        config: SmsTriggerConfig,
+        node: WorkflowNode,
+        host: TriggerHost,
+    ): Flow<NodeOutput<SmsMessage>> {
+        val senderFilter = config.sender.takeIf { it.isNotBlank() }
+        return host.busEvents()
             .filter { it.source == TriggerSource.SMS }
-            .filter { event ->
-                val senderFilter = node.config["sender"]?.takeIf { it.isNotBlank() }
-                senderFilter == null || event.payload["sender"] == senderFilter
-            }
+            .filter { senderFilter == null || it.payload[KEY_SENDER] == senderFilter }
             .map { event ->
                 NodeOutput(
                     SmsMessage(
-                        sender = event.payload["sender"].orEmpty(),
-                        body = event.payload["body"].orEmpty(),
-                        timestamp = event.payload["timestamp"]?.toLongOrNull() ?: event.firedAtEpochMs,
+                        sender = event.payload[KEY_SENDER].orEmpty(),
+                        body = event.payload[KEY_BODY].orEmpty(),
+                        timestamp = event.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: event.firedAtEpochMs,
                     ),
                 )
             }
+    }
+
+    companion object {
+        const val KEY_SENDER = "sender"
+        const val KEY_BODY = "body"
+    }
 }

@@ -1,5 +1,9 @@
 package com.example.ottomatic.feature.grapheditor
 
+import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.core.model.ConfigKey
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.lifecycle.ViewModel
@@ -16,6 +20,7 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.registry.CONDITION_SOURCE_IN
+import com.example.ottomatic.domain.registry.CONDITION_VALUE_IN
 import com.example.ottomatic.domain.registry.CONDITION_TYPE_CONFIG_KEY
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.effectiveInputPorts
@@ -42,8 +47,8 @@ data class CanvasTransform(
 
 /** Reference to a single port on a node, addressed by name and kind. */
 data class PortRef(
-    val nodeId: String,
-    val portName: String,
+    val nodeId: NodeId,
+    val portName: PortName,
     val isOutput: Boolean,
     val kind: PortKind,
 )
@@ -56,7 +61,7 @@ data class PendingConnection(
 )
 
 sealed interface Selection {
-    data class Node(val nodeId: String) : Selection
+    data class Node(val nodeId: NodeId) : Selection
     data class Edge(val connectionId: String) : Selection
 }
 
@@ -152,7 +157,7 @@ class GraphEditorViewModel(
 
     // region Selection
 
-    fun selectNode(nodeId: String) {
+    fun selectNode(nodeId: NodeId) {
         _uiState.update { it.copy(selection = Selection.Node(nodeId)) }
     }
 
@@ -209,10 +214,10 @@ class GraphEditorViewModel(
 
     // region Node editing
 
-    fun addNode(typeId: String, positionGraph: Offset) {
+    fun addNode(typeId: NodeTypeId, positionGraph: Offset) {
         val definition = NodeTypeRegistry.byId(typeId) ?: return
         val node = WorkflowNode(
-            id = UUID.randomUUID().toString(),
+            id = NodeId(UUID.randomUUID().toString()),
             typeId = typeId,
             name = definition.displayName,
             x = positionGraph.x,
@@ -227,7 +232,7 @@ class GraphEditorViewModel(
         persist()
     }
 
-    fun moveNode(nodeId: String, deltaGraph: Offset) {
+    fun moveNode(nodeId: NodeId, deltaGraph: Offset) {
         _uiState.update { state ->
             val nodes = state.workflow.nodes.map { node ->
                 if (node.id == nodeId) node.copy(x = node.x + deltaGraph.x, y = node.y + deltaGraph.y) else node
@@ -439,7 +444,7 @@ class GraphEditorViewModel(
 
     // region Node configuration
 
-    fun updateNodeConfig(nodeId: String, key: String, value: String) {
+    fun updateNodeConfig(nodeId: NodeId, key: ConfigKey, value: String) {
         _uiState.update { state ->
             val nodes = state.workflow.nodes.map { node ->
                 if (node.id == nodeId) node.copy(config = node.config + (key to value)) else node
@@ -451,7 +456,7 @@ class GraphEditorViewModel(
             val finalWorkflow = if (key == CONDITION_TYPE_CONFIG_KEY) {
                 workflow.copy(
                     dataConnections = workflow.dataConnections.filterNot {
-                        it.toNodeId == nodeId && (it.toPort == CONDITION_SOURCE_IN || it.toPort == "value")
+                        it.toNodeId == nodeId && (it.toPort == CONDITION_SOURCE_IN || it.toPort == CONDITION_VALUE_IN)
                     },
                 )
             } else {
@@ -462,7 +467,7 @@ class GraphEditorViewModel(
         persist()
     }
 
-    fun setNodeDataInputVisible(nodeId: String, portName: String, visible: Boolean) {
+    fun setNodeDataInputVisible(nodeId: NodeId, portName: PortName, visible: Boolean) {
         _uiState.update { state ->
             val workflow = state.workflow
             val nodes = workflow.nodes.map { node ->
@@ -489,7 +494,7 @@ class GraphEditorViewModel(
         persist()
     }
 
-    fun updateNodeName(nodeId: String, name: String) {
+    fun updateNodeName(nodeId: NodeId, name: String) {
         _uiState.update { state ->
             val nodes = state.workflow.nodes.map { node ->
                 if (node.id == nodeId) node.copy(name = name) else node

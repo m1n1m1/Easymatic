@@ -2,110 +2,113 @@ package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
-import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.SystemState
-import com.example.ottomatic.domain.model.schema.Item
-import com.example.ottomatic.domain.registry.ConfigField
-import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.TriggerNodeDefinition
 import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.Serializable
 
 /**
- * Shared single declaration for Tier 1 broadcast-receiver triggers that
- * produce a [SystemState] data item on their `state` DATA output port.
+ * Config of a Tier 1 trigger that can filter on which event it fires for.
  *
- * @param eventFilterLabel label of the optional `event` config field. When
- *   non-null, an ENUM config field is declared with options
- *   `"any" + eventFilterOptions`; the runtime filter in [systemStateFlow]
- *   treats `"any"` (or a blank value) as "fire on every event".
+ * [event] is a *nullable* enum: unset means "fire on every event", which is what
+ * the old `"any"` sentinel string meant. The config form derives its options
+ * from [E]'s entries plus a leading blank "Any" choice, so an invalid filter can
+ * no longer be persisted.
  */
-@Suppress("LongParameterList")
-internal fun systemStateDefinition(
+@Serializable
+data class EventFilter<E : Enum<E>>(
+    @Label("Event") val event: E? = null,
+)
+
+/**
+ * Shared declaration for Tier 1 broadcast-receiver triggers that produce a
+ * [SystemState] item on their `state` DATA output port.
+ *
+ * [C] is the trigger's config class: [EventFilter] of the trigger's own event
+ * enum when it supports filtering, or
+ * [com.example.ottomatic.domain.model.config.NoConfig] when it does not.
+ */
+internal inline fun <reified C : Any> systemStateDefinition(
     typeId: String,
     displayName: String,
     description: String,
     category: NodeCategory,
-    iconKey: String = "bolt",
-    eventFilterLabel: String? = null,
-    eventFilterOptions: List<String> = emptyList(),
-): TriggerNodeDefinition<SystemState> = triggerNode(
+    icon: NodeIcon = NodeIcon.BOLT,
+): TriggerNodeDefinition<C, SystemState> = triggerNode(
     typeId = typeId,
     displayName = displayName,
     description = description,
     category = category,
-    iconKey = iconKey,
-    dataOutputs = listOf(dataOut<SystemState>("state")),
-    configFields = if (eventFilterLabel != null) {
-        listOf(
-            ConfigField(
-                key = CONFIG_EVENT,
-                label = eventFilterLabel,
-                type = ConfigFieldType.ENUM(options = listOf(DEFAULT_EVENT) + eventFilterOptions),
-                defaultValue = DEFAULT_EVENT,
-            ),
-        )
-    } else {
-        emptyList()
-    },
-    encodeData = { state -> mapOf("state" to Item.of(state)) },
+    icon = icon,
+    output = dataOut<SystemState>("state", label = "State"),
 )
 
 /**
- * Shared logic for Tier 1 broadcast-receiver triggers that produce a
- * [SystemState] data item. All such triggers listen to [TriggerHost.busEvents],
- * filter by [source] + [triggerType], optionally apply a user-configured event
- * filter, and map the bus event to a typed [SystemState].
+ * Shared runtime for Tier 1 broadcast-receiver triggers. All of them listen to
+ * [TriggerHost.busEvents], filter by [source] + [triggerType], optionally keep
+ * only the events matching the user-selected [event], and map the bus event to a
+ * typed [SystemState].
  *
- * @param source the [TriggerSource] this trigger listens to.
- * @param triggerType the `triggerType` payload value identifying this trigger.
- * @param node the placed workflow node (for reading config).
- * @param host the trigger host providing the bus.
- * @param eventOptions the set of valid events for config validation. If
- *   `null`, no event filter is applied (the trigger fires on every matching
- *   bus event).
+ * @param event the configured filter, or null to fire on every matching event.
  */
-@Suppress("LongParameterList")
 internal fun systemStateFlow(
     source: TriggerSource,
     triggerType: String,
-    node: WorkflowNode,
     host: TriggerHost,
-    eventOptions: List<String>? = listOf("any"),
-): Flow<NodeOutput<SystemState>> {
-    val base = host.busEvents()
-        .filter { it.source == source }
-        .filter { it.payload[KEY_TRIGGER_TYPE] == triggerType }
-
-    val filtered = if (eventOptions != null) {
-        base.filter { event ->
-            val filter = node.config[CONFIG_EVENT]?.takeIf { it.isNotBlank() } ?: DEFAULT_EVENT
-            filter == DEFAULT_EVENT || filter == event.payload[KEY_EVENT]
-        }
-    } else {
-        base
-    }
-
-    return filtered.map { event ->
+    event: Enum<*>? = null,
+): Flow<NodeOutput<SystemState>> = host.busEvents()
+    .filter { it.source == source }
+    .filter { it.payload[KEY_TRIGGER_TYPE] == triggerType }
+    .filter { bus -> event == null || event.payloadValue == bus.payload[KEY_EVENT] }
+    .map { bus ->
         NodeOutput(
             SystemState(
-                event = event.payload[KEY_EVENT].orEmpty(),
-                detail = event.payload[KEY_DETAIL].orEmpty(),
-                timestamp = event.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: event.firedAtEpochMs,
+                event = bus.payload[KEY_EVENT].orEmpty(),
+                detail = bus.payload[KEY_DETAIL].orEmpty(),
+                timestamp = bus.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: bus.firedAtEpochMs,
             ),
         )
     }
-}
 
-/** Shared constants for Tier 1 trigger payload keys. */
+/**
+ * The `event` payload value an enum entry matches. Trigger event enums name
+ * their entries after the payload they filter on, so the mapping is mechanical
+ * rather than a second list of strings to keep in sync.
+ */
+internal val Enum<*>.payloadValue: String get() = name.lowercase()
+
+/** Shared constants for Tier 1 trigger payload keys, as emitted by `data/trigger`. */
 internal const val KEY_TRIGGER_TYPE = "triggerType"
 internal const val KEY_EVENT = "event"
 internal const val KEY_DETAIL = "detail"
 internal const val KEY_TIMESTAMP = "timestamp"
 internal const val KEY_PACKAGE_NAME = "packageName"
-internal const val CONFIG_EVENT = "event"
-internal const val DEFAULT_EVENT = "any"
+
+/**
+ * A radio/mode being switched on or off. Shared by `trigger.airplane_mode`,
+ * `trigger.bluetooth`, `trigger.screen` and `trigger.power_save`, whose
+ * broadcasts all report the same two payload values.
+ */
+@Serializable
+enum class OnOffEvent {
+    ON,
+    OFF,
+}
+
+/**
+ * A peripheral connecting or disconnecting. Shared by
+ * `trigger.bluetooth_connect` and `trigger.usb_device`.
+ */
+@Serializable
+enum class ConnectionEvent {
+    CONNECTED,
+    DISCONNECTED,
+}
+

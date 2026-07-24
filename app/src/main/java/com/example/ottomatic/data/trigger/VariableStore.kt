@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
 import kotlinx.coroutines.flow.Flow
@@ -42,7 +43,7 @@ object VariableStore {
         _changes.tryEmit(
             TriggerEvent(
                 source = TriggerSource.VARIABLE,
-                triggerNodeId = NODE_ID_SENTINEL,
+                triggerNodeId = NodeId.BROADCAST,
                 payload = mapOf(
                     "name" to name,
                     "value" to value,
@@ -56,7 +57,6 @@ object VariableStore {
     fun changesFor(name: String): Flow<TriggerEvent> =
         _changes.asSharedFlow().filter { it.payload[KEY_NAME] == name }
 
-    private const val NODE_ID_SENTINEL = "*"
     private const val KEY_NAME = "name"
     private const val DEFAULT_BUFFER = 64
 }

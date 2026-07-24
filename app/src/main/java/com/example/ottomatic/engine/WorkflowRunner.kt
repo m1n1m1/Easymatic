@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine
 
+import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.Workflow
@@ -33,7 +34,7 @@ class WorkflowRunner(
         MacroEventBus.emit(
             com.example.ottomatic.core.trigger.TriggerEvent(
                 source = TriggerSource.MACRO,
-                triggerNodeId = "*",
+                triggerNodeId = NodeId.BROADCAST,
                 payload = mapOf(
                     "event" to "enabled",
                     "macroId" to workflow.id,
@@ -76,7 +77,7 @@ class WorkflowRunner(
         MacroEventBus.emit(
             com.example.ottomatic.core.trigger.TriggerEvent(
                 source = TriggerSource.MACRO,
-                triggerNodeId = "*",
+                triggerNodeId = NodeId.BROADCAST,
                 payload = mapOf(
                     "event" to "finished",
                     "macroId" to workflow.id,

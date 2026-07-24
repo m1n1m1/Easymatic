@@ -2,135 +2,156 @@ package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
+import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.ScheduleFire
-import com.example.ottomatic.domain.model.schema.Item
-import com.example.ottomatic.domain.registry.ConfigField
-import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.Serializable
 import java.util.Calendar
 
 /**
- * Trigger for `trigger.schedule`. Arms a periodic [ScheduleWorker] via the
- * host when collection starts, surfaces matching bus events, and cancels the
- * schedule when the flow is cancelled.
+ * How often `trigger.schedule` fires. [CRON] defers to the node's cron
+ * expression instead of a fixed cadence.
+ */
+@Serializable
+enum class ScheduleInterval(val minutes: Long?) {
+    @Label("Every 15 minutes")
+    EVERY_15_MINUTES(15L),
+
+    @Label("Every 30 minutes")
+    EVERY_30_MINUTES(30L),
+
+    @Label("Hourly")
+    HOURLY(60L),
+
+    @Label("Every 6 hours")
+    EVERY_6_HOURS(360L),
+
+    @Label("Every 12 hours")
+    EVERY_12_HOURS(720L),
+
+    @Label("Daily")
+    DAILY(1_440L),
+
+    @Label("Cron expression")
+    CRON(null),
+}
+
+/**
+ * Config for `trigger.schedule`.
  *
- * Optional day/time filters (mirroring MacroDroid's Day/Time and Day-of-Week
- * triggers) suppress ticks that fall outside the configured window:
- * - `daysOfWeek` — comma-separated `mon,tue,...` (empty = every day).
- * - `daysOfMonth` — comma-separated day numbers `1,15,...` (empty = every day).
- * - `timeOfDay` — `HH:mm`; when set, only ticks at/after this time fire.
- * - `endTimeOfDay` — `HH:mm`; when set, only ticks before this time fire.
- *   If `endTimeOfDay` is earlier than `timeOfDay` the window wraps past midnight.
+ * The day filters are independent switches rather than the comma-joined strings
+ * they used to be, and the four window settings — which the trigger read without
+ * declaring them — are now part of the generated form.
+ */
+@Suppress("LongParameterList") // One property per form field; a config class is a flat declaration.
+@Serializable
+data class ScheduleConfig(
+    @Label("Interval") val interval: ScheduleInterval = ScheduleInterval.EVERY_15_MINUTES,
+    @Label("Cron expression (when interval is cron)") val cron: String = "*/15 * * * *",
+    @Label("Mondays") val monday: Boolean = false,
+    @Label("Tuesdays") val tuesday: Boolean = false,
+    @Label("Wednesdays") val wednesday: Boolean = false,
+    @Label("Thursdays") val thursday: Boolean = false,
+    @Label("Fridays") val friday: Boolean = false,
+    @Label("Saturdays") val saturday: Boolean = false,
+    @Label("Sundays") val sunday: Boolean = false,
+    @Label("Days of month (e.g. 1,15, empty = every day)") val daysOfMonth: String = "",
+    @Label("Not before (HH:mm, optional)") val notBefore: String = "",
+    @Label("Not after (HH:mm, optional)") val notAfter: String = "",
+) {
+    /**
+     * The selected [Calendar] day-of-week constants, or an empty set meaning
+     * "every day" (no day filter).
+     */
+    val daysOfWeek: Set<Int>
+        get() = buildSet {
+            if (sunday) add(Calendar.SUNDAY)
+            if (monday) add(Calendar.MONDAY)
+            if (tuesday) add(Calendar.TUESDAY)
+            if (wednesday) add(Calendar.WEDNESDAY)
+            if (thursday) add(Calendar.THURSDAY)
+            if (friday) add(Calendar.FRIDAY)
+            if (saturday) add(Calendar.SATURDAY)
+        }
+
+    /** The selected days of the month, or an empty set meaning "every day". */
+    val monthDays: Set<Int>
+        get() = daysOfMonth.split(',').mapNotNullTo(mutableSetOf()) { it.trim().toIntOrNull() }
+
+    /** The cron expression to arm, or null when a fixed interval is used. */
+    val cronExpression: String? get() = cron.takeIf { interval == ScheduleInterval.CRON && it.isNotBlank() }
+
+    /** The cadence to arm, falling back to the WorkManager floor for cron schedules. */
+    val intervalMinutes: Long get() = interval.minutes ?: DEFAULT_INTERVAL_MINUTES
+
+    /** True when [epochMs] passes the day and time-of-day filters. */
+    fun matches(epochMs: Long): Boolean = matchesDay(epochMs) && matchesTimeOfDay(epochMs)
+
+    private fun matchesDay(epochMs: Long): Boolean {
+        val weekdays = daysOfWeek
+        val monthDays = monthDays
+        val weekOk = weekdays.isEmpty() || dayOfWeek(epochMs) in weekdays
+        val monthOk = monthDays.isEmpty() || dayOfMonth(epochMs) in monthDays
+        return weekOk && monthOk
+    }
+
+    private fun matchesTimeOfDay(epochMs: Long): Boolean {
+        val start = notBefore.takeIf { it.isNotBlank() }?.let { minutesOfDay(it) }
+        val end = notAfter.takeIf { it.isNotBlank() }?.let { minutesOfDay(it) }
+        if (start == null && end == null) return true
+        val now = minutesOfDay(epochMs)
+        val from = start ?: 0
+        val until = end ?: MINUTES_PER_DAY
+        return if (from <= until) now in from until until else now >= from || now < until
+    }
+}
+
+// A `@Serializable` class must not declare its own companion: the serialization
+// plugin puts `serializer()` on it, and a private companion would hide it.
+private const val MINUTES_PER_DAY = 24 * 60
+
+/**
+ * Trigger for `trigger.schedule`. Arms a periodic
+ * [com.example.ottomatic.data.trigger.ScheduleWorker] via the host when
+ * collection starts, surfaces matching bus events, and cancels the schedule
+ * when the flow is cancelled.
+ *
+ * Optional day and time-of-day filters (mirroring MacroDroid's Day/Time and
+ * Day-of-Week triggers) suppress ticks outside the configured window.
  *
  * Produces a typed [ScheduleFire] item on the `fireTime` data port.
  */
-class ScheduleTrigger : Trigger<ScheduleFire> {
+class ScheduleTrigger : Trigger<ScheduleConfig, ScheduleFire> {
 
-    override val definition = triggerNode<ScheduleFire>(
+    override val definition = triggerNode<ScheduleConfig, ScheduleFire>(
         typeId = "trigger.schedule",
         displayName = "Schedule",
         description = "Starts the workflow on a fixed schedule",
         category = NodeCategory.TIME_SCHEDULE,
-        iconKey = "schedule",
-        dataOutputs = listOf(dataOut<ScheduleFire>("fireTime")),
-        configFields = listOf(
-            ConfigField(
-                key = "interval",
-                label = "Interval",
-                type = ConfigFieldType.ENUM(options = listOf("15", "30", "60", "360", "720", "1440", "cron")),
-                defaultValue = "15",
-            ),
-            ConfigField(
-                key = "cron",
-                label = "Cron expression (when interval = cron)",
-                type = ConfigFieldType.STR,
-                defaultValue = "*/15 * * * *",
-            ),
-        ),
-        encodeData = { fire -> mapOf("fireTime" to Item.of(fire)) },
+        icon = NodeIcon.SCHEDULE,
+        output = dataOut<ScheduleFire>("fireTime", label = "Fire time"),
     )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<ScheduleFire>> {
-        val intervalRaw = node.config["interval"]
-        val cron = if (intervalRaw == "cron") node.config["cron"] else null
-        val intervalMinutes = intervalRaw?.toLongOrNull() ?: DEFAULT_INTERVAL_MINUTES
-        val daysOfWeek = parseDaysOfWeek(node.config[CONFIG_DAYS_OF_WEEK])
-        val daysOfMonth = parseIntSet(node.config[CONFIG_DAYS_OF_MONTH])
-        val timeOfDay = node.config[CONFIG_TIME_OF_DAY]?.takeIf { it.isNotBlank() }
-        val endTimeOfDay = node.config[CONFIG_END_TIME_OF_DAY]?.takeIf { it.isNotBlank() }
-        return flow {
-            val handle = host.armSchedule(node.id, intervalMinutes, cron)
-            try {
-                host.busEvents()
-                    .filter { it.source == TriggerSource.SCHEDULE && it.triggerNodeId == node.id }
-                    .filter { matchesDayFilter(it.firedAtEpochMs, daysOfWeek, daysOfMonth) }
-                    .filter { matchesTimeFilter(it.firedAtEpochMs, timeOfDay, endTimeOfDay) }
-                    .collect { bus ->
-                        emit(NodeOutput(ScheduleFire(firedAt = bus.firedAtEpochMs)))
-                    }
-            } finally {
-                handle.cancel()
-            }
+    override fun activate(
+        config: ScheduleConfig,
+        node: WorkflowNode,
+        host: TriggerHost,
+    ): Flow<NodeOutput<ScheduleFire>> = flow {
+        val handle = host.armSchedule(node.id, config.intervalMinutes, config.cronExpression)
+        try {
+            host.busEvents()
+                .filter { it.source == TriggerSource.SCHEDULE && it.triggerNodeId == node.id }
+                .filter { config.matches(it.firedAtEpochMs) }
+                .collect { bus -> emit(NodeOutput(ScheduleFire(firedAt = bus.firedAtEpochMs))) }
+        } finally {
+            handle.cancel()
         }
-    }
-
-    private fun parseDaysOfWeek(raw: String?): Set<Int> {
-        if (raw.isNullOrBlank()) return emptySet()
-        val map = mapOf(
-            "sun" to Calendar.SUNDAY, "mon" to Calendar.MONDAY, "tue" to Calendar.TUESDAY,
-            "wed" to Calendar.WEDNESDAY, "thu" to Calendar.THURSDAY, "fri" to Calendar.FRIDAY,
-            "sat" to Calendar.SATURDAY,
-        )
-        return raw.split(',').mapNotNull { token -> map[token.trim().lowercase()] }.toSet()
-    }
-
-    private fun parseIntSet(raw: String?): Set<Int> {
-        if (raw.isNullOrBlank()) return emptySet()
-        return raw.split(',').mapNotNull { it.trim().toIntOrNull() }.toSet()
-    }
-
-    private fun matchesDayFilter(epochMs: Long, daysOfWeek: Set<Int>, daysOfMonth: Set<Int>): Boolean {
-        if (daysOfWeek.isEmpty() && daysOfMonth.isEmpty()) return true
-        val cal = Calendar.getInstance().apply { timeInMillis = epochMs }
-        val dayOk = daysOfWeek.isEmpty() || cal.get(Calendar.DAY_OF_WEEK) in daysOfWeek
-        val monthOk = daysOfMonth.isEmpty() || cal.get(Calendar.DAY_OF_MONTH) in daysOfMonth
-        return dayOk && monthOk
-    }
-
-    private fun matchesTimeFilter(epochMs: Long, startTime: String?, endTime: String?): Boolean {
-        if (startTime == null && endTime == null) return true
-        val cal = Calendar.getInstance().apply { timeInMillis = epochMs }
-        val now = cal.get(Calendar.HOUR_OF_DAY) * MINUTES_PER_HOUR + cal.get(Calendar.MINUTE)
-        val start = startTime?.let { parseTime(it) } ?: 0
-        val end = endTime?.let { parseTime(it) } ?: MINUTES_PER_DAY
-        return if (start <= end) {
-            now in start until end
-        } else {
-            now >= start || now < end
-        }
-    }
-
-    private fun parseTime(raw: String): Int {
-        val parts = raw.split(':')
-        val hours = parts.getOrNull(0)?.toIntOrNull() ?: 0
-        val minutes = parts.getOrNull(1)?.toIntOrNull() ?: 0
-        return hours * MINUTES_PER_HOUR + minutes
-    }
-
-    companion object {
-        private const val DEFAULT_INTERVAL_MINUTES = 15L
-        private const val MINUTES_PER_HOUR = 60
-        private const val MINUTES_PER_DAY = 24 * 60
-
-        const val CONFIG_DAYS_OF_WEEK = "daysOfWeek"
-        const val CONFIG_DAYS_OF_MONTH = "daysOfMonth"
-        const val CONFIG_TIME_OF_DAY = "timeOfDay"
-        const val CONFIG_END_TIME_OF_DAY = "endTimeOfDay"
     }
 }

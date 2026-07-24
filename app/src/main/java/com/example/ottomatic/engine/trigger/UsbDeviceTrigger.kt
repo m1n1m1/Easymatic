@@ -13,22 +13,23 @@ import kotlinx.coroutines.flow.Flow
  *
  * Produces a typed [SystemState] item on the `state` data port.
  */
-class UsbDeviceTrigger : Trigger<SystemState> {
+class UsbDeviceTrigger : Trigger<EventFilter<ConnectionEvent>, SystemState> {
 
-    override val definition = systemStateDefinition(
+    override val definition = systemStateDefinition<EventFilter<ConnectionEvent>>(
         typeId = "trigger.usb_device",
         displayName = "USB Device Connected",
         description = "Starts when a USB device is connected or disconnected",
         category = NodeCategory.CONNECTIVITY,
-        eventFilterLabel = "Event",
-        eventFilterOptions = listOf("connected", "disconnected"),
     )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<SystemState>> =
-        systemStateFlow(
-            source = TriggerSource.HARDWARE,
-            triggerType = "usb_device",
-            node = node,
-            host = host,
-        )
+    override fun activate(
+        config: EventFilter<ConnectionEvent>,
+        node: WorkflowNode,
+        host: TriggerHost,
+    ): Flow<NodeOutput<SystemState>> = systemStateFlow(
+        source = TriggerSource.HARDWARE,
+        triggerType = "usb_device",
+        host = host,
+        event = config.event,
+    )
 }

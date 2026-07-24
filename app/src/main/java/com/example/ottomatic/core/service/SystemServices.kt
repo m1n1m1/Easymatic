@@ -17,21 +17,19 @@ interface SystemServices {
     fun httpRequest(request: HttpRequest): HttpResponse
 
     /**
-     * Adjusts an audio stream's volume. [mode] is one of `"up"`, `"down"`,
-     * `"set"`, `"mute"` or `"unmute"`; [value] (0..100) is only used when
-     * [mode] is `"set"` and is scaled to the stream's max index. Returns null
-     * when the stream is unknown or the call fails.
+     * Adjusts an audio [stream]'s volume. [value] (0..100) is only used when
+     * [mode] is [VolumeMode.SET] and is scaled to the stream's max index.
+     * Returns null when the call fails.
      */
-    fun setVolume(stream: String, mode: String, value: Int): VolumeResult?
+    fun setVolume(stream: AudioStream, mode: VolumeMode, value: Int): VolumeResult?
 
     /**
      * Toggles Do-Not-Disturb. When [enabled] is true, [level] selects the
-     * policy (`"priority"`, `"alarms"`, `"silence"`); when false, [level] is
-     * ignored and all notifications are allowed. Returns null when the
-     * `ACCESS_NOTIFICATION_POLICY` permission has not been granted or the call
-     * fails.
+     * policy; when false, [level] is ignored and all notifications are allowed.
+     * Returns null when the `ACCESS_NOTIFICATION_POLICY` permission has not been
+     * granted or the call fails.
      */
-    fun setDnd(enabled: Boolean, level: String): DndResult?
+    fun setDnd(enabled: Boolean, level: DndLevel): DndResult?
 
     /**
      * Toggles Bluetooth. Returns null when Bluetooth is unavailable or the call
@@ -40,11 +38,10 @@ interface SystemServices {
     fun setBluetooth(enabled: Boolean): BluetoothResult?
 
     /**
-     * Sets the ringer mode. [mode] is `"normal"`, `"silent"` or `"vibrate"`.
-     * Returns null on failure (e.g. missing `ACCESS_NOTIFICATION_POLICY` for
-     * silent mode on API 21+).
+     * Sets the ringer [mode]. Returns null on failure (e.g. missing
+     * `ACCESS_NOTIFICATION_POLICY` for [RingerMode.SILENT] on API 21+).
      */
-    fun setRingerMode(mode: String): RingerResult?
+    fun setRingerMode(mode: RingerMode): RingerResult?
 
     /**
      * Sets the screen brightness. [value] (0..255) is used when [auto] is
@@ -113,7 +110,7 @@ interface SystemServices {
 }
 
 data class HttpRequest(
-    val method: String,
+    val method: HttpMethod,
     val url: String,
     val headers: Map<String, String> = emptyMap(),
     val body: String = "",
@@ -128,17 +125,15 @@ data class HttpResponse(
 /**
  * Result of a volume change via [SystemServices.setVolume].
  *
- * - [stream]: which audio stream was adjusted (`"media"`, `"ring"`, `"alarm"`,
- *   `"notification"`, `"system"`).
- * - [mode]: the requested change (`"up"`, `"down"`, `"set"`, `"mute"`,
- *   `"unmute"`).
+ * - [stream]: which audio stream was adjusted.
+ * - [mode]: the requested change.
  * - [volume]: resulting volume index.
  * - [maxVolume]: maximum index for the stream.
  * - [changed]: whether the call was accepted.
  */
 data class VolumeResult(
-    val stream: String,
-    val mode: String,
+    val stream: AudioStream,
+    val mode: VolumeMode,
     val volume: Int,
     val maxVolume: Int,
     val changed: Boolean,
@@ -148,13 +143,12 @@ data class VolumeResult(
  * Result of a Do-Not-Disturb toggle via [SystemServices.setDnd].
  *
  * - [enabled]: whether DND is now active.
- * - [level]: policy in effect (`"priority"`, `"alarms"`, `"silence"` when
- *   enabled, or `"all"` when disabled).
+ * - [level]: policy in effect ([DndLevel.ALL] when DND is off).
  * - [changed]: whether the call was accepted.
  */
 data class DndResult(
     val enabled: Boolean,
-    val level: String,
+    val level: DndLevel,
     val changed: Boolean,
 )
 
@@ -166,7 +160,7 @@ data class BluetoothResult(
 
 /** Result of [SystemServices.setRingerMode]. */
 data class RingerResult(
-    val mode: String,
+    val mode: RingerMode,
     val changed: Boolean,
 )
 

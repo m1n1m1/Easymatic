@@ -1,5 +1,7 @@
 package com.example.ottomatic.data
 
+import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.WorkflowSummary
@@ -94,14 +96,14 @@ class WorkflowRepositoryTest {
         val graph = Workflow(
             id = workflow.id,
             name = "Graph",
-            nodes = listOf(WorkflowNode("n1", "trigger.manual", "M", 0f, 0f)),
+            nodes = listOf(WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "M", 0f, 0f)),
         )
         repo.save(graph)
         repo.setEnabled(workflow.id, true)
         val loaded = repo.load(workflow.id)!!
         assertEquals(true, loaded.enabled)
         assertEquals(1, loaded.nodes.size)
-        assertEquals("n1", loaded.nodes.first().id)
+        assertEquals(NodeId("n1"), loaded.nodes.first().id)
     }
 
     @Test

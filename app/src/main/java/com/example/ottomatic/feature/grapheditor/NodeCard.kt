@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.grapheditor
 
+import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.model.ConfigKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -158,7 +161,7 @@ private fun NodeBody(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector = nodeIcon(definition.iconKey),
+                    imageVector = nodeIcon(definition.icon),
                     contentDescription = definition.displayName,
                     tint = accent,
                     modifier = Modifier.size(20.dp),
@@ -190,7 +193,7 @@ private fun NodeBody(
 @OptIn(ExperimentalTextApi::class)
 @Composable
 private fun OutputLabels(
-    nodeId: String,
+    nodeId: NodeId,
     outputPorts: List<Port>,
     width: Float,
     density: Float,

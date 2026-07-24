@@ -3,6 +3,7 @@ package com.example.ottomatic.domain.registry
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
+import com.example.ottomatic.core.model.NodeTypeId
 
 /**
  * Central registry for all available node types (triggers and actions).
@@ -26,9 +27,9 @@ object NodeTypeRegistry {
         TriggerRegistry.all().map { it.definition.nodeType } +
             ActionRegistry.all().map { it.definition.nodeType }
 
-    private val byId: Map<String, NodeTypeDefinition> = all.associateBy { it.typeId }
+    private val byId: Map<NodeTypeId, NodeTypeDefinition> = all.associateBy { it.typeId }
 
-    fun byId(typeId: String): NodeTypeDefinition? = byId[typeId]
+    fun byId(typeId: NodeTypeId): NodeTypeDefinition? = byId[typeId]
 
     fun byKind(kind: NodeKind): List<NodeTypeDefinition> = all.filter { it.kind == kind }
 

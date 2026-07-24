@@ -2,18 +2,35 @@ package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
+import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.BatteryState
-import com.example.ottomatic.domain.model.schema.Item
-import com.example.ottomatic.domain.registry.ConfigField
-import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.Serializable
+
+/** Which way the battery level must cross the threshold to fire. */
+@Serializable
+enum class BatteryDirection {
+    BELOW,
+    ABOVE,
+}
+
+/** Config for `trigger.battery_level`. */
+@Serializable
+data class BatteryLevelConfig(
+    @Label("Direction") val direction: BatteryDirection = BatteryDirection.BELOW,
+    @Label("Threshold (0-100)") val level: Int = DEFAULT_THRESHOLD,
+    @Label("Poll interval (minutes, minimum 15)") val intervalMinutes: Long = DEFAULT_INTERVAL_MINUTES,
+)
+
+private const val DEFAULT_THRESHOLD = 20
 
 /**
  * Trigger for `trigger.battery_level`. Arms a periodic
@@ -27,85 +44,59 @@ import kotlinx.coroutines.flow.map
  *
  * Produces a typed [BatteryState] item on the `state` data port.
  */
-class BatteryLevelTrigger : Trigger<BatteryState> {
+class BatteryLevelTrigger : Trigger<BatteryLevelConfig, BatteryState> {
 
-    override val definition = triggerNode<BatteryState>(
+    override val definition = triggerNode<BatteryLevelConfig, BatteryState>(
         typeId = "trigger.battery_level",
         displayName = "Battery Level",
         description = "Starts when the battery level crosses a threshold (polls in the background)",
         category = NodeCategory.POWER_BATTERY,
-        iconKey = "battery_level",
-        dataOutputs = listOf(dataOut<BatteryState>("state")),
-        configFields = listOf(
-            ConfigField(
-                key = CONFIG_DIRECTION,
-                label = "Direction",
-                type = ConfigFieldType.ENUM(options = listOf("below", "above")),
-                defaultValue = DEFAULT_DIRECTION,
-            ),
-            ConfigField(
-                key = CONFIG_LEVEL,
-                label = "Threshold (0-100)",
-                type = ConfigFieldType.INT,
-                defaultValue = "20",
-            ),
-            ConfigField(
-                key = CONFIG_INTERVAL,
-                label = "Poll interval (minutes, minimum 15)",
-                type = ConfigFieldType.INT,
-                defaultValue = "15",
-            ),
-        ),
-        encodeData = { state -> mapOf("state" to Item.of(state)) },
+        icon = NodeIcon.BATTERY_LEVEL,
+        output = dataOut<BatteryState>("state", label = "State"),
     )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<BatteryState>> {
-        val direction = node.config[CONFIG_DIRECTION]?.takeIf { it.isNotBlank() } ?: DEFAULT_DIRECTION
-        val threshold = node.config[CONFIG_LEVEL]?.toIntOrNull() ?: DEFAULT_THRESHOLD
-        val intervalMinutes = node.config[CONFIG_INTERVAL]?.toLongOrNull() ?: DEFAULT_INTERVAL_MINUTES
-        return flow {
-            val handle = host.armBatteryLevelPoll(node.id, intervalMinutes, direction, threshold)
-            try {
-                host.busEvents()
-                    .filter {
-                        it.source == TriggerSource.BATTERY &&
-                            it.triggerNodeId == node.id &&
-                            it.payload[KEY_EVENT] == EVENT_LEVEL_POLL
-                    }
-                    .map { event ->
-                        NodeOutput(
-                            BatteryState(
-                                isCharging = event.payload[KEY_IS_CHARGING]?.toBooleanStrictOrNull() ?: false,
-                                level = event.payload[KEY_LEVEL]?.toIntOrNull() ?: -1,
-                                plugged = event.payload[KEY_PLUGGED]?.takeIf { it.isNotBlank() },
-                                event = event.payload[KEY_EVENT].orEmpty(),
-                                timestamp = event.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: event.firedAtEpochMs,
-                            ),
-                        )
-                    }
-                    .collect { emit(it) }
-            } finally {
-                handle.cancel()
-            }
+    override fun activate(
+        config: BatteryLevelConfig,
+        node: WorkflowNode,
+        host: TriggerHost,
+    ): Flow<NodeOutput<BatteryState>> = flow {
+        val handle = host.armBatteryLevelPoll(node.id, config.intervalMinutes, config.direction, config.level)
+        try {
+            host.busEvents()
+                .filter {
+                    it.source == TriggerSource.BATTERY &&
+                        it.triggerNodeId == node.id &&
+                        it.payload[KEY_EVENT] == EVENT_LEVEL_POLL
+                }
+                .map { event -> NodeOutput(event.toBatteryState()) }
+                .collect { emit(it) }
+        } finally {
+            handle.cancel()
         }
     }
 
     companion object {
-        const val CONFIG_DIRECTION = "direction"
-        const val CONFIG_LEVEL = "level"
-        const val CONFIG_INTERVAL = "intervalMinutes"
-
-        const val DEFAULT_DIRECTION = "below"
-        const val DEFAULT_THRESHOLD = 20
-        const val DEFAULT_INTERVAL_MINUTES = 15L
-
-        // Must match the payload keys emitted by `BatteryLevelWorker` in `data/`.
-        const val KEY_EVENT = "event"
-        const val KEY_LEVEL = "level"
-        const val KEY_IS_CHARGING = "isCharging"
-        const val KEY_PLUGGED = "plugged"
-        const val KEY_TIMESTAMP = "timestamp"
-
+        /** The `event` payload value emitted by the battery-level poll worker. */
         const val EVENT_LEVEL_POLL = "level_poll"
     }
 }
+
+/**
+ * Maps a battery bus event to a typed [BatteryState]. Shared by
+ * `trigger.battery_level` and `trigger.charging`, whose producers in `data/`
+ * emit the same payload keys.
+ */
+internal fun com.example.ottomatic.core.trigger.TriggerEvent.toBatteryState(): BatteryState = BatteryState(
+    isCharging = payload[KEY_IS_CHARGING]?.toBooleanStrictOrNull() ?: false,
+    level = payload[KEY_LEVEL]?.toIntOrNull() ?: UNKNOWN_LEVEL,
+    plugged = payload[KEY_PLUGGED]?.takeIf { it.isNotBlank() },
+    event = payload[KEY_EVENT].orEmpty(),
+    timestamp = payload[KEY_TIMESTAMP]?.toLongOrNull() ?: firedAtEpochMs,
+)
+
+// Must match the payload keys emitted by `BatteryLevelWorker` / `ChargingReceiver` in `data/`.
+internal const val KEY_LEVEL = "level"
+internal const val KEY_IS_CHARGING = "isCharging"
+internal const val KEY_PLUGGED = "plugged"
+
+private const val UNKNOWN_LEVEL = -1

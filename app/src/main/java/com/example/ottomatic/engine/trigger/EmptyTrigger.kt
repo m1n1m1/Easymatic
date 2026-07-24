@@ -1,9 +1,11 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.domain.model.NodeCategory
+import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.NoConfig
 import com.example.ottomatic.engine.NodeOutput
-import com.example.ottomatic.engine.triggerNode
+import com.example.ottomatic.engine.pulseTriggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -13,17 +15,16 @@ import kotlinx.coroutines.flow.flowOf
  * composition where the real logic is driven by constraints or downstream
  * nodes.
  */
-class EmptyTrigger : Trigger<Unit> {
+class EmptyTrigger : Trigger<NoConfig, Unit> {
 
-    override val definition = triggerNode<Unit>(
+    override val definition = pulseTriggerNode<NoConfig>(
         typeId = "trigger.empty",
         displayName = "Empty Trigger",
         description = "Fires immediately when the workflow starts (no external event)",
         category = NodeCategory.AUTOMATION,
-        iconKey = "bolt",
-        encodeData = { emptyMap() },
+        icon = NodeIcon.BOLT,
     )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<Unit>> =
+    override fun activate(config: NoConfig, node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<Unit>> =
         flowOf(NodeOutput(Unit))
 }

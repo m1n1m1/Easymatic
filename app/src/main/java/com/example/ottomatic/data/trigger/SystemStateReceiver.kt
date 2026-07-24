@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -36,7 +37,7 @@ class SystemStateReceiver : BroadcastReceiver() {
         TriggerBus.emit(
             TriggerEvent(
                 source = mapping.source,
-                triggerNodeId = NODE_ID_SENTINEL,
+                triggerNodeId = NodeId.BROADCAST,
                 payload = buildMap {
                     put(KEY_TRIGGER_TYPE, mapping.triggerType)
                     put(KEY_EVENT, event)
@@ -122,7 +123,6 @@ class SystemStateReceiver : BroadcastReceiver() {
     )
 
     companion object {
-        const val NODE_ID_SENTINEL = "*"
 
         const val KEY_TRIGGER_TYPE = "triggerType"
         const val KEY_EVENT = "event"

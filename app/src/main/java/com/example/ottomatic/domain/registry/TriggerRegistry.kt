@@ -1,5 +1,6 @@
 package com.example.ottomatic.domain.registry
 
+import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.engine.trigger.ExecutableTrigger
 
 /**
@@ -55,9 +56,9 @@ object TriggerRegistry {
         add(com.example.ottomatic.engine.trigger.MediaMountTrigger())
     }
 
-    private val byId: Map<String, ExecutableTrigger> = triggers.associateBy { it.typeId }
+    private val byId: Map<NodeTypeId, ExecutableTrigger> = triggers.associateBy { it.typeId }
 
-    fun byId(typeId: String): ExecutableTrigger? = byId[typeId]
+    fun byId(typeId: NodeTypeId): ExecutableTrigger? = byId[typeId]
 
     fun all(): List<ExecutableTrigger> = triggers
 }

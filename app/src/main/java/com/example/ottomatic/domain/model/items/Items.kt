@@ -1,5 +1,10 @@
 package com.example.ottomatic.domain.model.items
 
+import com.example.ottomatic.core.service.AudioStream
+import com.example.ottomatic.core.service.DndLevel
+import com.example.ottomatic.core.service.HttpMethod
+import com.example.ottomatic.core.service.RingerMode
+import com.example.ottomatic.core.service.VolumeMode
 import kotlinx.serialization.Serializable
 
 /**
@@ -31,7 +36,7 @@ data class ScheduleFire(
 /** Request built by the HTTP action from its config + data inputs. */
 @Serializable
 data class HttpRequestItem(
-    val method: String,
+    val method: HttpMethod,
     val url: String,
     val headers: Map<String, String> = emptyMap(),
     val body: String = "",
@@ -55,17 +60,16 @@ data class WifiState(
 /**
  * Volume state reported by the volume action on its `state` data port.
  *
- * - [stream]: which audio stream was adjusted — `"media"`, `"ring"`,
- *   `"alarm"`, `"notification"` or `"system"`.
- * - [mode]: what was done — `"up"`, `"down"`, `"set"`, `"mute"` or `"unmute"`.
+ * - [stream]: which audio stream was adjusted.
+ * - [mode]: what was done.
  * - [volume]: resulting volume index (0..[maxVolume]).
  * - [maxVolume]: maximum index for the stream.
  * - [changed]: whether the system accepted the change.
  */
 @Serializable
 data class VolumeState(
-    val stream: String,
-    val mode: String,
+    val stream: AudioStream,
+    val mode: VolumeMode,
     val volume: Int,
     val maxVolume: Int,
     val changed: Boolean,
@@ -75,15 +79,14 @@ data class VolumeState(
  * Do-Not-Disturb state reported by the DND action on its `state` data port.
  *
  * - [enabled]: whether DND is now active.
- * - [level]: DND policy in effect — `"priority"`, `"alarms"` or `"silence"`
- *   when enabled, or `"all"` when disabled.
+ * - [level]: DND policy in effect ([DndLevel.ALL] when disabled).
  * - [changed]: whether the system accepted the change (requires the
  *   `ACCESS_NOTIFICATION_POLICY` permission).
  */
 @Serializable
 data class DndState(
     val enabled: Boolean,
-    val level: String,
+    val level: DndLevel,
     val changed: Boolean,
 )
 
@@ -247,12 +250,12 @@ data class BluetoothState(
 /**
  * Ringer mode reported by the ringer mode action on its `state` port.
  *
- * - [mode]: `"normal"`, `"silent"` or `"vibrate"`.
+ * - [mode]: the resulting ringer mode.
  * - [changed]: whether the system accepted the change.
  */
 @Serializable
 data class RingerModeState(
-    val mode: String,
+    val mode: RingerMode,
     val changed: Boolean,
 )
 

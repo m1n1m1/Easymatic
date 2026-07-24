@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.grapheditor
 
+import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.model.ConfigKey
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -382,7 +385,7 @@ private fun NodePaletteSheet(
         searchTerm.isEmpty() || listOf(
             definition.displayName,
             definition.description,
-            definition.typeId,
+            definition.typeId.value,
             definition.category.displayName,
         ).any { it.contains(searchTerm, ignoreCase = true) }
     }
@@ -524,7 +527,7 @@ private fun PaletteRow(
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = nodeIcon(definition.iconKey),
+                imageVector = nodeIcon(definition.icon),
                 contentDescription = null,
                 tint = accent,
                 modifier = Modifier.size(22.dp),
@@ -553,8 +556,8 @@ private fun NodeConfigSheet(
     node: WorkflowNode,
     onDismiss: () -> Unit,
     onNameChange: (String) -> Unit,
-    onConfigChange: (String, String) -> Unit,
-    onDataInputVisibilityChange: (String, Boolean) -> Unit,
+    onConfigChange: (ConfigKey, String) -> Unit,
+    onDataInputVisibilityChange: (PortName, Boolean) -> Unit,
 ) {
     val definition = NodeTypeRegistry.byId(node.typeId)
     val schema = definition?.let { effectiveConfigSchema(it, workflow, node) }
@@ -573,7 +576,7 @@ private fun NodeConfigSheet(
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text = definition?.displayName ?: node.typeId,
+                text = definition?.displayName ?: node.typeId.value,
                 color = EditorColors.textSecondary,
                 fontSize = 12.sp,
                 modifier = Modifier.padding(top = 2.dp),
@@ -642,12 +645,13 @@ private fun ConfigFieldEditor(
     Column {
         when (type) {
         is com.example.ottomatic.domain.registry.ConfigFieldType.ENUM -> {
+            val selected = type.options.firstOrNull { it.value == value }
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = it },
             ) {
                 OutlinedTextField(
-                    value = value,
+                    value = selected?.label ?: value,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text(field.label) },
@@ -663,9 +667,9 @@ private fun ConfigFieldEditor(
                 ) {
                     type.options.forEach { option ->
                         DropdownMenuItem(
-                            text = { Text(option) },
+                            text = { Text(option.label) },
                             onClick = {
-                                onValueChange(option)
+                                onValueChange(option.value)
                                 expanded = false
                             },
                         )
@@ -685,7 +689,9 @@ private fun ConfigFieldEditor(
         com.example.ottomatic.domain.registry.ConfigFieldType.INT -> {
             OutlinedTextField(
                 value = value,
-                onValueChange = { new -> if (new.all { it.isDigit() } || new.isEmpty()) onValueChange(new) },
+                onValueChange = { new ->
+                    if (new.matches(Regex("-?\\d*")) || new.isEmpty()) onValueChange(new)
+                },
                 label = { Text(field.label) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),

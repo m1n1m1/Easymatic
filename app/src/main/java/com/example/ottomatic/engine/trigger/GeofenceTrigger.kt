@@ -1,19 +1,49 @@
 package com.example.ottomatic.engine.trigger
 
+import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
+import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.GeofenceEvent
-import com.example.ottomatic.domain.model.schema.Item
-import com.example.ottomatic.domain.registry.ConfigField
-import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.Serializable
+
+/**
+ * Config for `trigger.geofence`.
+ *
+ * [latitude] and [longitude] are nullable with no default: an unconfigured
+ * geofence has no centre and is not armed. The armed transitions are three
+ * independent switches rather than the previous comma-joined enum string, which
+ * could express combinations the UI never offered (and vice versa).
+ */
+@Serializable
+data class GeofenceConfig(
+    @Label("Latitude") val latitude: Double? = null,
+    @Label("Longitude") val longitude: Double? = null,
+    @Label("Radius (metres)") val radiusMeters: Int = DEFAULT_RADIUS_METERS,
+    @Label("On enter") val onEnter: Boolean = true,
+    @Label("On exit") val onExit: Boolean = false,
+    @Label("On dwell") val onDwell: Boolean = false,
+    @Label("Dwell delay (ms, only when dwell is armed)") val dwellDelayMs: Int = DEFAULT_DWELL_DELAY_MS,
+) {
+    /** The armed transitions; always at least [GeofenceTransition.ENTER]. */
+    val transitions: Set<GeofenceTransition>
+        get() = buildSet {
+            if (onEnter) add(GeofenceTransition.ENTER)
+            if (onExit) add(GeofenceTransition.EXIT)
+            if (onDwell) add(GeofenceTransition.DWELL)
+        }.ifEmpty { setOf(GeofenceTransition.ENTER) }
+}
+
+private const val DEFAULT_RADIUS_METERS = 100
 
 /**
  * Trigger for `trigger.geofence`. Arms a platform geofence via the host when
@@ -25,86 +55,50 @@ import kotlinx.coroutines.flow.flow
  * Payload contract with `GeofenceReceiver` in `data/` (string keys):
  * - `event` ∈ `"enter"`, `"exit"`, `"dwell"`
  * - `lat`, `lng`, `accuracy`, `timestamp`
- *
- * Config keys:
- * - `latitude` (DOUBLE) — geofence centre latitude.
- * - `longitude` (DOUBLE) — geofence centre longitude.
- * - `radiusMeters` (INT) — geofence radius in metres (default 100).
- * - `event` (ENUM) — comma-separated subset of `enter,exit,dwell` (default `enter`).
- * - `dwellDelayMs` (INT, optional) — loitering delay in milliseconds.
  */
-class GeofenceTrigger : Trigger<GeofenceEvent> {
+class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
 
-    override val definition = triggerNode<GeofenceEvent>(
-        typeId = TYPE_ID,
+    override val definition = triggerNode<GeofenceConfig, GeofenceEvent>(
+        typeId = TYPE_ID.value,
         displayName = "Geofence",
         description = "Starts when the device enters, exits or dwells inside a circular area",
         category = NodeCategory.LOCATION,
-        iconKey = "location",
-        dataOutputs = listOf(dataOut<GeofenceEvent>("event")),
-        configFields = listOf(
-            ConfigField(
-                key = CONFIG_LATITUDE,
-                label = "Latitude",
-                type = ConfigFieldType.DOUBLE,
-            ),
-            ConfigField(
-                key = CONFIG_LONGITUDE,
-                label = "Longitude",
-                type = ConfigFieldType.DOUBLE,
-            ),
-            ConfigField(
-                key = CONFIG_RADIUS_METERS,
-                label = "Radius (metres)",
-                type = ConfigFieldType.INT,
-                defaultValue = "100",
-            ),
-            ConfigField(
-                key = CONFIG_EVENT,
-                label = "Events",
-                type = ConfigFieldType.ENUM(
-                    options = listOf("enter", "exit", "dwell", "enter,exit", "enter,exit,dwell"),
-                ),
-                defaultValue = "enter",
-            ),
-            ConfigField(
-                key = CONFIG_DWELL_DELAY_MS,
-                label = "Dwell delay (ms, only when dwell is armed)",
-                type = ConfigFieldType.INT,
-                defaultValue = "30000",
-            ),
-        ),
-        encodeData = { event -> mapOf("event" to Item.of(event)) },
+        icon = NodeIcon.LOCATION,
+        output = dataOut<GeofenceEvent>("event", label = "Event"),
     )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<GeofenceEvent>> {
-        val config = parseConfig(node) ?: return emptyFlow()
+    override fun activate(
+        config: GeofenceConfig,
+        node: WorkflowNode,
+        host: TriggerHost,
+    ): Flow<NodeOutput<GeofenceEvent>> {
+        val latitude = config.latitude ?: return emptyFlow()
+        val longitude = config.longitude ?: return emptyFlow()
+        val transitions = config.transitions
+        val armedNames = transitions.mapTo(mutableSetOf()) { it.payloadValue }
         return flow {
             val handle = host.armGeofence(
                 nodeId = node.id,
-                latitude = config.latitude,
-                longitude = config.longitude,
-                radiusMeters = config.radiusMeters,
-                transitions = config.transitions,
+                latitude = latitude,
+                longitude = longitude,
+                radiusMeters = config.radiusMeters.toFloat(),
+                transitions = transitions,
                 dwellDelayMs = config.dwellDelayMs,
             )
             try {
                 host.busEvents()
                     .filter { it.source == TriggerSource.GEOFENCE && it.triggerNodeId == node.id }
-                    .filter { event -> event.payload[KEY_EVENT] in config.transitionNames }
+                    .filter { it.payload[KEY_EVENT] in armedNames }
                     .collect { bus ->
                         emit(
                             NodeOutput(
                                 GeofenceEvent(
-                                    triggerNodeId = node.id,
+                                    triggerNodeId = node.id.value,
                                     transition = bus.payload[KEY_EVENT].orEmpty(),
-                                    latitude = bus.payload[KEY_LATITUDE]?.toDoubleOrNull()
-                                        ?: config.latitude,
-                                    longitude = bus.payload[KEY_LONGITUDE]?.toDoubleOrNull()
-                                        ?: config.longitude,
+                                    latitude = bus.payload[KEY_LATITUDE]?.toDoubleOrNull() ?: latitude,
+                                    longitude = bus.payload[KEY_LONGITUDE]?.toDoubleOrNull() ?: longitude,
                                     accuracyMeters = bus.payload[KEY_ACCURACY]?.toFloatOrNull() ?: 0f,
-                                    timestamp = bus.payload[KEY_TIMESTAMP]?.toLongOrNull()
-                                        ?: bus.firedAtEpochMs,
+                                    timestamp = bus.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: bus.firedAtEpochMs,
                                 ),
                             ),
                         )
@@ -115,46 +109,11 @@ class GeofenceTrigger : Trigger<GeofenceEvent> {
         }
     }
 
-    private fun parseConfig(node: WorkflowNode): GeofenceConfig? {
-        val latitude = node.config[CONFIG_LATITUDE]?.toDoubleOrNull()
-        val longitude = node.config[CONFIG_LONGITUDE]?.toDoubleOrNull()
-        if (latitude == null || longitude == null) return null
-        val radiusMeters = node.config[CONFIG_RADIUS_METERS]?.toFloatOrNull() ?: DEFAULT_RADIUS_METERS
-        val transitions = GeofenceTransition.parse(node.config[CONFIG_EVENT])
-        return GeofenceConfig(
-            latitude = latitude,
-            longitude = longitude,
-            radiusMeters = radiusMeters,
-            transitions = transitions,
-            transitionNames = transitions.map { it.name.lowercase() }.toSet(),
-            dwellDelayMs = node.config[CONFIG_DWELL_DELAY_MS]?.toIntOrNull() ?: DEFAULT_DWELL_DELAY_MS,
-        )
-    }
-
-    private data class GeofenceConfig(
-        val latitude: Double,
-        val longitude: Double,
-        val radiusMeters: Float,
-        val transitions: Set<GeofenceTransition>,
-        val transitionNames: Set<String>,
-        val dwellDelayMs: Int,
-    )
-
     companion object {
-        const val TYPE_ID = "trigger.geofence"
+        val TYPE_ID = NodeTypeId("trigger.geofence")
 
-        const val CONFIG_LATITUDE = "latitude"
-        const val CONFIG_LONGITUDE = "longitude"
-        const val CONFIG_RADIUS_METERS = "radiusMeters"
-        const val CONFIG_EVENT = "event"
-        const val CONFIG_DWELL_DELAY_MS = "dwellDelayMs"
-
-        const val KEY_EVENT = "event"
         const val KEY_LATITUDE = "lat"
         const val KEY_LONGITUDE = "lng"
         const val KEY_ACCURACY = "accuracy"
-        const val KEY_TIMESTAMP = "timestamp"
-
-        const val DEFAULT_RADIUS_METERS = 100f
     }
 }

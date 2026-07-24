@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine.validation
 
+import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecConnection
@@ -141,7 +142,7 @@ class GraphValidator(private val workflow: Workflow) {
         // For every data edge source -> target, source must be exec-upstream of target
         // (i.e. target is reachable from source by following exec edges). Otherwise the
         // source would not have run by the time the target executes.
-        val execForward = mutableMapOf<String, MutableList<String>>()
+        val execForward = mutableMapOf<NodeId, MutableList<NodeId>>()
         workflow.execConnections.forEach {
             execForward.getOrPut(it.fromNodeId) { mutableListOf() } += it.toNodeId
         }
@@ -159,12 +160,12 @@ class GraphValidator(private val workflow: Workflow) {
 
     @Suppress("ReturnCount")
     private fun reaches(
-        execForward: Map<String, List<String>>,
-        start: String,
-        target: String,
+        execForward: Map<NodeId, List<NodeId>>,
+        start: NodeId,
+        target: NodeId,
     ): Boolean {
         if (start == target) return true
-        val seen = mutableSetOf<String>()
+        val seen = mutableSetOf<NodeId>()
         val stack = ArrayDeque(execForward[start] ?: emptyList())
         while (stack.isNotEmpty()) {
             val cur = stack.removeLast()
@@ -186,17 +187,17 @@ class GraphValidator(private val workflow: Workflow) {
         return fromPort to toPort
     }
 
-    private fun <E> findCycle(edges: List<E>, endpoints: (E) -> Pair<String, String>): List<String>? {
-        val adj = mutableMapOf<String, MutableList<String>>()
+    private fun <E> findCycle(edges: List<E>, endpoints: (E) -> Pair<NodeId, NodeId>): List<NodeId>? {
+        val adj = mutableMapOf<NodeId, MutableList<NodeId>>()
         edges.forEach { e ->
             val (from, to) = endpoints(e)
             adj.getOrPut(from) { mutableListOf() } += to
             adj.getOrPut(to) { mutableListOf() }
         }
-        val visited = mutableSetOf<String>()
-        val onStack = mutableSetOf<String>()
-        val path = mutableListOf<String>()
-        fun dfs(node: String): List<String>? {
+        val visited = mutableSetOf<NodeId>()
+        val onStack = mutableSetOf<NodeId>()
+        val path = mutableListOf<NodeId>()
+        fun dfs(node: NodeId): List<NodeId>? {
             visited += node
             onStack += node
             path += node

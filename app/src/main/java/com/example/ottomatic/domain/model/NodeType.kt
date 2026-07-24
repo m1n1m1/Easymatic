@@ -1,5 +1,7 @@
 package com.example.ottomatic.domain.model
 
+import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.permissions.PermissionRequirement
 import com.example.ottomatic.domain.model.schema.ItemSchema
 
@@ -61,19 +63,17 @@ enum class Cardinality {
  * described by [schema]. [schema] is null for EXECUTION ports.
  */
 data class Port(
-    val name: String,
+    val name: PortName,
     val kind: PortKind,
     val direction: Direction,
     val schema: ItemSchema? = null,
     val cardinality: Cardinality = Cardinality.ONE,
-    val label: String = name,
+    val label: String = name.value,
 )
 
 /**
  * Static description of a node type: what it is called, what it does and
  * which ports (execution and data) it exposes.
- *
- * [iconKey] is a platform-agnostic identifier that the UI layer maps to an icon.
  *
  * [hasDynamicPorts] marks node types whose effective port set depends on the
  * placed node's connections (e.g. `action.break` derives its field output ports
@@ -83,13 +83,13 @@ data class Port(
  * [ports] directly.
  */
 data class NodeTypeDefinition(
-    val typeId: String,
+    val typeId: NodeTypeId,
     val displayName: String,
     val description: String,
     val kind: NodeKind,
     val category: NodeCategory,
     val ports: List<Port>,
-    val iconKey: String,
+    val icon: NodeIcon,
     val hasDynamicPorts: Boolean = false,
     val permissionRequirements: List<PermissionRequirement> = emptyList(),
 ) {
@@ -106,10 +106,10 @@ data class NodeTypeDefinition(
     fun outputs(kind: PortKind): List<Port> = ports.filter { it.direction == Direction.OUT && it.kind == kind }
 
     /** Look up a port by name. */
-    fun port(name: String): Port? = ports.firstOrNull { it.name == name }
+    fun port(name: PortName): Port? = ports.firstOrNull { it.name == name }
 
     /** Look up a port by name and kind, throwing if missing or the wrong kind. */
-    fun requirePort(name: String, kind: PortKind, direction: Direction): Port =
+    fun requirePort(name: PortName, kind: PortKind, direction: Direction): Port =
         port(name)
             ?.takeIf { it.kind == kind && it.direction == direction }
             ?: error("Node type $typeId has no $kind $direction port named '$name'")

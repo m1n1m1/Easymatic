@@ -6,29 +6,37 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.items.SystemState
 import com.example.ottomatic.engine.NodeOutput
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.Serializable
+
+/** The dock transitions `trigger.dock` can filter on. */
+@Serializable
+enum class DockEvent {
+    DOCKED,
+    UNDOCKED,
+}
 
 /**
  * Trigger for `trigger.dock`. Fires when the device is docked or undocked.
- * Dock type (car / desk) is carried in the `detail` field.
  *
  * Produces a typed [SystemState] item on the `state` data port.
  */
-class DockTrigger : Trigger<SystemState> {
+class DockTrigger : Trigger<EventFilter<DockEvent>, SystemState> {
 
-    override val definition = systemStateDefinition(
+    override val definition = systemStateDefinition<EventFilter<DockEvent>>(
         typeId = "trigger.dock",
         displayName = "Device Docked",
         description = "Starts when the device is docked or undocked",
         category = NodeCategory.CONNECTIVITY,
-        eventFilterLabel = "Event",
-        eventFilterOptions = listOf("docked", "undocked"),
     )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<SystemState>> =
-        systemStateFlow(
-            source = TriggerSource.HARDWARE,
-            triggerType = "dock",
-            node = node,
-            host = host,
-        )
+    override fun activate(
+        config: EventFilter<DockEvent>,
+        node: WorkflowNode,
+        host: TriggerHost,
+    ): Flow<NodeOutput<SystemState>> = systemStateFlow(
+        source = TriggerSource.HARDWARE,
+        triggerType = "dock",
+        host = host,
+        event = config.event,
+    )
 }

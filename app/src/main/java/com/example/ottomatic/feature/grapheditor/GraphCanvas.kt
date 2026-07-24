@@ -2,6 +2,9 @@
 
 package com.example.ottomatic.feature.grapheditor
 
+import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.model.ConfigKey
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -299,8 +302,8 @@ internal fun resolvePort(workflow: Workflow, ref: PortRef): Port? =
         }
     }
 
-private fun execRef(nodeId: String, portName: String, isOutput: Boolean): PortRef =
+private fun execRef(nodeId: NodeId, portName: PortName, isOutput: Boolean): PortRef =
     PortRef(nodeId, portName, isOutput, PortKind.EXECUTION)
 
-private fun dataRef(nodeId: String, portName: String, isOutput: Boolean): PortRef =
+private fun dataRef(nodeId: NodeId, portName: PortName, isOutput: Boolean): PortRef =
     PortRef(nodeId, portName, isOutput, PortKind.DATA)

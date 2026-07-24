@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -24,7 +25,7 @@ class SmsReceiver : BroadcastReceiver() {
         TriggerBus.emit(
             TriggerEvent(
                 source = TriggerSource.SMS,
-                triggerNodeId = NODE_ID_SENTINEL,
+                triggerNodeId = NodeId.BROADCAST,
                 payload = mapOf(
                     "sender" to sender,
                     "body" to body,
@@ -38,6 +39,5 @@ class SmsReceiver : BroadcastReceiver() {
         // System receivers don't know which workflow node they belong to.
         // The SmsTrigger fans this out to all sms trigger nodes by matching
         // on source + sender filter.
-        const val NODE_ID_SENTINEL = "*"
     }
 }

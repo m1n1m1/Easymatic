@@ -1,17 +1,14 @@
 package com.example.ottomatic.engine
 
-import com.example.ottomatic.core.service.HttpRequest
-import com.example.ottomatic.core.service.HttpResponse
-import com.example.ottomatic.core.service.SystemServices
-import com.example.ottomatic.core.service.VolumeResult
-import com.example.ottomatic.core.service.DndResult
-import com.example.ottomatic.core.service.BluetoothResult
-import com.example.ottomatic.core.service.RingerResult
-import com.example.ottomatic.core.service.BrightnessResult
-import com.example.ottomatic.core.service.ScreenTimeoutResult
-import com.example.ottomatic.core.service.AutoRotateResult
-import com.example.ottomatic.core.service.TorchResult
-import com.example.ottomatic.core.service.MacroControl
+import com.example.ottomatic.core.model.ConfigKey
+import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.engine.action.ClipboardMode
+import com.example.ottomatic.domain.model.config.ComparisonOperator
+import com.example.ottomatic.domain.model.config.ComparisonType
+import com.example.ottomatic.domain.registry.CONDITION_OPERATOR_KEY
+import com.example.ottomatic.domain.registry.CONDITION_TYPE_CONFIG_KEY
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
@@ -37,17 +34,17 @@ class WorkflowExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.manual", "Manual", 0f, 0f),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
                 WorkflowNode(
-                    "n2", "action.notify", "Notify", 0f, 100f,
-                    config = mapOf("title" to "T", "text" to "Hello"),
+                    NodeId("n2"), NodeTypeId("action.notify"), "Notify", 0f, 100f,
+                    config = mapOf(ConfigKey("title") to "T", ConfigKey("text") to "Hello"),
                 ),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "n2", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
             ),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
+        executor.executeFrom(workflow, workflow.node(NodeId("n1"))!!, TriggerOutput(emptyMap()))
         assertEquals(1, services.notifications.size)
         assertEquals("T", services.notifications.first().first)
         assertEquals("Hello", services.notifications.first().second)
@@ -60,20 +57,20 @@ class WorkflowExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.sms", "SMS", 0f, 0f),
-                WorkflowNode("brk", "action.break", "Break", 0f, 100f),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.sms"), "SMS", 0f, 0f),
+                WorkflowNode(NodeId("brk"), NodeTypeId("action.break"), "Break", 0f, 100f),
                 WorkflowNode(
-                    "n2", "action.notify", "Notify", 0f, 200f,
-                    config = mapOf("title" to "T"),
+                    NodeId("n2"), NodeTypeId("action.notify"), "Notify", 0f, 200f,
+                    config = mapOf(ConfigKey("title") to "T"),
                 ),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "brk", "in"),
-                ExecConnection("c2", "brk", "out", "n2", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("brk"), PortName("in")),
+                ExecConnection("c2", NodeId("brk"), PortName("out"), NodeId("n2"), PortName("in")),
             ),
             dataConnections = listOf(
-                DataConnection("d1", "n1", "sms", "brk", "struct"),
-                DataConnection("d2", "brk", "body", "n2", "text"),
+                DataConnection("d1", NodeId("n1"), PortName("sms"), NodeId("brk"), PortName("struct")),
+                DataConnection("d2", NodeId("brk"), PortName("body"), NodeId("n2"), PortName("text")),
             ),
         )
         val sms = com.example.ottomatic.domain.model.items.SmsMessage(
@@ -81,9 +78,9 @@ class WorkflowExecutorTest {
         )
         executor.executeFrom(
             workflow,
-            workflow.node("n1")!!,
+            workflow.node(NodeId("n1"))!!,
             TriggerOutput(
-                mapOf("sms" to com.example.ottomatic.domain.model.schema.Item.of(sms)),
+                mapOf(PortName("sms") to com.example.ottomatic.domain.model.schema.Item.of(sms)),
             ),
         )
         assertEquals(1, services.notifications.size)
@@ -97,23 +94,32 @@ class WorkflowExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.charging", "Charging", 0f, 0f),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.charging"), "Charging", 0f, 0f),
                 WorkflowNode(
-                    "cond", "action.condition", "If", 0f, 100f,
+                    NodeId("cond"), NodeTypeId("action.condition"), "If", 0f, 100f,
                     config = mapOf(
-                        "type" to "auto", "field" to "level", "operator" to "greaterThan", "value" to "5",
+                        CONDITION_TYPE_CONFIG_KEY to ComparisonType.AUTO.name,
+                        ConfigKey("field") to "level",
+                        CONDITION_OPERATOR_KEY to ComparisonOperator.GREATER_THAN.name,
+                        ConfigKey("value") to "5",
                     ),
                 ),
-                WorkflowNode("yes", "action.notify", "Yes", 0f, 200f, config = mapOf("text" to "yes")),
-                WorkflowNode("no", "action.notify", "No", 200f, 200f, config = mapOf("text" to "no")),
+                WorkflowNode(
+                    NodeId("yes"), NodeTypeId("action.notify"), "Yes", 0f, 200f,
+                    config = mapOf(ConfigKey("text") to "yes"),
+                ),
+                WorkflowNode(
+                    NodeId("no"), NodeTypeId("action.notify"), "No", 200f, 200f,
+                    config = mapOf(ConfigKey("text") to "no"),
+                ),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "cond", "in"),
-                ExecConnection("c2", "cond", "true", "yes", "in"),
-                ExecConnection("c3", "cond", "false", "no", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("cond"), PortName("in")),
+                ExecConnection("c2", NodeId("cond"), PortName("true"), NodeId("yes"), PortName("in")),
+                ExecConnection("c3", NodeId("cond"), PortName("false"), NodeId("no"), PortName("in")),
             ),
             dataConnections = listOf(
-                DataConnection("d1", "n1", "state", "cond", "source"),
+                DataConnection("d1", NodeId("n1"), PortName("state"), NodeId("cond"), PortName("source")),
             ),
         )
         // BatteryState.level = 50 > 5 -> true branch.
@@ -122,8 +128,8 @@ class WorkflowExecutorTest {
         )
         executor.executeFrom(
             workflow,
-            workflow.node("n1")!!,
-            TriggerOutput(mapOf("state" to Item.of(battery))),
+            workflow.node(NodeId("n1"))!!,
+            TriggerOutput(mapOf(PortName("state") to Item.of(battery))),
         )
         assertEquals(1, services.notifications.size)
         assertEquals("yes", services.notifications.first().second)
@@ -136,23 +142,32 @@ class WorkflowExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.charging", "Charging", 0f, 0f),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.charging"), "Charging", 0f, 0f),
                 WorkflowNode(
-                    "cond", "action.condition", "If", 0f, 100f,
+                    NodeId("cond"), NodeTypeId("action.condition"), "If", 0f, 100f,
                     config = mapOf(
-                        "type" to "auto", "field" to "level", "operator" to "lessThan", "value" to "20",
+                        CONDITION_TYPE_CONFIG_KEY to ComparisonType.AUTO.name,
+                        ConfigKey("field") to "level",
+                        CONDITION_OPERATOR_KEY to ComparisonOperator.LESS_THAN.name,
+                        ConfigKey("value") to "20",
                     ),
                 ),
-                WorkflowNode("yes", "action.notify", "Yes", 0f, 200f, config = mapOf("text" to "yes")),
-                WorkflowNode("no", "action.notify", "No", 200f, 200f, config = mapOf("text" to "no")),
+                WorkflowNode(
+                    NodeId("yes"), NodeTypeId("action.notify"), "Yes", 0f, 200f,
+                    config = mapOf(ConfigKey("text") to "yes"),
+                ),
+                WorkflowNode(
+                    NodeId("no"), NodeTypeId("action.notify"), "No", 200f, 200f,
+                    config = mapOf(ConfigKey("text") to "no"),
+                ),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "cond", "in"),
-                ExecConnection("c2", "cond", "true", "yes", "in"),
-                ExecConnection("c3", "cond", "false", "no", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("cond"), PortName("in")),
+                ExecConnection("c2", NodeId("cond"), PortName("true"), NodeId("yes"), PortName("in")),
+                ExecConnection("c3", NodeId("cond"), PortName("false"), NodeId("no"), PortName("in")),
             ),
             dataConnections = listOf(
-                DataConnection("d1", "n1", "state", "cond", "source"),
+                DataConnection("d1", NodeId("n1"), PortName("state"), NodeId("cond"), PortName("source")),
             ),
         )
         // BatteryState.level = 50 < 20 is false -> false branch.
@@ -161,8 +176,8 @@ class WorkflowExecutorTest {
         )
         executor.executeFrom(
             workflow,
-            workflow.node("n1")!!,
-            TriggerOutput(mapOf("state" to Item.of(battery))),
+            workflow.node(NodeId("n1"))!!,
+            TriggerOutput(mapOf(PortName("state") to Item.of(battery))),
         )
         assertEquals(1, services.notifications.size)
         assertEquals("no", services.notifications.first().second)
@@ -176,16 +191,16 @@ class WorkflowExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.manual", "Manual", 0f, 0f),
-                WorkflowNode("n2", "action.notify", "Notify", 0f, 100f),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(NodeId("n2"), NodeTypeId("action.notify"), "Notify", 0f, 100f),
             ),
             execConnections = listOf(
                 // cycle: n1 -> n2 -> n1
-                ExecConnection("c1", "n1", "out", "n2", "in"),
-                ExecConnection("c2", "n2", "out", "n1", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
+                ExecConnection("c2", NodeId("n2"), PortName("out"), NodeId("n1"), PortName("in")),
             ),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
+        executor.executeFrom(workflow, workflow.node(NodeId("n1"))!!, TriggerOutput(emptyMap()))
         assertTrue(services.notifications.isEmpty())
         assertTrue(logs.any { it.contains("Workflow invalid") })
     }
@@ -198,27 +213,30 @@ class WorkflowExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.sms", "SMS", 0f, 0f),
-                WorkflowNode("brk", "action.break", "Break", 0f, 100f),
-                WorkflowNode("n2", "action.log", "Log", 0f, 200f),
-                WorkflowNode("n3", "action.notify", "Notify", 0f, 300f, config = mapOf("text" to "after")),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.sms"), "SMS", 0f, 0f),
+                WorkflowNode(NodeId("brk"), NodeTypeId("action.break"), "Break", 0f, 100f),
+                WorkflowNode(NodeId("n2"), NodeTypeId("action.log"), "Log", 0f, 200f),
+                WorkflowNode(
+                    NodeId("n3"), NodeTypeId("action.notify"), "Notify", 0f, 300f,
+                    config = mapOf(ConfigKey("text") to "after"),
+                ),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "brk", "in"),
-                ExecConnection("c2", "brk", "out", "n2", "in"),
-                ExecConnection("c3", "n2", "out", "n3", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("brk"), PortName("in")),
+                ExecConnection("c2", NodeId("brk"), PortName("out"), NodeId("n2"), PortName("in")),
+                ExecConnection("c3", NodeId("n2"), PortName("out"), NodeId("n3"), PortName("in")),
             ),
             dataConnections = listOf(
-                DataConnection("d1", "n1", "sms", "brk", "struct"),
-                DataConnection("d2", "brk", "body", "n2", "message"),
+                DataConnection("d1", NodeId("n1"), PortName("sms"), NodeId("brk"), PortName("struct")),
+                DataConnection("d2", NodeId("brk"), PortName("body"), NodeId("n2"), PortName("message")),
             ),
         )
         val sms = com.example.ottomatic.domain.model.items.SmsMessage("+1555", "hi", 1L)
         executor.executeFrom(
             workflow,
-            workflow.node("n1")!!,
+            workflow.node(NodeId("n1"))!!,
             TriggerOutput(
-                mapOf("sms" to com.example.ottomatic.domain.model.schema.Item.of(sms)),
+                mapOf(PortName("sms") to com.example.ottomatic.domain.model.schema.Item.of(sms)),
             ),
         )
         assertTrue(logs.contains("hi"))
@@ -233,16 +251,22 @@ class WorkflowExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.manual", "Manual", 0f, 0f),
-                WorkflowNode("n2", "action.stop", "Stop", 0f, 100f, config = mapOf("reason" to "done")),
-                WorkflowNode("n3", "action.notify", "ShouldNotRun", 0f, 200f, config = mapOf("text" to "x")),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(
+                    NodeId("n2"), NodeTypeId("action.stop"), "Stop", 0f, 100f,
+                    config = mapOf(ConfigKey("reason") to "done"),
+                ),
+                WorkflowNode(
+                    NodeId("n3"), NodeTypeId("action.notify"), "ShouldNotRun", 0f, 200f,
+                    config = mapOf(ConfigKey("text") to "x"),
+                ),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "n2", "in"),
-                ExecConnection("c2", "n2", "out", "n3", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
+                ExecConnection("c2", NodeId("n2"), PortName("out"), NodeId("n3"), PortName("in")),
             ),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
+        executor.executeFrom(workflow, workflow.node(NodeId("n1"))!!, TriggerOutput(emptyMap()))
         assertTrue(services.notifications.isEmpty())
         assertTrue(logs.any { it.contains("Stop: done") })
         assertTrue(logs.any { it.contains("halted") })
@@ -256,14 +280,17 @@ class WorkflowExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.manual", "Manual", 0f, 0f),
-                WorkflowNode("n2", "action.enable_macro", "Enable", 0f, 100f, config = mapOf("macroId" to "abc-123")),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(
+                    NodeId("n2"), NodeTypeId("action.enable_macro"), "Enable", 0f, 100f,
+                    config = mapOf(ConfigKey("macroId") to "abc-123"),
+                ),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "n2", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
             ),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
+        executor.executeFrom(workflow, workflow.node(NodeId("n1"))!!, TriggerOutput(emptyMap()))
         assertEquals(listOf("abc-123"), macroControl.enabled)
         assertTrue(macroControl.disabled.isEmpty())
     }
@@ -275,28 +302,28 @@ class WorkflowExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.sms", "SMS", 0f, 0f),
-                WorkflowNode("brk", "action.break", "Break", 0f, 100f),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.sms"), "SMS", 0f, 0f),
+                WorkflowNode(NodeId("brk"), NodeTypeId("action.break"), "Break", 0f, 100f),
                 WorkflowNode(
-                    "n2", "action.send_sms", "Reply", 0f, 200f,
-                    config = mapOf("body" to "Got it"),
+                    NodeId("n2"), NodeTypeId("action.send_sms"), "Reply", 0f, 200f,
+                    config = mapOf(ConfigKey("body") to "Got it"),
                 ),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "brk", "in"),
-                ExecConnection("c2", "brk", "out", "n2", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("brk"), PortName("in")),
+                ExecConnection("c2", NodeId("brk"), PortName("out"), NodeId("n2"), PortName("in")),
             ),
             dataConnections = listOf(
-                DataConnection("d1", "n1", "sms", "brk", "struct"),
-                DataConnection("d2", "brk", "sender", "n2", "to"),
+                DataConnection("d1", NodeId("n1"), PortName("sms"), NodeId("brk"), PortName("struct")),
+                DataConnection("d2", NodeId("brk"), PortName("sender"), NodeId("n2"), PortName("to")),
             ),
         )
         val sms = com.example.ottomatic.domain.model.items.SmsMessage("+1555", "hello", 1L)
         executor.executeFrom(
             workflow,
-            workflow.node("n1")!!,
+            workflow.node(NodeId("n1"))!!,
             TriggerOutput(
-                mapOf("sms" to com.example.ottomatic.domain.model.schema.Item.of(sms)),
+                mapOf(PortName("sms") to com.example.ottomatic.domain.model.schema.Item.of(sms)),
             ),
         )
         assertEquals(listOf("+1555" to "Got it"), services.smsSent)
@@ -309,12 +336,15 @@ class WorkflowExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.manual", "Manual", 0f, 0f),
-                WorkflowNode("n2", "action.bluetooth", "BT", 0f, 100f, config = mapOf("state" to "off")),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(
+                    NodeId("n2"), NodeTypeId("action.bluetooth"), "BT", 0f, 100f,
+                    config = mapOf(ConfigKey("state") to "off"),
+                ),
             ),
-            execConnections = listOf(ExecConnection("c1", "n1", "out", "n2", "in")),
+            execConnections = listOf(ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in"))),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
+        executor.executeFrom(workflow, workflow.node(NodeId("n1"))!!, TriggerOutput(emptyMap()))
         assertEquals(false, services.bluetoothEnabled)
     }
 
@@ -325,79 +355,15 @@ class WorkflowExecutorTest {
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.manual", "Manual", 0f, 0f),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
                 WorkflowNode(
-                    "n2", "action.clipboard", "Clip", 0f, 100f,
-                    config = mapOf("mode" to "clear", "text" to "ignored"),
+                    NodeId("n2"), NodeTypeId("action.clipboard"), "Clip", 0f, 100f,
+                    config = mapOf(ConfigKey("mode") to ClipboardMode.CLEAR.name, ConfigKey("text") to "ignored"),
                 ),
             ),
-            execConnections = listOf(ExecConnection("c1", "n1", "out", "n2", "in")),
+            execConnections = listOf(ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in"))),
         )
-        executor.executeFrom(workflow, workflow.node("n1")!!, TriggerOutput(emptyMap()))
+        executor.executeFrom(workflow, workflow.node(NodeId("n1"))!!, TriggerOutput(emptyMap()))
         assertEquals(listOf<String?>(null), services.clipboard)
-    }
-
-    private class RecordingMacroControl : MacroControl {
-        val enabled = mutableListOf<String>()
-        val disabled = mutableListOf<String>()
-        override fun enable(macroId: String): Boolean { enabled += macroId; return true }
-        override fun disable(macroId: String): Boolean { disabled += macroId; return true }
-    }
-
-    private class RecordingSystemServices : SystemServices {
-        val notifications = mutableListOf<Pair<String, String>>()
-        val logs = mutableListOf<String>()
-        val smsSent = mutableListOf<Pair<String, String>>()
-        val calls = mutableListOf<String>()
-        val clipboard = mutableListOf<String?>()
-        var torchEnabled: Boolean? = null
-        var bluetoothEnabled: Boolean? = null
-        var ringerMode: String? = null
-
-        override fun notify(title: String, text: String): Boolean {
-            notifications += title to text
-            return true
-        }
-        override fun setWifi(enabled: Boolean): Boolean? = null
-        override fun httpRequest(request: HttpRequest): HttpResponse = HttpResponse(200, "")
-        override fun setVolume(stream: String, mode: String, value: Int): VolumeResult? = null
-        override fun setDnd(enabled: Boolean, level: String): DndResult? = null
-        override fun setBluetooth(enabled: Boolean): BluetoothResult? {
-            bluetoothEnabled = enabled
-            return BluetoothResult(enabled = enabled, changed = true)
-        }
-        override fun setRingerMode(mode: String): RingerResult? {
-            ringerMode = mode
-            return RingerResult(mode = mode, changed = true)
-        }
-        override fun setBrightness(value: Int, auto: Boolean): BrightnessResult? =
-            BrightnessResult(value = value, auto = auto, changed = true)
-        override fun setScreenTimeout(ms: Int): ScreenTimeoutResult? =
-            ScreenTimeoutResult(ms = ms, changed = true)
-        override fun setAutoRotate(enabled: Boolean): AutoRotateResult? =
-            AutoRotateResult(enabled = enabled, changed = true)
-        override fun setTorch(enabled: Boolean): TorchResult? {
-            torchEnabled = enabled
-            return TorchResult(enabled = enabled, changed = true)
-        }
-        override fun vibrate(durationMs: Int, pattern: List<Long>): Boolean = true
-        override fun launchApp(packageName: String): Boolean = true
-        override fun openUrl(url: String): Boolean = true
-        override fun sendSms(to: String, body: String): Boolean {
-            smsSent += to to body
-            return true
-        }
-        override fun call(number: String): Boolean {
-            calls += number
-            return true
-        }
-        override fun setClipboard(text: String): Boolean {
-            clipboard += text
-            return true
-        }
-        override fun clearClipboard(): Boolean {
-            clipboard += null
-            return true
-        }
     }
 }

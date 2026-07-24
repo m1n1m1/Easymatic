@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -9,6 +10,7 @@ import androidx.work.WorkerParameters
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.engine.trigger.BatteryDirection
 
 /**
  * Periodic worker that polls the current battery level and emits a
@@ -33,7 +35,9 @@ class BatteryLevelWorker(
 
     override suspend fun doWork(): Result {
         val nodeId = inputData.getString(KEY_NODE_ID) ?: return Result.failure()
-        val direction = inputData.getString(KEY_DIRECTION) ?: DIRECTION_BELOW
+        val direction = inputData.getString(KEY_DIRECTION)
+            ?.let { name -> runCatching { BatteryDirection.valueOf(name) }.getOrNull() }
+            ?: BatteryDirection.BELOW
         val threshold = inputData.getInt(KEY_LEVEL, DEFAULT_THRESHOLD)
         val battery = readBattery()
         if (battery.level >= 0) {
@@ -44,20 +48,20 @@ class BatteryLevelWorker(
 
     private fun maybeEmit(
         nodeId: String,
-        direction: String,
+        direction: BatteryDirection,
         threshold: Int,
         battery: BatterySnapshot,
     ) {
         val nowSatisfied = when (direction) {
-            DIRECTION_ABOVE -> battery.level >= threshold
-            else -> battery.level <= threshold
+            BatteryDirection.ABOVE -> battery.level >= threshold
+            BatteryDirection.BELOW -> battery.level <= threshold
         }
         val wasSatisfied = prefs.getBoolean(prefsKey(nodeId, direction, threshold), !nowSatisfied)
         if (nowSatisfied && !wasSatisfied) {
             TriggerBus.emit(
                 TriggerEvent(
                     source = TriggerSource.BATTERY,
-                    triggerNodeId = nodeId,
+                    triggerNodeId = NodeId(nodeId),
                     payload = mapOf(
                         ChargingReceiver.KEY_EVENT to EVENT_LEVEL_POLL,
                         ChargingReceiver.KEY_LEVEL to battery.level.toString(),
@@ -90,8 +94,8 @@ class BatteryLevelWorker(
         return BatterySnapshot(level = percent, isCharging = isCharging, plugged = plugged)
     }
 
-    private fun prefsKey(nodeId: String, direction: String, threshold: Int): String =
-        "$PREFS_KEY_PREFIX$nodeId/$direction/$threshold"
+    private fun prefsKey(nodeId: String, direction: BatteryDirection, threshold: Int): String =
+        "$PREFS_KEY_PREFIX$nodeId/${direction.name}/$threshold"
 
     private data class BatterySnapshot(
         val level: Int = -1,
@@ -103,9 +107,6 @@ class BatteryLevelWorker(
         const val KEY_NODE_ID = "nodeId"
         const val KEY_DIRECTION = "direction"
         const val KEY_LEVEL = "level"
-
-        const val DIRECTION_ABOVE = "above"
-        const val DIRECTION_BELOW = "below"
 
         const val EVENT_LEVEL_POLL = "level_poll"
 

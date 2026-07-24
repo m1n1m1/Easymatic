@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import android.app.Notification
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
@@ -24,7 +25,7 @@ class NotificationListener : NotificationListenerService() {
         TriggerBus.emit(
             TriggerEvent(
                 source = TriggerSource.NOTIFICATION,
-                triggerNodeId = NotificationTriggerBridge.NODE_ID_SENTINEL,
+                triggerNodeId = NodeId.BROADCAST,
                 payload = mapOf(
                     "package" to sbn.packageName,
                     "title" to title,
@@ -37,5 +38,4 @@ class NotificationListener : NotificationListenerService() {
 }
 
 object NotificationTriggerBridge {
-    const val NODE_ID_SENTINEL = "*"
 }

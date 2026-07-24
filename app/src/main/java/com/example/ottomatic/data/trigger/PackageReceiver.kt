@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -32,7 +33,7 @@ class PackageReceiver : BroadcastReceiver() {
         TriggerBus.emit(
             TriggerEvent(
                 source = TriggerSource.PACKAGE,
-                triggerNodeId = NODE_ID_SENTINEL,
+                triggerNodeId = NodeId.BROADCAST,
                 payload = mapOf(
                     KEY_TRIGGER_TYPE to "app_installed",
                     KEY_EVENT to event,
@@ -44,7 +45,6 @@ class PackageReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        const val NODE_ID_SENTINEL = "*"
 
         const val KEY_TRIGGER_TYPE = "triggerType"
         const val KEY_EVENT = "event"

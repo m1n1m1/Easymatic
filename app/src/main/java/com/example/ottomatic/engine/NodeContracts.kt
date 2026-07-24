@@ -1,92 +1,118 @@
 package com.example.ottomatic.engine
 
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.execOut
+import com.example.ottomatic.domain.model.Port
+import com.example.ottomatic.domain.model.ExecPorts
+import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.schema.Item
-import com.example.ottomatic.domain.model.schema.asTyped
 
-/** Raw graph values available while a contract constructs a typed action input. */
-class NodeInput internal constructor(
-    val node: WorkflowNode,
-    private val data: Map<String, Item>,
-) {
-    fun configString(key: String, default: String = ""): String =
-        node.config[key]?.takeIf { it.isNotBlank() } ?: default
-
-    fun configInt(key: String, default: Int = 0): Int = node.config[key]?.toIntOrNull() ?: default
-
-    fun configBoolean(key: String, default: Boolean = false): Boolean =
-        node.config[key]?.toBooleanStrictOrNull() ?: default
-
-    fun item(port: String): Item? = data[port]
-
-    /** Reads a String port, falling back to its paired static configuration field. */
-    fun text(port: String, default: String = ""): String =
-        data[port]?.asTyped<String>()?.takeIf { it.isNotEmpty() } ?: configString(port, default)
+/**
+ * The EXECUTION output a node pulses after running. A node declares which
+ * routes it may take via [ExecOutputs]; the port name is derived from the route,
+ * so no node maps routes onto port-name strings any more.
+ */
+enum class ExecutionRoute(val portName: PortName) {
+    OUT(ExecPorts.OUT),
+    TRUE(ExecPorts.TRUE),
+    FALSE(ExecPorts.FALSE),
 }
 
-sealed interface ExecutionRoute {
-    data object Out : ExecutionRoute
-    data object True : ExecutionRoute
-    data object False : ExecutionRoute
+/** The set of EXECUTION output ports a node exposes. */
+enum class ExecOutputs(val routes: List<ExecutionRoute>) {
+    /** A single `out` port: the node always continues along one path. */
+    SINGLE(listOf(ExecutionRoute.OUT)),
+
+    /** `true` / `false` ports: the node routes conditionally. */
+    BRANCH(listOf(ExecutionRoute.TRUE, ExecutionRoute.FALSE)),
+    ;
+
+    val ports: List<Port> get() = routes.map { execOut(it.portName) }
 }
 
-/** Typed result produced by an action or trigger before it is encoded for the graph runtime. */
+/** Typed result produced by a node before it is encoded for the graph runtime. */
 data class NodeOutput<out T : Any>(
     val value: T,
-    val route: ExecutionRoute = ExecutionRoute.Out,
+    val route: ExecutionRoute = ExecutionRoute.OUT,
     val halt: Boolean = false,
 )
 
-/** Internal executor representation. Port-name maps do not escape this contract boundary. */
+/** Internal executor representation. Port-name maps do not escape this boundary. */
 class EncodedNodeOutput internal constructor(
-    val execOut: List<String>,
-    val dataOut: Map<String, Item>,
+    val execOut: List<PortName>,
+    val dataOut: Map<PortName, Item>,
     val halt: Boolean,
 )
 
 /**
- * Defines how one action's graph values become its Kotlin input and output ports.
- * Constructed as part of the action's single [ActionNodeDefinition] via [actionNode].
+ * Raw graph values for a placed node. Only the two adaptive nodes
+ * ([RawAction]) see this: every other node receives a typed config object
+ * decoded from its declared config class.
  */
-class ActionContract<I : Any, O : Any>(
-    val typeId: String,
-    private val decode: (NodeInput) -> I,
-    private val encodeData: (O) -> Map<String, Item>,
-    private val encodeRoute: (ExecutionRoute) -> List<String> = { listOf("out") },
+class NodeInput internal constructor(
+    val node: WorkflowNode,
+    private val data: Map<PortName, Item>,
 ) {
-    fun input(values: NodeInput): I = decode(values)
+    /** The item wired into [port], or null when the port is unwired. */
+    fun item(port: PortName): Item? = data[port]
 
-    fun output(output: NodeOutput<O>): EncodedNodeOutput = EncodedNodeOutput(
-        execOut = encodeRoute(output.route),
-        dataOut = encodeData(output.value),
-        halt = output.halt,
-    )
+    /** The wired value of [port] as text, or null when unwired or empty. */
+    fun text(port: PortName): String? = data[port]?.value?.toString()?.takeIf { it.isNotEmpty() }
 }
 
 /** Non-generic execution bridge used by the heterogeneous action registry. */
 interface ExecutableAction {
     val definition: ActionNodeDefinition<*, *>
 
-    val typeId: String get() = definition.typeId
+    val typeId: NodeTypeId get() = definition.typeId
 
-    suspend fun run(input: NodeInput, context: ExecutionContext): EncodedNodeOutput
+    suspend fun run(node: WorkflowNode, data: Map<PortName, Item>, context: ExecutionContext): EncodedNodeOutput
 }
 
 /**
- * An action receives and returns only its contract's Kotlin types. The generic
- * bridge keeps the graph's string port IDs at the executor boundary.
- *
- * The action's [definition] is the node's single declaration (metadata, ports,
- * config fields and contract); it lives in the action's own file and the
- * domain registries derive their views from it.
+ * An action receives its declared config type [I] and returns its declared
+ * output type [O] — nothing else. The graph's string port names and config keys
+ * live entirely in the node's [definition], which derives them from [I] and
+ * from its output port declaration.
  */
 interface Action<I : Any, O : Any> : ExecutableAction {
     override val definition: ActionNodeDefinition<I, O>
 
-    val contract: ActionContract<I, O> get() = definition.contract
-
     suspend fun execute(input: I, context: ExecutionContext): NodeOutput<O>
 
-    override suspend fun run(input: NodeInput, context: ExecutionContext): EncodedNodeOutput =
-        contract.output(execute(contract.input(input), context))
+    override suspend fun run(
+        node: WorkflowNode,
+        data: Map<PortName, Item>,
+        context: ExecutionContext,
+    ): EncodedNodeOutput = definition.encode(execute(definition.schema.decode(node, data), context))
+}
+
+/**
+ * Escape hatch for the two *adaptive* actions (`action.break`,
+ * `action.condition`), whose data ports are not statically known: their output
+ * ports are derived from the schema of whatever struct is connected
+ * ([com.example.ottomatic.domain.registry.effectivePorts]), so they emit a
+ * port-keyed map directly and read their wildcard inputs as raw [Item]s.
+ *
+ * They still receive their non-wildcard configuration as a typed [C], so the
+ * only untyped surface left in the node system is the port-keyed map these two
+ * nodes must produce by definition.
+ */
+interface RawAction<C : Any> : ExecutableAction {
+    override val definition: ActionNodeDefinition<C, Unit>
+
+    suspend fun executeRaw(
+        config: C,
+        input: NodeInput,
+        context: ExecutionContext,
+    ): NodeOutput<Map<PortName, Item>>
+
+    override suspend fun run(
+        node: WorkflowNode,
+        data: Map<PortName, Item>,
+        context: ExecutionContext,
+    ): EncodedNodeOutput = definition.encodeDynamic(
+        executeRaw(definition.schema.decode(node, data), NodeInput(node, data), context),
+    )
 }

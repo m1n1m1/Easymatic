@@ -1,5 +1,8 @@
 package com.example.ottomatic.engine.validation
 
+import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.PortKind
@@ -28,8 +31,8 @@ class GraphValidatorTest {
     fun `exec cycle is rejected`() {
         val wf = sampleWorkflow().copy(
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "n2", "in"),
-                ExecConnection("c2", "n2", "out", "n1", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
+                ExecConnection("c2", NodeId("n2"), PortName("out"), NodeId("n1"), PortName("in")),
             ),
         )
         val issues = GraphValidator(wf).validate()
@@ -40,7 +43,7 @@ class GraphValidatorTest {
     fun `data edge between exec ports is rejected`() {
         val wf = sampleWorkflow().copy(
             dataConnections = listOf(
-                DataConnection("d1", "n1", "out", "n2", "in"),
+                DataConnection("d1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
             ),
         )
         val issues = GraphValidator(wf).validate()
@@ -51,7 +54,7 @@ class GraphValidatorTest {
     fun `unknown exec port is rejected`() {
         val wf = sampleWorkflow().copy(
             execConnections = listOf(
-                ExecConnection("c1", "n1", "nope", "n2", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("nope"), NodeId("n2"), PortName("in")),
             ),
         )
         val issues = GraphValidator(wf).validate()
@@ -68,19 +71,19 @@ class GraphValidatorTest {
         // where n6 depends on n2 exec-wise, then data n6->n2 must be rejected.
         val wf = sampleWorkflow().copy(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.manual", "Manual", 0f, 0f),
-                WorkflowNode("n2", "action.http", "HTTP", 0f, 100f),
-                WorkflowNode("n6", "action.notify", "Notify", 0f, 200f),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(NodeId("n2"), NodeTypeId("action.http"), "HTTP", 0f, 100f),
+                WorkflowNode(NodeId("n6"), NodeTypeId("action.notify"), "Notify", 0f, 200f),
             ),
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "n2", "in"),
-                ExecConnection("c2", "n2", "out", "n6", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
+                ExecConnection("c2", NodeId("n2"), PortName("out"), NodeId("n6"), PortName("in")),
             ),
             dataConnections = listOf(
                 // No node currently has a DATA *input* port in v1, so this edge
                 // will fail on the port-kind check rather than the strict-data
                 // check. Still assert it is an error either way.
-                DataConnection("d1", "n2", "response", "n6", "in"),
+                DataConnection("d1", NodeId("n2"), PortName("response"), NodeId("n6"), PortName("in")),
             ),
         )
         val issues = GraphValidator(wf).validate()
@@ -103,8 +106,8 @@ class GraphValidatorTest {
     fun `isValid returns false for exec cycle`() {
         val wf = sampleWorkflow().copy(
             execConnections = listOf(
-                ExecConnection("c1", "n1", "out", "n2", "in"),
-                ExecConnection("c2", "n2", "out", "n1", "in"),
+                ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
+                ExecConnection("c2", NodeId("n2"), PortName("out"), NodeId("n1"), PortName("in")),
             ),
         )
         assertFalse(GraphValidator(wf).isValid())
@@ -114,14 +117,14 @@ class GraphValidatorTest {
     fun `condition with a source data edge is not flagged`() {
         val wf = Workflow(
             nodes = listOf(
-                WorkflowNode("n1", "trigger.charging", "Charging", 0f, 0f),
-                WorkflowNode("c", "action.condition", "If", 0f, 100f),
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.charging"), "Charging", 0f, 0f),
+                WorkflowNode(NodeId("c"), NodeTypeId("action.condition"), "If", 0f, 100f),
             ),
             execConnections = listOf(
-                ExecConnection("e1", "n1", "out", "c", "in"),
+                ExecConnection("e1", NodeId("n1"), PortName("out"), NodeId("c"), PortName("in")),
             ),
             dataConnections = listOf(
-                DataConnection("d1", "n1", "state", "c", "source"),
+                DataConnection("d1", NodeId("n1"), PortName("state"), NodeId("c"), PortName("source")),
             ),
         )
         val issues = GraphValidator(wf).validate()
@@ -136,11 +139,11 @@ class GraphValidatorTest {
 
     private fun sampleWorkflow(): Workflow = Workflow(
         nodes = listOf(
-            WorkflowNode("n1", "trigger.manual", "Manual Trigger", 0f, 0f),
-            WorkflowNode("n2", "action.http", "HTTP Request", 0f, 100f),
+            WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual Trigger", 0f, 0f),
+            WorkflowNode(NodeId("n2"), NodeTypeId("action.http"), "HTTP Request", 0f, 100f),
         ),
         execConnections = listOf(
-            ExecConnection("c1", "n1", "out", "n2", "in"),
+            ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
         ),
     )
 }

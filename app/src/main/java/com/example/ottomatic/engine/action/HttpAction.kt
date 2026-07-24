@@ -1,84 +1,55 @@
 package com.example.ottomatic.engine.action
 
+import com.example.ottomatic.core.service.HttpMethod
 import com.example.ottomatic.core.service.HttpRequest
 import com.example.ottomatic.domain.model.NodeCategory
-import com.example.ottomatic.domain.model.dataInPort
+import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.Multiline
+import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.HttpResponseItem
-import com.example.ottomatic.domain.model.schema.Item
-import com.example.ottomatic.domain.registry.ConfigField
-import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.engine.Action
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.actionNode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-data class HttpInput(val method: String, val url: String, val headers: String, val body: String)
+/**
+ * Config for `action.http`. [url], [headers] and [body] are `@Wired`: each may
+ * be fed from an upstream data edge, falling back to the value typed in the
+ * form.
+ */
+@Serializable
+data class HttpConfig(
+    @Label("Method") val method: HttpMethod = HttpMethod.GET,
+    @Label("URL") @Wired val url: String = "https://example.com",
+    @Label("Headers (JSON, optional)") @Multiline @Wired val headers: String = "",
+    @Label("Body") @Multiline @Wired val body: String = "",
+)
 
 /**
- * Action for `action.http`. Performs an HTTP request via [SystemServices]
- * and exposes the typed [HttpResponseItem] on its `response` data port.
- *
- * Its typed [HttpInput] is built by the action contract: `url`, `headers` and
- * `body` may be wired from upstream data or use their static form literals.
+ * Action for `action.http`. Performs an HTTP request via
+ * [com.example.ottomatic.core.service.SystemServices] and exposes the typed
+ * [HttpResponseItem] on its `response` data port.
  */
-class HttpAction : Action<HttpInput, HttpResponseItem> {
+class HttpAction : Action<HttpConfig, HttpResponseItem> {
 
-    override val definition = actionNode<HttpInput, HttpResponseItem>(
+    override val definition = actionNode<HttpConfig, HttpResponseItem>(
         typeId = "action.http",
         displayName = "HTTP Request",
         description = "Calls a web API and exposes the typed response",
         category = NodeCategory.NETWORK,
-        iconKey = "http",
-        dataInputs = listOf(
-            dataInPort<String>("url"),
-            dataInPort<String>("headers"),
-            dataInPort<String>("body"),
-        ),
-        dataOutputs = listOf(dataOut<HttpResponseItem>("response")),
-        configFields = listOf(
-            ConfigField(
-                key = "method",
-                label = "Method",
-                type = ConfigFieldType.ENUM(options = listOf("GET", "POST", "PUT", "DELETE")),
-                defaultValue = "GET",
-            ),
-            ConfigField(
-                key = "url",
-                label = "URL",
-                type = ConfigFieldType.STR,
-                defaultValue = "https://example.com",
-            ),
-            ConfigField(
-                key = "headers",
-                label = "Headers (JSON, optional)",
-                type = ConfigFieldType.MULTILINE,
-            ),
-            ConfigField(
-                key = "body",
-                label = "Body",
-                type = ConfigFieldType.MULTILINE,
-            ),
-        ),
-        decode = { input ->
-            HttpInput(
-                method = input.configString("method", "GET"),
-                url = input.text("url", "https://example.com"),
-                headers = input.text("headers"),
-                body = input.text("body"),
-            )
-        },
-        encodeData = { response -> mapOf("response" to Item.of(response)) },
+        icon = NodeIcon.HTTP,
+        output = dataOut<HttpResponseItem>("response"),
     )
 
-    override suspend fun execute(input: HttpInput, context: ExecutionContext): NodeOutput<HttpResponseItem> {
-        val headers = parseHeaders(input.headers)
-        val response = withContext(Dispatchers.IO) {
-            context.systemServices.httpRequest(HttpRequest(input.method, input.url, headers, input.body))
-        }
+    override suspend fun execute(input: HttpConfig, context: ExecutionContext): NodeOutput<HttpResponseItem> {
+        val request = HttpRequest(input.method, input.url, parseHeaders(input.headers), input.body)
+        val response = withContext(Dispatchers.IO) { context.systemServices.httpRequest(request) }
         return NodeOutput(
             HttpResponseItem(
                 statusCode = response.statusCode,
@@ -90,8 +61,6 @@ class HttpAction : Action<HttpInput, HttpResponseItem> {
 
     private fun parseHeaders(json: String): Map<String, String> {
         if (json.isBlank()) return emptyMap()
-        return runCatching {
-            Json.decodeFromString<Map<String, String>>(json)
-        }.getOrDefault(emptyMap())
+        return runCatching { Json.decodeFromString<Map<String, String>>(json) }.getOrDefault(emptyMap())
     }
 }

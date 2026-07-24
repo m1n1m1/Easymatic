@@ -1,5 +1,6 @@
 package com.example.ottomatic.domain.registry
 
+import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.engine.ExecutableAction
 import com.example.ottomatic.engine.action.AutoRotateAction
 import com.example.ottomatic.engine.action.BluetoothAction
@@ -68,9 +69,9 @@ object ActionRegistry {
         BreakStructAction(),
     )
 
-    private val byId: Map<String, ExecutableAction> = actions.associateBy { it.typeId }
+    private val byId: Map<NodeTypeId, ExecutableAction> = actions.associateBy { it.typeId }
 
-    fun byId(typeId: String): ExecutableAction? = byId[typeId]
+    fun byId(typeId: NodeTypeId): ExecutableAction? = byId[typeId]
 
     fun all(): List<ExecutableAction> = actions
 }

@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
@@ -27,7 +28,7 @@ interface TriggerHost {
      * schedule down when the trigger flow is cancelled.
      */
     fun armSchedule(
-        nodeId: String,
+        nodeId: NodeId,
         intervalMinutes: Long,
         cron: String?,
     ): ScheduleHandle
@@ -46,9 +47,9 @@ interface TriggerHost {
      * poll down when the trigger flow is cancelled.
      */
     fun armBatteryLevelPoll(
-        nodeId: String,
+        nodeId: NodeId,
         intervalMinutes: Long,
-        direction: String,
+        direction: BatteryDirection,
         threshold: Int,
     ): ScheduleHandle
 
@@ -70,7 +71,7 @@ interface TriggerHost {
      */
     @Suppress("LongParameterList") // Mirrors the GMS Geofence.Builder API surface.
     fun armGeofence(
-        nodeId: String,
+        nodeId: NodeId,
         latitude: Double,
         longitude: Double,
         radiusMeters: Float,
@@ -120,25 +121,6 @@ enum class GeofenceTransition {
     ENTER,
     EXIT,
     DWELL,
-    ;
-
-    companion object {
-        /** Parses a comma-separated string of `"enter"`, `"exit"`, `"dwell"`. */
-        fun parse(raw: String?): Set<GeofenceTransition> {
-            if (raw.isNullOrBlank()) return setOf(ENTER)
-            return raw.split(',')
-                .mapNotNull { token ->
-                    when (token.trim().lowercase()) {
-                        "enter" -> ENTER
-                        "exit" -> EXIT
-                        "dwell" -> DWELL
-                        else -> null
-                    }
-                }
-                .toSet()
-                .ifEmpty { setOf(ENTER) }
-        }
-    }
 }
 
 /** Default loitering delay (ms) forwarded to the platform when DWELL is armed. */

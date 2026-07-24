@@ -21,16 +21,20 @@ import android.provider.Settings
 import android.telephony.SmsManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import com.example.ottomatic.core.service.AudioStream
 import com.example.ottomatic.core.service.AutoRotateResult
 import com.example.ottomatic.core.service.BluetoothResult
 import com.example.ottomatic.core.service.BrightnessResult
+import com.example.ottomatic.core.service.DndLevel
 import com.example.ottomatic.core.service.DndResult
 import com.example.ottomatic.core.service.HttpRequest
 import com.example.ottomatic.core.service.HttpResponse
+import com.example.ottomatic.core.service.RingerMode
 import com.example.ottomatic.core.service.RingerResult
 import com.example.ottomatic.core.service.ScreenTimeoutResult
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.core.service.TorchResult
+import com.example.ottomatic.core.service.VolumeMode
 import com.example.ottomatic.core.service.VolumeResult
 import java.net.HttpURLConnection
 import java.net.URL
@@ -81,11 +85,11 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
 
     override fun httpRequest(request: HttpRequest): HttpResponse = runCatching {
         val connection = URL(request.url).openConnection() as HttpURLConnection
-        connection.requestMethod = request.method
+        connection.requestMethod = request.method.name
         connection.connectTimeout = TIMEOUT_MS
         connection.readTimeout = TIMEOUT_MS
         request.headers.forEach { (key, value) -> connection.setRequestProperty(key, value) }
-        if (request.method in setOf("POST", "PUT") && request.body.isNotEmpty()) {
+        if (request.method.sendsBody && request.body.isNotEmpty()) {
             connection.doOutput = true
             connection.outputStream.use { it.write(request.body.toByteArray()) }
         }
@@ -97,55 +101,54 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         HttpResponse(-1, e.message ?: "Request failed")
     }
 
-    override fun setVolume(stream: String, mode: String, value: Int): VolumeResult? = runCatching {
+    override fun setVolume(stream: AudioStream, mode: VolumeMode, value: Int): VolumeResult? = runCatching {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        val streamType = audioStreamType(stream) ?: return@runCatching null
+        val streamType = audioStreamType(stream)
         val maxVolume = audioManager.getStreamMaxVolume(streamType)
-        val appliedMode = if (mode.isBlank()) "up" else mode
-        when (appliedMode) {
-            "up" -> audioManager.adjustStreamVolume(
+        when (mode) {
+            VolumeMode.UP -> audioManager.adjustStreamVolume(
                 streamType, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI,
             )
-            "down" -> audioManager.adjustStreamVolume(
+            VolumeMode.DOWN -> audioManager.adjustStreamVolume(
                 streamType, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI,
             )
-            "set" -> {
+            VolumeMode.SET -> {
                 val clamped = value.coerceIn(0, maxVolume)
                 audioManager.setStreamVolume(streamType, clamped, AudioManager.FLAG_SHOW_UI)
             }
-            "mute" -> audioManager.adjustStreamVolume(
+            VolumeMode.MUTE -> audioManager.adjustStreamVolume(
                 streamType, AudioManager.ADJUST_MUTE, AudioManager.FLAG_SHOW_UI,
             )
-            "unmute" -> audioManager.adjustStreamVolume(
+            VolumeMode.UNMUTE -> audioManager.adjustStreamVolume(
                 streamType, AudioManager.ADJUST_UNMUTE, AudioManager.FLAG_SHOW_UI,
             )
-            else -> return@runCatching null
         }
         val current = audioManager.getStreamVolume(streamType)
-        VolumeResult(stream, appliedMode, current, maxVolume, changed = true)
+        VolumeResult(stream, mode, current, maxVolume, changed = true)
     }.getOrNull()
 
-    override fun setDnd(enabled: Boolean, level: String): DndResult? = runCatching {
+    override fun setDnd(enabled: Boolean, level: DndLevel): DndResult? = runCatching {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return@runCatching null
         if (!notificationManager.isNotificationPolicyAccessGranted) return@runCatching null
         val filter = if (enabled) {
             when (level) {
-                "alarms" -> NotificationManager.INTERRUPTION_FILTER_ALARMS
-                "silence" -> NotificationManager.INTERRUPTION_FILTER_NONE
-                else -> NotificationManager.INTERRUPTION_FILTER_PRIORITY
+                DndLevel.ALARMS -> NotificationManager.INTERRUPTION_FILTER_ALARMS
+                DndLevel.SILENCE -> NotificationManager.INTERRUPTION_FILTER_NONE
+                DndLevel.PRIORITY -> NotificationManager.INTERRUPTION_FILTER_PRIORITY
+                DndLevel.ALL -> NotificationManager.INTERRUPTION_FILTER_ALL
             }
         } else {
             NotificationManager.INTERRUPTION_FILTER_ALL
         }
         notificationManager.setInterruptionFilter(filter)
         val active = filter != NotificationManager.INTERRUPTION_FILTER_ALL
-        val levelName = when (filter) {
-            NotificationManager.INTERRUPTION_FILTER_PRIORITY -> "priority"
-            NotificationManager.INTERRUPTION_FILTER_ALARMS -> "alarms"
-            NotificationManager.INTERRUPTION_FILTER_NONE -> "silence"
-            else -> "all"
+        val effective = when (filter) {
+            NotificationManager.INTERRUPTION_FILTER_PRIORITY -> DndLevel.PRIORITY
+            NotificationManager.INTERRUPTION_FILTER_ALARMS -> DndLevel.ALARMS
+            NotificationManager.INTERRUPTION_FILTER_NONE -> DndLevel.SILENCE
+            else -> DndLevel.ALL
         }
-        DndResult(enabled = active, level = levelName, changed = true)
+        DndResult(enabled = active, level = effective, changed = true)
     }.getOrNull()
 
     override fun setBluetooth(enabled: Boolean): BluetoothResult? = runCatching {
@@ -164,12 +167,12 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         BluetoothResult(enabled = enabled, changed = true)
     }.getOrNull()
 
-    override fun setRingerMode(mode: String): RingerResult? = runCatching {
+    override fun setRingerMode(mode: RingerMode): RingerResult? = runCatching {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val ringerMode = when (mode) {
-            "silent" -> AudioManager.RINGER_MODE_SILENT
-            "vibrate" -> AudioManager.RINGER_MODE_VIBRATE
-            else -> AudioManager.RINGER_MODE_NORMAL
+            RingerMode.SILENT -> AudioManager.RINGER_MODE_SILENT
+            RingerMode.VIBRATE -> AudioManager.RINGER_MODE_VIBRATE
+            RingerMode.NORMAL -> AudioManager.RINGER_MODE_NORMAL
         }
         // Silent requires notification policy access on API 21+.
         if (ringerMode == AudioManager.RINGER_MODE_SILENT &&
@@ -179,12 +182,12 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
             return@runCatching null
         }
         audioManager.ringerMode = ringerMode
-        val modeName = when (audioManager.ringerMode) {
-            AudioManager.RINGER_MODE_SILENT -> "silent"
-            AudioManager.RINGER_MODE_VIBRATE -> "vibrate"
-            else -> "normal"
+        val effective = when (audioManager.ringerMode) {
+            AudioManager.RINGER_MODE_SILENT -> RingerMode.SILENT
+            AudioManager.RINGER_MODE_VIBRATE -> RingerMode.VIBRATE
+            else -> RingerMode.NORMAL
         }
-        RingerResult(mode = modeName, changed = true)
+        RingerResult(mode = effective, changed = true)
     }.getOrNull()
 
     override fun setBrightness(value: Int, auto: Boolean): BrightnessResult? = runCatching {
@@ -335,13 +338,12 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
     private fun canWriteSettings(): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.System.canWrite(context)
 
-    private fun audioStreamType(stream: String): Int? = when (stream) {
-        "media" -> AudioManager.STREAM_MUSIC
-        "ring" -> AudioManager.STREAM_RING
-        "alarm" -> AudioManager.STREAM_ALARM
-        "notification" -> AudioManager.STREAM_NOTIFICATION
-        "system" -> AudioManager.STREAM_SYSTEM
-        else -> null
+    private fun audioStreamType(stream: AudioStream): Int = when (stream) {
+        AudioStream.MEDIA -> AudioManager.STREAM_MUSIC
+        AudioStream.RING -> AudioManager.STREAM_RING
+        AudioStream.ALARM -> AudioManager.STREAM_ALARM
+        AudioStream.NOTIFICATION -> AudioManager.STREAM_NOTIFICATION
+        AudioStream.SYSTEM -> AudioManager.STREAM_SYSTEM
     }
 
     companion object {

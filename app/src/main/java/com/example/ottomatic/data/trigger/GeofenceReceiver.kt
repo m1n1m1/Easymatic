@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.trigger
 
+import com.example.ottomatic.core.model.NodeId
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -51,7 +52,7 @@ class GeofenceReceiver : BroadcastReceiver() {
                 val location = event.triggeringLocation
                 event.triggeringGeofences.orEmpty().map { geofence ->
                     Transition(
-                        nodeId = geofence.requestId,
+                        nodeId = NodeId(geofence.requestId),
                         transition = name,
                         latitude = location?.latitude,
                         longitude = location?.longitude,
@@ -70,7 +71,7 @@ class GeofenceReceiver : BroadcastReceiver() {
     }
 
     private data class Transition(
-        val nodeId: String,
+        val nodeId: NodeId,
         val transition: String,
         val latitude: Double?,
         val longitude: Double?,

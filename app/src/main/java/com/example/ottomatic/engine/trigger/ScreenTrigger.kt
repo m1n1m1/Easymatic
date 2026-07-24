@@ -10,26 +10,27 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Trigger for `trigger.screen`. Fires when the screen turns on or off.
  *
- * Produced by the runtime-registered [com.example.ottomatic.data.trigger.ScreenBroadcastBridge].
- *
- * Produces a typed [SystemState] item on the `state` data port.
+ * Produced by the runtime-registered
+ * [com.example.ottomatic.data.trigger.ScreenBroadcastBridge]. Produces a typed
+ * [SystemState] item on the `state` data port.
  */
-class ScreenTrigger : Trigger<SystemState> {
+class ScreenTrigger : Trigger<EventFilter<OnOffEvent>, SystemState> {
 
-    override val definition = systemStateDefinition(
+    override val definition = systemStateDefinition<EventFilter<OnOffEvent>>(
         typeId = "trigger.screen",
         displayName = "Screen On / Off",
         description = "Starts when the screen turns on or off",
         category = NodeCategory.DEVICE_STATE,
-        eventFilterLabel = "Event",
-        eventFilterOptions = listOf("on", "off"),
     )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<SystemState>> =
-        systemStateFlow(
-            source = TriggerSource.DISPLAY,
-            triggerType = "screen",
-            node = node,
-            host = host,
-        )
+    override fun activate(
+        config: EventFilter<OnOffEvent>,
+        node: WorkflowNode,
+        host: TriggerHost,
+    ): Flow<NodeOutput<SystemState>> = systemStateFlow(
+        source = TriggerSource.DISPLAY,
+        triggerType = "screen",
+        host = host,
+        event = config.event,
+    )
 }

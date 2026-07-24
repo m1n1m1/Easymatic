@@ -8,27 +8,27 @@ import com.example.ottomatic.engine.NodeOutput
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Trigger for `trigger.power_save`. Fires when power-save mode is toggled on
- * or off.
+ * Trigger for `trigger.power_save`. Fires when power-save mode is toggled.
  *
  * Produces a typed [SystemState] item on the `state` data port.
  */
-class PowerSaveTrigger : Trigger<SystemState> {
+class PowerSaveTrigger : Trigger<EventFilter<OnOffEvent>, SystemState> {
 
-    override val definition = systemStateDefinition(
+    override val definition = systemStateDefinition<EventFilter<OnOffEvent>>(
         typeId = "trigger.power_save",
         displayName = "Power Save Mode Changed",
         description = "Starts when power-save mode is toggled on or off",
         category = NodeCategory.POWER_BATTERY,
-        eventFilterLabel = "Event",
-        eventFilterOptions = listOf("on", "off"),
     )
 
-    override fun activate(node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<SystemState>> =
-        systemStateFlow(
-            source = TriggerSource.DISPLAY,
-            triggerType = "power_save",
-            node = node,
-            host = host,
-        )
+    override fun activate(
+        config: EventFilter<OnOffEvent>,
+        node: WorkflowNode,
+        host: TriggerHost,
+    ): Flow<NodeOutput<SystemState>> = systemStateFlow(
+        source = TriggerSource.DISPLAY,
+        triggerType = "power_save",
+        host = host,
+        event = config.event,
+    )
 }

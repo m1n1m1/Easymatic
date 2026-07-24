@@ -85,10 +85,15 @@ internal inline fun <reified T : Any> flattenItem(value: T): Map<String, String>
     }
 }
 
+/**
+ * Renders a [JsonElement] as the flat string form used by config defaults and
+ * by [Item.flat]. [JsonNull] must be matched before [JsonPrimitive] — it is a
+ * subclass whose `content` is the literal text `"null"`.
+ */
 @PublishedApi
 internal fun jsonElementToString(element: JsonElement): String = when (element) {
-    is JsonPrimitive -> element.content
     is JsonNull -> ""
+    is JsonPrimitive -> element.content
     else -> element.toString()
 }
 
