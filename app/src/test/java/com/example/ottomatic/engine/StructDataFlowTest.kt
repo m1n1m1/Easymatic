@@ -245,5 +245,18 @@ class StructDataFlowTest {
         override fun httpRequest(request: HttpRequest): HttpResponse = httpResponse
         override fun setVolume(stream: String, mode: String, value: Int): VolumeResult? = null
         override fun setDnd(enabled: Boolean, level: String): DndResult? = null
+        override fun setBluetooth(enabled: Boolean) = null
+        override fun setRingerMode(mode: String) = null
+        override fun setBrightness(value: Int, auto: Boolean) = null
+        override fun setScreenTimeout(ms: Int) = null
+        override fun setAutoRotate(enabled: Boolean) = null
+        override fun setTorch(enabled: Boolean) = null
+        override fun vibrate(durationMs: Int, pattern: List<Long>) = false
+        override fun launchApp(packageName: String) = false
+        override fun openUrl(url: String) = false
+        override fun sendSms(to: String, body: String) = false
+        override fun call(number: String) = false
+        override fun setClipboard(text: String) = false
+        override fun clearClipboard() = false
     }
 }

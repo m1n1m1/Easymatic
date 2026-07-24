@@ -6,18 +6,27 @@ import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.items.AutoRotateState
 import com.example.ottomatic.domain.model.items.BatteryState
+import com.example.ottomatic.domain.model.items.BluetoothState
+import com.example.ottomatic.domain.model.items.BrightnessState
+import com.example.ottomatic.domain.model.items.CallInitiated
 import com.example.ottomatic.domain.model.items.DndState
 import com.example.ottomatic.domain.model.items.GeofenceEvent
 import com.example.ottomatic.domain.model.items.HttpResponseItem
+import com.example.ottomatic.domain.model.items.MacroControlState
 import com.example.ottomatic.domain.model.items.MediaEvent
 import com.example.ottomatic.domain.model.items.ModeChange
 import com.example.ottomatic.domain.model.items.NotificationEvent
 import com.example.ottomatic.domain.model.items.PackageEvent
+import com.example.ottomatic.domain.model.items.RingerModeState
 import com.example.ottomatic.domain.model.items.ScheduleFire
+import com.example.ottomatic.domain.model.items.ScreenTimeoutState
 import com.example.ottomatic.domain.model.items.SmsMessage
+import com.example.ottomatic.domain.model.items.SmsSent
 import com.example.ottomatic.domain.model.items.StopwatchTick
 import com.example.ottomatic.domain.model.items.SystemState
+import com.example.ottomatic.domain.model.items.TorchState
 import com.example.ottomatic.domain.model.items.VariableChange
 import com.example.ottomatic.domain.model.items.VolumeState
 import com.example.ottomatic.domain.model.items.WifiState
@@ -452,6 +461,150 @@ object NodeTypeRegistry {
             category = NodeCategory.DEVICE_SETTINGS,
             ports = listOf(execIn(), execOut(), dataOut<DndState>("state")),
             iconKey = "dnd",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.log",
+            displayName = "Log Message",
+            description = "Writes a message to the engine log (use {{field}} for data values)",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.FLOW_CONTROL,
+            ports = listOf(execIn(), execOut()),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.stop",
+            displayName = "Stop Macro",
+            description = "Halts the current execution chain (stops following connected actions)",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.FLOW_CONTROL,
+            ports = listOf(execIn(), execOut()),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.enable_macro",
+            displayName = "Enable Macro",
+            description = "Enables another macro by id (persists the flag and arms its triggers)",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.FLOW_CONTROL,
+            ports = listOf(execIn(), execOut(), dataOut<MacroControlState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.disable_macro",
+            displayName = "Disable Macro",
+            description = "Disables another macro by id (persists the flag and disarms its triggers)",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.FLOW_CONTROL,
+            ports = listOf(execIn(), execOut(), dataOut<MacroControlState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.bluetooth",
+            displayName = "Toggle Bluetooth",
+            description = "Turns Bluetooth on or off and reports the resulting state",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.DEVICE_SETTINGS,
+            ports = listOf(execIn(), execOut(), dataOut<BluetoothState>("state")),
+            iconKey = "bluetooth",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.ringer_mode",
+            displayName = "Set Ringer Mode",
+            description = "Sets the ringer mode to normal, silent or vibrate",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.DEVICE_SETTINGS,
+            ports = listOf(execIn(), execOut(), dataOut<RingerModeState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.brightness",
+            displayName = "Set Brightness",
+            description = "Sets screen brightness (absolute value or auto)",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.DEVICE_SETTINGS,
+            ports = listOf(execIn(), execOut(), dataOut<BrightnessState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.screen_timeout",
+            displayName = "Set Screen Timeout",
+            description = "Sets the screen-off timeout in milliseconds",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.DEVICE_SETTINGS,
+            ports = listOf(execIn(), execOut(), dataOut<ScreenTimeoutState>("state")),
+            iconKey = "timer",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.auto_rotate",
+            displayName = "Toggle Auto-Rotate",
+            description = "Turns accelerometer auto-rotation on or off",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.DEVICE_SETTINGS,
+            ports = listOf(execIn(), execOut(), dataOut<AutoRotateState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.flashlight",
+            displayName = "Toggle Flashlight",
+            description = "Turns the camera torch (flashlight) on or off",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.DEVICE_SETTINGS,
+            ports = listOf(execIn(), execOut(), dataOut<TorchState>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.vibrate",
+            displayName = "Vibrate",
+            description = "Vibrates the device for a duration or pattern",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.NOTIFICATIONS,
+            ports = listOf(execIn(), execOut()),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.launch_app",
+            displayName = "Launch App",
+            description = "Launches another app by package name",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.NETWORK,
+            ports = listOf(execIn(), execOut()),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.open_url",
+            displayName = "Open URL",
+            description = "Opens a URL in the default handler (browser or app)",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.NETWORK,
+            ports = listOf(execIn(), execOut()),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.send_sms",
+            displayName = "Send SMS",
+            description = "Sends an SMS to a number with a body (use {{field}} for data values)",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.NOTIFICATIONS,
+            ports = listOf(execIn(), execOut(), dataOut<SmsSent>("state")),
+            iconKey = "sms",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.call",
+            displayName = "Make Call",
+            description = "Initiates a phone call to a number (use {{field}} for data values)",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.NOTIFICATIONS,
+            ports = listOf(execIn(), execOut(), dataOut<CallInitiated>("state")),
+            iconKey = "bolt",
+        ),
+        NodeTypeDefinition(
+            typeId = "action.clipboard",
+            displayName = "Clipboard",
+            description = "Sets or clears the clipboard (use {{field}} for data values)",
+            kind = NodeKind.ACTION,
+            category = NodeCategory.DATA,
+            ports = listOf(execIn(), execOut()),
+            iconKey = "bolt",
         ),
     )
 

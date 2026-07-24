@@ -217,3 +217,117 @@ data class MediaEvent(
     val detail: String = "",
     val timestamp: Long,
 )
+
+/**
+ * Result of a macro enable/disable action (`action.enable_macro` /
+ * `action.disable_macro`) reported on its `state` data port.
+ *
+ * - [macroId]: the target macro id (EXPR-interpolated).
+ * - [changed]: whether the control request was dispatched (false when the
+ *   engine has no [com.example.ottomatic.core.service.MacroControl] handle).
+ */
+@Serializable
+data class MacroControlState(
+    val macroId: String,
+    val changed: Boolean,
+)
+
+/**
+ * Bluetooth radio state reported by the bluetooth action on its `state` port.
+ *
+ * - [enabled]: whether Bluetooth is now on.
+ * - [changed]: whether the system accepted the change.
+ */
+@Serializable
+data class BluetoothState(
+    val enabled: Boolean,
+    val changed: Boolean,
+)
+
+/**
+ * Ringer mode reported by the ringer mode action on its `state` port.
+ *
+ * - [mode]: `"normal"`, `"silent"` or `"vibrate"`.
+ * - [changed]: whether the system accepted the change.
+ */
+@Serializable
+data class RingerModeState(
+    val mode: String,
+    val changed: Boolean,
+)
+
+/**
+ * Screen brightness reported by the brightness action on its `state` port.
+ *
+ * - [value]: resulting brightness index (0..255).
+ * - [auto]: whether auto-brightness is now active.
+ * - [changed]: whether the system accepted the change (requires WRITE_SETTINGS).
+ */
+@Serializable
+data class BrightnessState(
+    val value: Int,
+    val auto: Boolean,
+    val changed: Boolean,
+)
+
+/**
+ * Screen-off timeout reported by the screen timeout action on its `state` port.
+ *
+ * - [ms]: resulting timeout in milliseconds.
+ * - [changed]: whether the system accepted the change (requires WRITE_SETTINGS).
+ */
+@Serializable
+data class ScreenTimeoutState(
+    val ms: Int,
+    val changed: Boolean,
+)
+
+/**
+ * Auto-rotate state reported by the auto-rotate action on its `state` port.
+ *
+ * - [enabled]: whether accelerometer rotation is now on.
+ * - [changed]: whether the system accepted the change (requires WRITE_SETTINGS).
+ */
+@Serializable
+data class AutoRotateState(
+    val enabled: Boolean,
+    val changed: Boolean,
+)
+
+/**
+ * Torch (flashlight) state reported by the flashlight action on its `state` port.
+ *
+ * - [enabled]: whether the torch is now on.
+ * - [changed]: whether the system accepted the change (requires CAMERA).
+ */
+@Serializable
+data class TorchState(
+    val enabled: Boolean,
+    val changed: Boolean,
+)
+
+/**
+ * Result of the send-SMS action on its `state` data port.
+ *
+ * - [to]: the destination phone number (EXPR-interpolated).
+ * - [body]: the message body sent.
+ * - [sent]: whether the send call was accepted (requires SEND_SMS).
+ */
+@Serializable
+data class SmsSent(
+    val to: String,
+    val body: String,
+    val sent: Boolean,
+)
+
+/**
+ * Result of the call action on its `state` data port.
+ *
+ * - [number]: the destination phone number (EXPR-interpolated).
+ * - [initiated]: whether the call was placed (requires CALL_PHONE).
+ */
+@Serializable
+data class CallInitiated(
+    val number: String,
+    val initiated: Boolean,
+)

@@ -301,6 +301,204 @@ object ConfigSchemaRegistry {
                 ),
             ),
         ),
+        NodeConfigSchema(
+            typeId = "action.log",
+            fields = listOf(
+                ConfigField(
+                    key = "message",
+                    label = "Message (use {{field}} for data values)",
+                    type = ConfigFieldType.EXPR(multiline = true),
+                    defaultValue = "",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.stop",
+            fields = listOf(
+                ConfigField(
+                    key = "reason",
+                    label = "Reason (optional, logged before halting)",
+                    type = ConfigFieldType.EXPR(),
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.enable_macro",
+            fields = listOf(
+                ConfigField(
+                    key = "macroId",
+                    label = "Macro id (use {{field}} for dynamic selection)",
+                    type = ConfigFieldType.EXPR(),
+                    defaultValue = "",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.disable_macro",
+            fields = listOf(
+                ConfigField(
+                    key = "macroId",
+                    label = "Macro id (use {{field}} for dynamic selection)",
+                    type = ConfigFieldType.EXPR(),
+                    defaultValue = "",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.bluetooth",
+            fields = listOf(
+                ConfigField(
+                    key = "state",
+                    label = "State",
+                    type = ConfigFieldType.ENUM(options = listOf("on", "off")),
+                    defaultValue = "on",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.ringer_mode",
+            fields = listOf(
+                ConfigField(
+                    key = "mode",
+                    label = "Mode",
+                    type = ConfigFieldType.ENUM(options = listOf("normal", "silent", "vibrate")),
+                    defaultValue = "normal",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.brightness",
+            fields = listOf(
+                ConfigField(
+                    key = "auto",
+                    label = "Auto brightness",
+                    type = ConfigFieldType.ENUM(options = listOf("true", "false")),
+                    defaultValue = "false",
+                ),
+                ConfigField(
+                    key = "value",
+                    label = "Value (0-255, only when auto = false)",
+                    type = ConfigFieldType.INT,
+                    defaultValue = "128",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.screen_timeout",
+            fields = listOf(
+                ConfigField(
+                    key = "ms",
+                    label = "Timeout (ms)",
+                    type = ConfigFieldType.INT,
+                    defaultValue = "30000",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.auto_rotate",
+            fields = listOf(
+                ConfigField(
+                    key = "state",
+                    label = "State",
+                    type = ConfigFieldType.ENUM(options = listOf("on", "off")),
+                    defaultValue = "on",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.flashlight",
+            fields = listOf(
+                ConfigField(
+                    key = "state",
+                    label = "State",
+                    type = ConfigFieldType.ENUM(options = listOf("on", "off")),
+                    defaultValue = "on",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.vibrate",
+            fields = listOf(
+                ConfigField(
+                    key = "duration",
+                    label = "Duration (ms, used when pattern is empty)",
+                    type = ConfigFieldType.INT,
+                    defaultValue = "500",
+                ),
+                ConfigField(
+                    key = "pattern",
+                    label = "Pattern (comma-separated ms, optional, e.g. 0,200,500,200)",
+                    type = ConfigFieldType.STR,
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.launch_app",
+            fields = listOf(
+                ConfigField(
+                    key = "package",
+                    label = "Package name (use {{field}} for data values)",
+                    type = ConfigFieldType.EXPR(),
+                    defaultValue = "",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.open_url",
+            fields = listOf(
+                ConfigField(
+                    key = "url",
+                    label = "URL (use {{field}} for data values)",
+                    type = ConfigFieldType.EXPR(),
+                    defaultValue = "https://example.com",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.send_sms",
+            fields = listOf(
+                ConfigField(
+                    key = "to",
+                    label = "To (phone number, use {{field}} for data values)",
+                    type = ConfigFieldType.EXPR(),
+                    defaultValue = "",
+                ),
+                ConfigField(
+                    key = "body",
+                    label = "Body (use {{field}} for data values)",
+                    type = ConfigFieldType.EXPR(multiline = true),
+                    defaultValue = "",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.call",
+            fields = listOf(
+                ConfigField(
+                    key = "number",
+                    label = "Number (use {{field}} for data values)",
+                    type = ConfigFieldType.EXPR(),
+                    defaultValue = "",
+                ),
+            ),
+        ),
+        NodeConfigSchema(
+            typeId = "action.clipboard",
+            fields = listOf(
+                ConfigField(
+                    key = "mode",
+                    label = "Mode",
+                    type = ConfigFieldType.ENUM(options = listOf("set", "clear")),
+                    defaultValue = "set",
+                ),
+                ConfigField(
+                    key = "text",
+                    label = "Text (use {{field}} for data values)",
+                    type = ConfigFieldType.EXPR(multiline = true),
+                    defaultValue = "",
+                ),
+            ),
+        ),
         // Tier 1 trigger configs.
         NodeConfigSchema(
             typeId = "trigger.wifi_state",

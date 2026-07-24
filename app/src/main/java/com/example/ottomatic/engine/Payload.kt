@@ -36,6 +36,14 @@ data class ActionInput(
 data class ActionResult(
     val execOut: List<String> = emptyList(),
     val dataOut: Map<String, Item> = emptyMap(),
+    /**
+     * When `true`, the [com.example.ottomatic.engine.WorkflowExecutor] stops
+     * traversing the current execution chain after running this action: no
+     * further `execOut` ports are followed. Used by `action.stop` and any
+     * future short-circuiting action. Data produced in [dataOut] is still
+     * cached before the halt so already-running sibling branches can read it.
+     */
+    val halt: Boolean = false,
 ) {
     companion object {
         /** Pulses [port] (default `"out"`) and produces no data. */

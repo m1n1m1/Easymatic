@@ -1,12 +1,28 @@
 package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.engine.Action
+import com.example.ottomatic.engine.action.AutoRotateAction
+import com.example.ottomatic.engine.action.BluetoothAction
 import com.example.ottomatic.engine.action.BreakStructAction
+import com.example.ottomatic.engine.action.BrightnessAction
+import com.example.ottomatic.engine.action.CallAction
+import com.example.ottomatic.engine.action.ClipboardAction
 import com.example.ottomatic.engine.action.ConditionAction
 import com.example.ottomatic.engine.action.DelayAction
+import com.example.ottomatic.engine.action.DisableMacroAction
 import com.example.ottomatic.engine.action.DndAction
+import com.example.ottomatic.engine.action.EnableMacroAction
+import com.example.ottomatic.engine.action.FlashlightAction
 import com.example.ottomatic.engine.action.HttpAction
+import com.example.ottomatic.engine.action.LaunchAppAction
+import com.example.ottomatic.engine.action.LogAction
 import com.example.ottomatic.engine.action.NotifyAction
+import com.example.ottomatic.engine.action.OpenUrlAction
+import com.example.ottomatic.engine.action.RingerModeAction
+import com.example.ottomatic.engine.action.ScreenTimeoutAction
+import com.example.ottomatic.engine.action.SendSmsAction
+import com.example.ottomatic.engine.action.StopAction
+import com.example.ottomatic.engine.action.VibrateAction
 import com.example.ottomatic.engine.action.VolumeAction
 import com.example.ottomatic.engine.action.WifiAction
 
@@ -22,11 +38,27 @@ import com.example.ottomatic.engine.action.WifiAction
 object ActionRegistry {
 
     private val actions: List<Action> = listOf(
+        AutoRotateAction(),
+        BluetoothAction(),
+        BrightnessAction(),
+        CallAction(),
+        ClipboardAction(),
         ConditionAction(),
         DelayAction(),
+        DisableMacroAction(),
         DndAction(),
+        EnableMacroAction(),
+        FlashlightAction(),
         HttpAction(),
+        LaunchAppAction(),
+        LogAction(),
         NotifyAction(),
+        OpenUrlAction(),
+        RingerModeAction(),
+        ScreenTimeoutAction(),
+        SendSmsAction(),
+        StopAction(),
+        VibrateAction(),
         VolumeAction(),
         WifiAction(),
         BreakStructAction(),

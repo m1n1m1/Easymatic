@@ -4,6 +4,7 @@ package com.example.ottomatic.core.service
  * Android-backed system operations exposed to actions without pulling
  * Android types into `engine/`. Implemented by [AndroidSystemServices] in `data/`.
  */
+@Suppress("TooManyFunctions") // Facade over many independent Android subsystems.
 interface SystemServices {
 
     /** Posts a notification with [title] and [text]. Returns true on success. */
@@ -31,6 +32,84 @@ interface SystemServices {
      * fails.
      */
     fun setDnd(enabled: Boolean, level: String): DndResult?
+
+    /**
+     * Toggles Bluetooth. Returns null when Bluetooth is unavailable or the call
+     * fails (e.g. missing `BLUETOOTH_CONNECT` permission on API 31+).
+     */
+    fun setBluetooth(enabled: Boolean): BluetoothResult?
+
+    /**
+     * Sets the ringer mode. [mode] is `"normal"`, `"silent"` or `"vibrate"`.
+     * Returns null on failure (e.g. missing `ACCESS_NOTIFICATION_POLICY` for
+     * silent mode on API 21+).
+     */
+    fun setRingerMode(mode: String): RingerResult?
+
+    /**
+     * Sets the screen brightness. [value] (0..255) is used when [auto] is
+     * false; when [auto] is true the device switches to auto-brightness and
+     * [value] is ignored. Returns null on failure (requires
+     * `WRITE_SETTINGS`).
+     */
+    fun setBrightness(value: Int, auto: Boolean): BrightnessResult?
+
+    /**
+     * Sets the screen-off timeout in milliseconds. Returns null on failure
+     * (requires `WRITE_SETTINGS`).
+     */
+    fun setScreenTimeout(ms: Int): ScreenTimeoutResult?
+
+    /**
+     * Toggles accelerometer auto-rotation. Returns null on failure (requires
+     * `WRITE_SETTINGS`).
+     */
+    fun setAutoRotate(enabled: Boolean): AutoRotateResult?
+
+    /**
+     * Toggles the camera torch. Returns null when no camera with a flash unit
+     * is available or the call fails (requires `CAMERA`).
+     */
+    fun setTorch(enabled: Boolean): TorchResult?
+
+    /**
+     * Vibrates the device for [durationMs] (or [pattern] long-off-long… pairs
+     * in ms when non-empty). Returns false on failure.
+     */
+    fun vibrate(durationMs: Int, pattern: List<Long> = emptyList()): Boolean
+
+    /**
+     * Launches the app with [packageName] (its main launcher activity).
+     * Returns false on failure (package not installed / no launcher activity).
+     */
+    fun launchApp(packageName: String): Boolean
+
+    /**
+     * Opens [url] in the default handler (browser/app via intent). Returns
+     * false when no handler is available.
+     */
+    fun openUrl(url: String): Boolean
+
+    /**
+     * Sends an SMS to [to] with [body]. Returns false on failure (requires
+     * `SEND_SMS`).
+     */
+    fun sendSms(to: String, body: String): Boolean
+
+    /**
+     * Initiates a phone call to [number] (ACTION_CALL — requires `CALL_PHONE`;
+     * use `ACTION_DIAL` semantics by returning false when the permission is
+     * missing). Returns false on failure.
+     */
+    fun call(number: String): Boolean
+
+    /**
+     * Sets the clipboard primary clip to [text]. Returns false on failure.
+     */
+    fun setClipboard(text: String): Boolean
+
+    /** Clears the clipboard primary clip. Returns false on failure. */
+    fun clearClipboard(): Boolean
 }
 
 data class HttpRequest(
@@ -76,5 +155,42 @@ data class VolumeResult(
 data class DndResult(
     val enabled: Boolean,
     val level: String,
+    val changed: Boolean,
+)
+
+/** Result of [SystemServices.setBluetooth]. */
+data class BluetoothResult(
+    val enabled: Boolean,
+    val changed: Boolean,
+)
+
+/** Result of [SystemServices.setRingerMode]. */
+data class RingerResult(
+    val mode: String,
+    val changed: Boolean,
+)
+
+/** Result of [SystemServices.setBrightness]. */
+data class BrightnessResult(
+    val value: Int,
+    val auto: Boolean,
+    val changed: Boolean,
+)
+
+/** Result of [SystemServices.setScreenTimeout]. */
+data class ScreenTimeoutResult(
+    val ms: Int,
+    val changed: Boolean,
+)
+
+/** Result of [SystemServices.setAutoRotate]. */
+data class AutoRotateResult(
+    val enabled: Boolean,
+    val changed: Boolean,
+)
+
+/** Result of [SystemServices.setTorch]. */
+data class TorchResult(
+    val enabled: Boolean,
     val changed: Boolean,
 )

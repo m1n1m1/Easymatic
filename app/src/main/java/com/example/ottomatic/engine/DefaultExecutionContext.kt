@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine
 
+import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.SystemServices
 
 /**
@@ -9,6 +10,7 @@ import com.example.ottomatic.core.service.SystemServices
  */
 class DefaultExecutionContext(
     override val systemServices: SystemServices,
+    override val macroControl: MacroControl? = null,
     private val logger: (String) -> Unit = {},
 ) : ExecutionContext {
     override fun log(message: String) = logger(message)

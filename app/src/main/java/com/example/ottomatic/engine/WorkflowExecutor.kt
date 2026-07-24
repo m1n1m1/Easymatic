@@ -73,6 +73,10 @@ class WorkflowExecutor(
                 dataCache[target.id to p] = item
                 mergeIntoContext(dataContext, p, item)
             }
+            if (result.halt) {
+                context.log("Action ${target.typeId} halted execution chain")
+                return
+            }
             for (execPort in result.execOut) {
                 pulse(workflow, target, execPort, dataCache, dataContext)
             }
