@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
 /**
- * How `action.condition` should interpret the value it inspects.
+ * How `condition.compare` should interpret the value it inspects.
  *
  * [AUTO] infers the comparison from the schema of whatever is wired into the
  * node's `source` port (and exposes a field picker when that is a struct); every
@@ -28,7 +28,7 @@ enum class ComparisonType(private val primitive: KClass<out Any>?) {
 }
 
 /**
- * A comparison performed by `action.condition`.
+ * A comparison performed by `condition.compare`.
  *
  * Each operator carries its own evaluation, and [forSchema] narrows the set
  * offered for a given value type — so the operator list in the config form and

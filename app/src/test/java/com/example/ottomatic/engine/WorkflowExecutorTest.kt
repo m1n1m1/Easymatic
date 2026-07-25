@@ -96,7 +96,7 @@ class WorkflowExecutorTest {
             nodes = listOf(
                 WorkflowNode(NodeId("n1"), NodeTypeId("trigger.charging"), "Charging", 0f, 0f),
                 WorkflowNode(
-                    NodeId("cond"), NodeTypeId("action.condition"), "If", 0f, 100f,
+                    NodeId("cond"), NodeTypeId("condition.compare"), "If", 0f, 100f,
                     config = mapOf(
                         CONDITION_TYPE_CONFIG_KEY to ComparisonType.AUTO.name,
                         ConfigKey("field") to "level",
@@ -144,7 +144,7 @@ class WorkflowExecutorTest {
             nodes = listOf(
                 WorkflowNode(NodeId("n1"), NodeTypeId("trigger.charging"), "Charging", 0f, 0f),
                 WorkflowNode(
-                    NodeId("cond"), NodeTypeId("action.condition"), "If", 0f, 100f,
+                    NodeId("cond"), NodeTypeId("condition.compare"), "If", 0f, 100f,
                     config = mapOf(
                         CONDITION_TYPE_CONFIG_KEY to ComparisonType.AUTO.name,
                         ConfigKey("field") to "level",

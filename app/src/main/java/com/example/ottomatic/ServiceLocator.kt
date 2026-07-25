@@ -2,10 +2,12 @@ package com.example.ottomatic
 
 import android.content.Context
 import com.example.ottomatic.core.permissions.PermissionChecker
+import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
+import com.example.ottomatic.data.service.AndroidDeviceState
 import com.example.ottomatic.data.service.AndroidMacroControl
 import com.example.ottomatic.data.service.AndroidSystemServices
 import com.example.ottomatic.data.trigger.AndroidTriggerHost
@@ -24,6 +26,9 @@ object ServiceLocator {
         private set
 
     lateinit var systemServices: SystemServices
+        private set
+
+    lateinit var deviceState: DeviceState
         private set
 
     lateinit var macroControl: MacroControl
@@ -47,9 +52,11 @@ object ServiceLocator {
         val appContext = context.applicationContext
         workflowRepository = WorkflowRepository(appContext.filesDir)
         systemServices = AndroidSystemServices(appContext)
+        deviceState = AndroidDeviceState(appContext)
         macroControl = AndroidMacroControl(appContext)
         executionContext = DefaultExecutionContext(
             systemServices = systemServices,
+            deviceState = deviceState,
             macroControl = macroControl,
             logger = { msg -> android.util.Log.i("Ottomatic", msg) },
         )

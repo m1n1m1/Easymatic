@@ -1,0 +1,59 @@
+package com.example.ottomatic.core.service
+
+/**
+ * The read side of the device: what is true *right now*.
+ *
+ * [SystemServices] is deliberately write-only — every one of its members changes
+ * something. Conditions need the opposite, and the two do not belong in one
+ * facade: the setters need permissions and can fail loudly, whereas a reader is
+ * cheap, side-effect free and safe to call on every trigger event.
+ *
+ * Every method returns null when the value cannot be read (subsystem absent,
+ * permission not granted), mirroring the nullable-on-failure convention of the
+ * `set*` calls. A condition reading null evaluates false and logs rather than
+ * failing the run — an unknowable state is not a passing one.
+ *
+ * Implemented by `AndroidDeviceState` in `data/`.
+ */
+interface DeviceState {
+
+    /** Whether Wi-Fi is enabled. */
+    fun isWifiEnabled(): Boolean?
+
+    /** Whether Bluetooth is enabled. */
+    fun isBluetoothEnabled(): Boolean?
+
+    /** Whether airplane mode is on. */
+    fun isAirplaneMode(): Boolean?
+
+    /** Whether the device is charging (AC, USB or wireless). */
+    fun isCharging(): Boolean?
+
+    /** Battery charge as a percentage in 0..100. */
+    fun batteryLevel(): Int?
+
+    /** Whether the screen is on and interactive. */
+    fun isScreenOn(): Boolean?
+
+    /** Whether Do-Not-Disturb is active at any level. */
+    fun isDndEnabled(): Boolean?
+
+    /** The current ringer mode. */
+    fun ringerMode(): RingerMode?
+}
+
+/**
+ * A [DeviceState] that knows nothing, for environments with no device behind it
+ * (engine-only unit tests, previews). Every read is null, so conditions built on
+ * it evaluate false rather than inventing a state that was never observed.
+ */
+object UnknownDeviceState : DeviceState {
+    override fun isWifiEnabled(): Boolean? = null
+    override fun isBluetoothEnabled(): Boolean? = null
+    override fun isAirplaneMode(): Boolean? = null
+    override fun isCharging(): Boolean? = null
+    override fun batteryLevel(): Int? = null
+    override fun isScreenOn(): Boolean? = null
+    override fun isDndEnabled(): Boolean? = null
+    override fun ringerMode(): RingerMode? = null
+}

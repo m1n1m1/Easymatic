@@ -4,6 +4,7 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.execOut
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.ExecPorts
+import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.schema.Item
@@ -59,6 +60,37 @@ class NodeInput internal constructor(
 
     /** The wired value of [port] as text, or null when unwired or empty. */
     fun text(port: PortName): String? = data[port]?.value?.toString()?.takeIf { it.isNotEmpty() }
+}
+
+/**
+ * A node that answers a question rather than performing work.
+ *
+ * One declaration, two placements. Dropped on the canvas, a condition is run by
+ * [ConditionAsAction] and routes execution to `true`/`false` like any branching
+ * node. Attached to another node as an
+ * [com.example.ottomatic.domain.model.AttachedCondition], the same object decides
+ * whether that node runs at all — see [conditionsPass]. Because both paths call
+ * the same [evaluate], the two philosophies cannot drift apart.
+ */
+interface ConditionNode<C : Any> {
+    val definition: ConditionNodeDefinition<C>
+
+    val typeId: NodeTypeId get() = definition.typeId
+
+    suspend fun evaluate(config: C, input: NodeInput, context: ExecutionContext): Boolean
+
+    /**
+     * Evaluates from a raw [config] map — the entry point for both placements.
+     * [host] is the node the condition belongs to (the placed condition node
+     * itself, or the node it is attached to), and [data] the DATA items available
+     * to it.
+     */
+    suspend fun evaluateRaw(
+        config: Map<ConfigKey, String>,
+        host: WorkflowNode,
+        data: Map<PortName, Item>,
+        context: ExecutionContext,
+    ): Boolean = evaluate(definition.schema.decode(config, data), NodeInput(host, data), context)
 }
 
 /** Non-generic execution bridge used by the heterogeneous action registry. */

@@ -118,6 +118,80 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
 }
 
 /**
+ * The single declaration of a condition node, living in the condition's own file.
+ *
+ * A condition has two placements, both served from here:
+ *
+ *  - **placed** on the canvas, where [nodeType] presents it as a branching node
+ *    (exec in, `true`/`false` exec out, plus its wired/wildcard DATA inputs) and
+ *    [com.example.ottomatic.engine.ConditionAsAction] runs it through the normal
+ *    executor path;
+ *  - **attached** to another node as an
+ *    [com.example.ottomatic.domain.model.AttachedCondition], where it gates that
+ *    node and reads the host's already-collected data inputs.
+ *
+ * Neither placement re-declares anything: the config form, the DATA input ports
+ * and the decoder all come from the config class [C] via [schema], exactly as
+ * for [ActionNodeDefinition].
+ */
+@Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
+class ConditionNodeDefinition<C : Any> @PublishedApi internal constructor(
+    val typeId: NodeTypeId,
+    val displayName: String,
+    val description: String,
+    val category: NodeCategory,
+    val icon: NodeIcon,
+    val schema: NodeSchema<C>,
+    val wildcardInputs: List<Port>,
+    val hasDynamicPorts: Boolean,
+) {
+    /** Canvas-placement metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
+    val nodeType: NodeTypeDefinition
+        get() = NodeTypeDefinition(
+            typeId = typeId,
+            displayName = displayName,
+            description = description,
+            kind = NodeKind.CONDITION,
+            category = category,
+            ports = listOf(execIn()) + ExecOutputs.BRANCH.ports + schema.wiredPorts + wildcardInputs,
+            icon = icon,
+            hasDynamicPorts = hasDynamicPorts,
+        )
+
+    /** Static config-form view for [com.example.ottomatic.domain.registry.ConfigSchemaRegistry]. */
+    val configSchema: NodeConfigSchema?
+        get() = schema.fields.takeIf { it.isNotEmpty() }?.let { NodeConfigSchema(typeId, it) }
+}
+
+/**
+ * Declares a condition: a node that answers true/false rather than performing
+ * work. Register it in [com.example.ottomatic.domain.registry.ConditionRegistry].
+ *
+ * Pass [wildcardInputs] (and [hasDynamicPorts]) only when the condition's DATA
+ * input schemas are resolved from the graph at design time, as `condition.compare`
+ * does; a self-contained condition declares neither.
+ */
+@Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
+inline fun <reified C : Any> conditionNode(
+    typeId: String,
+    displayName: String,
+    description: String,
+    category: NodeCategory,
+    icon: NodeIcon,
+    wildcardInputs: List<Port> = emptyList(),
+    hasDynamicPorts: Boolean = false,
+): ConditionNodeDefinition<C> = ConditionNodeDefinition(
+    typeId = NodeTypeId(typeId),
+    displayName = displayName,
+    description = description,
+    category = category,
+    icon = icon,
+    schema = nodeSchema<C>(),
+    wildcardInputs = wildcardInputs,
+    hasDynamicPorts = hasDynamicPorts,
+)
+
+/**
  * Declares an action that produces a typed data item on [output].
  *
  * The config class [I] supplies the config form, the DATA input ports and the

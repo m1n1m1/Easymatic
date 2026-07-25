@@ -68,23 +68,33 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
     val wiredPorts: List<Port> = elements.filter { it.wired }.map { it.port() }
 
     /**
-     * Builds the typed config for a placed [node]. Each property resolves to the
-     * first available of: the item wired into its port (`@Wired` only), its form
-     * value in [WorkflowNode.config], or its declared default. Values that fail
-     * to parse fall back to the default rather than failing the run.
+     * Builds the typed config from a flat [config] map. Each property resolves to
+     * the first available of: the item wired into its port (`@Wired` only), its
+     * form value in [config], or its declared default. Values that fail to parse
+     * fall back to the default rather than failing the run.
+     *
+     * This takes the map rather than a [WorkflowNode] because the same decoding
+     * serves both placements of a node's config: a placed node's own
+     * [WorkflowNode.config], and an
+     * [com.example.ottomatic.domain.model.AttachedCondition]'s config, which has
+     * no node of its own.
      */
-    fun decode(node: WorkflowNode, data: Map<PortName, Item> = emptyMap()): T {
+    fun decode(config: Map<ConfigKey, String>, data: Map<PortName, Item> = emptyMap()): T {
         if (elements.isEmpty()) return defaults
         val encoded = buildMap<String, JsonElement> {
             for (element in elements) {
                 val wired = if (element.wired) data[PortName(element.key)]?.let { element.encode(it.value?.toString()) } else null
-                val resolved = wired ?: element.encode(node.config[ConfigKey(element.key)])
+                val resolved = wired ?: element.encode(config[ConfigKey(element.key)])
                 if (resolved != null) put(element.key, resolved)
             }
         }
         return runCatching { DECODER.decodeFromJsonElement(serializer, JsonObject(encoded)) }
             .getOrDefault(defaults)
     }
+
+    /** Builds the typed config for a placed [node] from its own config map. */
+    fun decode(node: WorkflowNode, data: Map<PortName, Item> = emptyMap()): T =
+        decode(node.config, data)
 
     private fun decodeDefaults(): T = runCatching {
         DECODER.decodeFromJsonElement(serializer, JsonObject(emptyMap()))

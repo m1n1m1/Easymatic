@@ -118,7 +118,7 @@ class GraphValidatorTest {
         val wf = Workflow(
             nodes = listOf(
                 WorkflowNode(NodeId("n1"), NodeTypeId("trigger.charging"), "Charging", 0f, 0f),
-                WorkflowNode(NodeId("c"), NodeTypeId("action.condition"), "If", 0f, 100f),
+                WorkflowNode(NodeId("c"), NodeTypeId("condition.compare"), "If", 0f, 100f),
             ),
             execConnections = listOf(
                 ExecConnection("e1", NodeId("n1"), PortName("out"), NodeId("c"), PortName("in")),

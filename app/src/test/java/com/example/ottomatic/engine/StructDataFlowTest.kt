@@ -132,7 +132,7 @@ class StructDataFlowTest {
             nodes = listOf(
                 WorkflowNode(NodeId("n1"), NodeTypeId("trigger.sms"), "SMS", 0f, 0f),
                 WorkflowNode(
-                    NodeId("n2"), NodeTypeId("action.condition"), "If", 0f, 100f,
+                    NodeId("n2"), NodeTypeId("condition.compare"), "If", 0f, 100f,
                     config = mapOf(
                         CONDITION_TYPE_CONFIG_KEY to ComparisonType.AUTO.name,
                         ConfigKey("field") to "body",
@@ -177,7 +177,7 @@ class StructDataFlowTest {
             nodes = listOf(
                 WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
                 WorkflowNode(
-                    NodeId("n2"), NodeTypeId("action.condition"), "If", 0f, 100f,
+                    NodeId("n2"), NodeTypeId("condition.compare"), "If", 0f, 100f,
                     config = mapOf(
                         CONDITION_TYPE_CONFIG_KEY to ComparisonType.STRING.name,
                         CONDITION_OPERATOR_KEY to ComparisonOperator.EQUALS.name,
@@ -218,7 +218,7 @@ class StructDataFlowTest {
                 WorkflowNode(NodeId("n1"), NodeTypeId("trigger.sms"), "SMS", 0f, 0f),
                 WorkflowNode(NodeId("n2"), NodeTypeId("action.break"), "Break", 0f, 100f),
                 WorkflowNode(
-                    NodeId("n3"), NodeTypeId("action.condition"), "If", 0f, 200f,
+                    NodeId("n3"), NodeTypeId("condition.compare"), "If", 0f, 200f,
                     config = mapOf(
                         CONDITION_TYPE_CONFIG_KEY to ComparisonType.STRING.name,
                         CONDITION_OPERATOR_KEY to ComparisonOperator.CONTAINS.name,

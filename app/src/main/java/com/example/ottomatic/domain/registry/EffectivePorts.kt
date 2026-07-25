@@ -3,6 +3,7 @@
 package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.core.model.ConfigKey
+import com.example.ottomatic.domain.model.AttachedCondition
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecPorts
 import com.example.ottomatic.domain.model.NodeTypeDefinition
@@ -31,7 +32,7 @@ import com.example.ottomatic.domain.model.schema.ItemSchema
  *     [ItemSchema]. Recursion through other dynamic nodes is safe because the
  *     graph validator guarantees data-edge acyclicity.
  *
- *  2. **Dynamic condition ports + config** — `action.condition` rewrites its
+ *  2. **Dynamic condition ports + config** — `condition.compare` rewrites its
  *     `source`/`value` DATA input port schemas, and *narrows* the config form
  *     derived from `ConditionConfig` (see [effectiveConfigSchema]): the field
  *     picker becomes a typed dropdown of the struct's fields, the operator list
@@ -53,28 +54,28 @@ val BREAK_STRUCT_IN = PortName("struct")
 /** typeId of the adaptive break-struct node. */
 val BREAK_TYPE_ID = NodeTypeId("action.break")
 
-/** typeId of the adaptive condition node. */
-val CONDITION_TYPE_ID = NodeTypeId("action.condition")
+/** typeId of the adaptive comparison condition. */
+val CONDITION_TYPE_ID = NodeTypeId("condition.compare")
 
-/** The data input port on `action.condition` carrying the value to inspect. */
+/** The data input port on `condition.compare` carrying the value to inspect. */
 val CONDITION_SOURCE_IN = PortName("source")
 
-/** The data input port on `action.condition` carrying the value to compare against. */
+/** The data input port on `condition.compare` carrying the value to compare against. */
 val CONDITION_VALUE_IN = PortName("value")
 
-/** The config key of `action.condition`'s field picker. */
+/** The config key of `condition.compare`'s field picker. */
 val CONDITION_FIELD_KEY = ConfigKey("field")
 
-/** The config key of `action.condition`'s operator picker. */
+/** The config key of `condition.compare`'s operator picker. */
 val CONDITION_OPERATOR_KEY = ConfigKey("operator")
 
-/** The config key of `action.condition`'s type chooser. */
+/** The config key of `condition.compare`'s type chooser. */
 val CONDITION_TYPE_CONFIG_KEY = ConfigKey("type")
 
 /**
  * The effective ports for the placed [node] in [workflow]: the node type's
  * static ports, with dynamic rewrites for `action.break` (struct-derived
- * output ports) and `action.condition` (dynamic `source`/`value` input schemas).
+ * output ports) and `condition.compare` (dynamic `source`/`value` input schemas).
  */
 fun effectivePorts(
     definition: NodeTypeDefinition,
@@ -119,7 +120,7 @@ fun effectivePort(
 
 /**
  * The effective [NodeConfigSchema] for the placed [node]: the schema derived
- * from the node's config class, graph-narrowed for `action.condition`, then
+ * from the node's config class, graph-narrowed for `condition.compare`, then
  * filtered down to the fields whose `@VisibleWhen` condition the node's own
  * config currently satisfies.
  *
@@ -136,15 +137,102 @@ fun effectiveConfigSchema(
     } else {
         declared
     }
-    return narrowed.visibleFor(node).takeIf { it.fields.isNotEmpty() }
+    return narrowed.visibleFor(node.config).takeIf { it.fields.isNotEmpty() }
 }
 
 /**
- * Drops the fields whose [ConfigField.visibleWhen] rule the [node] does not
- * satisfy. The controlling value is read from the node's config, falling back to
- * the controlling *field's* declared default — so a node the user has never
- * touched shows the fields belonging to its default mode rather than none of
- * them.
+ * The effective [NodeConfigSchema] for an [AttachedCondition] on [host]: the same
+ * derivation as [effectiveConfigSchema], but for a condition that has no node and
+ * therefore no incoming edges of its own.
+ *
+ * The narrowing differs in exactly one place. A *placed* `condition.compare`
+ * inspects whatever is wired into its own `source` port; an *attached* one has
+ * nothing wired to it, so `source` instead becomes a picker over the host node's
+ * own DATA input ports — the items the gate will actually be handed at runtime
+ * (see [com.example.ottomatic.engine.conditionsPass]). That is what makes an
+ * attached comparison useful without projecting new ports onto the host.
+ *
+ * Returns null when the condition has no configurable fields.
+ */
+fun effectiveConditionSchema(
+    workflow: Workflow,
+    host: WorkflowNode,
+    attached: AttachedCondition,
+): NodeConfigSchema? {
+    val declared = ConfigSchemaRegistry.byId(attached.typeId) ?: return null
+    val narrowed = if (attached.typeId == CONDITION_TYPE_ID) {
+        attachedCompareSchema(declared, workflow, host, attached.config)
+    } else {
+        declared
+    }
+    return narrowed.visibleFor(attached.config).takeIf { it.fields.isNotEmpty() }
+}
+
+/**
+ * Narrows an attached `condition.compare` form against its [host]: `source`
+ * becomes an ENUM of the host's DATA input port names, and the operator list and
+ * compare-against literal are typed from the port the user picked.
+ */
+private fun attachedCompareSchema(
+    declared: NodeConfigSchema,
+    workflow: Workflow,
+    host: WorkflowNode,
+    config: Map<ConfigKey, String>,
+): NodeConfigSchema {
+    val definition = NodeTypeRegistry.byId(host.typeId)
+    val inputs = definition
+        ?.let { effectiveInputPorts(it, workflow, host) }
+        ?.filter { it.kind == PortKind.DATA }
+        .orEmpty()
+    val sourceKey = ConfigKey(CONDITION_SOURCE_IN.value)
+    val selected = inputs.firstOrNull { it.name.value == config[sourceKey] } ?: inputs.firstOrNull()
+    val structFields = (selected?.schema as? ItemSchema.Object)?.fields?.keys?.toList()?.takeIf { it.isNotEmpty() }
+    val inspected = attachedInspectedSchema(selected?.schema, structFields, config)
+    val operators = ComparisonOperator.forSchema(inspected)
+
+    val fields = declared.fields.mapNotNull { field ->
+        when (field.key) {
+            // Pinning a primitive type is meaningless without a port to retype.
+            CONDITION_TYPE_CONFIG_KEY -> null
+            sourceKey -> inputs.takeIf { it.isNotEmpty() }?.let { ports ->
+                ConfigField(
+                    key = field.key,
+                    label = "Input",
+                    type = ConfigFieldType.ENUM(ports.map { ConfigOption(it.name.value, it.label) }),
+                    defaultValue = ports.first().name.value,
+                )
+            }
+            CONDITION_FIELD_KEY -> structFields?.let { field.asChoice(it, default = it.first()) }
+            CONDITION_OPERATOR_KEY -> field.asChoice(operators.map { it.name }, default = operators.first().name)
+            ConfigKey(CONDITION_VALUE_IN.value) ->
+                ConfigField(field.key, field.label, literalTypeFor(inspected), field.defaultValue)
+            else -> field
+        }
+    }
+    return NodeConfigSchema(typeId = CONDITION_TYPE_ID, fields = fields)
+}
+
+/** The schema of the value an attached comparison actually inspects. */
+private fun attachedInspectedSchema(
+    portSchema: ItemSchema?,
+    structFields: List<String>?,
+    config: Map<ConfigKey, String>,
+): ItemSchema {
+    if (structFields != null && portSchema is ItemSchema.Object) {
+        val selected = config[CONDITION_FIELD_KEY]?.takeIf { it in structFields } ?: structFields.first()
+        return portSchema.fields[selected] ?: ItemSchema.Primitive(String::class)
+    }
+    return portSchema ?: ItemSchema.Primitive(String::class)
+}
+
+/**
+ * Drops the fields whose [ConfigField.visibleWhen] rule [config] does not
+ * satisfy. The controlling value is read from [config], falling back to the
+ * controlling *field's* declared default — so a node the user has never touched
+ * shows the fields belonging to its default mode rather than none of them.
+ *
+ * Takes the config map rather than a [WorkflowNode] so the same rule evaluation
+ * serves both a placed node's config and an [AttachedCondition]'s.
  *
  * Rules nest: a field is visible only when its own rule holds *and* its
  * controlling field is itself visible. Without that, switching an outer mode
@@ -155,14 +243,14 @@ fun effectiveConfigSchema(
  * rejects that case, and rule cycles, at build time rather than leaving a field
  * silently unreachable at runtime.
  */
-private fun NodeConfigSchema.visibleFor(node: WorkflowNode): NodeConfigSchema {
+private fun NodeConfigSchema.visibleFor(config: Map<ConfigKey, String>): NodeConfigSchema {
     if (fields.none { it.visibleWhen != null }) return this
     val byKey = fields.associateBy { it.key }
-    return copy(fields = fields.filter { it.isVisibleFor(node, byKey) })
+    return copy(fields = fields.filter { it.isVisibleFor(config, byKey) })
 }
 
 /**
- * Whether this field's whole rule chain holds for [node]: its own rule, its
+ * Whether this field's whole rule chain holds for [config]: its own rule, its
  * controller's, and so on up to a field that declares none.
  *
  * The walk tracks the keys already visited, so a cyclic declaration terminates
@@ -170,7 +258,10 @@ private fun NodeConfigSchema.visibleFor(node: WorkflowNode): NodeConfigSchema {
  * declaration contract test rejects such cycles outright; this only keeps the
  * editor from hanging on one.
  */
-private fun ConfigField<*>.isVisibleFor(node: WorkflowNode, byKey: Map<ConfigKey, ConfigField<*>>): Boolean {
+private fun ConfigField<*>.isVisibleFor(
+    config: Map<ConfigKey, String>,
+    byKey: Map<ConfigKey, ConfigField<*>>,
+): Boolean {
     val seen = mutableSetOf(key)
     val chain = generateSequence(this) { field ->
         field.visibleWhen?.key?.let { byKey[it] }?.takeIf { seen.add(it.key) }
@@ -179,12 +270,12 @@ private fun ConfigField<*>.isVisibleFor(node: WorkflowNode, byKey: Map<ConfigKey
         val rule = field.visibleWhen ?: return@all true
         // A rule naming an unknown key hides nothing.
         val controlling = byKey[rule.key] ?: return@all true
-        (node.config[rule.key] ?: controlling.defaultValue) in rule.values
+        (config[rule.key] ?: controlling.defaultValue) in rule.values
     }
 }
 
 /**
- * Narrows `action.condition`'s [declared] form (derived from `ConditionConfig`)
+ * Narrows `condition.compare`'s [declared] form (derived from `ConditionConfig`)
  * against the graph:
  *  - the field picker is dropped unless the inspected value is a struct, and
  *    otherwise becomes an ENUM of that struct's field names;
@@ -290,7 +381,7 @@ private fun breakEffectivePorts(workflow: Workflow, node: WorkflowNode): List<Po
 }
 
 /**
- * Effective ports for `action.condition`: the static exec in + true/false ports,
+ * Effective ports for `condition.compare`: the static exec in + true/false ports,
  * with the `source` and `value` DATA input port schemas rewritten from the
  * `type` config and any connected edge.
  */
@@ -306,7 +397,7 @@ private fun conditionEffectivePorts(workflow: Workflow, node: WorkflowNode): Lis
 }
 
 /**
- * The schema of the `source` DATA input on `action.condition`:
+ * The schema of the `source` DATA input on `condition.compare`:
  *  - pinned type → the chosen [ItemSchema.Primitive];
  *  - auto + connected → the connected source's schema (struct/primitive);
  *  - auto + unconnected → [ItemSchema.Wildcard] (accepts anything).
@@ -320,7 +411,7 @@ private fun conditionSourceSchema(workflow: Workflow, node: WorkflowNode): ItemS
 /**
  * Resolves the [ItemSchema] of the item arriving on the DATA input port named
  * [inputPortName] of [node], by following the incoming DATA edge back to its
- * source port. Used by `action.break` (struct IN) and `action.condition`
+ * source port. Used by `action.break` (struct IN) and `condition.compare`
  * (source IN) to derive their dynamic port / config schemas. Returns null
  * when no edge is wired or the source has no schema.
  */

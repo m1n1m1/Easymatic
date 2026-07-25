@@ -1,7 +1,9 @@
 package com.example.ottomatic.engine
 
+import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.SystemServices
+import com.example.ottomatic.core.service.UnknownDeviceState
 
 /**
  * Default [ExecutionContext] wiring core-provided services to the engine.
@@ -11,6 +13,7 @@ import com.example.ottomatic.core.service.SystemServices
 class DefaultExecutionContext(
     override val systemServices: SystemServices,
     override val macroControl: MacroControl? = null,
+    override val deviceState: DeviceState = UnknownDeviceState,
     private val logger: (String) -> Unit = {},
 ) : ExecutionContext {
     override fun log(message: String) = logger(message)

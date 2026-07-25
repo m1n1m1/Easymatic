@@ -12,6 +12,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.data.WorkflowRepository
+import com.example.ottomatic.domain.model.AttachedCondition
+import com.example.ottomatic.domain.model.ConditionLogic
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecConnection
@@ -586,6 +588,49 @@ class GraphEditorViewModel(
             val nodes = state.workflow.nodes.map { node ->
                 if (node.id == nodeId) node.copy(name = name) else node
             }
+            state.copy(workflow = state.workflow.copy(nodes = nodes))
+        }
+        persist()
+    }
+
+    // endregion
+
+    // region Attached conditions
+
+    /** Attaches a condition of [typeId] to [nodeId], with its declared defaults. */
+    fun addCondition(nodeId: NodeId, typeId: NodeTypeId) {
+        editNode(nodeId) { node ->
+            node.copy(conditions = node.conditions + AttachedCondition(typeId = typeId))
+        }
+    }
+
+    fun removeCondition(nodeId: NodeId, index: Int) {
+        editNode(nodeId) { node ->
+            node.copy(conditions = node.conditions.filterIndexed { i, _ -> i != index })
+        }
+    }
+
+    fun updateConditionConfig(nodeId: NodeId, index: Int, key: ConfigKey, value: String) {
+        editCondition(nodeId, index) { it.copy(config = it.config + (key to value)) }
+    }
+
+    fun setConditionNegated(nodeId: NodeId, index: Int, negated: Boolean) {
+        editCondition(nodeId, index) { it.copy(negated = negated) }
+    }
+
+    fun setConditionLogic(nodeId: NodeId, logic: ConditionLogic) {
+        editNode(nodeId) { it.copy(conditionLogic = logic) }
+    }
+
+    private fun editCondition(nodeId: NodeId, index: Int, edit: (AttachedCondition) -> AttachedCondition) {
+        editNode(nodeId) { node ->
+            node.copy(conditions = node.conditions.mapIndexed { i, c -> if (i == index) edit(c) else c })
+        }
+    }
+
+    private fun editNode(nodeId: NodeId, edit: (WorkflowNode) -> WorkflowNode) {
+        _uiState.update { state ->
+            val nodes = state.workflow.nodes.map { if (it.id == nodeId) edit(it) else it }
             state.copy(workflow = state.workflow.copy(nodes = nodes))
         }
         persist()

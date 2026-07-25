@@ -19,6 +19,9 @@ import kotlinx.coroutines.launch
  *
  * Each trigger runs in its own coroutine; cancelling the returned [Job]
  * tears down all trigger flows and (for schedule triggers) their armed work.
+ *
+ * Conditions attached to a *trigger* node gate the entire flow here, before the
+ * executor is entered — the macro-level "only when I'm at home" constraint.
  */
 class WorkflowRunner(
     private val host: TriggerHost,
@@ -72,6 +75,12 @@ class WorkflowRunner(
         triggerNode: com.example.ottomatic.domain.model.WorkflowNode,
         output: TriggerOutput,
     ) {
+        // A condition attached to the trigger gates the whole flow, and sees the
+        // event payload the trigger just emitted.
+        if (!triggerNode.conditionsPass(output.value, context)) {
+            context.log("Skipped ${triggerNode.typeId}: conditions not met")
+            return
+        }
         executor.executeFrom(workflow, triggerNode, output)
         // Signal that this macro's execution has finished.
         MacroEventBus.emit(

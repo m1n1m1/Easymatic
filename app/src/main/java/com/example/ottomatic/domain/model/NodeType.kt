@@ -7,10 +7,16 @@ import com.example.ottomatic.domain.model.schema.ItemSchema
 
 /**
  * The high-level category of a node.
+ *
+ * [CONDITION] nodes are dual-placement: dropped on the canvas they behave like a
+ * branching action (exec in, `true`/`false` exec out), and attached to another
+ * node they gate whether that node runs at all. Both placements are served by the
+ * same declaration — see [com.example.ottomatic.engine.ConditionNodeDefinition].
  */
 enum class NodeKind {
     TRIGGER,
     ACTION,
+    CONDITION,
 }
 
 /** A user-facing group for a [NodeTypeDefinition] in the node palette. */
@@ -34,6 +40,8 @@ enum class NodeCategory(
     TIMING(NodeKind.ACTION, "Timing"),
     DEVICE_SETTINGS(NodeKind.ACTION, "Device Settings"),
     DATA(NodeKind.ACTION, "Data"),
+    CONDITION_DEVICE(NodeKind.CONDITION, "Device State"),
+    CONDITION_DATA(NodeKind.CONDITION, "Data"),
 }
 
 /** Whether a port carries control-flow pulse or a typed data value. */

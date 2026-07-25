@@ -57,6 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
@@ -76,6 +77,7 @@ fun GraphEditorScreen(
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     var showPalette by remember { mutableStateOf(false) }
     var showConfig by remember { mutableStateOf(false) }
+    var pickConditionFor by remember { mutableStateOf<NodeId?>(null) }
     var hasAutoFitted by remember { mutableStateOf(false) }
 
     // Center the workflow in the viewport once it is loaded and the canvas is measured.
@@ -208,10 +210,36 @@ fun GraphEditorScreen(
                 onDataInputVisibilityChange = { portName, visible ->
                     viewModel.setNodeDataInputVisible(node.id, portName, visible)
                 },
+                conditionActions = ConditionActions(
+                    onAdd = { pickConditionFor = node.id },
+                    onRemove = { index -> viewModel.removeCondition(node.id, index) },
+                    onConfigChange = { index, key, value ->
+                        viewModel.updateConditionConfig(node.id, index, key, value)
+                    },
+                    onNegatedChange = { index, negated ->
+                        viewModel.setConditionNegated(node.id, index, negated)
+                    },
+                    onLogicChange = { logic -> viewModel.setConditionLogic(node.id, logic) },
+                ),
             )
         } else {
             showConfig = false
         }
+    }
+
+    // Attaching a condition reuses the node palette, restricted to the condition
+    // kind — the same list you would drop on the canvas, picked to live inside a
+    // node instead.
+    pickConditionFor?.let { nodeId ->
+        NodePaletteSheet(
+            onDismiss = { pickConditionFor = null },
+            onPick = { definition ->
+                pickConditionFor = null
+                viewModel.addCondition(nodeId, definition.typeId)
+            },
+            title = "Add condition",
+            restrictedTo = NodeTypeRegistry.byKind(NodeKind.CONDITION).map { it.typeId }.toSet(),
+        )
     }
 
     if (showBatteryPrompt) {
@@ -382,6 +410,7 @@ private fun NodeConfigSheet(
     onNameChange: (String) -> Unit,
     onConfigChange: (ConfigKey, String) -> Unit,
     onDataInputVisibilityChange: (PortName, Boolean) -> Unit,
+    conditionActions: ConditionActions,
 ) {
     val definition = NodeTypeRegistry.byId(node.typeId)
     val schema = definition?.let { effectiveConfigSchema(it, workflow, node) }
@@ -424,6 +453,12 @@ private fun NodeConfigSheet(
                     Spacer(modifier = Modifier.height(10.dp))
                 }
             }
+            Spacer(modifier = Modifier.height(6.dp))
+            ConditionsSection(
+                workflow = workflow,
+                node = node,
+                actions = conditionActions,
+            )
             if (dataInputPorts.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
@@ -459,7 +494,7 @@ private fun NodeConfigSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 @Suppress("CyclomaticComplexMethod") // Inherent: one branch per ConfigFieldType.
 @Composable
-private fun ConfigFieldEditor(
+internal fun ConfigFieldEditor(
     field: com.example.ottomatic.domain.registry.ConfigField<*>,
     value: String,
     onValueChange: (String) -> Unit,

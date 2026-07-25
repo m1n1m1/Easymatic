@@ -47,6 +47,7 @@ object EditorColors {
     val chromeBorder = Color(0xFF32343D)
     val triggerAccent = Color(0xFFE06C4F)
     val actionAccent = Color(0xFF5B8DEF)
+    val conditionAccent = Color(0xFFC58AF9)
 
     /**
      * Per-data-type port colors, grouped from [ItemSchema] into a small
@@ -72,6 +73,14 @@ object EditorColors {
 fun accentColor(kind: NodeKind): Color = when (kind) {
     NodeKind.TRIGGER -> EditorColors.triggerAccent
     NodeKind.ACTION -> EditorColors.actionAccent
+    NodeKind.CONDITION -> EditorColors.conditionAccent
+}
+
+/** The word shown under a node's name on its card, and in the palette headers. */
+fun kindLabel(kind: NodeKind): String = when (kind) {
+    NodeKind.TRIGGER -> "Trigger"
+    NodeKind.ACTION -> "Action"
+    NodeKind.CONDITION -> "Condition"
 }
 
 /**

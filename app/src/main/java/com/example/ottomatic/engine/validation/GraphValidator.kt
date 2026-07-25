@@ -219,7 +219,11 @@ class GraphValidator(private val workflow: Workflow) {
     }
 
     @Suppress("unused")
-    private fun kindLabel(kind: NodeKind) = if (kind == NodeKind.TRIGGER) "trigger" else "action"
+    private fun kindLabel(kind: NodeKind) = when (kind) {
+        NodeKind.TRIGGER -> "trigger"
+        NodeKind.ACTION -> "action"
+        NodeKind.CONDITION -> "condition"
+    }
 
     @Suppress("unused")
     private fun DataConnection.describe(): String = "$fromNodeId.$fromPort -> $toNodeId.$toPort"

@@ -1,6 +1,8 @@
 package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.engine.ConditionAsAction
+import com.example.ottomatic.engine.ConditionNode
 import com.example.ottomatic.engine.ExecutableAction
 import com.example.ottomatic.engine.action.AutoRotateAction
 import com.example.ottomatic.engine.action.BluetoothAction
@@ -8,7 +10,6 @@ import com.example.ottomatic.engine.action.BreakStructAction
 import com.example.ottomatic.engine.action.BrightnessAction
 import com.example.ottomatic.engine.action.CallAction
 import com.example.ottomatic.engine.action.ClipboardAction
-import com.example.ottomatic.engine.action.ConditionAction
 import com.example.ottomatic.engine.action.DelayAction
 import com.example.ottomatic.engine.action.DisableMacroAction
 import com.example.ottomatic.engine.action.DndAction
@@ -39,6 +40,12 @@ import com.example.ottomatic.engine.action.WifiAction
  * are exposed directly on each node via
  * [com.example.ottomatic.domain.registry.effectivePorts] (no dedicated
  * make-struct action is needed).
+ *
+ * [byId] also resolves *conditions placed on the canvas*, by wrapping each
+ * [ConditionRegistry] entry in a [ConditionAsAction]. Those wrappers are
+ * deliberately absent from [all]: they are an execution bridge, not declarations,
+ * and [NodeTypeRegistry] takes conditions from [ConditionRegistry] directly so
+ * they keep their own [com.example.ottomatic.domain.model.NodeKind].
  */
 object ActionRegistry {
 
@@ -48,7 +55,6 @@ object ActionRegistry {
         BrightnessAction(),
         CallAction(),
         ClipboardAction(),
-        ConditionAction(),
         DelayAction(),
         DisableMacroAction(),
         DndAction(),
@@ -69,7 +75,15 @@ object ActionRegistry {
         BreakStructAction(),
     )
 
-    private val byId: Map<NodeTypeId, ExecutableAction> = actions.associateBy { it.typeId }
+    /** Execution bridges for conditions dropped on the canvas. */
+    private val placedConditions: List<ExecutableAction> =
+        ConditionRegistry.all().map { asAction(it) }
+
+    private fun <C : Any> asAction(condition: ConditionNode<C>): ExecutableAction =
+        ConditionAsAction(condition)
+
+    private val byId: Map<NodeTypeId, ExecutableAction> =
+        (actions + placedConditions).associateBy { it.typeId }
 
     fun byId(typeId: NodeTypeId): ExecutableAction? = byId[typeId]
 

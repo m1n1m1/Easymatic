@@ -54,17 +54,42 @@ class NodeTypeRegistryTest {
     }
 
     @Test
-    fun `every registered action and trigger exposes exactly one node type`() {
-        val behaviourIds = TriggerRegistry.all().map { it.typeId } + ActionRegistry.all().map { it.typeId }
+    fun `every registered behaviour exposes exactly one node type`() {
+        val behaviourIds = TriggerRegistry.all().map { it.typeId } +
+            ActionRegistry.all().map { it.typeId } +
+            ConditionRegistry.all().map { it.typeId }
         val nodeTypeIds = NodeTypeRegistry.all.map { it.typeId }
         assertEquals(behaviourIds.toSet(), nodeTypeIds.toSet())
         assertEquals(behaviourIds.size, nodeTypeIds.size)
     }
 
+    /**
+     * A condition placed on the canvas is *executed* through [ActionRegistry],
+     * but it must not be *declared* there — otherwise it would contribute a
+     * second node type with the wrong [NodeKind].
+     */
+    @Test
+    fun `conditions are executable as actions but declared only once`() {
+        ConditionRegistry.all().forEach { condition ->
+            assertTrue(
+                "${condition.typeId} should be executable via ActionRegistry",
+                ActionRegistry.byId(condition.typeId) != null,
+            )
+            assertTrue(
+                "${condition.typeId} should not be declared in ActionRegistry",
+                ActionRegistry.all().none { it.typeId == condition.typeId },
+            )
+        }
+    }
+
     @Test
     fun `node type ids match their kind prefix`() {
         NodeTypeRegistry.all.forEach { definition ->
-            val expectedPrefix = if (definition.kind == NodeKind.TRIGGER) "trigger." else "action."
+            val expectedPrefix = when (definition.kind) {
+                NodeKind.TRIGGER -> "trigger."
+                NodeKind.ACTION -> "action."
+                NodeKind.CONDITION -> "condition."
+            }
             assertTrue(
                 "${definition.typeId} should start with $expectedPrefix",
                 definition.typeId.value.startsWith(expectedPrefix),

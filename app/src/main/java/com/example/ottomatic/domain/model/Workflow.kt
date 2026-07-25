@@ -7,6 +7,35 @@ import com.example.ottomatic.core.model.PortName
 import kotlinx.serialization.Serializable
 
 /**
+ * A condition node attached to a [WorkflowNode], gating whether that node runs.
+ *
+ * This is the *attached* placement of a condition: the same declaration that can
+ * be dropped on the canvas as a branching node lives here instead as a settings
+ * blob, so no edge has to be drawn for the common "only when X" case. [typeId]
+ * names a node registered in
+ * [com.example.ottomatic.domain.registry.ConditionRegistry], and [config] is that
+ * condition's own flat config map — identical in shape to [WorkflowNode.config],
+ * because both are decoded by the same
+ * [com.example.ottomatic.domain.registry.NodeSchema].
+ *
+ * [negated] inverts the result, so a single declaration covers "WiFi is on" and
+ * "WiFi is not on" without a second node type.
+ */
+@Serializable
+data class AttachedCondition(
+    val typeId: NodeTypeId,
+    val config: Map<ConfigKey, String> = emptyMap(),
+    val negated: Boolean = false,
+)
+
+/** How a node's [WorkflowNode.conditions] combine into a single verdict. */
+@Serializable
+enum class ConditionLogic {
+    AND,
+    OR,
+}
+
+/**
  * A node placed on the workflow canvas. Position is stored in graph units (dp).
  *
  * [config] is a flat map of *typed* config values keyed by [ConfigKey]: each value
@@ -18,6 +47,11 @@ import kotlinx.serialization.Serializable
  * on that same config class, which makes them DATA input ports as well — so a
  * config key and its port name are the same string by construction.
  * [visibleDataInputs] controls which DATA input handles are shown in the editor.
+ *
+ * [conditions] gate this node: when they do not pass, the node is skipped and its
+ * exec output never pulses, so the whole branch below it stops. They are
+ * evaluated against this node's own already-collected data inputs, which is why
+ * they need no ports of their own.
  */
 @Serializable
 data class WorkflowNode(
@@ -28,6 +62,8 @@ data class WorkflowNode(
     val y: Float,
     val config: Map<ConfigKey, String> = emptyMap(),
     val visibleDataInputs: Set<PortName> = emptySet(),
+    val conditions: List<AttachedCondition> = emptyList(),
+    val conditionLogic: ConditionLogic = ConditionLogic.AND,
 )
 
 /**
@@ -100,6 +136,6 @@ data class Workflow(
         dataConnections.filter { it.toNodeId == nodeId && it.toPort == port }
 
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 6
+        const val CURRENT_SCHEMA_VERSION = 7
     }
 }

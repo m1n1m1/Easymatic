@@ -23,7 +23,7 @@ import org.junit.Test
  *
  *  - `action.break` exposes one DATA OUT per field of the struct connected to
  *    its `struct` input (schema derived from the incoming edge);
- *  - `action.condition` rewrites its `source`/`value` DATA IN port schemas and
+ *  - `condition.compare` rewrites its `source`/`value` DATA IN port schemas and
  *    narrows the config form derived from `ConditionConfig` against the data
  *    item connected to its `source` port.
  *

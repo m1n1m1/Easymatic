@@ -119,13 +119,13 @@ fun NodePaletteSheet(
                         )
                     }
                 } else {
-                    listOf(NodeKind.TRIGGER, NodeKind.ACTION).forEach { kind ->
+                    NodeKind.values().forEach { kind ->
                         val categoryGroups = NodeTypeRegistry.categoriesFor(kind).map { category ->
                             category to matchingDefinitions.filter { it.category == category }
                         }.filter { (_, definitions) -> definitions.isNotEmpty() }
                         if (categoryGroups.isNotEmpty()) {
                             item(key = "kind-${kind.name}") {
-                                PaletteHeader(if (kind == NodeKind.TRIGGER) "Triggers" else "Actions")
+                                PaletteHeader(kindLabel(kind) + "s")
                             }
                             categoryGroups.forEach { (category, definitions) ->
                                 item(key = "category-${category.name}") {

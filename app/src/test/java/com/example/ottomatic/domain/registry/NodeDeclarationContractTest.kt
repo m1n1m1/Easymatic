@@ -21,6 +21,7 @@ class NodeDeclarationContractTest {
 
     private val actions = ActionRegistry.all()
     private val triggers = TriggerRegistry.all()
+    private val conditions = ConditionRegistry.all()
 
     @Test
     fun `every node declares a config class that can be decoded unconfigured`() {
@@ -31,6 +32,11 @@ class NodeDeclarationContractTest {
         }
         for (trigger in triggers) {
             trigger.definition.schema.decode(placed(trigger.typeId))
+        }
+        for (condition in conditions) {
+            // Attached conditions decode from a bare config map, with no node
+            // behind them — the defaults must carry the whole thing.
+            condition.definition.schema.decode(emptyMap())
         }
     }
 
@@ -64,17 +70,18 @@ class NodeDeclarationContractTest {
 
     @Test
     fun `every wired config property is exposed as exactly one data input port`() {
-        for (action in actions) {
-            val definition = action.definition
-            val declaredKeys = definition.schema.fields.map { it.key.value }.toSet()
-            val wiredPorts = definition.schema.wiredPorts.map { it.name.value }
+        val schemas = actions.map { it.typeId to it.definition.schema } +
+            conditions.map { it.typeId to it.definition.schema }
+        for ((typeId, schema) in schemas) {
+            val declaredKeys = schema.fields.map { it.key.value }.toSet()
+            val wiredPorts = schema.wiredPorts.map { it.name.value }
             assertEquals(
-                "${action.typeId}: duplicate wired ports in $wiredPorts",
+                "$typeId: duplicate wired ports in $wiredPorts",
                 wiredPorts.distinct().size,
                 wiredPorts.size,
             )
             assertTrue(
-                "${action.typeId}: wired ports $wiredPorts must all be config keys $declaredKeys",
+                "$typeId: wired ports $wiredPorts must all be config keys $declaredKeys",
                 declaredKeys.containsAll(wiredPorts),
             )
         }
@@ -196,8 +203,27 @@ class NodeDeclarationContractTest {
         }
     }
 
+    @Test
+    fun `every condition branches and produces no data`() {
+        for (condition in conditions) {
+            val ports = condition.definition.nodeType.ports
+            val execOut = ports.filter { it.kind == PortKind.EXECUTION && it.direction == Direction.OUT }
+            assertEquals(
+                "${condition.typeId}: a condition must expose true/false exec outputs",
+                listOf("true", "false"),
+                execOut.map { it.name.value },
+            )
+            assertTrue(
+                "${condition.typeId}: a condition answers a question, it must not produce data",
+                ports.none { it.kind == PortKind.DATA && it.direction == Direction.OUT },
+            )
+        }
+    }
+
     private fun allConfigSchemas(): List<NodeConfigSchema> =
-        actions.mapNotNull { it.definition.configSchema } + triggers.mapNotNull { it.definition.configSchema }
+        actions.mapNotNull { it.definition.configSchema } +
+            triggers.mapNotNull { it.definition.configSchema } +
+            conditions.mapNotNull { it.definition.configSchema }
 
     private fun placed(typeId: NodeTypeId) = WorkflowNode(
         id = NodeId("n1"), typeId = typeId, name = typeId.value, x = 0f, y = 0f,

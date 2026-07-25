@@ -89,7 +89,7 @@ data class NodeConfigSchema(
  *
  * This object holds no declarations of its own: the schemas are derived from the
  * config classes of the single node definitions registered in [ActionRegistry]
- * and [TriggerRegistry]. `action.condition` narrows its derived schema further
+ * and [TriggerRegistry]. `condition.compare` narrows its derived schema further
  * at design time (see [effectiveConfigSchema]).
  */
 object ConfigSchemaRegistry {
@@ -97,7 +97,8 @@ object ConfigSchemaRegistry {
     private val byId: Map<NodeTypeId, NodeConfigSchema> =
         (
             ActionRegistry.all().map { it.definition.configSchema } +
-                TriggerRegistry.all().map { it.definition.configSchema }
+                TriggerRegistry.all().map { it.definition.configSchema } +
+                ConditionRegistry.all().map { it.definition.configSchema }
             )
             .filterNotNull()
             .associateBy { it.typeId }
