@@ -10,12 +10,16 @@ import com.example.ottomatic.engine.effectNode
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
+private const val MILLIS_PER_SECOND = 1_000L
+private const val MILLIS_PER_MINUTE = 60 * MILLIS_PER_SECOND
+private const val MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE
+
 /** Time unit of a [DelayConfig.duration]. */
 @Serializable
 enum class DelayUnit(val millis: Long) {
-    SECONDS(1_000L),
-    MINUTES(60_000L),
-    HOURS(3_600_000L),
+    SECONDS(MILLIS_PER_SECOND),
+    MINUTES(MILLIS_PER_MINUTE),
+    HOURS(MILLIS_PER_HOUR),
 }
 
 /** Config for `action.delay`. */

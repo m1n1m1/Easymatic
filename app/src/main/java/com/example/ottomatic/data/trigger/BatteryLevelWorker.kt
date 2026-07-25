@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
+import androidx.core.content.edit
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.ottomatic.core.trigger.TriggerBus
@@ -72,7 +73,7 @@ class BatteryLevelWorker(
                 ),
             )
         }
-        prefs.edit().putBoolean(prefsKey(nodeId, direction, threshold), nowSatisfied).apply()
+        prefs.edit { putBoolean(prefsKey(nodeId, direction, threshold), nowSatisfied) }
     }
 
     private fun readBattery(): BatterySnapshot {

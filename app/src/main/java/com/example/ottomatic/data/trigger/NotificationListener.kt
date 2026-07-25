@@ -36,6 +36,3 @@ class NotificationListener : NotificationListenerService() {
         )
     }
 }
-
-object NotificationTriggerBridge {
-}

@@ -48,7 +48,6 @@ class AndroidPermissionChecker(
     }
 
     private fun dndPolicyStatus(): PermissionStatus {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return PermissionStatus.Granted
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE)
             as NotificationManager
         return if (notificationManager.isNotificationPolicyAccessGranted) {

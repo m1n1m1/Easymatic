@@ -57,13 +57,14 @@ enum class ComparisonOperator {
     }
 
     private fun compareNumbers(actual: String, expected: String): Boolean {
-        val left = actual.toDoubleOrNull() ?: return false
-        val right = expected.toDoubleOrNull() ?: return false
-        return when (this) {
-            GREATER_THAN -> left > right
-            LESS_THAN -> left < right
-            GREATER_THAN_OR_EQUAL -> left >= right
-            LESS_THAN_OR_EQUAL -> left <= right
+        val left = actual.toDoubleOrNull()
+        val right = expected.toDoubleOrNull()
+        return when {
+            left == null || right == null -> false
+            this == GREATER_THAN -> left > right
+            this == LESS_THAN -> left < right
+            this == GREATER_THAN_OR_EQUAL -> left >= right
+            this == LESS_THAN_OR_EQUAL -> left <= right
             else -> false
         }
     }

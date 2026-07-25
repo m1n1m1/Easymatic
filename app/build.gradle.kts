@@ -40,6 +40,15 @@ android {
 }
 
 dependencies {
+    constraints {
+        // play-services-location transitively pins androidx.fragment to 1.1.0, which
+        // predates the ActivityResult APIs used by activity-compose. The app itself
+        // uses no fragments; this only raises the resolved transitive version.
+        implementation(libs.androidx.fragment) {
+            because("registerForActivityResult requires androidx.fragment >= 1.3.0")
+        }
+    }
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)

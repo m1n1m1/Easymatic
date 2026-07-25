@@ -72,8 +72,9 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
         node: WorkflowNode,
         host: TriggerHost,
     ): Flow<NodeOutput<GeofenceEvent>> {
-        val latitude = config.latitude ?: return emptyFlow()
-        val longitude = config.longitude ?: return emptyFlow()
+        val latitude = config.latitude
+        val longitude = config.longitude
+        if (latitude == null || longitude == null) return emptyFlow()
         val transitions = config.transitions
         val armedNames = transitions.mapTo(mutableSetOf()) { it.payloadValue }
         return flow {

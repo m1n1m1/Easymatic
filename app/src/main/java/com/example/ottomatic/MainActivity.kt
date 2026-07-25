@@ -1,7 +1,6 @@
 package com.example.ottomatic
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.graphics.Color
@@ -17,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -172,7 +172,7 @@ class MainActivity : ComponentActivity() {
 
     private fun requestBatteryOptimizationExemption() {
         val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-            data = Uri.parse("package:$packageName")
+            data = "package:$packageName".toUri()
         }
         requestIgnoreBatteryOptimizations.launch(intent)
         // We are now in the foreground, so this session's re-arm will succeed
@@ -210,7 +210,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestDndPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return
         if (permissionChecker.status(Permissions.ACCESS_NOTIFICATION_POLICY) is PermissionStatus.Granted) return
         val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
         requestDndPolicyAccess.launch(intent)

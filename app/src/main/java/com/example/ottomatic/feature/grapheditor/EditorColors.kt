@@ -105,6 +105,7 @@ fun portTypeColor(schema: ItemSchema?): Color = when (schema) {
  * Maps a node type's [NodeIcon] to its vector asset. Exhaustive by construction:
  * adding an icon to the enum is a compile error until it is drawn here.
  */
+@Suppress("CyclomaticComplexMethod") // A flat, exhaustive icon table, not branching logic.
 fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.BOLT -> Icons.Filled.Bolt
     NodeIcon.SPLIT -> Icons.AutoMirrored.Filled.CallSplit

@@ -56,7 +56,3 @@ class BootReceiver : BroadcastReceiver() {
         }
     }
 }
-
-/** Shared constants between the receiver and the engine-side BootTrigger. */
-object BootTriggerBridge {
-}

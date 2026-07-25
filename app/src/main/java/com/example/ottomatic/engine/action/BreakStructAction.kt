@@ -57,10 +57,14 @@ class BreakStructAction : RawAction<NoConfig> {
         input: NodeInput,
         context: ExecutionContext,
     ): NodeOutput<Map<PortName, Item>> {
-        val item = input.item(BREAK_STRUCT_IN) ?: return NodeOutput(emptyMap())
-        val schema = item.schema as? ItemSchema.Object
-        val kClass = schema?.kClass ?: return NodeOutput(emptyMap())
-        return NodeOutput(extractFields(item.value, kClass, schema))
+        val item = input.item(BREAK_STRUCT_IN)
+        val schema = item?.schema as? ItemSchema.Object
+        val kClass = schema?.kClass
+        return if (schema == null || kClass == null) {
+            NodeOutput(emptyMap())
+        } else {
+            NodeOutput(extractFields(item.value, kClass, schema))
+        }
     }
 
     @Suppress("UNCHECKED_CAST")

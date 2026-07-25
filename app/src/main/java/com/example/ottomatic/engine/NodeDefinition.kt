@@ -28,6 +28,7 @@ import com.example.ottomatic.domain.registry.nodeSchema
  * [com.example.ottomatic.domain.registry.NodeTypeRegistry] and
  * [com.example.ottomatic.domain.registry.ConfigSchemaRegistry].
  */
+@Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
 class ActionNodeDefinition<I : Any, O : Any> @PublishedApi internal constructor(
     val typeId: NodeTypeId,
     val displayName: String,
@@ -87,6 +88,7 @@ class ActionNodeDefinition<I : Any, O : Any> @PublishedApi internal constructor(
  * derived from the config class [C] and the [output] port. Every trigger has a
  * single EXECUTION `out` port, so only the data output is declared.
  */
+@Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
 class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor(
     val typeId: NodeTypeId,
     val displayName: String,

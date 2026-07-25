@@ -1,6 +1,7 @@
 package com.example.ottomatic.data
 
 import android.content.Context
+import androidx.core.content.edit
 
 /**
  * Tracks whether a background engine start failed and the user should be prompted
@@ -23,11 +24,11 @@ object BootFailureStore {
     private const val KEY_PENDING = "needs_battery_prompt"
 
     fun markPending(context: Context) {
-        prefs(context).edit().putBoolean(KEY_PENDING, true).apply()
+        prefs(context).edit { putBoolean(KEY_PENDING, true) }
     }
 
     fun clear(context: Context) {
-        prefs(context).edit().putBoolean(KEY_PENDING, false).apply()
+        prefs(context).edit { putBoolean(KEY_PENDING, false) }
     }
 
     /**

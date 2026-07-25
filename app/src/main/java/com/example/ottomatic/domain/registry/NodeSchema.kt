@@ -83,7 +83,11 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         if (elements.isEmpty()) return defaults
         val encoded = buildMap<String, JsonElement> {
             for (element in elements) {
-                val wired = if (element.wired) data[PortName(element.key)]?.let { element.encode(it.value?.toString()) } else null
+                val wired = if (element.wired) {
+                    data[PortName(element.key)]?.let { element.encode(it.value?.toString()) }
+                } else {
+                    null
+                }
                 val resolved = wired ?: element.encode(config[ConfigKey(element.key)])
                 if (resolved != null) put(element.key, resolved)
             }

@@ -337,14 +337,16 @@ private fun conditionStructFields(workflow: Workflow, node: WorkflowNode): List<
  * so the form is usable before anything is wired.
  */
 private fun inspectedSchema(workflow: Workflow, node: WorkflowNode, structFields: List<String>?): ItemSchema {
+    val fallback = ItemSchema.Primitive(String::class)
     val type = conditionType(node)
-    if (type != ComparisonType.AUTO) return type.schema ?: ItemSchema.Primitive(String::class)
+    if (type != ComparisonType.AUTO) return type.schema ?: fallback
     val connected = resolveInputSchema(workflow, node, CONDITION_SOURCE_IN)
-    if (structFields != null && connected is ItemSchema.Object) {
+    return if (structFields != null && connected is ItemSchema.Object) {
         val selected = node.config[CONDITION_FIELD_KEY]?.takeIf { it in structFields } ?: structFields.first()
-        return connected.fields[selected] ?: ItemSchema.Primitive(String::class)
+        connected.fields[selected] ?: fallback
+    } else {
+        connected ?: fallback
     }
-    return connected ?: ItemSchema.Primitive(String::class)
 }
 
 /** The condition's configured [ComparisonType], defaulting to [ComparisonType.AUTO]. */

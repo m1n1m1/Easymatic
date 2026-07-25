@@ -11,7 +11,6 @@ import android.content.pm.PackageManager
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.media.AudioManager
-import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.VibrationEffect
@@ -21,6 +20,7 @@ import android.provider.Settings
 import android.telephony.SmsManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import com.example.ottomatic.core.service.AudioStream
 import com.example.ottomatic.core.service.AutoRotateResult
 import com.example.ottomatic.core.service.BluetoothResult
@@ -54,14 +54,12 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
     }
 
     private fun ensureChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Ottomatic",
-                NotificationManager.IMPORTANCE_DEFAULT,
-            )
-            notificationManager.createNotificationChannel(channel)
-        }
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            "Ottomatic",
+            NotificationManager.IMPORTANCE_DEFAULT,
+        )
+        notificationManager.createNotificationChannel(channel)
     }
 
     override fun notify(title: String, text: String): Boolean = runCatching {
@@ -128,7 +126,6 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
     }.getOrNull()
 
     override fun setDnd(enabled: Boolean, level: DndLevel): DndResult? = runCatching {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return@runCatching null
         if (!notificationManager.isNotificationPolicyAccessGranted) return@runCatching null
         val filter = if (enabled) {
             when (level) {
@@ -163,6 +160,10 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         if (ContextCompat.checkSelfPermission(context, perm) != PackageManager.PERMISSION_GRANTED) {
             return@runCatching null
         }
+        // Deprecated since API 33 with no direct replacement: the sanctioned path is
+        // an ACTION_REQUEST_ENABLE intent, which cannot run unattended as a workflow
+        // action must. Still functional on the OEM builds that permit it.
+        @Suppress("DEPRECATION")
         if (enabled) adapter.enable() else adapter.disable()
         BluetoothResult(enabled = enabled, changed = true)
     }.getOrNull()
@@ -174,9 +175,8 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
             RingerMode.VIBRATE -> AudioManager.RINGER_MODE_VIBRATE
             RingerMode.NORMAL -> AudioManager.RINGER_MODE_NORMAL
         }
-        // Silent requires notification policy access on API 21+.
+        // Silent requires notification policy access.
         if (ringerMode == AudioManager.RINGER_MODE_SILENT &&
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
             !notificationManager.isNotificationPolicyAccessGranted
         ) {
             return@runCatching null
@@ -272,17 +272,11 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
             @Suppress("DEPRECATION")
             context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (pattern.isNotEmpty()) {
-                val amplitudes = IntArray(pattern.size) { VibrationEffect.DEFAULT_AMPLITUDE }
-                vibrator.vibrate(VibrationEffect.createWaveform(pattern.toLongArray(), amplitudes, -1))
-            } else {
-                vibrator.vibrate(VibrationEffect.createOneShot(durationMs.toLong(), VibrationEffect.DEFAULT_AMPLITUDE))
-            }
+        if (pattern.isNotEmpty()) {
+            val amplitudes = IntArray(pattern.size) { VibrationEffect.DEFAULT_AMPLITUDE }
+            vibrator.vibrate(VibrationEffect.createWaveform(pattern.toLongArray(), amplitudes, REPEAT_NEVER))
         } else {
-            @Suppress("DEPRECATION")
-            if (pattern.isNotEmpty()) vibrator.vibrate(pattern.toLongArray(), -1)
-            else vibrator.vibrate(durationMs.toLong())
+            vibrator.vibrate(VibrationEffect.createOneShot(durationMs.toLong(), VibrationEffect.DEFAULT_AMPLITUDE))
         }
         true
     }.getOrDefault(false)
@@ -295,7 +289,7 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
     }.getOrDefault(false)
 
     override fun openUrl(url: String): Boolean = runCatching {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+        val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(intent)
@@ -314,7 +308,7 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
     }.getOrDefault(false)
 
     override fun call(number: String): Boolean = runCatching {
-        val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$number")).apply {
+        val intent = Intent(Intent.ACTION_CALL, "tel:$number".toUri()).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(intent)
@@ -335,8 +329,7 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         true
     }.getOrDefault(false)
 
-    private fun canWriteSettings(): Boolean =
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.System.canWrite(context)
+    private fun canWriteSettings(): Boolean = Settings.System.canWrite(context)
 
     private fun audioStreamType(stream: AudioStream): Int = when (stream) {
         AudioStream.MEDIA -> AudioManager.STREAM_MUSIC
@@ -352,5 +345,8 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         private const val MIN_BRIGHTNESS = 0
         private const val MAX_BRIGHTNESS = 255
         private const val MIN_SCREEN_TIMEOUT_MS = 1_000
+
+        /** `VibrationEffect` repeat index meaning "play the waveform once". */
+        private const val REPEAT_NEVER = -1
     }
 }
