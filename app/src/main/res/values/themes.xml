@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Ottomatic" parent="android:Theme.Material.Light.NoActionBar" />
+     <!-- The app renders a fixed dark palette; a light window background flashes
+         through during navigation transitions. -->
+    <style name="Theme.Ottomatic" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/canvas_background</item>
+    </style>
 </resources>

@@ -12,6 +12,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -99,6 +100,13 @@ class MainActivity : ComponentActivity() {
                 NavHost(
                     navController = navController,
                     startDestination = ROUTE_WORKFLOW_LIST,
+                    // Mid-slide neither screen covers the full width; the gap shows
+                    // the window background, which Theme.Ottomatic pins to the
+                    // canvas colour so nothing flashes at the edge.
+                    enterTransition = { slideIntoContainer(SlideDirection.Left) },
+                    exitTransition = { slideOutOfContainer(SlideDirection.Left) },
+                    popEnterTransition = { slideIntoContainer(SlideDirection.Right) },
+                    popExitTransition = { slideOutOfContainer(SlideDirection.Right) },
                 ) {
                     composable(ROUTE_WORKFLOW_LIST) {
                         WorkflowListScreen(

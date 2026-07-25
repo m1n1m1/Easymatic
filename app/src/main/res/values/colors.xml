@@ -7,4 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <!-- Mirrors EditorColors.canvasBackground. Used as the window background so
+         nav transitions never expose a lighter surface underneath. -->
+    <color name="canvas_background">#FF17181D</color>
 </resources>
