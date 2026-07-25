@@ -12,10 +12,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -109,15 +111,28 @@ class MainActivity : ComponentActivity() {
                         arguments = listOf(navArgument(ARG_WORKFLOW_ID) { type = NavType.StringType }),
                     ) { backStackEntry ->
                         val workflowId = backStackEntry.arguments?.getString(ARG_WORKFLOW_ID).orEmpty()
-                        val editorViewModel: GraphEditorViewModel by viewModels {
-                            GraphEditorViewModel.factory(
+                        if (workflowId.isBlank()) {
+                            // No id to edit: an editor bound to "" would read and write
+                            // workflows/.json. Bounce back to the list instead.
+                            LaunchedEffect(Unit) { navController.popBackStack() }
+                            return@composable
+                        }
+                        // Scoped to the NavBackStackEntry (the default owner for
+                        // viewModel() inside composable {}), NOT the Activity: each
+                        // workflow gets its own instance, cleared when the entry is
+                        // popped. An activity-scoped ViewModel would be created once
+                        // and keep serving the first workflow's graph — and save it
+                        // over every workflow opened afterwards.
+                        val editorViewModel: GraphEditorViewModel = viewModel(
+                            key = workflowId,
+                            factory = GraphEditorViewModel.factory(
                                 repository = ServiceLocator.workflowRepository,
                                 triggerHost = ServiceLocator.triggerHost,
                                 executionContext = ServiceLocator.executionContext,
                                 appContext = applicationContext,
                                 workflowId = workflowId,
-                            )
-                        }
+                            ),
+                        )
                         GraphEditorScreen(
                             viewModel = editorViewModel,
                             showBatteryPrompt = showBatteryPrompt,

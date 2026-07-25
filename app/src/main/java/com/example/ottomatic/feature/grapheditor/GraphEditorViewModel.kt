@@ -466,7 +466,12 @@ class GraphEditorViewModel(
     }
 
     private fun persist() {
-        val workflow = _uiState.value.workflow
+        // Before the initial load lands, [_uiState.workflow] is still the default
+        // instance whose id is "default" — saving it would write a junk
+        // workflows/default.json instead of this workflow's file.
+        val state = _uiState.value
+        if (!state.isLoaded) return
+        val workflow = state.workflow
         viewModelScope.launch { repository.save(workflow) }
     }
 
@@ -480,7 +485,11 @@ class GraphEditorViewModel(
      * in the long-lived service scope so it keeps running after the UI is gone.
      */
     fun setMacroEnabled(enabled: Boolean) {
-        val workflow = _uiState.value.workflow
+        val state = _uiState.value
+        // Same guard as [persist]: arming before the load completes would target
+        // the default id rather than this workflow.
+        if (!state.isLoaded) return
+        val workflow = state.workflow
         _uiState.update { it.copy(isMacroEnabled = enabled) }
         viewModelScope.launch { repository.setEnabled(workflow.id, enabled) }
         if (enabled) {
