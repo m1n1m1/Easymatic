@@ -10,6 +10,7 @@ import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
+import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.model.schema.ItemSchema
@@ -112,6 +113,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                     label = annotations.labelOr(key),
                     type = formTypeOf(element, multiline = annotations.any { it is Multiline }, key = key),
                     defaultValue = defaultValues[key].orEmpty(),
+                    visibleWhen = annotations.visibilityRule(),
                 ),
             )
         }
@@ -198,6 +200,11 @@ inline fun <reified T : Any> nodeSchema(): NodeSchema<T> = NodeSchema(serializer
 
 private fun List<Annotation>.labelOr(name: String): String =
     filterIsInstance<Label>().firstOrNull()?.value ?: prettify(name)
+
+private fun List<Annotation>.visibilityRule(): VisibilityRule? =
+    filterIsInstance<VisibleWhen>().firstOrNull()?.let {
+        VisibilityRule(key = ConfigKey(it.key), values = it.values.toSet())
+    }
 
 /**
  * Turns a property or enum-entry name into a form label:

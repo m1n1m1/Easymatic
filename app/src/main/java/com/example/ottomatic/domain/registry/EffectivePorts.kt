@@ -119,10 +119,11 @@ fun effectivePort(
 
 /**
  * The effective [NodeConfigSchema] for the placed [node]: the schema derived
- * from the node's config class for ordinary nodes, and a graph-narrowed variant
- * of it for `action.condition`.
+ * from the node's config class, graph-narrowed for `action.condition`, then
+ * filtered down to the fields whose `@VisibleWhen` condition the node's own
+ * config currently satisfies.
  *
- * Returns null when the node has no configurable fields.
+ * Returns null when the node has no configurable fields left.
  */
 fun effectiveConfigSchema(
     definition: NodeTypeDefinition,
@@ -130,8 +131,56 @@ fun effectiveConfigSchema(
     node: WorkflowNode,
 ): NodeConfigSchema? {
     val declared = ConfigSchemaRegistry.byId(definition.typeId) ?: return null
-    if (definition.typeId != CONDITION_TYPE_ID) return declared
-    return conditionConfigSchema(declared, workflow, node)
+    val narrowed = if (definition.typeId == CONDITION_TYPE_ID) {
+        conditionConfigSchema(declared, workflow, node)
+    } else {
+        declared
+    }
+    return narrowed.visibleFor(node).takeIf { it.fields.isNotEmpty() }
+}
+
+/**
+ * Drops the fields whose [ConfigField.visibleWhen] rule the [node] does not
+ * satisfy. The controlling value is read from the node's config, falling back to
+ * the controlling *field's* declared default — so a node the user has never
+ * touched shows the fields belonging to its default mode rather than none of
+ * them.
+ *
+ * Rules nest: a field is visible only when its own rule holds *and* its
+ * controlling field is itself visible. Without that, switching an outer mode
+ * hides the control but leaves the fields it gates on screen, stranded behind a
+ * switch the user can no longer see.
+ *
+ * A rule naming an unknown key hides nothing; the declaration contract test
+ * rejects that case, and rule cycles, at build time rather than leaving a field
+ * silently unreachable at runtime.
+ */
+private fun NodeConfigSchema.visibleFor(node: WorkflowNode): NodeConfigSchema {
+    if (fields.none { it.visibleWhen != null }) return this
+    val byKey = fields.associateBy { it.key }
+    return copy(fields = fields.filter { it.isVisibleFor(node, byKey) })
+}
+
+/**
+ * Whether this field's whole rule chain holds for [node]: its own rule, its
+ * controller's, and so on up to a field that declares none.
+ *
+ * The walk tracks the keys already visited, so a cyclic declaration terminates
+ * after evaluating each field in the cycle once rather than looping. The
+ * declaration contract test rejects such cycles outright; this only keeps the
+ * editor from hanging on one.
+ */
+private fun ConfigField<*>.isVisibleFor(node: WorkflowNode, byKey: Map<ConfigKey, ConfigField<*>>): Boolean {
+    val seen = mutableSetOf(key)
+    val chain = generateSequence(this) { field ->
+        field.visibleWhen?.key?.let { byKey[it] }?.takeIf { seen.add(it.key) }
+    }
+    return chain.all { field ->
+        val rule = field.visibleWhen ?: return@all true
+        // A rule naming an unknown key hides nothing.
+        val controlling = byKey[rule.key] ?: return@all true
+        (node.config[rule.key] ?: controlling.defaultValue) in rule.values
+    }
 }
 
 /**

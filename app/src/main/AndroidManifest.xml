@@ -25,6 +25,7 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
@@ -85,6 +86,14 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="com.example.ottomatic.GEOFENCE_TRANSITION" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".data.trigger.AlarmReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.ottomatic.SCHEDULE_ALARM" />
             </intent-filter>
         </receiver>
 

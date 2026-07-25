@@ -21,8 +21,7 @@ interface TriggerHost {
     /**
      * Arms a periodic schedule that emits a bus event for [nodeId] every
      * [intervalMinutes] (clamped to the WorkManager 15-minute floor by the
-     * implementation). When [cron] is non-null the implementation interprets
-     * it as a cron expression instead of a fixed interval.
+     * implementation).
      *
      * Returns a [ScheduleHandle] whose [ScheduleHandle.cancel] tears the
      * schedule down when the trigger flow is cancelled.
@@ -30,7 +29,25 @@ interface TriggerHost {
     fun armSchedule(
         nodeId: NodeId,
         intervalMinutes: Long,
-        cron: String?,
+    ): ScheduleHandle
+
+    /**
+     * Arms a **one-shot** exact alarm that emits a bus event for [nodeId] at
+     * [atEpochMs]. Unlike [armSchedule] this is minute-accurate and fires
+     * through doze, which is what makes "at 07:30" mean 07:30; the caller
+     * re-arms the next occurrence after each event.
+     *
+     * On Android 12+ exact alarms require the `SCHEDULE_EXACT_ALARM` permission.
+     * When the user has not granted it the implementation degrades to an
+     * inexact alarm rather than failing, so the trigger still fires — just not
+     * to the minute.
+     *
+     * Returns a [ScheduleHandle] whose [ScheduleHandle.cancel] cancels the
+     * pending alarm when the trigger flow is cancelled.
+     */
+    fun armAlarm(
+        nodeId: NodeId,
+        atEpochMs: Long,
     ): ScheduleHandle
 
     /**

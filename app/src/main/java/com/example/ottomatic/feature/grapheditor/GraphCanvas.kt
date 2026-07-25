@@ -258,7 +258,11 @@ private fun DrawScope.drawArrow(start: Offset, end: Offset, color: Color) {
 }
 
 private fun DrawScope.drawPendingConnection(state: GraphEditorUiState) {
-    val pending = state.pendingConnection ?: return
+    // While the drop-to-add palette is open the drag is over, but the edge stays
+    // on screen so the user can see what they are about to connect.
+    val pending = state.pendingConnection
+        ?: state.nodePick?.let { PendingConnection(it.from, it.dropPosGraph) }
+        ?: return
     val fromPos = portPositionOf(state.workflow, pending.from) ?: return
     val target = pending.hoverPort?.let { portPositionOf(state.workflow, it) } ?: pending.currentPos
     val (start, end) = if (pending.from.isOutput) fromPos to target else target to fromPos

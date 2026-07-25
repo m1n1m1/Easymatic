@@ -1,9 +1,11 @@
 package com.example.ottomatic.data.trigger
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.annotation.SuppressLint
+import android.os.Build
 import android.util.Log
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -30,6 +32,7 @@ class AndroidTriggerHost(
 
     private val appContext = context.applicationContext
     private val workManager = WorkManager.getInstance(appContext)
+    private val alarmManager = appContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     private val geofencingClient = LocationServices.getGeofencingClient(appContext)
     private val lifecycleBridge = AppLifecycleBridge(appContext)
 
@@ -39,7 +42,6 @@ class AndroidTriggerHost(
     override fun armSchedule(
         nodeId: NodeId,
         intervalMinutes: Long,
-        cron: String?,
     ): ScheduleHandle {
         // WorkManager enforces a 15-minute minimum; clamp here for clarity.
         val minutes = intervalMinutes.coerceAtLeast(MIN_INTERVAL_MINUTES)
@@ -49,6 +51,33 @@ class AndroidTriggerHost(
         val workName = ScheduleWorker.WORK_NAME_PREFIX + nodeId
         workManager.enqueueUniquePeriodicWork(workName, ExistingPeriodicWorkPolicy.UPDATE, request)
         return ScheduleHandle { workManager.cancelUniqueWork(workName) }
+    }
+
+    override fun armAlarm(nodeId: NodeId, atEpochMs: Long): ScheduleHandle {
+        val pendingIntent = alarmPendingIntent(nodeId)
+        // setExact* needs SCHEDULE_EXACT_ALARM from API 31; without it the call
+        // throws, so fall back to the inexact variant rather than failing the
+        // whole trigger. Both variants fire through doze.
+        if (canScheduleExactAlarms()) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atEpochMs, pendingIntent)
+        } else {
+            Log.w(TAG, "Exact alarms not permitted; node $nodeId falls back to an inexact alarm")
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atEpochMs, pendingIntent)
+        }
+        return ScheduleHandle { alarmManager.cancel(pendingIntent) }
+    }
+
+    private fun canScheduleExactAlarms(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
+
+    private fun alarmPendingIntent(nodeId: NodeId): PendingIntent {
+        val intent = Intent(appContext, AlarmReceiver::class.java).apply {
+            action = AlarmReceiver.ACTION_ALARM
+            putExtra(AlarmReceiver.EXTRA_NODE_ID, nodeId.value)
+        }
+        val requestCode = nodeId.hashCode() and Int.MAX_VALUE
+        val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        return PendingIntent.getBroadcast(appContext, requestCode, intent, flags)
     }
 
     override fun armBatteryLevelPoll(

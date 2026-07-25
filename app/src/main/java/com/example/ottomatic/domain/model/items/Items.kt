@@ -27,10 +27,31 @@ data class NotificationEvent(
     val timestamp: Long,
 )
 
-/** A scheduled trigger fire timestamp, exposed on `trigger.schedule`'s `fireTime` port. */
+/**
+ * A `trigger.schedule` fire, exposed on its `fireTime` port.
+ *
+ * - [firedAt]: epoch ms at which this fire occurred.
+ * - [elapsedMs]: milliseconds since the trigger was activated — what the old
+ *   `trigger.stopwatch` reported.
+ * - [count]: 1-based occurrence number since activation.
+ * - [hour], [minute]: wall-clock time of the fire, in the device's timezone.
+ * - [dayOfWeek]: [java.util.Calendar] constant, 1 = Sunday.
+ * - [dayOfMonth]: day of the month, 1-31.
+ *
+ * The calendar parts are carried so a downstream condition can branch on them
+ * without recomputing anything. [elapsedMs] and [count] are relative to when the
+ * trigger's flow was collected, so both restart when the workflow is re-armed or
+ * the process is killed.
+ */
 @Serializable
 data class ScheduleFire(
     val firedAt: Long,
+    val elapsedMs: Long,
+    val count: Int,
+    val hour: Int,
+    val minute: Int,
+    val dayOfWeek: Int,
+    val dayOfMonth: Int,
 )
 
 /** Request built by the HTTP action from its config + data inputs. */
@@ -138,18 +159,6 @@ data class GeofenceEvent(
 )
 
 /**
- * A stopwatch tick reported by `trigger.stopwatch` on its `tick` data port.
- *
- * - [elapsedMs]: milliseconds elapsed since the stopwatch was started.
- * - [tickAt]: epoch ms at which this tick fired.
- */
-@Serializable
-data class StopwatchTick(
-    val elapsedMs: Long,
-    val tickAt: Long,
-)
-
-/**
  * A variable change reported by `trigger.variable_change` on its `variable` data port.
  *
  * - [name]: the variable name.
@@ -178,7 +187,7 @@ data class ModeChange(
 /**
  * Generic system-state event reported by Tier 1 broadcast-receiver triggers
  * (wifi, bluetooth, airplane, headset, usb, dock, screen, ringer, power-save,
- * timezone, locale, date, shutdown, time-tick, call) on their `state` data port.
+ * clock-change, locale, shutdown, call) on their `state` data port.
  *
  * - [event]: discriminator — `"enabled"`, `"disabled"`, `"connected"`,
  *   `"disconnected"`, `"on"`, `"off"`, `"plugged"`, `"unplugged"`, etc.

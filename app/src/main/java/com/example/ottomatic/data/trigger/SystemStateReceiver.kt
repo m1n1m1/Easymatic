@@ -108,10 +108,12 @@ class SystemStateReceiver : BroadcastReceiver() {
             else -> null
         }
 
+    // The two clock actions share the `clock_change` trigger type and are told
+    // apart by their event, so `trigger.clock_changed` can filter between them.
     private fun resolveSystemEvent(action: String): String? = when (action) {
-        Intent.ACTION_TIMEZONE_CHANGED -> "changed"
+        Intent.ACTION_TIMEZONE_CHANGED -> "timezone_changed"
+        Intent.ACTION_DATE_CHANGED -> "date_changed"
         Intent.ACTION_LOCALE_CHANGED -> "changed"
-        Intent.ACTION_DATE_CHANGED -> "changed"
         Intent.ACTION_SHUTDOWN -> "shutdown"
         else -> null
     }
@@ -236,17 +238,17 @@ class SystemStateReceiver : BroadcastReceiver() {
             // System
             put(
                 Intent.ACTION_TIMEZONE_CHANGED,
-                ActionMapping(TriggerSource.SYSTEM, "timezone_change") {
+                ActionMapping(TriggerSource.SYSTEM, "clock_change") {
                     it.getStringExtra("time-zone")
                 },
             )
             put(
-                Intent.ACTION_LOCALE_CHANGED,
-                ActionMapping(TriggerSource.SYSTEM, "locale_change"),
+                Intent.ACTION_DATE_CHANGED,
+                ActionMapping(TriggerSource.SYSTEM, "clock_change"),
             )
             put(
-                Intent.ACTION_DATE_CHANGED,
-                ActionMapping(TriggerSource.SYSTEM, "date_change"),
+                Intent.ACTION_LOCALE_CHANGED,
+                ActionMapping(TriggerSource.SYSTEM, "locale_change"),
             )
             put(
                 Intent.ACTION_SHUTDOWN,

@@ -10,6 +10,7 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.effectivePort
+import com.example.ottomatic.domain.registry.isDataAssignable
 
 /**
  * One finding produced by validating a [Workflow] graph.
@@ -111,9 +112,9 @@ class GraphValidator(private val workflow: Workflow) {
                 )
                 continue
             }
-            val sourceSchema = fromPort.schema ?: ItemSchema.Wildcard
-            val targetSchema = toPort.schema ?: ItemSchema.Wildcard
-            if (!targetSchema.isAssignableFrom(sourceSchema)) {
+            if (!isDataAssignable(fromPort, toPort)) {
+                val sourceSchema = fromPort.schema ?: ItemSchema.Wildcard
+                val targetSchema = toPort.schema ?: ItemSchema.Wildcard
                 out += ValidationIssue(
                     Severity.ERROR,
                     "Schema mismatch on data edge: source $sourceSchema not assignable to target $targetSchema",

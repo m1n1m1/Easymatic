@@ -10,6 +10,7 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.NoConfig
+import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.model.schema.ItemSchema
@@ -43,6 +44,8 @@ class NodeSchemaTest {
         val enabled: Boolean = false,
         val mode: Mode = Mode.FAST,
         val optionalMode: Mode? = null,
+        @VisibleWhen("mode", "SLOW") val patience: Int = 3,
+        @VisibleWhen("patience", "3") val excuse: String = "",
     )
 
     private val schema = nodeSchema<Sample>()
@@ -50,7 +53,7 @@ class NodeSchemaTest {
     @Test
     fun `fields are derived in declaration order with keys taken from property names`() {
         assertEquals(
-            listOf("name", "notes", "count", "ratio", "enabled", "mode", "optionalMode"),
+            listOf("name", "notes", "count", "ratio", "enabled", "mode", "optionalMode", "patience", "excuse"),
             schema.fields.map { it.key.value },
         )
     }
@@ -92,6 +95,35 @@ class NodeSchemaTest {
         val options = (field("optionalMode").type as ConfigFieldType.ENUM).options
         assertEquals("", options.first().value)
         assertEquals(listOf("", "FAST", "SLOW"), options.map { it.value })
+    }
+
+    @Test
+    fun `a visible-when annotation is derived into a visibility rule`() {
+        assertEquals(
+            VisibilityRule(key = ConfigKey("mode"), values = setOf("SLOW")),
+            field("patience").visibleWhen,
+        )
+    }
+
+    @Test
+    fun `rules nest, each field naming its own controller`() {
+        // Derivation is per-property; it is the *resolution* in
+        // effectiveConfigSchema that walks the chain. Both links must survive.
+        assertEquals(ConfigKey("mode"), field("patience").visibleWhen?.key)
+        assertEquals(ConfigKey("patience"), field("excuse").visibleWhen?.key)
+    }
+
+    @Test
+    fun `a property without the annotation carries no visibility rule`() {
+        assertNull(field("count").visibleWhen)
+    }
+
+    @Test
+    fun `a hidden property still decodes, so visibility stays a form concern`() {
+        // `patience` is hidden while mode is FAST, but its stored value must
+        // still reach the node — nothing about the runtime depends on what the
+        // editor happens to be showing.
+        assertEquals(9, schema.decode(node("mode" to "FAST", "patience" to "9")).patience)
     }
 
     @Test

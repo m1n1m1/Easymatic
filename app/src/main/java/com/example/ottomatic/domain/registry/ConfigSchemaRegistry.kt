@@ -50,14 +50,31 @@ data class ConfigOption(
 )
 
 /**
+ * Condition under which a field appears in the form: the sibling field [key]
+ * must currently hold one of [values]. Derived from
+ * [com.example.ottomatic.domain.model.config.VisibleWhen] and applied by
+ * [effectiveConfigSchema], which is the only place that knows a *placed* node's
+ * config values.
+ */
+data class VisibilityRule(
+    val key: ConfigKey,
+    val values: Set<String>,
+)
+
+/**
  * Describes a single configurable field on a node, so the UI can render a
  * schema-driven form without knowing each node type individually.
+ *
+ * [visibleWhen] is non-null for a field that only applies to some of the node's
+ * modes; it is resolved against the placed node by [effectiveConfigSchema], so
+ * the renderer never has to reason about it.
  */
 data class ConfigField<T>(
     val key: ConfigKey,
     val label: String,
     val type: ConfigFieldType<T>,
     val defaultValue: String = "",
+    val visibleWhen: VisibilityRule? = null,
 )
 
 /** Schema for a node type's configuration form. Looked up by [typeId]. */

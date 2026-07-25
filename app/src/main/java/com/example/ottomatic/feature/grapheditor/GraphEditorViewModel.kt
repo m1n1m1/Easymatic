@@ -13,18 +13,22 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.domain.model.DataConnection
+import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
-import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.registry.CONDITION_SOURCE_IN
 import com.example.ottomatic.domain.registry.CONDITION_VALUE_IN
 import com.example.ottomatic.domain.registry.CONDITION_TYPE_CONFIG_KEY
+import com.example.ottomatic.domain.registry.DragOrigin
+import com.example.ottomatic.domain.registry.NodeSuggestion
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.effectiveInputPorts
 import com.example.ottomatic.domain.registry.effectiveOutputPorts
+import com.example.ottomatic.domain.registry.isDataAssignable
+import com.example.ottomatic.domain.registry.suggestionsFor
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.WorkflowRunner
 import com.example.ottomatic.engine.trigger.ManualTrigger
@@ -60,6 +64,17 @@ data class PendingConnection(
     val hoverPort: PortRef? = null,
 )
 
+/**
+ * A connection drag released on empty canvas, awaiting a node type from the
+ * palette. Holds everything needed to place the new node at the drop point and
+ * wire it in one step (Blueprint-style "drag off a pin").
+ */
+data class NodePickRequest(
+    val from: PortRef,
+    val dropPosGraph: Offset,
+    val suggestions: List<NodeSuggestion>,
+)
+
 sealed interface Selection {
     data class Node(val nodeId: NodeId) : Selection
     data class Edge(val connectionId: String) : Selection
@@ -70,6 +85,7 @@ data class GraphEditorUiState(
     val transform: CanvasTransform = CanvasTransform(),
     val selection: Selection? = null,
     val pendingConnection: PendingConnection? = null,
+    val nodePick: NodePickRequest? = null,
     val revealedLabel: PortRef? = null,
     val isLoaded: Boolean = false,
     val isRunning: Boolean = false,
@@ -265,8 +281,12 @@ class GraphEditorViewModel(
     fun endPortDrag() {
         val pending = _uiState.value.pendingConnection
         _uiState.update { it.copy(pendingConnection = null) }
-        val target = pending?.hoverPort ?: return
-        val (output, input) = if (pending.from.isOutput) pending.from to target else target to pending.from
+        if (pending == null) return
+        pending.hoverPort?.let { commitConnection(pending.from, it) } ?: openNodePick(pending)
+    }
+
+    private fun commitConnection(from: PortRef, target: PortRef) {
+        val (output, input) = if (from.isOutput) from to target else target to from
         require(output.kind == input.kind) { "Cannot connect exec port to data port" }
         val workflow = _uiState.value.workflow
         if (output.kind == PortKind.DATA && !isTypeCompatible(workflow, output, input)) return
@@ -279,11 +299,8 @@ class GraphEditorViewModel(
      * silently rejected at drop time (Blueprint-style). Wildcard ports (e.g.
      * `action.break`'s `struct` input) accept anything.
      */
-    private fun isTypeCompatible(workflow: Workflow, output: PortRef, input: PortRef): Boolean {
-        val sourceSchema = resolvePort(workflow, output)?.schema ?: ItemSchema.Wildcard
-        val targetSchema = resolvePort(workflow, input)?.schema ?: ItemSchema.Wildcard
-        return targetSchema.isAssignableFrom(sourceSchema)
-    }
+    private fun isTypeCompatible(workflow: Workflow, output: PortRef, input: PortRef): Boolean =
+        isDataAssignable(resolvePort(workflow, output), resolvePort(workflow, input))
 
     private fun connectionExists(workflow: Workflow, output: PortRef, input: PortRef): Boolean =
         when (output.kind) {
@@ -299,34 +316,104 @@ class GraphEditorViewModel(
 
     private fun addConnection(output: PortRef, input: PortRef) {
         _uiState.update { state ->
-            val wf = state.workflow
-            val updated = when (output.kind) {
-                PortKind.EXECUTION -> wf.copy(
-                    execConnections = wf.execConnections + ExecConnection(
-                        id = UUID.randomUUID().toString(),
-                        fromNodeId = output.nodeId,
-                        fromPort = output.portName,
-                        toNodeId = input.nodeId,
-                        toPort = input.portName,
-                    ),
-                )
-                PortKind.DATA -> wf.copy(
-                    dataConnections = wf.dataConnections + DataConnection(
-                        id = UUID.randomUUID().toString(),
-                        fromNodeId = output.nodeId,
-                        fromPort = output.portName,
-                        toNodeId = input.nodeId,
-                        toPort = input.portName,
-                    ),
-                )
-            }
-            state.copy(workflow = updated)
+            state.copy(workflow = state.workflow.withConnection(output, input))
         }
         persist()
     }
 
+    /** Appends the exec or data edge [output] → [input] to this workflow. */
+    private fun Workflow.withConnection(output: PortRef, input: PortRef): Workflow = when (output.kind) {
+        PortKind.EXECUTION -> copy(
+            execConnections = execConnections + ExecConnection(
+                id = UUID.randomUUID().toString(),
+                fromNodeId = output.nodeId,
+                fromPort = output.portName,
+                toNodeId = input.nodeId,
+                toPort = input.portName,
+            ),
+        )
+        PortKind.DATA -> copy(
+            dataConnections = dataConnections + DataConnection(
+                id = UUID.randomUUID().toString(),
+                fromNodeId = output.nodeId,
+                fromPort = output.portName,
+                toNodeId = input.nodeId,
+                toPort = input.portName,
+            ),
+        )
+    }
+
     fun cancelPortDrag() {
         _uiState.update { it.copy(pendingConnection = null) }
+    }
+
+    // endregion
+
+    // region Drop-to-add (drag a port into empty canvas)
+
+    /**
+     * A drag released away from any port opens the node palette filtered to the
+     * types that can connect to it. Ignores drags that barely moved so a stray
+     * tap on a port handle still does nothing.
+     */
+    private fun openNodePick(pending: PendingConnection) {
+        val origin = portPosition(pending.from)
+        val port = resolvePort(_uiState.value.workflow, pending.from)
+        if (origin == null || port == null) return
+        if ((pending.currentPos - origin).getDistance() <= GraphGeometry.PORT_SNAP_RADIUS) return
+        val suggestions = suggestionsFor(
+            DragOrigin(kind = pending.from.kind, isOutput = pending.from.isOutput, schema = port.schema),
+        )
+        _uiState.update {
+            it.copy(nodePick = NodePickRequest(pending.from, pending.currentPos, suggestions))
+        }
+    }
+
+    fun dismissNodePick() {
+        _uiState.update { it.copy(nodePick = null) }
+    }
+
+    /**
+     * Places a node of [typeId] for the pending [NodePickRequest] and wires it
+     * to the dragged port in a single edit. The node is positioned so the wired
+     * port lands on the drop point; a type with no matching port (picked from
+     * the palette's "show all" list) is placed unwired.
+     */
+    fun addNodeConnectedTo(typeId: NodeTypeId) {
+        val pick = _uiState.value.nodePick ?: return
+        val definition = NodeTypeRegistry.byId(typeId) ?: return
+        val port = pick.suggestions.firstOrNull { it.definition.typeId == typeId }?.port
+        val topLeft = if (port != null) {
+            pick.dropPosGraph - GraphGeometry.portOffset(definition, port)
+        } else {
+            pick.dropPosGraph - Offset(GraphGeometry.nodeWidth(definition) / 2f, GraphGeometry.NODE_HEIGHT / 2f)
+        }
+        val node = WorkflowNode(
+            id = NodeId(UUID.randomUUID().toString()),
+            typeId = typeId,
+            name = definition.displayName,
+            x = topLeft.x,
+            y = topLeft.y,
+            // `@Wired` data inputs are hidden until opted in; reveal the one we
+            // are about to wire, otherwise the edge would have no visible handle.
+            visibleDataInputs = if (port != null && port.kind == PortKind.DATA && port.direction == Direction.IN) {
+                setOf(port.name)
+            } else {
+                emptySet()
+            },
+        )
+        _uiState.update { state ->
+            val withNode = state.workflow.copy(nodes = state.workflow.nodes + node)
+            val workflow = if (port == null) {
+                withNode
+            } else {
+                val newRef = PortRef(node.id, port.name, port.direction == Direction.OUT, port.kind)
+                val (output, input) = if (pick.from.isOutput) pick.from to newRef else newRef to pick.from
+                withNode.withConnection(output, input)
+            }
+            state.copy(workflow = workflow, selection = Selection.Node(node.id), nodePick = null)
+        }
+        persist()
     }
 
     // endregion

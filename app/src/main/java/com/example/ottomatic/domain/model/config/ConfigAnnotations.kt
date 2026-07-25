@@ -44,6 +44,28 @@ annotation class Multiline
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Wired
 
+/**
+ * Shows this property in the config form only when the sibling property named
+ * [key] currently holds one of [values].
+ *
+ * This lets a single node cover several modes without the form becoming a wall
+ * of mutually irrelevant fields: `trigger.schedule` declares interval settings
+ * and a time-of-day setting side by side, and the form shows whichever set the
+ * chosen mode actually reads.
+ *
+ * Visibility is a *form* concern only — a hidden property still decodes to its
+ * stored-or-default value, so nothing about the node's runtime contract depends
+ * on what the editor happens to be showing.
+ *
+ * [key] must name a declared property of the same config class, and each of
+ * [values] must be a valid option of that property (enforced by
+ * `NodeDeclarationContractTest`).
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class VisibleWhen(val key: String, vararg val values: String)
+
 /** Config class for nodes that have nothing to configure. */
 @Serializable
 data object NoConfig

@@ -1,11 +1,13 @@
 package com.example.ottomatic.domain.registry
 
+import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.WorkflowNode
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -76,6 +78,57 @@ class NodeDeclarationContractTest {
                 declaredKeys.containsAll(wiredPorts),
             )
         }
+    }
+
+    @Test
+    fun `every visibility rule points at a real sibling field and real option values`() {
+        for (schema in allConfigSchemas()) {
+            val byKey = schema.fields.associateBy { it.key }
+            val ruled = schema.fields.mapNotNull { field -> field.visibleWhen?.let { field to it } }
+            for ((field, rule) in ruled) {
+                // A rule naming a key that does not exist would hide nothing and
+                // read as if it worked; a value that is not an option of the
+                // controlling field would hide the property forever.
+                val controlling = byKey[rule.key]
+                assertTrue(
+                    "${schema.typeId}.${field.key}: @VisibleWhen names unknown key '${rule.key.value}'",
+                    controlling != null,
+                )
+                val values = (controlling!!.type as? ConfigFieldType.ENUM)
+                    ?.options.orEmpty().map { it.value }.toSet()
+                assertTrue(
+                    "${schema.typeId}.${field.key}: @VisibleWhen values ${rule.values} are not all in $values",
+                    values.isEmpty() || values.containsAll(rule.values),
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `visibility rules never form a cycle`() {
+        // Rules nest — a field is shown only when its controller is shown too —
+        // so a cycle would be a set of fields that can never appear, and is worth
+        // rejecting at declaration time rather than debugging in the editor.
+        for (schema in allConfigSchemas()) {
+            val byKey = schema.fields.associateBy { it.key }
+            for (field in schema.fields) {
+                val cycle = cycleFrom(field, byKey)
+                assertNull("${schema.typeId}.${field.key}: @VisibleWhen chain cycles through $cycle", cycle)
+            }
+        }
+    }
+
+    /**
+     * The first key revisited while walking [field]'s controller chain, or null
+     * when the chain terminates. The sequence is lazy, so a cycle is caught on
+     * its first repeat rather than walked forever.
+     */
+    private fun cycleFrom(field: ConfigField<*>, byKey: Map<ConfigKey, ConfigField<*>>): ConfigKey? {
+        val seen = mutableSetOf(field.key)
+        return generateSequence(field) { it.visibleWhen?.key?.let(byKey::get) }
+            .drop(1)
+            .firstOrNull { !seen.add(it.key) }
+            ?.key
     }
 
     @Test
