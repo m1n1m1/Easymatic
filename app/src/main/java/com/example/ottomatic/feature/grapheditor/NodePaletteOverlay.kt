@@ -13,20 +13,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -50,13 +52,12 @@ import com.example.ottomatic.domain.registry.NodeTypeRegistry
 /**
  * The node palette, shown either as the full catalogue (the `+` FAB) or
  * restricted to the types that can connect to a dragged port ([restrictedTo],
- * with [title] naming the origin). A restricted sheet offers a "Show all nodes"
+ * with [title] naming the origin). A restricted palette offers a "Show all"
  * escape hatch that widens it to the full catalogue.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Suppress("LongMethod") // Single declarative sheet: search field + grouped, collapsible list.
-fun NodePaletteSheet(
+@Suppress("LongMethod") // Single declarative surface: search field + grouped, collapsible list.
+fun NodePaletteOverlay(
     onDismiss: () -> Unit,
     onPick: (NodeTypeDefinition) -> Unit,
     title: String? = null,
@@ -79,14 +80,30 @@ fun NodePaletteSheet(
             ).any { it.contains(searchTerm, ignoreCase = true) }
         }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(modifier = Modifier.padding(bottom = 24.dp)) {
-            if (title != null) {
-                PaletteTitleRow(
-                    title = title,
-                    onShowAll = if (restriction != null) ({ showAll = true }) else null,
-                )
-            }
+    val listState = rememberLazyListState()
+    // Picking closes the palette too, so it goes through the same exit
+    // animation: the pick is held here and applied once the overlay is gone.
+    var picked by remember { mutableStateOf<NodeTypeDefinition?>(null) }
+
+    EditorOverlay(
+        title = title ?: "Add node",
+        onClose = { picked?.let(onPick) ?: onDismiss() },
+        action = if (restriction != null) {
+            { TextButton(onClick = { showAll = true }) { Text("Show all") } }
+        } else {
+            null
+        },
+    ) { dismiss ->
+        val pick: (NodeTypeDefinition) -> Unit = { definition ->
+            picked = definition
+            dismiss()
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .imePadding()
+                .navigationBarsPadding(),
+        ) {
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
@@ -102,9 +119,14 @@ fun NodePaletteSheet(
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
             )
-            LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            ) {
                 if (matchingDefinitions.isEmpty()) {
                     item {
                         Text(
@@ -140,7 +162,7 @@ fun NodePaletteSheet(
                                                 collapsedCategories + category
                                             }
                                         },
-                                        onPick = onPick,
+                                        onPick = pick,
                                     )
                                 }
                             }
@@ -148,28 +170,6 @@ fun NodePaletteSheet(
                     }
                 }
             }
-        }
-    }
-}
-
-/** Names the port a drag came from, with the escape hatch to the full catalogue. */
-@Composable
-private fun PaletteTitleRow(title: String, onShowAll: (() -> Unit)?) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 20.dp, end = 8.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(1f),
-        )
-        if (onShowAll != null) {
-            TextButton(onClick = onShowAll) { Text("Show all") }
         }
     }
 }

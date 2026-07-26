@@ -5,6 +5,8 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.ConfigKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,6 +32,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -36,7 +40,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -166,7 +169,7 @@ fun GraphEditorScreen(
     }
 
     if (showPalette) {
-        NodePaletteSheet(
+        NodePaletteOverlay(
             onDismiss = { showPalette = false },
             onPick = { definition ->
                 showPalette = false
@@ -187,7 +190,7 @@ fun GraphEditorScreen(
     // A connection drag released on empty canvas: same palette, filtered to the
     // node types that can wire straight to the port it came from.
     state.nodePick?.let { pick ->
-        NodePaletteSheet(
+        NodePaletteOverlay(
             onDismiss = { viewModel.dismissNodePick() },
             onPick = { definition -> viewModel.addNodeConnectedTo(definition.typeId) },
             title = "Connect from ${originLabel(state.workflow, pick.from)}",
@@ -201,7 +204,7 @@ fun GraphEditorScreen(
             state.workflow.node(ref.nodeId)
         }
         if (node != null) {
-            NodeConfigSheet(
+            NodeConfigOverlay(
                 workflow = state.workflow,
                 node = node,
                 onDismiss = { showConfig = false },
@@ -231,7 +234,7 @@ fun GraphEditorScreen(
     // kind — the same list you would drop on the canvas, picked to live inside a
     // node instead.
     pickConditionFor?.let { nodeId ->
-        NodePaletteSheet(
+        NodePaletteOverlay(
             onDismiss = { pickConditionFor = null },
             onPick = { definition ->
                 pickConditionFor = null
@@ -401,9 +404,8 @@ private fun originLabel(workflow: com.example.ottomatic.domain.model.Workflow, r
     return "$nodeName › $portLabel"
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun NodeConfigSheet(
+private fun NodeConfigOverlay(
     workflow: com.example.ottomatic.domain.model.Workflow,
     node: WorkflowNode,
     onDismiss: () -> Unit,
@@ -417,22 +419,23 @@ private fun NodeConfigSheet(
     val dataInputPorts = definition?.let { effectiveInputPorts(it, workflow, node) }
         ?.filter { it.kind == PortKind.DATA }
         .orEmpty()
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = EditorColors.chrome,
-    ) {
-        Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 24.dp)) {
-            Text(
-                text = "Configure",
-                color = EditorColors.textPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-            )
+    // The form grows without bound — schema fields, attached conditions, data
+    // input switches — so it gets a full screen to scroll in.
+    EditorOverlay(title = "Configure", onClose = onDismiss) { _ ->
+        Column(
+            // imePadding/navigationBarsPadding sit outside the scroll so the
+            // keyboard shrinks the viewport rather than the scrolling content.
+            modifier = Modifier
+                .fillMaxSize()
+                .imePadding()
+                .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
+                .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 24.dp),
+        ) {
             Text(
                 text = definition?.displayName ?: node.typeId.value,
                 color = EditorColors.textSecondary,
                 fontSize = 12.sp,
-                modifier = Modifier.padding(top = 2.dp),
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
@@ -518,9 +521,9 @@ internal fun ConfigFieldEditor(
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .menuAnchor(),
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                 )
-                androidx.compose.material3.DropdownMenu(
+                ExposedDropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                 ) {
