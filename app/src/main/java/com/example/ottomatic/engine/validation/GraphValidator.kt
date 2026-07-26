@@ -44,6 +44,7 @@ class GraphValidator(private val workflow: Workflow) {
         validateExecAcyclicity(issues)
         validateDataAcyclicity(issues)
         validateStrictDataSemantics(issues)
+        validateValueNodesAreUsed(issues)
         return issues
     }
 
@@ -124,6 +125,29 @@ class GraphValidator(private val workflow: Workflow) {
         }
     }
 
+    /** True when [nodeId] is a placed value node (pull source, no exec position). */
+    private fun isValueNode(nodeId: NodeId): Boolean {
+        val node = workflow.node(nodeId) ?: return false
+        return NodeTypeRegistry.byId(node.typeId)?.kind == NodeKind.VALUE
+    }
+
+    /**
+     * A value node is only ever read through an outgoing data edge, so one with no
+     * such edge does nothing at all. That is almost always an unfinished wiring
+     * rather than an intent, but it breaks nothing — hence a warning.
+     */
+    private fun validateValueNodesAreUsed(out: MutableList<ValidationIssue>) {
+        val wired = workflow.dataConnections.map { it.fromNodeId }.toSet()
+        for (node in workflow.nodes) {
+            if (!isValueNode(node.id) || node.id in wired) continue
+            out += ValidationIssue(
+                Severity.WARNING,
+                "Value '${node.name}' is not connected to anything and will never be read",
+                node.id.value,
+            )
+        }
+    }
+
     private fun validateExecAcyclicity(out: MutableList<ValidationIssue>) {
         val cycle = findCycle(workflow.execConnections) { it.fromNodeId to it.toNodeId }
         if (cycle != null) {
@@ -143,11 +167,16 @@ class GraphValidator(private val workflow: Workflow) {
         // For every data edge source -> target, source must be exec-upstream of target
         // (i.e. target is reachable from source by following exec edges). Otherwise the
         // source would not have run by the time the target executes.
+        //
+        // A VALUE source is exempt: it is never pulsed, so it has no exec position for
+        // "upstream" to mean anything against. It is read on demand while collecting
+        // the target's inputs, which is always in time by construction.
         val execForward = mutableMapOf<NodeId, MutableList<NodeId>>()
         workflow.execConnections.forEach {
             execForward.getOrPut(it.fromNodeId) { mutableListOf() } += it.toNodeId
         }
         for (conn in workflow.dataConnections) {
+            if (isValueNode(conn.fromNodeId)) continue
             if (!reaches(execForward, conn.fromNodeId, conn.toNodeId)) {
                 out += ValidationIssue(
                     Severity.ERROR,
@@ -216,13 +245,6 @@ class GraphValidator(private val workflow: Workflow) {
         }
         for (start in adj.keys) if (start !in visited) dfs(start)?.let { return it }
         return null
-    }
-
-    @Suppress("unused")
-    private fun kindLabel(kind: NodeKind) = when (kind) {
-        NodeKind.TRIGGER -> "trigger"
-        NodeKind.ACTION -> "action"
-        NodeKind.CONDITION -> "condition"
     }
 
     @Suppress("unused")

@@ -6,13 +6,14 @@ import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.core.service.UnknownDeviceState
 
 /**
- * Context available to an [Action] or [ConditionNode] while executing.
+ * Context available to an [Action] or [ValueNode] while executing.
  *
  * Provides access to shared infrastructure without pulling Android types
  * into `engine/`: logging, system services and (optionally) macro control.
  *
  * [systemServices] changes the device; [deviceState] reads it. Actions use the
- * former, conditions the latter.
+ * former, value nodes the latter — and a value node may use *only* the latter,
+ * which is what its purity contract amounts to.
  *
  * [macroControl] is nullable: engine-only unit tests and environments without
  * a running [com.example.ottomatic.engine.service.MacroEngineService] may
@@ -23,9 +24,9 @@ interface ExecutionContext {
     val systemServices: SystemServices
 
     /**
-     * Read-only view of current device state, used by conditions. Defaults to
-     * [UnknownDeviceState] so engine-only tests need not supply one; conditions
-     * then read null and evaluate false.
+     * Read-only view of current device state, used by value nodes. Defaults to
+     * [UnknownDeviceState] so engine-only tests need not supply one; a value node
+     * then reads null, which contributes no item and fails a gate closed.
      */
     val deviceState: DeviceState get() = UnknownDeviceState
 

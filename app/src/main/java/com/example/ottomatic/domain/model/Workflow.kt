@@ -7,23 +7,24 @@ import com.example.ottomatic.core.model.PortName
 import kotlinx.serialization.Serializable
 
 /**
- * A condition node attached to a [WorkflowNode], gating whether that node runs.
+ * A comparison attached to a [WorkflowNode], gating whether that node runs.
  *
- * This is the *attached* placement of a condition: the same declaration that can
- * be dropped on the canvas as a branching node lives here instead as a settings
- * blob, so no edge has to be drawn for the common "only when X" case. [typeId]
- * names a node registered in
- * [com.example.ottomatic.domain.registry.ConditionRegistry], and [config] is that
- * condition's own flat config map — identical in shape to [WorkflowNode.config],
- * because both are decoded by the same
- * [com.example.ottomatic.domain.registry.NodeSchema].
+ * This is the *attached* placement of the graph's single comparison: the same
+ * thing `action.if` does on the canvas lives here instead as a settings blob, so
+ * no edge has to be drawn for the common "only when X" case. [config] is a
+ * [com.example.ottomatic.engine.action.CompareConfig] in flat map form —
+ * identical in shape to [WorkflowNode.config], because both are decoded by the
+ * same [com.example.ottomatic.domain.registry.NodeSchema].
  *
- * [negated] inverts the result, so a single declaration covers "WiFi is on" and
- * "WiFi is not on" without a second node type.
+ * There is no `typeId`: every gate is a comparison. What varies is the *source*
+ * it inspects, which its config names — a value node read on demand, or one of
+ * the host's own data inputs (see [com.example.ottomatic.engine.ValueSource]).
+ *
+ * [negated] inverts the result, so one comparison covers "Wi-Fi is on" and "Wi-Fi
+ * is not on" without a second declaration.
  */
 @Serializable
 data class AttachedCondition(
-    val typeId: NodeTypeId,
     val config: Map<ConfigKey, String> = emptyMap(),
     val negated: Boolean = false,
 )
@@ -136,6 +137,6 @@ data class Workflow(
         dataConnections.filter { it.toNodeId == nodeId && it.toPort == port }
 
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 8
+        const val CURRENT_SCHEMA_VERSION = 9
     }
 }

@@ -7,8 +7,8 @@ import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.engine.action.ClipboardMode
 import com.example.ottomatic.domain.model.config.ComparisonOperator
 import com.example.ottomatic.domain.model.config.ComparisonType
-import com.example.ottomatic.domain.registry.CONDITION_OPERATOR_KEY
-import com.example.ottomatic.domain.registry.CONDITION_TYPE_CONFIG_KEY
+import com.example.ottomatic.domain.registry.IF_OPERATOR_KEY
+import com.example.ottomatic.domain.registry.IF_TYPE_CONFIG_KEY
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
@@ -88,7 +88,7 @@ class WorkflowExecutorTest {
     }
 
     @Test
-    fun `condition true branch routes execution to the connected action only`() = runBlocking {
+    fun `the comparison true branch routes execution to the connected action only`() = runBlocking {
         val services = RecordingSystemServices()
         val context = DefaultExecutionContext(services) {}
         val executor = WorkflowExecutor(context)
@@ -96,11 +96,11 @@ class WorkflowExecutorTest {
             nodes = listOf(
                 WorkflowNode(NodeId("n1"), NodeTypeId("trigger.charging"), "Charging", 0f, 0f),
                 WorkflowNode(
-                    NodeId("cond"), NodeTypeId("condition.compare"), "If", 0f, 100f,
+                    NodeId("cond"), NodeTypeId("action.if"), "If", 0f, 100f,
                     config = mapOf(
-                        CONDITION_TYPE_CONFIG_KEY to ComparisonType.AUTO.name,
+                        IF_TYPE_CONFIG_KEY to ComparisonType.AUTO.name,
                         ConfigKey("field") to "level",
-                        CONDITION_OPERATOR_KEY to ComparisonOperator.GREATER_THAN.name,
+                        IF_OPERATOR_KEY to ComparisonOperator.GREATER_THAN.name,
                         ConfigKey("value") to "5",
                     ),
                 ),
@@ -136,7 +136,7 @@ class WorkflowExecutorTest {
     }
 
     @Test
-    fun `condition false branch fires when comparison does not match`() = runBlocking {
+    fun `the comparison false branch fires when comparison does not match`() = runBlocking {
         val services = RecordingSystemServices()
         val context = DefaultExecutionContext(services) {}
         val executor = WorkflowExecutor(context)
@@ -144,11 +144,11 @@ class WorkflowExecutorTest {
             nodes = listOf(
                 WorkflowNode(NodeId("n1"), NodeTypeId("trigger.charging"), "Charging", 0f, 0f),
                 WorkflowNode(
-                    NodeId("cond"), NodeTypeId("condition.compare"), "If", 0f, 100f,
+                    NodeId("cond"), NodeTypeId("action.if"), "If", 0f, 100f,
                     config = mapOf(
-                        CONDITION_TYPE_CONFIG_KEY to ComparisonType.AUTO.name,
+                        IF_TYPE_CONFIG_KEY to ComparisonType.AUTO.name,
                         ConfigKey("field") to "level",
-                        CONDITION_OPERATOR_KEY to ComparisonOperator.LESS_THAN.name,
+                        IF_OPERATOR_KEY to ComparisonOperator.LESS_THAN.name,
                         ConfigKey("value") to "20",
                     ),
                 ),

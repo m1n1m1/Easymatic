@@ -86,7 +86,7 @@ inline fun <reified T : Any> dataOut(
 
 /**
  * DATA input port accepting any schema. The documented escape hatch for the two
- * adaptive nodes (`condition.compare`, `action.break`), whose effective port
+ * adaptive nodes (`action.if`, `action.break`), whose effective port
  * schemas are resolved at design time by
  * [com.example.ottomatic.domain.registry.effectivePorts]. Ordinary nodes derive
  * their typed data inputs from `@Wired` config properties instead.

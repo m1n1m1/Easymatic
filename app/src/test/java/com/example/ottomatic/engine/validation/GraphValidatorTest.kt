@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine.validation
 
+import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
@@ -114,11 +115,11 @@ class GraphValidatorTest {
     }
 
     @Test
-    fun `condition with a source data edge is not flagged`() {
+    fun `the comparison with a source data edge is not flagged`() {
         val wf = Workflow(
             nodes = listOf(
                 WorkflowNode(NodeId("n1"), NodeTypeId("trigger.charging"), "Charging", 0f, 0f),
-                WorkflowNode(NodeId("c"), NodeTypeId("condition.compare"), "If", 0f, 100f),
+                WorkflowNode(NodeId("c"), NodeTypeId("action.if"), "If", 0f, 100f),
             ),
             execConnections = listOf(
                 ExecConnection("e1", NodeId("n1"), PortName("out"), NodeId("c"), PortName("in")),
@@ -132,6 +133,53 @@ class GraphValidatorTest {
             "wired source should produce no errors, got: ${issues.map { it.message }}",
             issues.none { it.severity == Severity.ERROR },
         )
+    }
+
+    /**
+     * The one validation rule a value node is exempt from, and the reason it can be
+     * pulled at all: "the source must be exec-upstream" is meaningless for a node
+     * that is never pulsed. It is read while collecting the target's inputs, which is
+     * always in time.
+     */
+    @Test
+    fun `a value source need not be exec-upstream of its consumer`() {
+        val wf = Workflow(
+            nodes = listOf(
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(
+                    NodeId("n2"), NodeTypeId("action.notify"), "Notify", 0f, 100f,
+                    config = mapOf(ConfigKey("title") to "T"),
+                    visibleDataInputs = setOf(PortName("text")),
+                ),
+                // No exec edge into the value at all — it has no exec ports to wire.
+                WorkflowNode(NodeId("v"), NodeTypeId("value.ringer"), "Ringer", 200f, 0f),
+            ),
+            execConnections = listOf(
+                ExecConnection("e1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", NodeId("v"), PortName("mode"), NodeId("n2"), PortName("text")),
+            ),
+        )
+        val issues = GraphValidator(wf).validate()
+        assertTrue(
+            "a pulled value must not trip the exec-upstream rule, got: ${issues.map { it.message }}",
+            issues.none { it.severity == Severity.ERROR },
+        )
+    }
+
+    @Test
+    fun `a value wired to nothing is warned about`() {
+        val wf = Workflow(
+            nodes = listOf(WorkflowNode(NodeId("v"), NodeTypeId("value.battery"), "Battery", 0f, 0f)),
+        )
+        val issues = GraphValidator(wf).validate()
+
+        assertTrue(
+            "an unread value should warn, got: ${issues.map { it.message }}",
+            issues.any { it.severity == Severity.WARNING && it.message.contains("never be read") },
+        )
+        assertTrue(issues.none { it.severity == Severity.ERROR })
     }
 
     @Suppress("unused")

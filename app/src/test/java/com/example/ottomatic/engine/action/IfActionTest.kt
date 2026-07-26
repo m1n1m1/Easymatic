@@ -1,0 +1,195 @@
+package com.example.ottomatic.engine.action
+
+import com.example.ottomatic.core.model.ConfigKey
+import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.core.service.DeviceState
+import com.example.ottomatic.core.service.RingerMode
+import com.example.ottomatic.domain.model.ValueSource
+import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.ComparisonOperator
+import com.example.ottomatic.domain.model.config.ComparisonType
+import com.example.ottomatic.domain.model.items.BatteryState
+import com.example.ottomatic.domain.model.schema.Item
+import com.example.ottomatic.domain.registry.IF_SOURCE_IN
+import com.example.ottomatic.domain.registry.IF_VALUE_IN
+import com.example.ottomatic.engine.DefaultExecutionContext
+import com.example.ottomatic.engine.ExecutionRoute
+import com.example.ottomatic.engine.NodeInput
+import com.example.ottomatic.engine.RecordingSystemServices
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+/**
+ * Behaviour of `action.if`, the graph's single comparison and only conditional
+ * branch.
+ *
+ * The three groups mirror the three sources a comparison can name: a value wired
+ * into the node's own `source` port (the placed form), one of the host node's own
+ * input ports, and a value node read on demand — the last being what an attached
+ * gate uses, since it owns no ports at all.
+ */
+class IfActionTest {
+
+    private val action = IfAction()
+    private val context = DefaultExecutionContext(RecordingSystemServices()) {}
+
+    @Test
+    fun `auto mode compares the selected field of a wired struct`() = runBlocking {
+        val battery = Item.of(battery(80))
+
+        assertTrue(
+            evaluate(
+                config = compare(field = "level", operator = ComparisonOperator.GREATER_THAN, value = "50"),
+                data = mapOf(IF_SOURCE_IN to battery),
+            ),
+        )
+        assertFalse(
+            evaluate(
+                config = compare(field = "level", operator = ComparisonOperator.LESS_THAN, value = "50"),
+                data = mapOf(IF_SOURCE_IN to battery),
+            ),
+        )
+    }
+
+    @Test
+    fun `a pinned primitive type compares the whole value not a field`() = runBlocking {
+        assertTrue(
+            evaluate(
+                config = compare(type = ComparisonType.STRING, field = "level", value = "hello"),
+                data = mapOf(IF_SOURCE_IN to Item.of("hello")),
+            ),
+        )
+    }
+
+    @Test
+    fun `a wired compare-against value wins over the form literal`() = runBlocking {
+        assertTrue(
+            evaluate(
+                config = compare(type = ComparisonType.STRING, value = "from-form"),
+                data = mapOf(
+                    IF_SOURCE_IN to Item.of("from-wire"),
+                    IF_VALUE_IN to Item.of("from-wire"),
+                ),
+            ),
+        )
+    }
+
+    /**
+     * With nothing wired there is no value to inspect, so the comparison is false.
+     *
+     * This is the one behaviour that changed when `source` became a spec rather than
+     * a literal: an unresolvable source can no longer be silently read as its own
+     * text, so a gate over one fails closed instead of comparing spec strings.
+     */
+    @Test
+    fun `an unresolved source compares false rather than comparing the spec`() = runBlocking {
+        assertFalse(evaluate(compare(type = ComparisonType.STRING, value = "")))
+    }
+
+    /** The attached form: `source` names one of the *host* node's input ports. */
+    @Test
+    fun `a host port source inspects that port's item`() = runBlocking {
+        val config = compare(
+            source = ValueSource.hostSpec(PortName("text")),
+            field = "level",
+            operator = ComparisonOperator.GREATER_THAN_OR_EQUAL,
+            value = "20",
+        )
+
+        assertTrue(evaluate(config, mapOf(PortName("text") to Item.of(battery(20)))))
+        assertFalse(evaluate(config, mapOf(PortName("text") to Item.of(battery(19)))))
+    }
+
+    /**
+     * A value source needs no ports and no edges — the property that makes a
+     * one-tap attached gate possible.
+     */
+    @Test
+    fun `a value source is read on demand with no ports at all`() = runBlocking {
+        val config = compare(
+            source = ValueSource.valueSpec(NodeTypeId("value.battery")),
+            operator = ComparisonOperator.GREATER_THAN,
+            value = "50",
+        )
+        val charged = DefaultExecutionContext(
+            systemServices = RecordingSystemServices(),
+            deviceState = FakeBattery(80),
+        ) {}
+        val flat = DefaultExecutionContext(
+            systemServices = RecordingSystemServices(),
+            deviceState = FakeBattery(20),
+        ) {}
+
+        assertTrue(action.executeRaw(config, NodeInput(host(), emptyMap()), charged).route.isTrue())
+        assertFalse(action.executeRaw(config, NodeInput(host(), emptyMap()), flat).route.isTrue())
+    }
+
+    @Test
+    fun `an unreadable value compares false`() = runBlocking {
+        val config = compare(
+            source = ValueSource.valueSpec(NodeTypeId("value.battery")),
+            operator = ComparisonOperator.GREATER_THAN,
+            value = "0",
+        )
+
+        // The default DeviceState knows nothing, so the read yields null.
+        assertFalse(evaluate(config))
+    }
+
+    @Test
+    fun `the comparison routes execution rather than producing data`() = runBlocking {
+        val result = action.executeRaw(
+            compare(type = ComparisonType.STRING, value = "x"),
+            NodeInput(host(), mapOf(IF_SOURCE_IN to Item.of("x"))),
+            context,
+        )
+
+        assertEquals(ExecutionRoute.TRUE, result.route)
+        assertTrue("a branch carries no data of its own", result.value.isEmpty())
+    }
+
+    private fun ExecutionRoute.isTrue() = this == ExecutionRoute.TRUE
+
+    private suspend fun evaluate(
+        config: CompareConfig,
+        data: Map<PortName, Item> = emptyMap(),
+    ): Boolean = action.executeRaw(config, NodeInput(host(), data), context).route == ExecutionRoute.TRUE
+
+    private fun compare(
+        type: ComparisonType = ComparisonType.AUTO,
+        field: String = "",
+        operator: ComparisonOperator = ComparisonOperator.EQUALS,
+        source: String = "",
+        value: String = "",
+    ) = CompareConfig(type = type, field = field, operator = operator, source = source, value = value)
+
+    private fun battery(level: Int) = BatteryState(
+        isCharging = false, level = level, plugged = null, event = "changed", timestamp = 0L,
+    )
+
+    private fun host() = WorkflowNode(
+        id = NodeId("host"),
+        typeId = NodeTypeId("action.notify"),
+        name = "Notify",
+        x = 0f,
+        y = 0f,
+        config = emptyMap<ConfigKey, String>(),
+    )
+}
+
+/** Reports a battery level and nothing else. */
+private class FakeBattery(private val level: Int) : DeviceState {
+    override fun isWifiEnabled(): Boolean? = null
+    override fun isBluetoothEnabled(): Boolean? = null
+    override fun isAirplaneMode(): Boolean? = null
+    override fun isCharging(): Boolean? = null
+    override fun batteryLevel(): Int = level
+    override fun isScreenOn(): Boolean? = null
+    override fun isDndEnabled(): Boolean? = null
+    override fun ringerMode(): RingerMode? = null
+}

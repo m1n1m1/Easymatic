@@ -43,16 +43,33 @@ feature/    Vertical feature slices (Compose UI + ViewModels)
 
 ### Node system
 
-Every node (Trigger or Action) is declared **exactly once** in its own file under `engine/`, bundling typeId, palette metadata, ports, config fields, and typed contract:
+Every node is declared **exactly once** in its own file under `engine/`, bundling typeId, palette metadata, ports, config fields, and typed contract. There are three kinds (`NodeKind`):
 
 - **Actions**: `override val definition = actionNode<I, O>(...)` (or `effectNode` for no data output, `adaptiveNode` for dynamic ports)
 - **Triggers**: `override val definition = triggerNode<C, O>(...)` (or `pulseTriggerNode` for no data output)
+- **Values**: `override val definition = valueNode<C, O>(...)` — a pure reader (see below)
 
-The **only** registration step is adding one line to `ActionRegistry` or `TriggerRegistry` (in `domain/registry/`). `NodeTypeRegistry` and `ConfigSchemaRegistry` are **derived views** — never add entries to them directly.
+The **only** registration step is adding one line to `ActionRegistry`, `TriggerRegistry` or `ValueRegistry` (in `domain/registry/`). `NodeTypeRegistry` and `ConfigSchemaRegistry` are **derived views** — never add entries to them directly.
 
 Config is declared on a single `@Serializable` data class per node, with annotations (`@Label`, `@Wired`, `@Multiline`, `@VisibleWhen`, `@Picker`) controlling form rendering and data input wiring. The framework derives config decoding, form schema, and data input ports from this class.
 
 `@Picker(PickerKind.X)` marks a `String` property whose value is an identifier chosen from a dedicated chooser rather than typed — currently a geofence place id. Adding a `PickerKind` requires a matching branch in `ConfigFieldEditor`'s exhaustive `when`.
+
+### Values and conditions
+
+There is deliberately **no condition node kind**. A condition is not a node family but a *comparison over a value*, so the two halves are declared separately and combined:
+
+- **Value nodes** (`engine/value/`) are pure readers — one DATA output, **no exec ports at all**. They are never pulsed; they are *pulled*. The rule is one sentence: **a value is read just before the node that uses it** — memoized per consuming node, so every port of one node sees a single consistent read while a second consumer reads fresh (no staleness across a delay, no two ports disagreeing). `NodeDeclarationContractTest` enforces purity: no exec ports, no data inputs, no permissions. Anything expensive or failable must be an action instead.
+- **`action.if`** is the graph's **only** comparison and only conditional branch.
+
+Both placements of a comparison call the one `evaluateCompare` function, so they cannot drift:
+
+- **Placed** on the canvas, `action.if` routes execution to `true`/`false`.
+- **Attached** to any node as `WorkflowNode.conditions` (a MacroDroid-style gate), the same comparison decides whether that node runs; failing skips it *and its whole downstream branch*. An `AttachedCondition` has no typeId — every gate is a comparison, and what varies is the **source** it names.
+
+`CompareConfig.source` holds a `ValueSource` *spec* (`domain/model/ValueSource.kt`), which is why one config serves both placements: `""` = the node's own wired `source` port, `in:<port>` = a host node's data input, `val:<typeId>` = a value node read on demand. The last needs no edge and no exec position, which is what keeps attaching a gate a single tap.
+
+`GraphValidator` exempts value-node sources from the exec-upstream rule (they have no exec position) and warns about a value wired to nothing.
 
 ### Geofence places
 

@@ -1,8 +1,6 @@
 package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.core.model.NodeTypeId
-import com.example.ottomatic.engine.ConditionAsAction
-import com.example.ottomatic.engine.ConditionNode
 import com.example.ottomatic.engine.ExecutableAction
 import com.example.ottomatic.engine.action.AutoRotateAction
 import com.example.ottomatic.engine.action.BluetoothAction
@@ -16,6 +14,7 @@ import com.example.ottomatic.engine.action.DndAction
 import com.example.ottomatic.engine.action.EnableMacroAction
 import com.example.ottomatic.engine.action.FlashlightAction
 import com.example.ottomatic.engine.action.HttpAction
+import com.example.ottomatic.engine.action.IfAction
 import com.example.ottomatic.engine.action.LaunchAppAction
 import com.example.ottomatic.engine.action.LogAction
 import com.example.ottomatic.engine.action.NotifyAction
@@ -41,11 +40,11 @@ import com.example.ottomatic.engine.action.WifiAction
  * [com.example.ottomatic.domain.registry.effectivePorts] (no dedicated
  * make-struct action is needed).
  *
- * [byId] also resolves *conditions placed on the canvas*, by wrapping each
- * [ConditionRegistry] entry in a [ConditionAsAction]. Those wrappers are
- * deliberately absent from [all]: they are an execution bridge, not declarations,
- * and [NodeTypeRegistry] takes conditions from [ConditionRegistry] directly so
- * they keep their own [com.example.ottomatic.domain.model.NodeKind].
+ * The other adaptive node is [IfAction], the graph's single comparison. It is an
+ * ordinary action registered here like any other — there is no separate condition
+ * registry and no execution bridge, because an attached gate does not *run* the
+ * node: it calls the same comparison directly (see
+ * [com.example.ottomatic.engine.evaluateCompare]).
  */
 object ActionRegistry {
 
@@ -61,6 +60,7 @@ object ActionRegistry {
         EnableMacroAction(),
         FlashlightAction(),
         HttpAction(),
+        IfAction(),
         LaunchAppAction(),
         LogAction(),
         NotifyAction(),
@@ -75,15 +75,7 @@ object ActionRegistry {
         BreakStructAction(),
     )
 
-    /** Execution bridges for conditions dropped on the canvas. */
-    private val placedConditions: List<ExecutableAction> =
-        ConditionRegistry.all().map { asAction(it) }
-
-    private fun <C : Any> asAction(condition: ConditionNode<C>): ExecutableAction =
-        ConditionAsAction(condition)
-
-    private val byId: Map<NodeTypeId, ExecutableAction> =
-        (actions + placedConditions).associateBy { it.typeId }
+    private val byId: Map<NodeTypeId, ExecutableAction> = actions.associateBy { it.typeId }
 
     fun byId(typeId: NodeTypeId): ExecutableAction? = byId[typeId]
 

@@ -8,15 +8,21 @@ import com.example.ottomatic.domain.model.schema.ItemSchema
 /**
  * The high-level category of a node.
  *
- * [CONDITION] nodes are dual-placement: dropped on the canvas they behave like a
- * branching action (exec in, `true`/`false` exec out), and attached to another
- * node they gate whether that node runs at all. Both placements are served by the
- * same declaration — see [com.example.ottomatic.engine.ConditionNodeDefinition].
+ * [VALUE] nodes are the pull side of the graph: a side-effect-free reader with a
+ * single DATA output port and *no* EXECUTION ports at all. They are never pulsed;
+ * they are read on demand, immediately before whichever node consumes them (see
+ * [com.example.ottomatic.engine.WorkflowExecutor]). That is also what lets an
+ * attached gate name one without drawing an edge — see
+ * [com.example.ottomatic.engine.ValueSource].
+ *
+ * There is deliberately no CONDITION kind. A condition is not a node family but a
+ * *comparison over a value*: the device properties are declared once as [VALUE]
+ * nodes, and the single comparison is the `action.if` [ACTION].
  */
 enum class NodeKind {
     TRIGGER,
     ACTION,
-    CONDITION,
+    VALUE,
 }
 
 /** A user-facing group for a [NodeTypeDefinition] in the node palette. */
@@ -40,8 +46,9 @@ enum class NodeCategory(
     TIMING(NodeKind.ACTION, "Timing"),
     DEVICE_SETTINGS(NodeKind.ACTION, "Device Settings"),
     DATA(NodeKind.ACTION, "Data"),
-    CONDITION_DEVICE(NodeKind.CONDITION, "Device State"),
-    CONDITION_DATA(NodeKind.CONDITION, "Data"),
+    VALUE_POWER(NodeKind.VALUE, "Power & Battery"),
+    VALUE_CONNECTIVITY(NodeKind.VALUE, "Connectivity"),
+    VALUE_DEVICE(NodeKind.VALUE, "Device State"),
 }
 
 /** Whether a port carries control-flow pulse or a typed data value. */

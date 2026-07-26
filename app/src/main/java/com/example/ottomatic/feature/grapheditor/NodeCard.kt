@@ -22,23 +22,20 @@ import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,6 +54,23 @@ import kotlin.math.roundToInt
 
 private val NodeShape = RoundedCornerShape(14.dp)
 private const val PORT_HANDLE_SIZE = 26f
+
+/** Fully rounded: the label reads as a pill, not a second, smaller card. */
+private val LabelShape = RoundedCornerShape(percent = 50)
+private val LabelTextStyle = TextStyle(fontSize = 10.sp, lineHeight = 12.sp, fontWeight = FontWeight.Medium)
+private val LABEL_PADDING_H = 9.dp
+private val LABEL_PADDING_V = 3.dp
+
+/** Distance in graph units between a port handle and the near edge of its label. */
+private const val LABEL_GAP = 10f
+
+/**
+ * The port colour is a saturated accent, so it tints the pill rather than
+ * filling it — composited over the opaque node background it stays legible
+ * while the border and text carry the actual hue.
+ */
+private const val LABEL_FILL_ALPHA = 0.18f
+private const val LABEL_BORDER_ALPHA = 0.55f
 
 @Composable
 fun NodeCard(
@@ -81,14 +95,21 @@ fun NodeCard(
     val visibleInputPorts = visibleInputPorts(definition, workflow, node)
     val outputPorts = effectiveOutputPorts(definition, workflow, node)
     val width = GraphGeometry.nodeWidth(layoutInputPorts.size, outputPorts.size)
-    val labelToShow =
-        pendingFrom?.takeIf { it.nodeId == node.id && it.isOutput } ?: revealedLabel
+    val labelToShow = pendingFrom?.takeIf { it.nodeId == node.id } ?: revealedLabel
 
     Box(
         modifier = Modifier
             .offset { IntOffset((node.x * density).roundToInt(), (node.y * density).roundToInt()) }
             .size(width.dp, GraphGeometry.NODE_HEIGHT.dp)
-            .zIndex(if (isSelected) 1f else 0f),
+            // A name chip overflows the card bounds, so a labelled node has to
+            // outrank both plain and selected neighbours or the chip gets covered.
+            .zIndex(
+                when {
+                    labelToShow?.nodeId == node.id -> 2f
+                    isSelected -> 1f
+                    else -> 0f
+                },
+            ),
     ) {
         NodeBody(
             node = node,
@@ -99,7 +120,7 @@ fun NodeCard(
             onDragEnd = onDragEnd,
             density = density,
         )
-        OutputLabels(node.id, outputPorts, width, density, labelToShow)
+        PortLabel(node.id, layoutInputPorts, outputPorts, width, density, labelToShow)
         Ports(
             node = node,
             layoutInputPorts = layoutInputPorts,
@@ -233,20 +254,20 @@ private fun ConditionBadge(count: Int) {
         modifier = Modifier
             .padding(start = 6.dp)
             .clip(RoundedCornerShape(5.dp))
-            .background(EditorColors.conditionAccent.copy(alpha = 0.18f))
+            .background(EditorColors.valueAccent.copy(alpha = 0.18f))
             .padding(horizontal = 4.dp, vertical = 1.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = Icons.Filled.FilterAlt,
             contentDescription = "Conditions",
-            tint = EditorColors.conditionAccent,
+            tint = EditorColors.valueAccent,
             modifier = Modifier.size(11.dp),
         )
         if (count > 1) {
             Text(
                 text = count.toString(),
-                color = EditorColors.conditionAccent,
+                color = EditorColors.valueAccent,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(start = 2.dp),
@@ -255,39 +276,65 @@ private fun ConditionBadge(count: Int) {
     }
 }
 
-@OptIn(ExperimentalTextApi::class)
+/**
+ * The name of the currently revealed port, drawn as a pill beside its handle.
+ *
+ * The opaque fill is not decoration: a port's bezier leaves it travelling
+ * straight down, so bare text centred on the port sits directly *on* the wire.
+ * The pill is what makes the name readable over the graph behind it, and it
+ * wears the port's own colour so the name and the handle it belongs to read as
+ * one object even when several ports sit side by side.
+ *
+ * Outputs hang below the card, inputs float above it — the gap to the handle is
+ * the same either way, measured from the pill's near edge.
+ */
 @Composable
-private fun OutputLabels(
+private fun PortLabel(
     nodeId: NodeId,
+    inputPorts: List<Port>,
     outputPorts: List<Port>,
     width: Float,
     density: Float,
     revealedLabel: PortRef?,
 ) {
-    if (outputPorts.size < 2) return
-    val revealedPort = revealedLabel
-        ?.takeIf { it.nodeId == nodeId && it.isOutput }
-        ?.let { ref -> outputPorts.firstOrNull { it.name == ref.portName && it.kind == ref.kind } }
-        ?: return
-    val portOffset = GraphGeometry.portOffset(emptyList(), outputPorts, width, revealedPort)
-    val textMeasurer = rememberTextMeasurer()
-    val layout = remember(revealedPort.label) {
-        textMeasurer.measure(
-            AnnotatedString(revealedPort.label),
-            style = TextStyle(fontSize = 10.sp, color = EditorColors.textSecondary),
-        )
-    }
+    val ref = revealedLabel?.takeIf { it.nodeId == nodeId } ?: return
+    val ports = if (ref.isOutput) outputPorts else inputPorts
+    val port = ports.firstOrNull { it.name == ref.portName && it.kind == ref.kind } ?: return
+
+    val portOffset = GraphGeometry.portOffset(inputPorts, outputPorts, width, port)
+    val accent = portColor(port, isSnapTarget = false)
+
     Box(
         modifier = Modifier
-            .offset {
-                IntOffset(
-                    (portOffset.x * density - layout.size.width / 2f).roundToInt(),
-                    ((portOffset.y + 10f) * density).roundToInt(),
-                )
+            // Placed from the measured pill rather than an estimated size: the
+            // input side anchors its *bottom* edge, so guessing the height would
+            // slide the pill down over the handle.
+            .layout { measurable, _ ->
+                val placeable = measurable.measure(Constraints())
+                layout(0, 0) {
+                    val x = portOffset.x * density - placeable.width / 2f
+                    val y = if (ref.isOutput) {
+                        (portOffset.y + LABEL_GAP) * density
+                    } else {
+                        (portOffset.y - LABEL_GAP) * density - placeable.height
+                    }
+                    placeable.place(x.roundToInt(), y.roundToInt())
+                }
             }
-            .size(width = (layout.size.width / density).dp, height = (layout.size.height / density).dp)
-            .drawBehind { drawText(layout) },
-    )
+            .zIndex(1f)
+            .shadow(elevation = 6.dp, shape = LabelShape, clip = false)
+            .clip(LabelShape)
+            .background(accent.copy(alpha = LABEL_FILL_ALPHA).compositeOver(EditorColors.nodeBackground))
+            .border(1.dp, accent.copy(alpha = LABEL_BORDER_ALPHA), LabelShape)
+            .padding(horizontal = LABEL_PADDING_H, vertical = LABEL_PADDING_V),
+    ) {
+        Text(
+            text = port.label,
+            color = accent,
+            style = LabelTextStyle,
+            maxLines = 1,
+        )
+    }
 }
 
 @Composable
@@ -316,6 +363,7 @@ private fun Ports(
             onDrag = onPortDrag,
             onDragEnd = onPortDragEnd,
             onDragCancel = onPortDragCancel,
+            onTap = { onToggleRevealedLabel(PortRef(node.id, port.name, isOutput = false, port.kind)) },
         )
     }
     outputPorts.forEach { port ->

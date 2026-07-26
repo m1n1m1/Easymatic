@@ -123,77 +123,74 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
 }
 
 /**
- * The single declaration of a condition node, living in the condition's own file.
+ * The single declaration of a value node, living in the reader's own file.
  *
- * A condition has two placements, both served from here:
+ * A value node is the graph's pull side: a side-effect-free reader of something
+ * that is true *right now*. It declares exactly one port — the typed DATA output
+ * [output] — and no EXECUTION ports at all, because it is never pulsed. Instead
+ * it is read on demand, immediately before whichever node consumes it (see
+ * [com.example.ottomatic.engine.WorkflowExecutor]), or named directly by an
+ * attached gate that has no edges of its own (see
+ * [com.example.ottomatic.engine.ValueSource]).
  *
- *  - **placed** on the canvas, where [nodeType] presents it as a branching node
- *    (exec in, `true`/`false` exec out, plus its wired/wildcard DATA inputs) and
- *    [com.example.ottomatic.engine.ConditionAsAction] runs it through the normal
- *    executor path;
- *  - **attached** to another node as an
- *    [com.example.ottomatic.domain.model.AttachedCondition], where it gates that
- *    node and reads the host's already-collected data inputs.
- *
- * Neither placement re-declares anything: the config form, the DATA input ports
- * and the decoder all come from the config class [C] via [schema], exactly as
- * for [ActionNodeDefinition].
+ * Purity is a contract, not a convention: `NodeDeclarationContractTest` asserts
+ * that every value node declares no exec ports, no DATA inputs and no permission
+ * requirements. Anything expensive, failable or side-effecting is an action.
  */
 @Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
-class ConditionNodeDefinition<C : Any> @PublishedApi internal constructor(
+class ValueNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor(
     val typeId: NodeTypeId,
     val displayName: String,
     val description: String,
     val category: NodeCategory,
     val icon: NodeIcon,
     val schema: NodeSchema<C>,
-    val wildcardInputs: List<Port>,
-    val hasDynamicPorts: Boolean,
+    val output: DataOut<O>,
 ) {
-    /** Canvas-placement metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
+    /** Static metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
     val nodeType: NodeTypeDefinition
         get() = NodeTypeDefinition(
             typeId = typeId,
             displayName = displayName,
             description = description,
-            kind = NodeKind.CONDITION,
+            kind = NodeKind.VALUE,
             category = category,
-            ports = listOf(execIn()) + ExecOutputs.BRANCH.ports + schema.wiredPorts + wildcardInputs,
+            ports = listOf(output.port),
             icon = icon,
-            hasDynamicPorts = hasDynamicPorts,
         )
 
     /** Static config-form view for [com.example.ottomatic.domain.registry.ConfigSchemaRegistry]. */
     val configSchema: NodeConfigSchema?
         get() = schema.fields.takeIf { it.isNotEmpty() }?.let { NodeConfigSchema(typeId, it) }
+
+    /** Wraps a successful read in the [Item] this node's output port carries. */
+    internal fun encode(value: O): Item = output.encode(value)
 }
 
 /**
- * Declares a condition: a node that answers true/false rather than performing
- * work. Register it in [com.example.ottomatic.domain.registry.ConditionRegistry].
+ * Declares a value node: a pure reader that emits a typed item on [output].
+ * Register it in [com.example.ottomatic.domain.registry.ValueRegistry].
  *
- * Pass [wildcardInputs] (and [hasDynamicPorts]) only when the condition's DATA
- * input schemas are resolved from the graph at design time, as `condition.compare`
- * does; a self-contained condition declares neither.
+ * Unlike an action or a trigger, a value node takes no [Port] arguments — its one
+ * port is [output], and declaring a DATA input (via a `@Wired` config property)
+ * is a contract violation because a value node is a leaf.
  */
 @Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
-inline fun <reified C : Any> conditionNode(
+inline fun <reified C : Any, O : Any> valueNode(
     typeId: String,
     displayName: String,
     description: String,
     category: NodeCategory,
     icon: NodeIcon,
-    wildcardInputs: List<Port> = emptyList(),
-    hasDynamicPorts: Boolean = false,
-): ConditionNodeDefinition<C> = ConditionNodeDefinition(
+    output: DataOut<O>,
+): ValueNodeDefinition<C, O> = ValueNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
     description = description,
     category = category,
     icon = icon,
     schema = nodeSchema<C>(),
-    wildcardInputs = wildcardInputs,
-    hasDynamicPorts = hasDynamicPorts,
+    output = output,
 )
 
 /**
@@ -249,7 +246,7 @@ inline fun <reified I : Any> effectNode(
 /**
  * Declares an *adaptive* action whose data ports are resolved at design time
  * from the graph ([com.example.ottomatic.domain.registry.effectivePorts]).
- * Reserved for `action.break` and `action.condition`; see [RawAction].
+ * Reserved for `action.break` and `action.if`; see [RawAction].
  */
 @Suppress("LongParameterList")
 inline fun <reified I : Any> adaptiveNode(

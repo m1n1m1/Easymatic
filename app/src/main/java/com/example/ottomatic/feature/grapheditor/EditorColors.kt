@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.DoNotDisturb
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Schedule
@@ -48,7 +49,7 @@ object EditorColors {
     val chromeBorder = Color(0xFF32343D)
     val triggerAccent = Color(0xFFE06C4F)
     val actionAccent = Color(0xFF5B8DEF)
-    val conditionAccent = Color(0xFFC58AF9)
+    val valueAccent = Color(0xFFC58AF9)
 
     /**
      * Per-data-type port colors, grouped from [ItemSchema] into a small
@@ -74,21 +75,21 @@ object EditorColors {
 fun accentColor(kind: NodeKind): Color = when (kind) {
     NodeKind.TRIGGER -> EditorColors.triggerAccent
     NodeKind.ACTION -> EditorColors.actionAccent
-    NodeKind.CONDITION -> EditorColors.conditionAccent
+    NodeKind.VALUE -> EditorColors.valueAccent
 }
 
 /** The word shown under a node's name on its card, and in the palette headers. */
 fun kindLabel(kind: NodeKind): String = when (kind) {
     NodeKind.TRIGGER -> "Trigger"
     NodeKind.ACTION -> "Action"
-    NodeKind.CONDITION -> "Condition"
+    NodeKind.VALUE -> "Value"
 }
 
 /** The glyph that stands for a whole node kind, used on the palette's kind cards. */
 fun kindIcon(kind: NodeKind): ImageVector = when (kind) {
     NodeKind.TRIGGER -> Icons.Filled.Bolt
     NodeKind.ACTION -> Icons.Filled.PlayArrow
-    NodeKind.CONDITION -> Icons.AutoMirrored.Filled.CallSplit
+    NodeKind.VALUE -> Icons.Filled.Numbers
 }
 
 /**

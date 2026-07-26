@@ -57,27 +57,23 @@ class NodeTypeRegistryTest {
     fun `every registered behaviour exposes exactly one node type`() {
         val behaviourIds = TriggerRegistry.all().map { it.typeId } +
             ActionRegistry.all().map { it.typeId } +
-            ConditionRegistry.all().map { it.typeId }
+            ValueRegistry.all().map { it.typeId }
         val nodeTypeIds = NodeTypeRegistry.all.map { it.typeId }
         assertEquals(behaviourIds.toSet(), nodeTypeIds.toSet())
         assertEquals(behaviourIds.size, nodeTypeIds.size)
     }
 
     /**
-     * A condition placed on the canvas is *executed* through [ActionRegistry],
-     * but it must not be *declared* there — otherwise it would contribute a
-     * second node type with the wrong [NodeKind].
+     * A value is never executed, so it must not appear in [ActionRegistry] at all —
+     * not even as a bridge. There is no pulse to give it: the executor *reads* it
+     * while collecting its consumer's inputs.
      */
     @Test
-    fun `conditions are executable as actions but declared only once`() {
-        ConditionRegistry.all().forEach { condition ->
+    fun `values are not executable`() {
+        ValueRegistry.all().forEach { value ->
             assertTrue(
-                "${condition.typeId} should be executable via ActionRegistry",
-                ActionRegistry.byId(condition.typeId) != null,
-            )
-            assertTrue(
-                "${condition.typeId} should not be declared in ActionRegistry",
-                ActionRegistry.all().none { it.typeId == condition.typeId },
+                "${value.typeId} must not be executable — a value is read, never run",
+                ActionRegistry.byId(value.typeId) == null,
             )
         }
     }
@@ -88,7 +84,7 @@ class NodeTypeRegistryTest {
             val expectedPrefix = when (definition.kind) {
                 NodeKind.TRIGGER -> "trigger."
                 NodeKind.ACTION -> "action."
-                NodeKind.CONDITION -> "condition."
+                NodeKind.VALUE -> "value."
             }
             assertTrue(
                 "${definition.typeId} should start with $expectedPrefix",

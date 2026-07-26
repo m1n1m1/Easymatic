@@ -4,21 +4,38 @@ import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.ConditionLogic
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.Item
-import com.example.ottomatic.domain.registry.ConditionRegistry
+import com.example.ottomatic.domain.registry.IF_TYPE_ID
+import com.example.ottomatic.domain.registry.ActionRegistry
+import com.example.ottomatic.engine.action.CompareConfig
+import com.example.ottomatic.engine.action.IfAction
 
 /**
- * Whether this node's attached conditions allow it to run.
+ * The schema used to decode an attached gate's config.
+ *
+ * Taken from the registered [IfAction] itself rather than re-derived, so a gate and
+ * a placed `action.if` are decoded by the very same [NodeSchema] — the same reason
+ * they share [evaluateCompare].
+ */
+@Suppress("UNCHECKED_CAST")
+private val compareSchema by lazy {
+    (ActionRegistry.byId(IF_TYPE_ID) as IfAction).definition.schema
+}
+
+/**
+ * Whether this node's attached gates allow it to run.
  *
  * Shared by both gating points — [WorkflowExecutor] for actions and
  * [WorkflowRunner] for triggers — so "the conditions passed" means exactly one
  * thing in this codebase. [data] is whatever DATA items the node already has in
  * hand (its collected inputs, or a trigger's own emitted items), which is what
- * lets an attached condition inspect the flow without owning any ports.
+ * lets a gate inspect the flow without owning any ports.
  *
- * Two deliberate asymmetries: a condition that *throws* fails closed, because a
- * gate that errors should not silently open; a condition whose [typeId] is
- * *unknown* passes, because a workflow referencing a node type this build no
- * longer has should degrade to "ungated" rather than becoming permanently dead.
+ * Every gate is the graph's single comparison ([evaluateCompare]), so there is no
+ * registry lookup and no unknown-type case: what varies between gates is the
+ * source their config names. A gate whose source cannot be resolved — an
+ * unregistered value node, a host port carrying nothing — compares against
+ * nothing and so fails closed, as does one that throws. A gate that errors must
+ * never silently open.
  */
 internal suspend fun WorkflowNode.conditionsPass(
     data: Map<PortName, Item>,
@@ -26,16 +43,13 @@ internal suspend fun WorkflowNode.conditionsPass(
 ): Boolean {
     if (conditions.isEmpty()) return true
     val results = conditions.map { attached ->
-        val condition = ConditionRegistry.byId(attached.typeId)
-        if (condition == null) {
-            context.log("Unknown condition ${attached.typeId.value} on '$name': ignoring")
-            return@map true
+        val passed = runCatching {
+            val config: CompareConfig = compareSchema.decode(attached.config, data)
+            evaluateCompare(config, NodeInput(this, data), context)
+        }.getOrElse { cause ->
+            context.log("Condition on '$name' failed: ${cause.message}")
+            false
         }
-        val passed = runCatching { condition.evaluateRaw(attached.config, this, data, context) }
-            .getOrElse { cause ->
-                context.log("Condition ${attached.typeId.value} failed: ${cause.message}")
-                false
-            }
         passed != attached.negated
     }
     return when (conditionLogic) {

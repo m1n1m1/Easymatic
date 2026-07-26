@@ -63,34 +63,37 @@ class NodeInput internal constructor(
 }
 
 /**
- * A node that answers a question rather than performing work.
+ * A pure reader of something that is true *right now* — the graph's pull side.
  *
- * One declaration, two placements. Dropped on the canvas, a condition is run by
- * [ConditionAsAction] and routes execution to `true`/`false` like any branching
- * node. Attached to another node as an
- * [com.example.ottomatic.domain.model.AttachedCondition], the same object decides
- * whether that node runs at all — see [conditionsPass]. Because both paths call
- * the same [evaluate], the two philosophies cannot drift apart.
+ * A value node performs no work and changes nothing, which is what lets it be read
+ * without an execution position: wired into a consumer's DATA input it is read
+ * just before that consumer runs, and named by an attached gate it is read when
+ * the gate evaluates. Both paths go through [readRaw], so a value can never mean
+ * one thing on the canvas and another in a gate.
+ *
+ * [read] returns null when the value cannot be read at all (subsystem absent,
+ * permission not granted), mirroring [com.example.ottomatic.core.service.DeviceState].
+ * A null read contributes no item, so the consumer falls back to its own form
+ * value exactly as it would for an unwired port.
  */
-interface ConditionNode<C : Any> {
-    val definition: ConditionNodeDefinition<C>
+interface ValueNode<C : Any, O : Any> {
+    val definition: ValueNodeDefinition<C, O>
 
     val typeId: NodeTypeId get() = definition.typeId
 
-    suspend fun evaluate(config: C, input: NodeInput, context: ExecutionContext): Boolean
+    /** The value right now, or null when it cannot be read. */
+    suspend fun read(config: C, context: ExecutionContext): O?
 
     /**
-     * Evaluates from a raw [config] map — the entry point for both placements.
-     * [host] is the node the condition belongs to (the placed condition node
-     * itself, or the node it is attached to), and [data] the DATA items available
-     * to it.
+     * Reads from a raw [config] map — the entry point for both placements.
+     *
+     * There is no `data` parameter: a value node is a leaf, so it has no inputs to
+     * resolve. The declaration contract test enforces that.
      */
-    suspend fun evaluateRaw(
+    suspend fun readRaw(
         config: Map<ConfigKey, String>,
-        host: WorkflowNode,
-        data: Map<PortName, Item>,
         context: ExecutionContext,
-    ): Boolean = evaluate(definition.schema.decode(config, data), NodeInput(host, data), context)
+    ): Item? = read(definition.schema.decode(config), context)?.let { definition.encode(it) }
 }
 
 /** Non-generic execution bridge used by the heterogeneous action registry. */
@@ -122,7 +125,7 @@ interface Action<I : Any, O : Any> : ExecutableAction {
 
 /**
  * Escape hatch for the two *adaptive* actions (`action.break`,
- * `action.condition`), whose data ports are not statically known: their output
+ * `action.if`), whose data ports are not statically known: their output
  * ports are derived from the schema of whatever struct is connected
  * ([com.example.ottomatic.domain.registry.effectivePorts]), so they emit a
  * port-keyed map directly and read their wildcard inputs as raw [Item]s.

@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.domain.model.AttachedCondition
 import com.example.ottomatic.domain.model.ConditionLogic
+import com.example.ottomatic.domain.model.ValueSource
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecConnection
@@ -21,9 +22,11 @@ import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
-import com.example.ottomatic.domain.registry.CONDITION_SOURCE_IN
-import com.example.ottomatic.domain.registry.CONDITION_VALUE_IN
-import com.example.ottomatic.domain.registry.CONDITION_TYPE_CONFIG_KEY
+import com.example.ottomatic.domain.registry.IF_SOURCE_IN
+import com.example.ottomatic.domain.registry.IF_SOURCE_KEY
+import com.example.ottomatic.domain.registry.IF_TYPE_CONFIG_KEY
+import com.example.ottomatic.domain.registry.IF_TYPE_ID
+import com.example.ottomatic.domain.registry.IF_VALUE_IN
 import com.example.ottomatic.domain.registry.DragOrigin
 import com.example.ottomatic.domain.registry.NodeSuggestion
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
@@ -548,13 +551,16 @@ class GraphEditorViewModel(
                 if (node.id == nodeId) node.copy(config = node.config + (key to value)) else node
             }
             val workflow = state.workflow.copy(nodes = nodes)
-            // When the condition's type chooser changes, drop any data edges wired into
-            // its `source`/`value` ports: their schemas are about to change and the old
-            // connections would likely fail the new type check.
-            val finalWorkflow = if (key == CONDITION_TYPE_CONFIG_KEY) {
+            // When `action.if`'s type chooser changes, drop any data edges wired into its
+            // `source`/`value` ports: their schemas are about to change and the old
+            // connections would likely fail the new type check. Gated on the node type as
+            // well as the key, since "type" is not a reserved config name.
+            val isIfType = key == IF_TYPE_CONFIG_KEY &&
+                workflow.node(nodeId)?.typeId == IF_TYPE_ID
+            val finalWorkflow = if (isIfType) {
                 workflow.copy(
                     dataConnections = workflow.dataConnections.filterNot {
-                        it.toNodeId == nodeId && (it.toPort == CONDITION_SOURCE_IN || it.toPort == CONDITION_VALUE_IN)
+                        it.toNodeId == nodeId && (it.toPort == IF_SOURCE_IN || it.toPort == IF_VALUE_IN)
                     },
                 )
             } else {
@@ -606,11 +612,16 @@ class GraphEditorViewModel(
 
     // region Attached conditions
 
-    /** Attaches a condition of [typeId] to [nodeId], with its declared defaults. */
+    /**
+     * Attaches a gate to [nodeId] comparing the value node [typeId].
+     *
+     * Every gate is the same comparison, so what the picker chooses is its *source*.
+     * Pre-filling it here is what keeps attaching a condition a single tap, while the
+     * rest of the form (operator, literal) narrows itself to the chosen value's type.
+     */
     fun addCondition(nodeId: NodeId, typeId: NodeTypeId) {
-        editNode(nodeId) { node ->
-            node.copy(conditions = node.conditions + AttachedCondition(typeId = typeId))
-        }
+        val source = AttachedCondition(config = mapOf(IF_SOURCE_KEY to ValueSource.valueSpec(typeId)))
+        editNode(nodeId) { node -> node.copy(conditions = node.conditions + source) }
     }
 
     fun removeCondition(nodeId: NodeId, index: Int) {

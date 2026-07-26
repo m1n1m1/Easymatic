@@ -10,7 +10,7 @@ import com.example.ottomatic.domain.model.items.HttpResponseItem
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.model.schema.asTyped
 import com.example.ottomatic.engine.action.HttpAction
-import com.example.ottomatic.engine.condition.CompareCondition
+import com.example.ottomatic.engine.action.IfAction
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -67,7 +67,7 @@ class NodeContractsTest {
 
     @Test
     fun `a branching node maps its typed branch to the matching execution port`() {
-        val definition = ConditionAsAction(CompareCondition()).definition
+        val definition = IfAction().definition
 
         val trueOutput = definition.encodeDynamic(NodeOutput(emptyMap(), ExecutionRoute.TRUE))
         val falseOutput = definition.encodeDynamic(NodeOutput(emptyMap(), ExecutionRoute.FALSE))
@@ -80,8 +80,7 @@ class NodeContractsTest {
 
     @Test(expected = IllegalArgumentException::class)
     fun `a branching node cannot route to the plain out port`() {
-        ConditionAsAction(CompareCondition()).definition
-            .encodeDynamic(NodeOutput(emptyMap(), ExecutionRoute.OUT))
+        IfAction().definition.encodeDynamic(NodeOutput(emptyMap(), ExecutionRoute.OUT))
     }
 
     private fun node(config: Map<String, String> = emptyMap()) = WorkflowNode(

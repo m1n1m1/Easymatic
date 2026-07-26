@@ -58,7 +58,7 @@ class NodeSuggestionsTest {
         val notifyText = suggestion(origin, notify)
         assertNotNull("Notify should accept a String on its wired 'text' input", notifyText)
         assertEquals(PortName("text"), notifyText?.port?.name)
-        assertNotNull(suggestion(origin, CONDITION_TYPE_ID))
+        assertNotNull(suggestion(origin, IF_TYPE_ID))
         assertNotNull(suggestion(origin, BREAK_TYPE_ID))
     }
 
@@ -109,13 +109,41 @@ class NodeSuggestionsTest {
         assertNull(suggestions.firstOrNull { it.definition.typeId == BREAK_TYPE_ID })
     }
 
+    /**
+     * Dragging backwards off a data input offers the values that fit it — the reason
+     * value nodes need no special handling here. They declare their output port
+     * *statically*, so [suggestionsFor] finds them like any other producer, and
+     * [isDataAssignable] keeps the list honest: a String input is offered
+     * `value.ringer` (an enum, which carries a String) but not `value.battery`.
+     */
     @Test
-    fun `dragging backwards from a String input finds nothing while every producer emits a struct`() {
-        // Documents today's node catalogue: every declared data output is an
-        // object, so only `action.break`'s derived field outputs carry a bare
-        // String and those are not declared statically.
+    fun `dragging backwards from a String input offers String-carrying values`() {
         val origin = DragOrigin(PortKind.DATA, isOutput = false, schema = schemaOf<String>())
-        assertTrue(suggestionsFor(origin).isEmpty())
+        val suggestions = suggestionsFor(origin)
+
+        assertNotNull(
+            "an enum value carries a String and should be offered",
+            suggestions.firstOrNull { it.definition.typeId == NodeTypeId("value.ringer") },
+        )
+        assertNull(
+            "an Int value must not be offered to a String input",
+            suggestions.firstOrNull { it.definition.typeId == NodeTypeId("value.battery") },
+        )
+    }
+
+    @Test
+    fun `dragging backwards from an Int input offers the numeric values`() {
+        val origin = DragOrigin(PortKind.DATA, isOutput = false, schema = schemaOf<Int>())
+        val suggestions = suggestionsFor(origin)
+
+        assertNotNull(
+            "battery level is an Int and should be offered",
+            suggestions.firstOrNull { it.definition.typeId == NodeTypeId("value.battery") },
+        )
+        assertNull(
+            "a Boolean value must not be offered to an Int input",
+            suggestions.firstOrNull { it.definition.typeId == NodeTypeId("value.wifi") },
+        )
     }
 
     @Test
@@ -146,6 +174,6 @@ class NodeSuggestionsTest {
         val suggestions = suggestionsFor(origin)
         // action.http has three wired String inputs; it must still appear once.
         assertEquals(suggestions.map { it.definition.typeId }.distinct().size, suggestions.size)
-        assertEquals(CONDITION_SOURCE_IN, suggestion(origin, CONDITION_TYPE_ID)?.port?.name)
+        assertEquals(IF_SOURCE_IN, suggestion(origin, IF_TYPE_ID)?.port?.name)
     }
 }

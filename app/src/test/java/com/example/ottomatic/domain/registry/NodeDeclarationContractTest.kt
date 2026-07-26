@@ -21,7 +21,7 @@ class NodeDeclarationContractTest {
 
     private val actions = ActionRegistry.all()
     private val triggers = TriggerRegistry.all()
-    private val conditions = ConditionRegistry.all()
+    private val values = ValueRegistry.all()
 
     @Test
     fun `every node declares a config class that can be decoded unconfigured`() {
@@ -33,11 +33,13 @@ class NodeDeclarationContractTest {
         for (trigger in triggers) {
             trigger.definition.schema.decode(placed(trigger.typeId))
         }
-        for (condition in conditions) {
-            // Attached conditions decode from a bare config map, with no node
-            // behind them — the defaults must carry the whole thing.
-            condition.definition.schema.decode(emptyMap())
+        for (value in values) {
+            // A value is read from a bare config map, with nothing wired into it —
+            // the defaults must carry the whole thing.
+            value.definition.schema.decode(emptyMap())
         }
+        // An attached gate decodes the same way, with no node behind it at all.
+        ActionRegistry.byId(IF_TYPE_ID)!!.definition.schema.decode(emptyMap())
     }
 
     @Test
@@ -71,7 +73,7 @@ class NodeDeclarationContractTest {
     @Test
     fun `every wired config property is exposed as exactly one data input port`() {
         val schemas = actions.map { it.typeId to it.definition.schema } +
-            conditions.map { it.typeId to it.definition.schema }
+            values.map { it.typeId to it.definition.schema }
         for ((typeId, schema) in schemas) {
             val declaredKeys = schema.fields.map { it.key.value }.toSet()
             val wiredPorts = schema.wiredPorts.map { it.name.value }
@@ -217,19 +219,37 @@ class NodeDeclarationContractTest {
         }
     }
 
+    /**
+     * The purity contract for value nodes, and the reason they can be pulled.
+     *
+     * A value node is read *outside* the execution order — with no pulse, at a moment
+     * decided by whoever consumes it. That is only sound while a read is cheap,
+     * repeatable and cannot fail loudly, so the shape that guarantees it is enforced
+     * here rather than left to convention: no exec ports (nothing to sequence), no
+     * data inputs (a leaf, so no recursive resolution), and no permission
+     * requirements (nothing that could prompt mid-read). Anything expensive or
+     * failable belongs in an action, where it has a place in the exec chain.
+     */
     @Test
-    fun `every condition branches and produces no data`() {
-        for (condition in conditions) {
-            val ports = condition.definition.nodeType.ports
-            val execOut = ports.filter { it.kind == PortKind.EXECUTION && it.direction == Direction.OUT }
-            assertEquals(
-                "${condition.typeId}: a condition must expose true/false exec outputs",
-                listOf("true", "false"),
-                execOut.map { it.name.value },
+    fun `every value is a pure leaf with exactly one data output`() {
+        for (value in values) {
+            val ports = value.definition.nodeType.ports
+            assertTrue(
+                "${value.typeId}: a value is never pulsed, it must declare no execution ports",
+                ports.none { it.kind == PortKind.EXECUTION },
             )
             assertTrue(
-                "${condition.typeId}: a condition answers a question, it must not produce data",
-                ports.none { it.kind == PortKind.DATA && it.direction == Direction.OUT },
+                "${value.typeId}: a value is a leaf, it must declare no data inputs (no @Wired properties)",
+                ports.none { it.kind == PortKind.DATA && it.direction == Direction.IN },
+            )
+            assertEquals(
+                "${value.typeId}: a value must expose exactly one data output",
+                1,
+                ports.count { it.kind == PortKind.DATA && it.direction == Direction.OUT },
+            )
+            assertTrue(
+                "${value.typeId}: a value must not require a permission — a read cannot prompt",
+                value.definition.nodeType.permissionRequirements.isEmpty(),
             )
         }
     }
@@ -237,7 +257,7 @@ class NodeDeclarationContractTest {
     private fun allConfigSchemas(): List<NodeConfigSchema> =
         actions.mapNotNull { it.definition.configSchema } +
             triggers.mapNotNull { it.definition.configSchema } +
-            conditions.mapNotNull { it.definition.configSchema }
+            values.mapNotNull { it.definition.configSchema }
 
     private fun placed(typeId: NodeTypeId) = WorkflowNode(
         id = NodeId("n1"), typeId = typeId, name = typeId.value, x = 0f, y = 0f,

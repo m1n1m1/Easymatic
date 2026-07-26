@@ -96,9 +96,9 @@ data class NodeConfigSchema(
  * A node with no entry here has no configurable fields.
  *
  * This object holds no declarations of its own: the schemas are derived from the
- * config classes of the single node definitions registered in [ActionRegistry]
- * and [TriggerRegistry]. `condition.compare` narrows its derived schema further
- * at design time (see [effectiveConfigSchema]).
+ * config classes of the single node definitions registered in [ActionRegistry],
+ * [TriggerRegistry] and [ValueRegistry]. `action.if` narrows its derived schema
+ * further at design time (see [effectiveConfigSchema]).
  */
 object ConfigSchemaRegistry {
 
@@ -106,7 +106,7 @@ object ConfigSchemaRegistry {
         (
             ActionRegistry.all().map { it.definition.configSchema } +
                 TriggerRegistry.all().map { it.definition.configSchema } +
-                ConditionRegistry.all().map { it.definition.configSchema }
+                ValueRegistry.all().map { it.definition.configSchema }
             )
             .filterNotNull()
             .associateBy { it.typeId }

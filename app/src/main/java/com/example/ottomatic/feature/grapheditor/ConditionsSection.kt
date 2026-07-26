@@ -34,8 +34,11 @@ import androidx.compose.ui.unit.sp
 import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.domain.model.AttachedCondition
 import com.example.ottomatic.domain.model.ConditionLogic
+import com.example.ottomatic.domain.model.NodeTypeDefinition
+import com.example.ottomatic.domain.model.ValueSource
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.registry.IF_SOURCE_KEY
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.effectiveConditionSchema
 
@@ -49,12 +52,13 @@ data class ConditionActions(
 )
 
 /**
- * The "Conditions" block of the node config sheet: the *attached* placement of a
- * condition node, edited in place rather than wired on the canvas.
+ * The "Conditions" block of the node config sheet: the *attached* placement of the
+ * graph's comparison, edited in place rather than wired on the canvas.
  *
- * Each row is a full condition node — the same declaration that can be dropped on
- * the canvas — so its form is rendered by the very same [ConfigFieldEditor] used
- * for node config, over the schema from [effectiveConditionSchema].
+ * Each row is the same comparison `action.if` performs on the canvas, so its form is
+ * rendered by the very same [ConfigFieldEditor] used for node config, over the
+ * schema from [effectiveConditionSchema]. What a row shows as its title is the
+ * *source* it compares, since that is the only thing that varies between gates.
  */
 @Composable
 fun ConditionsSection(
@@ -100,12 +104,12 @@ fun ConditionsSection(
         Icon(
             imageVector = Icons.Filled.Add,
             contentDescription = null,
-            tint = EditorColors.conditionAccent,
+            tint = EditorColors.valueAccent,
             modifier = Modifier.size(16.dp),
         )
         Text(
             text = "Add condition",
-            color = EditorColors.conditionAccent,
+            color = EditorColors.valueAccent,
             fontSize = 13.sp,
             modifier = Modifier.padding(start = 6.dp),
         )
@@ -122,13 +126,30 @@ private fun LogicSelector(current: ConditionLogic, onChange: (ConditionLogic) ->
                 onClick = { onChange(logic) },
                 label = { Text(logic.name, fontSize = 11.sp) },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = EditorColors.conditionAccent.copy(alpha = 0.22f),
-                    selectedLabelColor = EditorColors.conditionAccent,
+                    selectedContainerColor = EditorColors.valueAccent.copy(alpha = 0.22f),
+                    selectedLabelColor = EditorColors.valueAccent,
                     labelColor = EditorColors.textSecondary,
                 ),
             )
         }
     }
+}
+
+/**
+ * The value node this gate compares, or null when it inspects a host input instead.
+ *
+ * A gate has no node type of its own — every gate is the same comparison — so its
+ * identity to the user is the source it names.
+ */
+private fun AttachedCondition.sourceValue(): NodeTypeDefinition? =
+    (ValueSource.parse(config[IF_SOURCE_KEY].orEmpty()) as? ValueSource.Value)
+        ?.let { NodeTypeRegistry.byId(it.typeId) }
+
+/** The row title: the value's name, else the host port's, else a generic label. */
+private fun AttachedCondition.sourceLabel(sourceValue: NodeTypeDefinition?): String {
+    if (sourceValue != null) return sourceValue.displayName
+    val source = ValueSource.parse(config[IF_SOURCE_KEY].orEmpty())
+    return (source as? ValueSource.HostPort)?.port?.value ?: "Comparison"
 }
 
 @Composable
@@ -139,7 +160,7 @@ private fun ConditionRow(
     index: Int,
     actions: ConditionActions,
 ) {
-    val definition = NodeTypeRegistry.byId(attached.typeId)
+    val sourceValue = attached.sourceValue()
     val schema = effectiveConditionSchema(workflow, node, attached)
     Column(
         modifier = Modifier
@@ -152,13 +173,13 @@ private fun ConditionRow(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                imageVector = nodeIcon(definition?.icon ?: com.example.ottomatic.domain.model.NodeIcon.SPLIT),
+                imageVector = nodeIcon(sourceValue?.icon ?: com.example.ottomatic.domain.model.NodeIcon.SPLIT),
                 contentDescription = null,
-                tint = EditorColors.conditionAccent,
+                tint = EditorColors.valueAccent,
                 modifier = Modifier.size(16.dp),
             )
             Text(
-                text = definition?.displayName ?: attached.typeId.value,
+                text = attached.sourceLabel(sourceValue),
                 color = EditorColors.textPrimary,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
@@ -173,8 +194,8 @@ private fun ConditionRow(
                 onClick = { actions.onNegatedChange(index, !attached.negated) },
                 label = { Text("Not", fontSize = 11.sp) },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = EditorColors.conditionAccent.copy(alpha = 0.22f),
-                    selectedLabelColor = EditorColors.conditionAccent,
+                    selectedContainerColor = EditorColors.valueAccent.copy(alpha = 0.22f),
+                    selectedLabelColor = EditorColors.valueAccent,
                     labelColor = EditorColors.textSecondary,
                 ),
             )
@@ -200,3 +221,4 @@ private fun ConditionRow(
         }
     }
 }
+

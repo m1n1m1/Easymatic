@@ -248,9 +248,10 @@ private fun GraphEditorContent(
         }
     }
 
-    // Attaching a condition reuses the node palette, restricted to the condition
-    // kind — the same list you would drop on the canvas, picked to live inside a
-    // node instead.
+    // Attaching a condition reuses the node palette, restricted to values — because
+    // what a gate needs is a *source* to compare, the comparison itself being the
+    // same every time. Picking one pre-fills the gate, so this stays a single tap
+    // while covering every value the graph knows rather than a fixed list.
     pickConditionFor?.let { nodeId ->
         NodePaletteOverlay(
             onDismiss = { pickConditionFor = null },
@@ -259,7 +260,7 @@ private fun GraphEditorContent(
                 viewModel.addCondition(nodeId, definition.typeId)
             },
             title = "Add condition",
-            restrictedTo = NodeTypeRegistry.byKind(NodeKind.CONDITION).map { it.typeId }.toSet(),
+            restrictedTo = NodeTypeRegistry.byKind(NodeKind.VALUE).map { it.typeId }.toSet(),
         )
     }
 
