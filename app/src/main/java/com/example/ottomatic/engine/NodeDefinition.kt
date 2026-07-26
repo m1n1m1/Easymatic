@@ -129,9 +129,9 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
  * that is true *right now*. It declares exactly one port — the typed DATA output
  * [output] — and no EXECUTION ports at all, because it is never pulsed. Instead
  * it is read on demand, immediately before whichever node consumes it (see
- * [com.example.ottomatic.engine.WorkflowExecutor]), or named directly by an
- * attached gate that has no edges of its own (see
- * [com.example.ottomatic.engine.ValueSource]).
+ * [com.example.ottomatic.engine.WorkflowExecutor]), or named directly as an
+ * `action.if` source with no edge drawn to it (see
+ * [com.example.ottomatic.domain.model.ValueSource]).
  *
  * Purity is a contract, not a convention: `NodeDeclarationContractTest` asserts
  * that every value node declares no exec ports, no DATA inputs and no permission

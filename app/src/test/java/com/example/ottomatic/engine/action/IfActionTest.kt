@@ -28,10 +28,8 @@ import org.junit.Test
  * Behaviour of `action.if`, the graph's single comparison and only conditional
  * branch.
  *
- * The three groups mirror the three sources a comparison can name: a value wired
- * into the node's own `source` port (the placed form), one of the host node's own
- * input ports, and a value node read on demand — the last being what an attached
- * gate uses, since it owns no ports at all.
+ * The groups mirror the two sources a comparison can name: a value wired into the
+ * node's own `source` port, and a value node read on demand with no edge at all.
  */
 class IfActionTest {
 
@@ -84,30 +82,16 @@ class IfActionTest {
      *
      * This is the one behaviour that changed when `source` became a spec rather than
      * a literal: an unresolvable source can no longer be silently read as its own
-     * text, so a gate over one fails closed instead of comparing spec strings.
+     * text, so a comparison over one fails closed instead of comparing spec strings.
      */
     @Test
     fun `an unresolved source compares false rather than comparing the spec`() = runBlocking {
         assertFalse(evaluate(compare(type = ComparisonType.STRING, value = "")))
     }
 
-    /** The attached form: `source` names one of the *host* node's input ports. */
-    @Test
-    fun `a host port source inspects that port's item`() = runBlocking {
-        val config = compare(
-            source = ValueSource.hostSpec(PortName("text")),
-            field = "level",
-            operator = ComparisonOperator.GREATER_THAN_OR_EQUAL,
-            value = "20",
-        )
-
-        assertTrue(evaluate(config, mapOf(PortName("text") to Item.of(battery(20)))))
-        assertFalse(evaluate(config, mapOf(PortName("text") to Item.of(battery(19)))))
-    }
-
     /**
-     * A value source needs no ports and no edges — the property that makes a
-     * one-tap attached gate possible.
+     * A value source needs no ports and no edges — the property that lets a
+     * comparison read a device value with nothing wired to it.
      */
     @Test
     fun `a value source is read on demand with no ports at all`() = runBlocking {

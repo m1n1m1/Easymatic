@@ -66,10 +66,10 @@ class NodeInput internal constructor(
  * A pure reader of something that is true *right now* — the graph's pull side.
  *
  * A value node performs no work and changes nothing, which is what lets it be read
- * without an execution position: wired into a consumer's DATA input it is read
- * just before that consumer runs, and named by an attached gate it is read when
- * the gate evaluates. Both paths go through [readRaw], so a value can never mean
- * one thing on the canvas and another in a gate.
+ * without an execution position: wired into a consumer's DATA input it is read just
+ * before that consumer runs, and named as an `action.if` source it is read when the
+ * comparison evaluates. Both paths go through [readRaw], so a value can never mean
+ * one thing wired and another named.
  *
  * [read] returns null when the value cannot be read at all (subsystem absent,
  * permission not granted), mirroring [com.example.ottomatic.core.service.DeviceState].

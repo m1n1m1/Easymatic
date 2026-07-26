@@ -17,10 +17,6 @@ import com.example.ottomatic.core.model.NodeTypeId
  * [NodeTypeDefinition]s served here are derived views of those declarations, so
  * the editor, engine and persistence layers share a single source of truth.
  *
- * An attached gate carries no node type, because it is not a node on the graph —
- * it is a comparison stored on its host; see
- * [com.example.ottomatic.domain.model.AttachedCondition].
- *
  * Port schemas are derived from the typed data classes in
  * `domain/model/items/` via
  * [com.example.ottomatic.domain.model.schema.schemaOf]. EXECUTION ports carry
@@ -36,8 +32,6 @@ object NodeTypeRegistry {
     private val byId: Map<NodeTypeId, NodeTypeDefinition> = all.associateBy { it.typeId }
 
     fun byId(typeId: NodeTypeId): NodeTypeDefinition? = byId[typeId]
-
-    fun byKind(kind: NodeKind): List<NodeTypeDefinition> = all.filter { it.kind == kind }
 
     fun byKindAndCategory(kind: NodeKind, category: NodeCategory): List<NodeTypeDefinition> =
         all.filter { it.kind == kind && it.category == category }

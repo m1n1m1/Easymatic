@@ -6,15 +6,12 @@ import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.RingerMode
-import com.example.ottomatic.domain.model.AttachedCondition
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
-import com.example.ottomatic.domain.model.ValueSource
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.ComparisonOperator
 import com.example.ottomatic.domain.registry.IF_OPERATOR_KEY
-import com.example.ottomatic.domain.registry.IF_SOURCE_KEY
 import com.example.ottomatic.engine.trigger.TriggerOutput
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -103,53 +100,6 @@ class ValueReadTimingTest {
 
         assertEquals("both ports of one node must share a single read", 1, battery.reads)
         assertEquals("a value must equal itself", 1, services.notifications.size)
-    }
-
-    /**
-     * A gate is its own consumer, separate from the node it guards.
-     *
-     * The order is fixed by the executor: the node's inputs are collected first, then
-     * the gate is evaluated — so the wired source sees read #1 and the gate sees #2.
-     * Asserting on those exact numbers is what makes this a timing test rather than a
-     * count.
-     */
-    @Test
-    fun `a gate reads its value separately from the node's own inputs`() = runBlocking {
-        val services = RecordingSystemServices()
-        val battery = CountingBattery()
-        val executor = WorkflowExecutor(DefaultExecutionContext(services, deviceState = battery) {})
-        val gated = comparison("if1", expected = "1").copy(
-            conditions = listOf(
-                AttachedCondition(
-                    config = mapOf(
-                        IF_SOURCE_KEY to ValueSource.valueSpec(NodeTypeId("value.battery")),
-                        IF_OPERATOR_KEY to ComparisonOperator.EQUALS.name,
-                        ConfigKey("value") to "2",
-                    ),
-                ),
-            ),
-        )
-        val workflow = Workflow(
-            nodes = listOf(
-                WorkflowNode(NodeId("t"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
-                gated,
-                notify(),
-                value(),
-            ),
-            execConnections = listOf(
-                ExecConnection("e1", NodeId("t"), PortName("out"), NodeId("if1"), PortName("in")),
-                ExecConnection("e2", NodeId("if1"), PortName("true"), NodeId("n"), PortName("in")),
-            ),
-            dataConnections = listOf(
-                DataConnection("d1", NodeId("v"), PortName("level"), NodeId("if1"), PortName("source")),
-            ),
-        )
-
-        executor.executeFrom(workflow, workflow.node(NodeId("t"))!!, TriggerOutput(emptyMap()))
-
-        // One read collecting the node's inputs, then one for the gate.
-        assertEquals(2, battery.reads)
-        assertEquals("wired source saw read #1 and the gate saw #2", 1, services.notifications.size)
     }
 
     /** A comparison whose `source` is wired and whose literal is [expected]. */

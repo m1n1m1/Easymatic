@@ -3,7 +3,6 @@
 package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.core.model.ConfigKey
-import com.example.ottomatic.domain.model.AttachedCondition
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecPorts
 import com.example.ottomatic.domain.model.NodeTypeDefinition
@@ -138,7 +137,7 @@ fun effectiveConfigSchema(
 ): NodeConfigSchema? {
     val declared = ConfigSchemaRegistry.byId(definition.typeId) ?: return null
     val narrowed = if (definition.typeId == IF_TYPE_ID) {
-        compareSchema(declared, sourceOptions(workflow, node, attached = false), node.config, workflow, node)
+        compareSchema(declared, workflow, node)
     } else {
         declared
     }
@@ -146,64 +145,19 @@ fun effectiveConfigSchema(
 }
 
 /**
- * The effective [NodeConfigSchema] for an [AttachedCondition] on [host]: the same
- * derivation as [effectiveConfigSchema], but for a gate that has no node and
- * therefore no incoming edges of its own.
+ * The sources a comparison may inspect, as form options: whatever is wired into its
+ * own `source` port, plus every value node.
  *
- * Both placements run the *same* comparison and the *same* narrowing
- * ([compareSchema]); they differ only in what the source dropdown offers. A placed
- * `action.if` can be wired, so it offers its own `source` port plus every value
- * node. An attached gate has nothing wired to it, so it offers the host's own DATA
- * input ports — the items it will actually be handed at runtime (see
- * [com.example.ottomatic.engine.conditionsPass]) — plus every value node. Reading a
- * value node needs no edge at all, which is what makes a one-tap gate possible.
- *
- * Returns null when the gate has no configurable fields.
+ * Value nodes are always offered because they are pure — they can be read on demand
+ * with no edge and no execution position, so choosing one needs nothing else on the
+ * canvas.
  */
-fun effectiveConditionSchema(
-    workflow: Workflow,
-    host: WorkflowNode,
-    attached: AttachedCondition,
-): NodeConfigSchema? {
-    val declared = ConfigSchemaRegistry.byId(IF_TYPE_ID) ?: return null
-    val narrowed = compareSchema(
-        declared = declared,
-        sources = sourceOptions(workflow, host, attached = true),
-        config = attached.config,
-        workflow = workflow,
-        node = host,
-    )
-    return narrowed.visibleFor(attached.config).takeIf { it.fields.isNotEmpty() }
-}
-
-/**
- * The sources a comparison on [node] may inspect, as form options.
- *
- * Value nodes are always offered: being pure, they can be read on demand without an
- * edge or an execution position. What differs is the *other* end — an [attached]
- * gate offers its host's DATA input ports, while a placed node offers its own wired
- * `source` port.
- */
-fun sourceOptions(
-    workflow: Workflow,
-    node: WorkflowNode,
-    attached: Boolean,
-): List<ConfigOption> {
-    val hostPorts = if (attached) {
-        NodeTypeRegistry.byId(node.typeId)
-            ?.let { effectiveInputPorts(it, workflow, node) }
-            ?.filter { it.kind == PortKind.DATA }
-            .orEmpty()
-            .map { ConfigOption(ValueSource.hostSpec(it.name), it.label) }
-    } else {
-        listOf(ConfigOption(ValueSource.WIRED_SPEC, "Wired input"))
-    }
-    val values = ValueRegistry.all().map { value ->
-        val definition = value.definition.nodeType
-        ConfigOption(ValueSource.valueSpec(definition.typeId), definition.displayName)
-    }
-    return hostPorts + values
-}
+private fun sourceOptions(): List<ConfigOption> =
+    listOf(ConfigOption(ValueSource.WIRED_SPEC, "Wired input")) +
+        ValueRegistry.all().map { value ->
+            val definition = value.definition.nodeType
+            ConfigOption(ValueSource.valueSpec(definition.typeId), definition.displayName)
+        }
 
 /**
  * The [ItemSchema] of the value the [spec] source yields on [node], or null when it
@@ -214,16 +168,12 @@ fun sourceOptions(
  * answer — and a `val:` source gets a correctly typed form without anything being
  * wired.
  */
-fun sourceSchema(
+private fun sourceSchema(
     spec: String,
     workflow: Workflow,
     node: WorkflowNode,
 ): ItemSchema? = when (val source = ValueSource.parse(spec)) {
     ValueSource.Wired -> resolveInputSchema(workflow, node, IF_SOURCE_IN)
-    is ValueSource.HostPort -> NodeTypeRegistry.byId(node.typeId)
-        ?.let { effectiveInputPorts(it, workflow, node) }
-        ?.firstOrNull { it.name == source.port }
-        ?.schema
     is ValueSource.Value -> ValueRegistry.byId(source.typeId)?.definition?.nodeType?.ports?.firstOrNull()?.schema
 }
 
@@ -232,9 +182,6 @@ fun sourceSchema(
  * satisfy. The controlling value is read from [config], falling back to the
  * controlling *field's* declared default — so a node the user has never touched
  * shows the fields belonging to its default mode rather than none of them.
- *
- * Takes the config map rather than a [WorkflowNode] so the same rule evaluation
- * serves both a placed node's config and an [AttachedCondition]'s.
  *
  * Rules nest: a field is visible only when its own rule holds *and* its
  * controlling field is itself visible. Without that, switching an outer mode
@@ -278,8 +225,8 @@ private fun ConfigField<*>.isVisibleFor(
 
 /**
  * Narrows the comparison's [declared] form (derived from `CompareConfig`) against
- * the graph — the single narrowing for both placements:
- *  - `source` becomes an ENUM over [sources];
+ * the graph:
+ *  - `source` becomes an ENUM over [sourceOptions];
  *  - the field picker is dropped unless the inspected value is a struct, and
  *    otherwise becomes an ENUM of that struct's field names;
  *  - the operator list shrinks to those valid for the inspected type;
@@ -287,20 +234,18 @@ private fun ConfigField<*>.isVisibleFor(
  *
  * The `type` chooser survives only when the source is the node's own wired port:
  * pinning a primitive exists to make an *unconnected* port configurable, and a
- * value node or host port already knows its own type.
+ * value node already knows its own type.
  */
-@Suppress("LongParameterList") // One narrowing serving both placements needs all of it.
 private fun compareSchema(
     declared: NodeConfigSchema,
-    sources: List<ConfigOption>,
-    config: Map<ConfigKey, String>,
     workflow: Workflow,
     node: WorkflowNode,
 ): NodeConfigSchema {
-    val spec = config[IF_SOURCE_KEY] ?: sources.firstOrNull()?.value.orEmpty()
+    val sources = sourceOptions()
+    val spec = node.config[IF_SOURCE_KEY] ?: sources.firstOrNull()?.value.orEmpty()
     val pinned = ValueSource.parse(spec) == ValueSource.Wired
-    val structFields = compareStructFields(spec, config, workflow, node)
-    val inspected = inspectedSchema(spec, config, workflow, node, structFields)
+    val structFields = compareStructFields(spec, workflow, node)
+    val inspected = inspectedSchema(spec, workflow, node, structFields)
     val operators = ComparisonOperator.forSchema(inspected)
 
     val fields = declared.fields.mapNotNull { field ->
@@ -347,11 +292,10 @@ private fun prettifyOption(value: String): String =
  */
 private fun compareStructFields(
     spec: String,
-    config: Map<ConfigKey, String>,
     workflow: Workflow,
     node: WorkflowNode,
 ): List<String>? {
-    if (comparisonType(config) != ComparisonType.AUTO) return null
+    if (comparisonType(node.config) != ComparisonType.AUTO) return null
     val resolved = sourceSchema(spec, workflow, node)
     return (resolved as? ItemSchema.Object)?.fields?.keys?.toList()?.takeIf { it.isNotEmpty() }
 }
@@ -363,17 +307,16 @@ private fun compareStructFields(
  */
 private fun inspectedSchema(
     spec: String,
-    config: Map<ConfigKey, String>,
     workflow: Workflow,
     node: WorkflowNode,
     structFields: List<String>?,
 ): ItemSchema {
     val fallback = ItemSchema.Primitive(String::class)
-    val type = comparisonType(config)
+    val type = comparisonType(node.config)
     if (type != ComparisonType.AUTO) return type.schema ?: fallback
     val resolved = sourceSchema(spec, workflow, node)
     return if (structFields != null && resolved is ItemSchema.Object) {
-        val selected = config[IF_FIELD_KEY]?.takeIf { it in structFields } ?: structFields.first()
+        val selected = node.config[IF_FIELD_KEY]?.takeIf { it in structFields } ?: structFields.first()
         resolved.fields[selected] ?: fallback
     } else {
         resolved ?: fallback

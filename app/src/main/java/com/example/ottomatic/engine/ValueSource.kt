@@ -12,26 +12,24 @@ import com.example.ottomatic.domain.registry.ValueRegistry
  * This is the runtime half of [ValueSource]; the spec format itself lives in
  * `domain` because the design-time form derivation needs it too.
  *
- * [input] carries the ports available to the comparison — a placed node's own wired
- * inputs, or a gate host's collected inputs. A [ValueSource.Value] needs no ports
- * at all, which is exactly what lets an attached gate read a device value without
- * an edge.
+ * [input] carries the comparison's own wired inputs. A [ValueSource.Value] needs no
+ * ports at all, which is what lets `action.if` read a device value with no edge
+ * drawn to it.
  */
 internal suspend fun resolveValueSource(
     spec: String,
-    input: NodeInput?,
+    input: NodeInput,
     context: ExecutionContext,
 ): Item? = when (val source = ValueSource.parse(spec)) {
-    ValueSource.Wired -> input?.item(SOURCE_PORT)
-    is ValueSource.HostPort -> input?.item(source.port)
+    ValueSource.Wired -> input.item(SOURCE_PORT)
     is ValueSource.Value -> readValueNode(source.typeId, context)
 }
 
 /**
  * Reads a value node by id, logging the outcome.
  *
- * A gate's pulled value has no node-by-node line in the run log of its own, so
- * without this a gate that fails on an unreadable subsystem would be silent.
+ * An edgeless `val:` read has no node-by-node line in the run log of its own, so
+ * without this a comparison that fails on an unreadable subsystem would be silent.
  */
 private suspend fun readValueNode(typeId: NodeTypeId, context: ExecutionContext): Item? {
     val value = ValueRegistry.byId(typeId)

@@ -75,11 +75,9 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
      * form value in [config], or its declared default. Values that fail to parse
      * fall back to the default rather than failing the run.
      *
-     * This takes the map rather than a [WorkflowNode] because the same decoding
-     * serves both placements of a node's config: a placed node's own
-     * [WorkflowNode.config], and an
-     * [com.example.ottomatic.domain.model.AttachedCondition]'s config, which has
-     * no node of its own.
+     * This takes the map rather than a [WorkflowNode] so a caller holding only a
+     * config map — a test, or a decode driven by a form rather than a placed node —
+     * can use it without inventing a node to carry it.
      */
     fun decode(config: Map<ConfigKey, String>, data: Map<PortName, Item> = emptyMap()): T {
         if (elements.isEmpty()) return defaults

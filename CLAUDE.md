@@ -60,14 +60,11 @@ Config is declared on a single `@Serializable` data class per node, with annotat
 There is deliberately **no condition node kind**. A condition is not a node family but a *comparison over a value*, so the two halves are declared separately and combined:
 
 - **Value nodes** (`engine/value/`) are pure readers — one DATA output, **no exec ports at all**. They are never pulsed; they are *pulled*. The rule is one sentence: **a value is read just before the node that uses it** — memoized per consuming node, so every port of one node sees a single consistent read while a second consumer reads fresh (no staleness across a delay, no two ports disagreeing). `NodeDeclarationContractTest` enforces purity: no exec ports, no data inputs, no permissions. Anything expensive or failable must be an action instead.
-- **`action.if`** is the graph's **only** comparison and only conditional branch.
+- **`action.if`** is the graph's **only** comparison and only conditional branch. It is placed on the canvas and routes execution to `true`/`false`; the comparison itself lives in `evaluateCompare` (`engine/CompareEvaluation.kt`), separate from the routing.
 
-Both placements of a comparison call the one `evaluateCompare` function, so they cannot drift:
+There is deliberately **no way to attach a condition to a node**. A MacroDroid-style per-node gate existed (`WorkflowNode.conditions`) and was removed on 2026-07-26: it read as hidden control flow — nothing on the card said whether a condition was incoming or outgoing — and it duplicated what `action.if` already shows visibly. "Run this only when X" is an `action.if` upstream, including for triggers.
 
-- **Placed** on the canvas, `action.if` routes execution to `true`/`false`.
-- **Attached** to any node as `WorkflowNode.conditions` (a MacroDroid-style gate), the same comparison decides whether that node runs; failing skips it *and its whole downstream branch*. An `AttachedCondition` has no typeId — every gate is a comparison, and what varies is the **source** it names.
-
-`CompareConfig.source` holds a `ValueSource` *spec* (`domain/model/ValueSource.kt`), which is why one config serves both placements: `""` = the node's own wired `source` port, `in:<port>` = a host node's data input, `val:<typeId>` = a value node read on demand. The last needs no edge and no exec position, which is what keeps attaching a gate a single tap.
+`CompareConfig.source` holds a `ValueSource` *spec* (`domain/model/ValueSource.kt`): `""` = the node's own wired `source` port, `val:<typeId>` = a value node read on demand. The latter needs no edge and no exec position, so comparing a device property costs nothing on the canvas. Anything that is not a `val:` read parses as `Wired`, which fails closed.
 
 `GraphValidator` exempts value-node sources from the exec-upstream rule (they have no exec position) and warns about a value wired to nothing.
 

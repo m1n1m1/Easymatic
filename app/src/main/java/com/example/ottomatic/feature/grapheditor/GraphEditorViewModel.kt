@@ -12,9 +12,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.data.WorkflowRepository
-import com.example.ottomatic.domain.model.AttachedCondition
-import com.example.ottomatic.domain.model.ConditionLogic
-import com.example.ottomatic.domain.model.ValueSource
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecConnection
@@ -23,7 +20,6 @@ import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.IF_SOURCE_IN
-import com.example.ottomatic.domain.registry.IF_SOURCE_KEY
 import com.example.ottomatic.domain.registry.IF_TYPE_CONFIG_KEY
 import com.example.ottomatic.domain.registry.IF_TYPE_ID
 import com.example.ottomatic.domain.registry.IF_VALUE_IN
@@ -603,54 +599,6 @@ class GraphEditorViewModel(
             val nodes = state.workflow.nodes.map { node ->
                 if (node.id == nodeId) node.copy(name = name) else node
             }
-            state.copy(workflow = state.workflow.copy(nodes = nodes))
-        }
-        persist()
-    }
-
-    // endregion
-
-    // region Attached conditions
-
-    /**
-     * Attaches a gate to [nodeId] comparing the value node [typeId].
-     *
-     * Every gate is the same comparison, so what the picker chooses is its *source*.
-     * Pre-filling it here is what keeps attaching a condition a single tap, while the
-     * rest of the form (operator, literal) narrows itself to the chosen value's type.
-     */
-    fun addCondition(nodeId: NodeId, typeId: NodeTypeId) {
-        val source = AttachedCondition(config = mapOf(IF_SOURCE_KEY to ValueSource.valueSpec(typeId)))
-        editNode(nodeId) { node -> node.copy(conditions = node.conditions + source) }
-    }
-
-    fun removeCondition(nodeId: NodeId, index: Int) {
-        editNode(nodeId) { node ->
-            node.copy(conditions = node.conditions.filterIndexed { i, _ -> i != index })
-        }
-    }
-
-    fun updateConditionConfig(nodeId: NodeId, index: Int, key: ConfigKey, value: String) {
-        editCondition(nodeId, index) { it.copy(config = it.config + (key to value)) }
-    }
-
-    fun setConditionNegated(nodeId: NodeId, index: Int, negated: Boolean) {
-        editCondition(nodeId, index) { it.copy(negated = negated) }
-    }
-
-    fun setConditionLogic(nodeId: NodeId, logic: ConditionLogic) {
-        editNode(nodeId) { it.copy(conditionLogic = logic) }
-    }
-
-    private fun editCondition(nodeId: NodeId, index: Int, edit: (AttachedCondition) -> AttachedCondition) {
-        editNode(nodeId) { node ->
-            node.copy(conditions = node.conditions.mapIndexed { i, c -> if (i == index) edit(c) else c })
-        }
-    }
-
-    private fun editNode(nodeId: NodeId, edit: (WorkflowNode) -> WorkflowNode) {
-        _uiState.update { state ->
-            val nodes = state.workflow.nodes.map { if (it.id == nodeId) edit(it) else it }
             state.copy(workflow = state.workflow.copy(nodes = nodes))
         }
         persist()

@@ -54,7 +54,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
@@ -98,7 +97,6 @@ private fun GraphEditorContent(
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     var showPalette by remember { mutableStateOf(false) }
     var showConfig by remember { mutableStateOf(false) }
-    var pickConditionFor by remember { mutableStateOf<NodeId?>(null) }
     var hasAutoFitted by remember { mutableStateOf(false) }
 
     // Center the workflow in the viewport once it is loaded and the canvas is measured.
@@ -231,37 +229,10 @@ private fun GraphEditorContent(
                 onDataInputVisibilityChange = { portName, visible ->
                     viewModel.setNodeDataInputVisible(node.id, portName, visible)
                 },
-                conditionActions = ConditionActions(
-                    onAdd = { pickConditionFor = node.id },
-                    onRemove = { index -> viewModel.removeCondition(node.id, index) },
-                    onConfigChange = { index, key, value ->
-                        viewModel.updateConditionConfig(node.id, index, key, value)
-                    },
-                    onNegatedChange = { index, negated ->
-                        viewModel.setConditionNegated(node.id, index, negated)
-                    },
-                    onLogicChange = { logic -> viewModel.setConditionLogic(node.id, logic) },
-                ),
             )
         } else {
             showConfig = false
         }
-    }
-
-    // Attaching a condition reuses the node palette, restricted to values — because
-    // what a gate needs is a *source* to compare, the comparison itself being the
-    // same every time. Picking one pre-fills the gate, so this stays a single tap
-    // while covering every value the graph knows rather than a fixed list.
-    pickConditionFor?.let { nodeId ->
-        NodePaletteOverlay(
-            onDismiss = { pickConditionFor = null },
-            onPick = { definition ->
-                pickConditionFor = null
-                viewModel.addCondition(nodeId, definition.typeId)
-            },
-            title = "Add condition",
-            restrictedTo = NodeTypeRegistry.byKind(NodeKind.VALUE).map { it.typeId }.toSet(),
-        )
     }
 
     if (showBatteryPrompt) {
@@ -456,7 +427,6 @@ private fun NodeConfigOverlay(
     onNameChange: (String) -> Unit,
     onConfigChange: (ConfigKey, String) -> Unit,
     onDataInputVisibilityChange: (PortName, Boolean) -> Unit,
-    conditionActions: ConditionActions,
 ) {
     val definition = NodeTypeRegistry.byId(node.typeId)
     val schema = definition?.let { effectiveConfigSchema(it, workflow, node) }
@@ -474,8 +444,8 @@ private fun NodeConfigOverlay(
     // One wirable field puts every field in this sheet on the narrower measure, so
     // they keep a common right edge rather than the wirable ones looking clipped.
     val gutter = schemaKeys(schema).any { it in portByKey }
-    // The form grows without bound — schema fields, attached conditions, data
-    // inputs — so it gets a full screen to scroll in.
+    // The form grows without bound — schema fields plus data inputs — so it gets a
+    // full screen to scroll in.
     EditorOverlay(title = "Configure", onClose = onDismiss) { _ ->
         Column(
             // imePadding/navigationBarsPadding sit outside the scroll so the
@@ -522,12 +492,6 @@ private fun NodeConfigOverlay(
                 }
                 ConfigFormHint(node)
             }
-            Spacer(modifier = Modifier.height(6.dp))
-            ConditionsSection(
-                workflow = workflow,
-                node = node,
-                actions = conditionActions,
-            )
             if (fieldlessPorts.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(

@@ -26,7 +26,7 @@ interface ExecutionContext {
     /**
      * Read-only view of current device state, used by value nodes. Defaults to
      * [UnknownDeviceState] so engine-only tests need not supply one; a value node
-     * then reads null, which contributes no item and fails a gate closed.
+     * then reads null, which contributes no item and fails a comparison closed.
      */
     val deviceState: DeviceState get() = UnknownDeviceState
 

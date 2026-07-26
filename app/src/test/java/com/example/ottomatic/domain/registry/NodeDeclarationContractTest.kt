@@ -38,7 +38,8 @@ class NodeDeclarationContractTest {
             // the defaults must carry the whole thing.
             value.definition.schema.decode(emptyMap())
         }
-        // An attached gate decodes the same way, with no node behind it at all.
+        // The comparison must decode from bare defaults too: a freshly placed
+        // `action.if` has an empty config until the user touches its form.
         ActionRegistry.byId(IF_TYPE_ID)!!.definition.schema.decode(emptyMap())
     }
 

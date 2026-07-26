@@ -7,36 +7,6 @@ import com.example.ottomatic.core.model.PortName
 import kotlinx.serialization.Serializable
 
 /**
- * A comparison attached to a [WorkflowNode], gating whether that node runs.
- *
- * This is the *attached* placement of the graph's single comparison: the same
- * thing `action.if` does on the canvas lives here instead as a settings blob, so
- * no edge has to be drawn for the common "only when X" case. [config] is a
- * [com.example.ottomatic.engine.action.CompareConfig] in flat map form —
- * identical in shape to [WorkflowNode.config], because both are decoded by the
- * same [com.example.ottomatic.domain.registry.NodeSchema].
- *
- * There is no `typeId`: every gate is a comparison. What varies is the *source*
- * it inspects, which its config names — a value node read on demand, or one of
- * the host's own data inputs (see [com.example.ottomatic.engine.ValueSource]).
- *
- * [negated] inverts the result, so one comparison covers "Wi-Fi is on" and "Wi-Fi
- * is not on" without a second declaration.
- */
-@Serializable
-data class AttachedCondition(
-    val config: Map<ConfigKey, String> = emptyMap(),
-    val negated: Boolean = false,
-)
-
-/** How a node's [WorkflowNode.conditions] combine into a single verdict. */
-@Serializable
-enum class ConditionLogic {
-    AND,
-    OR,
-}
-
-/**
  * A node placed on the workflow canvas. Position is stored in graph units (dp).
  *
  * [config] is a flat map of *typed* config values keyed by [ConfigKey]: each value
@@ -49,10 +19,9 @@ enum class ConditionLogic {
  * config key and its port name are the same string by construction.
  * [visibleDataInputs] controls which DATA input handles are shown in the editor.
  *
- * [conditions] gate this node: when they do not pass, the node is skipped and its
- * exec output never pulses, so the whole branch below it stops. They are
- * evaluated against this node's own already-collected data inputs, which is why
- * they need no ports of their own.
+ * A node carries no conditions of its own. Running only when something is true is
+ * expressed by placing `action.if` upstream, where the branch is visible on the
+ * canvas rather than hidden in a settings blob.
  */
 @Serializable
 data class WorkflowNode(
@@ -63,8 +32,6 @@ data class WorkflowNode(
     val y: Float,
     val config: Map<ConfigKey, String> = emptyMap(),
     val visibleDataInputs: Set<PortName> = emptySet(),
-    val conditions: List<AttachedCondition> = emptyList(),
-    val conditionLogic: ConditionLogic = ConditionLogic.AND,
 )
 
 /**
@@ -137,6 +104,6 @@ data class Workflow(
         dataConnections.filter { it.toNodeId == nodeId && it.toPort == port }
 
     companion object {
-        const val CURRENT_SCHEMA_VERSION = 9
+        const val CURRENT_SCHEMA_VERSION = 10
     }
 }

@@ -35,10 +35,8 @@ import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
 
 /**
- * The input widget for one config field, chosen by its [ConfigFieldType]. The
- * single place a config value is edited, shared by both placements of a node's
- * config: a placed node's own form (via [ConfigFieldRow]) and an attached
- * condition's (via [ConditionsSection]).
+ * The input widget for one config field, chosen by its [ConfigFieldType] — the
+ * single place a config value is edited, reached through [ConfigFieldRow].
  *
  * [label] defaults to the field's own label but can be overridden to carry extra
  * information on the outline — [ConfigFieldRow] appends the wiring source to it.

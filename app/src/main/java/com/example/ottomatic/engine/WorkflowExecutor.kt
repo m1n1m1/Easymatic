@@ -21,8 +21,6 @@ import com.example.ottomatic.engine.validation.Severity
  *  2. The executor follows the trigger's EXECUTION `out` port, running each
  *     connected action once. Encoded outputs are cached and followed.
  *  3. Failed actions log and stop their branch.
- *  4. A node whose attached conditions do not pass ([conditionsPass]) is skipped
- *     along with everything below it.
  *
  * Data semantics: a data edge whose source is an *action or trigger* must be
  * exec-upstream of its target (enforced by [GraphValidator]) so the source has run
@@ -71,13 +69,6 @@ class WorkflowExecutor(
             val target = workflow.node(connection.toNodeId) ?: continue
             val action = ActionRegistry.byId(target.typeId) ?: continue
             val dataIn = collectDataIn(workflow, target, dataCache)
-            // Conditions are gathered before the node runs and see its collected
-            // inputs. Failing one skips the node *and* stops its branch: nothing
-            // pulses, so nothing downstream is reached.
-            if (!target.conditionsPass(dataIn, context)) {
-                context.log("Skipped ${target.typeId}: conditions not met")
-                continue
-            }
             val result = runCatching { action.run(target, dataIn, context) }.getOrElse { e ->
                 context.log("Action ${target.typeId} failed: ${e.message}")
                 null
@@ -147,7 +138,7 @@ class WorkflowExecutor(
      * Reads [value] for [target], logging the outcome.
      *
      * A pulled value has no node-by-node line in the run log of its own, so without
-     * this a failing gate or a surprising notification would be undiagnosable.
+     * this a failing comparison or a surprising notification would be undiagnosable.
      */
     private suspend fun readValue(
         value: ValueNode<*, *>,

@@ -16,9 +16,9 @@ import com.example.ottomatic.core.service.RingerMode
  * Android-backed implementation of [DeviceState].
  *
  * Every read is wrapped in `runCatching { }.getOrNull()`: a missing subsystem, a
- * revoked permission or an OEM quirk yields null rather than throwing, and the
- * condition layer turns null into a false verdict. A gate must never crash the
- * flow it guards.
+ * revoked permission or an OEM quirk yields null rather than throwing, which a
+ * comparison turns into a false verdict. Reading a device property must never crash
+ * the flow that reads it.
  */
 class AndroidDeviceState(private val context: Context) : DeviceState {
 

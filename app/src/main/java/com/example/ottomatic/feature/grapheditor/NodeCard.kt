@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -204,16 +203,13 @@ private fun NodeBody(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = nodeSubtitle(node, definition),
-                        color = EditorColors.textSecondary,
-                        fontSize = 11.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    ConditionBadge(count = node.conditions.size)
-                }
+                Text(
+                    text = nodeSubtitle(node, definition),
+                    color = EditorColors.textSecondary,
+                    fontSize = 11.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
     }
@@ -236,43 +232,6 @@ private fun nodeSubtitle(node: WorkflowNode, definition: NodeTypeDefinition): St
     return when {
         placeId.isBlank() -> "No place selected"
         else -> library?.placeById(placeId)?.name ?: "Place missing"
-    }
-}
-
-/**
- * Marks a node as gated by attached conditions.
- *
- * Deliberately a badge rather than a chip per condition: the card is a fixed
- * [GraphGeometry.NODE_HEIGHT] that the port maths depends on, so the canvas shows
- * only *that* the node is gated and how many times. What the conditions actually
- * say belongs in the config sheet, where there is room to edit them.
- */
-@Composable
-private fun ConditionBadge(count: Int) {
-    if (count == 0) return
-    Row(
-        modifier = Modifier
-            .padding(start = 6.dp)
-            .clip(RoundedCornerShape(5.dp))
-            .background(EditorColors.valueAccent.copy(alpha = 0.18f))
-            .padding(horizontal = 4.dp, vertical = 1.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = Icons.Filled.FilterAlt,
-            contentDescription = "Conditions",
-            tint = EditorColors.valueAccent,
-            modifier = Modifier.size(11.dp),
-        )
-        if (count > 1) {
-            Text(
-                text = count.toString(),
-                color = EditorColors.valueAccent,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(start = 2.dp),
-            )
-        }
     }
 }
 

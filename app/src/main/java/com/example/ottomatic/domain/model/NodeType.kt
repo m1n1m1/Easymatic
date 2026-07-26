@@ -11,9 +11,9 @@ import com.example.ottomatic.domain.model.schema.ItemSchema
  * [VALUE] nodes are the pull side of the graph: a side-effect-free reader with a
  * single DATA output port and *no* EXECUTION ports at all. They are never pulsed;
  * they are read on demand, immediately before whichever node consumes them (see
- * [com.example.ottomatic.engine.WorkflowExecutor]). That is also what lets an
- * attached gate name one without drawing an edge — see
- * [com.example.ottomatic.engine.ValueSource].
+ * [com.example.ottomatic.engine.WorkflowExecutor]). That is also what lets
+ * `action.if` name one as its source without drawing an edge — see
+ * [com.example.ottomatic.domain.model.ValueSource].
  *
  * There is deliberately no CONDITION kind. A condition is not a node family but a
  * *comparison over a value*: the device properties are declared once as [VALUE]

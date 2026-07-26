@@ -19,11 +19,11 @@ import com.example.ottomatic.engine.value.WifiValue
  * actions: the reader's own file declares its metadata, output port and config in
  * a single [com.example.ottomatic.engine.ValueNodeDefinition].
  *
- * Registering here lights up all three uses of a value at once — it appears in the
- * palette to drop on the canvas as a data source, in the drag-to-create
- * suggestions for any compatible data input ([suggestionsFor]), and in the
- * add-condition picker as a comparable source for an attached gate (see
- * [com.example.ottomatic.engine.ValueSource]). [NodeTypeRegistry] and
+ * Registering here lights up every use of a value at once — it appears in the
+ * palette to drop on the canvas as a data source, in the drag-to-create suggestions
+ * for any compatible data input ([suggestionsFor]), and in `action.if`'s source
+ * dropdown, where it can be read with no edge drawn to it (see
+ * [com.example.ottomatic.domain.model.ValueSource]). [NodeTypeRegistry] and
  * [ConfigSchemaRegistry] derive their views from these definitions.
  *
  * Unlike [ActionRegistry] there is no execution bridge: a value node is never

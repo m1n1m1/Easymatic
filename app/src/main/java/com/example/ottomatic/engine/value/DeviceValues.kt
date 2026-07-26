@@ -20,7 +20,7 @@ import com.example.ottomatic.engine.valueNode
  *
  * Every reader is config-free and returns null when the subsystem cannot be read,
  * which the executor logs and treats as "no item" — the consumer then falls back
- * to its own form value, and a gate over it fails closed.
+ * to its own form value, and a comparison over it fails closed.
  */
 
 /**

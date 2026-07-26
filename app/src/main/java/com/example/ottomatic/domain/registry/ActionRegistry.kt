@@ -40,11 +40,10 @@ import com.example.ottomatic.engine.action.WifiAction
  * [com.example.ottomatic.domain.registry.effectivePorts] (no dedicated
  * make-struct action is needed).
  *
- * The other adaptive node is [IfAction], the graph's single comparison. It is an
- * ordinary action registered here like any other — there is no separate condition
- * registry and no execution bridge, because an attached gate does not *run* the
- * node: it calls the same comparison directly (see
- * [com.example.ottomatic.engine.evaluateCompare]).
+ * The other adaptive node is [IfAction], the graph's single comparison and only
+ * conditional branch. It is an ordinary action registered here like any other —
+ * there is no separate condition registry, because a condition is not a node family
+ * but a comparison over a value.
  */
 object ActionRegistry {
 

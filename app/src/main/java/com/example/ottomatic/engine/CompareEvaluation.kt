@@ -13,26 +13,20 @@ internal val SOURCE_PORT = PortName("source")
 internal val COMPARE_PORT = PortName("value")
 
 /**
- * The one comparison in the graph, shared by both of its placements.
+ * The one comparison in the graph, kept separate from
+ * [com.example.ottomatic.engine.action.IfAction] so that what "greater than" means
+ * is decided in exactly one place, independent of how the answer is routed.
  *
- * [com.example.ottomatic.engine.action.IfAction] calls this and turns the result
- * into a `true`/`false` exec route; [conditionsPass] calls it and uses the Boolean
- * directly to gate a node. Neither re-implements the comparison, so an attached
- * gate and a placed if-node can never disagree about what "greater than" means.
- *
- * [input] carries the host's ports — the placed node's own wired inputs, or the
- * gate host's collected inputs. It is null only when there is no host to read
- * from, in which case a `val:` source still resolves and everything else fails
- * closed.
+ * [input] carries the node's own wired inputs. An unreadable source fails closed.
  */
 internal suspend fun evaluateCompare(
     config: CompareConfig,
-    input: NodeInput?,
+    input: NodeInput,
     context: ExecutionContext,
 ): Boolean {
     val item = resolveValueSource(config.source, input, context)
     // A wired port wins over the form literal on the compare-against side too.
-    val expected = input?.text(COMPARE_PORT) ?: config.value
+    val expected = input.text(COMPARE_PORT) ?: config.value
     val actual = item?.let { inspect(config, it) } ?: return false
     return config.operator.matches(actual, expected)
 }

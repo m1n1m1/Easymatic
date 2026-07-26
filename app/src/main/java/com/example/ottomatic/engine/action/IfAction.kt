@@ -22,20 +22,18 @@ import com.example.ottomatic.engine.evaluateCompare
 import kotlinx.serialization.Serializable
 
 /**
- * Config for `action.if`, and for every attached gate.
+ * Config for `action.if`.
  *
  * [source] is a *source spec* rather than a plain value — see
- * [com.example.ottomatic.engine.ValueSource]. That single field is what lets one
- * comparison serve both placements: a placed node leaves it blank to use its wired
- * `source` port, and an attached gate names either a host input port or a value
- * node to read on demand.
+ * [com.example.ottomatic.engine.ValueSource]. Blank means "read my own wired
+ * `source` port"; `val:<typeId>` names a value node to read on demand, which needs
+ * no edge at all.
  *
  * The static form derived from this class is narrowed at design time by
- * [com.example.ottomatic.domain.registry.effectiveConfigSchema] (placed form) and
- * [com.example.ottomatic.domain.registry.effectiveConditionSchema] (attached
- * form): [source] becomes a dropdown of the available sources, [field] a dropdown
- * of the inspected struct's fields, [operator] is filtered to those valid for the
- * inspected type, and [value] is retyped to match.
+ * [com.example.ottomatic.domain.registry.effectiveConfigSchema]: [source] becomes a
+ * dropdown of the available sources, [field] a dropdown of the inspected struct's
+ * fields, [operator] is filtered to those valid for the inspected type, and [value]
+ * is retyped to match.
  */
 @Serializable
 data class CompareConfig(
@@ -49,13 +47,14 @@ data class CompareConfig(
 /**
  * `action.if` — the graph's only comparison, and its only conditional branch.
  *
- * Placed on the canvas it is the adaptive if-node: its `source`/`value` port
- * schemas and its config form are resolved from whatever is wired into it, and it
- * routes execution to `true` or `false`. Attached to another node as a gate, the
- * *same* comparison decides whether that node runs at all — but there it is not
- * this action that runs. Both call [evaluateCompare] directly, so a gate's verdict
- * is a real Boolean rather than an exec route read backwards, and the two
- * placements cannot drift apart.
+ * An adaptive node: its `source`/`value` port schemas and its config form are
+ * resolved from whatever is wired into it, and it routes execution to `true` or
+ * `false`. The comparison itself lives in [evaluateCompare] rather than here, so
+ * what "greater than" means is decided independently of how the answer is routed.
+ *
+ * Running a node only under some condition is expressed by placing this upstream of
+ * it. There is deliberately no way to attach a condition to a node instead: a
+ * hidden branch is the one thing a node graph should never have.
  *
  * It replaces the former `condition.*` family entirely: those nodes welded a
  * device reader to a comparison, one weld per property. The readers are now
