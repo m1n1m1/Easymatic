@@ -4,6 +4,7 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.domain.model.GeofencePlace
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -86,6 +87,20 @@ interface TriggerHost {
      * Returns a [ScheduleHandle] whose [ScheduleHandle.cancel] removes the
      * geofence when the trigger flow is cancelled.
      */
+    /**
+     * Looks up a stored [GeofencePlace] by id, or null when the place has been
+     * deleted (or was never chosen).
+     *
+     * The place library is user data rather than a platform capability, but it
+     * reaches the trigger through the host for the same reason everything else
+     * does: [Trigger.activate] is handed a host and nothing else, and the
+     * library lives in `data/` where the geofencing client already is.
+     *
+     * The default returns null so a trigger with no library behind it simply
+     * stays unarmed — which is what test doubles want.
+     */
+    fun geofencePlace(id: String): GeofencePlace? = null
+
     @Suppress("LongParameterList") // Mirrors the GMS Geofence.Builder API surface.
     fun armGeofence(
         nodeId: NodeId,

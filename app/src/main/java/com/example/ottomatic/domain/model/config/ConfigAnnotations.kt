@@ -32,6 +32,40 @@ annotation class Label(val value: String)
 annotation class Multiline
 
 /**
+ * Renders the `String` property as a chooser of [kind] rather than a text
+ * field: the form shows the chosen thing's human name and opens a dedicated
+ * picker on tap.
+ *
+ * The stored value is still a plain identifier string — this changes only how
+ * it is *entered*, so nothing about the "every property is a String, a number,
+ * a Boolean or an enum" rule bends. It exists because some identifiers cannot
+ * reasonably be typed: no one knows a geofence's UUID by heart, and no one
+ * should have to type latitude and longitude to point at their own house.
+ *
+ * A picker's option set is open-ended and lives outside the node (in a user
+ * library or on the device), which is exactly what distinguishes this from an
+ * enum: [Wired] and enum options are fixed at declaration time, a picker's are
+ * not.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class Picker(val kind: PickerKind)
+
+/**
+ * The chooser a [Picker] property opens, and therefore what its stored string
+ * identifies. Each entry needs a renderer in the config form; adding one
+ * without it fails the form's exhaustive `when`.
+ */
+enum class PickerKind {
+    /**
+     * A [com.example.ottomatic.domain.model.GeofencePlace] id, chosen from the
+     * place library and editable on a map.
+     */
+    GEOFENCE_PLACE,
+}
+
+/**
  * Also exposes the property as a DATA input port of the same name, so its value
  * can be wired from upstream data instead of typed in the form.
  *

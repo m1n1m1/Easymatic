@@ -12,6 +12,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,8 +28,11 @@ import androidx.navigation.navArgument
 import com.example.ottomatic.core.permissions.PermissionStatus
 import com.example.ottomatic.core.permissions.Permissions
 import com.example.ottomatic.data.BootFailureStore
+import com.example.ottomatic.data.location.AndroidLocationLookup
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
 import com.example.ottomatic.engine.service.MacroEngineService
+import com.example.ottomatic.feature.geofence.GeofencePlacesScreen
+import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
 import com.example.ottomatic.feature.grapheditor.GraphEditorScreen
 import com.example.ottomatic.feature.grapheditor.GraphEditorViewModel
 import com.example.ottomatic.feature.workflowlist.WorkflowListScreen
@@ -41,6 +45,17 @@ class MainActivity : ComponentActivity() {
     private val listViewModel: WorkflowListViewModel by viewModels {
         WorkflowListViewModel.factory(
             repository = ServiceLocator.workflowRepository,
+            appContext = applicationContext,
+        )
+    }
+
+    // Activity-scoped, unlike the graph editor's: the place library is global,
+    // so the standalone Geofences screen and every workflow's config picker
+    // must see the same instance and the same in-flight edits.
+    private val geofencePlacesViewModel: GeofencePlacesViewModel by viewModels {
+        GeofencePlacesViewModel.factory(
+            repository = ServiceLocator.geofencePlaceRepository,
+            locationLookup = AndroidLocationLookup(applicationContext),
             appContext = applicationContext,
         )
     }
@@ -96,62 +111,76 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             OttomaticTheme(darkTheme = true, dynamicColor = false) {
-                val navController = rememberNavController()
-                NavHost(
-                    navController = navController,
-                    startDestination = ROUTE_WORKFLOW_LIST,
-                    // Mid-slide neither screen covers the full width; the gap shows
-                    // the window background, which Theme.Ottomatic pins to the
-                    // canvas colour so nothing flashes at the edge.
-                    enterTransition = { slideIntoContainer(SlideDirection.Left) },
-                    exitTransition = { slideOutOfContainer(SlideDirection.Left) },
-                    popEnterTransition = { slideIntoContainer(SlideDirection.Right) },
-                    popExitTransition = { slideOutOfContainer(SlideDirection.Right) },
-                ) {
-                    composable(ROUTE_WORKFLOW_LIST) {
-                        WorkflowListScreen(
-                            viewModel = listViewModel,
-                            onOpenWorkflow = { id -> navController.navigate("$ROUTE_GRAPH_EDITOR/$id") },
-                        )
-                    }
-                    composable(
-                        route = "$ROUTE_GRAPH_EDITOR/{$ARG_WORKFLOW_ID}",
-                        arguments = listOf(navArgument(ARG_WORKFLOW_ID) { type = NavType.StringType }),
-                    ) { backStackEntry ->
-                        val workflowId = backStackEntry.arguments?.getString(ARG_WORKFLOW_ID).orEmpty()
-                        if (workflowId.isBlank()) {
-                            // No id to edit: an editor bound to "" would read and write
-                            // workflows/.json. Bounce back to the list instead.
-                            LaunchedEffect(Unit) { navController.popBackStack() }
-                            return@composable
-                        }
-                        // Scoped to the NavBackStackEntry (the default owner for
-                        // viewModel() inside composable {}), NOT the Activity: each
-                        // workflow gets its own instance, cleared when the entry is
-                        // popped. An activity-scoped ViewModel would be created once
-                        // and keep serving the first workflow's graph — and save it
-                        // over every workflow opened afterwards.
-                        val editorViewModel: GraphEditorViewModel = viewModel(
-                            key = workflowId,
-                            factory = GraphEditorViewModel.factory(
-                                repository = ServiceLocator.workflowRepository,
-                                triggerHost = ServiceLocator.triggerHost,
-                                executionContext = ServiceLocator.executionContext,
-                                appContext = applicationContext,
-                                workflowId = workflowId,
-                            ),
-                        )
-                        GraphEditorScreen(
-                            viewModel = editorViewModel,
-                            showBatteryPrompt = showBatteryPrompt,
-                            onDismissBatteryPrompt = { showBatteryPrompt = false },
-                            onConfirmBatteryPrompt = {
-                                showBatteryPrompt = false
-                                requestBatteryOptimizationExemption()
-                            },
-                        )
-                    }
+                AppNavHost()
+            }
+        }
+    }
+
+    /** The app's three destinations: workflow list, geofence library, graph editor. */
+    @Composable
+    private fun AppNavHost() {
+        val navController = rememberNavController()
+        NavHost(
+            navController = navController,
+            startDestination = ROUTE_WORKFLOW_LIST,
+            // Mid-slide neither screen covers the full width; the gap shows
+            // the window background, which Theme.Ottomatic pins to the
+            // canvas colour so nothing flashes at the edge.
+            enterTransition = { slideIntoContainer(SlideDirection.Left) },
+            exitTransition = { slideOutOfContainer(SlideDirection.Left) },
+            popEnterTransition = { slideIntoContainer(SlideDirection.Right) },
+            popExitTransition = { slideOutOfContainer(SlideDirection.Right) },
+        ) {
+            composable(ROUTE_WORKFLOW_LIST) {
+                WorkflowListScreen(
+                    viewModel = listViewModel,
+                    onOpenWorkflow = { id -> navController.navigate("$ROUTE_GRAPH_EDITOR/$id") },
+                    onOpenGeofences = { navController.navigate(ROUTE_GEOFENCES) },
+                )
+            }
+            composable(ROUTE_GEOFENCES) {
+                GeofencePlacesScreen(
+                    viewModel = geofencePlacesViewModel,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(
+                route = "$ROUTE_GRAPH_EDITOR/{$ARG_WORKFLOW_ID}",
+                arguments = listOf(navArgument(ARG_WORKFLOW_ID) { type = NavType.StringType }),
+            ) { backStackEntry ->
+                val workflowId = backStackEntry.arguments?.getString(ARG_WORKFLOW_ID).orEmpty()
+                if (workflowId.isBlank()) {
+                    // No id to edit: an editor bound to "" would read and write
+                    // workflows/.json. Bounce back to the list instead.
+                    LaunchedEffect(Unit) { navController.popBackStack() }
+                    return@composable
                 }
+                // Scoped to the NavBackStackEntry (the default owner for
+                // viewModel() inside composable {}), NOT the Activity: each
+                // workflow gets its own instance, cleared when the entry is
+                // popped. An activity-scoped ViewModel would be created once
+                // and keep serving the first workflow's graph — and save it
+                // over every workflow opened afterwards.
+                val editorViewModel: GraphEditorViewModel = viewModel(
+                    key = workflowId,
+                    factory = GraphEditorViewModel.factory(
+                        repository = ServiceLocator.workflowRepository,
+                        triggerHost = ServiceLocator.triggerHost,
+                        executionContext = ServiceLocator.executionContext,
+                        appContext = applicationContext,
+                        workflowId = workflowId,
+                    ),
+                )
+                GraphEditorScreen(
+                    viewModel = editorViewModel,
+                    geofencePlaces = geofencePlacesViewModel,
+                    showBatteryPrompt = showBatteryPrompt,
+                    onDismissBatteryPrompt = { showBatteryPrompt = false },
+                    onConfirmBatteryPrompt = {
+                        showBatteryPrompt = false
+                        requestBatteryOptimizationExemption()
+                    },
+                )
             }
         }
     }
@@ -218,6 +247,7 @@ class MainActivity : ComponentActivity() {
     private companion object {
         const val ROUTE_WORKFLOW_LIST = "workflowList"
         const val ROUTE_GRAPH_EDITOR = "graphEditor"
+        const val ROUTE_GEOFENCES = "geofences"
         const val ARG_WORKFLOW_ID = "workflowId"
     }
 }

@@ -37,6 +37,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,14 +60,38 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.effectiveConfigSchema
 import com.example.ottomatic.domain.registry.effectiveInputPorts
+import com.example.ottomatic.engine.trigger.GeofenceTrigger
+import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
+import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
 import kotlin.math.roundToInt
 
 @Composable
 fun GraphEditorScreen(
     viewModel: GraphEditorViewModel,
+    geofencePlaces: GeofencePlacesViewModel,
     showBatteryPrompt: Boolean = false,
     onDismissBatteryPrompt: () -> Unit = {},
     onConfirmBatteryPrompt: () -> Unit = {},
+) {
+    // Published rather than passed down: the `@Picker` config field and the node
+    // cards both need the place library, and neither is reachable from here
+    // without threading a geofence-shaped parameter through generic code.
+    CompositionLocalProvider(LocalGeofencePlaces provides geofencePlaces) {
+        GraphEditorContent(
+            viewModel = viewModel,
+            showBatteryPrompt = showBatteryPrompt,
+            onDismissBatteryPrompt = onDismissBatteryPrompt,
+            onConfirmBatteryPrompt = onConfirmBatteryPrompt,
+        )
+    }
+}
+
+@Composable
+private fun GraphEditorContent(
+    viewModel: GraphEditorViewModel,
+    showBatteryPrompt: Boolean,
+    onDismissBatteryPrompt: () -> Unit,
+    onConfirmBatteryPrompt: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
     val density = LocalDensity.current.density
@@ -466,7 +491,9 @@ private fun NodeConfigOverlay(
                 color = EditorColors.textSecondary,
                 fontSize = 12.sp,
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+            NodePermissionNotice(definition = definition)
+            Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
                 value = node.name,
                 onValueChange = onNameChange,
@@ -492,6 +519,7 @@ private fun NodeConfigOverlay(
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                 }
+                ConfigFormHint(node)
             }
             Spacer(modifier = Modifier.height(6.dp))
             ConditionsSection(

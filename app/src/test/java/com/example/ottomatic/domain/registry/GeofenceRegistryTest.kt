@@ -2,7 +2,9 @@ package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.core.permissions.Permissions
 import com.example.ottomatic.domain.model.Direction
+import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.schema.ItemSchema
@@ -11,6 +13,7 @@ import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.GeofenceTrigger
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -48,12 +51,42 @@ class GeofenceRegistryTest {
         val schema = ConfigSchemaRegistry.byId(GeofenceTrigger.TYPE_ID)
         assertNotNull("trigger.geofence must have a config schema", schema)
         val byKey = schema!!.fields.associateBy { it.key }
-        assertNotNull(byKey[ConfigKey("latitude")])
-        assertNotNull(byKey[ConfigKey("longitude")])
-        assertNotNull(byKey[ConfigKey("radiusMeters")])
+        assertNotNull(byKey[ConfigKey("placeId")])
         assertNotNull(byKey[ConfigKey("dwellDelayMs")])
-        assertEquals("100", byKey[ConfigKey("radiusMeters")]?.defaultValue)
         assertEquals("30000", byKey[ConfigKey("dwellDelayMs")]?.defaultValue)
+        // Coordinates and radius moved to the shared place library; a trigger
+        // that still declared them would be storing a second copy that could
+        // drift from the place it points at.
+        assertNull(byKey[ConfigKey("latitude")])
+        assertNull(byKey[ConfigKey("longitude")])
+        assertNull(byKey[ConfigKey("radiusMeters")])
+    }
+
+    @Test
+    fun `place is chosen with a picker rather than typed`() {
+        val schema = ConfigSchemaRegistry.byId(GeofenceTrigger.TYPE_ID)!!
+        val placeField = schema.fields.first { it.key == ConfigKey("placeId") }
+        assertEquals(ConfigFieldType.PICKER(PickerKind.GEOFENCE_PLACE), placeField.type)
+    }
+
+    @Test
+    fun `dwell delay is only shown when dwell is armed`() {
+        val schema = ConfigSchemaRegistry.byId(GeofenceTrigger.TYPE_ID)!!
+        val rule = schema.fields.first { it.key == ConfigKey("dwellDelayMs") }.visibleWhen
+        assertEquals(VisibilityRule(ConfigKey("onDwell"), setOf("true")), rule)
+    }
+
+    @Test
+    fun `the trigger declares the location permissions it cannot fire without`() {
+        val def = NodeTypeRegistry.byId(GeofenceTrigger.TYPE_ID)!!
+        val declared = def.permissionRequirements.mapNotNull { it.manifestPermission }.toSet()
+        assertEquals(
+            setOf(
+                Permissions.ACCESS_FINE_LOCATION.manifest,
+                Permissions.ACCESS_BACKGROUND_LOCATION.manifest,
+            ),
+            declared,
+        )
     }
 
     @Test

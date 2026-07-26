@@ -12,6 +12,8 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.data.GeofencePlaceRepository
+import com.example.ottomatic.domain.model.GeofencePlace
 import com.example.ottomatic.engine.trigger.BatteryDirection
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.ScheduleHandle
@@ -25,9 +27,15 @@ import java.util.concurrent.TimeUnit
 /**
  * Android implementation of [TriggerHost]. Supplies real system streams and
  * arms [ScheduleWorker] via WorkManager, and geofences via Play Services.
+ *
+ * [geofencePlaces] is the shared place library the geofence trigger resolves
+ * its configured place against; it is read synchronously from the repository's
+ * in-memory cache, because arming happens outside a suspending context.
  */
+@Suppress("TooManyFunctions") // One override per TriggerHost capability; the interface sets the count.
 class AndroidTriggerHost(
     context: Context,
+    private val geofencePlaces: GeofencePlaceRepository,
 ) : TriggerHost {
 
     private val appContext = context.applicationContext
@@ -100,6 +108,8 @@ class AndroidTriggerHost(
         workManager.enqueueUniquePeriodicWork(workName, ExistingPeriodicWorkPolicy.UPDATE, request)
         return ScheduleHandle { workManager.cancelUniqueWork(workName) }
     }
+
+    override fun geofencePlace(id: String): GeofencePlace? = geofencePlaces.get(id)
 
     @SuppressLint("MissingPermission")
     override fun armGeofence(

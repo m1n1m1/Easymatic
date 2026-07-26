@@ -10,6 +10,8 @@ import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
+import com.example.ottomatic.domain.model.config.Picker
+import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.schema.Item
@@ -125,7 +127,12 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                 field = ConfigField(
                     key = ConfigKey(key),
                     label = annotations.labelOr(key),
-                    type = formTypeOf(element, multiline = annotations.any { it is Multiline }, key = key),
+                    type = formTypeOf(
+                        element = element,
+                        multiline = annotations.any { it is Multiline },
+                        picker = annotations.filterIsInstance<Picker>().firstOrNull()?.kind,
+                        key = key,
+                    ),
                     defaultValue = defaultValues[key].orEmpty(),
                     visibleWhen = annotations.visibilityRule(),
                 ),
@@ -139,11 +146,24 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         return encoded.mapValues { (_, value) -> jsonElementToString(value) }
     }
 
-    private fun formTypeOf(element: SerialDescriptor, multiline: Boolean, key: String): ConfigFieldType<*> =
-        when (element.kind) {
+    private fun formTypeOf(
+        element: SerialDescriptor,
+        multiline: Boolean,
+        picker: PickerKind?,
+        key: String,
+    ): ConfigFieldType<*> {
+        check(picker == null || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @Picker but is a " +
+                "${element.kind}; a picker stores the chosen thing's identifier, so it must be a String"
+        }
+        return when (element.kind) {
             SerialKind.ENUM -> ConfigFieldType.ENUM(enumOptions(element))
-            PrimitiveKind.STRING, PrimitiveKind.CHAR ->
-                if (multiline) ConfigFieldType.MULTILINE else ConfigFieldType.STR
+            PrimitiveKind.STRING, PrimitiveKind.CHAR -> when {
+                // A picker still stores a string; it only replaces the widget.
+                picker != null -> ConfigFieldType.PICKER(picker)
+                multiline -> ConfigFieldType.MULTILINE
+                else -> ConfigFieldType.STR
+            }
             PrimitiveKind.INT, PrimitiveKind.LONG, PrimitiveKind.SHORT, PrimitiveKind.BYTE -> ConfigFieldType.INT
             PrimitiveKind.BOOLEAN -> ConfigFieldType.BOOL
             PrimitiveKind.DOUBLE, PrimitiveKind.FLOAT -> ConfigFieldType.DOUBLE
@@ -152,6 +172,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                     "in a config form; use a String, a number, a Boolean or an enum",
             )
         }
+    }
 
     private fun enumOptions(element: SerialDescriptor): List<ConfigOption> {
         val options = (0 until element.elementsCount).map { index ->

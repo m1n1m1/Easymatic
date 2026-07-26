@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -21,6 +23,13 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // The Maps SDK reads its key from a manifest meta-data entry, so it has
+        // to be baked in at build time. It comes from local.properties, which is
+        // gitignored, so the key never enters the repository. Missing key =
+        // empty placeholder: everything still builds and runs, the map just
+        // renders blank tiles. See README for how to create one.
+        manifestPlaceholders["MAPS_API_KEY"] = localProperty("MAPS_API_KEY")
     }
 
     buildTypes {
@@ -63,6 +72,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.play.services.location)
+    implementation(libs.play.services.maps)
+    implementation(libs.maps.compose)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
@@ -75,4 +86,19 @@ dependencies {
 detekt {
     config.setFrom(files("$rootDir/detekt.yml"))
     buildUponDefaultConfig = true
+}
+
+/**
+ * Reads [key] from the gitignored `local.properties`, falling back to an
+ * environment variable of the same name (for CI, which has no such file) and
+ * then to an empty string, so a fresh clone builds without any local setup.
+ */
+fun localProperty(key: String): String {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        val properties = Properties()
+        file.inputStream().use(properties::load)
+        properties.getProperty(key)?.let { return it }
+    }
+    return System.getenv(key).orEmpty()
 }

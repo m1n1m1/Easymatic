@@ -101,14 +101,28 @@ class NodeDeclarationContractTest {
                     "${schema.typeId}.${field.key}: @VisibleWhen names unknown key '${rule.key.value}'",
                     controlling != null,
                 )
-                val values = (controlling!!.type as? ConfigFieldType.ENUM)
-                    ?.options.orEmpty().map { it.value }.toSet()
+                val values = allowedValues(controlling!!.type)
                 assertTrue(
                     "${schema.typeId}.${field.key}: @VisibleWhen values ${rule.values} are not all in $values",
-                    values.isEmpty() || values.containsAll(rule.values),
+                    values == null || values.containsAll(rule.values),
                 )
             }
         }
+    }
+
+    /**
+     * The values a field of [type] can actually hold, or null for a type whose
+     * value set is open (a number, free text, a picked identifier) and so
+     * cannot be checked.
+     *
+     * A Boolean's set is checkable even though it has no declared options —
+     * `@VisibleWhen("onDwell", "yes")` would otherwise hide the controlled
+     * field forever, because a switch only ever stores "true" or "false".
+     */
+    private fun allowedValues(type: ConfigFieldType<*>): Set<String>? = when (type) {
+        is ConfigFieldType.ENUM -> type.options.map { it.value }.toSet()
+        ConfigFieldType.BOOL -> setOf("true", "false")
+        else -> null
     }
 
     @Test

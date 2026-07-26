@@ -2,6 +2,7 @@ package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.domain.model.config.PickerKind
 
 /**
  * Type of a configurable field on a node, as rendered by the schema-driven
@@ -31,6 +32,13 @@ sealed interface ConfigFieldType<out T> {
 
     /** One of [options], stored as the option's [ConfigOption.value]. */
     data class ENUM(val options: List<ConfigOption>) : ConfigFieldType<String>
+
+    /**
+     * An identifier chosen from a dedicated picker of [kind] rather than typed
+     * (declared with `@Picker`). Stored as a plain string, like [STR]; the
+     * form resolves it to a human name for display.
+     */
+    data class PICKER(val kind: PickerKind) : ConfigFieldType<String>
 }
 
 /**

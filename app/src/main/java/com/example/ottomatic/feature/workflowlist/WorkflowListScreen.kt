@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -51,6 +52,7 @@ import com.example.ottomatic.feature.grapheditor.EditorColors
 fun WorkflowListScreen(
     viewModel: WorkflowListViewModel,
     onOpenWorkflow: (String) -> Unit,
+    onOpenGeofences: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -88,7 +90,18 @@ fun WorkflowListScreen(
                         color = EditorColors.textPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.weight(1f),
                     )
+                    // Places are edited independently of any macro, so the
+                    // library needs a way in that does not start with "open a
+                    // workflow that happens to use one".
+                    IconButton(onClick = onOpenGeofences) {
+                        Icon(
+                            imageVector = Icons.Filled.Place,
+                            contentDescription = "Geofences",
+                            tint = EditorColors.textPrimary,
+                        )
+                    }
                 }
             }
 

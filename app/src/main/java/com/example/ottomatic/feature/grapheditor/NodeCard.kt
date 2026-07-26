@@ -49,6 +49,8 @@ import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.engine.trigger.GeofenceTrigger
+import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
 import com.example.ottomatic.domain.registry.effectiveInputPorts
 import com.example.ottomatic.domain.registry.effectiveOutputPorts
 import kotlin.math.roundToInt
@@ -183,15 +185,36 @@ private fun NodeBody(
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = kindLabel(definition.kind),
+                        text = nodeSubtitle(node, definition),
                         color = EditorColors.textSecondary,
                         fontSize = 11.sp,
                         maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                     ConditionBadge(count = node.conditions.size)
                 }
             }
         }
+    }
+}
+
+/**
+ * The line under a node's name. Normally its kind ("Trigger", "Action"), but a
+ * geofence trigger names the place it watches instead.
+ *
+ * That node is the one case where the kind word carries no information the icon
+ * and accent colour have not already given, while *which place* is the entire
+ * difference between two otherwise identical cards — and, unlike coordinates,
+ * a place name fits.
+ */
+@Composable
+private fun nodeSubtitle(node: WorkflowNode, definition: NodeTypeDefinition): String {
+    if (node.typeId != GeofenceTrigger.TYPE_ID) return kindLabel(definition.kind)
+    val placeId = node.config[ConfigKey("placeId")].orEmpty()
+    val library = LocalGeofencePlaces.current
+    return when {
+        placeId.isBlank() -> "No place selected"
+        else -> library?.placeById(placeId)?.name ?: "Place missing"
     }
 }
 

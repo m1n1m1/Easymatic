@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine
 
+import com.example.ottomatic.core.permissions.PermissionRequirement
 import com.example.ottomatic.domain.model.DataOut
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
@@ -97,6 +98,7 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
     val icon: NodeIcon,
     val schema: NodeSchema<C>,
     val output: DataOut<O>?,
+    val permissions: List<PermissionRequirement> = emptyList(),
 ) {
     /** Static metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
     val nodeType: NodeTypeDefinition
@@ -108,6 +110,7 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
             category = category,
             ports = listOf(execOut()) + listOfNotNull(output?.port),
             icon = icon,
+            permissionRequirements = permissions,
         )
 
     /** Static config-form view for [com.example.ottomatic.domain.registry.ConfigSchemaRegistry]. */
@@ -270,7 +273,13 @@ inline fun <reified I : Any> adaptiveNode(
     hasDynamicPorts = true,
 )
 
-/** Declares a trigger that emits a typed data item on [output] when it fires. */
+/**
+ * Declares a trigger that emits a typed data item on [output] when it fires.
+ *
+ * [permissions] are the runtime grants the trigger cannot fire without. They
+ * are declared here, next to everything else about the node, so the config form
+ * can warn about a missing one instead of the trigger simply never firing.
+ */
 @Suppress("LongParameterList")
 inline fun <reified C : Any, O : Any> triggerNode(
     typeId: String,
@@ -279,6 +288,7 @@ inline fun <reified C : Any, O : Any> triggerNode(
     category: NodeCategory,
     icon: NodeIcon,
     output: DataOut<O>,
+    permissions: List<PermissionRequirement> = emptyList(),
 ): TriggerNodeDefinition<C, O> = TriggerNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -287,6 +297,7 @@ inline fun <reified C : Any, O : Any> triggerNode(
     icon = icon,
     schema = nodeSchema<C>(),
     output = output,
+    permissions = permissions,
 )
 
 /** Declares a trigger that only pulses execution, carrying no data. */

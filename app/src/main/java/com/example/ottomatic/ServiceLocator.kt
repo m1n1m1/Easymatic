@@ -5,6 +5,7 @@ import com.example.ottomatic.core.permissions.PermissionChecker
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.SystemServices
+import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
 import com.example.ottomatic.data.service.AndroidDeviceState
@@ -23,6 +24,10 @@ import com.example.ottomatic.engine.trigger.TriggerHost
 object ServiceLocator {
 
     lateinit var workflowRepository: WorkflowRepository
+        private set
+
+    /** The geofence place library, shared by the editor UI and the trigger host. */
+    lateinit var geofencePlaceRepository: GeofencePlaceRepository
         private set
 
     lateinit var systemServices: SystemServices
@@ -51,6 +56,7 @@ object ServiceLocator {
     fun init(context: Context) {
         val appContext = context.applicationContext
         workflowRepository = WorkflowRepository(appContext.filesDir)
+        geofencePlaceRepository = GeofencePlaceRepository(appContext.filesDir)
         systemServices = AndroidSystemServices(appContext)
         deviceState = AndroidDeviceState(appContext)
         macroControl = AndroidMacroControl(appContext)
@@ -60,7 +66,7 @@ object ServiceLocator {
             macroControl = macroControl,
             logger = { msg -> android.util.Log.i("Ottomatic", msg) },
         )
-        triggerHost = AndroidTriggerHost(appContext)
+        triggerHost = AndroidTriggerHost(appContext, geofencePlaceRepository)
         permissionChecker = AndroidPermissionChecker(appContext)
     }
 }

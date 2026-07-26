@@ -15,6 +15,16 @@ Always use the Gradle wrapper: `.\gradlew.bat <task>` (Windows).
 
 Configuration cache is enabled. If builds behave strangely after structural changes, add `--no-configuration-cache`.
 
+### Google Maps API key
+
+The geofence place editor renders a Google map. It needs a key, which is read from the gitignored `local.properties` and injected as the `MAPS_API_KEY` manifest placeholder:
+
+```
+MAPS_API_KEY=AIza…
+```
+
+Create it in Google Cloud Console with **Maps SDK for Android** enabled. Without a key everything still builds and runs — the map area just renders blank tiles, and every other control in the editor keeps working.
+
 ## Architecture
 
 Ottomatic is an Android automation app built on a **node-based workflow graph**. Users wire together Triggers (event sources) and Actions (handlers) in a visual editor; a foreground service executes them in the background.
@@ -40,7 +50,13 @@ Every node (Trigger or Action) is declared **exactly once** in its own file unde
 
 The **only** registration step is adding one line to `ActionRegistry` or `TriggerRegistry` (in `domain/registry/`). `NodeTypeRegistry` and `ConfigSchemaRegistry` are **derived views** — never add entries to them directly.
 
-Config is declared on a single `@Serializable` data class per node, with annotations (`@Label`, `@Wired`, `@Multiline`) controlling form rendering and data input wiring. The framework derives config decoding, form schema, and data input ports from this class.
+Config is declared on a single `@Serializable` data class per node, with annotations (`@Label`, `@Wired`, `@Multiline`, `@VisibleWhen`, `@Picker`) controlling form rendering and data input wiring. The framework derives config decoding, form schema, and data input ports from this class.
+
+`@Picker(PickerKind.X)` marks a `String` property whose value is an identifier chosen from a dedicated chooser rather than typed — currently a geofence place id. Adding a `PickerKind` requires a matching branch in `ConfigFieldEditor`'s exhaustive `when`.
+
+### Geofence places
+
+Geofences are a **shared library**, not per-node coordinates: `GeofencePlace` records live in `{filesDir}/places/geofences.json` via `GeofencePlaceRepository`, and `trigger.geofence` stores only a place id. The trigger resolves it at activation through `TriggerHost.geofencePlace(id)`. Because a trigger reads its place only when arming, edits to a place fire `MacroEngineService.ACTION_REARM_ALL` so live macros pick up the new location.
 
 ### Key types
 
