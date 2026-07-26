@@ -8,13 +8,17 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -30,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,8 +46,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeKind
@@ -50,10 +57,21 @@ import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 
 /**
+ * Below this many matching nodes the whole palette opens expanded: a list this
+ * short is its own overview, so collapsing it would only cost a tap.
+ */
+private const val AUTO_EXPAND_THRESHOLD = 8
+
+private val CARD_SHAPE = RoundedCornerShape(18.dp)
+
+/**
  * The node palette, shown either as the full catalogue (the `+` FAB) or
  * restricted to the types that can connect to a dragged port ([restrictedTo],
  * with [title] naming the origin). A restricted palette offers a "Show all"
  * escape hatch that widens it to the full catalogue.
+ *
+ * Each node kind is one accent-tinted card holding its categories, which start
+ * collapsed — see [AUTO_EXPAND_THRESHOLD] for when they do not.
  */
 @Composable
 @Suppress("LongMethod") // Single declarative surface: search field + grouped, collapsible list.
@@ -64,7 +82,7 @@ fun NodePaletteOverlay(
     restrictedTo: Set<NodeTypeId>? = null,
 ) {
     var query by remember { mutableStateOf("") }
-    var collapsedCategories by remember { mutableStateOf(emptySet<NodeCategory>()) }
+    var expandedCategories by remember { mutableStateOf(emptySet<NodeCategory>()) }
     var showAll by remember { mutableStateOf(false) }
     val restriction = restrictedTo?.takeUnless { showAll }
     val searchTerm = query.trim()
@@ -79,6 +97,9 @@ fun NodePaletteOverlay(
                 definition.category.displayName,
             ).any { it.contains(searchTerm, ignoreCase = true) }
         }
+    // Searching and short result sets expand everything without touching
+    // [expandedCategories], so clearing the search restores what the user opened.
+    val expandAll = searching || matchingDefinitions.size <= AUTO_EXPAND_THRESHOLD
 
     val listState = rememberLazyListState()
     // Picking closes the palette too, so it goes through the same exit
@@ -104,25 +125,14 @@ fun NodePaletteOverlay(
                 .imePadding()
                 .navigationBarsPadding(),
         ) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = { query = it },
-                label = { Text("Search nodes") },
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-                trailingIcon = {
-                    if (searching) {
-                        IconButton(onClick = { query = "" }) {
-                            Icon(Icons.Filled.Close, contentDescription = "Clear search")
-                        }
-                    }
-                },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
+            PaletteSearchField(
+                query = query,
+                onQueryChange = { query = it },
+                onClear = { query = "" },
             )
             LazyColumn(
                 state = listState,
+                contentPadding = PaddingValues(bottom = 16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
@@ -136,7 +146,7 @@ fun NodePaletteOverlay(
                                 "No nodes match your search"
                             },
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = EditorColors.textSecondary,
                             modifier = Modifier.padding(20.dp),
                         )
                     }
@@ -147,24 +157,21 @@ fun NodePaletteOverlay(
                         }.filter { (_, definitions) -> definitions.isNotEmpty() }
                         if (categoryGroups.isNotEmpty()) {
                             item(key = "kind-${kind.name}") {
-                                PaletteHeader(kindLabel(kind) + "s")
-                            }
-                            categoryGroups.forEach { (category, definitions) ->
-                                item(key = "category-${category.name}") {
-                                    PaletteCategory(
-                                        category = category,
-                                        definitions = definitions,
-                                        isCollapsed = !searching && category in collapsedCategories,
-                                        onToggle = {
-                                            collapsedCategories = if (category in collapsedCategories) {
-                                                collapsedCategories - category
-                                            } else {
-                                                collapsedCategories + category
-                                            }
-                                        },
-                                        onPick = pick,
-                                    )
-                                }
+                                PaletteKindCard(
+                                    kind = kind,
+                                    categoryGroups = categoryGroups,
+                                    isExpanded = { category ->
+                                        expandAll || category in expandedCategories
+                                    },
+                                    onToggle = { category ->
+                                        expandedCategories = if (category in expandedCategories) {
+                                            expandedCategories - category
+                                        } else {
+                                            expandedCategories + category
+                                        }
+                                    },
+                                    onPick = pick,
+                                )
                             }
                         }
                     }
@@ -174,86 +181,207 @@ fun NodePaletteOverlay(
     }
 }
 
+/** Search field, themed to the overlay's fixed dark chrome rather than the app's dynamic colors. */
+@Composable
+private fun PaletteSearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onClear: () -> Unit,
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        label = { Text("Search nodes") },
+        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = onClear) {
+                    Icon(Icons.Filled.Close, contentDescription = "Clear search")
+                }
+            }
+        },
+        singleLine = true,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = EditorColors.textPrimary,
+            unfocusedTextColor = EditorColors.textPrimary,
+            cursorColor = EditorColors.portSnap,
+            focusedBorderColor = EditorColors.portSnap,
+            unfocusedBorderColor = EditorColors.chromeBorder,
+            focusedLabelColor = EditorColors.portSnap,
+            unfocusedLabelColor = EditorColors.textSecondary,
+            focusedLeadingIconColor = EditorColors.textSecondary,
+            unfocusedLeadingIconColor = EditorColors.textSecondary,
+            focusedTrailingIconColor = EditorColors.textSecondary,
+            unfocusedTrailingIconColor = EditorColors.textSecondary,
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+    )
+}
+
+/**
+ * One node kind as a tinted card: its accent washes the background, border,
+ * header glyph and count, so Triggers / Actions / Conditions read as three
+ * distinct zones rather than three headings.
+ */
+@Composable
+private fun PaletteKindCard(
+    kind: NodeKind,
+    categoryGroups: List<Pair<NodeCategory, List<NodeTypeDefinition>>>,
+    isExpanded: (NodeCategory) -> Boolean,
+    onToggle: (NodeCategory) -> Unit,
+    onPick: (NodeTypeDefinition) -> Unit,
+) {
+    val accent = accentColor(kind)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .clip(CARD_SHAPE)
+            .background(accent.copy(alpha = 0.06f))
+            .border(1.dp, accent.copy(alpha = 0.30f), CARD_SHAPE),
+    ) {
+        PaletteKindHeader(
+            kind = kind,
+            accent = accent,
+            count = categoryGroups.sumOf { (_, definitions) -> definitions.size },
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(accent.copy(alpha = 0.16f)),
+        )
+        categoryGroups.forEach { (category, definitions) ->
+            PaletteCategory(
+                category = category,
+                definitions = definitions,
+                accent = accent,
+                isExpanded = isExpanded(category),
+                onToggle = { onToggle(category) },
+                onPick = onPick,
+            )
+        }
+    }
+}
+
+@Composable
+private fun PaletteKindHeader(kind: NodeKind, accent: Color, count: Int) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(26.dp)
+                .clip(RoundedCornerShape(9.dp))
+                .background(accent.copy(alpha = 0.20f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = kindIcon(kind),
+                contentDescription = null,
+                tint = accent,
+                modifier = Modifier.size(16.dp),
+            )
+        }
+        Text(
+            text = (kindLabel(kind) + "s").uppercase(),
+            style = MaterialTheme.typography.labelLarge,
+            color = accent,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Text(
+            text = count.toString(),
+            style = MaterialTheme.typography.labelSmall,
+            color = accent,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier
+                .clip(RoundedCornerShape(50))
+                .background(accent.copy(alpha = 0.16f))
+                .padding(horizontal = 8.dp, vertical = 3.dp),
+        )
+    }
+}
+
 /** One collapsible category group with its node rows. */
 @Composable
 private fun PaletteCategory(
     category: NodeCategory,
     definitions: List<NodeTypeDefinition>,
-    isCollapsed: Boolean,
+    accent: Color,
+    isExpanded: Boolean,
     onToggle: () -> Unit,
     onPick: (NodeTypeDefinition) -> Unit,
 ) {
     val chevronRotation by animateFloatAsState(
-        targetValue = if (isCollapsed) 0f else 180f,
+        targetValue = if (isExpanded) 180f else 0f,
         animationSpec = tween(220),
         label = "chevronRotation",
     )
+    // The only moving color cue: an open category tints towards its kind.
+    val trailingColor = if (isExpanded) accent else EditorColors.textSecondary
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onToggle)
-            .padding(start = 20.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
+            .padding(start = 16.dp, end = 12.dp, top = 10.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = category.displayName,
             style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = EditorColors.textPrimary,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.weight(1f),
         )
         Text(
             text = definitions.size.toString(),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = trailingColor,
             modifier = Modifier.padding(end = 8.dp),
         )
         Icon(
             imageVector = Icons.Filled.ExpandMore,
-            contentDescription = if (isCollapsed) {
-                "Expand ${category.displayName}"
-            } else {
+            contentDescription = if (isExpanded) {
                 "Collapse ${category.displayName}"
+            } else {
+                "Expand ${category.displayName}"
             },
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            tint = trailingColor,
             modifier = Modifier.rotate(chevronRotation),
         )
     }
     AnimatedVisibility(
-        visible = !isCollapsed,
+        visible = isExpanded,
         enter = expandVertically(tween(220)) + fadeIn(tween(180)),
         exit = shrinkVertically(tween(220)) + fadeOut(tween(180)),
     ) {
         Column {
             definitions.forEach { definition ->
-                PaletteRow(definition, onPick)
+                PaletteRow(definition, accent, onPick)
             }
         }
     }
 }
 
 @Composable
-private fun PaletteHeader(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(start = 20.dp, top = 16.dp, bottom = 4.dp),
-    )
-}
-
-@Composable
 private fun PaletteRow(
     definition: NodeTypeDefinition,
+    accent: Color,
     onPick: (NodeTypeDefinition) -> Unit,
 ) {
-    val accent = accentColor(definition.kind)
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onPick(definition) }
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
@@ -275,13 +403,13 @@ private fun PaletteRow(
             Text(
                 text = definition.displayName,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = EditorColors.textPrimary,
                 fontWeight = FontWeight.Medium,
             )
             Text(
                 text = definition.description,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = EditorColors.textSecondary,
             )
         }
     }

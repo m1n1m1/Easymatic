@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.DoNotDisturb
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Sms
@@ -81,6 +82,13 @@ fun kindLabel(kind: NodeKind): String = when (kind) {
     NodeKind.TRIGGER -> "Trigger"
     NodeKind.ACTION -> "Action"
     NodeKind.CONDITION -> "Condition"
+}
+
+/** The glyph that stands for a whole node kind, used on the palette's kind cards. */
+fun kindIcon(kind: NodeKind): ImageVector = when (kind) {
+    NodeKind.TRIGGER -> Icons.Filled.Bolt
+    NodeKind.ACTION -> Icons.Filled.PlayArrow
+    NodeKind.CONDITION -> Icons.AutoMirrored.Filled.CallSplit
 }
 
 /**
