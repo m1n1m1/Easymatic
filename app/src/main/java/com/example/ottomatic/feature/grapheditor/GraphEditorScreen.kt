@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,11 +29,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -404,6 +398,31 @@ private fun originLabel(workflow: com.example.ottomatic.domain.model.Workflow, r
     return "$nodeName › $portLabel"
 }
 
+/** The config keys a (possibly absent) schema renders a field for. */
+private fun schemaKeys(
+    schema: com.example.ottomatic.domain.registry.NodeConfigSchema?,
+): Set<ConfigKey> = schema?.fields?.map { it.key }?.toSet().orEmpty()
+
+/**
+ * "Node › Port" for whatever feeds [port] on [nodeId], or `null` when nothing is
+ * connected there yet. Data inputs accept a single edge, so the first is the one.
+ */
+private fun dataSourceLabel(
+    workflow: com.example.ottomatic.domain.model.Workflow,
+    nodeId: NodeId,
+    port: PortName,
+): String? = workflow.incomingData(nodeId, port).firstOrNull()?.let { connection ->
+    originLabel(
+        workflow,
+        PortRef(
+            nodeId = connection.fromNodeId,
+            portName = connection.fromPort,
+            isOutput = true,
+            kind = PortKind.DATA,
+        ),
+    )
+}
+
 @Composable
 private fun NodeConfigOverlay(
     workflow: com.example.ottomatic.domain.model.Workflow,
@@ -419,8 +438,19 @@ private fun NodeConfigOverlay(
     val dataInputPorts = definition?.let { effectiveInputPorts(it, workflow, node) }
         ?.filter { it.kind == PortKind.DATA }
         .orEmpty()
+    // A config key and its DATA port name are the same string by construction
+    // (see WorkflowNode.config), which is what lets each field carry its own
+    // wiring toggle instead of a detached list at the bottom of the sheet.
+    val portByKey = dataInputPorts.associateBy { ConfigKey(it.name.value) }
+    // What is left over are the wildcardDataIn ports (e.g. action.break's
+    // `struct`): real inputs with no config field to sit beside, so they keep a
+    // section of their own.
+    val fieldlessPorts = dataInputPorts.filterNot { ConfigKey(it.name.value) in schemaKeys(schema) }
+    // One wirable field puts every field in this sheet on the narrower measure, so
+    // they keep a common right edge rather than the wirable ones looking clipped.
+    val gutter = schemaKeys(schema).any { it in portByKey }
     // The form grows without bound — schema fields, attached conditions, data
-    // input switches — so it gets a full screen to scroll in.
+    // inputs — so it gets a full screen to scroll in.
     EditorOverlay(title = "Configure", onClose = onDismiss) { _ ->
         Column(
             // imePadding/navigationBarsPadding sit outside the scroll so the
@@ -443,15 +473,23 @@ private fun NodeConfigOverlay(
                 onValueChange = onNameChange,
                 label = { Text("Name") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = if (gutter) ConfigFieldToggleGutter else 0.dp),
             )
             if (schema != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 schema.fields.forEach { field ->
-                    ConfigFieldEditor(
+                    val port = portByKey[field.key]
+                    ConfigFieldRow(
                         field = field,
+                        port = port,
+                        wired = port != null && port.name in node.visibleDataInputs,
+                        sourceLabel = port?.let { dataSourceLabel(workflow, node.id, it.name) },
                         value = node.config[field.key] ?: field.defaultValue,
+                        reserveToggleGutter = gutter,
                         onValueChange = { onConfigChange(field.key, it) },
+                        onWiredChange = { port?.let { p -> onDataInputVisibilityChange(p.name, it) } },
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                 }
@@ -462,7 +500,7 @@ private fun NodeConfigOverlay(
                 node = node,
                 actions = conditionActions,
             )
-            if (dataInputPorts.isNotEmpty()) {
+            if (fieldlessPorts.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = "Data inputs",
@@ -470,7 +508,7 @@ private fun NodeConfigOverlay(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
-                dataInputPorts.forEach { port ->
+                fieldlessPorts.forEach { port ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -491,111 +529,5 @@ private fun NodeConfigOverlay(
                 }
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Suppress("CyclomaticComplexMethod") // Inherent: one branch per ConfigFieldType.
-@Composable
-internal fun ConfigFieldEditor(
-    field: com.example.ottomatic.domain.registry.ConfigField<*>,
-    value: String,
-    onValueChange: (String) -> Unit,
-) {
-    val type = field.type
-    var expanded by remember { mutableStateOf(false) }
-    Column {
-        when (type) {
-        is com.example.ottomatic.domain.registry.ConfigFieldType.ENUM -> {
-            val selected = type.options.firstOrNull { it.value == value }
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = it },
-            ) {
-                OutlinedTextField(
-                    value = selected?.label ?: value,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text(field.label) },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                )
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                ) {
-                    type.options.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option.label) },
-                            onClick = {
-                                onValueChange(option.value)
-                                expanded = false
-                            },
-                        )
-                    }
-                }
-            }
-        }
-        com.example.ottomatic.domain.registry.ConfigFieldType.MULTILINE -> {
-            OutlinedTextField(
-                value = value,
-                onValueChange = onValueChange,
-                label = { Text(field.label) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2,
-            )
-        }
-        com.example.ottomatic.domain.registry.ConfigFieldType.INT -> {
-            OutlinedTextField(
-                value = value,
-                onValueChange = { new ->
-                    if (new.matches(Regex("-?\\d*")) || new.isEmpty()) onValueChange(new)
-                },
-                label = { Text(field.label) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-        com.example.ottomatic.domain.registry.ConfigFieldType.DOUBLE -> {
-            OutlinedTextField(
-                value = value,
-                onValueChange = { new ->
-                    if (new.matches(Regex("-?\\d*\\.?\\d*")) || new.isEmpty()) onValueChange(new)
-                },
-                label = { Text(field.label) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-        com.example.ottomatic.domain.registry.ConfigFieldType.BOOL -> {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                androidx.compose.material3.Switch(
-                    checked = value.toBooleanStrictOrNull() == true,
-                    onCheckedChange = { onValueChange(it.toString()) },
-                )
-                Text(
-                    text = field.label,
-                    color = EditorColors.textPrimary,
-                    fontSize = 14.sp,
-                )
-            }
-        }
-        com.example.ottomatic.domain.registry.ConfigFieldType.STR -> {
-            OutlinedTextField(
-                value = value,
-                onValueChange = onValueChange,
-                label = { Text(field.label) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-    }
     }
 }
