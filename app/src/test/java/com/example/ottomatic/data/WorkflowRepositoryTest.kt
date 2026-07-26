@@ -106,6 +106,29 @@ class WorkflowRepositoryTest {
         assertEquals(NodeId("n1"), loaded.nodes.first().id)
     }
 
+    /**
+     * The graph editor writes the enabled flag as part of a full [save] rather
+     * than via [WorkflowRepository.setEnabled], so that toggling also flushes
+     * unsaved graph edits instead of re-reading a stale file over them.
+     */
+    @Test
+    fun `save carries the enabled flag together with the graph`() = runBlocking {
+        val repo = newRepo()
+        val workflow = repo.create("Armed graph")
+        repo.save(
+            Workflow(
+                id = workflow.id,
+                name = "Armed graph",
+                nodes = listOf(WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "M", 0f, 0f)),
+                enabled = true,
+            ),
+        )
+        val loaded = repo.load(workflow.id)!!
+        assertEquals(true, loaded.enabled)
+        assertEquals(1, loaded.nodes.size)
+        assertEquals(true, repo.list().first { it.id == workflow.id }.enabled)
+    }
+
     @Test
     fun `enabled states are independent per workflow`() = runBlocking {
         val repo = newRepo()

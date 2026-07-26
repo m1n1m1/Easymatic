@@ -103,6 +103,40 @@ data class Workflow(
     fun incomingData(nodeId: NodeId, port: PortName): List<DataConnection> =
         dataConnections.filter { it.toNodeId == nodeId && it.toPort == port }
 
+    /**
+     * Everything about this graph that the engine actually reads when it arms and
+     * runs the workflow — deliberately excluding the purely cosmetic fields
+     * ([WorkflowNode.x], [WorkflowNode.y], [WorkflowNode.name],
+     * [WorkflowNode.visibleDataInputs]) and the editor-irrelevant [schemaVersion].
+     *
+     * The editor compares this against the signature it last armed to decide
+     * whether a save needs to re-arm the running macro. Dragging a node or
+     * renaming it therefore costs nothing, while a config edit or a new edge
+     * re-arms. Re-arming is not free (it re-registers geofences and re-enqueues
+     * periodic work), so the gate matters.
+     */
+    fun runtimeSignature(): RuntimeSignature = RuntimeSignature(
+        nodes = nodes.map { RuntimeNode(it.id, it.typeId, it.config) },
+        execConnections = execConnections,
+        dataConnections = dataConnections,
+        enabled = enabled,
+    )
+
+    /** The execution-relevant projection of a [WorkflowNode]. */
+    data class RuntimeNode(
+        val id: NodeId,
+        val typeId: NodeTypeId,
+        val config: Map<ConfigKey, String>,
+    )
+
+    /** Opaque value compared for equality only; see [runtimeSignature]. */
+    data class RuntimeSignature(
+        val nodes: List<RuntimeNode>,
+        val execConnections: List<ExecConnection>,
+        val dataConnections: List<DataConnection>,
+        val enabled: Boolean,
+    )
+
     companion object {
         const val CURRENT_SCHEMA_VERSION = 10
     }

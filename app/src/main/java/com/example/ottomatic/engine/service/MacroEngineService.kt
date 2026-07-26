@@ -22,6 +22,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * The long-lived owner of the workflow engine.
@@ -51,7 +53,23 @@ import kotlinx.coroutines.launch
 class MacroEngineService : Service() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val activeJobs = mutableMapOf<String, Job>()
+
+    /**
+     * The armed runner per workflow id. Concurrent because [onCreate] reads
+     * [Map.size] on the main thread while the arm/disarm coroutines mutate it.
+     */
+    private val activeJobs = java.util.concurrent.ConcurrentHashMap<String, Job>()
+
+    /**
+     * Serialises arm/disarm/rearm. Every one of them is a read-modify-write of
+     * [activeJobs] spanning suspension points (joining the previous runner,
+     * loading from disk), so without this two overlapping arms for the same id
+     * both find no previous entry, both start a runner, and both store into the
+     * map — orphaning one runner that keeps collecting its triggers against a
+     * stale graph and can no longer be cancelled by anything, including a
+     * disable/enable cycle.
+     */
+    private val armMutex = Mutex()
 
     private lateinit var host: TriggerHost
     private lateinit var executionContext: ExecutionContext
@@ -71,17 +89,35 @@ class MacroEngineService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_REARM_ALL -> scope.launch { rearmAll() }
+            ACTION_REARM_ALL -> scope.launch { armMutex.withLock { rearmAll() } }
             ACTION_ENABLE -> intent.getStringExtra(EXTRA_WORKFLOW_ID)?.let { id ->
                 scope.launch {
                     repository.setEnabled(id, true)
-                    arm(id)
+                    armMutex.withLock { arm(id) }
                 }
             }
             ACTION_DISABLE -> intent.getStringExtra(EXTRA_WORKFLOW_ID)?.let { id ->
                 scope.launch {
                     repository.setEnabled(id, false)
-                    disarm(id)
+                    armMutex.withLock { disarm(id) }
+                }
+            }
+            // Re-read a macro that is *already* armed so a graph edit takes
+            // effect without the user toggling it off and on. Deliberately does
+            // not arm an unarmed macro: enabling is [ACTION_ENABLE]'s job, and a
+            // RELOAD must never resurrect a macro the user just disabled.
+            ACTION_RELOAD -> intent.getStringExtra(EXTRA_WORKFLOW_ID)?.let { id ->
+                scope.launch {
+                    // The armed check must be inside the lock with the arm it
+                    // guards, or a concurrent disable can slip between them.
+                    armMutex.withLock {
+                        if (activeJobs.containsKey(id)) {
+                            arm(id, announce = false)
+                        } else if (activeJobs.isEmpty()) {
+                            // startForegroundService spun us up for nothing.
+                            stopSelf()
+                        }
+                    }
                 }
             }
         }
@@ -95,6 +131,7 @@ class MacroEngineService : Service() {
         super.onDestroy()
     }
 
+    /** Callers must hold [armMutex]. */
     private suspend fun rearmAll() {
         val enabled = repository.list().filter { it.enabled }
         if (enabled.isEmpty()) {
@@ -104,17 +141,33 @@ class MacroEngineService : Service() {
         enabled.forEach { arm(it.id) }
     }
 
-    private suspend fun arm(workflowId: String) {
-        activeJobs.remove(workflowId)?.cancel()
+    /** Callers must hold [armMutex]. */
+    private suspend fun arm(workflowId: String, announce: Boolean = true) {
+        // Join, don't just cancel: each trigger's teardown runs in a `finally`
+        // that releases a platform resource keyed by node id — the geofence
+        // PendingIntent, the unique WorkManager name, the alarm PendingIntent.
+        // An un-awaited cancel can therefore run *after* the new arm and tear
+        // down what the new arm just registered.
+        activeJobs.remove(workflowId)?.let { previous ->
+            previous.cancel()
+            previous.join()
+        }
         val workflow = repository.load(workflowId) ?: return
         if (!workflow.enabled || workflow.id != workflowId) return
         val runner = WorkflowRunner(host, executionContext)
-        activeJobs[workflowId] = runner.run(scope, workflow)
+        activeJobs[workflowId] = runner.run(scope, workflow, announceEnabled = announce)
         refreshNotification()
     }
 
-    private fun disarm(workflowId: String) {
-        activeJobs.remove(workflowId)?.cancel()
+    /** Callers must hold [armMutex]. */
+    private suspend fun disarm(workflowId: String) {
+        // Join for the same reason [arm] does: the trigger teardown that
+        // releases the geofence / alarm / unique work must have finished before
+        // a subsequent arm of the same nodes re-registers them.
+        activeJobs.remove(workflowId)?.let { previous ->
+            previous.cancel()
+            previous.join()
+        }
         refreshNotification()
         if (activeJobs.isEmpty()) stopSelf()
     }
@@ -165,6 +218,7 @@ class MacroEngineService : Service() {
         const val ACTION_REARM_ALL = "com.example.ottomatic.action.REARM_ALL"
         const val ACTION_ENABLE = "com.example.ottomatic.action.ENABLE"
         const val ACTION_DISABLE = "com.example.ottomatic.action.DISABLE"
+        const val ACTION_RELOAD = "com.example.ottomatic.action.RELOAD"
         const val EXTRA_WORKFLOW_ID = "workflowId"
 
         private const val NOTIFICATION_ID = 4242

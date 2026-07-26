@@ -32,12 +32,15 @@ import com.example.ottomatic.domain.registry.isDataAssignable
 import com.example.ottomatic.domain.registry.suggestionsFor
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.WorkflowRunner
+import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.engine.trigger.ManualTrigger
 import com.example.ottomatic.engine.trigger.TriggerHost
 import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -99,15 +102,24 @@ class GraphEditorViewModel(
     private val triggerHost: TriggerHost,
     private val executionContext: ExecutionContext,
     private val appContext: android.content.Context,
+    private val appScope: CoroutineScope,
     private val workflowId: String,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GraphEditorUiState())
     val uiState: StateFlow<GraphEditorUiState> = _uiState.asStateFlow()
 
+    /**
+     * The [Workflow.runtimeSignature] the background service is currently
+     * running, as far as this editor knows. Seeded from the loaded workflow so
+     * opening an armed macro and changing nothing re-arms nothing.
+     */
+    private var lastArmedSignature: Workflow.RuntimeSignature? = null
+
     init {
         viewModelScope.launch {
             val workflow = repository.load(workflowId) ?: Workflow(id = workflowId)
+            lastArmedSignature = workflow.runtimeSignature()
             _uiState.update {
                 it.copy(workflow = workflow, isLoaded = true, isMacroEnabled = workflow.enabled)
             }
@@ -464,14 +476,74 @@ class GraphEditorViewModel(
         return best
     }
 
+    private var saveJob: Job? = null
+
+    /**
+     * Schedules a debounced write of the current graph. Every mutator calls this;
+     * typing a config value fires it per keystroke, so coalescing matters — each
+     * write is a full pretty-printed JSON encode.
+     */
     private fun persist() {
         // Before the initial load lands, [_uiState.workflow] is still the default
         // instance whose id is "default" — saving it would write a junk
         // workflows/default.json instead of this workflow's file.
+        if (!_uiState.value.isLoaded) return
+        saveJob?.cancel()
+        saveJob = viewModelScope.launch {
+            delay(SAVE_DEBOUNCE_MS)
+            flush()
+        }
+    }
+
+    /**
+     * Writes the graph and, when the change actually affects execution, tells the
+     * engine service to re-read it. This is what makes an edit to an armed macro
+     * take effect without the user toggling it off and on.
+     *
+     * Gated on [Workflow.runtimeSignature] so cosmetic edits — dragging a node,
+     * renaming it — never re-arm: re-arming re-registers geofences and re-enqueues
+     * periodic work, which is far too expensive to do on every drag frame.
+     */
+    private suspend fun flush() {
         val state = _uiState.value
         if (!state.isLoaded) return
         val workflow = state.workflow
-        viewModelScope.launch { repository.save(workflow) }
+        repository.save(workflow)
+        val signature = workflow.runtimeSignature()
+        if (state.isMacroEnabled && signature != lastArmedSignature) {
+            lastArmedSignature = signature
+            MacroEngineService.start(appContext, MacroEngineService.ACTION_RELOAD, workflow.id)
+        }
+    }
+
+    override fun onCleared() {
+        // viewModelScope is already cancelled here, so a pending debounced save
+        // would be dropped on the way out of the editor. Re-issue it on the
+        // process-lifetime scope instead.
+        saveJob?.cancel()
+        val state = _uiState.value
+        if (state.isLoaded) {
+            val workflow = state.workflow
+            val enabled = state.isMacroEnabled
+            val armed = lastArmedSignature
+            appScope.launch {
+                repository.save(workflow)
+                if (enabled && workflow.runtimeSignature() != armed) {
+                    // The Activity may already be gone, and Android 12+ forbids
+                    // starting a foreground service from the background. The save
+                    // above is the part that must not be lost; the reload is best
+                    // effort and REARM_ALL on next launch covers the miss.
+                    runCatching {
+                        MacroEngineService.start(
+                            appContext,
+                            MacroEngineService.ACTION_RELOAD,
+                            workflow.id,
+                        )
+                    }
+                }
+            }
+        }
+        super.onCleared()
     }
 
     // region Workflow execution
@@ -484,25 +556,33 @@ class GraphEditorViewModel(
      * in the long-lived service scope so it keeps running after the UI is gone.
      */
     fun setMacroEnabled(enabled: Boolean) {
-        val state = _uiState.value
         // Same guard as [persist]: arming before the load completes would target
         // the default id rather than this workflow.
-        if (!state.isLoaded) return
-        val workflow = state.workflow
-        _uiState.update { it.copy(isMacroEnabled = enabled) }
-        viewModelScope.launch { repository.setEnabled(workflow.id, enabled) }
-        if (enabled) {
-            com.example.ottomatic.engine.service.MacroEngineService.start(
-                appContext,
-                com.example.ottomatic.engine.service.MacroEngineService.ACTION_ENABLE,
-                workflow.id,
-            )
+        if (!_uiState.value.isLoaded) return
+        // Drop any pending debounced save: it would race this write, and the
+        // save below already carries the same graph plus the new flag.
+        saveJob?.cancel()
+        // [enabled] lives on the workflow, not just on the UI mirror flag —
+        // otherwise the next persist() writes the load-time value back and
+        // silently clobbers the toggle on disk.
+        _uiState.update {
+            it.copy(workflow = it.workflow.copy(enabled = enabled), isMacroEnabled = enabled)
+        }
+        val workflow = _uiState.value.workflow
+        // Arming reloads from disk, so whatever we write below is what runs.
+        lastArmedSignature = workflow.runtimeSignature()
+        val action = if (enabled) {
+            MacroEngineService.ACTION_ENABLE
         } else {
-            com.example.ottomatic.engine.service.MacroEngineService.start(
-                appContext,
-                com.example.ottomatic.engine.service.MacroEngineService.ACTION_DISABLE,
-                workflow.id,
-            )
+            MacroEngineService.ACTION_DISABLE
+        }
+        viewModelScope.launch {
+            // A full save rather than repository.setEnabled: that would re-read
+            // the file and write the *stale* graph back, discarding unsaved
+            // edits. It must complete before the service starts, because arm()
+            // loads the workflow from disk.
+            repository.save(workflow)
+            MacroEngineService.start(appContext, action, workflow.id)
         }
     }
 
@@ -610,15 +690,31 @@ class GraphEditorViewModel(
         private const val FIT_PADDING = 48f
         private const val MAX_FIT_ZOOM = 1.25f
 
+        /**
+         * How long the editor waits for edits to settle before writing. Long
+         * enough to coalesce a burst of keystrokes, short enough that an edit
+         * feels like it takes effect immediately.
+         */
+        private const val SAVE_DEBOUNCE_MS = 500L
+
+        @Suppress("LongParameterList") // Mirrors the ViewModel's injected dependencies 1:1.
         fun factory(
             repository: WorkflowRepository,
             triggerHost: TriggerHost,
             executionContext: ExecutionContext,
             appContext: android.content.Context,
+            appScope: CoroutineScope,
             workflowId: String,
         ): ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                GraphEditorViewModel(repository, triggerHost, executionContext, appContext, workflowId)
+                GraphEditorViewModel(
+                    repository,
+                    triggerHost,
+                    executionContext,
+                    appContext,
+                    appScope,
+                    workflowId,
+                )
             }
         }
     }

@@ -15,6 +15,9 @@ import com.example.ottomatic.data.trigger.AndroidTriggerHost
 import com.example.ottomatic.engine.DefaultExecutionContext
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.trigger.TriggerHost
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 /**
  * Minimal manual dependency container (Hilt deferred). Initialised once from
@@ -22,6 +25,13 @@ import com.example.ottomatic.engine.trigger.TriggerHost
  * instances of every infrastructure component.
  */
 object ServiceLocator {
+
+    /**
+     * Process-lifetime scope for work that must outlive the component that
+     * started it — chiefly the graph editor's final save, which runs from
+     * `onCleared()` after `viewModelScope` has already been cancelled.
+     */
+    val appScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     lateinit var workflowRepository: WorkflowRepository
         private set

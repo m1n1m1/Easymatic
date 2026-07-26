@@ -29,23 +29,34 @@ class WorkflowRunner(
     private val context: ExecutionContext,
 ) {
 
-    fun run(scope: CoroutineScope, workflow: Workflow): Job {
+    /**
+     * Arms every trigger in [workflow] on [scope].
+     *
+     * [announceEnabled] controls the `"enabled"` [MacroEventBus] event. It is
+     * true for a genuine enable (user toggle, boot, cold start), and false when
+     * the engine is merely re-arming an already-enabled macro to pick up an
+     * edit: [MacroEventBus] has `replay = 0`, so emitting there would re-fire
+     * every `trigger.macro_enabled` node on every edit.
+     */
+    fun run(scope: CoroutineScope, workflow: Workflow, announceEnabled: Boolean = true): Job {
         val executor = WorkflowExecutor(context)
         val triggers = workflow.nodes.filter {
             NodeTypeRegistry.byId(it.typeId)?.kind == NodeKind.TRIGGER
         }
         // Signal that this macro has been enabled (its triggers are being armed).
-        MacroEventBus.emit(
-            com.example.ottomatic.core.trigger.TriggerEvent(
-                source = TriggerSource.MACRO,
-                triggerNodeId = NodeId.BROADCAST,
-                payload = mapOf(
-                    "event" to "enabled",
-                    "macroId" to workflow.id,
-                    "timestamp" to System.currentTimeMillis().toString(),
+        if (announceEnabled) {
+            MacroEventBus.emit(
+                com.example.ottomatic.core.trigger.TriggerEvent(
+                    source = TriggerSource.MACRO,
+                    triggerNodeId = NodeId.BROADCAST,
+                    payload = mapOf(
+                        "event" to "enabled",
+                        "macroId" to workflow.id,
+                        "timestamp" to System.currentTimeMillis().toString(),
+                    ),
                 ),
-            ),
-        )
+            )
+        }
         // Activate all triggers synchronously so their flows are registered
         // before this method returns. Otherwise a caller that fires a manual
         // trigger immediately after run() would race with coroutine startup.

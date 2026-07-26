@@ -168,6 +168,7 @@ class MainActivity : ComponentActivity() {
                         triggerHost = ServiceLocator.triggerHost,
                         executionContext = ServiceLocator.executionContext,
                         appContext = applicationContext,
+                        appScope = ServiceLocator.appScope,
                         workflowId = workflowId,
                     ),
                 )

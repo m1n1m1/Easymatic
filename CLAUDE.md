@@ -89,6 +89,10 @@ All identifiers are `@JvmInline value class` (zero-cost type safety) in `core/mo
 - **MacroEngineService** (foreground service) owns the engine, survives UI destruction, re-arms on boot
 - **TriggerBus** is a singleton event bus connecting manifest-registered broadcast receivers to the engine
 
+`arm()` hands `WorkflowRunner` a *snapshot* loaded from disk, so an edit to an armed macro takes effect only on re-arm. The editor drives that itself: saves are debounced (`SAVE_DEBOUNCE_MS`, flushed from `onCleared` on `ServiceLocator.appScope` so the last edit survives the back gesture), and a save sends `ACTION_RELOAD` when `Workflow.runtimeSignature()` changed. That signature omits `x`/`y`/node `name`/`visibleDataInputs`, so dragging a node never re-arms — re-arming re-registers geofences and re-enqueues periodic work. `ACTION_RELOAD` re-arms only an already-armed macro and passes `announceEnabled = false`, so `trigger.macro_enabled` does not re-fire on every edit.
+
+`arm`/`disarm`/`rearmAll` are read-modify-writes of `activeJobs` spanning suspension points, so **every caller must hold `armMutex`**. Without it two overlapping arms of the same id each find no previous entry, each start a runner, and each store into the map — orphaning a runner that keeps collecting its triggers against a stale graph and is no longer cancellable by anything, including a disable/enable cycle. Both also `cancel()` **and `join()`** the previous job: trigger teardown runs in a `finally` that releases a platform resource keyed by node id, so an un-awaited cancel can tear down what the next arm just registered.
+
 ### Persistence
 
 Workflows persist as individual JSON files in `{filesDir}/workflows/{id}.json`. Lenient deserialization (`ignoreUnknownKeys`) provides forward compatibility. Schema version gates load — older workflows are discarded, not migrated.
