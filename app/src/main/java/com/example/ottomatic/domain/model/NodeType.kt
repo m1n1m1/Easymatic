@@ -8,12 +8,19 @@ import com.example.ottomatic.domain.model.schema.ItemSchema
 /**
  * The high-level category of a node.
  *
- * [VALUE] nodes are the pull side of the graph: a side-effect-free reader with a
- * single DATA output port and *no* EXECUTION ports at all. They are never pulsed;
- * they are read on demand, immediately before whichever node consumes them (see
- * [com.example.ottomatic.engine.WorkflowExecutor]). That is also what lets
- * `action.if` name one as its source without drawing an edge — see
- * [com.example.ottomatic.domain.model.ValueSource].
+ * [VALUE] and [TRANSFORM] are the pull side of the graph. Neither has any
+ * EXECUTION ports, so neither ever sits on the execution wire; both are read on
+ * demand, immediately before whichever node consumes them (see
+ * [com.example.ottomatic.engine.WorkflowExecutor]). They differ only in where
+ * their answer comes from:
+ *
+ *  - a [VALUE] is a *leaf* reading of something that is true right now (the
+ *    battery level, whether Wi-Fi is on). It has no data inputs at all, which is
+ *    what lets `action.if` name one as its source without drawing an edge — see
+ *    [com.example.ottomatic.domain.model.ValueSource];
+ *  - a [TRANSFORM] is a pure *function* of other data (convert this to a number,
+ *    read this path out of some JSON). It has one or more DATA inputs and exactly
+ *    one DATA output, and pulling it pulls whatever it depends on.
  *
  * There is deliberately no CONDITION kind. A condition is not a node family but a
  * *comparison over a value*: the device properties are declared once as [VALUE]
@@ -23,6 +30,7 @@ enum class NodeKind {
     TRIGGER,
     ACTION,
     VALUE,
+    TRANSFORM,
 }
 
 /** A user-facing group for a [NodeTypeDefinition] in the node palette. */
@@ -49,6 +57,8 @@ enum class NodeCategory(
     VALUE_POWER(NodeKind.VALUE, "Power & Battery"),
     VALUE_CONNECTIVITY(NodeKind.VALUE, "Connectivity"),
     VALUE_DEVICE(NodeKind.VALUE, "Device State"),
+    VALUE_TIME(NodeKind.VALUE, "Date & Time"),
+    TRANSFORM_DATA(NodeKind.TRANSFORM, "Data"),
 }
 
 /** Whether a port carries control-flow pulse or a typed data value. */

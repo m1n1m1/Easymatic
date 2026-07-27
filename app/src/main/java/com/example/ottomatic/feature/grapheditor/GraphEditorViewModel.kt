@@ -19,6 +19,11 @@ import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.schema.conversionTarget
+import com.example.ottomatic.domain.registry.CONVERT_IN
+import com.example.ottomatic.domain.registry.CONVERT_TO_KEY
+import com.example.ottomatic.domain.registry.CONVERT_TYPE_ID
+import com.example.ottomatic.domain.registry.TRANSFORM_OUT
 import com.example.ottomatic.domain.registry.IF_SOURCE_IN
 import com.example.ottomatic.domain.registry.IF_TYPE_CONFIG_KEY
 import com.example.ottomatic.domain.registry.IF_TYPE_ID
@@ -302,8 +307,64 @@ class GraphEditorViewModel(
         val (output, input) = if (from.isOutput) from to target else target to from
         require(output.kind == input.kind) { "Cannot connect exec port to data port" }
         val workflow = _uiState.value.workflow
-        if (output.kind == PortKind.DATA && !isTypeCompatible(workflow, output, input)) return
+        if (output.kind == PortKind.DATA && !isTypeCompatible(workflow, output, input)) {
+            insertConversion(workflow, output, input)
+            return
+        }
         if (!connectionExists(workflow, output, input)) addConnection(output, input)
+    }
+
+    /**
+     * Bridges a DATA drop the type system refused, by placing a `transform.convert`
+     * node into the wire pre-set to the conversion that fits — Unreal Blueprints'
+     * autocast, and the reason a mismatched drop is not simply thrown away.
+     *
+     * The conversion is a real node rather than a coercion on the edge, so it is
+     * visible, deletable, and carries its own "If it fails" setting. A drop with no
+     * conversion at all (text into a struct) is still silently refused.
+     */
+    private fun insertConversion(workflow: Workflow, output: PortRef, input: PortRef) {
+        val sourceSchema = resolvePort(workflow, output)?.schema
+        val targetSchema = resolvePort(workflow, input)?.schema
+        val to = conversionTarget(sourceSchema, targetSchema) ?: return
+        val definition = NodeTypeRegistry.byId(CONVERT_TYPE_ID) ?: return
+        val midpoint = midpoint(output, input)
+        val convert = WorkflowNode(
+            id = NodeId(UUID.randomUUID().toString()),
+            typeId = CONVERT_TYPE_ID,
+            name = definition.displayName,
+            x = midpoint.x - GraphGeometry.nodeWidth(definition) / 2f,
+            y = midpoint.y - GraphGeometry.NODE_HEIGHT / 2f,
+            config = mapOf(CONVERT_TO_KEY to to.name),
+            // The value input is a wildcard rather than a `@Wired` property, but
+            // every DATA input starts hidden — reveal it or the edge lands nowhere.
+            visibleDataInputs = setOf(CONVERT_IN),
+        )
+        val intoConvert = PortRef(convert.id, CONVERT_IN, isOutput = false, kind = PortKind.DATA)
+        val outOfConvert = PortRef(convert.id, TRANSFORM_OUT, isOutput = true, kind = PortKind.DATA)
+        _uiState.update { state ->
+            val placed = state.workflow.copy(nodes = state.workflow.nodes + convert)
+            state.copy(
+                workflow = placed
+                    .withConnection(output, intoConvert)
+                    .withConnection(outOfConvert, input),
+                selection = Selection.Node(convert.id),
+            )
+        }
+        persist()
+    }
+
+    /**
+     * Where to drop an inserted node: halfway along the wire it is joining, nudged
+     * clear of the two endpoints when their positions are unknown.
+     */
+    private fun midpoint(output: PortRef, input: PortRef): Offset {
+        val from = portPosition(output)
+        val to = portPosition(input)
+        return when {
+            from != null && to != null -> (from + to) / 2f
+            else -> from ?: to ?: Offset.Zero
+        }
     }
 
     /**

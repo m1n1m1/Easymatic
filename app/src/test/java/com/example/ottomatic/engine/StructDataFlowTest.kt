@@ -8,6 +8,7 @@ import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.RingerMode
 import com.example.ottomatic.domain.model.config.ComparisonOperator
 import com.example.ottomatic.domain.model.config.ComparisonType
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.registry.IF_OPERATOR_KEY
 import com.example.ottomatic.domain.registry.IF_SOURCE_KEY
 import com.example.ottomatic.domain.registry.IF_TYPE_CONFIG_KEY
@@ -59,7 +60,7 @@ class StructDataFlowTest {
                 DataConnection("d2", NodeId("n2"), PortName("body"), NodeId("n3"), PortName("text")),
             ),
         )
-        val sms = SmsMessage(sender = "+1555", body = "hello", timestamp = 1L)
+        val sms = SmsMessage(sender = "+1555", body = "hello", timestamp = DateTime(1))
         executor.executeFrom(
             workflow,
             workflow.node(NodeId("n1"))!!,
@@ -92,7 +93,7 @@ class StructDataFlowTest {
                 DataConnection("d2", NodeId("n2"), PortName("body"), NodeId("n3"), PortName("text")),
             ),
         )
-        val sms = SmsMessage(sender = "+1555", body = "from data", timestamp = 1L)
+        val sms = SmsMessage(sender = "+1555", body = "from data", timestamp = DateTime(1))
         executor.executeFrom(
             workflow,
             workflow.node(NodeId("n1"))!!,
@@ -162,7 +163,7 @@ class StructDataFlowTest {
                 DataConnection("d1", NodeId("n1"), PortName("sms"), NodeId("n2"), PortName("source")),
             ),
         )
-        val sms = SmsMessage(sender = "+1555", body = "please call me - urgent matter", timestamp = 1L)
+        val sms = SmsMessage(sender = "+1555", body = "please call me - urgent matter", timestamp = DateTime(1))
         executor.executeFrom(
             workflow,
             workflow.node(NodeId("n1"))!!,
@@ -259,7 +260,7 @@ class StructDataFlowTest {
                 DataConnection("d2", NodeId("n2"), PortName("body"), NodeId("n3"), PortName("source")),
             ),
         )
-        val sms = SmsMessage(sender = "+1555", body = "please call me - urgent matter", timestamp = 1L)
+        val sms = SmsMessage(sender = "+1555", body = "please call me - urgent matter", timestamp = DateTime(1))
         executor.executeFrom(
             workflow,
             workflow.node(NodeId("n1"))!!,

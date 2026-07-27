@@ -3,6 +3,7 @@ package com.example.ottomatic.domain.model.schema
 import com.example.ottomatic.domain.model.items.HttpResponseItem
 import com.example.ottomatic.domain.model.items.SmsMessage
 import com.example.ottomatic.domain.model.items.WifiState
+import com.example.ottomatic.domain.model.schema.DateTime
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -63,7 +64,16 @@ class ItemSchemaTest {
         val fields = (schema as ItemSchema.Object).fields
         assertEquals(setOf("sender", "body", "timestamp"), fields.keys)
         assertEquals(ItemSchema.Primitive(String::class), fields["sender"])
-        assertEquals(ItemSchema.Primitive(Long::class), fields["timestamp"])
+        // A timestamp is its own primitive, not the Long it is built from.
+        assertEquals(ItemSchema.Primitive(DateTime::class), fields["timestamp"])
+    }
+
+    @Test
+    fun `a date is invariant against the number it is built from`() {
+        val date = ItemSchema.Primitive(DateTime::class)
+        val long = ItemSchema.Primitive(Long::class)
+        assertFalse(date.isAssignableFrom(long))
+        assertFalse(long.isAssignableFrom(date))
     }
 
     @Test
@@ -74,11 +84,13 @@ class ItemSchemaTest {
 
     @Test
     fun `Item of captures flat field view for struct field access`() {
-        val sms = SmsMessage(sender = "+1", body = "hi", timestamp = 42L)
+        val sms = SmsMessage(sender = "+1", body = "hi", timestamp = DateTime(42))
         val item = Item.of(sms)
         assertEquals("+1", item.flat["sender"])
         assertEquals("hi", item.flat["body"])
-        assertEquals("42", item.flat["timestamp"])
+        // The flat view is what `action.if` reads for a struct field, so a date has
+        // to appear there exactly as it would render on a port of its own.
+        assertEquals(DateTime(42).toString(), item.flat["timestamp"])
     }
 
     @Test

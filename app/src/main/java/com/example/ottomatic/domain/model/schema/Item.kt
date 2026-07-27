@@ -117,6 +117,10 @@ internal fun jsonElementToValue(element: JsonElement, schema: ItemSchema): Any? 
         Boolean::class -> (element as? JsonPrimitive)?.contentOrNull?.toBooleanStrictOrNull() ?: false
         Double::class -> (element as? JsonPrimitive)?.doubleOrNull ?: 0.0
         Float::class -> (element as? JsonPrimitive)?.floatOrNull ?: 0f
+        // Reached both from our own struct encoding (ISO text) and from a foreign
+        // JSON body read through `transform.json_read` (epoch millis or seconds);
+        // the parse ladder covers all of them.
+        DateTime::class -> DateTime.parse((element as? JsonPrimitive)?.contentOrNull) ?: DateTime.EPOCH
         else -> (element as? JsonPrimitive)?.contentOrNull ?: ""
     }
     is ItemSchema.MapSchema -> decodeStringMap(element)
@@ -164,9 +168,22 @@ internal fun buildSchema(
 }
 
 @PublishedApi
-@Suppress("ComplexMethod")
 @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 internal fun buildSchemaNotNull(
+    descriptor: SerialDescriptor,
+    kClass: KClass<out Any>?,
+): ItemSchema {
+    // `PrimitiveKind` is closed, so a DateTime cannot announce itself through its
+    // kind — it reports STRING. Its serial name is the only hook, and it has to be
+    // checked first or every timestamp collapses back into a plain text port.
+    if (descriptor.serialName == DateTime.SERIAL_NAME) return ItemSchema.Primitive(DateTime::class)
+    return buildDeclaredSchema(descriptor, kClass)
+}
+
+/** The declared-kind mapping, once [buildSchemaNotNull] has ruled out a named primitive. */
+@Suppress("ComplexMethod")
+@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+private fun buildDeclaredSchema(
     descriptor: SerialDescriptor,
     kClass: KClass<out Any>?,
 ): ItemSchema = when (descriptor.kind) {

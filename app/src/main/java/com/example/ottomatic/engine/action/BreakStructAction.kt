@@ -10,7 +10,7 @@ import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.model.schema.flatViewFor
 import com.example.ottomatic.domain.model.schema.jsonElementToValue
-import com.example.ottomatic.domain.model.wildcardDataIn
+import com.example.ottomatic.domain.model.structDataIn
 import com.example.ottomatic.domain.registry.BREAK_STRUCT_IN
 import com.example.ottomatic.domain.registry.BREAK_TYPE_ID
 import com.example.ottomatic.engine.ExecutionContext
@@ -49,7 +49,7 @@ class BreakStructAction : RawAction<NoConfig> {
         description = "Splits a struct into its individual fields (auto-detects the struct from the input)",
         category = NodeCategory.DATA,
         icon = NodeIcon.SPLIT,
-        wildcardInputs = listOf(wildcardDataIn(BREAK_STRUCT_IN.value, label = "Struct")),
+        wildcardInputs = listOf(structDataIn(BREAK_STRUCT_IN.value, label = "Struct")),
     )
 
     override suspend fun executeRaw(

@@ -168,6 +168,112 @@ class ValueNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor(
 }
 
 /**
+ * The single declaration of a transform node, living in the transform's own file.
+ *
+ * A transform is the graph's pure *function* side: like a
+ * [ValueNodeDefinition] it declares no EXECUTION ports and is never pulsed, but
+ * unlike one it is not a leaf — it reads DATA inputs and derives its single DATA
+ * output from them. Pulling a transform pulls whatever it depends on, so a chain
+ * of transforms resolves in one go just before the node that consumes it.
+ *
+ * [output] is the declared port. For a transform whose output *type* is chosen in
+ * its own config (`transform.convert`, `transform.json_read`) it is declared with
+ * [com.example.ottomatic.domain.model.schema.ItemSchema.Wildcard] and retyped at
+ * design time by [com.example.ottomatic.domain.registry.effectivePorts]; declaring
+ * it statically anyway is what keeps the node offerable in the drag-into-empty-space
+ * palette, which reads declared ports.
+ */
+@Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
+class TransformNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor(
+    val typeId: NodeTypeId,
+    val displayName: String,
+    val description: String,
+    val category: NodeCategory,
+    val icon: NodeIcon,
+    val schema: NodeSchema<C>,
+    val outputPort: Port,
+    @PublishedApi internal val output: DataOut<O>?,
+    val wildcardInputs: List<Port>,
+    val hasDynamicPorts: Boolean,
+) {
+    /** Static metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
+    val nodeType: NodeTypeDefinition
+        get() = NodeTypeDefinition(
+            typeId = typeId,
+            displayName = displayName,
+            description = description,
+            kind = NodeKind.TRANSFORM,
+            category = category,
+            ports = schema.wiredPorts + wildcardInputs + outputPort,
+            icon = icon,
+            hasDynamicPorts = hasDynamicPorts,
+        )
+
+    /** Static config-form view for [com.example.ottomatic.domain.registry.ConfigSchemaRegistry]. */
+    val configSchema: NodeConfigSchema?
+        get() = schema.fields.takeIf { it.isNotEmpty() }?.let { NodeConfigSchema(typeId, it) }
+
+    /** Wraps a typed result in the [Item] this transform's output port carries. */
+    internal fun encode(value: O): Item =
+        requireNotNull(output) { "Transform $typeId is adaptive and emits raw items" }.encode(value)
+}
+
+/**
+ * Declares a transform whose output type is fixed, derived from the payload type
+ * [O]. Register it in [com.example.ottomatic.domain.registry.TransformRegistry].
+ */
+@Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
+inline fun <reified C : Any, O : Any> transformNode(
+    typeId: String,
+    displayName: String,
+    description: String,
+    category: NodeCategory,
+    icon: NodeIcon,
+    output: DataOut<O>,
+    wildcardInputs: List<Port> = emptyList(),
+): TransformNodeDefinition<C, O> = TransformNodeDefinition(
+    typeId = NodeTypeId(typeId),
+    displayName = displayName,
+    description = description,
+    category = category,
+    icon = icon,
+    schema = nodeSchema<C>(),
+    outputPort = output.port,
+    output = output,
+    wildcardInputs = wildcardInputs,
+    hasDynamicPorts = false,
+)
+
+/**
+ * Declares a transform whose output *schema* comes from its own config, and is
+ * therefore resolved at design time by
+ * [com.example.ottomatic.domain.registry.effectivePorts]. [output] is the
+ * declared placeholder port; it must carry
+ * [com.example.ottomatic.domain.model.schema.ItemSchema.Wildcard].
+ */
+@Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
+inline fun <reified C : Any> adaptiveTransformNode(
+    typeId: String,
+    displayName: String,
+    description: String,
+    category: NodeCategory,
+    icon: NodeIcon,
+    output: Port,
+    wildcardInputs: List<Port> = emptyList(),
+): TransformNodeDefinition<C, Unit> = TransformNodeDefinition(
+    typeId = NodeTypeId(typeId),
+    displayName = displayName,
+    description = description,
+    category = category,
+    icon = icon,
+    schema = nodeSchema<C>(),
+    outputPort = output,
+    output = null,
+    wildcardInputs = wildcardInputs,
+    hasDynamicPorts = true,
+)
+
+/**
  * Declares a value node: a pure reader that emits a typed item on [output].
  * Register it in [com.example.ottomatic.domain.registry.ValueRegistry].
  *

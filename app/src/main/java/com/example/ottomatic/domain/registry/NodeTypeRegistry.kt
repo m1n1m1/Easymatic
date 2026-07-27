@@ -6,7 +6,8 @@ import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.core.model.NodeTypeId
 
 /**
- * Central registry for all available node types (triggers, actions, values).
+ * Central registry for all available node types (triggers, actions, values,
+ * transforms).
  *
  * This object holds no declarations of its own: every node is declared exactly
  * once inside its own implementation file (an
@@ -27,7 +28,8 @@ object NodeTypeRegistry {
     val all: List<NodeTypeDefinition> =
         TriggerRegistry.all().map { it.definition.nodeType } +
             ActionRegistry.all().map { it.definition.nodeType } +
-            ValueRegistry.all().map { it.definition.nodeType }
+            ValueRegistry.all().map { it.definition.nodeType } +
+            TransformRegistry.all().map { it.definition.nodeType }
 
     private val byId: Map<NodeTypeId, NodeTypeDefinition> = all.associateBy { it.typeId }
 

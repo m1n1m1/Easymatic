@@ -30,6 +30,16 @@ sealed interface ConfigFieldType<out T> {
     /** Floating-point number. */
     data object DOUBLE : ConfigFieldType<Double>
 
+    /**
+     * A moment, rendered as a text field with a date/time picker beside it.
+     *
+     * Editable rather than picker-only on purpose: the stored text is read through
+     * [com.example.ottomatic.domain.model.schema.DateTime.parse], which also accepts
+     * a bare `18:00` meaning "today at 18:00" — the form a recurring condition wants,
+     * and one no calendar can express.
+     */
+    data object DATE_TIME : ConfigFieldType<String>
+
     /** One of [options], stored as the option's [ConfigOption.value]. */
     data class ENUM(val options: List<ConfigOption>) : ConfigFieldType<String>
 
@@ -97,8 +107,8 @@ data class NodeConfigSchema(
  *
  * This object holds no declarations of its own: the schemas are derived from the
  * config classes of the single node definitions registered in [ActionRegistry],
- * [TriggerRegistry] and [ValueRegistry]. `action.if` narrows its derived schema
- * further at design time (see [effectiveConfigSchema]).
+ * [TriggerRegistry], [ValueRegistry] and [TransformRegistry]. `action.if` narrows
+ * its derived schema further at design time (see [effectiveConfigSchema]).
  */
 object ConfigSchemaRegistry {
 
@@ -106,7 +116,8 @@ object ConfigSchemaRegistry {
         (
             ActionRegistry.all().map { it.definition.configSchema } +
                 TriggerRegistry.all().map { it.definition.configSchema } +
-                ValueRegistry.all().map { it.definition.configSchema }
+                ValueRegistry.all().map { it.definition.configSchema } +
+                TransformRegistry.all().map { it.definition.configSchema }
             )
             .filterNotNull()
             .associateBy { it.typeId }

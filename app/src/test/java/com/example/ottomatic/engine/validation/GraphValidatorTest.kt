@@ -11,6 +11,11 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import com.example.ottomatic.domain.model.config.ValueType
+import com.example.ottomatic.domain.registry.CONVERT_IN
+import com.example.ottomatic.domain.registry.CONVERT_TO_KEY
+import com.example.ottomatic.domain.registry.CONVERT_TYPE_ID
+import com.example.ottomatic.domain.registry.TRANSFORM_OUT
 import org.junit.Test
 
 /**
@@ -178,6 +183,71 @@ class GraphValidatorTest {
         assertTrue(
             "an unread value should warn, got: ${issues.map { it.message }}",
             issues.any { it.severity == Severity.WARNING && it.message.contains("never be read") },
+        )
+        assertTrue(issues.none { it.severity == Severity.ERROR })
+    }
+
+    /**
+     * A transform is pulled like a value, so the exec-upstream rule is just as
+     * meaningless for it — and the whole autocast design depends on that, since the
+     * Convert node the editor drops into a wire is never given an exec edge.
+     */
+    @Test
+    fun `a transform in a data wire need not be exec-upstream of its consumer`() {
+        val wf = Workflow(
+            nodes = listOf(
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(
+                    NodeId("n2"), NodeTypeId("action.notify"), "Notify", 0f, 100f,
+                    config = mapOf(ConfigKey("title") to "T"),
+                    visibleDataInputs = setOf(PortName("text")),
+                ),
+                WorkflowNode(NodeId("v"), NodeTypeId("value.battery"), "Battery", 200f, 0f),
+                WorkflowNode(
+                    NodeId("c"), CONVERT_TYPE_ID, "Convert", 200f, 50f,
+                    config = mapOf(CONVERT_TO_KEY to ValueType.TEXT.name),
+                    visibleDataInputs = setOf(CONVERT_IN),
+                ),
+            ),
+            execConnections = listOf(
+                ExecConnection("e1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", NodeId("v"), PortName("level"), NodeId("c"), CONVERT_IN),
+                DataConnection("d2", NodeId("c"), TRANSFORM_OUT, NodeId("n2"), PortName("text")),
+            ),
+        )
+        val issues = GraphValidator(wf).validate()
+        assertTrue(
+            "a pulled transform must not trip the exec-upstream rule, got: ${issues.map { it.message }}",
+            issues.none { it.severity == Severity.ERROR },
+        )
+    }
+
+    @Test
+    fun `a transform with nothing wired into it is warned about`() {
+        val wf = Workflow(
+            nodes = listOf(
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(
+                    NodeId("n2"), NodeTypeId("action.notify"), "Notify", 0f, 100f,
+                    config = mapOf(ConfigKey("title") to "T"),
+                    visibleDataInputs = setOf(PortName("text")),
+                ),
+                WorkflowNode(NodeId("c"), CONVERT_TYPE_ID, "Convert", 200f, 50f),
+            ),
+            execConnections = listOf(
+                ExecConnection("e1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
+            ),
+            dataConnections = listOf(
+                DataConnection("d2", NodeId("c"), TRANSFORM_OUT, NodeId("n2"), PortName("text")),
+            ),
+        )
+        val issues = GraphValidator(wf).validate()
+
+        assertTrue(
+            "a starved transform should warn, got: ${issues.map { it.message }}",
+            issues.any { it.severity == Severity.WARNING && it.message.contains("nothing wired into it") },
         )
         assertTrue(issues.none { it.severity == Severity.ERROR })
     }

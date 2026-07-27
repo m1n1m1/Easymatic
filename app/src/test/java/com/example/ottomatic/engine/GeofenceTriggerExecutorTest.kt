@@ -9,6 +9,7 @@ import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.items.GeofenceEvent
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.engine.trigger.TriggerOutput
 import kotlinx.coroutines.runBlocking
@@ -53,7 +54,7 @@ class GeofenceTriggerExecutorTest {
             latitude = 55.6761,
             longitude = 12.5683,
             accuracyMeters = 15f,
-            timestamp = 1L,
+            timestamp = DateTime(1),
         )
         executor.executeFrom(
             workflow,
@@ -80,7 +81,7 @@ class GeofenceTriggerExecutorTest {
             latitude = 0.0,
             longitude = 0.0,
             accuracyMeters = 0f,
-            timestamp = 0L,
+            timestamp = DateTime(0),
         )
         executor.executeFrom(
             workflow,

@@ -24,4 +24,7 @@ enum class NodeIcon {
     BOOT,
     BATTERY_LEVEL,
     BATTERY_CHARGING,
+    CONVERT,
+    TEXT,
+    JSON,
 }

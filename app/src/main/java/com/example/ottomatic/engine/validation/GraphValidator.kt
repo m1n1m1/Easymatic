@@ -125,26 +125,43 @@ class GraphValidator(private val workflow: Workflow) {
         }
     }
 
-    /** True when [nodeId] is a placed value node (pull source, no exec position). */
-    private fun isValueNode(nodeId: NodeId): Boolean {
+    /**
+     * True when [nodeId] is a placed pull-side node — a value or a transform. Both
+     * are read on demand and have no exec position at all.
+     */
+    private fun isPullNode(nodeId: NodeId): Boolean {
         val node = workflow.node(nodeId) ?: return false
-        return NodeTypeRegistry.byId(node.typeId)?.kind == NodeKind.VALUE
+        return NodeTypeRegistry.byId(node.typeId)?.kind in PULL_KINDS
     }
 
     /**
-     * A value node is only ever read through an outgoing data edge, so one with no
-     * such edge does nothing at all. That is almost always an unfinished wiring
+     * A pull-side node is only ever read through an outgoing data edge, so one with
+     * no such edge does nothing at all. That is almost always an unfinished wiring
      * rather than an intent, but it breaks nothing — hence a warning.
+     *
+     * A transform additionally warns when nothing feeds it: it would silently
+     * convert its own form values, which is legal but rarely what was meant.
      */
     private fun validateValueNodesAreUsed(out: MutableList<ValidationIssue>) {
-        val wired = workflow.dataConnections.map { it.fromNodeId }.toSet()
+        val consumed = workflow.dataConnections.map { it.fromNodeId }.toSet()
+        val fed = workflow.dataConnections.map { it.toNodeId }.toSet()
         for (node in workflow.nodes) {
-            if (!isValueNode(node.id) || node.id in wired) continue
-            out += ValidationIssue(
-                Severity.WARNING,
-                "Value '${node.name}' is not connected to anything and will never be read",
-                node.id.value,
-            )
+            if (!isPullNode(node.id)) continue
+            val kind = NodeTypeRegistry.byId(node.typeId)?.kind
+            if (node.id !in consumed) {
+                out += ValidationIssue(
+                    Severity.WARNING,
+                    "'${node.name}' is not connected to anything and will never be read",
+                    node.id.value,
+                )
+            }
+            if (kind == NodeKind.TRANSFORM && node.id !in fed) {
+                out += ValidationIssue(
+                    Severity.WARNING,
+                    "'${node.name}' has nothing wired into it and will only use its own settings",
+                    node.id.value,
+                )
+            }
         }
     }
 
@@ -168,15 +185,15 @@ class GraphValidator(private val workflow: Workflow) {
         // (i.e. target is reachable from source by following exec edges). Otherwise the
         // source would not have run by the time the target executes.
         //
-        // A VALUE source is exempt: it is never pulsed, so it has no exec position for
-        // "upstream" to mean anything against. It is read on demand while collecting
-        // the target's inputs, which is always in time by construction.
+        // A pull-side source (VALUE, TRANSFORM) is exempt: it is never pulsed, so it has
+        // no exec position for "upstream" to mean anything against. It is read on demand
+        // while collecting the target's inputs, which is always in time by construction.
         val execForward = mutableMapOf<NodeId, MutableList<NodeId>>()
         workflow.execConnections.forEach {
             execForward.getOrPut(it.fromNodeId) { mutableListOf() } += it.toNodeId
         }
         for (conn in workflow.dataConnections) {
-            if (isValueNode(conn.fromNodeId)) continue
+            if (isPullNode(conn.fromNodeId)) continue
             if (!reaches(execForward, conn.fromNodeId, conn.toNodeId)) {
                 out += ValidationIssue(
                     Severity.ERROR,
@@ -249,4 +266,9 @@ class GraphValidator(private val workflow: Workflow) {
 
     @Suppress("unused")
     private fun DataConnection.describe(): String = "$fromNodeId.$fromPort -> $toNodeId.$toPort"
+
+    private companion object {
+        /** The kinds that are pulled on demand rather than pulsed. */
+        val PULL_KINDS = setOf(NodeKind.VALUE, NodeKind.TRANSFORM)
+    }
 }

@@ -5,6 +5,7 @@ import com.example.ottomatic.core.service.DndLevel
 import com.example.ottomatic.core.service.HttpMethod
 import com.example.ottomatic.core.service.RingerMode
 import com.example.ottomatic.core.service.VolumeMode
+import com.example.ottomatic.domain.model.schema.DateTime
 import kotlinx.serialization.Serializable
 
 /**
@@ -15,7 +16,7 @@ import kotlinx.serialization.Serializable
 data class SmsMessage(
     val sender: String,
     val body: String,
-    val timestamp: Long,
+    val timestamp: DateTime,
 )
 
 /** A received notification, exposed on `trigger.notification`'s `notification` port. */
@@ -24,13 +25,13 @@ data class NotificationEvent(
     val packageName: String,
     val title: String,
     val text: String,
-    val timestamp: Long,
+    val timestamp: DateTime,
 )
 
 /**
  * A `trigger.schedule` fire, exposed on its `fireTime` port.
  *
- * - [firedAt]: epoch ms at which this fire occurred.
+ * - [firedAt]: the moment this fire occurred.
  * - [elapsedMs]: milliseconds since the trigger was activated — what the old
  *   `trigger.stopwatch` reported.
  * - [count]: 1-based occurrence number since activation.
@@ -45,7 +46,7 @@ data class NotificationEvent(
  */
 @Serializable
 data class ScheduleFire(
-    val firedAt: Long,
+    val firedAt: DateTime,
     val elapsedMs: Long,
     val count: Int,
     val hour: Int,
@@ -128,7 +129,7 @@ data class BatteryState(
     val level: Int,
     val plugged: String?,
     val event: String,
-    val timestamp: Long,
+    val timestamp: DateTime,
 )
 
 /** A duration value, in milliseconds, flowing into `action.delay`'s `duration` port. */
@@ -146,7 +147,7 @@ data class DurationMillis(
  * - [latitude], [longitude]: the triggering location.
  * - [accuracyMeters]: estimated accuracy of the triggering fix, or `0f` if
  *   unavailable.
- * - [timestamp]: when the transition was produced (epoch ms).
+ * - [timestamp]: when the transition was produced.
  */
 @Serializable
 data class GeofenceEvent(
@@ -155,7 +156,7 @@ data class GeofenceEvent(
     val latitude: Double,
     val longitude: Double,
     val accuracyMeters: Float,
-    val timestamp: Long,
+    val timestamp: DateTime,
 )
 
 /**
@@ -163,25 +164,25 @@ data class GeofenceEvent(
  *
  * - [name]: the variable name.
  * - [value]: the new string value.
- * - [timestamp]: when the change was produced (epoch ms).
+ * - [timestamp]: when the change was produced.
  */
 @Serializable
 data class VariableChange(
     val name: String,
     val value: String,
-    val timestamp: Long,
+    val timestamp: DateTime,
 )
 
 /**
  * A device/UI mode change reported by `trigger.mode_change` on its `mode` data port.
  *
  * - [mode]: the new mode — `"normal"` or `"night"`.
- * - [timestamp]: when the change was produced (epoch ms).
+ * - [timestamp]: when the change was produced.
  */
 @Serializable
 data class ModeChange(
     val mode: String,
-    val timestamp: Long,
+    val timestamp: DateTime,
 )
 
 /**
@@ -192,13 +193,13 @@ data class ModeChange(
  * - [event]: discriminator — `"enabled"`, `"disabled"`, `"connected"`,
  *   `"disconnected"`, `"on"`, `"off"`, `"plugged"`, `"unplugged"`, etc.
  * - [detail]: optional extra context (device name, dock type, timezone id, …).
- * - [timestamp]: when the event was produced (epoch ms).
+ * - [timestamp]: when the event was produced.
  */
 @Serializable
 data class SystemState(
     val event: String,
     val detail: String = "",
-    val timestamp: Long,
+    val timestamp: DateTime,
 )
 
 /**
@@ -206,13 +207,13 @@ data class SystemState(
  *
  * - [action]: `"installed"`, `"removed"` or `"replaced"`.
  * - [packageName]: the affected package, e.g. `com.example.app`.
- * - [timestamp]: when the event was produced (epoch ms).
+ * - [timestamp]: when the event was produced.
  */
 @Serializable
 data class PackageEvent(
     val action: String,
     val packageName: String,
-    val timestamp: Long,
+    val timestamp: DateTime,
 )
 
 /**
@@ -221,13 +222,13 @@ data class PackageEvent(
  *
  * - [event]: `"button"`, `"mounted"`, `"unmounted"` or `"ejected"`.
  * - [detail]: optional extra (media key name, mount path, …).
- * - [timestamp]: when the event was produced (epoch ms).
+ * - [timestamp]: when the event was produced.
  */
 @Serializable
 data class MediaEvent(
     val event: String,
     val detail: String = "",
-    val timestamp: Long,
+    val timestamp: DateTime,
 )
 
 /**

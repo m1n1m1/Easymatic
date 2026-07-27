@@ -3,7 +3,9 @@
 package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.core.model.ConfigKey
+import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.domain.model.Direction
+import com.example.ottomatic.domain.model.ANY_STRUCT
 import com.example.ottomatic.domain.model.ExecPorts
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.core.model.NodeTypeId
@@ -15,8 +17,10 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.ComparisonOperator
 import com.example.ottomatic.domain.model.config.ComparisonType
+import com.example.ottomatic.domain.model.config.ValueType
 import com.example.ottomatic.domain.model.execIn
 import com.example.ottomatic.domain.model.execOut
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.model.schema.ItemSchema
 
 /**
@@ -64,6 +68,27 @@ val IF_SOURCE_IN = PortName("source")
 /** The data input port on `action.if` carrying the value to compare against. */
 val IF_VALUE_IN = PortName("value")
 
+/** The DATA output port every transform emits on. */
+val TRANSFORM_OUT = PortName("value")
+
+/** typeId of the conversion transform — the node the editor inserts into a mismatched wire. */
+val CONVERT_TYPE_ID = NodeTypeId("transform.convert")
+
+/** The data input port on `transform.convert` carrying the value to convert. */
+val CONVERT_IN = PortName("in")
+
+/** The config key naming a conversion's target type (a [ValueType]). */
+val CONVERT_TO_KEY = ConfigKey("to")
+
+/** typeId of the JSON reading transform. */
+val JSON_READ_TYPE_ID = NodeTypeId("transform.json_read")
+
+/** The config key naming a JSON read's result type (a [ValueType]). */
+val JSON_READ_TYPE_KEY = ConfigKey("type")
+
+/** typeId of the text building transform. */
+val TEXT_TYPE_ID = NodeTypeId("transform.text")
+
 /** The config key of the comparison's field picker. */
 val IF_FIELD_KEY = ConfigKey("field")
 
@@ -79,16 +104,100 @@ val IF_SOURCE_KEY = ConfigKey("source")
 /**
  * The effective ports for the placed [node] in [workflow]: the node type's
  * static ports, with dynamic rewrites for `action.break` (struct-derived
- * output ports) and `action.if` (dynamic `source`/`value` input schemas).
+ * output ports), `action.if` (dynamic `source`/`value` input schemas) and the
+ * adaptive transforms (config-driven output schema).
  */
 fun effectivePorts(
     definition: NodeTypeDefinition,
     workflow: Workflow,
     node: WorkflowNode,
-): List<Port> = when (definition.typeId) {
-    BREAK_TYPE_ID -> breakEffectivePorts(workflow, node)
-    IF_TYPE_ID -> ifEffectivePorts(workflow, node)
-    else -> definition.ports
+): List<Port> = effectivePorts(definition, workflow, node, visiting = emptySet())
+
+/**
+ * [effectivePorts] with the recursion guard made explicit.
+ *
+ * Resolution walks the graph in both directions — `action.break` and `action.if`
+ * look *backwards* along an incoming edge, an adaptive transform looks *forwards*
+ * to the port it feeds — so two dynamic nodes wired to each other would otherwise
+ * ask each other for their schemas forever. [visiting] holds the nodes already
+ * being resolved further up the call chain; re-entering one falls back to its
+ * declared ports, which is exactly the "not known yet" answer the wildcard already
+ * means.
+ */
+private fun effectivePorts(
+    definition: NodeTypeDefinition,
+    workflow: Workflow,
+    node: WorkflowNode,
+    visiting: Set<NodeId>,
+): List<Port> {
+    if (node.id in visiting) return definition.ports
+    val deeper = visiting + node.id
+    return when (definition.typeId) {
+        BREAK_TYPE_ID -> breakEffectivePorts(workflow, node, deeper)
+        IF_TYPE_ID -> ifEffectivePorts(workflow, node, deeper)
+        CONVERT_TYPE_ID -> typedTransformPorts(definition, workflow, node, CONVERT_TO_KEY, deeper)
+        JSON_READ_TYPE_ID -> typedTransformPorts(definition, workflow, node, JSON_READ_TYPE_KEY, deeper)
+        else -> definition.ports
+    }
+}
+
+/**
+ * Ports for a transform whose output type is chosen in its own config
+ * (`transform.convert`, `transform.json_read`): the declared ports with the
+ * wildcard [TRANSFORM_OUT] port retyped to the selected [ValueType].
+ *
+ * When the output already feeds a port of a *narrower* primitive in the same
+ * family — a `Long` counter, a `Float` accuracy — that consumer's schema wins.
+ * "Whole number" is one choice in the form because nobody wants to pick between
+ * Int and Long, but the edge still has to type-check exactly, and the conversion
+ * is total either way.
+ */
+private fun typedTransformPorts(
+    definition: NodeTypeDefinition,
+    workflow: Workflow,
+    node: WorkflowNode,
+    typeKey: ConfigKey,
+    visiting: Set<NodeId>,
+): List<Port> {
+    val selected = configuredValueType(node, typeKey)
+    val consumer = resolveOutputSchema(workflow, node, TRANSFORM_OUT, visiting)?.takeIf { selected.covers(it) }
+    val schema = consumer ?: selected.schema
+    return definition.ports.map { port ->
+        if (port.name == TRANSFORM_OUT && port.direction == Direction.OUT) port.copy(schema = schema) else port
+    }
+}
+
+/** The [ValueType] named by [node]'s [typeKey] config, defaulting to text. */
+private fun configuredValueType(node: WorkflowNode, typeKey: ConfigKey): ValueType {
+    val raw = node.config[typeKey]?.takeIf { it.isNotBlank() } ?: return ValueType.TEXT
+    return runCatching { ValueType.valueOf(raw) }.getOrDefault(ValueType.TEXT)
+}
+
+/**
+ * The [ItemSchema] of the port that consumes [outputPortName] of [node], by
+ * following the outgoing DATA edge forward. The mirror of [resolveInputSchema];
+ * returns null when nothing is wired, or when several consumers disagree — a
+ * conversion feeding two differently-typed ports has no single right answer, so it
+ * falls back to its family default and the second edge is the one that has to
+ * convert again.
+ */
+private fun resolveOutputSchema(
+    workflow: Workflow,
+    node: WorkflowNode,
+    outputPortName: PortName,
+    visiting: Set<NodeId>,
+): ItemSchema? {
+    val edges = workflow.dataConnections.filter { it.fromNodeId == node.id && it.fromPort == outputPortName }
+    val schemas = edges.mapNotNull { edge ->
+        val targetNode = workflow.node(edge.toNodeId) ?: return@mapNotNull null
+        val targetDef = NodeTypeRegistry.byId(targetNode.typeId) ?: return@mapNotNull null
+        // The target's *effective* ports: `action.if` only knows it wants a Long
+        // once its own type is resolved. [visiting] stops that walking back here.
+        effectivePorts(targetDef, workflow, targetNode, visiting).firstOrNull {
+            it.name == edge.toPort && it.kind == PortKind.DATA && it.direction == Direction.IN
+        }?.schema
+    }.distinct()
+    return schemas.singleOrNull()
 }
 
 /** Effective input ports (convenience filter over [effectivePorts]). */
@@ -173,7 +282,10 @@ private fun sourceSchema(
     workflow: Workflow,
     node: WorkflowNode,
 ): ItemSchema? = when (val source = ValueSource.parse(spec)) {
-    ValueSource.Wired -> resolveInputSchema(workflow, node, IF_SOURCE_IN)
+    // A fresh walk from the config form rather than from a port resolution, so the
+    // guard starts here — with this node already in it, since resolving what feeds
+    // it can lead back to a transform that asks what this node wants.
+    ValueSource.Wired -> resolveInputSchema(workflow, node, IF_SOURCE_IN, visiting = setOf(node.id))
     is ValueSource.Value -> ValueRegistry.byId(source.typeId)?.definition?.nodeType?.ports?.firstOrNull()?.schema
 }
 
@@ -336,6 +448,7 @@ private fun literalTypeFor(schema: ItemSchema?): ConfigFieldType<*> =
             Int::class -> ConfigFieldType.INT
             Long::class, Double::class, Float::class -> ConfigFieldType.DOUBLE
             Boolean::class -> ConfigFieldType.BOOL
+            DateTime::class -> ConfigFieldType.DATE_TIME
             else -> ConfigFieldType.STR
         }
     } else {
@@ -343,16 +456,17 @@ private fun literalTypeFor(schema: ItemSchema?): ConfigFieldType<*> =
     }
 
 /**
- * Ports for an `action.break` node: base (exec in/out + struct IN wildcard)
- * plus one DATA OUT per field of the struct connected to [BREAK_STRUCT_IN].
+ * Ports for an `action.break` node: base (exec in/out + the struct IN port, which
+ * accepts any object and nothing else) plus one DATA OUT per field of the struct
+ * connected to [BREAK_STRUCT_IN].
  */
-private fun breakEffectivePorts(workflow: Workflow, node: WorkflowNode): List<Port> {
+private fun breakEffectivePorts(workflow: Workflow, node: WorkflowNode, visiting: Set<NodeId>): List<Port> {
     val base = listOf(
         execIn(),
         execOut(),
-        dataPort(BREAK_STRUCT_IN, Direction.IN, ItemSchema.Wildcard, label = "Struct"),
+        dataPort(BREAK_STRUCT_IN, Direction.IN, ANY_STRUCT, label = "Struct"),
     )
-    val schema = resolveInputSchema(workflow, node, BREAK_STRUCT_IN) as? ItemSchema.Object ?: return base
+    val schema = resolveInputSchema(workflow, node, BREAK_STRUCT_IN, visiting) as? ItemSchema.Object ?: return base
     return base + schema.fields.map { (name, fieldSchema) -> dataPort(PortName(name), Direction.OUT, fieldSchema) }
 }
 
@@ -361,8 +475,8 @@ private fun breakEffectivePorts(workflow: Workflow, node: WorkflowNode): List<Po
  * `source` and `value` DATA input port schemas rewritten from the `type` config and
  * any connected edge.
  */
-private fun ifEffectivePorts(workflow: Workflow, node: WorkflowNode): List<Port> {
-    val schema = ifSourcePortSchema(workflow, node)
+private fun ifEffectivePorts(workflow: Workflow, node: WorkflowNode, visiting: Set<NodeId>): List<Port> {
+    val schema = ifSourcePortSchema(workflow, node, visiting)
     return listOf(
         execIn(),
         execOut(ExecPorts.TRUE),
@@ -381,10 +495,10 @@ private fun ifEffectivePorts(workflow: Workflow, node: WorkflowNode): List<Port>
  * This describes the *port*, so it always reflects the wired edge — a node whose
  * config names a value node instead simply leaves the port unused.
  */
-private fun ifSourcePortSchema(workflow: Workflow, node: WorkflowNode): ItemSchema {
+private fun ifSourcePortSchema(workflow: Workflow, node: WorkflowNode, visiting: Set<NodeId>): ItemSchema {
     val type = comparisonType(node.config)
     if (type != ComparisonType.AUTO) return type.schema ?: ItemSchema.Wildcard
-    return resolveInputSchema(workflow, node, IF_SOURCE_IN) ?: ItemSchema.Wildcard
+    return resolveInputSchema(workflow, node, IF_SOURCE_IN, visiting) ?: ItemSchema.Wildcard
 }
 
 /**
@@ -399,12 +513,13 @@ private fun resolveInputSchema(
     workflow: Workflow,
     node: WorkflowNode,
     inputPortName: PortName,
+    visiting: Set<NodeId>,
 ): ItemSchema? {
     val edge = workflow.incomingData(node.id, inputPortName).firstOrNull() ?: return null
     val sourceNode = workflow.node(edge.fromNodeId) ?: return null
     val sourceDef = NodeTypeRegistry.byId(sourceNode.typeId) ?: return null
     val sourcePorts = if (sourceDef.hasDynamicPorts) {
-        effectivePorts(sourceDef, workflow, sourceNode)
+        effectivePorts(sourceDef, workflow, sourceNode, visiting)
     } else {
         sourceDef.ports
     }

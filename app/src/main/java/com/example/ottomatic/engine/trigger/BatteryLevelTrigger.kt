@@ -91,7 +91,7 @@ internal fun com.example.ottomatic.core.trigger.TriggerEvent.toBatteryState(): B
     level = payload[KEY_LEVEL]?.toIntOrNull() ?: UNKNOWN_LEVEL,
     plugged = payload[KEY_PLUGGED]?.takeIf { it.isNotBlank() },
     event = payload[KEY_EVENT].orEmpty(),
-    timestamp = payload[KEY_TIMESTAMP]?.toLongOrNull() ?: firedAtEpochMs,
+    timestamp = this.timestamp,
 )
 
 // Must match the payload keys emitted by `BatteryLevelWorker` / `ChargingReceiver` in `data/`.

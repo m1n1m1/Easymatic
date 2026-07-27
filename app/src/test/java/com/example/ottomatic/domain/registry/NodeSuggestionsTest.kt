@@ -12,6 +12,7 @@ import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.execIn
 import com.example.ottomatic.domain.model.items.HttpResponseItem
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.model.schema.schemaOf
 import org.junit.Assert.assertEquals
@@ -53,13 +54,24 @@ class NodeSuggestionsTest {
     }
 
     @Test
-    fun `dragging from a String output offers wired String inputs and the adaptive nodes`() {
+    fun `dragging from a String output offers wired String inputs and the comparison`() {
         val origin = DragOrigin(PortKind.DATA, isOutput = true, schema = schemaOf<String>())
         val notifyText = suggestion(origin, notify)
         assertNotNull("Notify should accept a String on its wired 'text' input", notifyText)
         assertEquals(PortName("text"), notifyText?.port?.name)
+        // `action.if` compares anything; `action.break` splits a struct, and there is
+        // nothing to split a scalar into.
         assertNotNull(suggestion(origin, IF_TYPE_ID))
-        assertNotNull(suggestion(origin, BREAK_TYPE_ID))
+        assertNull("Break must not be offered for a scalar", suggestion(origin, BREAK_TYPE_ID))
+    }
+
+    @Test
+    fun `break is offered for a struct and only for a struct`() {
+        val struct = DragOrigin(PortKind.DATA, isOutput = true, schema = schemaOf<HttpResponseItem>())
+        assertNotNull(suggestion(struct, BREAK_TYPE_ID))
+
+        val date = DragOrigin(PortKind.DATA, isOutput = true, schema = schemaOf<DateTime>())
+        assertNull("A date has no fields to break out", suggestion(date, BREAK_TYPE_ID))
     }
 
     @Test

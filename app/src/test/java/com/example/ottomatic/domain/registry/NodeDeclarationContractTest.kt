@@ -22,6 +22,7 @@ class NodeDeclarationContractTest {
     private val actions = ActionRegistry.all()
     private val triggers = TriggerRegistry.all()
     private val values = ValueRegistry.all()
+    private val transforms = TransformRegistry.all()
 
     @Test
     fun `every node declares a config class that can be decoded unconfigured`() {
@@ -37,6 +38,9 @@ class NodeDeclarationContractTest {
             // A value is read from a bare config map, with nothing wired into it —
             // the defaults must carry the whole thing.
             value.definition.schema.decode(emptyMap())
+        }
+        for (transform in transforms) {
+            transform.definition.schema.decode(emptyMap())
         }
         // The comparison must decode from bare defaults too: a freshly placed
         // `action.if` has an empty config until the user touches its form.
@@ -74,7 +78,8 @@ class NodeDeclarationContractTest {
     @Test
     fun `every wired config property is exposed as exactly one data input port`() {
         val schemas = actions.map { it.typeId to it.definition.schema } +
-            values.map { it.typeId to it.definition.schema }
+            values.map { it.typeId to it.definition.schema } +
+            transforms.map { it.typeId to it.definition.schema }
         for ((typeId, schema) in schemas) {
             val declaredKeys = schema.fields.map { it.key.value }.toSet()
             val wiredPorts = schema.wiredPorts.map { it.name.value }
@@ -255,10 +260,67 @@ class NodeDeclarationContractTest {
         }
     }
 
+    /**
+     * The purity contract for transforms — the other half of the pull side.
+     *
+     * A transform is read outside the execution order for the same reason a value
+     * is, so it carries the same bar: no exec ports and no permissions. What it does
+     * *not* share is leafness — a transform is a function, so it must have something
+     * to be a function of, and exactly one answer to give. Without the "at least one
+     * data input" half, a transform would be a value node with extra steps; without
+     * the "exactly one output" half, the pull memo (which is keyed by node, not port)
+     * would silently serve one port's item to another.
+     */
+    @Test
+    fun `every transform is a pure function with inputs and exactly one data output`() {
+        for (transform in transforms) {
+            val ports = transform.definition.nodeType.ports
+            assertTrue(
+                "${transform.typeId}: a transform is never pulsed, it must declare no execution ports",
+                ports.none { it.kind == PortKind.EXECUTION },
+            )
+            assertTrue(
+                "${transform.typeId}: a transform is a function, it must declare at least one data input",
+                ports.any { it.kind == PortKind.DATA && it.direction == Direction.IN },
+            )
+            assertEquals(
+                "${transform.typeId}: a transform must expose exactly one data output",
+                1,
+                ports.count { it.kind == PortKind.DATA && it.direction == Direction.OUT },
+            )
+            assertTrue(
+                "${transform.typeId}: a transform must not require a permission — a read cannot prompt",
+                transform.definition.nodeType.permissionRequirements.isEmpty(),
+            )
+        }
+    }
+
+    /**
+     * An adaptive transform declares a wildcard output and has it retyped by
+     * [effectivePorts]. A typeId missing from that `when` would keep the wildcard
+     * forever, so every edge out of it would be accepted and nothing downstream
+     * would ever narrow — the failure is silent, hence the check.
+     */
+    @Test
+    fun `every adaptive transform is retyped by effectivePorts`() {
+        val workflow = com.example.ottomatic.domain.model.Workflow(id = "w", name = "w")
+        for (transform in transforms.filter { it.definition.hasDynamicPorts }) {
+            val definition = transform.definition.nodeType
+            val resolved = effectivePorts(definition, workflow, placed(transform.typeId))
+                .single { it.kind == PortKind.DATA && it.direction == Direction.OUT }
+            assertTrue(
+                "${transform.typeId}: adaptive output was left as ${resolved.schema}; " +
+                    "add it to effectivePorts",
+                resolved.schema is com.example.ottomatic.domain.model.schema.ItemSchema.Primitive,
+            )
+        }
+    }
+
     private fun allConfigSchemas(): List<NodeConfigSchema> =
         actions.mapNotNull { it.definition.configSchema } +
             triggers.mapNotNull { it.definition.configSchema } +
-            values.mapNotNull { it.definition.configSchema }
+            values.mapNotNull { it.definition.configSchema } +
+            transforms.mapNotNull { it.definition.configSchema }
 
     private fun placed(typeId: NodeTypeId) = WorkflowNode(
         id = NodeId("n1"), typeId = typeId, name = typeId.value, x = 0f, y = 0f,

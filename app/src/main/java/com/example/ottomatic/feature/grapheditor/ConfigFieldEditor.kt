@@ -7,17 +7,26 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,10 +38,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ottomatic.domain.model.config.PickerKind
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.registry.ConfigField
 import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 /**
  * The input widget for one config field, chosen by its [ConfigFieldType] — the
@@ -149,6 +164,14 @@ internal fun ConfigFieldEditor(
                     )
                 }
             }
+            ConfigFieldType.DATE_TIME -> {
+                DateTimeField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    labelSlot = labelSlot,
+                    colors = colors,
+                )
+            }
             is ConfigFieldType.PICKER -> {
                 PickerField(
                     kind = type.kind,
@@ -168,6 +191,107 @@ internal fun ConfigFieldEditor(
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
+        }
+    }
+}
+
+/** Which half of the date/time chooser is on screen. */
+private enum class DateTimeStage { CLOSED, DATE, TIME }
+
+/**
+ * A date/time field: a text field the user can type into, with a calendar button
+ * that fills it in from a date picker followed by a time picker.
+ *
+ * Unlike a `@Picker` this stays **editable**. The stored text is read through
+ * [DateTime.parse], which accepts more than a calendar can express — most
+ * importantly a bare `18:00`, meaning "today at 18:00", which is how a comparison
+ * says "after six" and still means it tomorrow. The picker writes the canonical
+ * ISO-8601 form; anything the parser rejects simply leaves the property on its
+ * default when the node runs.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DateTimeField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
+    var stage by remember { mutableStateOf(DateTimeStage.CLOSED) }
+    var pickedDate by remember { mutableStateOf<LocalDate?>(null) }
+    // What the pickers open on: whatever is in the field, or now if it is empty
+    // or unreadable. Read at open time, so editing the text moves the picker too.
+    val seed = ZonedDateTime.ofInstant(
+        Instant.ofEpochMilli((DateTime.parse(value) ?: DateTime.now()).epochMs),
+        ZoneId.systemDefault(),
+    )
+
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = labelSlot,
+        colors = colors,
+        placeholder = { Text(text = "Now", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        trailingIcon = {
+            IconButton(onClick = { stage = DateTimeStage.DATE }) {
+                Icon(imageVector = Icons.Filled.DateRange, contentDescription = "Pick a date and time")
+            }
+        },
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+    )
+
+    when (stage) {
+        DateTimeStage.CLOSED -> Unit
+        DateTimeStage.DATE -> {
+            // The date picker works in UTC, so the seed is that *calendar day* at
+            // UTC midnight rather than the instant itself — otherwise a late
+            // evening east of Greenwich opens on the wrong day.
+            val dateState = rememberDatePickerState(
+                initialSelectedDateMillis = seed.toLocalDate().atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
+            )
+            DatePickerDialog(
+                onDismissRequest = { stage = DateTimeStage.CLOSED },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            pickedDate = dateState.selectedDateMillis?.let {
+                                Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate()
+                            }
+                            stage = DateTimeStage.TIME
+                        },
+                    ) { Text("Next") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { stage = DateTimeStage.CLOSED }) { Text("Cancel") }
+                },
+            ) {
+                DatePicker(state = dateState)
+            }
+        }
+        DateTimeStage.TIME -> {
+            val timeState = rememberTimePickerState(
+                initialHour = seed.hour,
+                initialMinute = seed.minute,
+                is24Hour = true,
+            )
+            AlertDialog(
+                onDismissRequest = { stage = DateTimeStage.CLOSED },
+                text = { TimePicker(state = timeState) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val day = pickedDate ?: seed.toLocalDate()
+                            val at = day.atTime(timeState.hour, timeState.minute).atZone(ZoneId.systemDefault())
+                            onValueChange(DateTime(at.toInstant().toEpochMilli()).toString())
+                            stage = DateTimeStage.CLOSED
+                        },
+                    ) { Text("Set") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { stage = DateTimeStage.CLOSED }) { Text("Cancel") }
+                },
+            )
         }
     }
 }

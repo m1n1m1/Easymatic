@@ -8,6 +8,8 @@ import com.example.ottomatic.domain.model.ValueSource
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.ComparisonOperator
+import com.example.ottomatic.domain.model.schema.DateTime
+import com.example.ottomatic.domain.model.schema.ItemSchema
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -93,6 +95,32 @@ class ValueRegistryTest {
         )
         assertEquals(
             ConfigFieldType.BOOL,
+            schema.fields.single { it.key == ConfigKey(IF_VALUE_IN.value) }.type,
+        )
+    }
+
+    /**
+     * `value.now` is what makes a date usable at all: it is the only source of a
+     * moment that needs no trigger, and picking it must give the comparison ordering
+     * operators and a date picker rather than a decimal field.
+     */
+    @Test
+    fun `the clock value types the comparison as a date`() {
+        val now = ValueRegistry.byId(NodeTypeId("value.now"))!!
+        assertEquals(
+            ItemSchema.Primitive(DateTime::class),
+            now.definition.nodeType.ports.single().schema,
+        )
+
+        val schema = schemaOf(ifNode(ValueSource.valueSpec(NodeTypeId("value.now"))))
+        val operators = (schema.fields.single { it.key == IF_OPERATOR_KEY }.type as ConfigFieldType.ENUM)
+            .options.map { it.value }
+        assertTrue(
+            "a date source must offer ordering, got $operators",
+            operators.contains(ComparisonOperator.GREATER_THAN.name),
+        )
+        assertEquals(
+            ConfigFieldType.DATE_TIME,
             schema.fields.single { it.key == ConfigKey(IF_VALUE_IN.value) }.type,
         )
     }

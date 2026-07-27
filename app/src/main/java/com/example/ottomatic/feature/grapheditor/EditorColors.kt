@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryStd
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.DoNotDisturb
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.LocationOn
@@ -17,12 +18,15 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Sms
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.NodeKind
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.model.schema.ItemSchema
 
 /**
@@ -51,6 +55,11 @@ object EditorColors {
     val actionAccent = Color(0xFF5B8DEF)
     val valueAccent = Color(0xFFC58AF9)
 
+    // Transforms sit next to values on the pull side, so they share the purple
+    // family — a cooler, dimmer shade, since a transform is plumbing rather than a
+    // reading of the device.
+    val transformAccent = Color(0xFF8E9CF7)
+
     /**
      * Per-data-type port colors, grouped from [ItemSchema] into a small
      * Blueprint-style palette (one color per *family* of types, not per type):
@@ -58,15 +67,21 @@ object EditorColors {
      *  - String  — pink
      *  - Number  — green (Int/Long/Double/Float)
      *  - Boolean — red
+     *  - Date & time — violet ([com.example.ottomatic.domain.model.schema.DateTime])
      *  - Struct  — blue ([ItemSchema.Object])
      *  - Collection — orange ([ItemSchema.ListSchema] / [ItemSchema.MapSchema])
      *  - Wildcard / Union / Unit / unknown — gray
+     *
+     * A moment gets its own color rather than joining the numbers: telling a
+     * timestamp apart from a battery percentage at a glance is most of the reason
+     * it is a type of its own.
      *
      * Use [portTypeColor] to map a port's [ItemSchema] to its color.
      */
     val stringPort = Color(0xFFE573B8)
     val numberPort = Color(0xFF56C2A8)
     val booleanPort = Color(0xFFEF5350)
+    val dateTimePort = Color(0xFFA97BF0)
     val structPort = Color(0xFF5B8DEF)
     val collectionPort = Color(0xFFE0A04C)
     val wildcardPort = Color(0xFFB4B8C2)
@@ -76,6 +91,7 @@ fun accentColor(kind: NodeKind): Color = when (kind) {
     NodeKind.TRIGGER -> EditorColors.triggerAccent
     NodeKind.ACTION -> EditorColors.actionAccent
     NodeKind.VALUE -> EditorColors.valueAccent
+    NodeKind.TRANSFORM -> EditorColors.transformAccent
 }
 
 /** The word shown under a node's name on its card, and in the palette headers. */
@@ -83,6 +99,7 @@ fun kindLabel(kind: NodeKind): String = when (kind) {
     NodeKind.TRIGGER -> "Trigger"
     NodeKind.ACTION -> "Action"
     NodeKind.VALUE -> "Value"
+    NodeKind.TRANSFORM -> "Transform"
 }
 
 /** The glyph that stands for a whole node kind, used on the palette's kind cards. */
@@ -90,6 +107,7 @@ fun kindIcon(kind: NodeKind): ImageVector = when (kind) {
     NodeKind.TRIGGER -> Icons.Filled.Bolt
     NodeKind.ACTION -> Icons.Filled.PlayArrow
     NodeKind.VALUE -> Icons.Filled.Numbers
+    NodeKind.TRANSFORM -> Icons.Filled.SwapHoriz
 }
 
 /**
@@ -103,6 +121,7 @@ fun portTypeColor(schema: ItemSchema?): Color = when (schema) {
         String::class -> EditorColors.stringPort
         Int::class, Long::class, Double::class, Float::class -> EditorColors.numberPort
         Boolean::class -> EditorColors.booleanPort
+        DateTime::class -> EditorColors.dateTimePort
         else -> EditorColors.stringPort
     }
     is ItemSchema.Object -> EditorColors.structPort
@@ -132,4 +151,7 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.BOOT -> Icons.Filled.PowerSettingsNew
     NodeIcon.BATTERY_LEVEL -> Icons.Filled.BatteryStd
     NodeIcon.BATTERY_CHARGING -> Icons.Filled.BatteryChargingFull
+    NodeIcon.CONVERT -> Icons.Filled.SwapHoriz
+    NodeIcon.TEXT -> Icons.Filled.TextFields
+    NodeIcon.JSON -> Icons.Filled.DataObject
 }

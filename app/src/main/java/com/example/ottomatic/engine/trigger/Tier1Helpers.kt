@@ -1,11 +1,13 @@
 package com.example.ottomatic.engine.trigger
 
+import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.SystemState
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.TriggerNodeDefinition
 import com.example.ottomatic.engine.triggerNode
@@ -72,10 +74,21 @@ internal fun systemStateFlow(
             SystemState(
                 event = bus.payload[KEY_EVENT].orEmpty(),
                 detail = bus.payload[KEY_DETAIL].orEmpty(),
-                timestamp = bus.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: bus.firedAtEpochMs,
+                timestamp = bus.timestamp,
             ),
         )
     }
+
+/**
+ * The moment this event reports, or when the bus saw it.
+ *
+ * The `data/trigger` receivers hand their timestamp over as text in a
+ * `Map<String, String>` payload, so this is the one place that reading is turned
+ * back into a [DateTime] — every trigger that fills a `timestamp` field goes
+ * through it rather than repeating the parse.
+ */
+internal val TriggerEvent.timestamp: DateTime
+    get() = DateTime(payload[KEY_TIMESTAMP]?.toLongOrNull() ?: firedAtEpochMs)
 
 /**
  * The `event` payload value an enum entry matches. Trigger event enums name

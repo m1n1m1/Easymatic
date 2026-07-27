@@ -14,8 +14,10 @@ import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.Wired
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.model.schema.ItemSchema
+import com.example.ottomatic.domain.model.schema.asText
 import com.example.ottomatic.domain.model.schema.buildSchema
 import com.example.ottomatic.domain.model.schema.jsonElementToString
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -84,7 +86,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         val encoded = buildMap<String, JsonElement> {
             for (element in elements) {
                 val wired = if (element.wired) {
-                    data[PortName(element.key)]?.let { element.encode(it.value?.toString()) }
+                    data[PortName(element.key)]?.let { element.encode(it.asText()) }
                 } else {
                     null
                 }
@@ -150,6 +152,15 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         picker: PickerKind?,
         key: String,
     ): ConfigFieldType<*> {
+        // A DateTime reports `STRING`, so it has to be recognised by name before the
+        // kind is consulted or it renders as a plain text field.
+        if (element.serialName == DateTime.SERIAL_NAME) {
+            check(picker == null) {
+                "Config property '${descriptor.serialName}.$key' is annotated @Picker but is a date; " +
+                    "dates have their own picker, so the annotation is redundant"
+            }
+            return ConfigFieldType.DATE_TIME
+        }
         check(picker == null || element.kind == PrimitiveKind.STRING) {
             "Config property '${descriptor.serialName}.$key' is annotated @Picker but is a " +
                 "${element.kind}; a picker stores the chosen thing's identifier, so it must be a String"
@@ -209,6 +220,18 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
          */
         fun encode(raw: String?): JsonElement? {
             val value = raw?.takeIf { it.isNotBlank() } ?: return null
+            // A date is normalised here rather than when the form is saved, which is
+            // what gives a stored `18:00` its meaning: this runs once per execution,
+            // so it resolves against *today* every time the node is decoded.
+            return if (elementDescriptor.serialName == DateTime.SERIAL_NAME) {
+                DateTime.parse(value)?.let { JsonPrimitive(it.toString()) }
+            } else {
+                encodeDeclared(value)
+            }
+        }
+
+        /** The parse table for a property whose form is its declared serial kind. */
+        private fun encodeDeclared(value: String): JsonElement? {
             return when (elementDescriptor.kind) {
                 SerialKind.ENUM -> JsonPrimitive(value).takeIf { value in enumValues }
                 PrimitiveKind.BOOLEAN -> value.toBooleanStrictOrNull()?.let { JsonPrimitive(it) }

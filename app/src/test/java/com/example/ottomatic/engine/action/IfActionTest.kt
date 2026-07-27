@@ -11,6 +11,7 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.ComparisonOperator
 import com.example.ottomatic.domain.model.config.ComparisonType
 import com.example.ottomatic.domain.model.items.BatteryState
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.registry.IF_SOURCE_IN
 import com.example.ottomatic.domain.registry.IF_VALUE_IN
@@ -50,6 +51,51 @@ class IfActionTest {
             evaluate(
                 config = compare(field = "level", operator = ComparisonOperator.LESS_THAN, value = "50"),
                 data = mapOf(IF_SOURCE_IN to battery),
+            ),
+        )
+    }
+
+    @Test
+    fun `a date compares chronologically, against the way a person writes one`() = runBlocking {
+        // Both sides render as ISO-8601 with an offset, where text order and time
+        // order disagree — so this is really a test that the comparison parses.
+        val evening = Item.of(DateTime.parse("2026-07-27T22:00:00+02:00")!!)
+
+        assertTrue(
+            evaluate(
+                config = compare(
+                    type = ComparisonType.DATE_TIME,
+                    operator = ComparisonOperator.GREATER_THAN,
+                    value = "2026-07-27T23:00:00+04:00",
+                ),
+                data = mapOf(IF_SOURCE_IN to evening),
+            ),
+        )
+        assertTrue(
+            evaluate(
+                config = compare(
+                    type = ComparisonType.DATE_TIME,
+                    operator = ComparisonOperator.LESS_THAN,
+                    value = "2026-07-28",
+                ),
+                data = mapOf(IF_SOURCE_IN to evening),
+            ),
+        )
+    }
+
+    @Test
+    fun `a struct's timestamp field is compared as a date`() = runBlocking {
+        // Reached through `Item.flat`, which is a different path to the value than a
+        // broken-out port takes — and has to agree with it.
+        val event = Item.of(battery(50).copy(timestamp = DateTime.parse("2026-07-27T12:00:00Z")!!))
+        assertTrue(
+            evaluate(
+                config = compare(
+                    field = "timestamp",
+                    operator = ComparisonOperator.GREATER_THAN,
+                    value = "2026-07-27T11:00:00Z",
+                ),
+                data = mapOf(IF_SOURCE_IN to event),
             ),
         )
     }
@@ -153,7 +199,7 @@ class IfActionTest {
     ) = CompareConfig(type = type, field = field, operator = operator, source = source, value = value)
 
     private fun battery(level: Int) = BatteryState(
-        isCharging = false, level = level, plugged = null, event = "changed", timestamp = 0L,
+        isCharging = false, level = level, plugged = null, event = "changed", timestamp = DateTime(0),
     )
 
     private fun host() = WorkflowNode(

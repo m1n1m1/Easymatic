@@ -43,17 +43,18 @@ feature/    Vertical feature slices (Compose UI + ViewModels)
 
 ### Node system
 
-Every node is declared **exactly once** in its own file under `engine/`, bundling typeId, palette metadata, ports, config fields, and typed contract. There are three kinds (`NodeKind`):
+Every node is declared **exactly once** in its own file under `engine/`, bundling typeId, palette metadata, ports, config fields, and typed contract. There are four kinds (`NodeKind`):
 
 - **Actions**: `override val definition = actionNode<I, O>(...)` (or `effectNode` for no data output, `adaptiveNode` for dynamic ports)
 - **Triggers**: `override val definition = triggerNode<C, O>(...)` (or `pulseTriggerNode` for no data output)
-- **Values**: `override val definition = valueNode<C, O>(...)` — a pure reader (see below)
+- **Values**: `override val definition = valueNode<C, O>(...)` — a pure leaf reader (see below)
+- **Transforms**: `override val definition = transformNode<C, O>(...)` (or `adaptiveTransformNode` when the output type comes from config) — a pure function of its data inputs (see below)
 
-The **only** registration step is adding one line to `ActionRegistry`, `TriggerRegistry` or `ValueRegistry` (in `domain/registry/`). `NodeTypeRegistry` and `ConfigSchemaRegistry` are **derived views** — never add entries to them directly.
+The **only** registration step is adding one line to `ActionRegistry`, `TriggerRegistry`, `ValueRegistry` or `TransformRegistry` (in `domain/registry/`). `NodeTypeRegistry` and `ConfigSchemaRegistry` are **derived views** — never add entries to them directly.
 
-Config is declared on a single `@Serializable` data class per node, with annotations (`@Label`, `@Wired`, `@Multiline`, `@VisibleWhen`, `@Picker`) controlling form rendering and data input wiring. The framework derives config decoding, form schema, and data input ports from this class.
+Config is declared on a single `@Serializable` data class per node, with annotations (`@Label`, `@Wired`, `@Multiline`, `@VisibleWhen`, `@Picker`) controlling form rendering and data input wiring. The framework derives config decoding, form schema, and data input ports from this class. Every property must be a `String`, a number, a `Boolean`, an `enum` or a `DateTime`.
 
-`@Picker(PickerKind.X)` marks a `String` property whose value is an identifier chosen from a dedicated chooser rather than typed — currently a geofence place id. Adding a `PickerKind` requires a matching branch in `ConfigFieldEditor`'s exhaustive `when`.
+`@Picker(PickerKind.X)` marks a `String` property whose value is an identifier chosen from a dedicated chooser rather than typed — currently a geofence place id. Adding a `PickerKind`, or a `ConfigFieldType`, requires a matching branch in `ConfigFieldEditor`'s exhaustive `when`.
 
 ### Values and conditions
 
@@ -66,7 +67,39 @@ There is deliberately **no way to attach a condition to a node**. A MacroDroid-s
 
 `CompareConfig.source` holds a `ValueSource` *spec* (`domain/model/ValueSource.kt`): `""` = the node's own wired `source` port, `val:<typeId>` = a value node read on demand. The latter needs no edge and no exec position, so comparing a device property costs nothing on the canvas. Anything that is not a `val:` read parses as `Wired`, which fails closed.
 
-`GraphValidator` exempts value-node sources from the exec-upstream rule (they have no exec position) and warns about a value wired to nothing.
+`GraphValidator` exempts pull-side sources (values *and* transforms) from the exec-upstream rule — they have no exec position — and warns about one wired to nothing.
+
+### Data conversion and parsing
+
+The graph is **strictly typed**: `ItemSchema.isAssignableFrom` is invariant on primitives, so an `Int` output is never silently accepted by a `Text` input. Conversion is a **node**, following Unreal Blueprints:
+
+- `action.break`'s `struct` input is **not** a wildcard: it is `ANY_STRUCT` (`ItemSchema.Object` with no fields), which width-subtyping makes accept every object and nothing else. A wildcard let a number or a date be wired in, where the node would sprout no output ports and look broken. A `Wildcard` *source* still connects, so an adaptive transform can be wired before it is retyped.
+- **`conversionTarget(source, target)`** (`domain/model/schema/Conversions.kt`) is the single conversion table. Every primitive pair converts (including failable ones like text→number); anything at all converts *to* text; nothing converts *to* a struct.
+- **Autocast**: when a data drop fails the type check, `GraphEditorViewModel.commitConnection` asks that table and, if a conversion exists, drops a pre-configured `transform.convert` into the wire. The user sees the node appear and can retype or delete it. A drop with no conversion is still refused.
+- Because the conversion is *visible* and carries its own "If it fails" field, `ValueType.convert` (`domain/model/config/ValueType.kt`) can be **total** — it always produces an item of the requested type and never throws. That permissiveness is only safe while the node stays on the canvas.
+- `ValueType` names a *family* (Text / Number / Whole number / Yes or no / Date & time), not a Kotlin type. When a conversion feeds a port that is specifically `Long` or `Float`, `effectivePorts` narrows the output port to that consumer's primitive.
+- **`Item.asText()`** (`domain/model/schema/ItemText.kt`) is the one renderer for "how does this look as text?" — used by the TEXT conversion, by `NodeSchema.decode` for wired values, and by `action.if`. Structs render as compact JSON, so a struct converted to text can be fed straight back into `transform.json_read`.
+
+### Dates and times
+
+A timestamp is a **`DateTime`** (`domain/model/schema/DateTime.kt`), not a `Long`. It is an ordinary `ItemSchema.Primitive` and therefore invariant against `Long` — bridging the two is the visible job of `transform.convert` — but it renders as ISO-8601 with an offset, gets its own port colour, and offers a date picker instead of a decimal field when compared against.
+
+- `PrimitiveKind` is closed, so a `DateTime` announces itself by **serial name**. Three places check `DateTime.SERIAL_NAME`: `buildSchemaNotNull` (port schemas), `NodeSchema.formTypeOf` (form field kind) and `ConfigElement.encode` (config parsing). Miss one and a date silently degrades to text.
+- `DateTime.toString()` **is** the text form — `Item.asText()` renders any primitive as `value.toString()`, so overriding it is what carries ISO-8601 to notifications, `transform.text`, wired config values and `action.if` without a special case anywhere. The serializer is a **string** too, so `Item.flat` and a struct's JSON agree with it.
+- `DateTime.parse` is deliberately lenient — epoch millis, epoch seconds, ISO with or without an offset, `2026-07-27`, and a bare `18:00` meaning **today** at that time. The last form is what makes "only after 18:00" expressible; it re-resolves every time a node is decoded, which is why `ConfigElement.encode` normalises on decode rather than on save.
+- Ordering comparisons parse both sides (`String.asOrdered` in `Comparison.kt`) because ISO text does not sort chronologically across offsets. `EQUALS` still compares text.
+- `value.now` is the only source of a moment that needs no trigger; every other one arrives as a field of a trigger's struct (`domain/model/items/Items.kt`).
+- A **duration is not a DateTime**: `action.delay`'s duration, poll intervals and `ScheduleFire.elapsedMs` stay plain numbers, and `trigger.schedule`'s `atTime`/`windowFrom`/`windowUntil` stay `HH:mm` strings — a time of day is not an instant.
+
+### Transforms
+
+A **transform** (`engine/transform/`) is the second half of the pull side: a pure *function* of its data inputs, where a value node is a pure *leaf*. Neither has exec ports; both are pulled just before the node that consumes them. Pulling a transform first pulls whatever feeds it, sharing one memo across the whole chain — so a value node reaching one consumer through two transforms is still read exactly once.
+
+`NodeDeclarationContractTest` enforces the contract: no exec ports, no permissions, **at least one** DATA input, **exactly one** DATA output. The single-output rule is load-bearing — the executor's pull memo is keyed by node, not port.
+
+Three exist: `transform.convert` (the autocast target), `transform.json_read` (dot path with array indexing — `main.temp`, `items.0.price`, `items[0].price`), and `transform.text` (a template with `{A}`/`{B}`/`{C}` slots, which is how a bare `43` becomes "Battery is 43%").
+
+`transform.convert` and `transform.json_read` declare a `Wildcard` output retyped by `effectivePorts` from their config. That resolution walks the graph both backwards (`action.break`, `action.if`) and forwards (a transform asking what it feeds), so `effectivePorts` threads a `visiting` set; re-entering a node falls back to its declared ports.
 
 ### Geofence places
 
@@ -86,6 +119,7 @@ All identifiers are `@JvmInline value class` (zero-cost type safety) in `core/mo
 - **WorkflowExecutor** dispatches trigger events through the graph depth-first
 - **Triggers** return `Flow<NodeOutput<T>>` events
 - **Actions** implement `suspend fun execute(I, context): NodeOutput<O>`
+- **Values and transforms** are never pulsed — `WorkflowExecutor.resolveDataIn` pulls them while collecting a consumer's inputs
 - **MacroEngineService** (foreground service) owns the engine, survives UI destruction, re-arms on boot
 - **TriggerBus** is a singleton event bus connecting manifest-registered broadcast receivers to the engine
 

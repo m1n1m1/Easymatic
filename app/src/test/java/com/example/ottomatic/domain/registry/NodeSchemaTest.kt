@@ -12,6 +12,7 @@ import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.NoConfig
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.Wired
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import kotlinx.serialization.Serializable
@@ -48,7 +49,45 @@ class NodeSchemaTest {
         @VisibleWhen("patience", "3") val excuse: String = "",
     )
 
+    /** A date property, whose serial kind is `STRING` and so must be recognised by name. */
+    @Serializable
+    data class Dated(
+        @Wired val at: DateTime = DateTime.EPOCH,
+    )
+
     private val schema = nodeSchema<Sample>()
+    private val dated = nodeSchema<Dated>()
+
+    @Test
+    fun `a date property gets a date field, port and default`() {
+        val field = dated.fields.single()
+        assertEquals(ConfigFieldType.DATE_TIME, field.type)
+        assertEquals(DateTime.EPOCH.toString(), field.defaultValue)
+        assertEquals(ItemSchema.Primitive(DateTime::class), dated.wiredPorts.single().schema)
+    }
+
+    @Test
+    fun `a stored date is resolved when the node is decoded, not when it was typed`() {
+        // The point of normalising on decode: a bare time means *today*, so the same
+        // stored config keeps meaning "six in the evening" tomorrow.
+        val expected = DateTime.parse("18:00")!!
+        assertEquals(expected, dated.decode(mapOf(ConfigKey("at") to "18:00")).at)
+        assertEquals(DateTime(1_753_617_791_000), dated.decode(mapOf(ConfigKey("at") to "1753617791000")).at)
+    }
+
+    @Test
+    fun `text that is not a date leaves the property on its default`() {
+        assertEquals(DateTime.EPOCH, dated.decode(mapOf(ConfigKey("at") to "not a date")).at)
+    }
+
+    @Test
+    fun `a wired date arrives through the same parse as a typed one`() {
+        val wired = dated.decode(
+            config = emptyMap(),
+            data = mapOf(PortName("at") to Item.of(DateTime(1_753_617_791_000))),
+        )
+        assertEquals(DateTime(1_753_617_791_000), wired.at)
+    }
 
     @Test
     fun `fields are derived in declaration order with keys taken from property names`() {

@@ -4,6 +4,7 @@ import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.engine.action.ClipboardMode
 import com.example.ottomatic.domain.model.config.ComparisonOperator
 import com.example.ottomatic.domain.model.config.ComparisonType
@@ -74,7 +75,7 @@ class WorkflowExecutorTest {
             ),
         )
         val sms = com.example.ottomatic.domain.model.items.SmsMessage(
-            sender = "+1555", body = "hello", timestamp = 1L,
+            sender = "+1555", body = "hello", timestamp = DateTime(1),
         )
         executor.executeFrom(
             workflow,
@@ -124,7 +125,7 @@ class WorkflowExecutorTest {
         )
         // BatteryState.level = 50 > 5 -> true branch.
         val battery = BatteryState(
-            isCharging = true, level = 50, plugged = "usb", event = "charging_started", timestamp = 1L,
+            isCharging = true, level = 50, plugged = "usb", event = "charging_started", timestamp = DateTime(1),
         )
         executor.executeFrom(
             workflow,
@@ -172,7 +173,7 @@ class WorkflowExecutorTest {
         )
         // BatteryState.level = 50 < 20 is false -> false branch.
         val battery = BatteryState(
-            isCharging = true, level = 50, plugged = "usb", event = "charging_started", timestamp = 1L,
+            isCharging = true, level = 50, plugged = "usb", event = "charging_started", timestamp = DateTime(1),
         )
         executor.executeFrom(
             workflow,
@@ -231,7 +232,7 @@ class WorkflowExecutorTest {
                 DataConnection("d2", NodeId("brk"), PortName("body"), NodeId("n2"), PortName("message")),
             ),
         )
-        val sms = com.example.ottomatic.domain.model.items.SmsMessage("+1555", "hi", 1L)
+        val sms = com.example.ottomatic.domain.model.items.SmsMessage("+1555", "hi", DateTime(1))
         executor.executeFrom(
             workflow,
             workflow.node(NodeId("n1"))!!,
@@ -318,7 +319,7 @@ class WorkflowExecutorTest {
                 DataConnection("d2", NodeId("brk"), PortName("sender"), NodeId("n2"), PortName("to")),
             ),
         )
-        val sms = com.example.ottomatic.domain.model.items.SmsMessage("+1555", "hello", 1L)
+        val sms = com.example.ottomatic.domain.model.items.SmsMessage("+1555", "hello", DateTime(1))
         executor.executeFrom(
             workflow,
             workflow.node(NodeId("n1"))!!,

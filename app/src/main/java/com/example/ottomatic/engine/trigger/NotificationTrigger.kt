@@ -52,7 +52,7 @@ class NotificationTrigger : Trigger<NotificationConfig, NotificationEvent> {
                         packageName = event.payload[KEY_PACKAGE].orEmpty(),
                         title = event.payload[KEY_TITLE].orEmpty(),
                         text = event.payload[KEY_TEXT].orEmpty(),
-                        timestamp = event.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: event.firedAtEpochMs,
+                        timestamp = event.timestamp,
                     ),
                 )
             }

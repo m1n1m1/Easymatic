@@ -8,6 +8,7 @@ import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.ScheduleFire
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
@@ -284,7 +285,7 @@ class ScheduleTrigger : Trigger<ScheduleConfig, ScheduleFire> {
             count += 1
             val calendar = Calendar.getInstance().apply { timeInMillis = firedAt }
             return ScheduleFire(
-                firedAt = firedAt,
+                firedAt = DateTime(firedAt),
                 elapsedMs = firedAt - startedAt,
                 count = count,
                 hour = calendar.get(Calendar.HOUR_OF_DAY),

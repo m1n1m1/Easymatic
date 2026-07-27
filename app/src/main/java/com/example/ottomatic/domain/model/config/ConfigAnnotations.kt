@@ -15,8 +15,9 @@ import kotlinx.serialization.Serializable
  * Rules enforced at declaration time (registry initialisation fails loudly
  * otherwise):
  *  - every property must have a default value;
- *  - every property must be a `String`, a number, a `Boolean` or an `enum`
- *    (possibly nullable) — richer shapes cannot be rendered in a form.
+ *  - every property must be a `String`, a number, a `Boolean`, an `enum` or a
+ *    [com.example.ottomatic.domain.model.schema.DateTime] (possibly nullable) —
+ *    richer shapes cannot be rendered in a form.
  */
 
 /** Human-readable form label for a config property or enum option. */

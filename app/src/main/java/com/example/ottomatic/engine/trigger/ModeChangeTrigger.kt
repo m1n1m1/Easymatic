@@ -7,6 +7,7 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.NoConfig
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.ModeChange
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
@@ -43,7 +44,7 @@ class ModeChangeTrigger : Trigger<NoConfig, ModeChange> {
                 NodeOutput(
                     ModeChange(
                         mode = bus.payload[KEY_MODE].orEmpty(),
-                        timestamp = bus.firedAtEpochMs,
+                        timestamp = DateTime(bus.firedAtEpochMs),
                     ),
                 )
             }

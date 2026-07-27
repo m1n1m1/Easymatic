@@ -7,6 +7,7 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.registry.ActionRegistry
+import com.example.ottomatic.domain.registry.TransformRegistry
 import com.example.ottomatic.domain.registry.ValueRegistry
 import com.example.ottomatic.engine.trigger.TriggerOutput
 import com.example.ottomatic.engine.validation.GraphValidator
@@ -29,13 +30,18 @@ import com.example.ottomatic.engine.validation.Severity
  * the source port's cached item. An unwired data input port simply yields no
  * entry, and the action's config class falls back to that property's form value.
  *
- * A data edge whose source is a [com.example.ottomatic.engine.ValueNode] works the
- * other way round — pull, not push. A value node is never pulsed and has no exec
- * position at all; it is *read* while collecting its consumer's inputs. The rule is
- * one sentence: **a value is read just before the node that uses it.** Within one
- * consumer every port sees a single read (so two ports of the same node can never
- * disagree), while two different consumers each read fresh (so a value can never
- * go stale across a delay, or across a future loop body).
+ * A data edge whose source is a [com.example.ottomatic.engine.ValueNode] or an
+ * [ExecutableTransform] works the other way round — pull, not push. Neither is ever
+ * pulsed and neither has an exec position at all; both are *read* while collecting
+ * their consumer's inputs. The rule is one sentence: **a value is read just before
+ * the node that uses it.** Within one consumer every port sees a single read (so two
+ * ports of the same node can never disagree), while two different consumers each read
+ * fresh (so a value can never go stale across a delay, or across a future loop body).
+ *
+ * A transform extends that rule rather than bending it: pulling one first pulls
+ * whatever feeds it, so a whole chain of conversions resolves in one go, sharing a
+ * single memo — a value node reaching one consumer through two different transforms
+ * is still read once.
  */
 /** Items produced so far, addressed by the port they were produced on. */
 private typealias DataCache = MutableMap<Pair<NodeId, PortName>, Item>
@@ -98,17 +104,19 @@ class WorkflowExecutor(
      * of this one call, which is exactly the "fresh per consumer" rule — consistent
      * across [target]'s own ports, re-read for the next consumer.
      */
+    @Suppress("LongParameterList") // The pull memo and cycle guard travel with the recursion.
     private suspend fun collectDataIn(
         workflow: Workflow,
         target: WorkflowNode,
         dataCache: DataCache,
+        reads: MutableMap<NodeId, Item?> = HashMap(),
+        visiting: MutableSet<NodeId> = HashSet(),
     ): Map<PortName, Item> {
         val incoming = workflow.incomingData(target.id)
         if (incoming.isEmpty()) return emptyMap()
-        val reads = HashMap<NodeId, Item?>()
         val result = HashMap<PortName, Item>(incoming.size)
         for (conn in incoming) {
-            val item = resolveDataIn(workflow, conn, target, dataCache, reads)
+            val item = resolveDataIn(workflow, conn, target, dataCache, reads, visiting)
             if (item != null) result[conn.toPort] = item
         }
         return result
@@ -116,22 +124,71 @@ class WorkflowExecutor(
 
     /**
      * The item arriving over [conn]: a cached output for a pushed source, or a live
-     * read for a value node — memoized in [reads] so [target] sees one consistent
-     * value however many of its ports the same value node feeds.
+     * pull for a value node or a transform — memoized in [reads] so [target] sees
+     * one consistent value however many of its ports the same source feeds, whether
+     * directly or through different transforms.
      */
-    @Suppress("ReturnCount") // Null-guards on the optional node/cache path are idiomatic here.
+    @Suppress("ReturnCount", "LongParameterList") // Null-guards on the optional node/cache path are idiomatic here.
     private suspend fun resolveDataIn(
         workflow: Workflow,
         conn: DataConnection,
         target: WorkflowNode,
         dataCache: DataCache,
         reads: MutableMap<NodeId, Item?>,
+        visiting: MutableSet<NodeId>,
     ): Item? {
         val sourceNode = workflow.node(conn.fromNodeId) ?: return null
-        val value = ValueRegistry.byId(sourceNode.typeId)
-            ?: return dataCache[conn.fromNodeId to conn.fromPort]
         if (conn.fromNodeId in reads) return reads[conn.fromNodeId]
-        return readValue(value, sourceNode, target).also { reads[conn.fromNodeId] = it }
+        ValueRegistry.byId(sourceNode.typeId)?.let { value ->
+            return readValue(value, sourceNode, target).also { reads[conn.fromNodeId] = it }
+        }
+        TransformRegistry.byId(sourceNode.typeId)?.let { transform ->
+            return readTransform(workflow, transform, sourceNode, target, dataCache, reads, visiting)
+                .also { reads[conn.fromNodeId] = it }
+        }
+        return dataCache[conn.fromNodeId to conn.fromPort]
+    }
+
+    /**
+     * Pulls [transform] for [target], first pulling whatever *it* depends on.
+     *
+     * The recursion shares [reads], which is what keeps the "one consistent read per
+     * consumer" rule honest across a chain: a value node feeding two transforms that
+     * both feed [target] is still read exactly once.
+     *
+     * [visiting] guards against a data cycle. [GraphValidator] rejects those before
+     * anything runs, so this only stops a hand-edited workflow file from recursing
+     * until the stack gives out.
+     */
+    @Suppress("LongParameterList") // The pull memo and cycle guard travel with the recursion.
+    private suspend fun readTransform(
+        workflow: Workflow,
+        transform: ExecutableTransform,
+        sourceNode: WorkflowNode,
+        target: WorkflowNode,
+        dataCache: DataCache,
+        reads: MutableMap<NodeId, Item?>,
+        visiting: MutableSet<NodeId>,
+    ): Item? {
+        if (!visiting.add(sourceNode.id)) {
+            context.log("Transform ${transform.typeId.value} skipped: it depends on itself")
+            return null
+        }
+        return try {
+            val data = collectDataIn(workflow, sourceNode, dataCache, reads, visiting)
+            val item = runCatching { transform.transformRaw(sourceNode, data, context) }.getOrElse { cause ->
+                context.log("Transform ${transform.typeId.value} failed: ${cause.message}")
+                null
+            }
+            if (item == null) {
+                context.log("Transform ${transform.typeId.value} produced nothing for '${target.name}'")
+            } else {
+                context.log("Transform ${transform.typeId.value} = ${item.value} for '${target.name}'")
+            }
+            item
+        } finally {
+            visiting.remove(sourceNode.id)
+        }
     }
 
     /**

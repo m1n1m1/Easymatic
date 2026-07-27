@@ -57,7 +57,8 @@ class NodeTypeRegistryTest {
     fun `every registered behaviour exposes exactly one node type`() {
         val behaviourIds = TriggerRegistry.all().map { it.typeId } +
             ActionRegistry.all().map { it.typeId } +
-            ValueRegistry.all().map { it.typeId }
+            ValueRegistry.all().map { it.typeId } +
+            TransformRegistry.all().map { it.typeId }
         val nodeTypeIds = NodeTypeRegistry.all.map { it.typeId }
         assertEquals(behaviourIds.toSet(), nodeTypeIds.toSet())
         assertEquals(behaviourIds.size, nodeTypeIds.size)
@@ -70,10 +71,10 @@ class NodeTypeRegistryTest {
      */
     @Test
     fun `values are not executable`() {
-        ValueRegistry.all().forEach { value ->
+        (ValueRegistry.all().map { it.typeId } + TransformRegistry.all().map { it.typeId }).forEach { typeId ->
             assertTrue(
-                "${value.typeId} must not be executable — a value is read, never run",
-                ActionRegistry.byId(value.typeId) == null,
+                "$typeId must not be executable — a pull-side node is read, never run",
+                ActionRegistry.byId(typeId) == null,
             )
         }
     }
@@ -85,6 +86,7 @@ class NodeTypeRegistryTest {
                 NodeKind.TRIGGER -> "trigger."
                 NodeKind.ACTION -> "action."
                 NodeKind.VALUE -> "value."
+                NodeKind.TRANSFORM -> "transform."
             }
             assertTrue(
                 "${definition.typeId} should start with $expectedPrefix",

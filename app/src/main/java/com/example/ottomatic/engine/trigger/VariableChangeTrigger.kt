@@ -7,6 +7,7 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.VariableChange
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.triggerNode
 import kotlinx.coroutines.flow.Flow
@@ -59,7 +60,7 @@ class VariableChangeTrigger : Trigger<VariableChangeConfig, VariableChange> {
                     VariableChange(
                         name = bus.payload[KEY_NAME].orEmpty(),
                         value = bus.payload[KEY_VALUE].orEmpty(),
-                        timestamp = bus.firedAtEpochMs,
+                        timestamp = DateTime(bus.firedAtEpochMs),
                     ),
                 )
             }

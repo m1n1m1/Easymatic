@@ -131,7 +131,7 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
                                     latitude = bus.payload[KEY_LATITUDE]?.toDoubleOrNull() ?: latitude,
                                     longitude = bus.payload[KEY_LONGITUDE]?.toDoubleOrNull() ?: longitude,
                                     accuracyMeters = bus.payload[KEY_ACCURACY]?.toFloatOrNull() ?: 0f,
-                                    timestamp = bus.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: bus.firedAtEpochMs,
+                                    timestamp = bus.timestamp,
                                 ),
                             ),
                         )

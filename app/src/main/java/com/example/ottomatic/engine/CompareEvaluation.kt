@@ -4,6 +4,7 @@ import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.config.ComparisonType
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.model.schema.ItemSchema
+import com.example.ottomatic.domain.model.schema.asText
 import com.example.ottomatic.engine.action.CompareConfig
 
 /** The `source` DATA input port a placed `action.if` reads when one is wired. */
@@ -39,5 +40,5 @@ private fun inspect(config: CompareConfig, item: Item): String {
     if (config.type == ComparisonType.AUTO && item.schema is ItemSchema.Object) {
         return item.flat[config.field].orEmpty()
     }
-    return item.value?.toString().orEmpty()
+    return item.asText()
 }

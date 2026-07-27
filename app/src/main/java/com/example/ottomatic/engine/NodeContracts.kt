@@ -8,6 +8,7 @@ import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.schema.Item
+import com.example.ottomatic.domain.model.schema.asText
 
 /**
  * The EXECUTION output a node pulses after running. A node declares which
@@ -59,7 +60,7 @@ class NodeInput internal constructor(
     fun item(port: PortName): Item? = data[port]
 
     /** The wired value of [port] as text, or null when unwired or empty. */
-    fun text(port: PortName): String? = data[port]?.value?.toString()?.takeIf { it.isNotEmpty() }
+    fun text(port: PortName): String? = data[port]?.asText()?.takeIf { it.isNotEmpty() }
 }
 
 /**
@@ -94,6 +95,70 @@ interface ValueNode<C : Any, O : Any> {
         config: Map<ConfigKey, String>,
         context: ExecutionContext,
     ): Item? = read(definition.schema.decode(config), context)?.let { definition.encode(it) }
+}
+
+/**
+ * Non-generic pull bridge used by the heterogeneous transform registry.
+ *
+ * A transform is a pure *function* of its data inputs — the other half of the
+ * graph's pull side. Where a [ValueNode] is a leaf reading of something true right
+ * now, a transform derives its single output from data it is given, so pulling one
+ * pulls whatever it depends on (see
+ * [com.example.ottomatic.engine.WorkflowExecutor]). Like a value node it has no
+ * EXECUTION ports and is never pulsed, and returning null means "unreadable": it
+ * contributes no item, and the consumer falls back to its own form value.
+ *
+ * Purity is a contract, not a convention: `NodeDeclarationContractTest` asserts
+ * that every transform declares no exec ports, no permissions, at least one DATA
+ * input and exactly one DATA output. Anything failable or side-effecting is an
+ * action.
+ */
+interface ExecutableTransform {
+    val definition: TransformNodeDefinition<*, *>
+
+    val typeId: NodeTypeId get() = definition.typeId
+
+    suspend fun transformRaw(
+        node: WorkflowNode,
+        data: Map<PortName, Item>,
+        context: ExecutionContext,
+    ): Item?
+}
+
+/**
+ * A transform whose output type [O] is fixed at declaration time. It receives its
+ * declared config type [C] — including anything wired into a `@Wired` property —
+ * and returns [O], exactly as [Action] does.
+ */
+interface TransformNode<C : Any, O : Any> : ExecutableTransform {
+    override val definition: TransformNodeDefinition<C, O>
+
+    /** The derived value, or null when it cannot be produced. */
+    suspend fun transform(config: C, context: ExecutionContext): O?
+
+    override suspend fun transformRaw(
+        node: WorkflowNode,
+        data: Map<PortName, Item>,
+        context: ExecutionContext,
+    ): Item? = transform(definition.schema.decode(node, data), context)?.let { definition.encode(it) }
+}
+
+/**
+ * Escape hatch for a transform whose output *schema* is chosen in its own config
+ * (`transform.convert`, `transform.json_read`) and so cannot be a static type
+ * parameter. It emits an [Item] directly and may read a wildcard input as a raw
+ * [Item] — the same trade [RawAction] makes, for the same reason.
+ */
+interface RawTransform<C : Any> : ExecutableTransform {
+    override val definition: TransformNodeDefinition<C, Unit>
+
+    suspend fun transformItem(config: C, input: NodeInput, context: ExecutionContext): Item?
+
+    override suspend fun transformRaw(
+        node: WorkflowNode,
+        data: Map<PortName, Item>,
+        context: ExecutionContext,
+    ): Item? = transformItem(definition.schema.decode(node, data), NodeInput(node, data), context)
 }
 
 /** Non-generic execution bridge used by the heterogeneous action registry. */

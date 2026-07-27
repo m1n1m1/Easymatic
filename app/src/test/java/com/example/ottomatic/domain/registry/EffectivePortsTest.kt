@@ -6,13 +6,18 @@ import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
+import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.ComparisonOperator
 import com.example.ottomatic.domain.model.config.ComparisonType
+import com.example.ottomatic.domain.model.items.SmsMessage
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.model.schema.ItemSchema
+import com.example.ottomatic.domain.model.schema.schemaOf
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -48,6 +53,90 @@ class EffectivePortsTest {
         val outputs = effectiveOutputPorts(def, workflow, breakNode).map { it.name }
         assertTrue("Expected per-field outputs, got: $outputs", outputs.contains(PortName("sender")))
         assertTrue("Expected per-field outputs, got: $outputs", outputs.contains(PortName("body")))
+    }
+
+    @Test
+    fun `break only accepts a struct`() {
+        // Its input is "any object", not a wildcard: breaking a date or a number
+        // into fields is meaningless, and a wildcard would let the user wire one up
+        // and then wonder why no output ports appeared.
+        val breakIn = breakStructPort()
+        assertTrue(isDataAssignable(structOut(schemaOf<SmsMessage>()), breakIn))
+        assertFalse(isDataAssignable(structOut(ItemSchema.Primitive(DateTime::class)), breakIn))
+        assertFalse(isDataAssignable(structOut(ItemSchema.Primitive(Int::class)), breakIn))
+        assertFalse(isDataAssignable(structOut(ItemSchema.ListSchema(ItemSchema.Primitive(Int::class))), breakIn))
+    }
+
+    @Test
+    fun `break still accepts a source that does not know its own type yet`() {
+        // An adaptive transform is a wildcard until it is retyped, so refusing it
+        // here would make the order the user wires things in matter.
+        assertTrue(isDataAssignable(structOut(ItemSchema.Wildcard), breakStructPort()))
+    }
+
+    private fun breakStructPort(): Port {
+        val def = NodeTypeRegistry.byId(BREAK_TYPE_ID)!!
+        val node = WorkflowNode(NodeId("b"), BREAK_TYPE_ID, "Break", 0f, 0f)
+        return effectiveInputPorts(def, Workflow(nodes = listOf(node)), node)
+            .single { it.name == BREAK_STRUCT_IN }
+    }
+
+    private fun structOut(schema: ItemSchema) =
+        Port(PortName("out"), PortKind.DATA, Direction.OUT, schema)
+
+    @Test
+    fun `a conversion takes its output type from its own config`() {
+        val workflow = Workflow(nodes = listOf(convertNode(to = "WHOLE_NUMBER")))
+        assertEquals(
+            ItemSchema.Primitive(Int::class),
+            convertOutput(workflow),
+        )
+    }
+
+    @Test
+    fun `a conversion narrows to the consuming port inside the same family`() {
+        // "Whole number" is one choice in the form, but a Long port has to receive a
+        // Long for the edge to type-check. `trigger.sms`'s struct carries a Long
+        // `timestamp`, so `action.if` wired to it exposes a Long compare port.
+        val workflow = Workflow(
+            nodes = listOf(
+                convertNode(to = "WHOLE_NUMBER"),
+                WorkflowNode(NodeId("s"), NodeTypeId("trigger.sms"), "SMS", 0f, 0f),
+                WorkflowNode(
+                    NodeId("i"), IF_TYPE_ID, "If", 0f, 100f,
+                    config = mapOf(IF_TYPE_CONFIG_KEY to ComparisonType.LONG.name),
+                ),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", NodeId("c"), TRANSFORM_OUT, NodeId("i"), IF_VALUE_IN),
+            ),
+        )
+        assertEquals(ItemSchema.Primitive(Long::class), convertOutput(workflow))
+    }
+
+    @Test
+    fun `a conversion keeps its family default when the consumer is a different family`() {
+        val workflow = Workflow(
+            nodes = listOf(
+                convertNode(to = "WHOLE_NUMBER"),
+                WorkflowNode(NodeId("n"), NodeTypeId("action.notify"), "Notify", 0f, 100f),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", NodeId("c"), TRANSFORM_OUT, NodeId("n"), PortName("text")),
+            ),
+        )
+        assertEquals(ItemSchema.Primitive(Int::class), convertOutput(workflow))
+    }
+
+    private fun convertNode(to: String) = WorkflowNode(
+        NodeId("c"), CONVERT_TYPE_ID, "Convert", 0f, 0f,
+        config = mapOf(CONVERT_TO_KEY to to),
+    )
+
+    private fun convertOutput(workflow: Workflow): ItemSchema? {
+        val node = workflow.node(NodeId("c"))!!
+        val def = NodeTypeRegistry.byId(CONVERT_TYPE_ID)!!
+        return effectiveOutputPorts(def, workflow, node).single { it.name == TRANSFORM_OUT }.schema
     }
 
     @Test

@@ -33,7 +33,14 @@ sealed interface ItemSchema {
     /** Unit value — used on EXECUTION ports and triggers that carry no data. */
     data object Unit : ItemSchema
 
-    /** A primitive scalar. [kClass] is one of String, Int, Long, Double, Float, Boolean. */
+    /**
+     * A primitive scalar. [kClass] is one of String, Int, Long, Double, Float,
+     * Boolean or [DateTime].
+     *
+     * [DateTime] is a primitive rather than a struct so that it stays invariant
+     * against `Long` — a timestamp port and a number port are different types, and
+     * bridging them is the visible job of `transform.convert`.
+     */
     data class Primitive(val kClass: KClass<out Any>) : ItemSchema
 
     /** A typed object whose fields are described by [fields]. */

@@ -66,6 +66,6 @@ internal fun com.example.ottomatic.core.trigger.TriggerEvent.toMediaEvent(): Nod
     MediaEvent(
         event = payload[KEY_EVENT].orEmpty(),
         detail = payload[KEY_DETAIL].orEmpty(),
-        timestamp = payload[KEY_TIMESTAMP]?.toLongOrNull() ?: firedAtEpochMs,
+        timestamp = this.timestamp,
     ),
 )

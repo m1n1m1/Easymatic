@@ -98,3 +98,28 @@ fun wildcardDataIn(name: String, label: String = name): Port = Port(
     schema = ItemSchema.Wildcard,
     label = label,
 )
+
+/**
+ * DATA input port accepting *any struct*, but only a struct — `action.break`'s
+ * input, whose whole job is to split one into fields.
+ *
+ * "Any struct" needs no new schema case: an [ItemSchema.Object] with no fields
+ * demands nothing of its source, so width-subtyping accepts every object and
+ * rejects everything else. A wildcard would accept a number or a date too, and
+ * breaking a date into fields is not a thing — the node would just sprout no output
+ * ports and leave the user wondering why.
+ *
+ * A [ItemSchema.Wildcard] source still connects: an adaptive transform that has not
+ * been retyped yet does not know what it produces, and refusing it there would make
+ * the order the user wires things in matter.
+ */
+fun structDataIn(name: String, label: String = name): Port = Port(
+    name = PortName(name),
+    kind = PortKind.DATA,
+    direction = Direction.IN,
+    schema = ANY_STRUCT,
+    label = label,
+)
+
+/** The schema meaning "any object at all" — see [structDataIn]. */
+val ANY_STRUCT: ItemSchema = ItemSchema.Object(fields = emptyMap())

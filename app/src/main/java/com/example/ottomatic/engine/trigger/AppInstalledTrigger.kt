@@ -63,7 +63,7 @@ class AppInstalledTrigger : Trigger<AppInstalledConfig, PackageEvent> {
                     PackageEvent(
                         action = event.payload[KEY_EVENT].orEmpty(),
                         packageName = event.payload[KEY_PACKAGE_NAME].orEmpty(),
-                        timestamp = event.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: event.firedAtEpochMs,
+                        timestamp = event.timestamp,
                     ),
                 )
             }

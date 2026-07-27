@@ -52,7 +52,7 @@ class SmsTrigger : Trigger<SmsTriggerConfig, SmsMessage> {
                     SmsMessage(
                         sender = event.payload[KEY_SENDER].orEmpty(),
                         body = event.payload[KEY_BODY].orEmpty(),
-                        timestamp = event.payload[KEY_TIMESTAMP]?.toLongOrNull() ?: event.firedAtEpochMs,
+                        timestamp = event.timestamp,
                     ),
                 )
             }

@@ -1,5 +1,6 @@
 package com.example.ottomatic.domain.model.config
 
+import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
@@ -21,6 +22,7 @@ enum class ComparisonType(private val primitive: KClass<out Any>?) {
     FLOAT(Float::class),
     BOOLEAN(Boolean::class),
     STRING(String::class),
+    DATE_TIME(DateTime::class),
     ;
 
     /** The pinned schema, or null for [AUTO]. */
@@ -47,7 +49,13 @@ enum class ComparisonOperator {
     MATCHES_REGEX,
     ;
 
-    /** Evaluates this comparison of [actual] against [expected]. */
+    /**
+     * Evaluates this comparison of [actual] against [expected].
+     *
+     * [EQUALS] and [NOT_EQUALS] compare the text as written, so two identical
+     * moments spelled with different UTC offsets do not match — the ordering
+     * operators are the ones that understand a date.
+     */
     fun matches(actual: String, expected: String): Boolean = when (this) {
         EQUALS -> actual == expected
         NOT_EQUALS -> actual != expected
@@ -57,8 +65,8 @@ enum class ComparisonOperator {
     }
 
     private fun compareNumbers(actual: String, expected: String): Boolean {
-        val left = actual.toDoubleOrNull()
-        val right = expected.toDoubleOrNull()
+        val left = actual.asOrdered()
+        val right = expected.asOrdered()
         return when {
             left == null || right == null -> false
             this == GREATER_THAN -> left > right
@@ -78,11 +86,24 @@ enum class ComparisonOperator {
         /** The operators that make sense for a value described by [schema]. */
         fun forSchema(schema: ItemSchema?): List<ComparisonOperator> = when {
             schema !is ItemSchema.Primitive -> EQUALITY
-            schema.kClass in NUMERIC -> ORDERING
+            schema.kClass in ORDERED -> ORDERING
             schema.kClass == String::class -> TEXT
             else -> EQUALITY
         }
 
-        private val NUMERIC = setOf(Int::class, Long::class, Double::class, Float::class)
+        /** The primitives with a meaningful "before/after", dates included. */
+        private val ORDERED = setOf(Int::class, Long::class, Double::class, Float::class, DateTime::class)
     }
 }
+
+/**
+ * This text as an orderable number: a plain number, or a moment read as its epoch
+ * milliseconds.
+ *
+ * The date rung is what keeps [ComparisonOperator.GREATER_THAN] meaningful once a
+ * timestamp renders as ISO-8601 — text order breaks across UTC offsets. It also
+ * lets the compare-against side be written the way a person would ("18:00",
+ * "2026-07-27") and still line up with a full timestamp. Epoch millis are exact in
+ * a `Double` for any date this app will see.
+ */
+private fun String.asOrdered(): Double? = toDoubleOrNull() ?: DateTime.parse(this)?.epochMs?.toDouble()
