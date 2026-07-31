@@ -185,24 +185,62 @@ class GraphValidator(private val workflow: Workflow) {
         // (i.e. target is reachable from source by following exec edges). Otherwise the
         // source would not have run by the time the target executes.
         //
-        // A pull-side source (VALUE, TRANSFORM) is exempt: it is never pulsed, so it has
-        // no exec position for "upstream" to mean anything against. It is read on demand
-        // while collecting the target's inputs, which is always in time by construction.
+        // A pull-side node (VALUE, TRANSFORM) is exempt on *both* ends, and for the same
+        // reason: it is never pulsed, so it has no exec position for "upstream" to mean
+        // anything against. As a source it is read on demand while collecting the
+        // target's inputs, which is always in time by construction. As a target it does
+        // not execute at all — the moment that matters is when the node that eventually
+        // *reads* the chain runs, so the rule is applied against [executedConsumers]
+        // instead. Checking the transform itself would reject the ordinary autocast
+        // shape (trigger -> Convert -> action), where nothing is ever exec-upstream of
+        // the Convert node because it has no exec input to reach.
         val execForward = mutableMapOf<NodeId, MutableList<NodeId>>()
         workflow.execConnections.forEach {
             execForward.getOrPut(it.fromNodeId) { mutableListOf() } += it.toNodeId
         }
         for (conn in workflow.dataConnections) {
             if (isPullNode(conn.fromNodeId)) continue
-            if (!reaches(execForward, conn.fromNodeId, conn.toNodeId)) {
+            val unreached = executedConsumers(conn.toNodeId)
+                .filterNot { reaches(execForward, conn.fromNodeId, it) }
+            for (consumer in unreached) {
                 out += ValidationIssue(
                     Severity.ERROR,
-                    "Data source ${conn.fromNodeId} is not exec-upstream of ${conn.toNodeId}" +
+                    "Data source ${conn.fromNodeId} is not exec-upstream of $consumer" +
                         ": the source will not have run when the target executes",
                     conn.id,
                 )
             }
         }
+    }
+
+    /**
+     * The nodes that actually execute and so eventually read whatever arrives at
+     * [nodeId]: [nodeId] itself when it is pulsed, or — when it is a pull-side node —
+     * everything its output reaches by following data edges through further pull-side
+     * nodes. A chain of transforms therefore resolves to the actions and triggers at
+     * its far end.
+     *
+     * Empty for a pull-side node wired to nothing, which is a warning on its own
+     * ([validateValueNodesAreUsed]) and no reason to also fail the edge feeding it.
+     */
+    private fun executedConsumers(nodeId: NodeId): Set<NodeId> {
+        if (!isPullNode(nodeId)) return setOf(nodeId)
+        val consumers = mutableSetOf<NodeId>()
+        val seen = mutableSetOf(nodeId)
+        val stack = ArrayDeque(listOf(nodeId))
+        while (stack.isNotEmpty()) {
+            val current = stack.removeLast()
+            for (conn in workflow.dataConnections.filter { it.fromNodeId == current }) {
+                if (!isPullNode(conn.toNodeId)) {
+                    consumers += conn.toNodeId
+                    // A data cycle is reported by validateDataAcyclicity; `seen` only
+                    // keeps this walk from spinning on one.
+                } else if (seen.add(conn.toNodeId)) {
+                    stack.addLast(conn.toNodeId)
+                }
+            }
+        }
+        return consumers
     }
 
     @Suppress("ReturnCount")

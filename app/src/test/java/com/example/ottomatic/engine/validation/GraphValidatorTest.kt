@@ -224,6 +224,87 @@ class GraphValidatorTest {
         )
     }
 
+    /**
+     * The other half of the same exemption, and the one that was missing: the
+     * transform is the *target* here. Nothing can ever be exec-upstream of a Convert
+     * node — it has no exec input to reach — so checking the edge against the
+     * transform itself failed every graph of the ordinary shape "trigger produces a
+     * number, Convert makes it text, notification shows it". The rule has to be
+     * applied against the node that eventually reads the chain.
+     */
+    @Test
+    fun `a trigger may feed a transform that feeds a downstream action`() {
+        val wf = Workflow(
+            nodes = listOf(
+                WorkflowNode(NodeId("t"), NodeTypeId("trigger.light_level"), "Light", 0f, 0f),
+                WorkflowNode(NodeId("b"), NodeTypeId("action.break"), "Break", 0f, 80f),
+                WorkflowNode(
+                    NodeId("n"), NodeTypeId("action.notify"), "Notify", 0f, 160f,
+                    config = mapOf(ConfigKey("title") to "T"),
+                    visibleDataInputs = setOf(PortName("text")),
+                ),
+                WorkflowNode(
+                    NodeId("c"), CONVERT_TYPE_ID, "Convert", 200f, 120f,
+                    config = mapOf(CONVERT_TO_KEY to ValueType.TEXT.name),
+                    visibleDataInputs = setOf(CONVERT_IN),
+                ),
+            ),
+            execConnections = listOf(
+                ExecConnection("e1", NodeId("t"), PortName("out"), NodeId("b"), PortName("in")),
+                ExecConnection("e2", NodeId("b"), PortName("out"), NodeId("n"), PortName("in")),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", NodeId("t"), PortName("reading"), NodeId("b"), PortName("struct")),
+                DataConnection("d2", NodeId("b"), PortName("value"), NodeId("c"), CONVERT_IN),
+                DataConnection("d3", NodeId("c"), TRANSFORM_OUT, NodeId("n"), PortName("text")),
+            ),
+        )
+        val issues = GraphValidator(wf).validate()
+        assertTrue(
+            "a transform in the wire must not fail the exec-upstream rule, got: ${issues.map { it.message }}",
+            issues.none { it.severity == Severity.ERROR },
+        )
+    }
+
+    /**
+     * Exempting the transform must not lose the rule it stands in for: the source
+     * still has to have run by the time the *consumer* does, however many
+     * conversions sit in between.
+     */
+    @Test
+    fun `a transform does not launder a source that is not exec-upstream`() {
+        val wf = Workflow(
+            nodes = listOf(
+                WorkflowNode(NodeId("t"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(
+                    NodeId("n"), NodeTypeId("action.notify"), "Notify", 0f, 80f,
+                    config = mapOf(ConfigKey("title") to "T"),
+                    visibleDataInputs = setOf(PortName("text")),
+                ),
+                // Runs *after* the notification, so its response cannot reach it.
+                WorkflowNode(NodeId("h"), NodeTypeId("action.http"), "HTTP", 0f, 160f),
+                WorkflowNode(
+                    NodeId("c"), CONVERT_TYPE_ID, "Convert", 200f, 120f,
+                    config = mapOf(CONVERT_TO_KEY to ValueType.TEXT.name),
+                    visibleDataInputs = setOf(CONVERT_IN),
+                ),
+            ),
+            execConnections = listOf(
+                ExecConnection("e1", NodeId("t"), PortName("out"), NodeId("n"), PortName("in")),
+                ExecConnection("e2", NodeId("n"), PortName("out"), NodeId("h"), PortName("in")),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", NodeId("h"), PortName("response"), NodeId("c"), CONVERT_IN),
+                DataConnection("d2", NodeId("c"), TRANSFORM_OUT, NodeId("n"), PortName("text")),
+            ),
+        )
+        val issues = GraphValidator(wf).validate()
+        assertTrue(
+            "the rule must still see through the transform, got: ${issues.map { it.message }}",
+            issues.any { it.severity == Severity.ERROR && it.message.contains("not exec-upstream") },
+        )
+    }
+
     @Test
     fun `a transform with nothing wired into it is warned about`() {
         val wf = Workflow(
