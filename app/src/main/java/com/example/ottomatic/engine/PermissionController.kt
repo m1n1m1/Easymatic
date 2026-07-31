@@ -23,10 +23,14 @@ class PermissionController(
 
     /**
      * Returns the [PermissionRequirement]s that are not satisfied for the
-     * trigger nodes in [nodes]. Non-[PrerequisiteType.RUNTIME] requirements
-     * (e.g. accessibility, notification listener) are always reported — their
-     * satisfied state is determined by the caller via system APIs, since they
-     * do not flow through [PermissionChecker].
+     * trigger nodes in [nodes].
+     *
+     * Requirements that are not granted through the runtime dialog — accessibility
+     * access, notification-listener access — are asked about through
+     * [PermissionChecker.isPrerequisiteSatisfied], which has a system API behind
+     * it. They used to be reported as unsatisfied unconditionally, which meant a
+     * node could never be shown as ready however many settings pages the user had
+     * visited.
      */
     fun unsatisfiedFor(nodes: List<WorkflowNode>): List<PermissionRequirement> {
         val requirements = nodes.mapNotNull { node ->
@@ -34,10 +38,11 @@ class PermissionController(
         }.flatten()
         return requirements.filter { requirement ->
             val permission = requirement.manifestPermission
-            if (permission == null) {
-                true
-            } else {
-                checker.status(Permission(permission)) !is PermissionStatus.Granted
+            when {
+                requirement.type != PrerequisiteType.RUNTIME ->
+                    !checker.isPrerequisiteSatisfied(requirement.type)
+                permission == null -> true
+                else -> checker.status(Permission(permission)) !is PermissionStatus.Granted
             }
         }.distinct()
     }

@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Ottomatic</string>
+
+    <!-- Shown on the system accessibility settings page. The description is the
+         prominent disclosure: it has to say what the service does and, just as
+         importantly, what it does not do. -->
+    <string name="accessibility_service_label">Ottomatic button triggers</string>
+    <string name="accessibility_service_summary">Lets macros start when you press the volume buttons.</string>
+    <string name="accessibility_service_description">Ottomatic uses this only to notice volume button presses, so your macros can start when you press them. It never reads screen content, and it never changes what the buttons do — the volume keys keep working normally.</string>
 </resources>

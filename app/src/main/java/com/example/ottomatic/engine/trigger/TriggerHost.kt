@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
  * Implementations live in `data/` and supply real system streams. Triggers
  * call these methods inside [Trigger.activate] to obtain their event flow.
  */
+@Suppress("TooManyFunctions") // One member per platform capability a trigger can reach; the platform sets the count.
 interface TriggerHost {
 
     /** Stream of all events pushed into [TriggerBus]. Filter by source/node. */
@@ -135,6 +136,76 @@ interface TriggerHost {
      * - `mode` (only for `mode`) — the new night-mode state (`"normal"` / `"night"`)
      */
     fun appLifecycleEvents(): Flow<TriggerEvent> = kotlinx.coroutines.flow.emptyFlow()
+
+    /**
+     * Multicast stream of raw samples from [kind], delivered at *at least*
+     * [rate].
+     *
+     * Cold and reference-counted: the platform listener is registered on first
+     * collection and unregistered when the last collector goes away, so an
+     * unarmed macro costs nothing. Every subscriber of one sensor shares a
+     * single registration, running at the fastest rate any of them asked for —
+     * which is why a detector must derive all of its timing from
+     * [SensorSample.elapsedMs] and never from a sample count. A detector tuned
+     * at 50 Hz has to behave identically when a tap trigger drags the same
+     * accelerometer to 200 Hz.
+     *
+     * Unlike the `arm*` methods this returns its values **in band** rather than
+     * through [TriggerBus], matching [appLifecycleEvents] and [variableChanges].
+     * The bus is deliberately avoided here: it is `replay = 0`,
+     * `extraBufferCapacity = 64` and `tryEmit`, so at 200 Hz it would drop
+     * samples on any collector stall — and every armed trigger in the process
+     * would wake to run its filter chain two hundred times a second.
+     *
+     * The default is empty, so a device that lacks the sensor — or a test
+     * double that does not care — simply leaves the trigger silent, the same
+     * way an unresolvable geofence place leaves `trigger.geofence` unarmed.
+     */
+    fun sensorSamples(kind: SensorKind, rate: SensorRate): Flow<SensorSample> =
+        kotlinx.coroutines.flow.emptyFlow()
+
+    /**
+     * Arms the one-shot significant-motion sensor for [nodeId], emitting a bus
+     * event (source `HARDWARE`, `triggerType = "significant_motion"`) each time
+     * it fires and re-arming itself afterwards.
+     *
+     * This is the one motion signal that costs nothing to leave armed: the
+     * detection runs in the sensor hub rather than on the CPU, and it is a
+     * wake-up sensor, so it fires through suspend without anyone holding a wake
+     * lock. The trade is that it reports only "the device has started moving
+     * somewhere" — no direction, no magnitude, and a latency of seconds.
+     *
+     * Returns a [ScheduleHandle] whose [ScheduleHandle.cancel] disarms it when
+     * the trigger flow is cancelled.
+     */
+    fun armSignificantMotion(nodeId: NodeId): ScheduleHandle = ScheduleHandle { }
+
+    /**
+     * Registers this collector's interest in accelerometer gestures continuing
+     * to work while the screen is off.
+     *
+     * The policy is process-wide rather than per-node — there is one
+     * accelerometer and one wake lock — so the strongest [mode] any live
+     * subscriber asked for wins. Cancel the returned handle to withdraw the
+     * interest; when the last one goes, the wake lock is released.
+     *
+     * Calling this with [ScreenOffMode.NEVER] is deliberately not a no-op at the
+     * call site: a trigger arms its choice unconditionally and cancels it in a
+     * `finally`, so there is no path on which an interest outlives its trigger.
+     */
+    fun armScreenOffSensing(mode: ScreenOffMode): ScheduleHandle = ScheduleHandle { }
+
+    /**
+     * The largest value [kind] can report, or null when the device has no such
+     * sensor.
+     *
+     * Needed because a proximity reading is only meaningful relative to its own
+     * range: most phone sensors are effectively binary, reporting 0 when covered
+     * and this value when clear, and that value is 3 cm on some devices and
+     * 100 cm on others. A fixed "covered" threshold would read *clear* as
+     * *covered* on the short-range ones.
+     */
+    fun sensorMaximumRange(kind: SensorKind): Float? = null
 
     /**
      * Stream of variable-change events ([TriggerSource.VARIABLE]) for the

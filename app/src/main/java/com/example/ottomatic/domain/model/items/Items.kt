@@ -232,6 +232,33 @@ data class MediaEvent(
 )
 
 /**
+ * A sensor or gesture event reported by the `trigger.device_*`, `trigger.shake`,
+ * `trigger.proximity` and `trigger.light_level` nodes on their `reading` port.
+ *
+ * - [event]: discriminator — `"face_down"`, `"shake"`, `"double_tap"`,
+ *   `"picked_up"`, `"wave"`, `"above"`, …
+ * - [sensor]: which sensor produced it — `"accelerometer"`, `"proximity"` or
+ *   `"light"`.
+ * - [value]: the gesture's magnitude, where it has one — lux for a light
+ *   threshold, peak m/s² for a shake, centimetres for proximity. Zero for
+ *   gestures that carry no magnitude.
+ * - [detail]: optional extra context.
+ * - [timestamp]: when the event was produced.
+ *
+ * [value] is a number rather than text so "only when it is darker than 5 lux" is
+ * a single `action.if`. Carrying it in a [SystemState.detail]-style string would
+ * put a `transform.convert` in the wire before every numeric comparison.
+ */
+@Serializable
+data class SensorReading(
+    val event: String,
+    val sensor: String,
+    val value: Float = 0f,
+    val detail: String = "",
+    val timestamp: DateTime,
+)
+
+/**
  * Result of a macro enable/disable action (`action.enable_macro` /
  * `action.disable_macro`) reported on its `state` data port.
  *

@@ -50,6 +50,15 @@ object TriggerRegistry {
         add(com.example.ottomatic.engine.trigger.AppInstalledTrigger())
         add(com.example.ottomatic.engine.trigger.MediaButtonTrigger())
         add(com.example.ottomatic.engine.trigger.MediaMountTrigger())
+        // Tier 2 — sensor-backed gesture triggers.
+        add(com.example.ottomatic.engine.trigger.DeviceOrientationTrigger())
+        add(com.example.ottomatic.engine.trigger.ShakeTrigger())
+        add(com.example.ottomatic.engine.trigger.DeviceTapTrigger())
+        add(com.example.ottomatic.engine.trigger.DeviceMotionTrigger())
+        add(com.example.ottomatic.engine.trigger.ProximityTrigger())
+        add(com.example.ottomatic.engine.trigger.LightLevelTrigger())
+        // Tier 3 — accessibility-service triggers.
+        add(com.example.ottomatic.engine.trigger.VolumeButtonTrigger())
     }
 
     private val byId: Map<NodeTypeId, ExecutableTrigger> = triggers.associateBy { it.typeId }

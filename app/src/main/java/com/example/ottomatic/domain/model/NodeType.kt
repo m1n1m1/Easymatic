@@ -48,6 +48,7 @@ enum class NodeCategory(
     CONNECTIVITY(NodeKind.TRIGGER, "Connectivity"),
     PHONE_MEDIA(NodeKind.TRIGGER, "Phone & Media"),
     DEVICE_STATE(NodeKind.TRIGGER, "Device State"),
+    SENSORS(NodeKind.TRIGGER, "Sensors & Gestures"),
     FLOW_CONTROL(NodeKind.ACTION, "Flow Control"),
     NETWORK(NodeKind.ACTION, "Network"),
     NOTIFICATIONS(NodeKind.ACTION, "Notifications"),

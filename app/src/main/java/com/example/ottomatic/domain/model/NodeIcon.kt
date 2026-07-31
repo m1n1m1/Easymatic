@@ -27,4 +27,10 @@ enum class NodeIcon {
     CONVERT,
     TEXT,
     JSON,
+    ORIENTATION,
+    SHAKE,
+    TAP,
+    MOTION,
+    PROXIMITY,
+    LIGHT,
 }

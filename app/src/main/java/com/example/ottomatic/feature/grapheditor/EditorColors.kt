@@ -11,16 +11,22 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.DoNotDisturb
 import androidx.compose.material.icons.filled.Http
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Numbers
+import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.ScreenRotation
+import androidx.compose.material.icons.filled.SensorOccupied
 import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -154,4 +160,10 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.CONVERT -> Icons.Filled.SwapHoriz
     NodeIcon.TEXT -> Icons.Filled.TextFields
     NodeIcon.JSON -> Icons.Filled.DataObject
+    NodeIcon.ORIENTATION -> Icons.Filled.ScreenRotation
+    NodeIcon.SHAKE -> Icons.Filled.Vibration
+    NodeIcon.TAP -> Icons.Filled.TouchApp
+    NodeIcon.MOTION -> Icons.Filled.OpenWith
+    NodeIcon.PROXIMITY -> Icons.Filled.SensorOccupied
+    NodeIcon.LIGHT -> Icons.Filled.LightMode
 }

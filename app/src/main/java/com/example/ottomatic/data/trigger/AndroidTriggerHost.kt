@@ -13,10 +13,15 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.data.GeofencePlaceRepository
+import com.example.ottomatic.data.sensor.SensorBridge
 import com.example.ottomatic.domain.model.GeofencePlace
 import com.example.ottomatic.engine.trigger.BatteryDirection
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.ScheduleHandle
+import com.example.ottomatic.engine.trigger.ScreenOffMode
+import com.example.ottomatic.engine.trigger.SensorKind
+import com.example.ottomatic.engine.trigger.SensorRate
+import com.example.ottomatic.engine.trigger.SensorSample
 import com.example.ottomatic.engine.trigger.TriggerHost
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingRequest
@@ -46,6 +51,19 @@ class AndroidTriggerHost(
 
     @Suppress("UnusedPrivateProperty") // Kept alive so its receiver stays registered.
     private val screenBridge = ScreenBroadcastBridge(appContext)
+
+    private val sensorBridge = SensorBridge(appContext)
+
+    override fun sensorSamples(kind: SensorKind, rate: SensorRate): Flow<SensorSample> =
+        sensorBridge.samples(kind, rate)
+
+    override fun armSignificantMotion(nodeId: NodeId): ScheduleHandle =
+        sensorBridge.armSignificantMotion(nodeId)
+
+    override fun armScreenOffSensing(mode: ScreenOffMode): ScheduleHandle =
+        sensorBridge.armScreenOffSensing(mode)
+
+    override fun sensorMaximumRange(kind: SensorKind): Float? = sensorBridge.maximumRange(kind)
 
     override fun armSchedule(
         nodeId: NodeId,

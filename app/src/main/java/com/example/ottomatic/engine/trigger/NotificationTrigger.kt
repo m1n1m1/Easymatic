@@ -1,5 +1,7 @@
 package com.example.ottomatic.engine.trigger
 
+import com.example.ottomatic.core.permissions.PermissionRequirement
+import com.example.ottomatic.core.permissions.PrerequisiteType
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
@@ -35,6 +37,16 @@ class NotificationTrigger : Trigger<NotificationConfig, NotificationEvent> {
         category = NodeCategory.MESSAGING,
         icon = NodeIcon.NOTIFICATION,
         output = dataOut<NotificationEvent>("notification", label = "Notification"),
+        // Nothing reaches NotificationListener until the user switches on
+        // notification access in Settings, and until this was declared the node
+        // gave no sign of that — it simply never fired.
+        permissions = listOf(
+            PermissionRequirement(
+                manifestPermission = null,
+                type = PrerequisiteType.NOTIFICATION_LISTENER,
+                rationaleKey = "notification.listener",
+            ),
+        ),
     )
 
     override fun activate(
