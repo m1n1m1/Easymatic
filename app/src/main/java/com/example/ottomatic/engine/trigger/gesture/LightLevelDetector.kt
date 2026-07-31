@@ -18,11 +18,19 @@ enum class Threshold {
 /**
  * Fires when the ambient light level crosses a threshold and stays there.
  *
- * Two guards, both necessary. A **hysteresis band** around the threshold stops a
- * level hovering right at it from firing repeatedly; between the two edges the
- * previous answer holds. A **dwell** then requires the new state to persist, which
- * is what separates "the room lights went out" from a hand passing over the
- * sensor or walking under a row of ceiling lights.
+ * Two guards, both necessary. A **hysteresis band** stops a level hovering right
+ * at the threshold from firing repeatedly; inside it the previous answer holds. A
+ * **dwell** then requires the new state to persist, which is what separates "the
+ * room lights went out" from a hand passing over the sensor or walking under a row
+ * of ceiling lights.
+ *
+ * The band is deliberately **one-sided**: the threshold itself is the firing edge,
+ * and the hysteresis only sets how far the level has to come back before the
+ * trigger re-arms. Centring the band on the threshold instead — the obvious
+ * reading of "ignore changes smaller than this" — quietly moves the firing edge by
+ * half the band, so "falls below 30 lux" with the default 10 lux of hysteresis
+ * would need the room to reach 20 lux and a room genuinely sitting at 25 would
+ * never fire at all. The number the user typed has to be the number that fires.
  *
  * Three seconds is close to the practical floor for the dwell anyway: many
  * devices heavily quantise and rate-limit their ambient light sensor, so a
@@ -43,13 +51,19 @@ class LightLevelDetector(
 
     fun update(sample: SensorSample): GestureFire? {
         val lux = sample.x
-        val high = thresholdLux + hysteresisLux
-        val low = thresholdLux - hysteresisLux
-        val instant = when {
-            lux > high -> direction == Threshold.ABOVE
-            lux < low -> direction == Threshold.BELOW
-            // Inside the band the reading is not decisive either way.
-            else -> return null
+        // The threshold fires; the band only sets where the trigger re-arms, on the
+        // far side of it. Between the two the reading is not decisive either way.
+        val instant = when (direction) {
+            Threshold.ABOVE -> when {
+                lux > thresholdLux -> true
+                lux < thresholdLux - hysteresisLux -> false
+                else -> return null
+            }
+            Threshold.BELOW -> when {
+                lux < thresholdLux -> true
+                lux > thresholdLux + hysteresisLux -> false
+                else -> return null
+            }
         }
 
         if (instant != candidate) {
@@ -69,10 +83,27 @@ class LightLevelDetector(
     }
 
     companion object {
-        const val DEFAULT_HYSTERESIS_LUX = 5f
+        /**
+         * Wide enough to clear [DEFAULT_THRESHOLD_LUX]'s unreliable zone on the way
+         * back: re-arming at 40 lux means the room has to reach a level the sensor
+         * can actually resolve before the trigger will fire again.
+         */
+        const val DEFAULT_HYSTERESIS_LUX = 10f
+
         const val DEFAULT_DWELL_MS = 3000L
 
-        /** Roughly a dim room; a lit office is hundreds of lux. */
-        const val DEFAULT_THRESHOLD_LUX = 10f
+        /**
+         * A dim room, and about as low as the default can usefully go.
+         *
+         * Phone ambient light sensors sit under the display and are heavily
+         * quantised and rate-limited at the bottom of their range; below roughly
+         * 30 lux the reported level stops tracking the room and starts reporting
+         * the sensor's own step size, so a threshold under that fires on noise or
+         * not at all. Anyone who genuinely wants "pitch dark" can still type a
+         * smaller number — this is only where the field starts.
+         *
+         * For scale on the other side: a lit office is a few hundred lux.
+         */
+        const val DEFAULT_THRESHOLD_LUX = 30f
     }
 }

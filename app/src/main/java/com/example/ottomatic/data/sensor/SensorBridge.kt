@@ -337,9 +337,11 @@ class SensorBridge(context: Context) {
 
     private fun defaultSensor(kind: SensorKind): Sensor? = when (kind) {
         SensorKind.ACCELEROMETER -> sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        // The wake-up proximity sensor keeps reporting with the screen off at no
-        // extra cost, which is the whole reason a wave-to-act macro works while
-        // the phone is face down on a desk. Not every device has one.
+        // Ask for the wake-up variant first: where it exists and is available to
+        // apps it keeps reporting with the screen off at no extra cost. Enough
+        // devices expose only the non-wake-up one — or reserve the wake-up one to
+        // telephony — that the trigger documents itself as screen-on only; this is
+        // an opportunistic upgrade, not something callers may rely on.
         SensorKind.PROXIMITY -> sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY, true)
             ?: sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
         SensorKind.LIGHT -> sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)

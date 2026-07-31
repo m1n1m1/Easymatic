@@ -23,7 +23,7 @@ import kotlinx.serialization.Serializable
 data class LightLevelConfig(
     @Label("When the light level") val direction: Threshold = Threshold.BELOW,
     @Label("Threshold (lux)") val thresholdLux: Float = LightLevelDetector.DEFAULT_THRESHOLD_LUX,
-    @Label("Ignore changes smaller than (lux)")
+    @Label("Don't start again until it changes back by (lux)")
     val hysteresisLux: Float = LightLevelDetector.DEFAULT_HYSTERESIS_LUX,
     @Label("Must hold for (ms)") val dwellMs: Long = LightLevelDetector.DEFAULT_DWELL_MS,
 )
@@ -33,8 +33,10 @@ data class LightLevelConfig(
  * falls below a threshold and stays there.
  *
  * The measured level is carried in [SensorReading.value] as a number, so a graph
- * can compare or report it without a conversion node. For scale: a dark room is
- * under 10 lux, an office a few hundred, and direct daylight tens of thousands.
+ * can compare or report it without a conversion node. For scale: a dim room is
+ * around 30 lux, an office a few hundred, and direct daylight tens of thousands.
+ * Below roughly 30 lux the sensor stops resolving the room — see
+ * [LightLevelDetector.DEFAULT_THRESHOLD_LUX].
  *
  * Only fires while the screen is on. The ambient light sensor is not a wake-up
  * sensor on most devices, and a light-level change with the screen off almost
@@ -50,7 +52,8 @@ class LightLevelTrigger : Trigger<LightLevelConfig, SensorReading> {
         typeId = TYPE_ID.value,
         displayName = "Ambient Light",
         description = "Starts when the light around the device crosses a level and stays " +
-            "there — a dark room is under 10 lux, an office a few hundred (screen on only)",
+            "there — a dim room is around 30 lux, an office a few hundred. Below about " +
+            "30 lux the sensor gets unreliable (screen on only)",
         category = NodeCategory.SENSORS,
         icon = NodeIcon.LIGHT,
         output = dataOut<SensorReading>("reading", label = "Reading"),

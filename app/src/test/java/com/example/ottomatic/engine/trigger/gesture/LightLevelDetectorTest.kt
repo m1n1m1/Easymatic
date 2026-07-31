@@ -60,9 +60,11 @@ class LightLevelDetectorTest {
     }
 
     @Test
-    fun `a level hovering at the threshold does not flap`() {
-        // Inside the hysteresis band the previous answer holds, so this reports
-        // nothing at all rather than firing on every crossing.
+    fun `a level hovering at the threshold fires once and does not flap`() {
+        // Six crossings, one event. The level really did fall below the threshold,
+        // so staying silent would be wrong; what the hysteresis has to prevent is
+        // the five further events, and it does — a reading inside the band never
+        // re-arms the trigger, so nothing after the first crossing is decisive.
         val run = light {
             level(BRIGHT, 5000)
             repeat(6) {
@@ -71,7 +73,39 @@ class LightLevelDetectorTest {
             }
         }
 
-        assertEquals(emptyList<String>(), run.eventsFrom(detector(Threshold.BELOW)::update))
+        assertEquals(listOf("below"), run.eventsFrom(detector(Threshold.BELOW)::update))
+    }
+
+    /**
+     * The threshold the user typed is the level that fires. Centring the hysteresis
+     * band on it instead moves the real edge to `threshold - hysteresis`, and a room
+     * that settles between the two never fires at all however long it stays there —
+     * which reads on device as the sensor being wrong rather than the trigger.
+     */
+    @Test
+    fun `a room settling just below the threshold fires`() {
+        val run = light {
+            level(BRIGHT, 5000)
+            level(JUST_UNDER, 8000)
+        }
+
+        assertEquals(listOf("below"), run.eventsFrom(detector(Threshold.BELOW)::update))
+    }
+
+    @Test
+    fun `it re-arms only once the level has come back past the band`() {
+        val run = light {
+            level(BRIGHT, 5000)
+            level(DARK, 5000)
+            // Back over the threshold but still inside the band: not a reset.
+            level(JUST_OVER, 5000)
+            level(DARK, 5000)
+            // Clear of the band, so the next fall counts again.
+            level(BRIGHT, 5000)
+            level(DARK, 5000)
+        }
+
+        assertEquals(listOf("below", "below"), run.eventsFrom(detector(Threshold.BELOW)::update))
     }
 
     @Test
@@ -105,9 +139,13 @@ class LightLevelDetectorTest {
         assertEquals(eventsAt(SAMPLE_MS), eventsAt(SLOW_SAMPLE_MS))
     }
 
+    // Both pinned rather than left to the defaults: these cases are about the shape
+    // of the band, and they should keep testing that shape when the defaults move
+    // for device reasons.
     private fun detector(direction: Threshold) = LightLevelDetector(
         direction = direction,
         thresholdLux = THRESHOLD_LUX,
+        hysteresisLux = HYSTERESIS_LUX,
     )
 
     private fun light(sampleMs: Long = SAMPLE_MS, block: LightRun.() -> Unit): List<SensorSample> =
@@ -128,13 +166,16 @@ class LightLevelDetectorTest {
 
     private companion object {
         const val THRESHOLD_LUX = 10f
+        const val HYSTERESIS_LUX = 5f
 
-        /** Well outside the ±5 lux hysteresis band. */
+        /** Clear of the threshold and of the 5 lux re-arm band above it. */
         const val DARK = 2f
         const val BRIGHT = 400f
 
-        /** Both inside the band, so neither is decisive. */
+        /** Below the threshold, so decisive. */
         const val JUST_UNDER = 8f
+
+        /** Back above the threshold but still inside the re-arm band. */
         const val JUST_OVER = 12f
 
         const val SAMPLE_MS = 200L

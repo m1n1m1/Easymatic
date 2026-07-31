@@ -33,10 +33,18 @@ data class ProximityConfig(
  * choice: phone proximity sensors are binary and, on current handsets, want the
  * hand close enough to be touching the glass. See [ProximityDetector].
  *
- * Unlike the accelerometer gestures this usually keeps working with the screen
- * off and without a wake lock, because proximity is normally a *wake-up* sensor —
- * the platform has to be able to notice an ear during a call while the display
- * is dark. There is therefore no screen-off setting to make.
+ * **In practice this only fires while the screen is on**, so the description says
+ * so. The hope was that it would not need to: proximity is often a *wake-up*
+ * sensor, since the platform has to notice an ear during a call while the display
+ * is dark, and [SensorKind.PROXIMITY] asks for that variant first. But plenty of
+ * devices only expose the non-wake-up one, and the wake-up variant is in any case
+ * reserved to the telephony stack on some. With the CPU suspended those simply
+ * stop delivering, and the trigger goes quiet without any error to show for it.
+ *
+ * There is still no screen-off setting, because there is nothing this node could
+ * do with the answer: the accelerometer gestures offer one only because a wake
+ * lock genuinely revives them, and holding a wake lock here would burn the battery
+ * on the devices where it changes nothing at all.
  *
  * Needs no permission. Silent on a device with no proximity sensor.
  *
@@ -48,8 +56,8 @@ class ProximityTrigger : Trigger<ProximityConfig, SensorReading> {
         typeId = TYPE_ID.value,
         displayName = "Proximity",
         description = "Starts when the sensor above the screen is covered or uncovered. " +
-            "Your hand has to be touching or nearly touching the glass. " +
-            "Usually works with the screen off",
+            "Your hand has to be touching or nearly touching the glass " +
+            "(screen on only on most devices)",
         category = NodeCategory.SENSORS,
         icon = NodeIcon.PROXIMITY,
         output = dataOut<SensorReading>("reading", label = "Reading"),
