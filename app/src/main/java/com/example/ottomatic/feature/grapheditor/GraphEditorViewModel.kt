@@ -715,6 +715,9 @@ class GraphEditorViewModel(
     fun stopWorkflow() {
         runJob?.cancel()
         runJob = null
+        // Stopping the preview promises the same silence disabling a macro does;
+        // a fire-and-forget sound would otherwise play on with nothing running.
+        executionContext.systemServices.stopSounds()
         _uiState.value.workflow.nodes
             .filter { it.typeId == ManualTrigger.TYPE_ID }
             .forEach { ManualTrigger.release(it.id) }

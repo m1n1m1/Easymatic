@@ -13,6 +13,8 @@ import androidx.compose.material.icons.filled.DoNotDisturb
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.MusicOff
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.OpenWith
@@ -158,6 +160,8 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.WIFI -> Icons.Filled.Wifi
     NodeIcon.BLUETOOTH -> Icons.Filled.Bluetooth
     NodeIcon.VOLUME -> Icons.AutoMirrored.Filled.VolumeUp
+    NodeIcon.MUSIC -> Icons.Filled.MusicNote
+    NodeIcon.MUSIC_OFF -> Icons.Filled.MusicOff
     NodeIcon.DND -> Icons.Filled.DoNotDisturb
     NodeIcon.LOCATION -> Icons.Filled.LocationOn
     NodeIcon.BOOT -> Icons.Filled.PowerSettingsNew

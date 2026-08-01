@@ -3,6 +3,7 @@ package com.example.ottomatic.engine.service
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -11,6 +12,7 @@ import android.os.Build
 import android.os.IBinder
 import com.example.ottomatic.R
 import com.example.ottomatic.ServiceLocator
+import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.BootFailureStore
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.engine.ExecutionContext
@@ -74,12 +76,17 @@ class MacroEngineService : Service() {
     private lateinit var host: TriggerHost
     private lateinit var executionContext: ExecutionContext
     private lateinit var repository: WorkflowRepository
+    private lateinit var systemServices: SystemServices
 
     override fun onCreate() {
         super.onCreate()
         host = ServiceLocator.triggerHost
         executionContext = ServiceLocator.executionContext
         repository = ServiceLocator.workflowRepository
+        systemServices = ServiceLocator.systemServices
+        // The notification carries the only way to stop a sound by hand, so it
+        // has to follow playback rather than only arm/disarm.
+        scope.launch { systemServices.soundPlaying.collect { refreshNotification() } }
         // The service has started successfully; clear the boot-failure flag so
         // MainActivity doesn't show a stale battery-optimisation prompt for a
         // start that actually worked.
@@ -120,6 +127,13 @@ class MacroEngineService : Service() {
                     }
                 }
             }
+            // The notification's "Stop sound" button. Silencing is immediate;
+            // nothing here touches the armed macros.
+            ACTION_STOP_SOUNDS -> {
+                systemServices.stopSounds()
+                refreshNotification()
+                if (activeJobs.isEmpty()) stopSelf()
+            }
         }
         return START_STICKY
     }
@@ -127,6 +141,9 @@ class MacroEngineService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
+        // A detached sound is held by this process, not by the run that started
+        // it, so it would outlive the engine itself.
+        systemServices.stopSounds()
         scope.cancel()
         super.onDestroy()
     }
@@ -168,6 +185,10 @@ class MacroEngineService : Service() {
             previous.cancel()
             previous.join()
         }
+        // Cancelling the run stops a sound it was waiting on, but a sound
+        // started fire-and-forget belongs to the process and would play on
+        // after the macro that asked for it is gone.
+        systemServices.stopSounds()
         refreshNotification()
         if (activeJobs.isEmpty()) stopSelf()
     }
@@ -179,12 +200,26 @@ class MacroEngineService : Service() {
 
     private fun buildNotification(activeCount: Int): Notification {
         val text = if (activeCount == 0) "Standing by" else "$activeCount macro(s) armed"
-        return Notification.Builder(this, CHANNEL_ID)
+        val builder = Notification.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Ottomatic")
             .setContentText(text)
             .setOngoing(true)
-            .build()
+        // Offered only while there is something to stop: a button that usually
+        // does nothing teaches people to ignore it.
+        if (systemServices.soundPlaying.value) builder.addAction(stopSoundAction())
+        return builder.build()
+    }
+
+    private fun stopSoundAction(): Notification.Action {
+        val intent = Intent(this, MacroEngineService::class.java).setAction(ACTION_STOP_SOUNDS)
+        val pending = PendingIntent.getService(
+            this,
+            STOP_SOUND_REQUEST_CODE,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
+        return Notification.Action.Builder(null, "Stop sound", pending).build()
     }
 
     @Suppress("CallApiLevelMismatch") // FOREGROUND_SERVICE_TYPE_SPECIAL_USE is API 34; guarded at runtime.
@@ -219,10 +254,12 @@ class MacroEngineService : Service() {
         const val ACTION_ENABLE = "com.example.ottomatic.action.ENABLE"
         const val ACTION_DISABLE = "com.example.ottomatic.action.DISABLE"
         const val ACTION_RELOAD = "com.example.ottomatic.action.RELOAD"
+        const val ACTION_STOP_SOUNDS = "com.example.ottomatic.action.STOP_SOUNDS"
         const val EXTRA_WORKFLOW_ID = "workflowId"
 
         private const val NOTIFICATION_ID = 4242
         private const val CHANNEL_ID = "ottomatic.engine"
+        private const val STOP_SOUND_REQUEST_CODE = 1
 
         /**
          * Starts the engine service for [action]. Uses [Context.startForegroundService]

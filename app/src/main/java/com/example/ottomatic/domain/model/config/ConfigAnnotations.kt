@@ -64,6 +64,13 @@ enum class PickerKind {
      * place library and editable on a map.
      */
     GEOFENCE_PLACE,
+
+    /**
+     * A sound's content URI, chosen either from the device's ringtone chooser
+     * or from its files. Which sounds exist is the device's business, not the
+     * node's — which is exactly why it cannot be an enum.
+     */
+    SOUND,
 }
 
 /**

@@ -12,10 +12,14 @@ import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.RingerMode
 import com.example.ottomatic.core.service.RingerResult
 import com.example.ottomatic.core.service.ScreenTimeoutResult
+import com.example.ottomatic.core.service.SoundRequest
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.core.service.TorchResult
 import com.example.ottomatic.core.service.VolumeMode
 import com.example.ottomatic.core.service.VolumeResult
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Recording [SystemServices] fake shared by the engine tests: every call is
@@ -32,6 +36,17 @@ class RecordingSystemServices : SystemServices {
 
     /** One entry per clipboard call: the text set, or null for a clear. */
     val clipboard = mutableListOf<String?>()
+
+    /** One entry per [playSound] call. */
+    val soundsPlayed = mutableListOf<SoundRequest>()
+
+    /** How many times [stopSounds] was asked to silence everything. */
+    var stopSoundCalls = 0
+        private set
+
+    private val playingState = MutableStateFlow(false)
+
+    override val soundPlaying: StateFlow<Boolean> = playingState.asStateFlow()
 
     var torchEnabled: Boolean? = null
     var bluetoothEnabled: Boolean? = null
@@ -90,6 +105,19 @@ class RecordingSystemServices : SystemServices {
     }
 
     override fun vibrate(durationMs: Int, pattern: List<Long>): Boolean = true
+
+    override suspend fun playSound(request: SoundRequest): Boolean {
+        soundsPlayed += request
+        playingState.value = true
+        return true
+    }
+
+    override fun stopSounds(): Int {
+        stopSoundCalls++
+        val stopped = soundsPlayed.size
+        playingState.value = false
+        return stopped
+    }
 
     override fun launchApp(packageName: String): Boolean {
         launchedApps += packageName

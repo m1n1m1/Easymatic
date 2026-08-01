@@ -10,9 +10,15 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.media.AudioAttributes
 import android.media.AudioManager
+import android.media.MediaPlayer
+import android.media.RingtoneManager
+import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -32,12 +38,24 @@ import com.example.ottomatic.core.service.HttpResponse
 import com.example.ottomatic.core.service.RingerMode
 import com.example.ottomatic.core.service.RingerResult
 import com.example.ottomatic.core.service.ScreenTimeoutResult
+import com.example.ottomatic.core.service.SoundRequest
+import com.example.ottomatic.core.service.SoundSource
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.core.service.TorchResult
 import com.example.ottomatic.core.service.VolumeMode
 import com.example.ottomatic.core.service.VolumeResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.Collections
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.resume
 
 /**
  * Android-backed implementation of [SystemServices]. Bridges the pure-Kotlin
@@ -48,6 +66,20 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
 
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+    /**
+     * Every sound currently making noise. A fire-and-forget player is
+     * referenced by nothing else and would be collected mid-sound; a waited-on
+     * one is here so that stopping it is possible at all.
+     */
+    private val playing: MutableSet<PlayingSound> = Collections.synchronizedSet(mutableSetOf())
+
+    private val playingState = MutableStateFlow(false)
+
+    override val soundPlaying: StateFlow<Boolean> = playingState.asStateFlow()
+
+    /** Carries the play-time cap of a sound nobody is waiting for. */
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     init {
         ensureChannel()
@@ -280,6 +312,186 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         }
         true
     }.getOrDefault(false)
+
+    override suspend fun playSound(request: SoundRequest): Boolean {
+        val player = preparedPlayer(request) ?: return false
+        return if (request.waitForCompletion) {
+            awaitPlayback(player, request.maxMs)
+        } else {
+            playDetached(player, request.maxMs)
+        }
+    }
+
+    /**
+     * A player ready to start at [SoundRequest.startMs], or null when there is
+     * no such sound, it cannot be opened (a chosen file since deleted, or one
+     * whose access grant is gone), or the start offset is past its end.
+     *
+     * `prepare` reads the file, so it stays off the caller's dispatcher. Only
+     * this setup is wrapped in runCatching: doing that around the *awaiting*
+     * half would swallow the CancellationException of a disarmed macro and let
+     * the executor carry on down the graph.
+     */
+    private suspend fun preparedPlayer(request: SoundRequest): MediaPlayer? {
+        val source = soundUri(request.sound, request.uri) ?: return null
+        val player = MediaPlayer()
+        val ready = withContext(Dispatchers.IO) {
+            runCatching {
+                player.setAudioAttributes(audioAttributes(request.stream))
+                player.setDataSource(context, source)
+                player.prepare()
+                seekToStart(player, request.startMs)
+            }.getOrDefault(false)
+        }
+        if (!ready) player.release()
+        return player.takeIf { ready }
+    }
+
+    /**
+     * Moves [player] to [startMs], reporting whether anything is left to play.
+     * A duration of 0 or less means the player does not know it, so the offset
+     * is taken on trust rather than refused.
+     */
+    private fun seekToStart(player: MediaPlayer, startMs: Int): Boolean {
+        // An empty range when there is no offset, so an unset start always plays.
+        val playable = player.duration !in 1..startMs
+        if (playable && startMs > 0) player.seekTo(startMs)
+        return playable
+    }
+
+    override fun stopSounds(): Int {
+        // Snapshot first: silencing a sound takes it out of the set.
+        val sounds = synchronized(playing) { playing.toList() }
+        sounds.forEach { it.silence() }
+        return sounds.size
+    }
+
+    /**
+     * Plays [player] to its end — or for [maxMs], when that is set — stopping
+     * it if the caller is cancelled. Hitting the cap still counts as played.
+     */
+    private suspend fun awaitPlayback(player: MediaPlayer, maxMs: Int): Boolean = try {
+        if (maxMs > 0) {
+            withTimeoutOrNull(maxMs.toLong()) { playToEnd(player) } ?: true
+        } else {
+            playToEnd(player)
+        }
+    } finally {
+        // Covers every exit: completion, error, the cap, a stop and cancellation.
+        player.release()
+    }
+
+    private suspend fun playToEnd(player: MediaPlayer): Boolean = suspendCancellableCoroutine { continuation ->
+        // Stopping resumes rather than cancels: a cancellation would travel out
+        // of the action and abort the whole macro run, where stopping a sound
+        // should only end the sound and let the workflow carry on.
+        val sound = register {
+            runCatching { if (player.isPlaying) player.stop() }
+            if (continuation.isActive) continuation.resume(false)
+        }
+        continuation.invokeOnCancellation {
+            sound.silence()
+            runCatching { player.stop() }
+        }
+        player.setOnCompletionListener {
+            sound.forget()
+            if (continuation.isActive) continuation.resume(true)
+        }
+        // Returning true marks the error handled, which suppresses the
+        // completion callback that would otherwise resume this twice.
+        player.setOnErrorListener { _, _, _ ->
+            sound.forget()
+            if (continuation.isActive) continuation.resume(false)
+            true
+        }
+        player.start()
+    }
+
+    /**
+     * Starts [player] and returns immediately, stopping it after [maxMs] when
+     * that is set. The player is held in [playing] until it ends: nothing else
+     * references it, and a collected MediaPlayer stops mid-sound.
+     */
+    private fun playDetached(player: MediaPlayer, maxMs: Int): Boolean {
+        val sound = register {
+            runCatching { if (player.isPlaying) player.stop() }
+            player.release()
+        }
+        return runCatching {
+            player.setOnCompletionListener { sound.silence() }
+            player.setOnErrorListener { _, _, _ ->
+                sound.silence()
+                true
+            }
+            player.start()
+            // Nothing cancels this when the sound ends on its own; silencing an
+            // already-silent sound is a no-op.
+            if (maxMs > 0) mainHandler.postDelayed({ sound.silence() }, maxMs.toLong())
+            true
+        }.getOrElse {
+            sound.silence()
+            false
+        }
+    }
+
+    private fun register(teardown: () -> Unit): PlayingSound {
+        val sound = PlayingSound(teardown)
+        playing += sound
+        playingState.value = playing.isNotEmpty()
+        return sound
+    }
+
+    /**
+     * One sound making noise, and how to silence it. The teardown runs at most
+     * once, so the end of a sound and a stop racing each other is harmless.
+     */
+    private inner class PlayingSound(private val teardown: () -> Unit) {
+
+        private val done = AtomicBoolean(false)
+
+        /** Stops the sound and tears it down, unless it is already over. */
+        fun silence() {
+            if (done.compareAndSet(false, true)) {
+                drop()
+                runCatching { teardown() }
+            }
+        }
+
+        /** Drops the sound without tearing it down: the caller is doing that. */
+        fun forget() {
+            if (done.compareAndSet(false, true)) drop()
+        }
+
+        private fun drop() {
+            playing -= this
+            playingState.value = playing.isNotEmpty()
+        }
+    }
+
+    /** Null when there is no such sound: no device default, or a blank uri. */
+    private fun soundUri(sound: SoundSource, uri: String): Uri? = when (sound) {
+        SoundSource.NOTIFICATION -> RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        SoundSource.RINGTONE -> RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+        SoundSource.ALARM -> RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        SoundSource.CUSTOM -> uri.takeIf { it.isNotBlank() }?.toUri()
+    }
+
+    /**
+     * The playback usage matching [stream]. `setAudioStreamType` is deprecated
+     * since API 26, so the stream choice is expressed as attributes instead.
+     */
+    private fun audioAttributes(stream: AudioStream): AudioAttributes = AudioAttributes.Builder()
+        .setUsage(
+            when (stream) {
+                AudioStream.MEDIA -> AudioAttributes.USAGE_MEDIA
+                AudioStream.RING -> AudioAttributes.USAGE_NOTIFICATION_RINGTONE
+                AudioStream.ALARM -> AudioAttributes.USAGE_ALARM
+                AudioStream.NOTIFICATION -> AudioAttributes.USAGE_NOTIFICATION
+                AudioStream.SYSTEM -> AudioAttributes.USAGE_ASSISTANCE_SONIFICATION
+            },
+        )
+        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+        .build()
 
     override fun launchApp(packageName: String): Boolean = runCatching {
         val intent = context.packageManager.getLaunchIntentForPackage(packageName) ?: return@runCatching false

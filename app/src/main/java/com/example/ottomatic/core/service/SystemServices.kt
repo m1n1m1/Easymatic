@@ -1,5 +1,7 @@
 package com.example.ottomatic.core.service
 
+import kotlinx.coroutines.flow.StateFlow
+
 /**
  * Android-backed system operations exposed to actions without pulling
  * Android types into `engine/`. Implemented by [AndroidSystemServices] in `data/`.
@@ -76,6 +78,35 @@ interface SystemServices {
     fun vibrate(durationMs: Int, pattern: List<Long> = emptyList()): Boolean
 
     /**
+     * Plays a sound as described by [request].
+     *
+     * When [SoundRequest.waitForCompletion] is true this suspends until
+     * playback ends, and cancelling the caller stops the sound. When it is
+     * false the sound outlives the call — until its own end, until
+     * [SoundRequest.maxMs], or until [stopSounds].
+     *
+     * Returns false when the sound cannot be played — no default set for the
+     * chosen type, a blank or unreadable uri, a start offset at or past the end
+     * of the sound, or a media-library sound without `READ_MEDIA_AUDIO`
+     * (API 33+) / `READ_EXTERNAL_STORAGE` below it. The presets need no
+     * permission.
+     */
+    suspend fun playSound(request: SoundRequest): Boolean
+
+    /**
+     * Stops every sound started by [playSound], returning how many were
+     * playing. A caller waiting on one is released rather than cancelled: the
+     * sound ends, the workflow carries on.
+     */
+    fun stopSounds(): Int
+
+    /**
+     * Whether any sound is playing right now, so a UI can offer to stop it —
+     * and only while there is something to stop.
+     */
+    val soundPlaying: StateFlow<Boolean>
+
+    /**
      * Launches the app with [packageName] (its main launcher activity).
      * Returns false on failure (package not installed / no launcher activity).
      */
@@ -114,6 +145,27 @@ data class HttpRequest(
     val url: String,
     val headers: Map<String, String> = emptyMap(),
     val body: String = "",
+)
+
+/**
+ * One playback of one sound, for [SystemServices.playSound].
+ *
+ * - [sound]: which sound — a device default, or the one [uri] identifies.
+ * - [uri]: the sound to play when [sound] is [SoundSource.CUSTOM].
+ * - [stream]: whose volume the sound obeys.
+ * - [waitForCompletion]: whether the caller waits for the sound to finish.
+ * - [startMs]: where in the sound to start; 0 plays it from the beginning.
+ * - [maxMs]: how long to play for at most; 0 plays to the end. Ringtones and
+ *   alarms are written to keep going until something answers them, so the cap
+ *   is what makes them usable as a short cue.
+ */
+data class SoundRequest(
+    val sound: SoundSource,
+    val uri: String = "",
+    val stream: AudioStream = AudioStream.NOTIFICATION,
+    val waitForCompletion: Boolean = false,
+    val startMs: Int = 0,
+    val maxMs: Int = 0,
 )
 
 data class HttpResponse(

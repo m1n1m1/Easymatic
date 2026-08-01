@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,6 +44,7 @@ import com.example.ottomatic.domain.registry.ConfigField
 import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
+import com.example.ottomatic.feature.sound.SoundPickerField
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -302,8 +304,10 @@ private fun DateTimeField(
  * a UUID by hand is not a use case worth supporting, and letting it be typed
  * would let it be typed *wrong*.
  *
- * The `when` is exhaustive over [PickerKind]: a new kind is a compile error
- * until it is given a chooser here.
+ * Each kind brings its own chooser and its own way of naming what was chosen,
+ * so the `when` dispatches once to a per-kind field rather than branching again
+ * for the label, the icon and the overlay. It is exhaustive over [PickerKind]:
+ * a new kind is a compile error until it is given a chooser here.
  */
 @Composable
 private fun PickerField(
@@ -313,18 +317,59 @@ private fun PickerField(
     labelSlot: @Composable () -> Unit,
     colors: TextFieldColors,
 ) {
+    when (kind) {
+        PickerKind.GEOFENCE_PLACE -> GeofencePickerField(value, onValueChange, labelSlot, colors)
+        PickerKind.SOUND -> SoundPickerField(value, onValueChange, labelSlot, colors)
+    }
+}
+
+@Composable
+private fun GeofencePickerField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
     var picking by remember { mutableStateOf(false) }
     val places = LocalGeofencePlaces.current
 
-    val display = when (kind) {
-        PickerKind.GEOFENCE_PLACE -> when {
+    PickerFieldChrome(
+        display = when {
             value.isBlank() -> ""
             // No library in scope (preview/test) or the place was deleted: show
             // the raw id rather than an empty field that looks unconfigured.
             else -> places?.placeById(value)?.name ?: value
-        }
-    }
+        },
+        icon = Icons.Filled.Map,
+        enabled = places != null,
+        onTap = { picking = true },
+        labelSlot = labelSlot,
+        colors = colors,
+    )
 
+    if (picking && places != null) {
+        GeofencePlacePickerOverlay(
+            viewModel = places,
+            selectedId = value.takeIf { it.isNotBlank() },
+            onPick = { id ->
+                onValueChange(id)
+                picking = false
+            },
+            onDismiss = { picking = false },
+        )
+    }
+}
+
+/** The read-only field every picker wears, minus whatever opens on a tap. */
+@Composable
+internal fun PickerFieldChrome(
+    display: String,
+    icon: ImageVector,
+    enabled: Boolean,
+    onTap: () -> Unit,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = display,
@@ -333,14 +378,7 @@ private fun PickerField(
             label = labelSlot,
             colors = colors,
             placeholder = { Text(text = "None selected", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-            trailingIcon = {
-                Icon(
-                    imageVector = when (kind) {
-                        PickerKind.GEOFENCE_PLACE -> Icons.Filled.Map
-                    },
-                    contentDescription = null,
-                )
-            },
+            trailingIcon = { Icon(imageVector = icon, contentDescription = null) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -349,21 +387,7 @@ private fun PickerField(
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .clickable(enabled = places != null) { picking = true },
+                .clickable(enabled = enabled) { onTap() },
         )
-    }
-
-    if (picking && places != null) {
-        when (kind) {
-            PickerKind.GEOFENCE_PLACE -> GeofencePlacePickerOverlay(
-                viewModel = places,
-                selectedId = value.takeIf { it.isNotBlank() },
-                onPick = { id ->
-                    onValueChange(id)
-                    picking = false
-                },
-                onDismiss = { picking = false },
-            )
-        }
     }
 }

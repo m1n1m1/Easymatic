@@ -19,6 +19,8 @@ enum class NodeIcon {
     WIFI,
     BLUETOOTH,
     VOLUME,
+    MUSIC,
+    MUSIC_OFF,
     DND,
     LOCATION,
     BOOT,

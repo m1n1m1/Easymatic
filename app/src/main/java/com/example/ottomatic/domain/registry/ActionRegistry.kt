@@ -19,10 +19,12 @@ import com.example.ottomatic.engine.action.LaunchAppAction
 import com.example.ottomatic.engine.action.LogAction
 import com.example.ottomatic.engine.action.NotifyAction
 import com.example.ottomatic.engine.action.OpenUrlAction
+import com.example.ottomatic.engine.action.PlaySoundAction
 import com.example.ottomatic.engine.action.RingerModeAction
 import com.example.ottomatic.engine.action.ScreenTimeoutAction
 import com.example.ottomatic.engine.action.SendSmsAction
 import com.example.ottomatic.engine.action.StopAction
+import com.example.ottomatic.engine.action.StopSoundAction
 import com.example.ottomatic.engine.action.VibrateAction
 import com.example.ottomatic.engine.action.VolumeAction
 import com.example.ottomatic.engine.action.WifiAction
@@ -64,10 +66,12 @@ object ActionRegistry {
         LogAction(),
         NotifyAction(),
         OpenUrlAction(),
+        PlaySoundAction(),
         RingerModeAction(),
         ScreenTimeoutAction(),
         SendSmsAction(),
         StopAction(),
+        StopSoundAction(),
         VibrateAction(),
         VolumeAction(),
         WifiAction(),

@@ -52,6 +52,26 @@ enum class AudioStream {
     SYSTEM,
 }
 
+/**
+ * Which sound `action.play_sound` plays. The three presets follow the device's
+ * own defaults, so they need no permission and no chooser; [CUSTOM] plays the
+ * sound identified by the node's `uri` config field.
+ */
+@Serializable
+enum class SoundSource {
+    @SerialName("notification")
+    NOTIFICATION,
+
+    @SerialName("ringtone")
+    RINGTONE,
+
+    @SerialName("alarm")
+    ALARM,
+
+    @SerialName("custom")
+    CUSTOM,
+}
+
 /** How a volume change should be applied. */
 @Serializable
 enum class VolumeMode {
