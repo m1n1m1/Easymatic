@@ -1,6 +1,7 @@
 package com.example.ottomatic.engine
 
 import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.ValueSource
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.registry.ValueRegistry
@@ -34,17 +35,17 @@ internal suspend fun resolveValueSource(
 private suspend fun readValueNode(typeId: NodeTypeId, context: ExecutionContext): Item? {
     val value = ValueRegistry.byId(typeId)
     if (value == null) {
-        context.log("Unknown value ${typeId.value}: treating as unavailable")
+        context.log("Unknown value ${typeId.value}: treating as unavailable", LogLevel.ERROR)
         return null
     }
     val item = runCatching { value.readRaw(emptyMap(), context) }.getOrElse { cause ->
-        context.log("Read ${typeId.value} failed: ${cause.message}")
+        context.log("Read ${typeId.value} failed: ${cause.message}", LogLevel.ERROR)
         null
     }
     if (item == null) {
-        context.log("Read ${typeId.value}: unavailable")
+        context.log("Read ${typeId.value}: unavailable", LogLevel.WARN)
     } else {
-        context.log("Read ${typeId.value} = ${item.value}")
+        context.log("Read ${typeId.value} = ${item.value}", LogLevel.DEBUG)
     }
     return item
 }

@@ -45,6 +45,7 @@ class MainActivity : ComponentActivity() {
     private val listViewModel: WorkflowListViewModel by viewModels {
         WorkflowListViewModel.factory(
             repository = ServiceLocator.workflowRepository,
+            runLog = ServiceLocator.runLog,
             appContext = applicationContext,
         )
     }
@@ -167,6 +168,7 @@ class MainActivity : ComponentActivity() {
                         repository = ServiceLocator.workflowRepository,
                         triggerHost = ServiceLocator.triggerHost,
                         executionContext = ServiceLocator.executionContext,
+                        runLog = ServiceLocator.runLog,
                         appContext = applicationContext,
                         appScope = ServiceLocator.appScope,
                         workflowId = workflowId,

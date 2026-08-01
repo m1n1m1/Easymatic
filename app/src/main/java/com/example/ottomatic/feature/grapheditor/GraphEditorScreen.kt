@@ -29,6 +29,9 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Terminal
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -36,6 +39,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import kotlinx.coroutines.flow.StateFlow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -97,6 +101,7 @@ private fun GraphEditorContent(
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     var showPalette by remember { mutableStateOf(false) }
     var showConfig by remember { mutableStateOf(false) }
+    var showConsole by remember { mutableStateOf(false) }
     var hasAutoFitted by remember { mutableStateOf(false) }
 
     // Center the workflow in the viewport once it is loaded and the canvas is measured.
@@ -118,6 +123,8 @@ private fun GraphEditorContent(
             selectedCount = state.selection.size,
             canConfigure = state.selection.singleNodeId != null,
             isMacroEnabled = state.isMacroEnabled,
+            problems = viewModel.consoleProblems,
+            onOpenConsole = { showConsole = true },
             onToggleEnabled = { viewModel.setMacroEnabled(it) },
             onConfigure = { showConfig = true },
             onDelete = { viewModel.deleteSelection() },
@@ -183,6 +190,17 @@ private fun GraphEditorContent(
                 }
             }
         }
+    }
+
+    if (showConsole) {
+        ConsoleOverlay(
+            entries = viewModel.console,
+            minLevel = viewModel.consoleMinLevel,
+            onMinLevelChange = { viewModel.setConsoleMinLevel(it) },
+            onClear = { viewModel.clearConsole() },
+            onSelectNode = { viewModel.selectNode(it) },
+            onDismiss = { showConsole = false },
+        )
     }
 
     if (showPalette) {
@@ -262,14 +280,17 @@ private fun GraphEditorContent(
 
 private fun IntSize.centerPx(): Offset = Offset(width / 2f, height / 2f)
 
+
 @Composable
-@Suppress("LongParameterList") // Title, subtitle inputs and the three selection-conditional controls.
+@Suppress("LongParameterList") // Title, subtitle inputs, the console and the selection-conditional controls.
 private fun EditorTopBar(
     title: String,
     nodeCount: Int,
     selectedCount: Int,
     canConfigure: Boolean,
     isMacroEnabled: Boolean,
+    problems: StateFlow<Int>,
+    onOpenConsole: () -> Unit,
     onToggleEnabled: (Boolean) -> Unit,
     onConfigure: () -> Unit,
     onDelete: () -> Unit,
@@ -306,6 +327,11 @@ private fun EditorTopBar(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
+            // First of the trailing controls, because the two below it come and
+            // go with the selection — anything placed after them would slide
+            // sideways every time a node is tapped, which is no way to treat a
+            // button reached for repeatedly while debugging.
+            ConsoleAction(problems, onOpenConsole)
             androidx.compose.material3.Switch(
                 checked = isMacroEnabled,
                 onCheckedChange = onToggleEnabled,

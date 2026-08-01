@@ -3,6 +3,10 @@ package com.example.ottomatic.engine.action
 import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.core.service.LogEntry
+import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.core.service.ScriptConsoleLevel
+import com.example.ottomatic.core.service.ScriptConsoleMessage
 import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.ScriptOutcome
 import com.example.ottomatic.domain.model.Direction
@@ -46,7 +50,7 @@ class ScriptActionTest {
         }
     }
 
-    private val logs = mutableListOf<String>()
+    private val logs = mutableListOf<LogEntry>()
 
     // region Spreading a result across ports
 
@@ -110,13 +114,13 @@ class ScriptActionTest {
         )
         assertEquals(0, out[PortName("a")]?.value)
         assertEquals(0, out[PortName("b")]?.value)
-        assertTrue(logs.toString(), logs.any { it.contains("TypeError") })
+        assertTrue(logs.toString(), logs.any { it.message.contains("TypeError") })
     }
 
     @Test
     fun `an engine failure is reported as the script's, not the device's`() {
         run(outputs = "a:TEXT", outcome = ScriptOutcome.Error("boom"))
-        assertTrue(logs.toString(), logs.any { it.contains("failed") && it.contains("boom") })
+        assertTrue(logs.toString(), logs.any { it.message.contains("failed") && it.message.contains("boom") })
     }
 
     @Test
@@ -124,7 +128,7 @@ class ScriptActionTest {
         // A phone with no usable WebView cannot be fixed by editing the code, so
         // the message must not read like the user made a mistake.
         run(outputs = "a:TEXT", outcome = ScriptOutcome.Unavailable)
-        assertTrue(logs.toString(), logs.any { it.contains("WebView") })
+        assertTrue(logs.toString(), logs.any { it.message.contains("WebView") })
     }
 
     @Test
@@ -137,6 +141,69 @@ class ScriptActionTest {
     fun `an unconfigured node still produces its default port`() {
         val out = run(outputs = "", outcome = ok("""{"result":"hi"}"""))
         assertEquals("hi", out[PortName("result")]?.value)
+    }
+
+    // endregion
+
+    // region What the script wrote to console
+
+    @Test
+    fun `console output is logged in order, before the outcome's own line`() {
+        // The whole point of the feature: `console.log("dividing"); boom()` has to
+        // read in the order it happened, or the preface lands after the crash.
+        run(
+            outputs = "a:TEXT",
+            outcome = ScriptOutcome.Value(
+                json = """{"ok":false,"error":"TypeError: nope"}""",
+                console = listOf(
+                    ScriptConsoleMessage(ScriptConsoleLevel.LOG, "step one"),
+                    ScriptConsoleMessage(ScriptConsoleLevel.LOG, "step two"),
+                ),
+            ),
+        )
+        val messages = logs.map { it.message }
+        assertEquals(
+            messages.toString(),
+            listOf("console: step one", "console: step two", "Run Script threw: TypeError: nope"),
+            messages,
+        )
+    }
+
+    @Test
+    fun `console output survives a failed run`() {
+        // A script that logs and then loops forever reports only a timeout. Those
+        // lines are the only clue where it went, so they must outlive the failure.
+        run(
+            outputs = "a:TEXT",
+            outcome = ScriptOutcome.Error(
+                message = "Script did not finish within 300 ms",
+                console = listOf(ScriptConsoleMessage(ScriptConsoleLevel.LOG, "before the loop")),
+            ),
+        )
+        assertTrue(logs.toString(), logs.any { it.message == "console: before the loop" })
+    }
+
+    @Test
+    fun `a console error is an error, and a plain log is not`() {
+        run(
+            outputs = "a:TEXT",
+            outcome = ok("null").withConsole(
+                ScriptConsoleMessage(ScriptConsoleLevel.ERROR, "bad"),
+                ScriptConsoleMessage(ScriptConsoleLevel.LOG, "fine"),
+            ),
+        )
+        assertEquals(LogLevel.ERROR, logs.first { it.message.endsWith("bad") }.level)
+        // A console.log is deliberate output, like action.log — hiding it at DEBUG
+        // would defeat the reason the user wrote the line.
+        assertEquals(LogLevel.INFO, logs.first { it.message.endsWith("fine") }.level)
+    }
+
+    @Test
+    fun `an unavailable engine warns rather than erroring`() {
+        // Nothing the user can fix by editing, so it must not join the error count
+        // that badges the console button.
+        run(outputs = "a:TEXT", outcome = ScriptOutcome.Unavailable)
+        assertEquals(LogLevel.WARN, logs.single().level)
     }
 
     // endregion
@@ -243,6 +310,9 @@ class ScriptActionTest {
     // endregion
 
     private fun ok(value: String) = ScriptOutcome.Value("""{"ok":true,"value":$value}""")
+
+    private fun ScriptOutcome.Value.withConsole(vararg lines: ScriptConsoleMessage) =
+        copy(console = lines.toList())
 
     private fun run(
         outputs: String,

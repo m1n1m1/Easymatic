@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine.action
 
+import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
@@ -33,7 +34,7 @@ class OpenUrlAction : Action<OpenUrlConfig, Unit> {
 
     override suspend fun execute(input: OpenUrlConfig, context: ExecutionContext): NodeOutput<Unit> {
         val ok = context.systemServices.openUrl(input.url)
-        if (!ok) context.log("Open url failed: ${input.url}")
+        if (!ok) context.log("Open url failed: ${input.url}", LogLevel.ERROR)
         return NodeOutput(Unit)
     }
 }

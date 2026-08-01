@@ -3,8 +3,12 @@ package com.example.ottomatic.data.script
 import android.content.Context
 import android.util.Log
 import androidx.javascriptengine.IsolateStartupParameters
+import androidx.javascriptengine.JavaScriptConsoleCallback
+import androidx.javascriptengine.JavaScriptIsolate
 import androidx.javascriptengine.JavaScriptSandbox
 import androidx.javascriptengine.SandboxDeadException
+import com.example.ottomatic.core.service.ScriptConsoleLevel
+import com.example.ottomatic.core.service.ScriptConsoleMessage
 import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.ScriptOutcome
 import com.google.common.util.concurrent.ListenableFuture
@@ -14,7 +18,9 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeout
+import java.util.Collections
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * [ScriptEngine] backed by the V8 inside the device's system WebView, via
@@ -54,7 +60,9 @@ class WebViewScriptEngine(context: Context) : ScriptEngine {
      *
      * The isolate is closed in a `finally` because that is also how a runaway
      * loop is stopped: cancelling the future abandons the *call*, only closing
-     * the isolate ends the *work*.
+     * the isolate ends the *work*. The console buffer is read *before* that, in
+     * every branch including the timeout — a script that logs and then loops is
+     * exactly the case where those lines are the only diagnosis available.
      */
     private suspend fun runIsolated(
         sandbox: JavaScriptSandbox,
@@ -62,20 +70,49 @@ class WebViewScriptEngine(context: Context) : ScriptEngine {
         timeoutMs: Long,
     ): ScriptOutcome {
         val isolate = runCatching { sandbox.createIsolate(startupParameters(sandbox)) }
-            .getOrElse { return failure(it, sandbox) }
+            .getOrElse { return failure(it, sandbox, ConsoleBuffer()) }
+        val console = captureConsole(sandbox, isolate)
         return try {
-            withTimeout(timeoutMs) { ScriptOutcome.Value(isolate.evaluateJavaScriptAsync(source).await()) }
+            withTimeout(timeoutMs) {
+                ScriptOutcome.Value(isolate.evaluateJavaScriptAsync(source).await(), console.snapshot())
+            }
         } catch (@Suppress("SwallowedException") timeout: TimeoutCancellationException) {
-            ScriptOutcome.Error("Script did not finish within $timeoutMs ms")
+            ScriptOutcome.Error("Script did not finish within $timeoutMs ms", console.snapshot())
         } catch (cancellation: CancellationException) {
             // The macro itself was cancelled (disarm, re-arm, service stop).
             // That is not a script failure and must keep propagating.
             throw cancellation
         } catch (@Suppress("TooGenericExceptionCaught") cause: Exception) {
-            failure(cause, sandbox)
+            failure(cause, sandbox, console)
         } finally {
             runCatching { isolate.close() }
         }
+    }
+
+    /**
+     * Starts collecting whatever the script writes to `console`.
+     *
+     * The executor is direct, like the one in [await]: every hop between the
+     * Binder thread and the buffer is a hop in which a message can still be in
+     * flight when the isolate closes. `clearConsoleCallback` is deliberately not
+     * called — it is an extra IPC that does not flush anything and only narrows
+     * that window; closing the isolate tears the callback down anyway.
+     *
+     * Delivery is best-effort by nature. The evaluation result and the console
+     * messages travel over different interfaces, and Binder orders calls per
+     * interface rather than across them, so a line written immediately before
+     * the return can in principle arrive after it. There is no flush API.
+     *
+     * Feature support tracks the device's WebView, so an older one simply
+     * reports nothing rather than failing the run.
+     */
+    private fun captureConsole(sandbox: JavaScriptSandbox, isolate: JavaScriptIsolate): ConsoleBuffer {
+        val buffer = ConsoleBuffer()
+        if (!sandbox.isFeatureSupported(JavaScriptSandbox.JS_FEATURE_CONSOLE_MESSAGING)) return buffer
+        runCatching {
+            isolate.setConsoleCallback(Runnable::run) { message -> buffer.add(message) }
+        }
+        return buffer
     }
 
     /**
@@ -87,9 +124,13 @@ class WebViewScriptEngine(context: Context) : ScriptEngine {
      * and a heap breach all mean "your script did not produce a value" — so the
      * message is passed through rather than classified.
      */
-    private suspend fun failure(cause: Throwable, sandbox: JavaScriptSandbox): ScriptOutcome {
+    private suspend fun failure(
+        cause: Throwable,
+        sandbox: JavaScriptSandbox,
+        console: ConsoleBuffer,
+    ): ScriptOutcome {
         if (cause is SandboxDeadException) forget(sandbox)
-        return ScriptOutcome.Error(cause.message ?: cause::class.java.simpleName)
+        return ScriptOutcome.Error(cause.message ?: cause::class.java.simpleName, console.snapshot())
     }
 
     /**
@@ -158,6 +199,55 @@ class WebViewScriptEngine(context: Context) : ScriptEngine {
             connected?.let { runCatching { it.close() } }
             connected = null
         }
+    }
+}
+
+/**
+ * Collects `console` output from one isolate.
+ *
+ * Appended to from a Binder thread and read from the coroutine that started the
+ * evaluation, so the list is synchronized and the callback body does nothing but
+ * append — anything slower there delays the sandbox process.
+ *
+ * The cap matters more than it looks: `for (;;) console.log(i)` inside a two
+ * second timeout emits tens of thousands of lines, and every one of them would
+ * otherwise cross a process boundary into a bounded run log, evicting whatever
+ * the user was actually trying to read. It belongs here rather than in the UI
+ * for the same reason.
+ */
+private class ConsoleBuffer {
+
+    private val lines = Collections.synchronizedList(mutableListOf<ScriptConsoleMessage>())
+    private val suppressed = AtomicInteger()
+
+    fun add(message: JavaScriptConsoleCallback.ConsoleMessage) {
+        if (lines.size >= MAX_CONSOLE_LINES) {
+            suppressed.incrementAndGet()
+            return
+        }
+        lines += ScriptConsoleMessage(levelOf(message.level), message.message)
+    }
+
+    fun snapshot(): List<ScriptConsoleMessage> {
+        val captured = synchronized(lines) { lines.toList() }
+        val dropped = suppressed.get()
+        if (dropped == 0) return captured
+        return captured + ScriptConsoleMessage(
+            level = ScriptConsoleLevel.WARNING,
+            message = "… $dropped more console line(s) suppressed",
+        )
+    }
+
+    private fun levelOf(level: Int): ScriptConsoleLevel = when (level) {
+        JavaScriptConsoleCallback.ConsoleMessage.LEVEL_ERROR -> ScriptConsoleLevel.ERROR
+        JavaScriptConsoleCallback.ConsoleMessage.LEVEL_WARNING -> ScriptConsoleLevel.WARNING
+        JavaScriptConsoleCallback.ConsoleMessage.LEVEL_INFO -> ScriptConsoleLevel.INFO
+        JavaScriptConsoleCallback.ConsoleMessage.LEVEL_DEBUG -> ScriptConsoleLevel.DEBUG
+        else -> ScriptConsoleLevel.LOG
+    }
+
+    private companion object {
+        const val MAX_CONSOLE_LINES = 100
     }
 }
 

@@ -188,7 +188,7 @@ class WorkflowExecutorTest {
     fun `invalid workflow logs and runs nothing`() = runBlocking {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
-        val context = DefaultExecutionContext(services) { logs += it }
+        val context = DefaultExecutionContext(services) { logs += it.message }
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -210,7 +210,7 @@ class WorkflowExecutorTest {
     fun `log action writes wired message and pulses out`() = runBlocking {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
-        val context = DefaultExecutionContext(services) { logs += it }
+        val context = DefaultExecutionContext(services) { logs += it.message }
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -248,7 +248,7 @@ class WorkflowExecutorTest {
     fun `stop action halts the execution chain so downstream actions do not run`() = runBlocking {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
-        val context = DefaultExecutionContext(services) { logs += it }
+        val context = DefaultExecutionContext(services) { logs += it.message }
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(

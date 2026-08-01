@@ -18,16 +18,21 @@ data class LogConfig(
 )
 
 /**
- * Action for `action.log`. Writes a single message to the engine log; the
- * message may be wired from upstream data or set as a static literal. Pulses
- * `out` with no data — useful for debugging and audit trails.
+ * Action for `action.log`. Writes a single message to the workflow's console;
+ * the message may be wired from upstream data or set as a static literal. Pulses
+ * `out` with no data.
+ *
+ * The deliberate half of the console. Everything else there is something the
+ * engine decided to say; this is the one line a user puts where they want it, so
+ * it logs at [com.example.ottomatic.core.service.LogLevel.INFO] and is visible
+ * at the console's default filter.
  */
 class LogAction : Action<LogConfig, Unit> {
 
     override val definition = effectNode<LogConfig>(
         typeId = "action.log",
         displayName = "Log Message",
-        description = "Writes a message to the engine log",
+        description = "Writes a message to this workflow's console",
         category = NodeCategory.FLOW_CONTROL,
         icon = NodeIcon.BOLT,
     )

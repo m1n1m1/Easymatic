@@ -36,7 +36,7 @@ class VariablesTest {
     private val context = DefaultExecutionContext(
         systemServices = RecordingSystemServices(),
         variables = variables,
-        logger = { logs += it },
+        logger = { logs += it.message },
     )
 
     @Test

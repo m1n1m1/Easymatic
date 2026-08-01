@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine.action
 
+import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
@@ -34,7 +35,7 @@ class LaunchAppAction : Action<LaunchAppConfig, Unit> {
 
     override suspend fun execute(input: LaunchAppConfig, context: ExecutionContext): NodeOutput<Unit> {
         val ok = context.systemServices.launchApp(input.packageName)
-        if (!ok) context.log("Launch app failed: ${input.packageName}")
+        if (!ok) context.log("Launch app failed: ${input.packageName}", LogLevel.ERROR)
         return NodeOutput(Unit)
     }
 }

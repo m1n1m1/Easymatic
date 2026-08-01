@@ -1,6 +1,8 @@
 package com.example.ottomatic.engine
 
 import com.example.ottomatic.core.service.DeviceState
+import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.NoScripts
 import com.example.ottomatic.core.service.NoVariables
@@ -70,5 +72,32 @@ interface ExecutionContext {
     /** Optional handle to enable/disable other macros at runtime, or null. */
     val macroControl: MacroControl? get() = null
 
-    fun log(message: String)
+    /**
+     * Writes one line to the workflow's console, at [level].
+     *
+     * [LogLevel.INFO] by default, which is what a node saying something
+     * deliberate — `action.log`, a variable write, a script's `console.log` —
+     * should be. Traces that exist for diagnosis rather than for reading belong
+     * at [LogLevel.DEBUG]; the console hides those unless asked.
+     */
+    fun log(message: String, level: LogLevel = LogLevel.INFO)
+
+    /**
+     * This same context, stamping [source] onto everything logged through it.
+     *
+     * A copy rather than a mutable "current node" field, because the executor
+     * recurses and trigger flows run concurrently — a field shared between them
+     * would attribute a line to whichever node happened to set it last. It also
+     * means an action needs to know nothing about logging: the executor hands it
+     * a context that is already stamped, and the action's plain `log("…")` picks
+     * up its node for free.
+     *
+     * [source] carries the whole attribution at once on purpose. Splitting it
+     * into a workflow call and a node call would break under class delegation:
+     * the forwarder generated for the second would delegate to the *unscoped*
+     * context and quietly discard the first.
+     *
+     * Defaults to `this`, so an engine-only test needs no attribution machinery.
+     */
+    fun scoped(source: LogSource): ExecutionContext = this
 }

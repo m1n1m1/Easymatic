@@ -4,6 +4,9 @@ import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.ConfigKey
+import com.example.ottomatic.core.service.LogEntry
+import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.core.service.RunLog
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.lifecycle.ViewModel
@@ -50,8 +53,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -106,11 +112,14 @@ data class GraphEditorUiState(
     val isMacroEnabled: Boolean = false,
 )
 
-@Suppress("TooManyFunctions") // Editor surface: transform, selection, node and connection editing.
+// TooManyFunctions: the editor surface — transform, selection, node and connection editing.
+// LongParameterList: one per collaborator; the alternative is a bag object that hides them.
+@Suppress("TooManyFunctions", "LongParameterList")
 class GraphEditorViewModel(
     private val repository: WorkflowRepository,
     private val triggerHost: TriggerHost,
     private val executionContext: ExecutionContext,
+    private val runLog: RunLog,
     private val appContext: android.content.Context,
     private val appScope: CoroutineScope,
     private val workflowId: String,
@@ -118,6 +127,43 @@ class GraphEditorViewModel(
 
     private val _uiState = MutableStateFlow(GraphEditorUiState())
     val uiState: StateFlow<GraphEditorUiState> = _uiState.asStateFlow()
+
+    /**
+     * This workflow's console, and the state around it.
+     *
+     * Deliberately **not** part of [GraphEditorUiState]. That state drives the
+     * canvas, and a run that logs a line per node would repaint the whole graph
+     * for each one — [GraphEditorViewModel] is not a stable type to Compose, so
+     * `GraphCanvas` would not skip. Kept as separate flows, only the console
+     * itself collects them.
+     */
+    val console: StateFlow<List<LogEntry>> = runLog.entries(workflowId)
+
+    private val _consoleMinLevel = MutableStateFlow(LogLevel.INFO)
+    val consoleMinLevel: StateFlow<LogLevel> = _consoleMinLevel.asStateFlow()
+
+    /** Drives the badge on the console button: what is worth looking at. */
+    val consoleProblems: StateFlow<Int> = console
+        .map { entries -> entries.count { it.level >= LogLevel.WARN } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_STOP_TIMEOUT_MS), 0)
+
+    fun setConsoleMinLevel(level: LogLevel) {
+        _consoleMinLevel.value = level
+    }
+
+    fun clearConsole() = runLog.clear(workflowId)
+
+    /**
+     * Selects the node a console line came from, if it is still on the canvas.
+     *
+     * A log line outlives the node it names — a run persists, an edit does not
+     * ask the log's permission — so a stale id selects nothing rather than
+     * leaving the canvas pointing at something that is gone.
+     */
+    fun selectNode(nodeId: NodeId) {
+        if (_uiState.value.workflow.node(nodeId) == null) return
+        _uiState.update { it.selectingOnly(nodeId) }
+    }
 
     /**
      * The [Workflow.runtimeSignature] the background service is currently
@@ -838,6 +884,9 @@ class GraphEditorViewModel(
          */
         private const val SAVE_DEBOUNCE_MS = 500L
 
+        /** Keeps derived console state alive across a configuration change. */
+        private const val FLOW_STOP_TIMEOUT_MS = 5_000L
+
         /** The two `@Ports` config keys on `action.script`, both of which retype its ports. */
         private val SCRIPT_PORT_KEYS = setOf(SCRIPT_INPUTS_KEY, SCRIPT_OUTPUTS_KEY)
 
@@ -846,6 +895,7 @@ class GraphEditorViewModel(
             repository: WorkflowRepository,
             triggerHost: TriggerHost,
             executionContext: ExecutionContext,
+            runLog: RunLog,
             appContext: android.content.Context,
             appScope: CoroutineScope,
             workflowId: String,
@@ -855,6 +905,7 @@ class GraphEditorViewModel(
                     repository,
                     triggerHost,
                     executionContext,
+                    runLog,
                     appContext,
                     appScope,
                     workflowId,

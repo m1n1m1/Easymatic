@@ -4,10 +4,12 @@ import android.content.Context
 import com.example.ottomatic.core.permissions.PermissionChecker
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.MacroControl
+import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.WorkflowRepository
+import com.example.ottomatic.data.log.RunLogStore
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
 import com.example.ottomatic.data.script.WebViewScriptEngine
 import com.example.ottomatic.data.sensor.SensorBridge
@@ -60,6 +62,18 @@ object ServiceLocator {
     lateinit var scriptEngine: ScriptEngine
         private set
 
+    /**
+     * The run log behind every workflow's console.
+     *
+     * One store for the process, which is what makes a background run visible in
+     * the editor: [MacroEngineService][com.example.ottomatic.engine.service.MacroEngineService]
+     * and the editor's preview run already share one [executionContext], and its
+     * logger writes here. That holds only while both live in the same process —
+     * giving the service an `android:process` would silently empty the console.
+     */
+    lateinit var runLog: RunLog
+        private set
+
     lateinit var executionContext: ExecutionContext
         private set
 
@@ -93,6 +107,8 @@ object ServiceLocator {
         // to them through the host, and the value nodes that read one sample
         // through the context. Two would mean two platform registrations.
         val sensorBridge = SensorBridge(appContext)
+        val log = RunLogStore().apply { attach(appContext.filesDir, appScope) }
+        runLog = log
         executionContext = DefaultExecutionContext(
             systemServices = systemServices,
             deviceState = deviceState,
@@ -100,7 +116,13 @@ object ServiceLocator {
             sensors = sensorBridge,
             scripts = scriptEngine,
             variables = VariableStore,
-            logger = { msg -> android.util.Log.i("Ottomatic", msg) },
+            // Both destinations, because they answer different questions: the
+            // store is what a user reads in the console, Logcat is what survives
+            // a crash and can be pulled off a device over a cable.
+            logger = { entry ->
+                log.record(entry)
+                android.util.Log.i("Ottomatic", entry.message)
+            },
         )
         triggerHost = AndroidTriggerHost(appContext, geofencePlaceRepository, sensorBridge)
         permissionChecker = AndroidPermissionChecker(appContext)

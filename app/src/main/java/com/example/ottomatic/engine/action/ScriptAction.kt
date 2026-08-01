@@ -1,6 +1,8 @@
 package com.example.ottomatic.engine.action
 
 import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.core.service.ScriptConsoleLevel
 import com.example.ottomatic.core.service.ScriptOutcome
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
@@ -88,7 +90,7 @@ class ScriptAction : RawAction<ScriptConfig> {
     override val definition = adaptiveNode<ScriptConfig>(
         typeId = SCRIPT_TYPE_ID.value,
         displayName = "Run Script",
-        description = "Runs JavaScript over up to three inputs and returns values on ports you name",
+        description = "Runs JavaScript over inputs you name and returns values on ports you name",
         category = NodeCategory.DATA,
         icon = NodeIcon.CODE,
         // No declared data ports at all: both sides are named in config and
@@ -107,6 +109,9 @@ class ScriptAction : RawAction<ScriptConfig> {
             source = wrap(config.script, PortSpec.parse(config.inputs), input),
             timeoutMs = config.timeoutMs.toLong().coerceAtLeast(1),
         )
+        // Before the outcome's own line, so `console.log("dividing"); boom()`
+        // reads in the order it happened rather than ending with its own preface.
+        outcome.console.forEach { context.log("console: ${it.message}", levelOf(it.level)) }
         val returned = resultOf(outcome, context)
         return NodeOutput(outputs.associate { spec -> PortName(spec.name) to item(spec, returned, outputs, config) })
     }
@@ -120,14 +125,25 @@ class ScriptAction : RawAction<ScriptConfig> {
      */
     private fun resultOf(outcome: ScriptOutcome, context: ExecutionContext): JsonElement? = when (outcome) {
         is ScriptOutcome.Unavailable -> {
-            context.log("Run Script: this device cannot run scripts (no compatible WebView)")
+            context.log("Run Script: this device cannot run scripts (no compatible WebView)", LogLevel.WARN)
             null
         }
         is ScriptOutcome.Error -> {
-            context.log("Run Script failed: ${outcome.message}")
+            context.log("Run Script failed: ${outcome.message}", LogLevel.ERROR)
             null
         }
         is ScriptOutcome.Value -> unwrap(outcome.json, context)
+    }
+
+    /**
+     * A `console.log` is deliberate output, exactly like `action.log` — so it
+     * lands at [LogLevel.INFO] and is visible at the console's default filter.
+     * Sending it to DEBUG would hide the one thing the user wrote the line for.
+     */
+    private fun levelOf(level: ScriptConsoleLevel): LogLevel = when (level) {
+        ScriptConsoleLevel.ERROR -> LogLevel.ERROR
+        ScriptConsoleLevel.WARNING -> LogLevel.WARN
+        else -> LogLevel.INFO
     }
 
     /** Reads the `{ok, value, error}` envelope [wrap] makes the script produce. */
@@ -135,12 +151,12 @@ class ScriptAction : RawAction<ScriptConfig> {
         val envelope = runCatching { Json.parseToJsonElement(json) }.getOrNull() as? JsonObject
         return when {
             envelope == null -> {
-                context.log("Run Script: the engine returned something unreadable")
+                context.log("Run Script: the engine returned something unreadable", LogLevel.ERROR)
                 null
             }
             (envelope[OK_KEY] as? JsonPrimitive)?.booleanOrNull != true -> {
                 val message = (envelope[ERROR_KEY] as? JsonPrimitive)?.content ?: "unknown error"
-                context.log("Run Script threw: $message")
+                context.log("Run Script threw: $message", LogLevel.ERROR)
                 null
             }
             else -> envelope[VALUE_KEY]?.takeIf { it !is JsonNull }

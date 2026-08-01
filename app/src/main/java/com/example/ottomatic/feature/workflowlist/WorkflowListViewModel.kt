@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.engine.service.MacroEngineService
@@ -23,6 +24,7 @@ data class WorkflowListUiState(
 @Suppress("TooManyFunctions") // CRUD surface over the workflow collection.
 class WorkflowListViewModel(
     private val repository: WorkflowRepository,
+    private val runLog: RunLog,
     private val appContext: Context,
 ) : ViewModel() {
 
@@ -54,6 +56,10 @@ class WorkflowListViewModel(
         // Disarm first so the engine releases trigger sources for this workflow
         // before its persisted file disappears.
         MacroEngineService.start(appContext, MacroEngineService.ACTION_DISABLE, id)
+        // Its console goes with it. A workflow id is reused only if the user
+        // recreates one by hand, but a new macro inheriting a deleted one's
+        // errors would be baffling, and the file would otherwise never be freed.
+        runLog.clear(id)
         viewModelScope.launch {
             repository.delete(id)
             refresh()
@@ -87,9 +93,10 @@ class WorkflowListViewModel(
     companion object {
         fun factory(
             repository: WorkflowRepository,
+            runLog: RunLog,
             appContext: Context,
         ): ViewModelProvider.Factory = viewModelFactory {
-            initializer { WorkflowListViewModel(repository, appContext) }
+            initializer { WorkflowListViewModel(repository, runLog, appContext) }
         }
     }
 }

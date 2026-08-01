@@ -66,6 +66,9 @@ object EditorColors {
     val chrome = Color(0xFF1E1F26)
     val chromeBorder = Color(0xFF32343D)
     val triggerAccent = Color(0xFFE06C4F)
+
+    /** Console warnings. Amber reads as "look at this" without reading as broken. */
+    val warnAccent = Color(0xFFE0A04C)
     val actionAccent = Color(0xFF5B8DEF)
     val valueAccent = Color(0xFFC58AF9)
 

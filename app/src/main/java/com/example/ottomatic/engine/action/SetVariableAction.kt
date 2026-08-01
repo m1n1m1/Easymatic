@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine.action
 
+import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
@@ -56,7 +57,7 @@ class SetVariableAction : Action<SetVariableConfig, Unit> {
     override suspend fun execute(input: SetVariableConfig, context: ExecutionContext): NodeOutput<Unit> {
         val name = input.name.trim()
         if (name.isEmpty()) {
-            context.log("Set Variable: no name configured, nothing stored")
+            context.log("Set Variable: no name configured, nothing stored", LogLevel.WARN)
             return NodeOutput(Unit)
         }
         context.variables.set(name, input.value)

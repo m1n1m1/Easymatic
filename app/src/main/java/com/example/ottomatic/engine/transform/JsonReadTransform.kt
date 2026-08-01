@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine.transform
 
+import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
@@ -73,7 +74,7 @@ class JsonReadTransform : RawTransform<JsonReadConfig> {
     ): Item {
         val found = readPath(config.json, config.path)
         if (found == null) {
-            context.log("Read from JSON: path '${config.path}' not found")
+            context.log("Read from JSON: path '${config.path}' not found", LogLevel.WARN)
         }
         // Route the found element back through the shared text form so a JSON
         // number, a JSON string and a nested object all convert identically.
