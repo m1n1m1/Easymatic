@@ -5,7 +5,7 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.service.DeviceState
-import com.example.ottomatic.core.service.RingerMode
+import com.example.ottomatic.core.service.UnknownDeviceState
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
@@ -136,7 +136,7 @@ class TransformPullTest {
 }
 
 /** Returns the next integer on every read, so reads are countable and distinguishable. */
-private class CountingBatteryState : DeviceState {
+private class CountingBatteryState : DeviceState by UnknownDeviceState {
     var reads = 0
         private set
 
@@ -145,11 +145,4 @@ private class CountingBatteryState : DeviceState {
         return reads
     }
 
-    override fun isWifiEnabled(): Boolean? = null
-    override fun isBluetoothEnabled(): Boolean? = null
-    override fun isAirplaneMode(): Boolean? = null
-    override fun isCharging(): Boolean? = null
-    override fun isScreenOn(): Boolean? = null
-    override fun isDndEnabled(): Boolean? = null
-    override fun ringerMode(): RingerMode? = null
 }

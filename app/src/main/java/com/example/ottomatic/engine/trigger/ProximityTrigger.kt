@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.serialization.Serializable
-import kotlin.math.min
 
 /** Config for `trigger.proximity`. */
 @Serializable
@@ -71,7 +70,7 @@ class ProximityTrigger : Trigger<ProximityConfig, SensorReading> {
         // A reading only means anything relative to the sensor's own range, so a
         // device that cannot report one gets no trigger rather than a guess.
         val range = host.sensorMaximumRange(SensorKind.PROXIMITY) ?: return emptyFlow()
-        val nearThreshold = min(range, ProximityDetector.MAX_NEAR_THRESHOLD_CM)
+        val nearThreshold = ProximityDetector.nearThresholdCm(range)
         return flow {
             val detector = ProximityDetector(
                 event = config.event,

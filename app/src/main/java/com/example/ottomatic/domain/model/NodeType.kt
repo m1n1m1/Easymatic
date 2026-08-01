@@ -58,6 +58,7 @@ enum class NodeCategory(
     VALUE_POWER(NodeKind.VALUE, "Power & Battery"),
     VALUE_CONNECTIVITY(NodeKind.VALUE, "Connectivity"),
     VALUE_DEVICE(NodeKind.VALUE, "Device State"),
+    VALUE_SENSORS(NodeKind.VALUE, "Sensors"),
     VALUE_TIME(NodeKind.VALUE, "Date & Time"),
     TRANSFORM_DATA(NodeKind.TRANSFORM, "Data"),
 }

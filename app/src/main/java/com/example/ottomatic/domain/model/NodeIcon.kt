@@ -35,4 +35,8 @@ enum class NodeIcon {
     MOTION,
     PROXIMITY,
     LIGHT,
+    POWER_SAVE,
+    HEADSET,
+    DOCK,
+    DARK_MODE,
 }

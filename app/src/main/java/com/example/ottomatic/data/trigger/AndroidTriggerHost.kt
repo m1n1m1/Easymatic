@@ -41,6 +41,12 @@ import java.util.concurrent.TimeUnit
 class AndroidTriggerHost(
     context: Context,
     private val geofencePlaces: GeofencePlaceRepository,
+    /**
+     * Shared with the execution context's value nodes, so a `value.orientation`
+     * read and an armed orientation trigger use one platform registration
+     * rather than two. Defaults to its own for callers that only need triggers.
+     */
+    private val sensorBridge: SensorBridge = SensorBridge(context),
 ) : TriggerHost {
 
     private val appContext = context.applicationContext
@@ -51,8 +57,6 @@ class AndroidTriggerHost(
 
     @Suppress("UnusedPrivateProperty") // Kept alive so its receiver stays registered.
     private val screenBridge = ScreenBroadcastBridge(appContext)
-
-    private val sensorBridge = SensorBridge(appContext)
 
     override fun sensorSamples(kind: SensorKind, rate: SensorRate): Flow<SensorSample> =
         sensorBridge.samples(kind, rate)

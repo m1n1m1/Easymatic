@@ -15,6 +15,7 @@ package com.example.ottomatic.core.service
  *
  * Implemented by `AndroidDeviceState` in `data/`.
  */
+@Suppress("TooManyFunctions") // One reader per device property; the device sets the count.
 interface DeviceState {
 
     /** Whether Wi-Fi is enabled. */
@@ -40,6 +41,18 @@ interface DeviceState {
 
     /** The current ringer mode. */
     fun ringerMode(): RingerMode?
+
+    /** Whether battery saver is on. */
+    fun isPowerSaveMode(): Boolean?
+
+    /** Whether a wired headset or headphones are plugged in. */
+    fun isHeadsetPlugged(): Boolean?
+
+    /** Whether the device is sitting in a dock. */
+    fun isDocked(): Boolean?
+
+    /** Whether the device is in night mode (dark theme). */
+    fun isNightMode(): Boolean?
 }
 
 /**
@@ -47,6 +60,7 @@ interface DeviceState {
  * (engine-only unit tests, previews). Every read is null, so conditions built on
  * it evaluate false rather than inventing a state that was never observed.
  */
+@Suppress("TooManyFunctions") // Mirrors the DeviceState facade.
 object UnknownDeviceState : DeviceState {
     override fun isWifiEnabled(): Boolean? = null
     override fun isBluetoothEnabled(): Boolean? = null
@@ -56,4 +70,8 @@ object UnknownDeviceState : DeviceState {
     override fun isScreenOn(): Boolean? = null
     override fun isDndEnabled(): Boolean? = null
     override fun ringerMode(): RingerMode? = null
+    override fun isPowerSaveMode(): Boolean? = null
+    override fun isHeadsetPlugged(): Boolean? = null
+    override fun isDocked(): Boolean? = null
+    override fun isNightMode(): Boolean? = null
 }

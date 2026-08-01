@@ -4,6 +4,7 @@ import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.engine.trigger.SensorSample
 import com.example.ottomatic.engine.trigger.payloadValue
 import kotlinx.serialization.Serializable
+import kotlin.math.min
 
 /** What `trigger.proximity` watches for. */
 @Serializable
@@ -69,5 +70,23 @@ class ProximityDetector(
          * centimetres would otherwise call a hand held 20 cm away a cover.
          */
         const val MAX_NEAR_THRESHOLD_CM = 5f
+
+        /**
+         * The distance below which a sensor of range [maxRangeCm] counts as
+         * covered.
+         *
+         * A reading only means anything relative to the sensor's own range —
+         * most phone sensors are effectively binary, reporting 0 when covered
+         * and their maximum when clear, and that maximum is 3 cm on some devices
+         * and 100 cm on others.
+         *
+         * Shared with `value.proximity` so the trigger and the value draw the
+         * line in the same place.
+         */
+        fun nearThresholdCm(maxRangeCm: Float): Float = min(maxRangeCm, MAX_NEAR_THRESHOLD_CM)
+
+        /** Whether [distanceCm] from a sensor of range [maxRangeCm] means covered. */
+        fun isCovered(distanceCm: Float, maxRangeCm: Float): Boolean =
+            distanceCm < nearThresholdCm(maxRangeCm)
     }
 }

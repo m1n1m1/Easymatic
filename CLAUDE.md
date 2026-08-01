@@ -69,6 +69,14 @@ There is deliberately **no way to attach a condition to a node**. A MacroDroid-s
 
 `GraphValidator` exempts pull-side sources (values *and* transforms) from the exec-upstream rule — they have no exec position — and warns about one wired to nothing.
 
+**Every trigger over a readable state gets a value node too.** A trigger answers "tell me when this changes"; a value answers "what is it right now?". They are not substitutes — "when it gets dark, turn the torch on" is a trigger, "when I get home, *if* it is dark, turn the torch on" is a value read inside an `action.if` — and a state with only the trigger half forces the user to arm a second macro just to remember what the first one saw. So when adding a trigger, add the matching value node in the same change, and share the reading and classification code between them rather than re-deriving it (`OrientationDetector.orientationOf`, `ProximityDetector.isCovered`). Skip the value only when there is genuinely nothing to read:
+
+- the trigger is an **event**, with no resting value — a shake, a tap, an SMS, a boot, a pick-up;
+- reading it needs a **permission** — values may declare none (`NodeDeclarationContractTest`), so `trigger.call_state` (READ_PHONE_STATE) and a connected-Bluetooth-device read (BLUETOOTH_CONNECT) have no counterpart;
+- reading it is **expensive or failable**, which is an action's job instead.
+
+Two facades serve the read side, both reachable from `ExecutionContext` and nothing else: `DeviceState` (`core/service/`, cheap synchronous device properties) and `SensorReader` (`engine/trigger/SensorProtocol.kt`, one-shot sensor samples, suspending and bounded by a timeout in `SensorBridge`). `SensorBridge` is a single instance shared by the trigger host and the execution context, so a value read and an armed trigger cost one platform registration between them.
+
 ### Data conversion and parsing
 
 The graph is **strictly typed**: `ItemSchema.isAssignableFrom` is invariant on primitives, so an `Int` output is never silently accepted by a `Text` input. Conversion is a **node**, following Unreal Blueprints:

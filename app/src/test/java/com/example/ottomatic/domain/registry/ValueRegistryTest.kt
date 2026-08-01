@@ -82,6 +82,21 @@ class ValueRegistryTest {
         )
     }
 
+    /**
+     * The switch a boolean literal is edited with always renders *some* state,
+     * so its default has to be one the comparison actually reads. Left at the
+     * declared `""` the form showed "off" for a literal that matched neither
+     * true nor false, and every untouched boolean If took its false branch.
+     */
+    @Test
+    fun `a boolean literal defaults to what its switch shows`() {
+        val schema = schemaOf(ifNode(ValueSource.valueSpec(NodeTypeId("value.wifi"))))
+
+        val literal = schema.fields.single { it.key == ConfigKey(IF_VALUE_IN.value) }
+        assertEquals(ConfigFieldType.BOOL, literal.type)
+        assertEquals(IF_BOOLEAN_DEFAULT, literal.defaultValue)
+    }
+
     /** A boolean source gets equality only, and a BOOL literal editor. */
     @Test
     fun `a boolean value source narrows to equality`() {

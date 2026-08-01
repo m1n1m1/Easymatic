@@ -137,3 +137,42 @@ data class SensorSample(
     val z: Float,
     val elapsedMs: Long,
 )
+
+/**
+ * The pull side of the same sensors: one reading, now, for a value node.
+ *
+ * A trigger *subscribes* to a sensor and watches it change; a value node asks
+ * what it says at the moment something needs to know. Both go through the same
+ * platform registration, so a macro that already has the accelerometer armed
+ * answers a `value.orientation` read from the stream it is collecting anyway.
+ *
+ * Separate from [TriggerHost] because the two are handed to different things:
+ * [Trigger.activate] gets a host, a value node gets an
+ * [com.example.ottomatic.engine.ExecutionContext]. Both are read-only, which is
+ * what keeps a value node pure.
+ */
+interface SensorReader {
+
+    /**
+     * The most recent reading from [kind], or null when the device has no such
+     * sensor or does not report one in time.
+     *
+     * Suspending because it may have to register the sensor and wait for the
+     * first sample — the one genuinely un-free thing a value node does, which
+     * is why the implementation bounds the wait rather than hanging a graph.
+     */
+    suspend fun latest(kind: SensorKind): SensorSample?
+
+    /** See [TriggerHost.sensorMaximumRange]. */
+    fun maximumRange(kind: SensorKind): Float? = null
+}
+
+/**
+ * A reader with no sensors behind it, for engine-only tests and previews. Every
+ * read is null, so a value built on it contributes no item and a comparison over
+ * it fails closed — the same contract [com.example.ottomatic.core.service.UnknownDeviceState]
+ * keeps for the device properties.
+ */
+object NoSensors : SensorReader {
+    override suspend fun latest(kind: SensorKind): SensorSample? = null
+}

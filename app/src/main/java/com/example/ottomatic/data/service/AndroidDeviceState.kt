@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.Configuration
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.net.wifi.WifiManager
 import android.os.BatteryManager
@@ -20,6 +22,7 @@ import com.example.ottomatic.core.service.RingerMode
  * comparison turns into a false verdict. Reading a device property must never crash
  * the flow that reads it.
  */
+@Suppress("TooManyFunctions") // Implements every DeviceState reader.
 class AndroidDeviceState(private val context: Context) : DeviceState {
 
     override fun isWifiEnabled(): Boolean? = runCatching {
@@ -77,8 +80,51 @@ class AndroidDeviceState(private val context: Context) : DeviceState {
         }
     }.getOrNull()
 
+    override fun isPowerSaveMode(): Boolean? = runCatching {
+        val manager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        manager.isPowerSaveMode
+    }.getOrNull()
+
+    /**
+     * Whether anything headphone-shaped is plugged into the jack or the USB
+     * port. `AudioManager.isWiredHeadsetOn` would be the obvious call and is
+     * deprecated precisely because it answers about routing rather than about
+     * what is attached; enumerating the output devices is the sanctioned way and
+     * is also the only one that notices a USB-C headset.
+     */
+    override fun isHeadsetPlugged(): Boolean? = runCatching {
+        val manager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        manager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).any { it.type in WIRED_HEADSET_TYPES }
+    }.getOrNull()
+
+    /**
+     * Whether the device is docked, from the sticky `ACTION_DOCK_EVENT`
+     * broadcast.
+     *
+     * A device that has never been docked has no sticky intent at all, which
+     * reads as undocked rather than as unknown: "never docked" is a fact about
+     * the dock state, not a failure to determine it.
+     */
+    override fun isDocked(): Boolean? = runCatching {
+        val intent = context.registerReceiver(null, IntentFilter(Intent.ACTION_DOCK_EVENT))
+        val state = intent?.getIntExtra(Intent.EXTRA_DOCK_STATE, Intent.EXTRA_DOCK_STATE_UNDOCKED)
+        state != null && state != Intent.EXTRA_DOCK_STATE_UNDOCKED
+    }.getOrNull()
+
+    override fun isNightMode(): Boolean? = runCatching {
+        val mode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        mode == Configuration.UI_MODE_NIGHT_YES
+    }.getOrNull()
+
     private companion object {
         const val PERCENT = 100
+
+        /** Output devices that mean "headphones are plugged in". */
+        val WIRED_HEADSET_TYPES = setOf(
+            AudioDeviceInfo.TYPE_WIRED_HEADSET,
+            AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+            AudioDeviceInfo.TYPE_USB_HEADSET,
+        )
 
         /** `Settings.Global.ZEN_MODE` is `@hide`; the key itself is stable. */
         const val ZEN_MODE = "zen_mode"

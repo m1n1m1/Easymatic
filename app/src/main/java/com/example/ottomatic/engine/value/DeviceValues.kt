@@ -135,6 +135,62 @@ class DndValue : DeviceValue<Boolean>() {
     override fun readValue(context: ExecutionContext) = context.deviceState.isDndEnabled()
 }
 
+/** `value.power_save` — whether battery saver is on. */
+class PowerSaveValue : DeviceValue<Boolean>() {
+    override val definition = valueNode<NoConfig, Boolean>(
+        typeId = "value.power_save",
+        displayName = "Power save mode",
+        description = "Whether battery saver is currently on",
+        category = NodeCategory.VALUE_POWER,
+        icon = NodeIcon.POWER_SAVE,
+        output = dataOut("enabled", label = "On"),
+    )
+
+    override fun readValue(context: ExecutionContext) = context.deviceState.isPowerSaveMode()
+}
+
+/** `value.headset` — whether wired headphones are plugged in. */
+class HeadsetValue : DeviceValue<Boolean>() {
+    override val definition = valueNode<NoConfig, Boolean>(
+        typeId = "value.headset",
+        displayName = "Headset plugged in",
+        description = "Whether a wired or USB headset is currently plugged in",
+        category = NodeCategory.VALUE_CONNECTIVITY,
+        icon = NodeIcon.HEADSET,
+        output = dataOut("plugged", label = "Plugged in"),
+    )
+
+    override fun readValue(context: ExecutionContext) = context.deviceState.isHeadsetPlugged()
+}
+
+/** `value.dock` — whether the device is docked. */
+class DockValue : DeviceValue<Boolean>() {
+    override val definition = valueNode<NoConfig, Boolean>(
+        typeId = "value.dock",
+        displayName = "Docked",
+        description = "Whether the device is currently sitting in a dock",
+        category = NodeCategory.VALUE_CONNECTIVITY,
+        icon = NodeIcon.DOCK,
+        output = dataOut("docked", label = "Docked"),
+    )
+
+    override fun readValue(context: ExecutionContext) = context.deviceState.isDocked()
+}
+
+/** `value.dark_mode` — whether the device is in night mode. */
+class DarkModeValue : DeviceValue<Boolean>() {
+    override val definition = valueNode<NoConfig, Boolean>(
+        typeId = "value.dark_mode",
+        displayName = "Dark theme",
+        description = "Whether the device is currently in dark theme (night mode)",
+        category = NodeCategory.VALUE_DEVICE,
+        icon = NodeIcon.DARK_MODE,
+        output = dataOut("enabled", label = "On"),
+    )
+
+    override fun readValue(context: ExecutionContext) = context.deviceState.isNightMode()
+}
+
 /** `value.ringer` — the current ringer mode. */
 class RingerModeValue : DeviceValue<RingerMode>() {
     override val definition = valueNode<NoConfig, RingerMode>(

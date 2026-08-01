@@ -6,8 +6,15 @@ import com.example.ottomatic.engine.value.AirplaneModeValue
 import com.example.ottomatic.engine.value.BatteryLevelValue
 import com.example.ottomatic.engine.value.BluetoothValue
 import com.example.ottomatic.engine.value.ChargingValue
+import com.example.ottomatic.engine.value.DarkModeValue
+import com.example.ottomatic.engine.value.DeviceOrientationValue
 import com.example.ottomatic.engine.value.DndValue
+import com.example.ottomatic.engine.value.DockValue
+import com.example.ottomatic.engine.value.HeadsetValue
+import com.example.ottomatic.engine.value.LightLevelValue
 import com.example.ottomatic.engine.value.NowValue
+import com.example.ottomatic.engine.value.PowerSaveValue
+import com.example.ottomatic.engine.value.ProximityValue
 import com.example.ottomatic.engine.value.RingerModeValue
 import com.example.ottomatic.engine.value.ScreenOnValue
 import com.example.ottomatic.engine.value.WifiValue
@@ -37,8 +44,15 @@ object ValueRegistry {
         BatteryLevelValue(),
         BluetoothValue(),
         ChargingValue(),
+        DarkModeValue(),
+        DeviceOrientationValue(),
         DndValue(),
+        DockValue(),
+        HeadsetValue(),
+        LightLevelValue(),
         NowValue(),
+        PowerSaveValue(),
+        ProximityValue(),
         RingerModeValue(),
         ScreenOnValue(),
         WifiValue(),

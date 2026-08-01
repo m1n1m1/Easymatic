@@ -5,7 +5,7 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.service.DeviceState
-import com.example.ottomatic.core.service.RingerMode
+import com.example.ottomatic.core.service.UnknownDeviceState
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
@@ -120,7 +120,7 @@ class ValueReadTimingTest {
 }
 
 /** Returns the next integer on every read, so reads are both countable and distinguishable. */
-private class CountingBattery : DeviceState {
+private class CountingBattery : DeviceState by UnknownDeviceState {
     var reads = 0
         private set
 
@@ -129,11 +129,4 @@ private class CountingBattery : DeviceState {
         return reads
     }
 
-    override fun isWifiEnabled(): Boolean? = null
-    override fun isBluetoothEnabled(): Boolean? = null
-    override fun isAirplaneMode(): Boolean? = null
-    override fun isCharging(): Boolean? = null
-    override fun isScreenOn(): Boolean? = null
-    override fun isDndEnabled(): Boolean? = null
-    override fun ringerMode(): RingerMode? = null
 }

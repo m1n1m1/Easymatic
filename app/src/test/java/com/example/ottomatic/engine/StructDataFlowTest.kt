@@ -5,7 +5,7 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.service.DeviceState
-import com.example.ottomatic.core.service.RingerMode
+import com.example.ottomatic.core.service.UnknownDeviceState
 import com.example.ottomatic.domain.model.config.ComparisonOperator
 import com.example.ottomatic.domain.model.config.ComparisonType
 import com.example.ottomatic.domain.model.schema.DateTime
@@ -272,13 +272,6 @@ class StructDataFlowTest {
 }
 
 /** Reports a battery level and nothing else. */
-private class BatteryAt(private val level: Int) : DeviceState {
-    override fun isWifiEnabled(): Boolean? = null
-    override fun isBluetoothEnabled(): Boolean? = null
-    override fun isAirplaneMode(): Boolean? = null
-    override fun isCharging(): Boolean? = null
+private class BatteryAt(private val level: Int) : DeviceState by UnknownDeviceState {
     override fun batteryLevel(): Int = level
-    override fun isScreenOn(): Boolean? = null
-    override fun isDndEnabled(): Boolean? = null
-    override fun ringerMode(): RingerMode? = null
 }

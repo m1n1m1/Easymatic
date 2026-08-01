@@ -23,11 +23,20 @@ import com.example.ottomatic.engine.trigger.ScheduleHandle
 import com.example.ottomatic.engine.trigger.ScreenOffMode
 import com.example.ottomatic.engine.trigger.SensorKind
 import com.example.ottomatic.engine.trigger.SensorRate
+import com.example.ottomatic.engine.trigger.SensorReader
 import com.example.ottomatic.engine.trigger.SensorSample
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.util.concurrent.ConcurrentHashMap
 import android.hardware.TriggerEvent as SensorTriggerEvent
 
@@ -61,7 +70,7 @@ import android.hardware.TriggerEvent as SensorTriggerEvent
  * few seconds.
  */
 @Suppress("TooManyFunctions") // Registration, screen-off policy and the SMD gate; each is small.
-class SensorBridge(context: Context) {
+class SensorBridge(context: Context) : SensorReader {
 
     private val appContext = context.applicationContext
 
@@ -110,6 +119,11 @@ class SensorBridge(context: Context) {
          * registered, which is before the collector has subscribed — without the
          * replay that reading is dropped, and a proximity detector then treats
          * the user's first wave as its starting state instead of a gesture.
+         *
+         * That only holds while the sensor is registered, which is why [release]
+         * discards the whole stream when the last subscriber leaves: a replayed
+         * reading from a registration that has since ended is not current, it is
+         * merely old.
          */
         val flow = MutableSharedFlow<SensorSample>(
             replay = 1,
@@ -235,7 +249,45 @@ class SensorBridge(context: Context) {
     }
 
     /** See [com.example.ottomatic.engine.trigger.TriggerHost.sensorMaximumRange]. */
-    fun maximumRange(kind: SensorKind): Float? = defaultSensor(kind)?.maximumRange
+    override fun maximumRange(kind: SensorKind): Float? = defaultSensor(kind)?.maximumRange
+
+    /**
+     * One reading for the pull side of the graph — [samples] collected through
+     * the same registration every armed trigger shares.
+     *
+     * **The first sample after a registration is not trustworthy**, which is why
+     * this waits out [SETTLE_MS] and answers with the newest reading rather than
+     * the first. A proximity sensor that has just been powered up commonly
+     * reports its idle "far" value before the hardware has actually measured
+     * anything, and a value node that believed it would report *uncovered* for a
+     * covered sensor every single time. `trigger.proximity` never noticed
+     * because a detector deliberately discards the state it finds at activation
+     * and reports only what changes afterwards — so the same wrong first sample
+     * is invisible on the push side and decisive on the pull side.
+     *
+     * The overall timeout is the other half: a device with no such sensor gives
+     * an empty flow (null immediately), but a *gated* one — the accelerometer
+     * with the screen off, which [reconcile] refuses to register — would
+     * otherwise leave the reading, and the graph waiting on it, hanging forever.
+     */
+    override suspend fun latest(kind: SensorKind): SensorSample? = coroutineScope {
+        val readings = MutableStateFlow<SensorSample?>(null)
+        val collector = launch { samples(kind, readRate(kind)).collect { readings.value = it } }
+        try {
+            // Nothing at all within the timeout means there is nothing to read;
+            // one reading means the sensor is alive and worth settling for.
+            val alive = withTimeoutOrNull(READ_TIMEOUT_MS) { readings.filterNotNull().first() }
+            if (alive != null) delay(SETTLE_MS)
+        } finally {
+            collector.cancelAndJoin()
+        }
+        readings.value
+    }
+
+    private fun readRate(kind: SensorKind): SensorRate = when (kind) {
+        SensorKind.ACCELEROMETER -> SensorRate.UI
+        SensorKind.PROXIMITY, SensorKind.LIGHT -> SensorRate.NORMAL
+    }
 
     private fun acquire(kind: SensorKind, rate: SensorRate): KindStream? = synchronized(lock) {
         val stream = streams[kind]
@@ -250,6 +302,19 @@ class SensorBridge(context: Context) {
         val remaining = (stream.rates[rate] ?: 0) - 1
         if (remaining <= 0) stream.rates.remove(rate) else stream.rates[rate] = remaining
         reconcile()
+        // Drop the stream once nothing is subscribed — after reconcile has
+        // unregistered it, since reconcile only walks what is still in the map.
+        //
+        // The replay buffer is what makes this necessary. While the sensor is
+        // registered that buffer holds the current reading, which is the whole
+        // point; once it is unregistered the same buffer is a *record of the
+        // past* that nothing keeps honest, and the next subscriber is handed it
+        // instantly. A one-shot `value.proximity` read then answers with the
+        // state from the previous read rather than the state now — covering the
+        // sensor and reading it returns "uncovered", uncovering and reading it
+        // returns "covered". With no subscribers there is no stream, so the
+        // next read registers and waits for a reading that is actually current.
+        if (stream.rates.isEmpty()) streams.remove(kind)
     }
 
     /**
@@ -362,6 +427,25 @@ class SensorBridge(context: Context) {
 
         /** How long to sample after significant motion before going quiet again. */
         const val MOTION_WINDOW_MS = 8_000L
+
+        /**
+         * Ceiling on a one-shot read. Long enough for the slowest sensor to
+         * produce its first sample, short enough that a graph reading a sensor
+         * the device will never report — a gated accelerometer, a hardware
+         * fault — carries on instead of stalling.
+         */
+        const val READ_TIMEOUT_MS = 1_000L
+
+        /**
+         * How long a one-shot read keeps listening after the sensor's first
+         * word, taking the newest reading it hears.
+         *
+         * Long enough for a sensor that has just been powered on to replace its
+         * idle value with a measured one — a proximity sensor takes tens of
+         * milliseconds — and short enough that a graph reading one does not
+         * visibly stall.
+         */
+        const val SETTLE_MS = 250L
 
         const val SIGNIFICANT_MOTION_TYPE = "significant_motion"
         const val SIGNIFICANT_MOTION_EVENT = "moved"

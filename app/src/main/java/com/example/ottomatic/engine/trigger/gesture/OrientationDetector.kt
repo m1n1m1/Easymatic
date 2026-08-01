@@ -75,32 +75,8 @@ class OrientationDetector(
         return GestureFire(event = candidate.payloadValue)
     }
 
-    /**
-     * The orientation whose axis currently dominates, or null when the device is
-     * held too ambiguously to call.
-     *
-     * Picking the *largest* component rather than testing the axes in a fixed
-     * order matters: at 45° between portrait and face-up both axes clear
-     * [ENTER_THRESHOLD] at once, and a fixed order would silently always prefer
-     * the same one.
-     */
-    private fun classify(): DeviceOrientation? {
-        val x = filter.gravityX
-        val y = filter.gravityY
-        val z = filter.gravityZ
-        val ax = abs(x)
-        val ay = abs(y)
-        val az = abs(z)
-        return when {
-            az >= ax && az >= ay && az > ENTER_THRESHOLD ->
-                if (z > 0f) DeviceOrientation.FACE_UP else DeviceOrientation.FACE_DOWN
-            ay >= ax && ay >= az && ay > ENTER_THRESHOLD ->
-                if (y > 0f) DeviceOrientation.PORTRAIT else DeviceOrientation.PORTRAIT_UPSIDE_DOWN
-            ax >= ay && ax >= az && ax > ENTER_THRESHOLD ->
-                if (x > 0f) DeviceOrientation.LANDSCAPE_LEFT else DeviceOrientation.LANDSCAPE_RIGHT
-            else -> null
-        }
-    }
+    private fun classify(): DeviceOrientation? =
+        orientationOf(filter.gravityX, filter.gravityY, filter.gravityZ)
 
     /** The committed orientation, while its own axis has not yet decayed past [EXIT_THRESHOLD]. */
     private fun heldOrientation(): DeviceOrientation? {
@@ -114,6 +90,36 @@ class OrientationDetector(
     }
 
     companion object {
+
+        /**
+         * The orientation whose axis dominates the gravity vector
+         * ([x], [y], [z] in m/s²), or null when the device is held too
+         * ambiguously to call.
+         *
+         * Picking the *largest* component rather than testing the axes in a
+         * fixed order matters: at 45° between portrait and face-up both axes
+         * clear [ENTER_THRESHOLD] at once, and a fixed order would silently
+         * always prefer the same one.
+         *
+         * Shared with `value.orientation`, which asks the same question of a
+         * single sample instead of a filtered stream — one definition of what
+         * "face down" means, so the trigger and the value can never disagree.
+         */
+        fun orientationOf(x: Float, y: Float, z: Float): DeviceOrientation? {
+            val ax = abs(x)
+            val ay = abs(y)
+            val az = abs(z)
+            return when {
+                az >= ax && az >= ay && az > ENTER_THRESHOLD ->
+                    if (z > 0f) DeviceOrientation.FACE_UP else DeviceOrientation.FACE_DOWN
+                ay >= ax && ay >= az && ay > ENTER_THRESHOLD ->
+                    if (y > 0f) DeviceOrientation.PORTRAIT else DeviceOrientation.PORTRAIT_UPSIDE_DOWN
+                ax >= ay && ax >= az && ax > ENTER_THRESHOLD ->
+                    if (x > 0f) DeviceOrientation.LANDSCAPE_LEFT else DeviceOrientation.LANDSCAPE_RIGHT
+                else -> null
+            }
+        }
+
         /** 700 ms — long enough to pass through an orientation without reporting it. */
         const val DEFAULT_DWELL_MS = 700L
 

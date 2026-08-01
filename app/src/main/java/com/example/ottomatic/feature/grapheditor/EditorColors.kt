@@ -5,11 +5,15 @@ import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.BatterySaver
 import androidx.compose.material.icons.filled.BatteryStd
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DataObject
+import androidx.compose.material.icons.filled.Dock
 import androidx.compose.material.icons.filled.DoNotDisturb
+import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
@@ -176,4 +180,8 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.MOTION -> Icons.Filled.OpenWith
     NodeIcon.PROXIMITY -> Icons.Filled.SensorOccupied
     NodeIcon.LIGHT -> Icons.Filled.LightMode
+    NodeIcon.POWER_SAVE -> Icons.Filled.BatterySaver
+    NodeIcon.HEADSET -> Icons.Filled.Headphones
+    NodeIcon.DOCK -> Icons.Filled.Dock
+    NodeIcon.DARK_MODE -> Icons.Filled.DarkMode
 }

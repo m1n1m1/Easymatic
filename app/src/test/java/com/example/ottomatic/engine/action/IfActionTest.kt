@@ -5,7 +5,7 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.service.DeviceState
-import com.example.ottomatic.core.service.RingerMode
+import com.example.ottomatic.core.service.UnknownDeviceState
 import com.example.ottomatic.domain.model.ValueSource
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.ComparisonOperator
@@ -171,6 +171,40 @@ class IfActionTest {
         assertFalse(evaluate(config))
     }
 
+    /**
+     * The compare-against editor for a boolean is a switch, so an untouched node
+     * shows a definite state while storing nothing. Reading that blank literal
+     * raw made every boolean comparison take its false branch — `""` equals
+     * neither `"true"` nor `"false"` — however plainly the source said true.
+     */
+    @Test
+    fun `an untouched boolean comparison routes on the source itself`() = runBlocking {
+        assertTrue(evaluate(compare(), data = mapOf(IF_SOURCE_IN to Item.of(true))))
+        assertFalse(evaluate(compare(), data = mapOf(IF_SOURCE_IN to Item.of(false))))
+    }
+
+    /** Turning the switch off is how the comparison is inverted, and it still is. */
+    @Test
+    fun `an explicit false literal inverts a boolean comparison`() = runBlocking {
+        assertTrue(evaluate(compare(value = "false"), data = mapOf(IF_SOURCE_IN to Item.of(false))))
+        assertFalse(evaluate(compare(value = "false"), data = mapOf(IF_SOURCE_IN to Item.of(true))))
+    }
+
+    /** A pinned boolean type reads a blank literal the same way an inferred one does. */
+    @Test
+    fun `a pinned boolean comparison reads a blank literal as true`() = runBlocking {
+        val config = compare(type = ComparisonType.BOOLEAN)
+
+        assertTrue(evaluate(config, data = mapOf(IF_SOURCE_IN to Item.of(true))))
+        assertFalse(evaluate(config, data = mapOf(IF_SOURCE_IN to Item.of(false))))
+    }
+
+    /** Text that merely looks boolean is still text: "" stays "" for it. */
+    @Test
+    fun `a blank literal over text is not read as true`() = runBlocking {
+        assertFalse(evaluate(compare(), data = mapOf(IF_SOURCE_IN to Item.of("true"))))
+    }
+
     @Test
     fun `the comparison routes execution rather than producing data`() = runBlocking {
         val result = action.executeRaw(
@@ -213,13 +247,6 @@ class IfActionTest {
 }
 
 /** Reports a battery level and nothing else. */
-private class FakeBattery(private val level: Int) : DeviceState {
-    override fun isWifiEnabled(): Boolean? = null
-    override fun isBluetoothEnabled(): Boolean? = null
-    override fun isAirplaneMode(): Boolean? = null
-    override fun isCharging(): Boolean? = null
+private class FakeBattery(private val level: Int) : DeviceState by UnknownDeviceState {
     override fun batteryLevel(): Int = level
-    override fun isScreenOn(): Boolean? = null
-    override fun isDndEnabled(): Boolean? = null
-    override fun ringerMode(): RingerMode? = null
 }

@@ -102,6 +102,21 @@ val IF_TYPE_CONFIG_KEY = ConfigKey("type")
 val IF_SOURCE_KEY = ConfigKey("source")
 
 /**
+ * What an untouched boolean comparison compares against.
+ *
+ * `true`, not `false`, because wiring a boolean into an `action.if` and leaving
+ * it alone means "route on this value" — the identity comparison every other
+ * node graph spells as a plain branch. Defaulting to `false` would silently
+ * invert the source, which is the one answer nobody wires a boolean expecting.
+ *
+ * Read by the form (as this field's default) and by
+ * [com.example.ottomatic.engine.evaluateCompare] (as what a blank literal
+ * means), so the switch on screen and the branch taken at runtime cannot
+ * disagree.
+ */
+const val IF_BOOLEAN_DEFAULT = "true"
+
+/**
  * The effective ports for the placed [node] in [workflow]: the node type's
  * static ports, with dynamic rewrites for `action.break` (struct-derived
  * output ports), `action.if` (dynamic `source`/`value` input schemas) and the
@@ -374,8 +389,9 @@ private fun compareSchema(
             }
             IF_FIELD_KEY -> structFields?.let { field.asChoice(it, default = it.first()) }
             IF_OPERATOR_KEY -> field.asChoice(operators.map { it.name }, default = operators.first().name)
-            ConfigKey(IF_VALUE_IN.value) ->
-                ConfigField(field.key, field.label, literalTypeFor(inspected), field.defaultValue)
+            ConfigKey(IF_VALUE_IN.value) -> literalTypeFor(inspected).let { literal ->
+                ConfigField(field.key, field.label, literal, literalDefaultFor(literal, field.defaultValue))
+            }
             else -> field
         }
     }
@@ -440,6 +456,17 @@ private fun comparisonType(config: Map<ConfigKey, String>): ComparisonType {
     val raw = config[IF_TYPE_CONFIG_KEY]?.takeIf { it.isNotBlank() } ?: return ComparisonType.AUTO
     return runCatching { ComparisonType.valueOf(raw) }.getOrDefault(ComparisonType.AUTO)
 }
+
+/**
+ * The default a compare-against literal shows before the user touches it.
+ *
+ * Only a boolean needs one of its own: its editor is a switch, which always
+ * renders *some* state, so the declared `""` would put a definite-looking "off"
+ * on screen for a value the comparison does not read as false. Every other
+ * editor renders blank as blank, which is honest.
+ */
+private fun literalDefaultFor(type: ConfigFieldType<*>, declared: String): String =
+    if (type == ConfigFieldType.BOOL) IF_BOOLEAN_DEFAULT else declared
 
 /** The form type of a compare-against literal of the given [schema]. */
 private fun literalTypeFor(schema: ItemSchema?): ConfigFieldType<*> =
