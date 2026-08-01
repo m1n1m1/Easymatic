@@ -1,6 +1,7 @@
 package com.example.ottomatic.feature.grapheditor
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.WorkflowNode
@@ -12,6 +13,7 @@ import kotlin.math.min
  * Layout math for the node graph. All values are in graph units,
  * which map 1:1 to dp at zoom level 1.
  */
+@Suppress("TooManyFunctions") // A flat table of layout and curve maths, not branching logic.
 object GraphGeometry {
 
     const val NODE_HEIGHT = 72f
@@ -128,5 +130,20 @@ object GraphGeometry {
             if (d < best) best = d
         }
         return best
+    }
+
+    /**
+     * True when any sampled point of the connection curve falls inside [rect].
+     *
+     * Same sampling as [distanceToEdge] — an edge is a bezier, so testing its
+     * endpoints would miss a marquee drawn across the middle of a long curve, and
+     * testing its bounding box would catch one drawn well clear of it.
+     */
+    fun edgeIntersects(start: Offset, end: Offset, rect: Rect): Boolean {
+        for (i in 0..EDGE_SAMPLES) {
+            val t = i / EDGE_SAMPLES.toFloat()
+            if (rect.contains(edgePoint(start, end, t))) return true
+        }
+        return false
     }
 }

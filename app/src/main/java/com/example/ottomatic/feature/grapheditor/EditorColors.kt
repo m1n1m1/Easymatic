@@ -66,6 +66,12 @@ object EditorColors {
     // reading of the device.
     val transformAccent = Color(0xFF8E9CF7)
 
+    // The box selection borrows the selected-node hue so that what it is about to
+    // do is legible before it happens. The fill is barely there — it sits over the
+    // cards it is capturing and must not obscure them.
+    val marqueeStroke = Color(0xFFFF8A65)
+    val marqueeFill = Color(0x1FFF8A65)
+
     /**
      * Per-data-type port colors, grouped from [ItemSchema] into a small
      * Blueprint-style palette (one color per *family* of types, not per type):

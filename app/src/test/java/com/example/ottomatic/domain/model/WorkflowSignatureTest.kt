@@ -39,6 +39,20 @@ class WorkflowSignatureTest {
     }
 
     @Test
+    fun `a group move does not change the signature`() {
+        // Dragging a multi-selection moves every node in it at once. That must
+        // stay as free as moving one: re-arming re-registers geofences and
+        // re-enqueues periodic work, and none of it depends on where a card sits.
+        val before = workflow(node(id = "n1"), node(id = "n2"), node(id = "n3"))
+        val after = workflow(
+            node(id = "n1").copy(x = 40f, y = 40f),
+            node(id = "n2").copy(x = 40f, y = 40f),
+            node(id = "n3").copy(x = 40f, y = 40f),
+        )
+        assertEquals(before.runtimeSignature(), after.runtimeSignature())
+    }
+
+    @Test
     fun `renaming a node does not change the signature`() {
         val before = workflow(node())
         val after = workflow(node().copy(name = "Start of my macro"))

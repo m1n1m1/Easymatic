@@ -71,18 +71,19 @@ private const val LABEL_GAP = 10f
 private const val LABEL_FILL_ALPHA = 0.18f
 private const val LABEL_BORDER_ALPHA = 0.55f
 
+/** Half-strength selected border for a node a marquee is currently over. */
+private const val CANDIDATE_BORDER_ALPHA = 0.5f
+
 @Composable
 fun NodeCard(
     node: WorkflowNode,
     definition: NodeTypeDefinition,
     workflow: Workflow,
-    isSelected: Boolean,
+    highlight: NodeHighlight,
     hoverPort: PortRef?,
     revealedLabel: PortRef?,
     pendingFrom: PortRef?,
-    onSelect: () -> Unit,
-    onDrag: (Offset) -> Unit,
-    onDragEnd: () -> Unit,
+    gestures: NodeGestureHandlers,
     onPortDragStart: (PortRef) -> Unit,
     onPortDrag: (Offset) -> Unit,
     onPortDragEnd: () -> Unit,
@@ -105,7 +106,7 @@ fun NodeCard(
             .zIndex(
                 when {
                     labelToShow?.nodeId == node.id -> 2f
-                    isSelected -> 1f
+                    highlight == NodeHighlight.SELECTED -> 1f
                     else -> 0f
                 },
             ),
@@ -113,11 +114,8 @@ fun NodeCard(
         NodeBody(
             node = node,
             definition = definition,
-            isSelected = isSelected,
-            onSelect = onSelect,
-            onDrag = onDrag,
-            onDragEnd = onDragEnd,
-            density = density,
+            highlight = highlight,
+            gestures = gestures,
         )
         PortLabel(node.id, layoutInputPorts, outputPorts, width, density, labelToShow)
         Ports(
@@ -141,15 +139,19 @@ fun NodeCard(
 private fun NodeBody(
     node: WorkflowNode,
     definition: NodeTypeDefinition,
-    isSelected: Boolean,
-    onSelect: () -> Unit,
-    onDrag: (Offset) -> Unit,
-    onDragEnd: () -> Unit,
-    density: Float,
+    highlight: NodeHighlight,
+    gestures: NodeGestureHandlers,
 ) {
     val accent = accentColor(definition.kind)
-    val borderColor = if (isSelected) EditorColors.nodeSelectedBorder else EditorColors.nodeBorder
-    val borderWidth = if (isSelected) 2.dp else 1.dp
+    // A marquee candidate wears the selected border at half strength: enough to
+    // read as "this one is coming with you", not enough to be mistaken for a
+    // selection that has already happened.
+    val borderColor = when (highlight) {
+        NodeHighlight.SELECTED -> EditorColors.nodeSelectedBorder
+        NodeHighlight.CANDIDATE -> EditorColors.nodeSelectedBorder.copy(alpha = CANDIDATE_BORDER_ALPHA)
+        NodeHighlight.NONE -> EditorColors.nodeBorder
+    }
+    val borderWidth = if (highlight == NodeHighlight.NONE) 1.dp else 2.dp
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -157,20 +159,9 @@ private fun NodeBody(
             .clip(NodeShape)
             .background(EditorColors.nodeBackground)
             .border(borderWidth, borderColor, NodeShape)
-            .pointerInput(node.id) {
-                detectTapGestures(onTap = { onSelect() })
-            }
-            .pointerInput(node.id) {
-                detectDragGestures(
-                    onDragStart = { onSelect() },
-                    onDrag = { change, amount ->
-                        change.consume()
-                        onDrag(Offset(amount.x / density, amount.y / density))
-                    },
-                    onDragEnd = onDragEnd,
-                    onDragCancel = onDragEnd,
-                )
-            },
+            // One detector, not a tap/drag pair: press, tap, long press and drag
+            // are outcomes of the same finger and have to be arbitrated together.
+            .pointerInput(node.id) { detectNodeGestures(gestures) },
         contentAlignment = Alignment.CenterStart,
     ) {
         Row(

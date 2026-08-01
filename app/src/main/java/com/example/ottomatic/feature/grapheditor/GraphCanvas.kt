@@ -7,8 +7,6 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.ConfigKey
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -26,7 +24,9 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
@@ -62,10 +62,19 @@ fun GraphCanvas(
     Box(
         modifier = modifier
             .clipToBounds()
-            .background(EditorColors.canvasBackground),
+            .background(EditorColors.canvasBackground)
+            // Outermost on purpose: this is an ancestor of every node card, so it
+            // sees a second finger land before any of them do. See the file.
+            .pointerInput(viewModel) {
+                awaitCanvasTransformGate(
+                    onTakeOver = { viewModel.beginCanvasTransform() },
+                    onTransform = { centroid, zoom, pan -> viewModel.onZoom(centroid, zoom, pan) },
+                )
+            },
     ) {
         BackgroundLayer(state, viewModel)
         NodeLayer(state, viewModel)
+        MarqueeLayer(state)
     }
 }
 
@@ -76,27 +85,27 @@ private fun BackgroundLayer(state: GraphEditorUiState, viewModel: GraphEditorVie
         modifier = Modifier
             .fillMaxSize()
             .pointerInput(viewModel) {
-                detectTapGestures { positionPx ->
-                    val current = viewModel.uiState.value
-                    val t = current.transform
-                    val graphPos = (positionPx - t.offset) / (t.scale * density)
-                    val hit = edgeHitTest(current.workflow, graphPos)
-                    if (hit != null) {
-                        viewModel.selectConnection(hit)
-                    } else {
-                        viewModel.clearSelection()
-                    }
-                    viewModel.clearRevealedLabel()
-                }
-            }
-            .pointerInput(viewModel) {
-                detectTransformGestures { centroid, pan, zoom, _ ->
-                    if (zoom != 1f) {
-                        viewModel.onZoom(centroid, zoom, pan)
-                    } else {
-                        viewModel.onPan(pan)
-                    }
-                }
+                detectCanvasSurfaceGestures(
+                    CanvasGestureHandlers(
+                        onTap = { positionPx ->
+                            val current = viewModel.uiState.value
+                            val hit = edgeHitTest(current.workflow, current.transform.toGraph(positionPx, density))
+                            if (hit != null) viewModel.tapConnection(hit) else viewModel.clearSelection()
+                            viewModel.clearRevealedLabel()
+                        },
+                        onPan = { delta -> viewModel.onPan(delta) },
+                        // Converted to graph units on the way in, so the box keeps
+                        // hold of the same nodes if the canvas moves under it.
+                        onMarqueeStart = { positionPx ->
+                            viewModel.startMarquee(viewModel.uiState.value.transform.toGraph(positionPx, density))
+                        },
+                        onMarqueeMove = { positionPx ->
+                            viewModel.moveMarquee(viewModel.uiState.value.transform.toGraph(positionPx, density))
+                        },
+                        onMarqueeCommit = { viewModel.commitMarquee() },
+                        onMarqueeCancel = { viewModel.cancelMarquee() },
+                    ),
+                )
             },
     ) {
         drawGrid(transform)
@@ -125,7 +134,9 @@ private fun NodeLayer(state: GraphEditorUiState, viewModel: GraphEditorViewModel
                 transformOrigin = TransformOrigin(0f, 0f)
             },
     ) {
-        val selectedNodeId = (state.selection as? Selection.Node)?.nodeId
+        val selection = state.selection
+        val captured = state.interaction.marquee?.captured
+        val haptics = LocalHapticFeedback.current
         state.workflow.nodes.forEach { node ->
             val definition = NodeTypeRegistry.byId(node.typeId) ?: return@forEach
             key(node.id) {
@@ -133,13 +144,28 @@ private fun NodeLayer(state: GraphEditorUiState, viewModel: GraphEditorViewModel
                     node = node,
                     definition = definition,
                     workflow = state.workflow,
-                    isSelected = node.id == selectedNodeId,
+                    highlight = when {
+                        node.id in selection -> NodeHighlight.SELECTED
+                        captured != null && node.id in captured -> NodeHighlight.CANDIDATE
+                        else -> NodeHighlight.NONE
+                    },
                     hoverPort = state.pendingConnection?.hoverPort,
                     revealedLabel = state.revealedLabel,
                     pendingFrom = state.pendingConnection?.from,
-                    onSelect = { viewModel.selectNode(node.id) },
-                    onDrag = { delta -> viewModel.moveNode(node.id, delta) },
-                    onDragEnd = { viewModel.onNodeDragEnd() },
+                    gestures = NodeGestureHandlers(
+                        onPress = { viewModel.beginNodeGesture() },
+                        onTap = { viewModel.tapNode(node.id) },
+                        onLongPress = {
+                            // A mode change with no feedback is not discoverable on
+                            // a surface with no hover and no cursor.
+                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.longPressNode(node.id)
+                        },
+                        onDragStart = { viewModel.beginNodeDrag(node.id) },
+                        onDrag = { delta -> viewModel.dragSelectedNodes(delta) },
+                        onFinish = { viewModel.endNodeGesture() },
+                        onCancel = { viewModel.cancelNodeGesture() },
+                    ),
                     onPortDragStart = { ref -> viewModel.startPortDrag(ref) },
                     onPortDrag = { delta -> viewModel.updatePortDrag(delta) },
                     onPortDragEnd = { viewModel.endPortDrag() },
@@ -178,13 +204,13 @@ private fun DrawScope.drawGrid(transform: CanvasTransform) {
 
 private fun DrawScope.drawConnections(state: GraphEditorUiState) {
     val workflow = state.workflow
-    val selectedEdgeId = (state.selection as? Selection.Edge)?.connectionId
+    val selection = state.selection
     workflow.execConnections.forEach { connection ->
         val from = execRef(connection.fromNodeId, connection.fromPort, isOutput = true)
         val to = execRef(connection.toNodeId, connection.toPort, isOutput = false)
         val start = portPositionOf(workflow, from) ?: return@forEach
         val end = portPositionOf(workflow, to) ?: return@forEach
-        val isSelected = connection.id == selectedEdgeId
+        val isSelected = connection.id in selection
         val color = if (isSelected) EditorColors.execEdgeSelected else EditorColors.execEdge
         val width = if (isSelected) EDGE_SELECTED_WIDTH else EDGE_WIDTH
         drawEdge(start, end, color, width, dashed = false)
@@ -195,7 +221,7 @@ private fun DrawScope.drawConnections(state: GraphEditorUiState) {
         val to = dataRef(connection.toNodeId, connection.toPort, isOutput = false)
         val start = portPositionOf(workflow, from) ?: return@forEach
         val end = portPositionOf(workflow, to) ?: return@forEach
-        val isSelected = connection.id == selectedEdgeId
+        val isSelected = connection.id in selection
         val typeColor = portTypeColor(resolvePort(workflow, from)?.schema)
         val color = if (isSelected) EditorColors.dataEdgeSelected else typeColor
         val width = if (isSelected) EDGE_SELECTED_WIDTH else EDGE_WIDTH

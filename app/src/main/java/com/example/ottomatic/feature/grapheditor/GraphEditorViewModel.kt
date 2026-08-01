@@ -56,7 +56,13 @@ import kotlinx.coroutines.launch
 data class CanvasTransform(
     val offset: Offset = Offset.Zero,
     val scale: Float = 1f,
-)
+) {
+    /**
+     * Screen px to graph units. Graph units are dp at zoom 1, so undoing the
+     * transform means dividing by [scale] *and* by the display density.
+     */
+    fun toGraph(positionPx: Offset, density: Float): Offset = (positionPx - offset) / (scale * density)
+}
 
 /** Reference to a single port on a node, addressed by name and kind. */
 data class PortRef(
@@ -84,15 +90,11 @@ data class NodePickRequest(
     val suggestions: List<NodeSuggestion>,
 )
 
-sealed interface Selection {
-    data class Node(val nodeId: NodeId) : Selection
-    data class Edge(val connectionId: String) : Selection
-}
-
 data class GraphEditorUiState(
     val workflow: Workflow = Workflow(),
     val transform: CanvasTransform = CanvasTransform(),
-    val selection: Selection? = null,
+    val selection: Selection = Selection.EMPTY,
+    val interaction: GraphInteraction = GraphInteraction(),
     val pendingConnection: PendingConnection? = null,
     val nodePick: NodePickRequest? = null,
     val revealedLabel: PortRef? = null,
@@ -132,6 +134,23 @@ class GraphEditorViewModel(
     }
 
     // region Canvas transform
+
+    /**
+     * A second finger landed: the canvas is taking the gesture over.
+     *
+     * Everything a single finger might have had in flight is abandoned, and
+     * abandoned *without* a trace — a node goes back where it started, a pending
+     * wire disappears. The rule the gesture layer is built around is that an
+     * accidental pinch changes nothing.
+     *
+     * Every step is idempotent because this runs on the Initial pointer pass and
+     * each child then reports its own cancellation a pass later.
+     */
+    fun beginCanvasTransform() {
+        cancelNodeGesture()
+        cancelMarquee()
+        cancelPortDrag()
+    }
 
     fun onPan(deltaPx: Offset) {
         _uiState.update { state ->
@@ -191,16 +210,36 @@ class GraphEditorViewModel(
 
     // region Selection
 
-    fun selectNode(nodeId: NodeId) {
-        _uiState.update { it.copy(selection = Selection.Node(nodeId)) }
+    fun tapNode(nodeId: NodeId) {
+        _uiState.update { it.withTappedNode(nodeId) }
     }
 
-    fun selectConnection(connectionId: String) {
-        _uiState.update { it.copy(selection = Selection.Edge(connectionId)) }
+    fun tapConnection(connectionId: String) {
+        _uiState.update { it.withTappedConnection(connectionId) }
+    }
+
+    fun longPressNode(nodeId: NodeId) {
+        _uiState.update { it.withLongPressedNode(nodeId) }
+    }
+
+    fun startMarquee(graphPos: Offset) {
+        _uiState.update { it.withMarqueeStarted(graphPos) }
+    }
+
+    fun moveMarquee(graphPos: Offset) {
+        _uiState.update { it.withMarqueeMoved(graphPos) }
+    }
+
+    fun commitMarquee() {
+        _uiState.update { it.withMarqueeCommitted() }
+    }
+
+    fun cancelMarquee() {
+        _uiState.update { it.withMarqueeCancelled() }
     }
 
     fun clearSelection() {
-        _uiState.update { it.copy(selection = null) }
+        _uiState.update { it.withClearedSelection() }
     }
 
     /**
@@ -220,26 +259,13 @@ class GraphEditorViewModel(
     }
 
     fun deleteSelection() {
-        val selection = _uiState.value.selection ?: return
+        if (_uiState.value.selection.isEmpty) return
         _uiState.update { state ->
-            val workflow = state.workflow
-            val updated = when (selection) {
-                is Selection.Node -> workflow.copy(
-                    nodes = workflow.nodes.filterNot { it.id == selection.nodeId },
-                    execConnections = workflow.execConnections.filterNot {
-                        it.fromNodeId == selection.nodeId || it.toNodeId == selection.nodeId
-                    },
-                    dataConnections = workflow.dataConnections.filterNot {
-                        it.fromNodeId == selection.nodeId || it.toNodeId == selection.nodeId
-                    },
-                )
-
-                is Selection.Edge -> workflow.copy(
-                    execConnections = workflow.execConnections.filterNot { it.id == selection.connectionId },
-                    dataConnections = workflow.dataConnections.filterNot { it.id == selection.connectionId },
-                )
-            }
-            state.copy(workflow = updated, selection = null)
+            state.copy(
+                workflow = state.workflow.withoutSelection(state.selection),
+                selection = Selection.EMPTY,
+                interaction = state.interaction.copy(isMultiSelect = false),
+            )
         }
         persist()
     }
@@ -258,25 +284,43 @@ class GraphEditorViewModel(
             y = positionGraph.y,
         )
         _uiState.update { state ->
-            state.copy(
-                workflow = state.workflow.copy(nodes = state.workflow.nodes + node),
-                selection = Selection.Node(node.id),
-            )
+            state.copy(workflow = state.workflow.copy(nodes = state.workflow.nodes + node))
+                .selectingOnly(node.id)
         }
         persist()
     }
 
-    fun moveNode(nodeId: NodeId, deltaGraph: Offset) {
-        _uiState.update { state ->
-            val nodes = state.workflow.nodes.map { node ->
-                if (node.id == nodeId) node.copy(x = node.x + deltaGraph.x, y = node.y + deltaGraph.y) else node
-            }
-            state.copy(workflow = state.workflow.copy(nodes = nodes))
-        }
+    /** A finger landed on a node card. Records the undo point; changes nothing. */
+    fun beginNodeGesture() {
+        _uiState.update { it.withNodeGestureBegun() }
     }
 
-    fun onNodeDragEnd() {
-        persist()
+    /** The finger crossed the slop: grab [nodeId] and fix the set that will move. */
+    fun beginNodeDrag(nodeId: NodeId) {
+        _uiState.update { it.withNodeDragBegun(nodeId) }
+    }
+
+    fun dragSelectedNodes(deltaGraph: Offset) {
+        _uiState.update { it.withDragDelta(deltaGraph) }
+    }
+
+    /**
+     * The finger lifted. Saves only if something actually moved — a press that
+     * merely selected must not schedule a write of an unchanged graph.
+     */
+    fun endNodeGesture() {
+        val moved = _uiState.value.hasUnsavedNodeMove
+        _uiState.update { it.withNodeGestureEnded() }
+        if (moved) persist()
+    }
+
+    /**
+     * The gesture was cancelled or taken over by the canvas: put positions,
+     * selection and mode back. Deliberately does **not** persist — nothing
+     * net-changed, and a redundant save would rewrite the file for a pinch.
+     */
+    fun cancelNodeGesture() {
+        _uiState.update { it.withNodeGestureReverted() }
     }
 
     // endregion
@@ -348,8 +392,7 @@ class GraphEditorViewModel(
                 workflow = placed
                     .withConnection(output, intoConvert)
                     .withConnection(outOfConvert, input),
-                selection = Selection.Node(convert.id),
-            )
+            ).selectingOnly(convert.id)
         }
         persist()
     }
@@ -485,7 +528,7 @@ class GraphEditorViewModel(
                 val (output, input) = if (pick.from.isOutput) pick.from to newRef else newRef to pick.from
                 withNode.withConnection(output, input)
             }
-            state.copy(workflow = workflow, selection = Selection.Node(node.id), nodePick = null)
+            state.copy(workflow = workflow, nodePick = null).selectingOnly(node.id)
         }
         persist()
     }
@@ -780,3 +823,16 @@ class GraphEditorViewModel(
         }
     }
 }
+
+/**
+ * Selects a freshly placed node and nothing else.
+ *
+ * Placing a node — from the palette, from a dragged-off pin, or as an autocast
+ * Convert — is always a deliberate single-node act, so it also leaves multi-select
+ * mode. Staying in it would mean the next tap toggled the new node straight back
+ * out of the selection.
+ */
+private fun GraphEditorUiState.selectingOnly(nodeId: NodeId): GraphEditorUiState = copy(
+    selection = Selection.ofNode(nodeId),
+    interaction = interaction.copy(isMultiSelect = false),
+)

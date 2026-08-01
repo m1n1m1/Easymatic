@@ -115,7 +115,8 @@ private fun GraphEditorContent(
         EditorTopBar(
             title = state.workflow.name,
             nodeCount = state.workflow.nodes.size,
-            hasSelection = state.selection != null,
+            selectedCount = state.selection.size,
+            canConfigure = state.selection.singleNodeId != null,
             isMacroEnabled = state.isMacroEnabled,
             onToggleEnabled = { viewModel.setMacroEnabled(it) },
             onConfigure = { showConfig = true },
@@ -215,10 +216,7 @@ private fun GraphEditorContent(
     }
 
     if (showConfig) {
-        val selection = state.selection
-        val node = (selection as? Selection.Node)?.let { ref ->
-            state.workflow.node(ref.nodeId)
-        }
+        val node = state.selection.singleNodeId?.let { state.workflow.node(it) }
         if (node != null) {
             NodeConfigOverlay(
                 workflow = state.workflow,
@@ -265,10 +263,12 @@ private fun GraphEditorContent(
 private fun IntSize.centerPx(): Offset = Offset(width / 2f, height / 2f)
 
 @Composable
+@Suppress("LongParameterList") // Title, subtitle inputs and the three selection-conditional controls.
 private fun EditorTopBar(
     title: String,
     nodeCount: Int,
-    hasSelection: Boolean,
+    selectedCount: Int,
+    canConfigure: Boolean,
     isMacroEnabled: Boolean,
     onToggleEnabled: (Boolean) -> Unit,
     onConfigure: () -> Unit,
@@ -290,9 +290,18 @@ private fun EditorTopBar(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
+                // The selection count replaces the node count rather than sitting
+                // beside it: on a phone-width bar there is room for one subtitle,
+                // and while something is selected that is the more useful one. It
+                // is also the only visible signal that multi-select is on.
                 Text(
-                    text = if (nodeCount == 1) "1 node" else "$nodeCount nodes",
-                    color = EditorColors.textSecondary,
+                    text = when {
+                        selectedCount == 1 -> "1 selected"
+                        selectedCount > 1 -> "$selectedCount selected"
+                        nodeCount == 1 -> "1 node"
+                        else -> "$nodeCount nodes"
+                    },
+                    color = if (selectedCount > 0) EditorColors.nodeSelectedBorder else EditorColors.textSecondary,
                     fontSize = 11.sp,
                 )
             }
@@ -307,7 +316,10 @@ private fun EditorTopBar(
                 fontSize = 12.sp,
                 modifier = Modifier.padding(start = 6.dp, end = 8.dp),
             )
-            if (hasSelection) {
+            // Configure edits one node's fields, so it is gated on a lone node
+            // rather than on "anything selected" — which used to show the button
+            // for an edge and then silently refuse to open the sheet.
+            if (canConfigure) {
                 IconButton(onClick = onConfigure) {
                     Icon(
                         imageVector = Icons.Filled.Settings,
@@ -315,6 +327,8 @@ private fun EditorTopBar(
                         tint = EditorColors.textPrimary,
                     )
                 }
+            }
+            if (selectedCount > 0) {
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
