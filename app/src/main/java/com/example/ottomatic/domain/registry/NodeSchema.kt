@@ -12,6 +12,7 @@ import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
+import com.example.ottomatic.domain.model.config.Ports
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.schema.DateTime
@@ -131,6 +132,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                         element = element,
                         multiline = annotations.any { it is Multiline },
                         picker = annotations.filterIsInstance<Picker>().firstOrNull()?.kind,
+                        ports = annotations.any { it is Ports },
                         key = key,
                     ),
                     defaultValue = defaultValues[key].orEmpty(),
@@ -146,29 +148,29 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         return encoded.mapValues { (_, value) -> jsonElementToString(value) }
     }
 
+    @Suppress("LongParameterList") // One parameter per rendering annotation; they are all independent.
     private fun formTypeOf(
         element: SerialDescriptor,
         multiline: Boolean,
         picker: PickerKind?,
+        ports: Boolean,
         key: String,
     ): ConfigFieldType<*> {
         // A DateTime reports `STRING`, so it has to be recognised by name before the
         // kind is consulted or it renders as a plain text field.
         if (element.serialName == DateTime.SERIAL_NAME) {
-            check(picker == null) {
-                "Config property '${descriptor.serialName}.$key' is annotated @Picker but is a date; " +
+            check(picker == null && !ports) {
+                "Config property '${descriptor.serialName}.$key' is annotated @Picker or @Ports but is a date; " +
                     "dates have their own picker, so the annotation is redundant"
             }
             return ConfigFieldType.DATE_TIME
         }
-        check(picker == null || element.kind == PrimitiveKind.STRING) {
-            "Config property '${descriptor.serialName}.$key' is annotated @Picker but is a " +
-                "${element.kind}; a picker stores the chosen thing's identifier, so it must be a String"
-        }
+        checkWidgetAnnotations(element, picker, ports, key)
         return when (element.kind) {
             SerialKind.ENUM -> ConfigFieldType.ENUM(enumOptions(element))
             PrimitiveKind.STRING, PrimitiveKind.CHAR -> when {
                 // A picker still stores a string; it only replaces the widget.
+                ports -> ConfigFieldType.PORT_LIST
                 picker != null -> ConfigFieldType.PICKER(picker)
                 multiline -> ConfigFieldType.MULTILINE
                 else -> ConfigFieldType.STR
@@ -183,11 +185,34 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         }
     }
 
-    private fun enumOptions(element: SerialDescriptor): List<ConfigOption> {
-        val options = (0 until element.elementsCount).map { index ->
-            val name = element.getElementName(index)
-            ConfigOption(value = name, label = element.getElementAnnotations(index).labelOr(name))
+    /**
+     * The annotations that replace a property's widget both store a plain string
+     * and both claim the whole field, so each needs a `String` and the two
+     * cannot appear together. Split out from [formTypeOf] to keep the type table
+     * readable next to the rules that guard it.
+     */
+    private fun checkWidgetAnnotations(
+        element: SerialDescriptor,
+        picker: PickerKind?,
+        ports: Boolean,
+        key: String,
+    ) {
+        check(picker == null || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @Picker but is a " +
+                "${element.kind}; a picker stores the chosen thing's identifier, so it must be a String"
         }
+        check(!ports || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @Ports but is a " +
+                "${element.kind}; a port list is persisted as one 'name:TYPE' line per port, so it must be a String"
+        }
+        check(picker == null || !ports) {
+            "Config property '${descriptor.serialName}.$key' is annotated both @Picker and @Ports; " +
+                "a property has one editor"
+        }
+    }
+
+    private fun enumOptions(element: SerialDescriptor): List<ConfigOption> {
+        val options = enumConfigOptions(element)
         // A nullable enum means "optional choice"; the blank option clears it.
         return if (element.isNullable) listOf(ConfigOption(value = "", label = UNSET_LABEL)) + options else options
     }
@@ -253,6 +278,22 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
 
 /** Derives the [NodeSchema] of a node's `@Serializable` config class [T]. */
 inline fun <reified T : Any> nodeSchema(): NodeSchema<T> = NodeSchema(serializer())
+
+/**
+ * The persisted names and form labels of an enum class, as a config field's
+ * options would show them (its `@SerialName`s and [Label]s).
+ *
+ * Exposed because one editor needs an enum's labels without there being a
+ * [ConfigField] for it: the `@Ports` editor offers a
+ * [com.example.ottomatic.domain.model.config.ValueType] per row, and those rows
+ * are not config fields of their own. Sharing this is what keeps "Date & time"
+ * from being spelled a second time in the UI.
+ */
+fun enumConfigOptions(descriptor: SerialDescriptor): List<ConfigOption> =
+    (0 until descriptor.elementsCount).map { index ->
+        val name = descriptor.getElementName(index)
+        ConfigOption(value = name, label = descriptor.getElementAnnotations(index).labelOr(name))
+    }
 
 private fun List<Annotation>.labelOr(name: String): String =
     filterIsInstance<Label>().firstOrNull()?.value ?: prettify(name)

@@ -9,6 +9,7 @@ import com.example.ottomatic.domain.model.ANY_STRUCT
 import com.example.ottomatic.domain.model.ExecPorts
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.domain.model.PortSpec
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.core.model.PortName
@@ -89,6 +90,15 @@ val JSON_READ_TYPE_KEY = ConfigKey("type")
 /** typeId of the text building transform. */
 val TEXT_TYPE_ID = NodeTypeId("transform.text")
 
+/** typeId of the scripting action — the graph's escape hatch into real code. */
+val SCRIPT_TYPE_ID = NodeTypeId("action.script")
+
+/** The config key holding a script's input ports (a list of [com.example.ottomatic.domain.model.PortSpec]). */
+val SCRIPT_INPUTS_KEY = ConfigKey("inputs")
+
+/** The config key holding a script's output ports (a list of [com.example.ottomatic.domain.model.PortSpec]). */
+val SCRIPT_OUTPUTS_KEY = ConfigKey("outputs")
+
 /** The config key of the comparison's field picker. */
 val IF_FIELD_KEY = ConfigKey("field")
 
@@ -152,8 +162,39 @@ private fun effectivePorts(
         IF_TYPE_ID -> ifEffectivePorts(workflow, node, deeper)
         CONVERT_TYPE_ID -> typedTransformPorts(definition, workflow, node, CONVERT_TO_KEY, deeper)
         JSON_READ_TYPE_ID -> typedTransformPorts(definition, workflow, node, JSON_READ_TYPE_KEY, deeper)
+        SCRIPT_TYPE_ID -> scriptEffectivePorts(definition, node)
         else -> definition.ports
     }
+}
+
+/**
+ * Ports for `action.script`: its declared exec ports plus a DATA port per entry
+ * of its own `inputs` and `outputs` config.
+ *
+ * The only dynamic node that walks no edges. `action.break` asks what is wired
+ * *into* it and an adaptive transform asks what it feeds, but a script's ports
+ * are stated outright by the user, so there is nothing to resolve and no
+ * recursion to guard against.
+ *
+ * Both sides are built the same way, which is the point: an input and an output
+ * are one [PortSpec] seen from opposite directions. A port only exists once it
+ * has been declared, so a script that reads nothing has no input handles at all
+ * rather than three unused ones, and a typed port carries its own colour and its
+ * own type check instead of a wildcard that accepts anything.
+ *
+ * A name colliding with a declared port is dropped rather than shadowing it:
+ * silently rebinding an exec port to a script's value would be a far worse
+ * surprise than a missing handle. Inputs and outputs may share a name — ports
+ * are unique per direction, not per node.
+ */
+private fun scriptEffectivePorts(definition: NodeTypeDefinition, node: WorkflowNode): List<Port> {
+    val taken = definition.ports.mapTo(mutableSetOf()) { it.name.value }
+    fun ports(specs: List<PortSpec>, direction: Direction) = specs
+        .filterNot { it.name in taken }
+        .map { spec -> dataPort(PortName(spec.name), direction, spec.schema, label = spec.name) }
+    return definition.ports +
+        ports(PortSpec.parse(node.config[SCRIPT_INPUTS_KEY]), Direction.IN) +
+        ports(PortSpec.parseOutputs(node.config[SCRIPT_OUTPUTS_KEY]), Direction.OUT)
 }
 
 /**

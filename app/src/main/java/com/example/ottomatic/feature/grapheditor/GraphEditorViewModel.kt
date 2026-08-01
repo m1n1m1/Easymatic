@@ -31,6 +31,9 @@ import com.example.ottomatic.domain.registry.IF_VALUE_IN
 import com.example.ottomatic.domain.registry.DragOrigin
 import com.example.ottomatic.domain.registry.NodeSuggestion
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.domain.registry.SCRIPT_INPUTS_KEY
+import com.example.ottomatic.domain.registry.SCRIPT_OUTPUTS_KEY
+import com.example.ottomatic.domain.registry.SCRIPT_TYPE_ID
 import com.example.ottomatic.domain.registry.effectiveInputPorts
 import com.example.ottomatic.domain.registry.effectiveOutputPorts
 import com.example.ottomatic.domain.registry.isDataAssignable
@@ -734,24 +737,55 @@ class GraphEditorViewModel(
                 if (node.id == nodeId) node.copy(config = node.config + (key to value)) else node
             }
             val workflow = state.workflow.copy(nodes = nodes)
-            // When `action.if`'s type chooser changes, drop any data edges wired into its
-            // `source`/`value` ports: their schemas are about to change and the old
-            // connections would likely fail the new type check. Gated on the node type as
-            // well as the key, since "type" is not a reserved config name.
-            val isIfType = key == IF_TYPE_CONFIG_KEY &&
-                workflow.node(nodeId)?.typeId == IF_TYPE_ID
-            val finalWorkflow = if (isIfType) {
-                workflow.copy(
-                    dataConnections = workflow.dataConnections.filterNot {
-                        it.toNodeId == nodeId && (it.toPort == IF_SOURCE_IN || it.toPort == IF_VALUE_IN)
-                    },
-                )
-            } else {
-                workflow
-            }
-            state.copy(workflow = finalWorkflow)
+            state.copy(workflow = pruneRetypedEdges(workflow, nodeId, key))
         }
         persist()
+    }
+
+    /**
+     * Drops the data edges a config change has just invalidated.
+     *
+     * Two config keys retype a placed node's ports through [effectivePorts], and
+     * an edge left behind on a port that no longer exists — or no longer has the
+     * type it was checked against — is worse than no edge: it draws, it saves,
+     * and it silently carries nothing.
+     *
+     * Both are gated on the node's own typeId as well as the key, because
+     * neither "type" nor "outputs" is a reserved config name.
+     */
+    private fun pruneRetypedEdges(workflow: Workflow, nodeId: NodeId, key: ConfigKey): Workflow {
+        val typeId = workflow.node(nodeId)?.typeId
+        return when {
+            // `action.if`'s type chooser: the `source`/`value` schemas are about
+            // to change and the old connections would likely fail the new check.
+            key == IF_TYPE_CONFIG_KEY && typeId == IF_TYPE_ID -> workflow.copy(
+                dataConnections = workflow.dataConnections.filterNot {
+                    it.toNodeId == nodeId && (it.toPort == IF_SOURCE_IN || it.toPort == IF_VALUE_IN)
+                },
+            )
+            // A script's port lists: an edited row can rename a port, delete it
+            // or retype it, so every edge touching this node is re-checked
+            // against the ports it now has.
+            key in SCRIPT_PORT_KEYS && typeId == SCRIPT_TYPE_ID ->
+                workflow.copy(dataConnections = workflow.dataConnections.filter { it.stillValid(workflow, nodeId) })
+            else -> workflow
+        }
+    }
+
+    /**
+     * True when this edge still connects two ports that exist and type-check.
+     *
+     * Re-checking beats dropping every edge on the node the way `action.if`'s
+     * type chooser does: a port list is edited one character at a time, so
+     * clearing the lot on each keystroke would delete work the user can see is
+     * still correct. An edge only goes when its port is genuinely gone or its
+     * type no longer fits.
+     */
+    private fun DataConnection.stillValid(workflow: Workflow, nodeId: NodeId): Boolean {
+        if (toNodeId != nodeId && fromNodeId != nodeId) return true
+        val from = resolvePort(workflow, PortRef(fromNodeId, fromPort, isOutput = true, kind = PortKind.DATA))
+        val to = resolvePort(workflow, PortRef(toNodeId, toPort, isOutput = false, kind = PortKind.DATA))
+        return from != null && to != null && isDataAssignable(from, to)
     }
 
     fun setNodeDataInputVisible(nodeId: NodeId, portName: PortName, visible: Boolean) {
@@ -803,6 +837,9 @@ class GraphEditorViewModel(
          * feels like it takes effect immediately.
          */
         private const val SAVE_DEBOUNCE_MS = 500L
+
+        /** The two `@Ports` config keys on `action.script`, both of which retype its ports. */
+        private val SCRIPT_PORT_KEYS = setOf(SCRIPT_INPUTS_KEY, SCRIPT_OUTPUTS_KEY)
 
         @Suppress("LongParameterList") // Mirrors the ViewModel's injected dependencies 1:1.
         fun factory(

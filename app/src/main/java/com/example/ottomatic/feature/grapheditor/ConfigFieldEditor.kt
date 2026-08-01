@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.AlertDialog
@@ -38,10 +39,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ottomatic.domain.model.PortSpec
 import com.example.ottomatic.domain.model.config.PickerKind
+import com.example.ottomatic.domain.model.config.ValueType
 import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.registry.ConfigField
 import com.example.ottomatic.domain.registry.ConfigFieldType
+import com.example.ottomatic.domain.registry.ConfigOption
+import com.example.ottomatic.domain.registry.enumConfigOptions
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
 import com.example.ottomatic.feature.sound.SoundPickerField
@@ -183,6 +188,14 @@ internal fun ConfigFieldEditor(
                     colors = colors,
                 )
             }
+            ConfigFieldType.PORT_LIST -> {
+                PortListField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    label = label,
+                    colors = colors,
+                )
+            }
             ConfigFieldType.STR -> {
                 OutlinedTextField(
                     value = value,
@@ -297,6 +310,136 @@ private fun DateTimeField(
         }
     }
 }
+
+/**
+ * A `@Ports` field: the rows of data ports a script declares, each a name and a
+ * type. Used for both its inputs and its outputs — they are one [PortSpec] seen
+ * from opposite directions, so they share this editor.
+ *
+ * Fully controlled — there is no local editing state, so what the canvas shows
+ * and what the form shows can never disagree. That means rendering rows
+ * *leniently*: [PortSpec.parseLenient] keeps a row whose name is half-typed or
+ * momentarily blank, where [PortSpec.parse] (which decides the actual ports)
+ * drops it. A port therefore appears on the node the moment its name becomes
+ * valid, and the row it came from never disappears from under the cursor.
+ *
+ * The row count is free to reach zero: a script that reads nothing is a real
+ * thing, and the *outputs* side's floor is enforced by
+ * [PortSpec.parseOutputs] where the ports are built, not by the form.
+ */
+@Composable
+private fun PortListField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    colors: TextFieldColors,
+) {
+    val rows = remember(value) { value.lines().filter { it.isNotBlank() }.map(PortSpec::parseLenient) }
+    val options = remember { PORT_TYPE_OPTIONS }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(text = label, color = EditorColors.textPrimary, fontSize = 14.sp)
+        rows.forEachIndexed { index, row ->
+            PortListRow(
+                row = row,
+                options = options,
+                colors = colors,
+                onNameChange = { onValueChange(PortSpec.encode(rows.replacing(index, row.copy(name = it)))) },
+                onTypeChange = { onValueChange(PortSpec.encode(rows.replacing(index, row.copy(type = it)))) },
+                onRemove = { onValueChange(PortSpec.encode(rows.dropping(index))) },
+            )
+        }
+        if (rows.size < PortSpec.MAX_PORTS) {
+            TextButton(
+                onClick = { onValueChange(PortSpec.encode(rows + PortSpec("", null))) },
+            ) {
+                Text("Add ${label.lowercase().removeSuffix("s")}")
+            }
+        }
+    }
+}
+
+/**
+ * The type choices for one port row: every [ValueType], plus "Anything" for a
+ * wildcard.
+ *
+ * Labelled through [enumConfigOptions] rather than spelled out, so "Date & time"
+ * is written once. "Anything" leads because it is what an unconfigured input is
+ * and the only choice that accepts a struct.
+ */
+private val PORT_TYPE_OPTIONS: List<ConfigOption> =
+    listOf(ConfigOption(value = PortSpec.ANY, label = "Anything")) +
+        enumConfigOptions(ValueType.serializer().descriptor)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PortListRow(
+    row: PortSpec,
+    options: List<ConfigOption>,
+    colors: TextFieldColors,
+    onNameChange: (String) -> Unit,
+    onTypeChange: (ValueType?) -> Unit,
+    onRemove: () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        OutlinedTextField(
+            value = row.name,
+            onValueChange = onNameChange,
+            label = { Text(text = "Name", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            colors = colors,
+            singleLine = true,
+            modifier = Modifier.weight(1f),
+        )
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+            modifier = Modifier.weight(1f),
+        ) {
+            val selected = row.type?.name ?: PortSpec.ANY
+            OutlinedTextField(
+                value = options.firstOrNull { it.value == selected }?.label.orEmpty(),
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(text = "Type", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                colors = colors,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.label) },
+                        onClick = {
+                            // "Anything" is not a ValueType, so a failed lookup
+                            // is the wildcard rather than an error.
+                            onTypeChange(runCatching { ValueType.valueOf(option.value) }.getOrNull())
+                            expanded = false
+                        },
+                    )
+                }
+            }
+        }
+        IconButton(onClick = onRemove) {
+            Icon(Icons.Filled.Close, contentDescription = "Remove port")
+        }
+    }
+}
+
+private fun List<PortSpec>.replacing(index: Int, spec: PortSpec): List<PortSpec> =
+    mapIndexed { position, existing -> if (position == index) spec else existing }
+
+private fun List<PortSpec>.dropping(index: Int): List<PortSpec> =
+    filterIndexed { position, _ -> position != index }
 
 /**
  * A `@Picker` field: shows the chosen thing's human name and opens its chooser

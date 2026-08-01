@@ -67,6 +67,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
+    // Runs `action.script` on the V8 inside the device's system WebView, out of
+    // process. Adds no engine to the APK — this artifact is only the IPC glue.
+    implementation(libs.androidx.javascriptengine)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.serialization.json)

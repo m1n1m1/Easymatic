@@ -17,6 +17,7 @@ import com.example.ottomatic.engine.value.PowerSaveValue
 import com.example.ottomatic.engine.value.ProximityValue
 import com.example.ottomatic.engine.value.RingerModeValue
 import com.example.ottomatic.engine.value.ScreenOnValue
+import com.example.ottomatic.engine.value.VariableValue
 import com.example.ottomatic.engine.value.WifiValue
 
 /**
@@ -55,6 +56,7 @@ object ValueRegistry {
         ProximityValue(),
         RingerModeValue(),
         ScreenOnValue(),
+        VariableValue(),
         WifiValue(),
     )
 

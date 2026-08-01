@@ -450,16 +450,18 @@ private fun NodeConfigOverlay(
     // A config key and its DATA port name are the same string by construction
     // (see WorkflowNode.config), which is what lets each field carry its own
     // wiring toggle instead of a detached list at the bottom of the sheet.
+    //
+    // A port with *no* config key is not listed here at all. It has no form value
+    // to choose between, so there is nothing to toggle: `visibleInputPorts` shows
+    // it on the card unconditionally, and a switch that could not hide it would
+    // only ever delete the edge wired into it — which the canvas already does,
+    // visibly.
     val portByKey = dataInputPorts.associateBy { ConfigKey(it.name.value) }
-    // What is left over are the wildcardDataIn ports (e.g. action.break's
-    // `struct`): real inputs with no config field to sit beside, so they keep a
-    // section of their own.
-    val fieldlessPorts = dataInputPorts.filterNot { ConfigKey(it.name.value) in schemaKeys(schema) }
     // One wirable field puts every field in this sheet on the narrower measure, so
     // they keep a common right edge rather than the wirable ones looking clipped.
     val gutter = schemaKeys(schema).any { it in portByKey }
-    // The form grows without bound — schema fields plus data inputs — so it gets a
-    // full screen to scroll in.
+    // The form grows without bound — a script alone can declare sixteen ports —
+    // so it gets a full screen to scroll in.
     EditorOverlay(title = "Configure", onClose = onDismiss) { _ ->
         Column(
             // imePadding/navigationBarsPadding sit outside the scroll so the
@@ -505,34 +507,6 @@ private fun NodeConfigOverlay(
                     Spacer(modifier = Modifier.height(10.dp))
                 }
                 ConfigFormHint(node)
-            }
-            if (fieldlessPorts.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "Data inputs",
-                    color = EditorColors.textPrimary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                fieldlessPorts.forEach { port ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = port.label,
-                            color = EditorColors.textSecondary,
-                            fontSize = 13.sp,
-                            modifier = Modifier.weight(1f),
-                        )
-                        androidx.compose.material3.Switch(
-                            checked = port.name in node.visibleDataInputs,
-                            onCheckedChange = { onDataInputVisibilityChange(port.name, it) },
-                        )
-                    }
-                }
             }
         }
     }

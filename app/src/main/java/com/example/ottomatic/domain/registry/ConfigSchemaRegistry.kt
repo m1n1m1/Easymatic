@@ -49,6 +49,17 @@ sealed interface ConfigFieldType<out T> {
      * form resolves it to a human name for display.
      */
     data class PICKER(val kind: PickerKind) : ConfigFieldType<String>
+
+    /**
+     * A list of output ports — a name and a type per row — declared with
+     * `@Ports` and stored as one `name:TYPE` line per port (see
+     * [com.example.ottomatic.domain.model.OutputSpec]).
+     *
+     * Only `action.script` has this: it is the one node whose output ports are
+     * named by the user rather than derived from an upstream schema the way
+     * `action.break`'s are.
+     */
+    data object PORT_LIST : ConfigFieldType<String>
 }
 
 /**

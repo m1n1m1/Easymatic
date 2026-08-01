@@ -60,6 +60,7 @@ enum class NodeCategory(
     VALUE_DEVICE(NodeKind.VALUE, "Device State"),
     VALUE_SENSORS(NodeKind.VALUE, "Sensors"),
     VALUE_TIME(NodeKind.VALUE, "Date & Time"),
+    VALUE_VARIABLES(NodeKind.VALUE, "Variables"),
     TRANSFORM_DATA(NodeKind.TRANSFORM, "Data"),
 }
 

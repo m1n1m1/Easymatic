@@ -1,5 +1,6 @@
 package com.example.ottomatic.feature.grapheditor
 
+import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
@@ -49,6 +50,40 @@ class VisibleInputPortsTest {
         val inputs = visibleInputPorts(definition, workflow, node)
 
         assertTrue(inputs.any { it.name == PortName("text") && it.kind == PortKind.DATA })
+    }
+
+    @Test
+    fun `a declared script input is always shown, because it has no form row to opt in from`() {
+        // A script's inputs are named in its `@Ports` config, not declared as
+        // `@Wired` properties, so the form has no socket toggle for them. Hidden
+        // by default they could never be revealed at all.
+        val workflow = Workflow(
+            nodes = listOf(
+                WorkflowNode(
+                    NodeId("s"), NodeTypeId("action.script"), "Run Script", 0f, 0f,
+                    config = mapOf(ConfigKey("inputs") to "battery:WHOLE_NUMBER\npayload:ANY"),
+                ),
+            ),
+        )
+        val node = workflow.node(NodeId("s"))!!
+        val definition = NodeTypeRegistry.byId(node.typeId)!!
+
+        val inputs = visibleInputPorts(definition, workflow, node).map { it.name }
+
+        assertTrue(inputs.toString(), inputs.containsAll(listOf(PortName("battery"), PortName("payload"))))
+    }
+
+    @Test
+    fun `the struct a break reads is shown too`() {
+        val workflow = Workflow(
+            nodes = listOf(WorkflowNode(NodeId("b"), NodeTypeId("action.break"), "Break", 0f, 0f)),
+        )
+        val node = workflow.node(NodeId("b"))!!
+        val definition = NodeTypeRegistry.byId(node.typeId)!!
+
+        val inputs = visibleInputPorts(definition, workflow, node).map { it.name }
+
+        assertTrue(inputs.toString(), inputs.contains(PortName("struct")))
     }
 
     @Test

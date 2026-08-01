@@ -30,14 +30,16 @@ fun Item.asText(): String = when {
 
 /**
  * Best-effort [JsonElement] for a runtime [value] described by [schema] — the
- * loose inverse of [jsonElementToValue], used only by [asText].
+ * loose inverse of [jsonElementToValue]. Used by [asText], and by
+ * `action.script` to hand an input to JavaScript with its type intact — a number
+ * has to arrive as a JSON number, not as the quoted text [asText] would render.
  *
  * A struct is encoded through its own serializer (the same route
  * [com.example.ottomatic.engine.action.BreakStructAction] takes); collections
  * recurse; anything whose type cannot be recovered degrades to its `toString()`
  * rather than failing, because rendering text must never throw.
  */
-private fun anyToJsonElement(value: Any?, schema: ItemSchema): JsonElement = when (value) {
+internal fun anyToJsonElement(value: Any?, schema: ItemSchema): JsonElement = when (value) {
     null, kotlin.Unit -> JsonNull
     is JsonElement -> value
     is Boolean -> JsonPrimitive(value)

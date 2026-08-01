@@ -133,6 +133,104 @@ class EffectivePortsTest {
         config = mapOf(CONVERT_TO_KEY to to),
     )
 
+    // region action.script — both sides stated in config rather than resolved from the graph
+
+    @Test
+    fun `a script exposes one typed output per declared port`() {
+        val ports = scriptPorts(outputs = "count:WHOLE_NUMBER\nlabel:TEXT").outputs
+        assertEquals(ItemSchema.Primitive(Int::class), ports[PortName("count")])
+        assertEquals(ItemSchema.Primitive(String::class), ports[PortName("label")])
+    }
+
+    @Test
+    fun `a script exposes one typed input per declared port`() {
+        val ports = scriptPorts(inputs = "battery:WHOLE_NUMBER\nname:TEXT").inputs
+        assertEquals(ItemSchema.Primitive(Int::class), ports[PortName("battery")])
+        assertEquals(ItemSchema.Primitive(String::class), ports[PortName("name")])
+    }
+
+    @Test
+    fun `an untyped port is a wildcard, so a struct can still be wired in`() {
+        assertEquals(ItemSchema.Wildcard, scriptPorts(inputs = "payload:ANY").inputs[PortName("payload")])
+        assertTrue(isDataAssignable(structOut(schemaOf<SmsMessage>()), scriptInputPort("payload:ANY")))
+    }
+
+    @Test
+    fun `a typed input refuses a mismatched drop`() {
+        // The point of naming a type: a mis-wired script is a refused drop rather
+        // than a confusing NaN at run time.
+        val numeric = scriptInputPort("battery:WHOLE_NUMBER")
+        assertTrue(isDataAssignable(structOut(ItemSchema.Primitive(Int::class)), numeric))
+        assertFalse(isDataAssignable(structOut(schemaOf<SmsMessage>()), numeric))
+    }
+
+    @Test
+    fun `a script with no inputs configured has no input handles at all`() {
+        // Not three unused wildcards: a port exists once it has been declared.
+        assertTrue(scriptPorts(inputs = "").inputs.isEmpty())
+    }
+
+    @Test
+    fun `a script with nothing configured still has an output to wire`() {
+        // A node whose card has no output port reads as broken; the parser's
+        // default is what keeps a freshly dropped script usable.
+        assertEquals(setOf(PortName("result")), scriptPorts(outputs = "").outputs.keys)
+    }
+
+    @Test
+    fun `a script cannot shadow a port it already has`() {
+        // `out` is its exec output; silently rebinding it to a return value would
+        // be a far worse surprise than a missing output.
+        assertEquals(setOf(PortName("fine")), scriptPorts(outputs = "out:TEXT\nfine:TEXT").outputs.keys)
+    }
+
+    @Test
+    fun `an input and an output may share a name`() {
+        // Port names are unique per direction, not per node.
+        val ports = scriptPorts(inputs = "value:TEXT", outputs = "value:WHOLE_NUMBER")
+        assertEquals(ItemSchema.Primitive(String::class), ports.inputs[PortName("value")])
+        assertEquals(ItemSchema.Primitive(Int::class), ports.outputs[PortName("value")])
+    }
+
+    @Test
+    fun `editing a port list retypes the ports`() {
+        assertEquals(ItemSchema.Primitive(Boolean::class), scriptPorts(outputs = "hot:YES_OR_NO").outputs[hot])
+        assertEquals(ItemSchema.Primitive(Double::class), scriptPorts(outputs = "hot:NUMBER").outputs[hot])
+    }
+
+    private val hot = PortName("hot")
+
+    private class ScriptPorts(
+        val inputs: Map<PortName, ItemSchema?>,
+        val outputs: Map<PortName, ItemSchema?>,
+    )
+
+    /** The DATA ports a script node declaring [inputs] and [outputs] resolves to. */
+    private fun scriptPorts(inputs: String = "", outputs: String = "result:TEXT"): ScriptPorts {
+        val node = WorkflowNode(
+            NodeId("s"), SCRIPT_TYPE_ID, "Run Script", 0f, 0f,
+            config = mapOf(SCRIPT_INPUTS_KEY to inputs, SCRIPT_OUTPUTS_KEY to outputs),
+        )
+        val workflow = Workflow(nodes = listOf(node))
+        val def = NodeTypeRegistry.byId(SCRIPT_TYPE_ID)!!
+        fun data(ports: List<Port>) = ports.filter { it.kind == PortKind.DATA }.associate { it.name to it.schema }
+        return ScriptPorts(
+            inputs = data(effectiveInputPorts(def, workflow, node)),
+            outputs = data(effectiveOutputPorts(def, workflow, node)),
+        )
+    }
+
+    private fun scriptInputPort(inputs: String): Port {
+        val node = WorkflowNode(
+            NodeId("s"), SCRIPT_TYPE_ID, "Run Script", 0f, 0f,
+            config = mapOf(SCRIPT_INPUTS_KEY to inputs),
+        )
+        val def = NodeTypeRegistry.byId(SCRIPT_TYPE_ID)!!
+        return effectiveInputPorts(def, Workflow(nodes = listOf(node)), node).first { it.kind == PortKind.DATA }
+    }
+
+    // endregion
+
     private fun convertOutput(workflow: Workflow): ItemSchema? {
         val node = workflow.node(NodeId("c"))!!
         val def = NodeTypeRegistry.byId(CONVERT_TYPE_ID)!!

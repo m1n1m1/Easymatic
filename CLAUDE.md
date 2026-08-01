@@ -52,9 +52,13 @@ Every node is declared **exactly once** in its own file under `engine/`, bundlin
 
 The **only** registration step is adding one line to `ActionRegistry`, `TriggerRegistry`, `ValueRegistry` or `TransformRegistry` (in `domain/registry/`). `NodeTypeRegistry` and `ConfigSchemaRegistry` are **derived views** — never add entries to them directly.
 
-Config is declared on a single `@Serializable` data class per node, with annotations (`@Label`, `@Wired`, `@Multiline`, `@VisibleWhen`, `@Picker`) controlling form rendering and data input wiring. The framework derives config decoding, form schema, and data input ports from this class. Every property must be a `String`, a number, a `Boolean`, an `enum` or a `DateTime`.
+Config is declared on a single `@Serializable` data class per node, with annotations (`@Label`, `@Wired`, `@Multiline`, `@VisibleWhen`, `@Picker`, `@Ports`) controlling form rendering and data input wiring. The framework derives config decoding, form schema, and data input ports from this class. Every property must be a `String`, a number, a `Boolean`, an `enum` or a `DateTime`.
 
-`@Picker(PickerKind.X)` marks a `String` property whose value is an identifier chosen from a dedicated chooser rather than typed — currently a geofence place id. Adding a `PickerKind`, or a `ConfigFieldType`, requires a matching branch in `ConfigFieldEditor`'s exhaustive `when`.
+`@Picker(PickerKind.X)` marks a `String` property whose value is an identifier chosen from a dedicated chooser rather than typed — currently a geofence place id or a sound URI. `@Ports` marks a `String` property holding a *list of data ports* (`action.script`'s two, one per direction), persisted as one `name:TYPE` line per port and parsed by `PortSpec`. Both keep the "every property is a scalar" rule by storing a parsed spec as text, exactly as `CompareConfig.source` stores a `ValueSource` — a `List` property is rejected outright by `NodeSchema.formTypeOf`. Adding a `PickerKind`, or a `ConfigFieldType`, requires a matching branch in `ConfigFieldEditor`'s exhaustive `when`.
+
+A `@Ports` property's **default must be what "nothing configured" parses to**, because `NodeSchema.decode` reads a blank config value as absent and substitutes the property default — while `effectivePorts` reads the raw config and sees blank. Any other default makes the ports on the card disagree with the ones the node actually binds, and makes a deleted row come back.
+
+A DATA input derived from a `@Wired` property is **hidden until opted in** with the socket toggle beside its form field. A DATA input with no config field behind it — `action.script`'s named inputs, `action.break`'s struct, `transform.convert`'s value — is **always shown**, because there is no form row to opt in from (`visibleInputPorts`).
 
 ### Values and conditions
 
@@ -75,7 +79,9 @@ There is deliberately **no way to attach a condition to a node**. A MacroDroid-s
 - reading it needs a **permission** — values may declare none (`NodeDeclarationContractTest`), so `trigger.call_state` (READ_PHONE_STATE) and a connected-Bluetooth-device read (BLUETOOTH_CONNECT) have no counterpart;
 - reading it is **expensive or failable**, which is an action's job instead.
 
-Two facades serve the read side, both reachable from `ExecutionContext` and nothing else: `DeviceState` (`core/service/`, cheap synchronous device properties) and `SensorReader` (`engine/trigger/SensorProtocol.kt`, one-shot sensor samples, suspending and bounded by a timeout in `SensorBridge`). `SensorBridge` is a single instance shared by the trigger host and the execution context, so a value read and an armed trigger cost one platform registration between them.
+Two facades serve the read side, both reachable from `ExecutionContext` and nothing else: `DeviceState` (`core/service/`, cheap synchronous device properties) and `SensorReader` (`engine/trigger/SensorProtocol.kt`, one-shot sensor samples, suspending and bounded by a timeout in `SensorBridge`). `SensorBridge` is a single instance shared by the trigger host and the execution context, so a value read and an armed trigger cost one platform registration between them. `Variables` (`core/service/`) straddles both sides — a read is cheap enough for the pull side, a write is an action's job — and `ScriptEngine` (`core/service/`) is action-only.
+
+`value.variable` is the one value node with **configuration**. The purity contract is about ports and effects, not about config: it still declares no exec ports, no data inputs and no permission. It needs config because there is one battery level but as many variables as the user names. That does mean `action.if`'s edge-free `val:<typeId>` read (`ValueSource`) resolves it with *default* config, i.e. a blank name — comparing a named variable means wiring `value.variable` into the `source` port.
 
 ### Data conversion and parsing
 
@@ -108,6 +114,32 @@ A **transform** (`engine/transform/`) is the second half of the pull side: a pur
 Three exist: `transform.convert` (the autocast target), `transform.json_read` (dot path with array indexing — `main.temp`, `items.0.price`, `items[0].price`), and `transform.text` (a template with `{A}`/`{B}`/`{C}` slots, which is how a bare `43` becomes "Battery is 43%").
 
 `transform.convert` and `transform.json_read` declare a `Wildcard` output retyped by `effectivePorts` from their config. That resolution walks the graph both backwards (`action.break`, `action.if`) and forwards (a transform asking what it feeds), so `effectivePorts` threads a `visiting` set; re-entering a node falls back to its declared ports.
+
+### Scripting
+
+`action.script` is the graph's escape hatch: JavaScript over inputs the user names, returning values on ports the user names. Everything else in the palette has a fixed meaning; this covers what a palette never can — arithmetic over two readings, pulling a code out of an SMS, reshaping an API response.
+
+It runs on the **V8 inside the device's system WebView**, via `androidx.javascriptengine`, so no interpreter ships in the APK. `ScriptEngine` (`core/service/`) is the port; `WebViewScriptEngine` (`data/script/`) is the Android half. Consequences that shaped the design:
+
+- **It is an action, not a transform.** The pull side is for reads that are cheap and cannot fail. This is cross-process IPC that can throw, can time out, and on a device with no usable WebView cannot happen at all (`ScriptOutcome.Unavailable`). Like `transform.json_read`, every failure lands on the node's fallback and pulses `out` rather than halting — acting on "the script failed" is an `action.if` on its output, which is visible.
+- **One sandbox per process**, held lazily behind a mutex in `WebViewScriptEngine` (the platform throws on a second) and **a fresh isolate per run**, closed in a `finally` — which is also how a runaway loop is stopped, since cancelling the future abandons only the call. A script therefore *cannot remember its own previous run*; that is what variables are for.
+- **Values in, JSON out, no callbacks.** There is no `addJavascriptInterface` across a process boundary, and the isolate has no DOM, network or filesystem. Inputs are inlined as JSON literals under their own names (via `anyToJsonElement`, so a number stays a number and a struct stays an object); the result comes back through an `{ok, value, error}` envelope the wrapper stringifies, because the platform returns empty text for any non-`String` result.
+- **Its ports are named, not derived — on both sides.** `action.break` learns its ports from the struct wired into it; a script's shape is known only to whoever wrote it, so inputs *and* outputs come from `@Ports` config and `scriptEffectivePorts` — the one dynamic node that walks no edges. An input and an output are one `PortSpec` seen from opposite directions, so they share the parser, the editor and the port builder. Each input becomes a JS variable of its own name; the script returns an object keyed by the output names.
+- **A port only exists once declared, and carries its own type.** A script that reads nothing has no input handles rather than unused wildcards. A port may name a `ValueType` — which gives it a colour and a real type check, so a mis-wired script is a refused drop — or take **Anything** (`PortSpec.type == null` ⇒ `ItemSchema.Wildcard`), which is what lets a whole `HttpResponseItem` arrive as a real JavaScript object, since no `ValueType` can say "object". A name colliding with a declared port is dropped rather than shadowing it; inputs and outputs may share a name, since ports are unique per direction. Editing either list re-checks every edge touching the node in `GraphEditorViewModel.pruneRetypedEdges` and drops only those whose port is gone or no longer type-checks — dropping them all on each keystroke, the way `action.if`'s type chooser does, would delete work the user can see is still correct.
+
+**What a script may use** (measured by `ScriptEnvironmentTest`, which pins it): the **ECMAScript standard library and nothing else**. `Math`, `JSON`, `Date`, `RegExp`, `Promise`, `Map`/`Set`/`WeakMap`, `Symbol`, `Proxy`, `Reflect`, `BigInt`, `Intl` are all present, and syntax is current Chrome V8 (verified through ES2023 — `toSorted`, `findLast`, `Object.hasOwn`, `at`, `replaceAll`, named capture groups, optional chaining, classes, generators, destructuring). Absent: every web API (`fetch`, `XMLHttpRequest`, `WebSocket`, `crypto`, `TextEncoder`, `URL`, `atob`, `navigator`, `document`, `localStorage`, `performance`, `structuredClone`), **all timers** (`setTimeout`, `setInterval`, `queueMicrotask`), and any module system (`require`, `module`, `import`). No imports, no npm, no I/O — a script is one self-contained snippet over the values it is handed.
+
+No timers means `async` is a trap rather than a feature: it compiles, but there is nothing to await on, and the wrapper `JSON.stringify`s a returned Promise to `{}` rather than resolving it. Scripts are effectively synchronous.
+
+Everything on the app's side of the boundary is unit-tested with a fake `ScriptEngine` (`ScriptActionTest`); the engine itself needs a device and lives in `androidTest` (`WebViewScriptEngineTest`, `ScriptEnvironmentTest`), skipped where `JavaScriptSandbox.isSupported()` is false. Run them — the sandbox behaviour they cover cannot be reached from the JVM, and the one bug that mattered here (a per-instance sandbox holder where the platform's limit is per *process*) was invisible until they ran on hardware.
+
+### Variables
+
+`action.set_variable` writes and `value.variable` reads the graph's **only writable state** — `VariableStore` (`data/trigger/`), persisted to `{filesDir}/variables.json`, behind the `Variables` facade. Everything else in the graph is derived from what is true right now, which covers "when I get home, turn the lights on" and not "the third time this happens today"; scripting does not close that gap, because every isolate starts empty.
+
+`trigger.variable_change` already existed and could never fire, because nothing wrote to the store. It fires now. Writing an unchanged value is a deliberate no-op — "when this changes" must not mean "whenever anyone looked" — and a blank name stores nothing rather than accumulating a variable nobody can find.
+
+Variables are flat text. A counter compared as a number goes through `action.if`'s type chooser, and one wired into a numeric port picks up a visible `transform.convert`, the same route every other loosely-typed value takes; typed variables would mean a second type system alongside `ItemSchema` that only variables used.
 
 ### Geofence places
 
@@ -145,4 +177,4 @@ Manual `ServiceLocator` (no Hilt). Single instance initialized in `OttomaticAppl
 
 ## Tech stack
 
-Single `:app` module · Kotlin · Jetpack Compose (Material3) · Kotlinx Serialization · WorkManager · Play Services Location (geofencing) · Detekt · JUnit 4
+Single `:app` module · Kotlin · Jetpack Compose (Material3) · Kotlinx Serialization · WorkManager · Play Services Location (geofencing) · AndroidX JavaScriptEngine (`action.script`, no engine in the APK — it is the system WebView's V8) · Detekt · JUnit 4

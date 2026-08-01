@@ -74,6 +74,28 @@ enum class PickerKind {
 }
 
 /**
+ * Renders the `String` property as an editor for a list of **output ports** —
+ * a name and a type per row — rather than as a text field.
+ *
+ * The stored value is still a plain string (one `name:TYPE` per line, parsed by
+ * [com.example.ottomatic.domain.model.OutputSpec]), so the "every property is a
+ * scalar" rule above holds: this changes only how the list is *entered*. It has
+ * to be a string, because a `List` property cannot be rendered in a form at all
+ * and fails at registry initialisation.
+ *
+ * Declared by `action.script` alone, and meaningful only on a node whose
+ * [com.example.ottomatic.domain.model.NodeType] resolves the resulting ports
+ * through [com.example.ottomatic.domain.registry.effectivePorts] — annotating a
+ * property on a static node would render the editor and change nothing. Like
+ * [Picker], it needs a renderer in the config form; adding it without one fails
+ * the form's exhaustive `when`.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class Ports
+
+/**
  * Also exposes the property as a DATA input port of the same name, so its value
  * can be wired from upstream data instead of typed in the form.
  *

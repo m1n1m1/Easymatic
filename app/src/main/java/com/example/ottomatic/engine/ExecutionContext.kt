@@ -2,6 +2,10 @@ package com.example.ottomatic.engine
 
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.MacroControl
+import com.example.ottomatic.core.service.NoScripts
+import com.example.ottomatic.core.service.NoVariables
+import com.example.ottomatic.core.service.ScriptEngine
+import com.example.ottomatic.core.service.Variables
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.core.service.UnknownDeviceState
 import com.example.ottomatic.engine.trigger.NoSensors
@@ -39,6 +43,29 @@ interface ExecutionContext {
      * a reading no sensor ever produced.
      */
     val sensors: SensorReader get() = NoSensors
+
+    /**
+     * Runs the JavaScript behind `action.script`. Defaults to [NoScripts] so
+     * engine-only tests need not stand up a WebView sandbox: they then see the
+     * same [com.example.ottomatic.core.service.ScriptOutcome.Unavailable] a
+     * device without a usable WebView reports, which the action already has to
+     * handle.
+     *
+     * An action, never a value node — an evaluation is slow and failable, so it
+     * is not something the pull side may do.
+     */
+    val scripts: ScriptEngine get() = NoScripts
+
+    /**
+     * Named values that outlive a single run — written by `action.set_variable`,
+     * read by `value.variable`. Defaults to [NoVariables] so an engine-only test
+     * reads null and a comparison over it fails closed.
+     *
+     * The one facade both sides may touch: reading a variable is cheap and
+     * cannot fail, so the pull side may do it, and writing one is a side effect,
+     * so only an action does.
+     */
+    val variables: Variables get() = NoVariables
 
     /** Optional handle to enable/disable other macros at runtime, or null. */
     val macroControl: MacroControl? get() = null

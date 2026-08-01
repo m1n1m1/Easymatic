@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.BatterySaver
 import androidx.compose.material.icons.filled.BatteryStd
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.Dock
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.ScreenRotation
 import androidx.compose.material.icons.filled.SensorOccupied
 import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.TouchApp
@@ -174,6 +176,8 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.CONVERT -> Icons.Filled.SwapHoriz
     NodeIcon.TEXT -> Icons.Filled.TextFields
     NodeIcon.JSON -> Icons.Filled.DataObject
+    NodeIcon.CODE -> Icons.Filled.Code
+    NodeIcon.VARIABLE -> Icons.Filled.Tag
     NodeIcon.ORIENTATION -> Icons.Filled.ScreenRotation
     NodeIcon.SHAKE -> Icons.Filled.Vibration
     NodeIcon.TAP -> Icons.Filled.TouchApp

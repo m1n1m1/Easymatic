@@ -22,6 +22,8 @@ import com.example.ottomatic.engine.action.OpenUrlAction
 import com.example.ottomatic.engine.action.PlaySoundAction
 import com.example.ottomatic.engine.action.RingerModeAction
 import com.example.ottomatic.engine.action.ScreenTimeoutAction
+import com.example.ottomatic.engine.action.ScriptAction
+import com.example.ottomatic.engine.action.SetVariableAction
 import com.example.ottomatic.engine.action.SendSmsAction
 import com.example.ottomatic.engine.action.StopAction
 import com.example.ottomatic.engine.action.StopSoundAction
@@ -69,7 +71,9 @@ object ActionRegistry {
         PlaySoundAction(),
         RingerModeAction(),
         ScreenTimeoutAction(),
+        ScriptAction(),
         SendSmsAction(),
+        SetVariableAction(),
         StopAction(),
         StopSoundAction(),
         VibrateAction(),
