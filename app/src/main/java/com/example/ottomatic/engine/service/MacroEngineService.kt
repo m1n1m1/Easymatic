@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import com.example.ottomatic.MainActivity
 import com.example.ottomatic.R
 import com.example.ottomatic.ServiceLocator
 import com.example.ottomatic.core.service.SystemServices
@@ -204,11 +205,34 @@ class MacroEngineService : Service() {
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Ottomatic")
             .setContentText(text)
+            .setContentIntent(openAppIntent())
             .setOngoing(true)
         // Offered only while there is something to stop: a button that usually
         // does nothing teaches people to ignore it.
         if (systemServices.soundPlaying.value) builder.addAction(stopSoundAction())
         return builder.build()
+    }
+
+    /**
+     * Opens the app on a tap. An ongoing notification is the app's only visible
+     * trace while it is backgrounded, so tapping it should lead back in.
+     *
+     * `SINGLE_TOP` rather than the `CLEAR_TOP` [com.example.ottomatic.data.BootFailureNotifier]
+     * uses: the whole app is one Activity holding a Compose back stack, so
+     * clearing the top would tear that Activity down and rebuild it — the tap
+     * would throw the user out of the editor they had open instead of returning
+     * them to it. There is nothing above MainActivity to clear anyway.
+     */
+    private fun openAppIntent(): PendingIntent {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        return PendingIntent.getActivity(
+            this,
+            OPEN_APP_REQUEST_CODE,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+        )
     }
 
     private fun stopSoundAction(): Notification.Action {
@@ -259,6 +283,7 @@ class MacroEngineService : Service() {
 
         private const val NOTIFICATION_ID = 4242
         private const val CHANNEL_ID = "ottomatic.engine"
+        private const val OPEN_APP_REQUEST_CODE = 0
         private const val STOP_SOUND_REQUEST_CODE = 1
 
         /**
