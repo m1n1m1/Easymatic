@@ -46,6 +46,8 @@ import com.example.ottomatic.engine.WorkflowRunner
 import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.engine.trigger.ManualTrigger
 import com.example.ottomatic.engine.trigger.TriggerHost
+import com.example.ottomatic.engine.validation.GraphValidation
+import com.example.ottomatic.engine.validation.GraphValidator
 import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
@@ -56,6 +58,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -164,6 +167,41 @@ class GraphEditorViewModel(
         if (_uiState.value.workflow.node(nodeId) == null) return
         _uiState.update { it.selectingOnly(nodeId) }
     }
+
+    /**
+     * Selects one edge outright.
+     *
+     * [tapConnection] *toggles*, which is right for a tap on the canvas and wrong
+     * for a tap in a list: picking a problem must land on its wire, not clear the
+     * selection because the wire happened to be selected already.
+     */
+    fun selectConnection(connectionId: String) {
+        _uiState.update { it.copy(selection = Selection.ofConnection(connectionId)) }
+    }
+
+    /**
+     * What is wrong with the graph as it stands, recomputed as it is edited.
+     *
+     * A sibling flow rather than a field on [GraphEditorUiState], for two reasons
+     * that have nothing to do with how often it changes:
+     *
+     *  - **it cannot go stale.** There are twenty-odd `_uiState.update { }` call
+     *    sites; a stored field would have to be recomputed correctly by every one
+     *    of them, and by the next one somebody adds. A derivation cannot be
+     *    forgotten.
+     *  - **it costs nothing to drag.** `dragSelectedNodes` rewrites the workflow
+     *    on every pointer event. [Workflow.runtimeSignature] omits `x`/`y`, so the
+     *    de-dupe collapses a whole drag to zero validator runs, where a stored
+     *    field would revalidate per frame.
+     *
+     * The key is the runtime signature *plus* node names: names are what the
+     * messages are written in, and renaming a node is not a per-frame operation.
+     */
+    val validation: StateFlow<GraphValidation> = uiState
+        .map { it.workflow }
+        .distinctUntilChangedBy { workflow -> workflow.runtimeSignature() to workflow.nodes.map { it.name } }
+        .map { GraphValidator(it).validate() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_STOP_TIMEOUT_MS), GraphValidation.EMPTY)
 
     /**
      * The [Workflow.runtimeSignature] the background service is currently
@@ -632,6 +670,17 @@ class GraphEditorViewModel(
     private var saveJob: Job? = null
 
     /**
+     * Set once [deleteWorkflow] has removed this workflow's file, and never
+     * cleared: it makes every remaining write a no-op.
+     *
+     * Without it, deleting from the editor does nothing visible. The debounced
+     * [persist] may have a write in flight, and [onCleared] saves unconditionally
+     * on the way out — and the way out is exactly what deleting triggers. Either
+     * one recreates the file we just removed.
+     */
+    private var isDeleted = false
+
+    /**
      * Schedules a debounced write of the current graph. Every mutator calls this;
      * typing a config value fires it per keystroke, so coalescing matters — each
      * write is a full pretty-printed JSON encode.
@@ -640,7 +689,7 @@ class GraphEditorViewModel(
         // Before the initial load lands, [_uiState.workflow] is still the default
         // instance whose id is "default" — saving it would write a junk
         // workflows/default.json instead of this workflow's file.
-        if (!_uiState.value.isLoaded) return
+        if (!_uiState.value.isLoaded || isDeleted) return
         saveJob?.cancel()
         saveJob = viewModelScope.launch {
             delay(SAVE_DEBOUNCE_MS)
@@ -659,7 +708,7 @@ class GraphEditorViewModel(
      */
     private suspend fun flush() {
         val state = _uiState.value
-        if (!state.isLoaded) return
+        if (!state.isLoaded || isDeleted) return
         val workflow = state.workflow
         repository.save(workflow)
         val signature = workflow.runtimeSignature()
@@ -675,7 +724,7 @@ class GraphEditorViewModel(
         // process-lifetime scope instead.
         saveJob?.cancel()
         val state = _uiState.value
-        if (state.isLoaded) {
+        if (state.isLoaded && !isDeleted) {
             val workflow = state.workflow
             val enabled = state.isMacroEnabled
             val armed = lastArmedSignature
@@ -698,6 +747,54 @@ class GraphEditorViewModel(
         }
         super.onCleared()
     }
+
+    // region Workflow-level actions
+
+    /**
+     * Renames the workflow.
+     *
+     * Deliberately not `repository.rename`, the way the workflow list does it:
+     * the editor holds the whole graph in memory and [flush] writes all of it,
+     * so a repository-side rename would be overwritten by the next debounced
+     * save, and again by [onCleared]'s final one. Going through [persist] is the
+     * same route `updateNodeName` takes.
+     *
+     * [Workflow.runtimeSignature] omits the name, so renaming an armed macro
+     * never re-arms it.
+     */
+    fun renameWorkflow(name: String) {
+        _uiState.update { it.copy(workflow = it.workflow.copy(name = name)) }
+        persist()
+    }
+
+    /**
+     * Deletes this workflow and calls [onDeleted] once its file is gone, so the
+     * caller can leave the editor.
+     *
+     * Mirrors `WorkflowListViewModel.delete` — disarm first so the engine
+     * releases this workflow's trigger sources before the file it was armed from
+     * disappears, and drop its console, which would otherwise outlive it and
+     * surface a deleted macro's errors under a recreated one.
+     *
+     * The extra step the list does not need is [isDeleted]: leaving the editor
+     * clears this ViewModel, and clearing it saves. See the flag's own note.
+     */
+    fun deleteWorkflow(onDeleted: () -> Unit) {
+        if (!_uiState.value.isLoaded || isDeleted) return
+        val id = _uiState.value.workflow.id
+        isDeleted = true
+        saveJob?.cancel()
+        MacroEngineService.start(appContext, MacroEngineService.ACTION_DISABLE, id)
+        runLog.clear(id)
+        // viewModelScope survives this: the ViewModel is cleared by the
+        // navigation that [onDeleted] performs, which is the last thing here.
+        viewModelScope.launch {
+            repository.delete(id)
+            onDeleted()
+        }
+    }
+
+    // endregion
 
     // region Workflow execution
 

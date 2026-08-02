@@ -69,6 +69,17 @@ object EditorColors {
 
     /** Console warnings. Amber reads as "look at this" without reading as broken. */
     val warnAccent = Color(0xFFE0A04C)
+
+    /**
+     * Something is broken: a quarantined node or wire, and the problems badge.
+     *
+     * Its own colour rather than [triggerAccent], which is already the trigger
+     * kind's accent, the console badge and the delete tint — and which sits one
+     * step from [nodeSelectedBorder]. An error border in that orange on an
+     * unselected trigger card reads as "selected", which is the one thing a border
+     * on this canvas already means.
+     */
+    val errorAccent = Color(0xFFE5534B)
     val actionAccent = Color(0xFF5B8DEF)
     val valueAccent = Color(0xFFC58AF9)
 

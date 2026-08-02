@@ -48,6 +48,30 @@ data class Selection(
     }
 }
 
+/**
+ * How a selection reads in the editor's contextual top bar.
+ *
+ * A plain function rather than a property on [Selection] so it stays out of the
+ * data class's equals/hashCode and can be unit-tested on its own — the editor's
+ * one testable seam, for the reason [withTappedNode]'s file records.
+ *
+ * Nodes and edges are named separately here even though [Selection] unions them,
+ * because "3 selected" over a mixed selection reads as three nodes and the
+ * delete that follows is the one action the user cannot undo.
+ */
+fun selectionLabel(selection: Selection): String {
+    val nodes = selection.nodeIds.size
+    val connections = selection.connectionIds.size
+    return when {
+        nodes == 0 && connections == 0 -> "Nothing selected"
+        connections == 0 -> "$nodes ${plural(nodes, "node")} selected"
+        nodes == 0 -> "$connections ${plural(connections, "connection")} selected"
+        else -> "$nodes ${plural(nodes, "node")}, $connections ${plural(connections, "connection")}"
+    }
+}
+
+private fun plural(count: Int, noun: String): String = if (count == 1) noun else "${noun}s"
+
 /** Adds [nodeId] if it is absent, removes it if it is present. */
 fun Selection.toggleNode(nodeId: NodeId): Selection = copy(
     nodeIds = if (nodeId in nodeIds) nodeIds - nodeId else nodeIds + nodeId,

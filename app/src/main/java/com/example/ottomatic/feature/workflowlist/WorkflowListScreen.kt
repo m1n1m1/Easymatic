@@ -5,18 +5,22 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.AlertDialog
@@ -47,6 +51,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.ottomatic.feature.grapheditor.EditorColors
+import com.example.ottomatic.feature.grapheditor.editorSwitchColors
 
 @Composable
 fun WorkflowListScreen(
@@ -118,6 +123,7 @@ fun WorkflowListScreen(
                     items(state.workflows, key = { it.id }) { summary ->
                         WorkflowRow(
                             summary = summary,
+                            errors = state.errors[summary.id] ?: 0,
                             onOpen = { onOpenWorkflow(summary.id) },
                             onToggleEnabled = { viewModel.setEnabled(summary.id, it) },
                             onRename = { renaming = summary },
@@ -177,9 +183,24 @@ fun WorkflowListScreen(
     }
 }
 
+/**
+ * The line under a workflow's name.
+ *
+ * A broken graph outranks the armed flag because it is the more surprising fact:
+ * "Armed" beside a macro that stops at its first bad wire is the reading this
+ * screen used to give, and the one the user is least likely to question.
+ */
+private fun statusText(enabled: Boolean, errors: Int): String = when {
+    errors > 0 && enabled -> "Armed · $errors ${if (errors == 1) "problem" else "problems"}"
+    errors > 0 -> "$errors ${if (errors == 1) "problem" else "problems"}"
+    enabled -> "Armed"
+    else -> "Off"
+}
+
 @Composable
 private fun WorkflowRow(
     summary: com.example.ottomatic.domain.model.WorkflowSummary,
+    errors: Int,
     onOpen: () -> Unit,
     onToggleEnabled: (Boolean) -> Unit,
     onRename: () -> Unit,
@@ -200,15 +221,36 @@ private fun WorkflowRow(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
             )
-            Text(
-                text = if (summary.enabled) "Armed" else "Off",
-                color = if (summary.enabled) EditorColors.triggerAccent else EditorColors.textSecondary,
-                fontSize = 12.sp,
-            )
+            // "Armed" on its own is a half-truth for a graph that cannot run all
+            // the way through, so the problem count replaces it rather than
+            // sitting beside it.
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (errors > 0) {
+                    Icon(
+                        imageVector = Icons.Filled.ErrorOutline,
+                        contentDescription = null,
+                        tint = EditorColors.errorAccent,
+                        modifier = Modifier
+                            .size(13.dp)
+                            .padding(end = 1.dp),
+                    )
+                    Spacer(Modifier.width(4.dp))
+                }
+                Text(
+                    text = statusText(summary.enabled, errors),
+                    color = when {
+                        errors > 0 -> EditorColors.errorAccent
+                        summary.enabled -> EditorColors.triggerAccent
+                        else -> EditorColors.textSecondary
+                    },
+                    fontSize = 12.sp,
+                )
+            }
         }
         Switch(
             checked = summary.enabled,
             onCheckedChange = onToggleEnabled,
+            colors = editorSwitchColors(),
         )
         Box {
             IconButton(onClick = { menuOpen = true }) {

@@ -28,7 +28,7 @@ class GraphValidatorTest {
     @Test
     fun `sample workflow with valid exec edges validates clean`() {
         val wf = sampleWorkflow()
-        val issues = GraphValidator(wf).validate()
+        val issues = GraphValidator(wf).validate().issues
         val errors = issues.filter { it.severity == Severity.ERROR }
         assertTrue("expected no errors, got: $errors", errors.isEmpty())
     }
@@ -41,7 +41,7 @@ class GraphValidatorTest {
                 ExecConnection("c2", NodeId("n2"), PortName("out"), NodeId("n1"), PortName("in")),
             ),
         )
-        val issues = GraphValidator(wf).validate()
+        val issues = GraphValidator(wf).validate().issues
         assertTrue(issues.any { it.severity == Severity.ERROR && it.message.contains("Execution cycle") })
     }
 
@@ -52,7 +52,7 @@ class GraphValidatorTest {
                 DataConnection("d1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
             ),
         )
-        val issues = GraphValidator(wf).validate()
+        val issues = GraphValidator(wf).validate().issues
         assertTrue(issues.any { it.severity == Severity.ERROR && it.message.contains("data output port") })
     }
 
@@ -63,7 +63,7 @@ class GraphValidatorTest {
                 ExecConnection("c1", NodeId("n1"), PortName("nope"), NodeId("n2"), PortName("in")),
             ),
         )
-        val issues = GraphValidator(wf).validate()
+        val issues = GraphValidator(wf).validate().issues
         assertTrue(issues.any { it.severity == Severity.ERROR })
     }
 
@@ -92,31 +92,31 @@ class GraphValidatorTest {
                 DataConnection("d1", NodeId("n2"), PortName("response"), NodeId("n6"), PortName("in")),
             ),
         )
-        val issues = GraphValidator(wf).validate()
+        val issues = GraphValidator(wf).validate().issues
         assertTrue(issues.any { it.severity == Severity.ERROR })
     }
 
     @Test
     fun `connecting exec output to exec input of correct kind is accepted`() {
         val wf = sampleWorkflow()
-        val errors = GraphValidator(wf).validate().filter { it.severity == Severity.ERROR }
+        val errors = GraphValidator(wf).validate().issues.filter { it.severity == Severity.ERROR }
         assertTrue("got errors: $errors", errors.isEmpty())
     }
 
     @Test
-    fun `isValid returns true for clean sample workflow`() {
-        assertTrue(GraphValidator(sampleWorkflow()).isValid())
+    fun `isRunnable is true for clean sample workflow`() {
+        assertTrue(GraphValidator(sampleWorkflow()).validate().isRunnable)
     }
 
     @Test
-    fun `isValid returns false for exec cycle`() {
+    fun `isRunnable is false for exec cycle`() {
         val wf = sampleWorkflow().copy(
             execConnections = listOf(
                 ExecConnection("c1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
                 ExecConnection("c2", NodeId("n2"), PortName("out"), NodeId("n1"), PortName("in")),
             ),
         )
-        assertFalse(GraphValidator(wf).isValid())
+        assertFalse(GraphValidator(wf).validate().isRunnable)
     }
 
     @Test
@@ -133,7 +133,7 @@ class GraphValidatorTest {
                 DataConnection("d1", NodeId("n1"), PortName("state"), NodeId("c"), PortName("source")),
             ),
         )
-        val issues = GraphValidator(wf).validate()
+        val issues = GraphValidator(wf).validate().issues
         assertTrue(
             "wired source should produce no errors, got: ${issues.map { it.message }}",
             issues.none { it.severity == Severity.ERROR },
@@ -166,7 +166,7 @@ class GraphValidatorTest {
                 DataConnection("d1", NodeId("v"), PortName("mode"), NodeId("n2"), PortName("text")),
             ),
         )
-        val issues = GraphValidator(wf).validate()
+        val issues = GraphValidator(wf).validate().issues
         assertTrue(
             "a pulled value must not trip the exec-upstream rule, got: ${issues.map { it.message }}",
             issues.none { it.severity == Severity.ERROR },
@@ -178,7 +178,7 @@ class GraphValidatorTest {
         val wf = Workflow(
             nodes = listOf(WorkflowNode(NodeId("v"), NodeTypeId("value.battery"), "Battery", 0f, 0f)),
         )
-        val issues = GraphValidator(wf).validate()
+        val issues = GraphValidator(wf).validate().issues
 
         assertTrue(
             "an unread value should warn, got: ${issues.map { it.message }}",
@@ -217,7 +217,7 @@ class GraphValidatorTest {
                 DataConnection("d2", NodeId("c"), TRANSFORM_OUT, NodeId("n2"), PortName("text")),
             ),
         )
-        val issues = GraphValidator(wf).validate()
+        val issues = GraphValidator(wf).validate().issues
         assertTrue(
             "a pulled transform must not trip the exec-upstream rule, got: ${issues.map { it.message }}",
             issues.none { it.severity == Severity.ERROR },
@@ -259,7 +259,7 @@ class GraphValidatorTest {
                 DataConnection("d3", NodeId("c"), TRANSFORM_OUT, NodeId("n"), PortName("text")),
             ),
         )
-        val issues = GraphValidator(wf).validate()
+        val issues = GraphValidator(wf).validate().issues
         assertTrue(
             "a transform in the wire must not fail the exec-upstream rule, got: ${issues.map { it.message }}",
             issues.none { it.severity == Severity.ERROR },
@@ -298,10 +298,10 @@ class GraphValidatorTest {
                 DataConnection("d2", NodeId("c"), TRANSFORM_OUT, NodeId("n"), PortName("text")),
             ),
         )
-        val issues = GraphValidator(wf).validate()
+        val issues = GraphValidator(wf).validate().issues
         assertTrue(
             "the rule must still see through the transform, got: ${issues.map { it.message }}",
-            issues.any { it.severity == Severity.ERROR && it.message.contains("not exec-upstream") },
+            issues.any { it.severity == Severity.ERROR && it.message.contains("will not have run when") },
         )
     }
 
@@ -324,7 +324,7 @@ class GraphValidatorTest {
                 DataConnection("d2", NodeId("c"), TRANSFORM_OUT, NodeId("n2"), PortName("text")),
             ),
         )
-        val issues = GraphValidator(wf).validate()
+        val issues = GraphValidator(wf).validate().issues
 
         assertTrue(
             "a starved transform should warn, got: ${issues.map { it.message }}",

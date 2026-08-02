@@ -102,6 +102,42 @@ class SelectionOpsTest {
         assertFalse(DATA_EDGE in selection)
     }
 
+    @Test
+    fun `selectionLabel names one node`() {
+        assertEquals("1 node selected", selectionLabel(Selection.ofNode(A)))
+    }
+
+    @Test
+    fun `selectionLabel pluralises nodes`() {
+        assertEquals("2 nodes selected", selectionLabel(Selection(nodeIds = setOf(A, B))))
+    }
+
+    @Test
+    fun `selectionLabel names connections when no node is selected`() {
+        assertEquals("1 connection selected", selectionLabel(Selection.ofConnection(EXEC_EDGE)))
+        assertEquals(
+            "2 connections selected",
+            selectionLabel(Selection(connectionIds = setOf(EXEC_EDGE, DATA_EDGE))),
+        )
+    }
+
+    @Test
+    fun `selectionLabel counts a mixed selection by kind`() {
+        // Not "3 selected": the delete that follows is the one action the user
+        // cannot undo, so the bar says exactly what is about to go.
+        val selection = Selection(nodeIds = setOf(A, B), connectionIds = setOf(EXEC_EDGE))
+
+        assertEquals("2 nodes, 1 connection", selectionLabel(selection))
+    }
+
+    @Test
+    fun `selectionLabel has something to say about an empty selection`() {
+        // Unreachable from the bar, which shows the workflow mode instead — but a
+        // label function that returns "0 nodes selected" would be a trap for the
+        // next caller.
+        assertEquals("Nothing selected", selectionLabel(Selection.EMPTY))
+    }
+
     /** A -> B (exec) and B -> C (data), so deleting B orphans one edge of each kind. */
     private fun workflow() = Workflow(
         nodes = listOf(

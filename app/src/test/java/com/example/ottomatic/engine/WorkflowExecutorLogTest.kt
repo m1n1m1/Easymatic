@@ -81,14 +81,38 @@ class WorkflowExecutorLogTest {
         assertEquals(LogLevel.INFO, written.level)
     }
 
+    /**
+     * A problem is announced **once**, as a summary, and attributed to the trigger.
+     *
+     * Not one line per finding: the run continues now, so the inventory would be
+     * re-written on every fire and evict the trace that says what actually
+     * happened — in a buffer that holds 500 lines and a macro that fires every
+     * minute, that is the whole console. The list itself lives in the editor's
+     * Problems panel, where it does not repeat.
+     */
     @Test
-    fun `an invalid workflow is an error, not a trace`() = runBlocking {
+    fun `a problem is one error line, against the trigger`() = runBlocking {
         run(cyclicWorkflow())
 
-        val invalid = logs.filter { it.message.contains("Workflow invalid") }
-        assertTrue(logs.toString(), invalid.isNotEmpty())
-        assertTrue(invalid.toString(), invalid.all { it.level == LogLevel.ERROR })
-        assertTrue("nothing should have run", services.notifications.isEmpty())
+        val summary = logs.single { it.message.contains("problem(s) in this workflow") }
+        assertEquals(LogLevel.ERROR, summary.level)
+        assertEquals("n1", summary.source?.nodeId)
+    }
+
+    /**
+     * The line a skip produces is attributed to the node that did not run, not to
+     * the one that tried to reach it — that is the contract `ProblemsOverlay` and
+     * the console's tap-to-select are both written against.
+     */
+    @Test
+    fun `a skipped step says so against itself`() = runBlocking {
+        run(cyclicWorkflow())
+
+        val skipped = logs.single { it.message.contains("that wire has a problem") }
+        assertEquals(LogLevel.ERROR, skipped.level)
+        assertEquals("n1", skipped.source?.nodeId)
+        // …and the node before the bad wire still ran.
+        assertEquals(1, services.notifications.size)
     }
 
     @Test

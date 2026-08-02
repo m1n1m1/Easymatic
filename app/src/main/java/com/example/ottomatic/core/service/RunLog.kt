@@ -33,7 +33,16 @@ data class LogSource(
     val runId: Long,
     val nodeId: String? = null,
     val nodeName: String? = null,
-)
+) {
+    companion object {
+        /**
+         * The run id for a line that belongs to a workflow but to no run — arming a
+         * trigger, or failing to. `WorkflowExecutor.runIds` counts up from 1, so this
+         * can never collide with a real run.
+         */
+        const val NO_RUN = 0L
+    }
+}
 
 /**
  * One line in a workflow's console.

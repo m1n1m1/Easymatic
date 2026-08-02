@@ -31,7 +31,8 @@ data class NodeSuggestion(
  * True iff a DATA edge from [source] to [target] satisfies the structural
  * subtyping rule. The single definition of that rule: used by the editor at
  * drop time, by the node suggestions below and by
- * [com.example.ottomatic.engine.validation.GraphValidator] on save/run.
+ * [com.example.ottomatic.engine.validation.GraphValidator], which runs
+ * continuously in the editor and again on the snapshot each run walks.
  *
  * A missing port or missing schema is treated as [ItemSchema.Wildcard], which
  * accepts (and is accepted by) anything.

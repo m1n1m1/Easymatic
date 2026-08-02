@@ -10,6 +10,7 @@ import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.engine.service.MacroEngineService
+import com.example.ottomatic.engine.validation.GraphValidator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +19,14 @@ import kotlinx.coroutines.launch
 
 data class WorkflowListUiState(
     val workflows: List<WorkflowSummary> = emptyList(),
+    /**
+     * Error count per workflow id, for the ids that have any.
+     *
+     * A macro that cannot run should say so from here rather than only once the
+     * editor is open: an armed macro with a broken wire looks exactly like a
+     * working one from this screen, which is where the user goes to ask "is it on?".
+     */
+    val errors: Map<String, Int> = emptyMap(),
     val isLoading: Boolean = true,
 )
 
@@ -35,11 +44,24 @@ class WorkflowListViewModel(
         refresh()
     }
 
-    /** Reloads the persisted workflow summaries. Called on init and on resume. */
+    /**
+     * Reloads the persisted workflow summaries, and validates each graph.
+     *
+     * Validating means loading every workflow in full, which the summary list
+     * deliberately avoids — but a graph is small, the list is short, and this
+     * already runs off the main thread. Caching it would mean invalidating the
+     * cache on every edit made in another screen.
+     */
     fun refresh() {
         viewModelScope.launch {
             val list = repository.list()
-            _uiState.update { it.copy(workflows = list, isLoading = false) }
+            val errors = list.mapNotNull { summary ->
+                val workflow = repository.load(summary.id) ?: return@mapNotNull null
+                GraphValidator(workflow).validate().errors.size
+                    .takeIf { it > 0 }
+                    ?.let { summary.id to it }
+            }.toMap()
+            _uiState.update { it.copy(workflows = list, errors = errors, isLoading = false) }
         }
     }
 

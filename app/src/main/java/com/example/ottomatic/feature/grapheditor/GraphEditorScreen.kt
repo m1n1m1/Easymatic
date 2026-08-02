@@ -3,6 +3,7 @@ package com.example.ottomatic.feature.grapheditor
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.ConfigKey
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
@@ -18,20 +19,14 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FitScreen
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.Terminal
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,7 +34,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import kotlinx.coroutines.flow.StateFlow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -72,6 +66,7 @@ import kotlin.math.roundToInt
 fun GraphEditorScreen(
     viewModel: GraphEditorViewModel,
     geofencePlaces: GeofencePlacesViewModel,
+    onBack: () -> Unit,
     showBatteryPrompt: Boolean = false,
     onDismissBatteryPrompt: () -> Unit = {},
     onConfirmBatteryPrompt: () -> Unit = {},
@@ -82,6 +77,7 @@ fun GraphEditorScreen(
     CompositionLocalProvider(LocalGeofencePlaces provides geofencePlaces) {
         GraphEditorContent(
             viewModel = viewModel,
+            onBack = onBack,
             showBatteryPrompt = showBatteryPrompt,
             onDismissBatteryPrompt = onDismissBatteryPrompt,
             onConfirmBatteryPrompt = onConfirmBatteryPrompt,
@@ -92,6 +88,7 @@ fun GraphEditorScreen(
 @Composable
 private fun GraphEditorContent(
     viewModel: GraphEditorViewModel,
+    onBack: () -> Unit,
     showBatteryPrompt: Boolean,
     onDismissBatteryPrompt: () -> Unit,
     onConfirmBatteryPrompt: () -> Unit,
@@ -102,7 +99,16 @@ private fun GraphEditorContent(
     var showPalette by remember { mutableStateOf(false) }
     var showConfig by remember { mutableStateOf(false) }
     var showConsole by remember { mutableStateOf(false) }
+    var showProblems by remember { mutableStateOf(false) }
     var hasAutoFitted by remember { mutableStateOf(false) }
+    // Read here rather than inside the canvas: the cards and the wires both need
+    // it, and it changes only when the graph does — which is already a recompose.
+    val validation by viewModel.validation.collectAsState()
+
+    // Back leaves selection mode before it leaves the editor — what the
+    // contextual bar's ✕ does, from the system gesture. The overlays are each a
+    // Dialog with its own window, so they still consume back ahead of this.
+    BackHandler(enabled = state.selection.isNotEmpty) { viewModel.clearSelection() }
 
     // Center the workflow in the viewport once it is loaded and the canvas is measured.
     LaunchedEffect(state.isLoaded, canvasSize) {
@@ -120,18 +126,25 @@ private fun GraphEditorContent(
         EditorTopBar(
             title = state.workflow.name,
             nodeCount = state.workflow.nodes.size,
-            selectedCount = state.selection.size,
+            selectionLabel = state.selection.takeIf { it.isNotEmpty }?.let(::selectionLabel),
             canConfigure = state.selection.singleNodeId != null,
             isMacroEnabled = state.isMacroEnabled,
             problems = viewModel.consoleProblems,
+            validation = viewModel.validation,
+            onBack = onBack,
             onOpenConsole = { showConsole = true },
+            onOpenProblems = { showProblems = true },
             onToggleEnabled = { viewModel.setMacroEnabled(it) },
+            onRename = { viewModel.renameWorkflow(it) },
+            onDeleteWorkflow = { viewModel.deleteWorkflow(onDeleted = onBack) },
+            onClearSelection = { viewModel.clearSelection() },
             onConfigure = { showConfig = true },
-            onDelete = { viewModel.deleteSelection() },
+            onDeleteSelection = { viewModel.deleteSelection() },
         )
         Box(modifier = Modifier.fillMaxSize()) {
             GraphCanvas(
                 state = state,
+                validation = validation,
                 viewModel = viewModel,
                 modifier = Modifier
                     .fillMaxSize()
@@ -192,16 +205,14 @@ private fun GraphEditorContent(
         }
     }
 
-    if (showConsole) {
-        ConsoleOverlay(
-            entries = viewModel.console,
-            minLevel = viewModel.consoleMinLevel,
-            onMinLevelChange = { viewModel.setConsoleMinLevel(it) },
-            onClear = { viewModel.clearConsole() },
-            onSelectNode = { viewModel.selectNode(it) },
-            onDismiss = { showConsole = false },
-        )
-    }
+    DiagnosticsOverlays(
+        viewModel = viewModel,
+        workflow = state.workflow,
+        showConsole = showConsole,
+        showProblems = showProblems,
+        onCloseConsole = { showConsole = false },
+        onCloseProblems = { showProblems = false },
+    )
 
     if (showPalette) {
         NodePaletteOverlay(
@@ -280,90 +291,41 @@ private fun GraphEditorContent(
 
 private fun IntSize.centerPx(): Offset = Offset(width / 2f, height / 2f)
 
-
+/**
+ * The two surfaces that answer "why did this not work": what the graph *is*
+ * (Problems) and what a run *did* (Console).
+ *
+ * Grouped rather than left inline so [GraphEditorContent] stays a description of
+ * the editor rather than a list of every overlay it can put on top of it. Each
+ * still takes its own flow and collects it internally — see [ConsoleOverlay].
+ */
 @Composable
-@Suppress("LongParameterList") // Title, subtitle inputs, the console and the selection-conditional controls.
-private fun EditorTopBar(
-    title: String,
-    nodeCount: Int,
-    selectedCount: Int,
-    canConfigure: Boolean,
-    isMacroEnabled: Boolean,
-    problems: StateFlow<Int>,
-    onOpenConsole: () -> Unit,
-    onToggleEnabled: (Boolean) -> Unit,
-    onConfigure: () -> Unit,
-    onDelete: () -> Unit,
+private fun DiagnosticsOverlays(
+    viewModel: GraphEditorViewModel,
+    workflow: com.example.ottomatic.domain.model.Workflow,
+    showConsole: Boolean,
+    showProblems: Boolean,
+    onCloseConsole: () -> Unit,
+    onCloseProblems: () -> Unit,
 ) {
-    Surface(color = EditorColors.chrome) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .height(60.dp)
-                .padding(horizontal = 18.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column {
-                Text(
-                    text = title,
-                    color = EditorColors.textPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                // The selection count replaces the node count rather than sitting
-                // beside it: on a phone-width bar there is room for one subtitle,
-                // and while something is selected that is the more useful one. It
-                // is also the only visible signal that multi-select is on.
-                Text(
-                    text = when {
-                        selectedCount == 1 -> "1 selected"
-                        selectedCount > 1 -> "$selectedCount selected"
-                        nodeCount == 1 -> "1 node"
-                        else -> "$nodeCount nodes"
-                    },
-                    color = if (selectedCount > 0) EditorColors.nodeSelectedBorder else EditorColors.textSecondary,
-                    fontSize = 11.sp,
-                )
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            // First of the trailing controls, because the two below it come and
-            // go with the selection — anything placed after them would slide
-            // sideways every time a node is tapped, which is no way to treat a
-            // button reached for repeatedly while debugging.
-            ConsoleAction(problems, onOpenConsole)
-            androidx.compose.material3.Switch(
-                checked = isMacroEnabled,
-                onCheckedChange = onToggleEnabled,
-            )
-            Text(
-                text = "Enabled",
-                color = EditorColors.textSecondary,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(start = 6.dp, end = 8.dp),
-            )
-            // Configure edits one node's fields, so it is gated on a lone node
-            // rather than on "anything selected" — which used to show the button
-            // for an edge and then silently refuse to open the sheet.
-            if (canConfigure) {
-                IconButton(onClick = onConfigure) {
-                    Icon(
-                        imageVector = Icons.Filled.Settings,
-                        contentDescription = "Configure node",
-                        tint = EditorColors.textPrimary,
-                    )
-                }
-            }
-            if (selectedCount > 0) {
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        imageVector = Icons.Filled.Delete,
-                        contentDescription = "Delete selection",
-                        tint = EditorColors.nodeSelectedBorder,
-                    )
-                }
-            }
-        }
+    if (showConsole) {
+        ConsoleOverlay(
+            entries = viewModel.console,
+            minLevel = viewModel.consoleMinLevel,
+            onMinLevelChange = { viewModel.setConsoleMinLevel(it) },
+            onClear = { viewModel.clearConsole() },
+            onSelectNode = { viewModel.selectNode(it) },
+            onDismiss = onCloseConsole,
+        )
+    }
+    if (showProblems) {
+        ProblemsOverlay(
+            validation = viewModel.validation,
+            workflow = workflow,
+            onSelectNode = { viewModel.selectNode(it) },
+            onSelectConnection = { viewModel.selectConnection(it) },
+            onDismiss = onCloseProblems,
+        )
     }
 }
 

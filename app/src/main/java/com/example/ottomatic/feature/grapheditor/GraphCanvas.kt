@@ -33,6 +33,7 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.effectiveInputPorts
 import com.example.ottomatic.domain.registry.effectiveOutputPorts
+import com.example.ottomatic.engine.validation.GraphValidation
 
 private const val GRID_SPACING = 26f
 private const val MIN_GRID_SPACING_PX = 16f
@@ -53,9 +54,16 @@ private const val DASH_OFF = 7f
 private const val SNAP_HIGHLIGHT_RADIUS = 14f
 private const val SNAP_HIGHLIGHT_ALPHA = 0.3f
 
+/**
+ * [validation] arrives as a value rather than a flow, unlike the console's:
+ * it changes only when the graph does, and the canvas is already recomposing for
+ * that. Collecting it here instead would just add a second subscription to the
+ * same edits.
+ */
 @Composable
 fun GraphCanvas(
     state: GraphEditorUiState,
+    validation: GraphValidation,
     viewModel: GraphEditorViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -72,14 +80,18 @@ fun GraphCanvas(
                 )
             },
     ) {
-        BackgroundLayer(state, viewModel)
-        NodeLayer(state, viewModel)
+        BackgroundLayer(state, validation, viewModel)
+        NodeLayer(state, validation, viewModel)
         MarqueeLayer(state)
     }
 }
 
 @Composable
-private fun BackgroundLayer(state: GraphEditorUiState, viewModel: GraphEditorViewModel) {
+private fun BackgroundLayer(
+    state: GraphEditorUiState,
+    validation: GraphValidation,
+    viewModel: GraphEditorViewModel,
+) {
     val transform = state.transform
     Canvas(
         modifier = Modifier
@@ -114,14 +126,18 @@ private fun BackgroundLayer(state: GraphEditorUiState, viewModel: GraphEditorVie
             translate(transform.offset.x, transform.offset.y)
             scale(densityScale, densityScale, pivot = Offset.Zero)
         }) {
-            drawConnections(state)
+            drawConnections(state, validation.blockedConnections)
             drawPendingConnection(state)
         }
     }
 }
 
 @Composable
-private fun NodeLayer(state: GraphEditorUiState, viewModel: GraphEditorViewModel) {
+private fun NodeLayer(
+    state: GraphEditorUiState,
+    validation: GraphValidation,
+    viewModel: GraphEditorViewModel,
+) {
     val transform = state.transform
     Box(
         modifier = Modifier
@@ -149,6 +165,7 @@ private fun NodeLayer(state: GraphEditorUiState, viewModel: GraphEditorViewModel
                         captured != null && node.id in captured -> NodeHighlight.CANDIDATE
                         else -> NodeHighlight.NONE
                     },
+                    problem = validation.severityFor(node.id),
                     hoverPort = state.pendingConnection?.hoverPort,
                     revealedLabel = state.revealedLabel,
                     pendingFrom = state.pendingConnection?.from,
@@ -202,7 +219,12 @@ private fun DrawScope.drawGrid(transform: CanvasTransform) {
     )
 }
 
-private fun DrawScope.drawConnections(state: GraphEditorUiState) {
+/**
+ * [blocked] is the set of edges the executor will refuse to follow. They keep the
+ * dash pattern that says which channel they belong to — that is load-bearing — and
+ * change only colour, so a blocked data wire still reads as a data wire.
+ */
+private fun DrawScope.drawConnections(state: GraphEditorUiState, blocked: Set<String>) {
     val workflow = state.workflow
     val selection = state.selection
     workflow.execConnections.forEach { connection ->
@@ -211,10 +233,12 @@ private fun DrawScope.drawConnections(state: GraphEditorUiState) {
         val start = portPositionOf(workflow, from) ?: return@forEach
         val end = portPositionOf(workflow, to) ?: return@forEach
         val isSelected = connection.id in selection
-        val color = if (isSelected) EditorColors.execEdgeSelected else EditorColors.execEdge
-        val width = if (isSelected) EDGE_SELECTED_WIDTH else EDGE_WIDTH
-        drawEdge(start, end, color, width, dashed = false)
-        drawArrow(start, end, color)
+        val color = when {
+            isSelected -> EditorColors.execEdgeSelected
+            connection.id in blocked -> EditorColors.errorAccent
+            else -> EditorColors.execEdge
+        }
+        drawWire(start, end, color, isSelected, dashed = false)
     }
     workflow.dataConnections.forEach { connection ->
         val from = dataRef(connection.fromNodeId, connection.fromPort, isOutput = true)
@@ -222,12 +246,19 @@ private fun DrawScope.drawConnections(state: GraphEditorUiState) {
         val start = portPositionOf(workflow, from) ?: return@forEach
         val end = portPositionOf(workflow, to) ?: return@forEach
         val isSelected = connection.id in selection
-        val typeColor = portTypeColor(resolvePort(workflow, from)?.schema)
-        val color = if (isSelected) EditorColors.dataEdgeSelected else typeColor
-        val width = if (isSelected) EDGE_SELECTED_WIDTH else EDGE_WIDTH
-        drawEdge(start, end, color, width, dashed = true)
-        drawArrow(start, end, color)
+        val color = when {
+            isSelected -> EditorColors.dataEdgeSelected
+            connection.id in blocked -> EditorColors.errorAccent
+            else -> portTypeColor(resolvePort(workflow, from)?.schema)
+        }
+        drawWire(start, end, color, isSelected, dashed = true)
     }
+}
+
+private fun DrawScope.drawWire(start: Offset, end: Offset, color: Color, isSelected: Boolean, dashed: Boolean) {
+    val width = if (isSelected) EDGE_SELECTED_WIDTH else EDGE_WIDTH
+    drawEdge(start, end, color, width, dashed)
+    drawArrow(start, end, color)
 }
 
 private fun edgeHitTest(workflow: Workflow, graphPos: Offset): String? {

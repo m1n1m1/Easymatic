@@ -9,6 +9,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +19,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,6 +52,7 @@ import com.example.ottomatic.engine.trigger.GeofenceTrigger
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
 import com.example.ottomatic.domain.registry.effectiveInputPorts
 import com.example.ottomatic.domain.registry.effectiveOutputPorts
+import com.example.ottomatic.engine.validation.Severity
 import kotlin.math.roundToInt
 
 private val NodeShape = RoundedCornerShape(14.dp)
@@ -80,6 +84,17 @@ fun NodeCard(
     definition: NodeTypeDefinition,
     workflow: Workflow,
     highlight: NodeHighlight,
+    /**
+     * The worst thing [com.example.ottomatic.engine.validation.GraphValidator] says
+     * about this node, or null when it says nothing.
+     *
+     * A parameter rather than more [NodeHighlight] cases, because validity is
+     * orthogonal to selection: a node can be selected *and* broken, and the card
+     * has to show both. Folding them into one enum would force a precedence and
+     * throw the loser away. A [Severity] is an enum, so the card stays skippable —
+     * the whole `GraphValidation` never reaches this leaf.
+     */
+    problem: Severity?,
     hoverPort: PortRef?,
     revealedLabel: PortRef?,
     pendingFrom: PortRef?,
@@ -115,6 +130,7 @@ fun NodeCard(
             node = node,
             definition = definition,
             highlight = highlight,
+            problem = problem,
             gestures = gestures,
         )
         PortLabel(node.id, layoutInputPorts, outputPorts, width, density, labelToShow)
@@ -140,18 +156,23 @@ private fun NodeBody(
     node: WorkflowNode,
     definition: NodeTypeDefinition,
     highlight: NodeHighlight,
+    problem: Severity?,
     gestures: NodeGestureHandlers,
 ) {
     val accent = accentColor(definition.kind)
     // A marquee candidate wears the selected border at half strength: enough to
     // read as "this one is coming with you", not enough to be mistaken for a
     // selection that has already happened.
+    //
+    // A problem tints the border only while the node is *not* selected: selection
+    // is a thing the user is doing right now and has to stay legible, and the badge
+    // keeps saying "broken" underneath it either way.
     val borderColor = when (highlight) {
         NodeHighlight.SELECTED -> EditorColors.nodeSelectedBorder
         NodeHighlight.CANDIDATE -> EditorColors.nodeSelectedBorder.copy(alpha = CANDIDATE_BORDER_ALPHA)
-        NodeHighlight.NONE -> EditorColors.nodeBorder
+        NodeHighlight.NONE -> problemColor(problem) ?: EditorColors.nodeBorder
     }
-    val borderWidth = if (highlight == NodeHighlight.NONE) 1.dp else 2.dp
+    val borderWidth = if (highlight == NodeHighlight.NONE && problem == null) 1.dp else 2.dp
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -203,7 +224,35 @@ private fun NodeBody(
                 )
             }
         }
+        ProblemBadge(problem, Modifier.align(Alignment.TopEnd))
     }
+}
+
+/**
+ * The mark on a card that something is wrong with it.
+ *
+ * Inside the card's bounds rather than offset over its corner: a chip that
+ * overflows has to out-`zIndex` its neighbours to stay visible, and the card
+ * already spends that budget on [PortLabel]. Two signals, not one — the badge is
+ * unreadable when the canvas is zoomed out, and the border tint is what survives.
+ */
+@Composable
+private fun BoxScope.ProblemBadge(problem: Severity?, modifier: Modifier = Modifier) {
+    val color = problemColor(problem) ?: return
+    Icon(
+        imageVector = if (problem == Severity.ERROR) Icons.Filled.ErrorOutline else Icons.Filled.WarningAmber,
+        contentDescription = if (problem == Severity.ERROR) "Has an error" else "Has a warning",
+        tint = color,
+        modifier = modifier
+            .padding(top = 6.dp, end = 6.dp)
+            .size(14.dp),
+    )
+}
+
+private fun problemColor(problem: Severity?): Color? = when (problem) {
+    Severity.ERROR -> EditorColors.errorAccent
+    Severity.WARNING -> EditorColors.warnAccent
+    null -> null
 }
 
 /**

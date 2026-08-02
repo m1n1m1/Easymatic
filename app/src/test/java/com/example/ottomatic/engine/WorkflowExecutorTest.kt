@@ -184,8 +184,17 @@ class WorkflowExecutorTest {
         assertEquals("no", services.notifications.first().second)
     }
 
+    /**
+     * A cycle costs the wire that closes it, and nothing else.
+     *
+     * This used to assert that the run did nothing at all, which is what the old
+     * all-or-nothing gate did: one bad edge anywhere refused the whole graph. The
+     * point of quarantining is that the work between the trigger and the bad wire
+     * is perfectly good, and there is no reading of the user's intent under which
+     * they would rather none of it happened.
+     */
     @Test
-    fun `invalid workflow logs and runs nothing`() = runBlocking {
+    fun `a cycle's closing edge is quarantined and the rest still runs`() = runBlocking {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
         val context = DefaultExecutionContext(services) { logs += it.message }
@@ -193,7 +202,10 @@ class WorkflowExecutorTest {
         val workflow = Workflow(
             nodes = listOf(
                 WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
-                WorkflowNode(NodeId("n2"), NodeTypeId("action.notify"), "Notify", 0f, 100f),
+                WorkflowNode(
+                    NodeId("n2"), NodeTypeId("action.notify"), "Notify", 0f, 100f,
+                    config = mapOf(ConfigKey("text") to "once"),
+                ),
             ),
             execConnections = listOf(
                 // cycle: n1 -> n2 -> n1
@@ -202,8 +214,183 @@ class WorkflowExecutorTest {
             ),
         )
         executor.executeFrom(workflow, workflow.node(NodeId("n1"))!!, TriggerOutput(emptyMap()))
-        assertTrue(services.notifications.isEmpty())
-        assertTrue(logs.any { it.contains("Workflow invalid") })
+        assertEquals(1, services.notifications.size)
+        assertTrue(logs.toString(), logs.any { it.contains("problem(s) in this workflow") })
+    }
+
+    /**
+     * The path guard, on the one graph that gets past the validator's report.
+     *
+     * Cycle enumeration is capped, so a graph with more loops than the cap has a
+     * loop nobody blocked — and before the guard, that recursed until the stack
+     * gave out. Ten two-node loops off one trigger is the cheapest way to build
+     * one; the assertion is simply that the run *returns*.
+     */
+    @Test
+    fun `a cycle past the reporting cap stops instead of recursing`() = runBlocking {
+        val services = RecordingSystemServices()
+        val context = DefaultExecutionContext(services) {}
+        val executor = WorkflowExecutor(context)
+        val loops = 10
+        val nodes = mutableListOf(
+            WorkflowNode(NodeId("t"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+        )
+        val edges = mutableListOf<ExecConnection>()
+        repeat(loops) { i ->
+            val a = NodeId("a$i")
+            val b = NodeId("b$i")
+            nodes += WorkflowNode(a, NodeTypeId("action.notify"), "A$i", 0f, 0f, mapOf(ConfigKey("text") to "a$i"))
+            nodes += WorkflowNode(b, NodeTypeId("action.notify"), "B$i", 0f, 0f, mapOf(ConfigKey("text") to "b$i"))
+            edges += ExecConnection("t$i", NodeId("t"), PortName("out"), a, PortName("in"))
+            edges += ExecConnection("f$i", a, PortName("out"), b, PortName("in"))
+            edges += ExecConnection("r$i", b, PortName("out"), a, PortName("in"))
+        }
+        val workflow = Workflow(nodes = nodes, execConnections = edges)
+
+        executor.executeFrom(workflow, workflow.node(NodeId("t"))!!, TriggerOutput(emptyMap()))
+
+        // Every node ran, and each of them exactly once.
+        assertEquals(loops * 2, services.notifications.size)
+        assertEquals(loops * 2, services.notifications.map { it.second }.distinct().size)
+    }
+
+    /**
+     * The regression the path guard is most likely to cause, and the reason it is
+     * scoped to the path rather than to the run: a diamond re-converges, and the
+     * join node is *supposed* to run once per incoming pulse.
+     */
+    @Test
+    fun `a diamond runs its join node twice`() = runBlocking {
+        val services = RecordingSystemServices()
+        val context = DefaultExecutionContext(services) {}
+        val executor = WorkflowExecutor(context)
+        val workflow = Workflow(
+            nodes = listOf(
+                WorkflowNode(NodeId("t"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(
+                    NodeId("a"), NodeTypeId("action.notify"), "A", 0f, 100f,
+                    config = mapOf(ConfigKey("text") to "a"),
+                ),
+                WorkflowNode(
+                    NodeId("b"), NodeTypeId("action.notify"), "B", 200f, 100f,
+                    config = mapOf(ConfigKey("text") to "b"),
+                ),
+                WorkflowNode(
+                    NodeId("j"), NodeTypeId("action.notify"), "Join", 100f, 200f,
+                    config = mapOf(ConfigKey("text") to "join"),
+                ),
+            ),
+            execConnections = listOf(
+                ExecConnection("c1", NodeId("t"), PortName("out"), NodeId("a"), PortName("in")),
+                ExecConnection("c2", NodeId("t"), PortName("out"), NodeId("b"), PortName("in")),
+                ExecConnection("c3", NodeId("a"), PortName("out"), NodeId("j"), PortName("in")),
+                ExecConnection("c4", NodeId("b"), PortName("out"), NodeId("j"), PortName("in")),
+            ),
+        )
+        executor.executeFrom(workflow, workflow.node(NodeId("t"))!!, TriggerOutput(emptyMap()))
+        assertEquals(2, services.notifications.count { it.second == "join" })
+    }
+
+    /**
+     * The complaint this whole change answers: two triggers in one file are two
+     * independent macros that happen to share a canvas.
+     */
+    @Test
+    fun `a problem under one trigger does not stop a branch under another`() = runBlocking {
+        val services = RecordingSystemServices()
+        val context = DefaultExecutionContext(services) {}
+        val executor = WorkflowExecutor(context)
+        val workflow = Workflow(
+            nodes = listOf(
+                WorkflowNode(NodeId("bad"), NodeTypeId("trigger.manual"), "Bad", 0f, 0f),
+                WorkflowNode(NodeId("loop"), NodeTypeId("action.notify"), "Loop", 0f, 100f),
+                WorkflowNode(NodeId("good"), NodeTypeId("trigger.manual"), "Good", 400f, 0f),
+                WorkflowNode(
+                    NodeId("fine"), NodeTypeId("action.notify"), "Fine", 400f, 100f,
+                    config = mapOf(ConfigKey("text") to "fine"),
+                ),
+            ),
+            execConnections = listOf(
+                ExecConnection("c1", NodeId("bad"), PortName("out"), NodeId("loop"), PortName("in")),
+                ExecConnection("c2", NodeId("loop"), PortName("out"), NodeId("bad"), PortName("in")),
+                ExecConnection("c3", NodeId("good"), PortName("out"), NodeId("fine"), PortName("in")),
+            ),
+        )
+        executor.executeFrom(workflow, workflow.node(NodeId("good"))!!, TriggerOutput(emptyMap()))
+        assertEquals(listOf("fine"), services.notifications.map { it.second })
+    }
+
+    /**
+     * A wire that cannot carry what it claims to holds back the node reading it —
+     * and only that node's branch. The alternative, letting the edge contribute
+     * nothing, would have Notify quietly send the placeholder from its form.
+     */
+    @Test
+    fun `a broken data wire blocks its consumer and leaves the sibling branch alone`() = runBlocking {
+        val services = RecordingSystemServices()
+        val context = DefaultExecutionContext(services) {}
+        val executor = WorkflowExecutor(context)
+        val workflow = Workflow(
+            nodes = listOf(
+                WorkflowNode(NodeId("t"), NodeTypeId("trigger.sms"), "SMS", 0f, 0f),
+                WorkflowNode(
+                    NodeId("broken"), NodeTypeId("action.notify"), "Broken", 0f, 100f,
+                    config = mapOf(ConfigKey("text") to "placeholder"),
+                ),
+                WorkflowNode(
+                    NodeId("ok"), NodeTypeId("action.notify"), "Ok", 200f, 100f,
+                    config = mapOf(ConfigKey("text") to "ok"),
+                ),
+            ),
+            execConnections = listOf(
+                ExecConnection("c1", NodeId("t"), PortName("out"), NodeId("broken"), PortName("in")),
+                ExecConnection("c2", NodeId("t"), PortName("out"), NodeId("ok"), PortName("in")),
+            ),
+            dataConnections = listOf(
+                // The whole SmsMessage struct into a Text input: no conversion exists.
+                DataConnection("d1", NodeId("t"), PortName("sms"), NodeId("broken"), PortName("text")),
+            ),
+        )
+        val sms = com.example.ottomatic.domain.model.items.SmsMessage("+1555", "hi", DateTime(1))
+        executor.executeFrom(
+            workflow,
+            workflow.node(NodeId("t"))!!,
+            TriggerOutput(mapOf(PortName("sms") to Item.of(sms))),
+        )
+        assertEquals(listOf("ok"), services.notifications.map { it.second })
+    }
+
+    /**
+     * A node the registry does not know is now a reported problem rather than a
+     * `?: continue`, and it costs the rest of the graph nothing.
+     *
+     * The message itself is `GraphValidationTest`'s business — what a run says is
+     * the *count*, once, so a macro firing every minute does not rewrite the whole
+     * inventory into a 500-line buffer.
+     */
+    @Test
+    fun `an unrelated broken node is announced without stopping the run`() = runBlocking {
+        val services = RecordingSystemServices()
+        val logs = mutableListOf<String>()
+        val context = DefaultExecutionContext(services) { logs += it.message }
+        val executor = WorkflowExecutor(context)
+        val workflow = Workflow(
+            nodes = listOf(
+                WorkflowNode(NodeId("t"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(
+                    NodeId("n"), NodeTypeId("action.notify"), "Notify", 0f, 100f,
+                    config = mapOf(ConfigKey("text") to "x"),
+                ),
+                WorkflowNode(NodeId("gone"), NodeTypeId("action.nope"), "Gone", 200f, 0f),
+            ),
+            execConnections = listOf(
+                ExecConnection("c1", NodeId("t"), PortName("out"), NodeId("n"), PortName("in")),
+            ),
+        )
+        // The unknown-type node is blocked; the trigger is not, so the run proceeds.
+        executor.executeFrom(workflow, workflow.node(NodeId("t"))!!, TriggerOutput(emptyMap()))
+        assertEquals(1, services.notifications.size)
+        assertTrue(logs.toString(), logs.any { it.contains("1 problem(s) in this workflow") })
     }
 
     @Test

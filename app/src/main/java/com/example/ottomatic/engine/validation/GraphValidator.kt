@@ -5,6 +5,7 @@ import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.NodeKind
+import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.schema.ItemSchema
@@ -15,13 +16,29 @@ import com.example.ottomatic.domain.registry.isDataAssignable
 /**
  * One finding produced by validating a [Workflow] graph.
  *
- * [ERROR]-severity issues block execution; [WARNING]s are reported but do not.
- * [location] is a human-readable hint (e.g. a connection id or "nodeId/port").
+ * A finding says two separate things, and both are needed:
+ *
+ *  - **where it is** — [nodes] are the cards to badge and [connectionId] the edge
+ *    to colour, so the editor can point at the problem instead of describing it;
+ *  - **what it costs** — [blockedNodes] and [blockedConnections] are what must not
+ *    run because of it. An [Severity.ERROR] blocks the smallest thing that is
+ *    actually broken; a [Severity.WARNING] blocks nothing at all, by construction.
+ *
+ * The quarantine is decided here rather than in [GraphValidation] because working
+ * it out needs the graph — resolving a broken data edge to the actions that
+ * eventually read it means walking the transform chain — and by the time the
+ * findings are aggregated the [Workflow] is gone.
+ *
+ * [nodes] iteration order is meaningful: it is the order the problems list renders
+ * (a cycle reads as its path), and the first entry is what tapping the row selects.
  */
 data class ValidationIssue(
     val severity: Severity,
     val message: String,
-    val location: String? = null,
+    val nodes: Set<NodeId> = emptySet(),
+    val connectionId: String? = null,
+    val blockedNodes: Set<NodeId> = emptySet(),
+    val blockedConnections: Set<String> = emptySet(),
 )
 
 enum class Severity { ERROR, WARNING }
@@ -32,61 +49,160 @@ enum class Severity { ERROR, WARNING }
  * sets, structural schema subtyping on data edges, and the strict data
  * semantics rule (a data edge's source must be exec-upstream of its target).
  *
- * Run on save in the editor and before [com.example.ottomatic.engine.WorkflowExecutor] runs.
+ * Run continuously by the editor — which is where the result is *shown* — and
+ * again by [com.example.ottomatic.engine.WorkflowExecutor] against the snapshot it
+ * is about to run, which is where the result is *enforced*. Neither trusts the
+ * other: the editor's graph is unsaved, and the executor's may have been armed
+ * before the editor existed, or hand-edited on disk.
+ *
+ * It never rejects a whole workflow. Every finding names what it blocks, and the
+ * executor skips exactly that, so one broken wire costs one branch rather than
+ * every branch under every trigger.
  */
 @Suppress("TooManyFunctions")
 class GraphValidator(private val workflow: Workflow) {
 
-    fun validate(): List<ValidationIssue> {
+    fun validate(): GraphValidation {
         val issues = mutableListOf<ValidationIssue>()
+        validateNodeTypes(issues)
         validateExecConnections(issues)
         validateDataConnections(issues)
         validateExecAcyclicity(issues)
         validateDataAcyclicity(issues)
         validateStrictDataSemantics(issues)
         validateValueNodesAreUsed(issues)
-        return issues
+        validateTriggers(issues)
+        return GraphValidation(issues)
     }
 
-    /** True iff there are no [Severity.ERROR] issues. */
-    fun isValid(): Boolean = validate().none { it.severity == Severity.ERROR }
+    /**
+     * A node whose type is not in the registry. The executor's `ActionRegistry.byId(…)
+     * ?: continue` skips it in total silence, so a workflow saved by a newer build —
+     * or one naming a node type since removed — presents as "my macro does nothing"
+     * with no diagnostic anywhere. Naming it is most of the value of validating at all.
+     */
+    private fun validateNodeTypes(out: MutableList<ValidationIssue>) {
+        for (node in workflow.nodes) {
+            if (NodeTypeRegistry.byId(node.typeId) != null) continue
+            out += ValidationIssue(
+                Severity.ERROR,
+                "'${node.name}' is an unknown node type (${node.typeId.value}) and cannot run",
+                nodes = setOf(node.id),
+                blockedNodes = setOf(node.id),
+            )
+        }
+    }
 
+    /**
+     * A trigger is what starts a run, so a graph with none can only ever be run from
+     * the editor's Run button — and one wired to nothing fires into the void. Both
+     * are warnings: the graph is well-formed, it just cannot do anything yet, which
+     * is the ordinary state of a workflow halfway through being built.
+     */
+    private fun validateTriggers(out: MutableList<ValidationIssue>) {
+        if (workflow.nodes.isEmpty()) return
+        val triggers = workflow.nodes.filter { NodeTypeRegistry.byId(it.typeId)?.kind == NodeKind.TRIGGER }
+        if (triggers.isEmpty()) {
+            out += ValidationIssue(
+                Severity.WARNING,
+                "This workflow has no trigger, so nothing will ever start it",
+            )
+            return
+        }
+        for (trigger in triggers) {
+            if (workflow.outgoingExec(trigger.id).isNotEmpty()) continue
+            out += ValidationIssue(
+                Severity.WARNING,
+                "'${trigger.name}' is not wired to anything, so it will fire and do nothing",
+                nodes = setOf(trigger.id),
+            )
+        }
+    }
+
+    /**
+     * A broken exec edge blocks the edge and nothing else: the target may still be
+     * perfectly reachable down another wire, and refusing to run it because *one*
+     * of its inbound edges is malformed would quarantine work that is fine.
+     */
     private fun validateExecConnections(out: MutableList<ValidationIssue>) {
         for (conn in workflow.execConnections) {
-            val (from, to) = resolveExec(conn) ?: run {
-                out += ValidationIssue(Severity.ERROR, "Unknown node in exec connection", conn.id)
+            val ends = conn.endpoints()
+            if (ends == null) {
+                out += ValidationIssue(
+                    Severity.ERROR,
+                    "An execution wire points at a node that is not here any more",
+                    nodes = setOf(conn.fromNodeId, conn.toNodeId),
+                    connectionId = conn.id,
+                    blockedConnections = setOf(conn.id),
+                )
                 continue
             }
+            val (from, to) = ends
             if (from == null) {
                 out += ValidationIssue(
                     Severity.ERROR,
                     "Unknown exec output port '${conn.fromPort}' on ${conn.fromNodeId}",
-                    conn.id,
+                    nodes = setOf(conn.fromNodeId, conn.toNodeId),
+                    connectionId = conn.id,
+                    blockedConnections = setOf(conn.id),
                 )
             }
             if (to == null) {
                 out += ValidationIssue(
                     Severity.ERROR,
                     "Unknown exec input port '${conn.toPort}' on ${conn.toNodeId}",
-                    conn.id,
+                    nodes = setOf(conn.fromNodeId, conn.toNodeId),
+                    connectionId = conn.id,
+                    blockedConnections = setOf(conn.id),
                 )
             }
         }
     }
 
+    /**
+     * A broken *data* edge blocks the node that reads it, not just the edge.
+     *
+     * The alternative — drop the edge and let the consumer fall back to the form
+     * value of the same property, which is what an unwired input already does —
+     * would have a notification quietly send its placeholder text in place of the
+     * value the user can see wired into it on the canvas. A structural error is not
+     * the same as a runtime one: `transform.json_read` and `action.script` land a
+     * *failed read* on a fallback the user configured for exactly that, but nobody
+     * configures a fallback for a wire that cannot carry what it claims to.
+     *
+     * [executedConsumers] is what makes this land on the right node when the
+     * consumer is itself pulled: the far end of a transform chain is what actually
+     * runs, so that is what gets held back.
+     */
     @Suppress("CyclomaticComplexMethod", "LoopWithTooManyJumpStatements")
     private fun validateDataConnections(out: MutableList<ValidationIssue>) {
         for (conn in workflow.dataConnections) {
             val fromNode = workflow.node(conn.fromNodeId)
             val toNode = workflow.node(conn.toNodeId)
             if (fromNode == null || toNode == null) {
-                out += ValidationIssue(Severity.ERROR, "Unknown node in data connection", conn.id)
+                out += ValidationIssue(
+                    Severity.ERROR,
+                    "A data wire points at a node that is not here any more",
+                    nodes = setOf(conn.fromNodeId, conn.toNodeId),
+                    connectionId = conn.id,
+                    blockedNodes = executedConsumers(conn.toNodeId),
+                    blockedConnections = setOf(conn.id),
+                )
                 continue
             }
             val fromDef = NodeTypeRegistry.byId(fromNode.typeId)
             val toDef = NodeTypeRegistry.byId(toNode.typeId)
             if (fromDef == null || toDef == null) {
-                out += ValidationIssue(Severity.ERROR, "Unknown node type in data connection", conn.id)
+                // The unknown type itself is already reported by validateNodeTypes;
+                // this only stops the edge being read through a definition we lack.
+                out += ValidationIssue(
+                    Severity.ERROR,
+                    "A data wire runs through an unknown node type",
+                    nodes = setOf(conn.fromNodeId, conn.toNodeId),
+                    connectionId = conn.id,
+                    blockedNodes = executedConsumers(conn.toNodeId),
+                    blockedConnections = setOf(conn.id),
+                )
                 continue
             }
             // Always resolve via effectivePort: dynamic-port nodes
@@ -97,33 +213,39 @@ class GraphValidator(private val workflow: Workflow) {
                 ?: toDef.port(conn.toPort)
             val fromBad = fromPort == null || fromPort.kind != PortKind.DATA || fromPort.direction != Direction.OUT
             if (fromBad) {
-                out += ValidationIssue(
-                    Severity.ERROR,
+                out += dataEdgeError(
+                    conn,
                     "'${conn.fromPort}' is not a data output port on ${conn.fromNodeId}",
-                    conn.id,
                 )
                 continue
             }
             val toBad = toPort == null || toPort.kind != PortKind.DATA || toPort.direction != Direction.IN
             if (toBad) {
-                out += ValidationIssue(
-                    Severity.ERROR,
+                out += dataEdgeError(
+                    conn,
                     "'${conn.toPort}' is not a data input port on ${conn.toNodeId}",
-                    conn.id,
                 )
                 continue
             }
             if (!isDataAssignable(fromPort, toPort)) {
                 val sourceSchema = fromPort.schema ?: ItemSchema.Wildcard
                 val targetSchema = toPort.schema ?: ItemSchema.Wildcard
-                out += ValidationIssue(
-                    Severity.ERROR,
+                out += dataEdgeError(
+                    conn,
                     "Schema mismatch on data edge: source $sourceSchema not assignable to target $targetSchema",
-                    conn.id,
                 )
             }
         }
     }
+
+    private fun dataEdgeError(conn: DataConnection, message: String) = ValidationIssue(
+        Severity.ERROR,
+        message,
+        nodes = setOf(conn.fromNodeId, conn.toNodeId),
+        connectionId = conn.id,
+        blockedNodes = executedConsumers(conn.toNodeId),
+        blockedConnections = setOf(conn.id),
+    )
 
     /**
      * True when [nodeId] is a placed pull-side node — a value or a transform. Both
@@ -152,30 +274,51 @@ class GraphValidator(private val workflow: Workflow) {
                 out += ValidationIssue(
                     Severity.WARNING,
                     "'${node.name}' is not connected to anything and will never be read",
-                    node.id.value,
+                    nodes = setOf(node.id),
                 )
             }
             if (kind == NodeKind.TRANSFORM && node.id !in fed) {
                 out += ValidationIssue(
                     Severity.WARNING,
                     "'${node.name}' has nothing wired into it and will only use its own settings",
-                    node.id.value,
+                    nodes = setOf(node.id),
                 )
             }
         }
     }
 
+    /**
+     * A cycle is quarantined by blocking the one edge that closes it, which leaves
+     * every node on the loop reachable and runnable exactly once. Blocking the nodes
+     * instead would delete a whole chain of working steps over one wire too many.
+     *
+     * This report is for **attribution** — what to colour, and what to say. It is not
+     * what makes running a cyclic graph *safe*: the executor carries its own
+     * path-scoped guard for that, because a workflow can reach it hand-edited, or
+     * having been armed before this rule existed.
+     */
     private fun validateExecAcyclicity(out: MutableList<ValidationIssue>) {
-        val cycle = findCycle(workflow.execConnections) { it.fromNodeId to it.toNodeId }
-        if (cycle != null) {
-            out += ValidationIssue(Severity.ERROR, "Execution cycle detected: ${cycle.joinToString(" -> ")}")
+        for (cycle in findCycles(workflow.execConnections) { it.fromNodeId to it.toNodeId }) {
+            out += ValidationIssue(
+                Severity.ERROR,
+                "Execution cycle detected: ${cycle.path(::nameOf)}",
+                nodes = cycle.nodes.toSet(),
+                connectionId = cycle.closing.id,
+                blockedConnections = setOf(cycle.closing.id),
+            )
         }
     }
 
     private fun validateDataAcyclicity(out: MutableList<ValidationIssue>) {
-        val cycle = findCycle(workflow.dataConnections) { it.fromNodeId to it.toNodeId }
-        if (cycle != null) {
-            out += ValidationIssue(Severity.ERROR, "Data cycle detected: ${cycle.joinToString(" -> ")}")
+        for (cycle in findCycles(workflow.dataConnections) { it.fromNodeId to it.toNodeId }) {
+            out += ValidationIssue(
+                Severity.ERROR,
+                "Data cycle detected: ${cycle.path(::nameOf)}",
+                nodes = cycle.nodes.toSet(),
+                connectionId = cycle.closing.id,
+                blockedNodes = executedConsumers(cycle.closing.toNodeId),
+                blockedConnections = setOf(cycle.closing.id),
+            )
         }
     }
 
@@ -205,9 +348,12 @@ class GraphValidator(private val workflow: Workflow) {
             for (consumer in unreached) {
                 out += ValidationIssue(
                     Severity.ERROR,
-                    "Data source ${conn.fromNodeId} is not exec-upstream of $consumer" +
-                        ": the source will not have run when the target executes",
-                    conn.id,
+                    "'${nameOf(conn.fromNodeId)}' will not have run when '${nameOf(consumer)}' executes",
+                    nodes = setOf(conn.fromNodeId, consumer),
+                    connectionId = conn.id,
+                    // Only the consumer: the source itself is fine, it just runs too late.
+                    blockedNodes = setOf(consumer),
+                    blockedConnections = setOf(conn.id),
                 )
             }
         }
@@ -260,53 +406,109 @@ class GraphValidator(private val workflow: Workflow) {
         return false
     }
 
-    private fun resolveExec(conn: ExecConnection): Pair<Any?, Any?> {
-        val fromNode = workflow.node(conn.fromNodeId)
-        val toNode = workflow.node(conn.toNodeId)
-        val fromDef = fromNode?.let { NodeTypeRegistry.byId(it.typeId) }
-        val toDef = toNode?.let { NodeTypeRegistry.byId(it.typeId) }
-        val fromPort = fromDef?.port(conn.fromPort)
+    /** A node's display name, falling back to its id when it is gone. */
+    private fun nameOf(id: NodeId): String = workflow.node(id)?.name ?: id.value
+
+    /**
+     * Both endpoints' ports, or null when either end names a node — or a node type —
+     * that is not there. Distinguishing the two matters: without it a missing node
+     * fell through to "unknown output port", which sends the user looking at a port
+     * on a card that does not exist.
+     */
+    @Suppress("ReturnCount") // Two null-guards and the result; the alternative is nesting.
+    private fun ExecConnection.endpoints(): Pair<Port?, Port?>? {
+        val fromDef = workflow.node(fromNodeId)?.let { NodeTypeRegistry.byId(it.typeId) } ?: return null
+        val toDef = workflow.node(toNodeId)?.let { NodeTypeRegistry.byId(it.typeId) } ?: return null
+        val from = fromDef.port(fromPort)
             ?.takeIf { it.kind == PortKind.EXECUTION && it.direction == Direction.OUT }
-        val toPort = toDef?.port(conn.toPort)
+        val to = toDef.port(toPort)
             ?.takeIf { it.kind == PortKind.EXECUTION && it.direction == Direction.IN }
-        return fromPort to toPort
+        return from to to
     }
 
-    private fun <E> findCycle(edges: List<E>, endpoints: (E) -> Pair<NodeId, NodeId>): List<NodeId>? {
-        val adj = mutableMapOf<NodeId, MutableList<NodeId>>()
+    /**
+     * A cycle, and the edge whose removal breaks it.
+     *
+     * The closing edge has to come out of the search itself rather than be looked up
+     * afterwards from the node pair: two exec edges between the same two nodes are
+     * legal, and picking the wrong one would block a wire that was never in the loop.
+     */
+    private data class Cycle<E>(val nodes: List<NodeId>, val closing: E) {
+        /** `A -> B -> A`, closing back on the node it started from. */
+        fun path(name: (NodeId) -> String): String = (nodes + nodes.first()).joinToString(" -> ", transform = name)
+    }
+
+    /**
+     * Every cycle in [edges], found by repeatedly searching with the previous
+     * closing edges taken out.
+     *
+     * One search only ever reports one cycle, and a graph with two independent loops
+     * would then have one of them quarantined and the other still live. Capped
+     * because a pathological graph could otherwise cost a search per edge, and
+     * because a user with eight simultaneous loops has been told enough.
+     */
+    private fun <E> findCycles(edges: List<E>, endpoints: (E) -> Pair<NodeId, NodeId>): List<Cycle<E>> {
+        val found = mutableListOf<Cycle<E>>()
+        val excluded = mutableSetOf<E>()
+        while (found.size < MAX_REPORTED_CYCLES) {
+            val cycle = findCycle(edges, endpoints, excluded) ?: break
+            found += cycle
+            excluded += cycle.closing
+        }
+        return found
+    }
+
+    /** The node order the cycle walk starts from; see the loop at the bottom. */
+    private val startOrder: List<NodeId> get() = workflow.nodes.map { it.id }
+
+    private fun <E> findCycle(
+        edges: List<E>,
+        endpoints: (E) -> Pair<NodeId, NodeId>,
+        excluded: Set<E>,
+    ): Cycle<E>? {
+        val adj = mutableMapOf<NodeId, MutableList<Pair<NodeId, E>>>()
         edges.forEach { e ->
             val (from, to) = endpoints(e)
-            adj.getOrPut(from) { mutableListOf() } += to
             adj.getOrPut(to) { mutableListOf() }
+            if (e in excluded) return@forEach
+            adj.getOrPut(from) { mutableListOf() } += to to e
         }
         val visited = mutableSetOf<NodeId>()
         val onStack = mutableSetOf<NodeId>()
         val path = mutableListOf<NodeId>()
-        fun dfs(node: NodeId): List<NodeId>? {
+        @Suppress("ReturnCount") // Textbook iterative-DFS cycle detection.
+        fun dfs(node: NodeId): Cycle<E>? {
             visited += node
             onStack += node
             path += node
-            for (next in adj[node] ?: emptyList()) {
+            for ((next, edge) in adj[node] ?: emptyList()) {
                 if (next !in visited) {
-                    dfs(next)?.let { return@dfs it }
+                    dfs(next)?.let { return it }
                 } else if (next in onStack) {
                     val cycleStart = path.indexOf(next)
-                    return path.subList(cycleStart, path.size) + next
+                    return Cycle(path.subList(cycleStart, path.size).toList(), edge)
                 }
             }
             onStack -= node
             path.removeAt(path.lastIndex)
             return null
         }
-        for (start in adj.keys) if (start !in visited) dfs(start)?.let { return it }
+        // Started in the order the nodes were placed, not in whatever order the
+        // adjacency map happened to build. Which edge of a loop is "the one going
+        // back" depends entirely on where the walk began, and the answer has to be
+        // both stable across runs and the one a user would point at: entering the
+        // loop the way execution does makes the closing edge the wire that returns
+        // to a node already running, which is the wire they drew last.
+        for (start in startOrder + adj.keys) {
+            if (start in adj && start !in visited) dfs(start)?.let { return it }
+        }
         return null
     }
-
-    @Suppress("unused")
-    private fun DataConnection.describe(): String = "$fromNodeId.$fromPort -> $toNodeId.$toPort"
 
     private companion object {
         /** The kinds that are pulled on demand rather than pulsed. */
         val PULL_KINDS = setOf(NodeKind.VALUE, NodeKind.TRANSFORM)
+
+        const val MAX_REPORTED_CYCLES = 8
     }
 }

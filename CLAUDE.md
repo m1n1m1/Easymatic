@@ -71,7 +71,7 @@ There is deliberately **no way to attach a condition to a node**. A MacroDroid-s
 
 `CompareConfig.source` holds a `ValueSource` *spec* (`domain/model/ValueSource.kt`): `""` = the node's own wired `source` port, `val:<typeId>` = a value node read on demand. The latter needs no edge and no exec position, so comparing a device property costs nothing on the canvas. Anything that is not a `val:` read parses as `Wired`, which fails closed.
 
-`GraphValidator` exempts pull-side sources (values *and* transforms) from the exec-upstream rule — they have no exec position — and warns about one wired to nothing.
+`GraphValidator` exempts pull-side sources (values *and* transforms) from the exec-upstream rule — they have no exec position — and warns about one wired to nothing. What it does with everything it finds is under **Validity** below.
 
 **Every trigger over a readable state gets a value node too.** A trigger answers "tell me when this changes"; a value answers "what is it right now?". They are not substitutes — "when it gets dark, turn the torch on" is a trigger, "when I get home, *if* it is dark, turn the torch on" is a value read inside an `action.if` — and a state with only the trigger half forces the user to arm a second macro just to remember what the first one saw. So when adding a trigger, add the matching value node in the same change, and share the reading and classification code between them rather than re-deriving it (`OrientationDetector.orientationOf`, `ProximityDetector.isCovered`). Skip the value only when there is genuinely nothing to read:
 
@@ -162,6 +162,20 @@ All identifiers are `@JvmInline value class` (zero-cost type safety) in `core/mo
 - **Values and transforms** are never pulsed — `WorkflowExecutor.resolveDataIn` pulls them while collecting a consumer's inputs
 - **MacroEngineService** (foreground service) owns the engine, survives UI destruction, re-arms on boot
 - **TriggerBus** is a singleton event bus connecting manifest-registered broadcast receivers to the engine
+
+### Validity, and why a problem stops only what it has to
+
+`GraphValidator` returns a `GraphValidation` (`engine/validation/`), and every finding carries two separate things: **where it is** (`nodes`, `connectionId` — what to badge and what to colour) and **what it costs** (`blockedNodes`, `blockedConnections`). The editor consumes the first, the executor the second. One type, two instances: the editor validates its live unsaved graph, `executeFrom` validates the disk snapshot `arm()` handed it, and those are legitimately different graphs — feeding the editor's flow into the engine would put `feature/` on the wrong side of the dependency rule.
+
+**Quarantine is the smallest thing that is actually broken.** A bad exec edge blocks that edge; a cycle blocks the one edge that closes it, leaving every node on the loop runnable once; a bad data edge blocks the node that *reads* it (resolved through `executedConsumers`, so a chain of transforms blocks the action at the far end, not the transform). A `WARNING` blocks nothing at all, and a test pins that. `executeFrom` therefore no longer refuses the whole workflow: it logs **one summary line** and runs everything not named, so a loop in one trigger's branch leaves every sibling branch and every other trigger working. The old all-or-nothing gate made one bad wire indistinguishable from a macro that had never been armed.
+
+Blocking a node for a broken *data* edge is not the same stance as `transform.json_read`'s and `action.script`'s "a failure lands on the fallback and pulses `out`". That rule is about **runtime** failure of a well-formed graph, which the user configured a fallback for. This is **structural** invalidity, where falling back would quietly substitute a form value for a wire the user can see on the canvas.
+
+`pulse` also carries an `onPath` set — added before a node runs, removed in a `finally`. It is **path-scoped, never a global visited set**: a diamond must still run its join node once per incoming pulse. It exists because cycle *enumeration* is capped, so a graph with more loops than the cap has one nobody blocked, and that used to recurse until the stack gave out. The validator's cycle report is for attribution; this is for correctness.
+
+**Failure isolation, three levels up.** `WorkflowRunner` guards arming (one malformed config must not disarm the other triggers), the source (a dead flow reports and its siblings keep collecting) and each event (one bad run must not unsubscribe a geofence for the rest of the arm). `supervisorScope` alone does not do this: it stops sibling cancellation but the exception still reaches the thread's default handler, i.e. crashes the app — the `catch` is the part that matters, and there is now a `CoroutineExceptionHandler` on the service scope and `appScope` as a backstop. `MacroEngineService.rearmAll` guards per workflow for the same reason, since one macro that cannot arm used to silently skip every macro after it on boot. Every `runCatching` in the executor rethrows `CancellationException`, so stopping a run stops it instead of logging a bogus action failure and walking on.
+
+Problems surface in the editor's **Problems panel** — its own badge beside the console, shown only when there is something to say — plus a badge and border tint per node and an `errorAccent` wire, and a count on the workflow list row. It is deliberately not the console: the console is a record of what *happened*, this is a statement about what the graph *is*. Arming an invalid macro is not blocked, because isolated failure is the whole point.
 
 ### The run log
 

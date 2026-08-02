@@ -21,6 +21,7 @@ import com.example.ottomatic.data.trigger.VariableStore
 import com.example.ottomatic.engine.DefaultExecutionContext
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.trigger.TriggerHost
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -36,8 +37,17 @@ object ServiceLocator {
      * Process-lifetime scope for work that must outlive the component that
      * started it — chiefly the graph editor's final save, which runs from
      * `onCleared()` after `viewModelScope` has already been cancelled.
+     *
+     * The handler is what keeps a failure here a failure: [SupervisorJob] stops one
+     * child cancelling its siblings but does nothing about the exception itself,
+     * which would otherwise reach the thread's default handler and take the process
+     * down over a save that could not write.
      */
-    val appScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    val appScope: CoroutineScope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, e ->
+            android.util.Log.e("Ottomatic", "App-scope coroutine failed", e)
+        },
+    )
 
     lateinit var workflowRepository: WorkflowRepository
         private set

@@ -177,6 +177,7 @@ class MainActivity : ComponentActivity() {
                 GraphEditorScreen(
                     viewModel = editorViewModel,
                     geofencePlaces = geofencePlacesViewModel,
+                    onBack = { navController.popBackStack() },
                     showBatteryPrompt = showBatteryPrompt,
                     onDismissBatteryPrompt = { showBatteryPrompt = false },
                     onConfirmBatteryPrompt = {

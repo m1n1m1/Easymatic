@@ -10,15 +10,19 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import com.example.ottomatic.MainActivity
 import com.example.ottomatic.R
 import com.example.ottomatic.ServiceLocator
+import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.BootFailureStore
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.WorkflowRunner
 import com.example.ottomatic.engine.trigger.TriggerHost
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -27,6 +31,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * The long-lived owner of the workflow engine.
@@ -55,7 +60,17 @@ import kotlinx.coroutines.sync.withLock
 @Suppress("TooManyFunctions") // Android Service lifecycle + arm/disarm/notification helpers.
 class MacroEngineService : Service() {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    /**
+     * The handler is the process's backstop, not decoration: without one, anything
+     * that escapes a coroutine here reaches the thread's default handler and kills
+     * the app. [SupervisorJob] alone does not prevent that — it only stops sibling
+     * cancellation.
+     */
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, e ->
+            Log.e("Ottomatic", "Engine coroutine failed", e)
+        },
+    )
 
     /**
      * The armed runner per workflow id. Concurrent because [onCreate] reads
@@ -149,14 +164,34 @@ class MacroEngineService : Service() {
         super.onDestroy()
     }
 
-    /** Callers must hold [armMutex]. */
+    /**
+     * Callers must hold [armMutex].
+     *
+     * Each macro is armed inside its own guard. This runs on cold start and on
+     * boot, over every enabled macro at once, so a single one that cannot arm —
+     * a config that no longer decodes, a platform source that refuses — used to
+     * abort the loop and leave every macro *after* it in the list silently
+     * unarmed, with nothing anywhere saying why.
+     */
+    @Suppress("TooGenericExceptionCaught") // One macro that cannot arm must not stop the rest.
     private suspend fun rearmAll() {
         val enabled = repository.list().filter { it.enabled }
         if (enabled.isEmpty()) {
             if (activeJobs.isEmpty()) stopSelf()
             return
         }
-        enabled.forEach { arm(it.id) }
+        for (workflow in enabled) {
+            try {
+                arm(workflow.id)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Into that workflow's own console: "why won't this arm" is asked
+                // in the editor, not in Logcat.
+                executionContext.scoped(LogSource(workflow.id, LogSource.NO_RUN))
+                    .log("Could not arm this workflow: ${e.message}", LogLevel.ERROR)
+            }
+        }
     }
 
     /** Callers must hold [armMutex]. */
@@ -173,7 +208,20 @@ class MacroEngineService : Service() {
         val workflow = repository.load(workflowId) ?: return
         if (!workflow.enabled || workflow.id != workflowId) return
         val runner = WorkflowRunner(host, executionContext)
-        activeJobs[workflowId] = runner.run(scope, workflow, announceEnabled = announce)
+        val job = runner.run(scope, workflow, announceEnabled = announce)
+        activeJobs[workflowId] = job
+        // Nothing else ever removes a job that ended on its own, and one does: a
+        // workflow with no trigger nodes finishes its body immediately, and the
+        // notification then counts it as armed forever.
+        //
+        // The *two-argument* remove is load-bearing. With `remove(workflowId)`, a
+        // stale job's completion callback firing after a re-arm would delete the
+        // new job's entry — orphaning a runner still collecting its triggers that
+        // nothing, including a disable/enable cycle, could then cancel. That is
+        // precisely the failure [armMutex] exists to prevent.
+        job.invokeOnCompletion {
+            if (activeJobs.remove(workflowId, job)) refreshNotification()
+        }
         refreshNotification()
     }
 
