@@ -16,6 +16,8 @@ import com.example.ottomatic.engine.trigger.TriggerOutput
 import com.example.ottomatic.engine.validation.GraphValidation
 import com.example.ottomatic.engine.validation.GraphValidator
 import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
@@ -54,10 +56,21 @@ import kotlin.coroutines.cancellation.CancellationException
  * whatever feeds it, so a whole chain of conversions resolves in one go, sharing a
  * single memo — a value node reaching one consumer through two different transforms
  * is still read once.
+ *
+ * Iteration ([LoopAction], [runLoop]) is the one place the executor pulses the same
+ * port more than once. It stays a *forward* walk: a loop declares its iterations and
+ * this class pulses `body` for each, then `completed`. Nothing is wired back into the
+ * loop, so the graph is still acyclic and both the validator's cycle rule and the
+ * `onPath` guard below apply unchanged.
  */
 /** Items produced so far, addressed by the port they were produced on. */
 private typealias DataCache = MutableMap<Pair<NodeId, PortName>, Item>
 
+// One walk, split into the steps it genuinely has: follow an edge, run a node, run
+// a loop, collect inputs, pull a transform, pull a value, log. Merging any two to
+// come under the threshold would hide a distinction the KDoc above spends its length
+// explaining.
+@Suppress("TooManyFunctions")
 class WorkflowExecutor(
     private val context: ExecutionContext,
 ) {
@@ -120,18 +133,27 @@ class WorkflowExecutor(
     }
 
     /**
-     * Follows one exec output port, running each node it reaches.
+     * Follows one exec output port, running each node it reaches. Returns false
+     * when something halted the chain, which unwinds this branch of the walk.
+     *
+     * The return value is what makes `action.stop` mean the same thing inside a
+     * loop body as anywhere else. [runLoop] pulses `body` once per iteration, so a
+     * halt that only unwound the current pulse would quietly start the next one —
+     * the macro would keep running after the step that stopped it.
      *
      * [Run.onPath] is a **path-scoped** guard, added before a node runs and removed
      * in a `finally` on the way back out — the same shape as the `visiting` set in
      * [readTransform]. It must not be a global visited set: a diamond (T→A, T→B,
      * A→J, B→J) is supposed to run J once per incoming pulse, and a visited set
-     * would silently swallow the second. What it does stop is a true loop, in a
-     * graph that reached the engine hand-edited or armed before the cycle rule
-     * existed — where the previous version recursed until the stack gave out.
+     * would silently swallow the second. It is also what lets a loop body re-run
+     * every iteration: the body's nodes are added and removed inside each pulse,
+     * while the loop node itself stays on the path throughout. What it stops is a
+     * true loop, in a graph that reached the engine hand-edited or armed before the
+     * cycle rule existed — where the previous version recursed until the stack gave
+     * out.
      */
     @Suppress("LoopWithTooManyJumpStatements")
-    private suspend fun pulse(run: Run, node: WorkflowNode, port: PortName) {
+    private suspend fun pulse(run: Run, node: WorkflowNode, port: PortName): Boolean {
         val outgoing = run.workflow.outgoingExec(node.id, port)
         for (connection in outgoing) {
             val target = run.workflow.node(connection.toNodeId) ?: continue
@@ -150,11 +172,12 @@ class WorkflowExecutor(
                 continue
             }
             try {
-                if (!runNode(run, action, target, at)) return
+                if (!runNode(run, action, target, at)) return false
             } finally {
                 run.onPath.remove(target.id)
             }
         }
+        return true
     }
 
     /**
@@ -188,6 +211,8 @@ class WorkflowExecutor(
         target: WorkflowNode,
         at: ExecutionContext,
     ): Boolean {
+        if (action is LoopAction<*>) return runLoop(run, action, target, at)
+        if (action is ConditionalLoopAction<*>) return runConditionalLoop(run, action, target, at)
         val dataIn = collectDataIn(run, target)
         at.log("→ ${target.name}", LogLevel.DEBUG)
         logData(at, IN_LABEL, dataIn)
@@ -207,9 +232,121 @@ class WorkflowExecutor(
             return false
         }
         for (execPort in result.execOut) {
-            pulse(run, target, execPort)
+            if (!pulse(run, target, execPort)) return false
         }
         return true
+    }
+
+    /**
+     * Runs a [LoopAction]: `body` once per iteration, then `completed` once.
+     *
+     * The loop node's own DATA outputs are written into the run's cache *before*
+     * each body pulse and overwritten on the next, which is exactly right because a
+     * body node reads them while that iteration is running. Nothing needs to
+     * snapshot or restore them: [collectDataIn] builds a fresh memo per consuming
+     * node, so a value node or transform inside the body is re-read every pass
+     * rather than frozen at the value it had on the first one.
+     *
+     * `completed` fires even when the body never ran. An empty list is not a
+     * failure — "there was nothing to send" is a perfectly good outcome, and a
+     * macro that silently stopped there would be indistinguishable from one whose
+     * loop was wired wrong.
+     *
+     * The iteration count is capped as a backstop even though both loop nodes clamp
+     * their own: the cap has to hold for whatever loop is written next, and a
+     * truncation nobody announced reads like a run that covered everything.
+     */
+    @Suppress("ReturnCount")
+    private suspend fun runLoop(
+        run: Run,
+        loop: LoopAction<*>,
+        target: WorkflowNode,
+        at: ExecutionContext,
+    ): Boolean {
+        val dataIn = collectDataIn(run, target)
+        at.log("→ ${target.name}", LogLevel.DEBUG)
+        logData(at, IN_LABEL, dataIn)
+        val declared = runCatching { loop.iterationsRaw(target, dataIn, at) }.getOrElse { e ->
+            if (e is CancellationException) throw e
+            at.log("Action ${target.typeId} failed: ${e.message}", LogLevel.ERROR)
+            null
+        } ?: return true
+        val iterations = declared.take(MAX_ITERATIONS)
+        if (declared.size > iterations.size) {
+            at.log(
+                "'${target.name}' stopped after $MAX_ITERATIONS of ${declared.size} repeats",
+                LogLevel.WARN,
+            )
+        }
+        at.log("'${target.name}' repeating ${iterations.size} time(s)", LogLevel.DEBUG)
+        for (values in iterations) {
+            currentCoroutineContext().ensureActive()
+            values.forEach { (producedOn, item) -> run.dataCache[target.id to producedOn] = item }
+            logData(at, OUT_LABEL, values)
+            if (!pulse(run, target, ExecutionRoute.BODY.portName)) return false
+        }
+        return pulse(run, target, ExecutionRoute.COMPLETED.portName)
+    }
+
+    /**
+     * Runs a [ConditionalLoopAction]: ask, pulse `body`, ask again, and pulse
+     * `completed` once the answer is no.
+     *
+     * **The inputs are re-collected every pass, and that is the whole design.** A
+     * `for each` resolves its list once because appending to it from inside the body
+     * must not extend the walk; a `while` is the exact opposite — its condition is
+     * its only exit, so it has to see what the body just did or it could never stop.
+     * [collectDataIn] builds a fresh memo per call, so a value node, a transform
+     * chain and an edge-free `val:` read all answer anew each time round.
+     *
+     * The cap is checked *before* the body rather than after the condition, so a
+     * runaway loop runs exactly [MAX_ITERATIONS] passes and says so. This is the one
+     * node whose pass count nobody states, so it is also the one where a silent cap
+     * would be indistinguishable from a condition that finally went false.
+     */
+    @Suppress("ReturnCount") // Halted, failed and finished are three genuinely different endings.
+    private suspend fun runConditionalLoop(
+        run: Run,
+        loop: ConditionalLoopAction<*>,
+        target: WorkflowNode,
+        at: ExecutionContext,
+    ): Boolean {
+        at.log("→ ${target.name}", LogLevel.DEBUG)
+        var passes = 0
+        var asking = true
+        var failed = false
+        // The cap lives in the loop condition rather than in a `break`, so "it ran out
+        // of passes" and "its condition went false" stay distinguishable afterwards:
+        // still asking when the loop exits means the cap is what stopped it.
+        while (asking && passes < MAX_ITERATIONS) {
+            currentCoroutineContext().ensureActive()
+            val dataIn = collectDataIn(run, target)
+            if (passes == 0) logData(at, IN_LABEL, dataIn)
+            val values = runCatching { loop.nextPassRaw(target, dataIn, at, passes) }.getOrElse { cause ->
+                if (cause is CancellationException) throw cause
+                at.log("Action ${target.typeId} failed: ${cause.message}", LogLevel.ERROR)
+                failed = true
+                null
+            }
+            if (values == null) {
+                asking = false
+            } else {
+                passes++
+                values.forEach { (producedOn, item) -> run.dataCache[target.id to producedOn] = item }
+                logData(at, OUT_LABEL, values)
+                if (!pulse(run, target, ExecutionRoute.BODY.portName)) return false
+            }
+        }
+        // A failed condition pulses nothing, exactly as a failed action does.
+        if (failed) return true
+        if (asking) {
+            at.log(
+                "'${target.name}' stopped after $MAX_ITERATIONS repeats; its condition never went false",
+                LogLevel.WARN,
+            )
+        }
+        at.log("'${target.name}' repeated $passes time(s)", LogLevel.DEBUG)
+        return pulse(run, target, ExecutionRoute.COMPLETED.portName)
     }
 
     /**

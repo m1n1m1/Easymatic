@@ -80,6 +80,25 @@ fun suggestionsFor(
     }
 }
 
+/**
+ * Whether this node type answers to [term] in the palette's search box.
+ *
+ * Lives here rather than inline in the palette so it can be tested: what a node is
+ * *called* is not the only way people look for it, and a node nobody can find is
+ * exactly as useful as one that does not exist. The [description] is part of the
+ * haystack for that reason — it is where a node's other names live, which is how
+ * searching "loop" reaches three nodes all called "Repeat …".
+ *
+ * A blank term matches everything, so the caller can pass the box's contents
+ * straight in.
+ */
+fun NodeTypeDefinition.matchesSearch(term: String): Boolean {
+    val needle = term.trim()
+    if (needle.isEmpty()) return true
+    return listOf(displayName, description, typeId.value, category.displayName)
+        .any { it.contains(needle, ignoreCase = true) }
+}
+
 private fun accepts(originPort: Port, candidate: Port, origin: DragOrigin): Boolean = when (origin.kind) {
     PortKind.EXECUTION -> true
     PortKind.DATA -> if (origin.isOutput) {

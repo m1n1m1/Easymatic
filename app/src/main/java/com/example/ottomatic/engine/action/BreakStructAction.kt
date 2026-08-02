@@ -49,7 +49,7 @@ class BreakStructAction : RawAction<NoConfig> {
         description = "Splits a struct into its individual fields (auto-detects the struct from the input)",
         category = NodeCategory.DATA,
         icon = NodeIcon.SPLIT,
-        wildcardInputs = listOf(structDataIn(BREAK_STRUCT_IN.value, label = "Struct")),
+        extraPorts = listOf(structDataIn(BREAK_STRUCT_IN.value, label = "Struct")),
     )
 
     override suspend fun executeRaw(

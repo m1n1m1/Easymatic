@@ -5,6 +5,14 @@ import com.example.ottomatic.engine.ExecutableTransform
 import com.example.ottomatic.engine.transform.BuildTextTransform
 import com.example.ottomatic.engine.transform.ConvertTransform
 import com.example.ottomatic.engine.transform.JsonReadTransform
+import com.example.ottomatic.engine.transform.ListContainsTransform
+import com.example.ottomatic.engine.transform.ListCountTransform
+import com.example.ottomatic.engine.transform.ListIndexOfTransform
+import com.example.ottomatic.engine.transform.ListItemTransform
+import com.example.ottomatic.engine.transform.ListJoinTransform
+import com.example.ottomatic.engine.transform.ListSliceTransform
+import com.example.ottomatic.engine.transform.ListSortTransform
+import com.example.ottomatic.engine.transform.SplitTextTransform
 
 /**
  * Central registry mapping a transform [typeId] to its implementation.
@@ -26,6 +34,14 @@ object TransformRegistry {
         BuildTextTransform(),
         ConvertTransform(),
         JsonReadTransform(),
+        SplitTextTransform(),
+        ListCountTransform(),
+        ListItemTransform(),
+        ListJoinTransform(),
+        ListContainsTransform(),
+        ListIndexOfTransform(),
+        ListSortTransform(),
+        ListSliceTransform(),
     )
 
     private val byId: Map<NodeTypeId, ExecutableTransform> = transforms.associateBy { it.typeId }

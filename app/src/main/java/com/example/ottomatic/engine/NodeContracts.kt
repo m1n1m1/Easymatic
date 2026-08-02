@@ -15,10 +15,19 @@ import com.example.ottomatic.domain.model.schema.asText
  * routes it may take via [ExecOutputs]; the port name is derived from the route,
  * so no node maps routes onto port-name strings any more.
  */
-enum class ExecutionRoute(val portName: PortName) {
-    OUT(ExecPorts.OUT),
-    TRUE(ExecPorts.TRUE),
-    FALSE(ExecPorts.FALSE),
+/**
+ * [label] is what the port says when the card reveals it. The first three are named
+ * well enough by their own port name — an `out`, a `true` and a `false` beside an
+ * "If" need no gloss — but a loop's two outputs do: "body" and "completed" are
+ * words from a programming language, and which of the two to wire is the single
+ * thing people get wrong about a loop.
+ */
+enum class ExecutionRoute(val portName: PortName, val label: String) {
+    OUT(ExecPorts.OUT, ExecPorts.OUT.value),
+    TRUE(ExecPorts.TRUE, ExecPorts.TRUE.value),
+    FALSE(ExecPorts.FALSE, ExecPorts.FALSE.value),
+    BODY(ExecPorts.BODY, ExecPorts.BODY_LABEL),
+    COMPLETED(ExecPorts.COMPLETED, ExecPorts.COMPLETED_LABEL),
 }
 
 /** The set of EXECUTION output ports a node exposes. */
@@ -28,9 +37,17 @@ enum class ExecOutputs(val routes: List<ExecutionRoute>) {
 
     /** `true` / `false` ports: the node routes conditionally. */
     BRANCH(listOf(ExecutionRoute.TRUE, ExecutionRoute.FALSE)),
+
+    /**
+     * `body` / `completed` ports: the node repeats. Both are *forward* outputs —
+     * nothing is ever wired back into the loop — so the graph stays acyclic and
+     * [com.example.ottomatic.engine.validation.GraphValidator] needs no exception.
+     * See [LoopAction].
+     */
+    LOOP(listOf(ExecutionRoute.BODY, ExecutionRoute.COMPLETED)),
     ;
 
-    val ports: List<Port> get() = routes.map { execOut(it.portName) }
+    val ports: List<Port> get() = routes.map { execOut(it.portName, it.label) }
 }
 
 /** Typed result produced by a node before it is encoded for the graph runtime. */
@@ -216,3 +233,135 @@ interface RawAction<C : Any> : ExecutableAction {
         executeRaw(definition.schema.decode(node, data), NodeInput(node, data), context),
     )
 }
+
+/**
+ * An action whose `body` the executor pulses once per iteration, then `completed`.
+ *
+ * This is the Unreal Blueprints shape, and it is the reason iteration costs the
+ * rest of the engine nothing: both ports point *forward*, so nothing is wired back
+ * into the loop, the graph stays acyclic, and neither
+ * [com.example.ottomatic.engine.validation.GraphValidator]'s cycle rule nor the
+ * executor's path-scoped `onPath` guard needs an exception carved into it. (n8n's
+ * *Loop Over Items* asks the user to wire the last body node back into the loop;
+ * here that is an execution cycle, which both of those correctly refuse.)
+ *
+ * A loop **declares** the iterations rather than pulsing anything itself: it
+ * returns one data map per pass — what its own DATA output ports carry that time
+ * round — and the executor writes each into the run's data cache before pulsing.
+ * Driving the walk from inside a node would mean duplicating the quarantine rules,
+ * the log attribution and the halt propagation that already live in one place.
+ *
+ * [ExecOutputs.LOOP] is not optional: `body` and `completed` are the only ports
+ * the executor pulses for one of these.
+ */
+interface LoopAction<C : Any> : ExecutableAction {
+    override val definition: ActionNodeDefinition<C, Unit>
+
+    /**
+     * One entry per iteration, each holding the items this node's own DATA outputs
+     * carry that pass. An empty list means the body never runs — `completed` still
+     * fires, because "there was nothing to do" is not a failure.
+     *
+     * Must not exceed [MAX_ITERATIONS] entries; the executor truncates as a
+     * backstop, but a loop that knows its own count should clamp it rather than
+     * building a list it cannot use.
+     */
+    suspend fun iterations(
+        config: C,
+        input: NodeInput,
+        context: ExecutionContext,
+    ): List<Map<PortName, Item>>
+
+    /** Decoding entry point, mirroring [RawAction.run]. */
+    suspend fun iterationsRaw(
+        node: WorkflowNode,
+        data: Map<PortName, Item>,
+        context: ExecutionContext,
+    ): List<Map<PortName, Item>> =
+        iterations(definition.schema.decode(node, data), NodeInput(node, data), context)
+
+    /**
+     * Never reached: [com.example.ottomatic.engine.WorkflowExecutor] tests for
+     * `is LoopAction` before it calls this. It skips the body rather than throwing
+     * so that a caller which does not know about loops degrades to "ran zero
+     * times" instead of failing the run.
+     */
+    override suspend fun run(
+        node: WorkflowNode,
+        data: Map<PortName, Item>,
+        context: ExecutionContext,
+    ): EncodedNodeOutput = EncodedNodeOutput(
+        execOut = listOf(ExecPorts.COMPLETED),
+        dataOut = emptyMap(),
+        halt = false,
+    )
+}
+
+/**
+ * A loop that decides **before each pass** whether to run another, rather than
+ * settling all of them up front.
+ *
+ * The split from [LoopAction] is the meaningful part, not an implementation detail.
+ * A `for each` *snapshots* its list when it starts — appending to that list from
+ * inside the body must not extend the walk, exactly as in Unreal Blueprints — so its
+ * passes are known before the first one runs. A `while` is the opposite by
+ * definition: its condition is its exit, so it has to be re-evaluated against freshly
+ * pulled inputs every time round, or the body could never end it.
+ *
+ * That re-pull is what makes the loop terminate at all: `collectDataIn` builds a
+ * fresh memo per call, and an edge-free `val:` source is re-read through
+ * `readRaw`, so a variable written in the body is visible to the next check.
+ */
+interface ConditionalLoopAction<C : Any> : ExecutableAction {
+    override val definition: ActionNodeDefinition<C, Unit>
+
+    /**
+     * The DATA this node's own outputs carry for pass number [pass] (counting from
+     * 0), or null to stop and pulse `completed`.
+     *
+     * Returning a map rather than a plain `Boolean` keeps the currency the same as
+     * [LoopAction.iterations] — one map per pass — so the executor handles both
+     * kinds of loop with one piece of machinery.
+     */
+    suspend fun nextPass(
+        config: C,
+        input: NodeInput,
+        context: ExecutionContext,
+        pass: Int,
+    ): Map<PortName, Item>?
+
+    /** Decoding entry point, mirroring [RawAction.run]. */
+    suspend fun nextPassRaw(
+        node: WorkflowNode,
+        data: Map<PortName, Item>,
+        context: ExecutionContext,
+        pass: Int,
+    ): Map<PortName, Item>? =
+        nextPass(definition.schema.decode(node, data), NodeInput(node, data), context, pass)
+
+    /** Never reached; see [LoopAction.run]. */
+    override suspend fun run(
+        node: WorkflowNode,
+        data: Map<PortName, Item>,
+        context: ExecutionContext,
+    ): EncodedNodeOutput = EncodedNodeOutput(
+        execOut = listOf(ExecPorts.COMPLETED),
+        dataOut = emptyMap(),
+        halt = false,
+    )
+}
+
+/**
+ * The most iterations one loop may run.
+ *
+ * A `Repeat` configured with a million — by a typo, or by a number that arrived
+ * down a wire — would otherwise hold a million maps in memory and spin a
+ * foreground service until Android's watchdog killed the app. Truncation is
+ * always announced in the run log, never silent: a capped loop that said nothing
+ * would read exactly like one that finished.
+ *
+ * It matters most for [ConditionalLoopAction], which is the only node whose pass
+ * count nobody states: a condition the body never changes would otherwise loop for
+ * as long as the process lives.
+ */
+const val MAX_ITERATIONS: Int = 1_000

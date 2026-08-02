@@ -68,7 +68,7 @@ class IfAction : RawAction<CompareConfig> {
         description = "Routes execution by comparing a value against another",
         category = NodeCategory.FLOW_CONTROL,
         icon = NodeIcon.SPLIT,
-        wildcardInputs = listOf(
+        extraPorts = listOf(
             wildcardDataIn(IF_SOURCE_IN.value, label = "Source"),
             wildcardDataIn(IF_VALUE_IN.value, label = "Compare against"),
         ),

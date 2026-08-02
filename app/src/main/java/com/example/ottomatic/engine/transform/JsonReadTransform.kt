@@ -29,12 +29,18 @@ import kotlinx.serialization.json.JsonObject
  *
  * [json] is `@Wired`, so the usual wiring is `action.http` → `action.break` →
  * `body` → here. [path] addresses one value inside it.
+ *
+ * [list] says the path lands on an *array*, and turns the output port into a list
+ * of [type]. Leaving [path] blank then reads the whole document — which is how a
+ * list stored in a variable comes back out, since a variable holds the array's JSON
+ * text and `value.variable` hands it over as text.
  */
 @Serializable
 data class JsonReadConfig(
     @Label("JSON text") @Multiline @Wired val json: String = "",
-    @Label("Path (e.g. main.temp)") val path: String = "",
+    @Label("Path (e.g. main.temp) — blank for the whole document") val path: String = "",
     @Label("Get as") val type: ValueType = ValueType.TEXT,
+    @Label("This is a list") val list: Boolean = false,
     @Label("If missing") val fallback: String = "",
 )
 
@@ -76,9 +82,34 @@ class JsonReadTransform : RawTransform<JsonReadConfig> {
         if (found == null) {
             context.log("Read from JSON: path '${config.path}' not found", LogLevel.WARN)
         }
+        if (config.list) return readList(config, found, context)
         // Route the found element back through the shared text form so a JSON
         // number, a JSON string and a nested object all convert identically.
         return config.type.convert(found?.let { Item(value = it, schema = ItemSchema.Wildcard) }, config.fallback)
+    }
+
+    /**
+     * The found array as a list of [JsonReadConfig.type], one element at a time
+     * through the same total conversion the scalar branch uses — so a stray `null`
+     * in an array of numbers lands on the fallback rather than losing the whole
+     * list.
+     *
+     * A path that matched something which is *not* an array reads as empty rather
+     * than as a one-element list: quietly wrapping a single object would make a
+     * mistyped path look like it worked, and the warning is what the user needs.
+     */
+    private fun readList(config: JsonReadConfig, found: JsonElement?, context: ExecutionContext): Item {
+        val array = found as? JsonArray
+        if (found != null && array == null) {
+            context.log("Read from JSON: '${config.path}' is not a list", LogLevel.WARN)
+        }
+        val converted = array.orEmpty().map { element ->
+            config.type.convert(Item(value = element, schema = ItemSchema.Wildcard), config.fallback)
+        }
+        return Item(
+            value = converted.map { it.value },
+            schema = ItemSchema.ListSchema(config.type.schema),
+        )
     }
 }
 

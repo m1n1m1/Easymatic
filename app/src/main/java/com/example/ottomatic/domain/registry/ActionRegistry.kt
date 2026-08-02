@@ -13,13 +13,17 @@ import com.example.ottomatic.engine.action.DisableMacroAction
 import com.example.ottomatic.engine.action.DndAction
 import com.example.ottomatic.engine.action.EnableMacroAction
 import com.example.ottomatic.engine.action.FlashlightAction
+import com.example.ottomatic.engine.action.ForEachAction
 import com.example.ottomatic.engine.action.HttpAction
 import com.example.ottomatic.engine.action.IfAction
 import com.example.ottomatic.engine.action.LaunchAppAction
+import com.example.ottomatic.engine.action.ListAddAction
+import com.example.ottomatic.engine.action.ListClearAction
 import com.example.ottomatic.engine.action.LogAction
 import com.example.ottomatic.engine.action.NotifyAction
 import com.example.ottomatic.engine.action.OpenUrlAction
 import com.example.ottomatic.engine.action.PlaySoundAction
+import com.example.ottomatic.engine.action.RepeatAction
 import com.example.ottomatic.engine.action.RingerModeAction
 import com.example.ottomatic.engine.action.ScreenTimeoutAction
 import com.example.ottomatic.engine.action.ScriptAction
@@ -29,6 +33,7 @@ import com.example.ottomatic.engine.action.StopAction
 import com.example.ottomatic.engine.action.StopSoundAction
 import com.example.ottomatic.engine.action.VibrateAction
 import com.example.ottomatic.engine.action.VolumeAction
+import com.example.ottomatic.engine.action.WhileAction
 import com.example.ottomatic.engine.action.WifiAction
 
 /**
@@ -47,7 +52,15 @@ import com.example.ottomatic.engine.action.WifiAction
  * The other adaptive node is [IfAction], the graph's single comparison and only
  * conditional branch. It is an ordinary action registered here like any other —
  * there is no separate condition registry, because a condition is not a node family
- * but a comparison over a value.
+ * but a comparison over a value. [WhileAction] shares that same comparison outright
+ * (see [COMPARISON_TYPE_IDS]) and differs only in doing the answer again rather than
+ * branching on it.
+ *
+ * [ForEachAction], [RepeatAction] and [WhileAction] are the graph's only iteration,
+ * and are likewise registered here rather than anywhere special: a loop is an action
+ * whose `body` the executor pulses more than once
+ * ([com.example.ottomatic.engine.LoopAction],
+ * [com.example.ottomatic.engine.ConditionalLoopAction]), not a node family of its own.
  */
 object ActionRegistry {
 
@@ -65,10 +78,19 @@ object ActionRegistry {
         HttpAction(),
         IfAction(),
         LaunchAppAction(),
+        ListAddAction(),
+        ListClearAction(),
         LogAction(),
         NotifyAction(),
         OpenUrlAction(),
         PlaySoundAction(),
+        // The palette renders in registry order, so the three loops are kept
+        // together and out of alphabetical order deliberately: they are one family,
+        // and "Repeat" leads because repeating a set number of times is the case
+        // people come looking for.
+        RepeatAction(),
+        ForEachAction(),
+        WhileAction(),
         RingerModeAction(),
         ScreenTimeoutAction(),
         ScriptAction(),

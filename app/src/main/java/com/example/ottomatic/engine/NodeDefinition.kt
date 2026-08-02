@@ -39,7 +39,7 @@ class ActionNodeDefinition<I : Any, O : Any> @PublishedApi internal constructor(
     val schema: NodeSchema<I>,
     val output: DataOut<O>?,
     val execOutputs: ExecOutputs,
-    val wildcardInputs: List<Port>,
+    val extraPorts: List<Port>,
     val hasDynamicPorts: Boolean,
 ) {
     /** Static metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
@@ -50,7 +50,7 @@ class ActionNodeDefinition<I : Any, O : Any> @PublishedApi internal constructor(
             description = description,
             kind = NodeKind.ACTION,
             category = category,
-            ports = listOf(execIn()) + execOutputs.ports + schema.wiredPorts + wildcardInputs +
+            ports = listOf(execIn()) + execOutputs.ports + schema.wiredPorts + extraPorts +
                 listOfNotNull(output?.port),
             icon = icon,
             hasDynamicPorts = hasDynamicPorts,
@@ -193,7 +193,7 @@ class TransformNodeDefinition<C : Any, O : Any> @PublishedApi internal construct
     val schema: NodeSchema<C>,
     val outputPort: Port,
     @PublishedApi internal val output: DataOut<O>?,
-    val wildcardInputs: List<Port>,
+    val extraPorts: List<Port>,
     val hasDynamicPorts: Boolean,
 ) {
     /** Static metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
@@ -204,7 +204,7 @@ class TransformNodeDefinition<C : Any, O : Any> @PublishedApi internal construct
             description = description,
             kind = NodeKind.TRANSFORM,
             category = category,
-            ports = schema.wiredPorts + wildcardInputs + outputPort,
+            ports = schema.wiredPorts + extraPorts + outputPort,
             icon = icon,
             hasDynamicPorts = hasDynamicPorts,
         )
@@ -230,7 +230,7 @@ inline fun <reified C : Any, O : Any> transformNode(
     category: NodeCategory,
     icon: NodeIcon,
     output: DataOut<O>,
-    wildcardInputs: List<Port> = emptyList(),
+    extraPorts: List<Port> = emptyList(),
 ): TransformNodeDefinition<C, O> = TransformNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -240,7 +240,45 @@ inline fun <reified C : Any, O : Any> transformNode(
     schema = nodeSchema<C>(),
     outputPort = output.port,
     output = output,
-    wildcardInputs = wildcardInputs,
+    extraPorts = extraPorts,
+    hasDynamicPorts = false,
+)
+
+/**
+ * Declares a transform whose output type is **fixed** but whose input arrives as a
+ * raw [Item] — the list transforms that count, join or search a list and answer
+ * with a number, a text or a yes/no.
+ *
+ * The gap it fills: a DATA input derived from a `@Wired` config property can only
+ * be a scalar ([com.example.ottomatic.domain.registry.NodeSchema] rejects
+ * anything else), so a list has to arrive on a declared [extraPorts] port — and
+ * reading one of those means being a [RawTransform], which until now implied
+ * being *adaptive*. These are not: their output schema is known at declaration
+ * time and they have no business in `effectivePorts`.
+ *
+ * [output] is therefore a real typed port rather than a wildcard placeholder, and
+ * `hasDynamicPorts` stays false. The encoder is null because the node emits its
+ * own [Item] — the same trade [RawTransform] already makes.
+ */
+@Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
+inline fun <reified C : Any> rawTransformNode(
+    typeId: String,
+    displayName: String,
+    description: String,
+    category: NodeCategory,
+    icon: NodeIcon,
+    output: Port,
+    extraPorts: List<Port> = emptyList(),
+): TransformNodeDefinition<C, Unit> = TransformNodeDefinition(
+    typeId = NodeTypeId(typeId),
+    displayName = displayName,
+    description = description,
+    category = category,
+    icon = icon,
+    schema = nodeSchema<C>(),
+    outputPort = output,
+    output = null,
+    extraPorts = extraPorts,
     hasDynamicPorts = false,
 )
 
@@ -259,7 +297,7 @@ inline fun <reified C : Any> adaptiveTransformNode(
     category: NodeCategory,
     icon: NodeIcon,
     output: Port,
-    wildcardInputs: List<Port> = emptyList(),
+    extraPorts: List<Port> = emptyList(),
 ): TransformNodeDefinition<C, Unit> = TransformNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -269,7 +307,7 @@ inline fun <reified C : Any> adaptiveTransformNode(
     schema = nodeSchema<C>(),
     outputPort = output,
     output = null,
-    wildcardInputs = wildcardInputs,
+    extraPorts = extraPorts,
     hasDynamicPorts = true,
 )
 
@@ -323,11 +361,19 @@ inline fun <reified I : Any, O : Any> actionNode(
     schema = nodeSchema<I>(),
     output = output,
     execOutputs = execOutputs,
-    wildcardInputs = emptyList(),
+    extraPorts = emptyList(),
     hasDynamicPorts = false,
 )
 
-/** Declares an action that performs a side effect and produces no data item. */
+/**
+ * Declares an action that performs a side effect and produces no data item.
+ *
+ * [extraPorts] covers the case where an effect still has to *read* something the
+ * config class cannot describe — `action.list_add` takes a wildcard so it can
+ * append an item with its type intact. That does not make the node adaptive:
+ * nothing about these ports depends on the graph, so `hasDynamicPorts` stays false
+ * and no schema resolution ever walks an edge looking for them.
+ */
 @Suppress("LongParameterList")
 inline fun <reified I : Any> effectNode(
     typeId: String,
@@ -336,6 +382,7 @@ inline fun <reified I : Any> effectNode(
     category: NodeCategory,
     icon: NodeIcon,
     execOutputs: ExecOutputs = ExecOutputs.SINGLE,
+    extraPorts: List<Port> = emptyList(),
 ): ActionNodeDefinition<I, Unit> = ActionNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -345,14 +392,20 @@ inline fun <reified I : Any> effectNode(
     schema = nodeSchema<I>(),
     output = null,
     execOutputs = execOutputs,
-    wildcardInputs = emptyList(),
+    extraPorts = extraPorts,
     hasDynamicPorts = false,
 )
 
 /**
  * Declares an *adaptive* action whose data ports are resolved at design time
  * from the graph ([com.example.ottomatic.domain.registry.effectivePorts]).
- * Reserved for `action.break` and `action.if`; see [RawAction].
+ * Reserved for `action.break`, `action.if` and `action.for_each`; see [RawAction]
+ * and [LoopAction].
+ *
+ * [extraPorts] are the ports the config class cannot supply — a wildcard or list
+ * input to read, and (for a loop) the per-iteration DATA outputs. They are
+ * declared statically even when `effectivePorts` will retype them, because the
+ * drag-into-empty-space palette reads declared ports.
  */
 @Suppress("LongParameterList")
 inline fun <reified I : Any> adaptiveNode(
@@ -361,7 +414,7 @@ inline fun <reified I : Any> adaptiveNode(
     description: String,
     category: NodeCategory,
     icon: NodeIcon,
-    wildcardInputs: List<Port>,
+    extraPorts: List<Port>,
     execOutputs: ExecOutputs = ExecOutputs.SINGLE,
 ): ActionNodeDefinition<I, Unit> = ActionNodeDefinition(
     typeId = NodeTypeId(typeId),
@@ -372,8 +425,39 @@ inline fun <reified I : Any> adaptiveNode(
     schema = nodeSchema<I>(),
     output = null,
     execOutputs = execOutputs,
-    wildcardInputs = wildcardInputs,
+    extraPorts = extraPorts,
     hasDynamicPorts = true,
+)
+
+/**
+ * Declares a [LoopAction]: `body` / `completed` exec outputs and the DATA outputs
+ * each iteration carries.
+ *
+ * Separate from [adaptiveNode] because a loop whose ports are entirely static
+ * (`action.repeat` emits an `index` and nothing else) has no business claiming
+ * `hasDynamicPorts` — that flag makes every schema resolution walk the graph
+ * looking for an answer this node does not have.
+ */
+@Suppress("LongParameterList")
+inline fun <reified I : Any> loopNode(
+    typeId: String,
+    displayName: String,
+    description: String,
+    category: NodeCategory,
+    icon: NodeIcon,
+    extraPorts: List<Port>,
+    hasDynamicPorts: Boolean = false,
+): ActionNodeDefinition<I, Unit> = ActionNodeDefinition(
+    typeId = NodeTypeId(typeId),
+    displayName = displayName,
+    description = description,
+    category = category,
+    icon = icon,
+    schema = nodeSchema<I>(),
+    output = null,
+    execOutputs = ExecOutputs.LOOP,
+    extraPorts = extraPorts,
+    hasDynamicPorts = hasDynamicPorts,
 )
 
 /**

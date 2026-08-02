@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
+import androidx.compose.material.icons.filled.Loop
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.ScreenRotation
 import androidx.compose.material.icons.filled.SensorOccupied
@@ -103,8 +105,11 @@ object EditorColors {
      *  - Boolean — red
      *  - Date & time — violet ([com.example.ottomatic.domain.model.schema.DateTime])
      *  - Struct  — blue ([ItemSchema.Object])
-     *  - Collection — orange ([ItemSchema.ListSchema] / [ItemSchema.MapSchema])
+     *  - Collection — orange ([ItemSchema.MapSchema])
      *  - Wildcard / Union / Unit / unknown — gray
+     *
+     * A [ItemSchema.ListSchema] takes its *element's* color and is told apart by
+     * its handle shape instead — see [portIsList].
      *
      * A moment gets its own color rather than joining the numbers: telling a
      * timestamp apart from a battery percentage at a glance is most of the reason
@@ -159,9 +164,23 @@ fun portTypeColor(schema: ItemSchema?): Color = when (schema) {
         else -> EditorColors.stringPort
     }
     is ItemSchema.Object -> EditorColors.structPort
-    is ItemSchema.ListSchema, is ItemSchema.MapSchema -> EditorColors.collectionPort
+    // A list wears its element's color and says "several" with its *shape* instead
+    // ([portIsList]). One orange for every collection could not tell a list of dates
+    // from a list of text, which is exactly what someone wiring a loop needs to see.
+    is ItemSchema.ListSchema -> portTypeColor(schema.element)
+    is ItemSchema.MapSchema -> EditorColors.collectionPort
     is ItemSchema.Wildcard, is ItemSchema.Union, is ItemSchema.Unit, null -> EditorColors.wildcardPort
 }
+
+/**
+ * Whether a port carries several values rather than one, and so is drawn as a
+ * stacked handle instead of a single ring.
+ *
+ * Unreal Blueprints' array-pin convention: color answers "of what?", shape answers
+ * "how many?". Keeping them on separate axes is what lets a list of text stay
+ * recognisably text.
+ */
+fun portIsList(schema: ItemSchema?): Boolean = schema is ItemSchema.ListSchema
 
 /**
  * Maps a node type's [NodeIcon] to its vector asset. Exhaustive by construction:
@@ -202,4 +221,6 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.HEADSET -> Icons.Filled.Headphones
     NodeIcon.DOCK -> Icons.Filled.Dock
     NodeIcon.DARK_MODE -> Icons.Filled.DarkMode
+    NodeIcon.LOOP -> Icons.Filled.Loop
+    NodeIcon.LIST -> Icons.AutoMirrored.Filled.FormatListBulleted
 }

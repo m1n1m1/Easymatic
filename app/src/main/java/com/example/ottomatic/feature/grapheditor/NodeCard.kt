@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
@@ -427,12 +428,13 @@ private fun PortHandle(
             .then(tapModifier),
         contentAlignment = Alignment.Center,
     ) {
+        val shape = portShape(port)
         Box(
             modifier = Modifier
                 .size((GraphGeometry.PORT_RADIUS * 2).dp)
-                .clip(CircleShape)
+                .clip(shape)
                 .background(fill)
-                .border(2.dp, ring, CircleShape),
+                .border(2.dp, ring, shape),
         )
     }
 }
@@ -442,3 +444,15 @@ private fun portColor(port: Port, isSnapTarget: Boolean): Color =
         PortKind.EXECUTION -> EditorColors.execPort
         PortKind.DATA -> portTypeColor(port.schema)
     }
+
+/**
+ * A round handle carries one value, a square one carries a list.
+ *
+ * Unreal Blueprints' array-pin convention, and the reason [portTypeColor] gives a
+ * list its *element's* color: the two questions a port answers — of what, and how
+ * many — get one channel each, so "a list of dates" stays recognisably dates. The
+ * size is unchanged either way, because the edge geometry anchors on
+ * [GraphGeometry.PORT_RADIUS].
+ */
+private fun portShape(port: Port): Shape =
+    if (portIsList(port.schema)) RoundedCornerShape(2.dp) else CircleShape

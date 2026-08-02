@@ -76,12 +76,6 @@ enum class Direction {
     OUT,
 }
 
-/** How many items a data port may carry. EXECUTION ports always [ONE]. */
-enum class Cardinality {
-    ONE,
-    MANY,
-}
-
 /**
  * A connection point on a node.
  *
@@ -89,13 +83,19 @@ enum class Cardinality {
  * determines the order in which nodes run. DATA ports carry a typed
  * [Item][com.example.ottomatic.domain.model.schema.Item] whose shape is
  * described by [schema]. [schema] is null for EXECUTION ports.
+ *
+ * A port carries exactly one item. "Several of them" is a property of the
+ * *value*, not of the port: it is [ItemSchema.ListSchema], the same as any other
+ * schema, so it type-checks, converts and renders through the machinery that was
+ * already there. A `Cardinality.MANY` flag lived here until 2026-08-02 and was
+ * read by nothing; a second notion of "many" beside the schema could only ever
+ * drift out of agreement with it.
  */
 data class Port(
     val name: PortName,
     val kind: PortKind,
     val direction: Direction,
     val schema: ItemSchema? = null,
-    val cardinality: Cardinality = Cardinality.ONE,
     val label: String = name.value,
 )
 

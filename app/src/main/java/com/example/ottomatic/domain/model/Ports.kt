@@ -28,6 +28,23 @@ object ExecPorts {
     val OUT = PortName("out")
     val TRUE = PortName("true")
     val FALSE = PortName("false")
+
+    /** A loop's per-iteration pulse. See [com.example.ottomatic.engine.LoopAction]. */
+    val BODY = PortName("body")
+
+    /** A loop's after-the-last-iteration pulse. */
+    val COMPLETED = PortName("completed")
+
+    /**
+     * What a loop's two exec outputs are *called* on the card.
+     *
+     * Wiring the wrong one of the two is the single mistake everybody makes with a
+     * loop, and "body"/"completed" only read as obvious to someone who already
+     * knows what a loop is. The port *names* stay as they are — they are persisted
+     * in saved graphs — so this is a display concern and lives beside them.
+     */
+    const val BODY_LABEL = "Repeat this"
+    const val COMPLETED_LABEL = "When finished"
 }
 
 /** EXECUTION input port. */
@@ -35,8 +52,8 @@ fun execIn(name: PortName = ExecPorts.IN): Port =
     Port(name = name, kind = PortKind.EXECUTION, direction = Direction.IN)
 
 /** EXECUTION output port. */
-fun execOut(name: PortName = ExecPorts.OUT): Port =
-    Port(name = name, kind = PortKind.EXECUTION, direction = Direction.OUT)
+fun execOut(name: PortName = ExecPorts.OUT, label: String = name.value): Port =
+    Port(name = name, kind = PortKind.EXECUTION, direction = Direction.OUT, label = label)
 
 /**
  * A node's typed DATA output port: the port declaration *and* the encoder for
@@ -51,7 +68,6 @@ class DataOut<T : Any> @PublishedApi internal constructor(
     val name: PortName,
     val schema: ItemSchema,
     val label: String,
-    val cardinality: Cardinality,
     @PublishedApi internal val encoder: (T) -> Item,
 ) {
     /** The declaration consumed by [NodeTypeDefinition.ports]. */
@@ -60,7 +76,6 @@ class DataOut<T : Any> @PublishedApi internal constructor(
         kind = PortKind.DATA,
         direction = Direction.OUT,
         schema = schema,
-        cardinality = cardinality,
         label = label,
     )
 
@@ -71,16 +86,18 @@ class DataOut<T : Any> @PublishedApi internal constructor(
 /**
  * Declares a node's typed DATA output port. The port's [ItemSchema] is derived
  * from the `@Serializable` payload type [T].
+ *
+ * [T] may itself be a `List<…>`: `buildSchema` maps `StructureKind.LIST` to
+ * [ItemSchema.ListSchema], so `dataOut<List<String>>("values")` is a list port with
+ * no further ceremony.
  */
 inline fun <reified T : Any> dataOut(
     name: String,
     label: String = name,
-    cardinality: Cardinality = Cardinality.ONE,
 ): DataOut<T> = DataOut(
     name = PortName(name),
     schema = schemaOf<T>(),
     label = label,
-    cardinality = cardinality,
     encoder = { Item.of(it) },
 )
 
@@ -121,5 +138,27 @@ fun structDataIn(name: String, label: String = name): Port = Port(
     label = label,
 )
 
+/**
+ * DATA input port accepting *any list*, but only a list — what `action.for_each`
+ * and the list transforms take.
+ *
+ * The exact counterpart of [structDataIn], built the same way and for the same
+ * reason: [ItemSchema.ListSchema] with a [ItemSchema.Wildcard] element demands
+ * nothing of the element type, so `isAssignableFrom` accepts every list and
+ * rejects every primitive, struct and map. A plain wildcard would accept a number,
+ * and a loop over a number is not a thing — the node would iterate nothing and
+ * leave the user wondering why.
+ */
+fun listDataIn(name: String, label: String = name): Port = Port(
+    name = PortName(name),
+    kind = PortKind.DATA,
+    direction = Direction.IN,
+    schema = ANY_LIST,
+    label = label,
+)
+
 /** The schema meaning "any object at all" — see [structDataIn]. */
 val ANY_STRUCT: ItemSchema = ItemSchema.Object(fields = emptyMap())
+
+/** The schema meaning "any list at all" — see [listDataIn]. */
+val ANY_LIST: ItemSchema = ItemSchema.ListSchema(ItemSchema.Wildcard)

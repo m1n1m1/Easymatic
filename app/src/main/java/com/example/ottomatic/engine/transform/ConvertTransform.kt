@@ -58,7 +58,7 @@ class ConvertTransform : RawTransform<ConvertConfig> {
         description = "Turns a value into another type — text, a number, yes/no or a date",
         category = NodeCategory.TRANSFORM_DATA,
         icon = NodeIcon.CONVERT,
-        wildcardInputs = listOf(wildcardDataIn(CONVERT_IN.value, label = "Value")),
+        extraPorts = listOf(wildcardDataIn(CONVERT_IN.value, label = "Value")),
         output = Port(
             name = TRANSFORM_OUT,
             kind = PortKind.DATA,

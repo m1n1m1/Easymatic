@@ -1,13 +1,17 @@
 package com.example.ottomatic.engine.validation
 
+import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecConnection
+import com.example.ottomatic.domain.model.ExecPorts
 import com.example.ottomatic.domain.model.NodeKind
+import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
+import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.effectivePort
@@ -72,7 +76,27 @@ class GraphValidator(private val workflow: Workflow) {
         validateStrictDataSemantics(issues)
         validateValueNodesAreUsed(issues)
         validateTriggers(issues)
+        validateLoopBodies(issues)
         return GraphValidation(issues)
+    }
+
+    /**
+     * A loop whose `body` output goes nowhere walks its list and does nothing with
+     * it. Structurally fine — `completed` may well be wired — so it is a warning in
+     * the same family as an unwired trigger: the graph works, it just cannot do
+     * what the node is for yet.
+     */
+    private fun validateLoopBodies(out: MutableList<ValidationIssue>) {
+        val emptyLoops = workflow.nodes
+            .filter { NodeTypeRegistry.byId(it.typeId)?.port(ExecPorts.BODY) != null }
+            .filter { workflow.outgoingExec(it.id, ExecPorts.BODY).isEmpty() }
+        for (node in emptyLoops) {
+            out += ValidationIssue(
+                Severity.WARNING,
+                "'${node.name}' has nothing in its loop body, so repeating does nothing",
+                nodes = setOf(node.id),
+            )
+        }
     }
 
     /**
@@ -261,15 +285,18 @@ class GraphValidator(private val workflow: Workflow) {
      * no such edge does nothing at all. That is almost always an unfinished wiring
      * rather than an intent, but it breaks nothing — hence a warning.
      *
-     * A transform additionally warns when nothing feeds it: it would silently
-     * convert its own form values, which is legal but rarely what was meant.
+     * A transform additionally warns when nothing feeds it *and* nothing was typed
+     * into it either: with neither, it can only produce its declared defaults, which
+     * is never what anyone meant. Having typed something in is the whole point of a
+     * `transform.split_text` used as a list literal — one item per line in the form,
+     * no edge — so warning on that would put a permanent badge on a correct graph.
      */
     private fun validateValueNodesAreUsed(out: MutableList<ValidationIssue>) {
         val consumed = workflow.dataConnections.map { it.fromNodeId }.toSet()
         val fed = workflow.dataConnections.map { it.toNodeId }.toSet()
         for (node in workflow.nodes) {
             if (!isPullNode(node.id)) continue
-            val kind = NodeTypeRegistry.byId(node.typeId)?.kind
+            val definition = NodeTypeRegistry.byId(node.typeId)
             if (node.id !in consumed) {
                 out += ValidationIssue(
                     Severity.WARNING,
@@ -277,7 +304,8 @@ class GraphValidator(private val workflow: Workflow) {
                     nodes = setOf(node.id),
                 )
             }
-            if (kind == NodeKind.TRANSFORM && node.id !in fed) {
+            val starved = definition?.kind == NodeKind.TRANSFORM && node.id !in fed && !node.hasTypedInput(definition)
+            if (starved) {
                 out += ValidationIssue(
                     Severity.WARNING,
                     "'${node.name}' has nothing wired into it and will only use its own settings",
@@ -286,6 +314,17 @@ class GraphValidator(private val workflow: Workflow) {
             }
         }
     }
+
+    /**
+     * True when something has been typed into a field this node could equally have
+     * been *wired* on — a `@Wired` property, whose config key is its port name.
+     *
+     * That equivalence is what makes the check meaningful: the form value and the
+     * edge are two ways of supplying the same input, so having one is not being
+     * starved of the other.
+     */
+    private fun WorkflowNode.hasTypedInput(definition: NodeTypeDefinition): Boolean =
+        definition.inputs(PortKind.DATA).any { port -> config[ConfigKey(port.name.value)]?.isNotBlank() == true }
 
     /**
      * A cycle is quarantined by blocking the one edge that closes it, which leaves

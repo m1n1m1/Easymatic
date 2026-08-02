@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
@@ -20,6 +21,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -345,6 +347,7 @@ private fun PortListField(
                 colors = colors,
                 onNameChange = { onValueChange(PortSpec.encode(rows.replacing(index, row.copy(name = it)))) },
                 onTypeChange = { onValueChange(PortSpec.encode(rows.replacing(index, row.copy(type = it)))) },
+                onListChange = { onValueChange(PortSpec.encode(rows.replacing(index, row.copy(list = it)))) },
                 onRemove = { onValueChange(PortSpec.encode(rows.dropping(index))) },
             )
         }
@@ -378,6 +381,7 @@ private fun PortListRow(
     colors: TextFieldColors,
     onNameChange: (String) -> Unit,
     onTypeChange: (ValueType?) -> Unit,
+    onListChange: (Boolean) -> Unit,
     onRemove: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -429,9 +433,30 @@ private fun PortListRow(
                 }
             }
         }
+        ListToggle(on = row.list, onChange = onListChange)
         IconButton(onClick = onRemove) {
             Icon(Icons.Filled.Close, contentDescription = "Remove port")
         }
+    }
+}
+
+/**
+ * "Is this port a list?", as a toggle beside the type rather than as more entries
+ * in the type dropdown.
+ *
+ * Type and count are two independent questions — a list of text and a single text
+ * differ in one of them — so folding them into one control would double the
+ * dropdown and still have no way to say "a list of anything". Unreal Blueprints
+ * splits the same pair across two controls on a pin for the same reason.
+ */
+@Composable
+private fun ListToggle(on: Boolean, onChange: (Boolean) -> Unit) {
+    IconToggleButton(checked = on, onCheckedChange = onChange) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
+            contentDescription = if (on) "This port carries a list" else "This port carries one value",
+            tint = if (on) EditorColors.textPrimary else EditorColors.textSecondary,
+        )
     }
 }
 

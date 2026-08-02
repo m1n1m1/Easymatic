@@ -34,6 +34,10 @@ import com.example.ottomatic.domain.registry.IF_VALUE_IN
 import com.example.ottomatic.domain.registry.DragOrigin
 import com.example.ottomatic.domain.registry.NodeSuggestion
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.domain.registry.COMPARISON_TYPE_IDS
+import com.example.ottomatic.domain.registry.JSON_READ_LIST_KEY
+import com.example.ottomatic.domain.registry.JSON_READ_TYPE_ID
+import com.example.ottomatic.domain.registry.JSON_READ_TYPE_KEY
 import com.example.ottomatic.domain.registry.SCRIPT_INPUTS_KEY
 import com.example.ottomatic.domain.registry.SCRIPT_OUTPUTS_KEY
 import com.example.ottomatic.domain.registry.SCRIPT_TYPE_ID
@@ -899,9 +903,10 @@ class GraphEditorViewModel(
     private fun pruneRetypedEdges(workflow: Workflow, nodeId: NodeId, key: ConfigKey): Workflow {
         val typeId = workflow.node(nodeId)?.typeId
         return when {
-            // `action.if`'s type chooser: the `source`/`value` schemas are about
-            // to change and the old connections would likely fail the new check.
-            key == IF_TYPE_CONFIG_KEY && typeId == IF_TYPE_ID -> workflow.copy(
+            // A comparison's type chooser (`action.if`, `action.while`): the
+            // `source`/`value` schemas are about to change and the old connections
+            // would likely fail the new check.
+            key == IF_TYPE_CONFIG_KEY && typeId in COMPARISON_TYPE_IDS -> workflow.copy(
                 dataConnections = workflow.dataConnections.filterNot {
                     it.toNodeId == nodeId && (it.toPort == IF_SOURCE_IN || it.toPort == IF_VALUE_IN)
                 },
@@ -910,6 +915,11 @@ class GraphEditorViewModel(
             // or retype it, so every edge touching this node is re-checked
             // against the ports it now has.
             key in SCRIPT_PORT_KEYS && typeId == SCRIPT_TYPE_ID ->
+                workflow.copy(dataConnections = workflow.dataConnections.filter { it.stillValid(workflow, nodeId) })
+            // A JSON read's result type and its list switch both retype the one
+            // output port, so an edge that fitted a Text no longer fits a list of
+            // them. Re-checked rather than dropped, for the same reason as above.
+            key in JSON_READ_PORT_KEYS && typeId == JSON_READ_TYPE_ID ->
                 workflow.copy(dataConnections = workflow.dataConnections.filter { it.stillValid(workflow, nodeId) })
             else -> workflow
         }
@@ -986,6 +996,8 @@ class GraphEditorViewModel(
 
         /** The two `@Ports` config keys on `action.script`, both of which retype its ports. */
         private val SCRIPT_PORT_KEYS = setOf(SCRIPT_INPUTS_KEY, SCRIPT_OUTPUTS_KEY)
+
+        private val JSON_READ_PORT_KEYS = setOf(JSON_READ_TYPE_KEY, JSON_READ_LIST_KEY)
 
         @Suppress("LongParameterList") // Mirrors the ViewModel's injected dependencies 1:1.
         fun factory(

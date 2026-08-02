@@ -21,6 +21,7 @@ import com.example.ottomatic.engine.RawAction
 import com.example.ottomatic.engine.adaptiveNode
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -96,7 +97,7 @@ class ScriptAction : RawAction<ScriptConfig> {
         // No declared data ports at all: both sides are named in config and
         // resolved by `scriptEffectivePorts`, so a script that reads nothing has
         // no input handles rather than unused ones.
-        wildcardInputs = emptyList(),
+        extraPorts = emptyList(),
     )
 
     override suspend fun executeRaw(
@@ -184,6 +185,7 @@ class ScriptAction : RawAction<ScriptConfig> {
             outputs.size == 1 && returned !is JsonObject -> returned
             else -> (returned as? JsonObject)?.get(spec.name)
         }
+        if (spec.list) return listItem(spec, found, config)
         // An untyped port passes the raw JSON through: `Item.asText()` renders it
         // the same way, so it still reads correctly downstream, and there is no
         // type to convert it to.
@@ -191,6 +193,24 @@ class ScriptAction : RawAction<ScriptConfig> {
             item = found?.let { Item(value = it, schema = ItemSchema.Wildcard) },
             fallback = config.fallback,
         ) ?: Item(value = found ?: JsonPrimitive(config.fallback), schema = ItemSchema.Wildcard)
+    }
+
+    /**
+     * A list output port's item: the returned JavaScript array, element by element
+     * through the same total conversion the scalar branch uses.
+     *
+     * Anything that is not an array reads as the empty list. A script that declares
+     * a list port and returns a single value has a bug in it, and quietly wrapping
+     * that value would hide it behind a loop that ran exactly once.
+     */
+    private fun listItem(spec: PortSpec, found: JsonElement?, config: ScriptConfig): Item {
+        val elements = (found as? JsonArray).orEmpty()
+        val type = spec.type
+            ?: return Item(elements.toList(), ItemSchema.ListSchema(ItemSchema.Wildcard))
+        val converted = elements.map { element ->
+            type.convert(Item(value = element, schema = ItemSchema.Wildcard), config.fallback).value
+        }
+        return Item(converted, ItemSchema.ListSchema(type.schema))
     }
 
     /**

@@ -5,6 +5,7 @@ package com.example.ottomatic.domain.registry
 import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.domain.model.Direction
+import com.example.ottomatic.domain.model.ANY_LIST
 import com.example.ottomatic.domain.model.ANY_STRUCT
 import com.example.ottomatic.domain.model.ExecPorts
 import com.example.ottomatic.domain.model.NodeTypeDefinition
@@ -63,6 +64,20 @@ val BREAK_TYPE_ID = NodeTypeId("action.break")
 /** typeId of the adaptive comparison action — the graph's only conditional branch. */
 val IF_TYPE_ID = NodeTypeId("action.if")
 
+/** typeId of the condition-controlled loop. */
+val WHILE_TYPE_ID = NodeTypeId("action.while")
+
+/**
+ * The nodes whose config *is* a comparison.
+ *
+ * `action.if` and `action.while` ask the same question and differ only in what they
+ * do with the answer — branch, or go round again. Everything the question needs is
+ * therefore shared: the two `source`/`value` ports, the graph-narrowed form, and
+ * `evaluateCompare` itself. Keeping this a set rather than repeating the typeId
+ * check is what stops the two drifting into two slightly different comparisons.
+ */
+val COMPARISON_TYPE_IDS = setOf(IF_TYPE_ID, WHILE_TYPE_ID)
+
 /** The data input port on `action.if` carrying the value to inspect. */
 val IF_SOURCE_IN = PortName("source")
 
@@ -86,6 +101,36 @@ val JSON_READ_TYPE_ID = NodeTypeId("transform.json_read")
 
 /** The config key naming a JSON read's result type (a [ValueType]). */
 val JSON_READ_TYPE_KEY = ConfigKey("type")
+
+/** The config key saying a JSON read lands on an array, making its output a list. */
+val JSON_READ_LIST_KEY = ConfigKey("list")
+
+/** typeId of the for-each loop — the graph's only iteration over a list. */
+val FOR_EACH_TYPE_ID = NodeTypeId("action.for_each")
+
+/** The data input port on `action.for_each` carrying the list to walk. */
+val FOR_EACH_LIST_IN = PortName("list")
+
+/** The data output port on `action.for_each` carrying the current element. */
+val FOR_EACH_ITEM_OUT = PortName("item")
+
+/** The data output port carrying the current position, on both loop nodes. */
+val LOOP_INDEX_OUT = PortName("index")
+
+/** typeId of the count-based loop. */
+val REPEAT_TYPE_ID = NodeTypeId("action.repeat")
+
+/** The data input port every list transform reads its list from. */
+val LIST_IN = PortName("list")
+
+/** typeId of the transform reading one element out of a list. */
+val LIST_ITEM_TYPE_ID = NodeTypeId("transform.list_item")
+
+/** typeId of the transform reordering a list. */
+val LIST_SORT_TYPE_ID = NodeTypeId("transform.list_sort")
+
+/** typeId of the transform taking a run of elements out of a list. */
+val LIST_SLICE_TYPE_ID = NodeTypeId("transform.list_slice")
 
 /** typeId of the text building transform. */
 val TEXT_TYPE_ID = NodeTypeId("transform.text")
@@ -159,11 +204,74 @@ private fun effectivePorts(
     val deeper = visiting + node.id
     return when (definition.typeId) {
         BREAK_TYPE_ID -> breakEffectivePorts(workflow, node, deeper)
-        IF_TYPE_ID -> ifEffectivePorts(workflow, node, deeper)
-        CONVERT_TYPE_ID -> typedTransformPorts(definition, workflow, node, CONVERT_TO_KEY, deeper)
-        JSON_READ_TYPE_ID -> typedTransformPorts(definition, workflow, node, JSON_READ_TYPE_KEY, deeper)
+        IF_TYPE_ID -> comparisonEffectivePorts(workflow, node, deeper, BRANCH_EXEC_PORTS)
+        WHILE_TYPE_ID -> comparisonEffectivePorts(workflow, node, deeper, LOOP_EXEC_PORTS) +
+            dataPort(LOOP_INDEX_OUT, Direction.OUT, ItemSchema.Primitive(Int::class), label = "Index")
+        CONVERT_TYPE_ID -> typedTransformPorts(definition, workflow, node, CONVERT_TO_KEY, null, deeper)
+        JSON_READ_TYPE_ID ->
+            typedTransformPorts(definition, workflow, node, JSON_READ_TYPE_KEY, JSON_READ_LIST_KEY, deeper)
         SCRIPT_TYPE_ID -> scriptEffectivePorts(definition, node)
+        FOR_EACH_TYPE_ID -> forEachEffectivePorts(workflow, node, deeper)
+        LIST_ITEM_TYPE_ID -> listOutputPorts(definition, workflow, node, deeper) { it.element }
+        LIST_SORT_TYPE_ID, LIST_SLICE_TYPE_ID -> listOutputPorts(definition, workflow, node, deeper) { it }
         else -> definition.ports
+    }
+}
+
+/**
+ * The element type of the list wired into [port] of [node], or null when nothing is
+ * wired or what is wired is not a list.
+ *
+ * The shared half of every list-aware resolution below: `action.for_each` and
+ * `transform.list_item` want `.element`, `transform.list_sort` and
+ * `transform.list_slice` want the list itself, and all four ask the same question
+ * first.
+ */
+private fun wiredListSchema(
+    workflow: Workflow,
+    node: WorkflowNode,
+    port: PortName,
+    visiting: Set<NodeId>,
+): ItemSchema.ListSchema? = resolveInputSchema(workflow, node, port, visiting) as? ItemSchema.ListSchema
+
+/**
+ * Ports for `action.for_each`: the fixed exec and index ports, plus an `item`
+ * output typed from whatever list is wired in.
+ *
+ * The exec ports are re-declared by hand for the same reason [ifEffectivePorts]
+ * does it — this replaces the declared port list wholesale, so anything left out
+ * disappears from the card.
+ */
+private fun forEachEffectivePorts(workflow: Workflow, node: WorkflowNode, visiting: Set<NodeId>): List<Port> {
+    val element = wiredListSchema(workflow, node, FOR_EACH_LIST_IN, visiting)?.element ?: ItemSchema.Wildcard
+    return listOf(
+        execIn(),
+        execOut(ExecPorts.BODY, ExecPorts.BODY_LABEL),
+        execOut(ExecPorts.COMPLETED, ExecPorts.COMPLETED_LABEL),
+        dataPort(FOR_EACH_LIST_IN, Direction.IN, ANY_LIST, label = "List"),
+        dataPort(FOR_EACH_ITEM_OUT, Direction.OUT, element, label = "Item"),
+        dataPort(LOOP_INDEX_OUT, Direction.OUT, ItemSchema.Primitive(Int::class), label = "Index"),
+    )
+}
+
+/**
+ * Ports for a list transform whose output type follows its input: [element] picks
+ * what the output carries, given the wired list's schema.
+ *
+ * Unlike [typedTransformPorts] there is nothing to narrow against the consumer —
+ * the answer comes from upstream, and a consumer that wants something else has to
+ * convert visibly like everyone else.
+ */
+private fun listOutputPorts(
+    definition: NodeTypeDefinition,
+    workflow: Workflow,
+    node: WorkflowNode,
+    visiting: Set<NodeId>,
+    element: (ItemSchema.ListSchema) -> ItemSchema,
+): List<Port> {
+    val schema = wiredListSchema(workflow, node, LIST_IN, visiting)?.let(element) ?: ItemSchema.Wildcard
+    return definition.ports.map { port ->
+        if (port.name == TRANSFORM_OUT && port.direction == Direction.OUT) port.copy(schema = schema) else port
     }
 }
 
@@ -207,17 +315,29 @@ private fun scriptEffectivePorts(definition: NodeTypeDefinition, node: WorkflowN
  * "Whole number" is one choice in the form because nobody wants to pick between
  * Int and Long, but the edge still has to type-check exactly, and the conversion
  * is total either way.
+ *
+ * [listKey], when the node has one, turns the result into a list of that family.
+ * The consumer narrowing is skipped in that case: it exists to pin one primitive
+ * out of a family against a single consuming port, and the family's own default is
+ * the only sensible element type for a list.
  */
+@Suppress("LongParameterList") // Two config keys and the recursion guard travel together.
 private fun typedTransformPorts(
     definition: NodeTypeDefinition,
     workflow: Workflow,
     node: WorkflowNode,
     typeKey: ConfigKey,
+    listKey: ConfigKey?,
     visiting: Set<NodeId>,
 ): List<Port> {
     val selected = configuredValueType(node, typeKey)
-    val consumer = resolveOutputSchema(workflow, node, TRANSFORM_OUT, visiting)?.takeIf { selected.covers(it) }
-    val schema = consumer ?: selected.schema
+    val asList = listKey != null && node.config[listKey]?.toBooleanStrictOrNull() == true
+    val schema = if (asList) {
+        ItemSchema.ListSchema(selected.schema)
+    } else {
+        resolveOutputSchema(workflow, node, TRANSFORM_OUT, visiting)?.takeIf { selected.covers(it) }
+            ?: selected.schema
+    }
     return definition.ports.map { port ->
         if (port.name == TRANSFORM_OUT && port.direction == Direction.OUT) port.copy(schema = schema) else port
     }
@@ -301,7 +421,7 @@ fun effectiveConfigSchema(
     node: WorkflowNode,
 ): NodeConfigSchema? {
     val declared = ConfigSchemaRegistry.byId(definition.typeId) ?: return null
-    val narrowed = if (definition.typeId == IF_TYPE_ID) {
+    val narrowed = if (definition.typeId in COMPARISON_TYPE_IDS) {
         compareSchema(declared, workflow, node)
     } else {
         declared
@@ -436,7 +556,10 @@ private fun compareSchema(
             else -> field
         }
     }
-    return NodeConfigSchema(typeId = IF_TYPE_ID, fields = fields)
+    // The node's own id, not `action.if`'s: `action.while` narrows through here too,
+    // and stamping the wrong typeId onto its form would have the editor look its
+    // fields up against the wrong node.
+    return NodeConfigSchema(typeId = declared.typeId, fields = fields)
 }
 
 /** Replaces a derived field's type with an ENUM over [options]. */
@@ -538,17 +661,37 @@ private fun breakEffectivePorts(workflow: Workflow, node: WorkflowNode, visiting
     return base + schema.fields.map { (name, fieldSchema) -> dataPort(PortName(name), Direction.OUT, fieldSchema) }
 }
 
+/** `action.if`'s exec ports: it routes the answer. */
+private val BRANCH_EXEC_PORTS: List<Port> = listOf(execIn(), execOut(ExecPorts.TRUE), execOut(ExecPorts.FALSE))
+
+/** `action.while`'s exec ports: it repeats on the answer. */
+private val LOOP_EXEC_PORTS: List<Port> = listOf(
+    execIn(),
+    execOut(ExecPorts.BODY, ExecPorts.BODY_LABEL),
+    execOut(ExecPorts.COMPLETED, ExecPorts.COMPLETED_LABEL),
+)
+
 /**
- * Effective ports for `action.if`: the static exec in + true/false ports, with the
- * `source` and `value` DATA input port schemas rewritten from the `type` config and
- * any connected edge.
+ * Effective ports for a comparison node ([COMPARISON_TYPE_IDS]): [execPorts], plus
+ * the `source` and `value` DATA inputs rewritten from the `type` config and any
+ * connected edge.
+ *
+ * The exec ports are a parameter rather than hard-coded because that is the *only*
+ * thing `action.if` and `action.while` disagree about — everything to do with the
+ * comparison itself is identical, and a second copy of this function would be two
+ * places for the source schema to be resolved differently.
+ *
+ * They have to be listed at all because this replaces the declared port set
+ * wholesale: anything left out simply vanishes from the card.
  */
-private fun ifEffectivePorts(workflow: Workflow, node: WorkflowNode, visiting: Set<NodeId>): List<Port> {
+private fun comparisonEffectivePorts(
+    workflow: Workflow,
+    node: WorkflowNode,
+    visiting: Set<NodeId>,
+    execPorts: List<Port>,
+): List<Port> {
     val schema = ifSourcePortSchema(workflow, node, visiting)
-    return listOf(
-        execIn(),
-        execOut(ExecPorts.TRUE),
-        execOut(ExecPorts.FALSE),
+    return execPorts + listOf(
         dataPort(IF_SOURCE_IN, Direction.IN, schema, label = "Source"),
         dataPort(IF_VALUE_IN, Direction.IN, schema, label = "Compare against"),
     )

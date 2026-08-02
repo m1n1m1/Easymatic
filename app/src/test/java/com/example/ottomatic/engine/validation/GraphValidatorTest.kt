@@ -333,6 +333,60 @@ class GraphValidatorTest {
         assertTrue(issues.none { it.severity == Severity.ERROR })
     }
 
+    @Test
+    fun `a transform with its input typed into the form is not starved`() {
+        // `transform.split_text` used as a list literal — one item per line in the
+        // form, no edge — is the documented way to make a list without an API. The
+        // form value and the edge supply the same input, so having one is not being
+        // starved of the other, and a permanent badge on a correct graph is worse
+        // than no badge at all.
+        val wf = Workflow(
+            nodes = listOf(
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(NodeId("n2"), NodeTypeId("action.for_each"), "For each", 0f, 100f),
+                WorkflowNode(
+                    NodeId("items"), NodeTypeId("transform.split_text"), "Items", 200f, 50f,
+                    config = mapOf(ConfigKey("text") to "a\nb"),
+                ),
+            ),
+            execConnections = listOf(
+                ExecConnection("e1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", NodeId("items"), TRANSFORM_OUT, NodeId("n2"), PortName("list")),
+            ),
+        )
+        val issues = GraphValidator(wf).validate().issues
+
+        assertTrue(
+            "a transform fed from its own form should not warn, got: ${issues.map { it.message }}",
+            issues.none { it.message.contains("nothing wired into it") },
+        )
+        assertTrue(issues.none { it.severity == Severity.ERROR })
+    }
+
+    @Test
+    fun `a loop with an empty body is warned about but blocks nothing`() {
+        val wf = Workflow(
+            nodes = listOf(
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                WorkflowNode(NodeId("n2"), NodeTypeId("action.repeat"), "Repeat", 0f, 100f),
+            ),
+            execConnections = listOf(
+                ExecConnection("e1", NodeId("n1"), PortName("out"), NodeId("n2"), PortName("in")),
+            ),
+        )
+        val validation = GraphValidator(wf).validate()
+
+        assertTrue(
+            "an empty loop body should warn, got: ${validation.issues.map { it.message }}",
+            validation.warnings.any { it.message.contains("nothing in its loop body") },
+        )
+        // A warning blocks nothing, by construction.
+        assertTrue(validation.blockedNodes.isEmpty())
+        assertTrue(validation.blockedConnections.isEmpty())
+    }
+
     @Suppress("unused")
     private fun portKindUnused(): PortKind = PortKind.EXECUTION
 

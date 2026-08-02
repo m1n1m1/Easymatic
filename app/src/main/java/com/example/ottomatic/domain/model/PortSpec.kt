@@ -19,22 +19,36 @@ import com.example.ottomatic.domain.model.schema.ItemSchema
  * instead buys the port a colour and a real type check, which is what makes a
  * mis-wired script a refused drop rather than a confusing `NaN`.
  *
+ * [list] is a second, independent axis: *how many* of [type], not which type. It is
+ * deliberately not a sixth [ValueType] — that enum is typed `ItemSchema.Primitive`
+ * all the way through `convert`, `ComparisonType` and the adaptive transforms, so a
+ * `LIST` member would mean widening every one of them to describe something none of
+ * them can do anything with. Unreal Blueprints splits the same two questions across
+ * two controls on a pin for the same reason, and `ANY[]` — a list of anything — is
+ * expressible here only because the axes are separate.
+ *
  * The list is persisted as one `name:TYPE` line per port in a single `String`
- * config field, for the same reason `CompareConfig.source` persists a
- * [ValueSource] as a string: every config property must be a scalar
- * ([com.example.ottomatic.domain.registry.NodeSchema] rejects a list outright),
- * so a structured setting is stored as text and parsed here. This lives in
- * `domain` because both the runtime and the design-time port derivation
- * ([com.example.ottomatic.domain.registry.effectivePorts]) must read it the
- * same way.
+ * config field, with `[]` appended for a list port (`items:TEXT[]`), for the same
+ * reason `CompareConfig.source` persists a [ValueSource] as a string: every config
+ * property must be a scalar ([com.example.ottomatic.domain.registry.NodeSchema]
+ * rejects a list outright), so a structured setting is stored as text and parsed
+ * here. This lives in `domain` because both the runtime and the design-time port
+ * derivation ([com.example.ottomatic.domain.registry.effectivePorts]) must read it
+ * the same way.
  */
-data class PortSpec(val name: String, val type: ValueType?) {
+data class PortSpec(val name: String, val type: ValueType?, val list: Boolean = false) {
 
-    /** The port's schema: the named type's, or a wildcard for "Anything". */
-    val schema: ItemSchema get() = type?.schema ?: ItemSchema.Wildcard
+    /** The port's schema: the named type's, or a wildcard for "Anything", wrapped when [list]. */
+    val schema: ItemSchema
+        get() = (type?.schema ?: ItemSchema.Wildcard).let { element ->
+            if (list) ItemSchema.ListSchema(element) else element
+        }
 
     companion object {
         private const val SEPARATOR = ':'
+
+        /** The persisted marker for a list port, appended to the type name. */
+        const val LIST_SUFFIX = "[]"
 
         /** The persisted spelling of "Anything" — deliberately not a [ValueType]. */
         const val ANY = "ANY"
@@ -80,18 +94,22 @@ data class PortSpec(val name: String, val type: ValueType?) {
             // Always written with its separator, even for an unnamed row: the
             // editor is fully controlled, so a row that encoded to nothing would
             // vanish from under the cursor the moment its name was cleared.
-            "${spec.name}$SEPARATOR${spec.type?.name ?: ANY}"
+            val suffix = if (spec.list) LIST_SUFFIX else ""
+            "${spec.name}$SEPARATOR${spec.type?.name ?: ANY}$suffix"
         }
 
         /** One editor row's worth of text, keeping names [parse] would reject. */
         fun parseLenient(line: String): PortSpec {
             val trimmed = line.trim()
             val separator = trimmed.lastIndexOf(SEPARATOR)
-            return if (separator < 0) {
-                PortSpec(trimmed, null)
-            } else {
-                PortSpec(trimmed.substring(0, separator).trim(), parseType(trimmed.substring(separator + 1)))
-            }
+            if (separator < 0) return PortSpec(trimmed, null)
+            val rawType = trimmed.substring(separator + 1).trim()
+            // The suffix is stripped before the type is looked up, so `TEXT[]` and
+            // `TEXT` reach `parseType` identically and an unrecognised type still
+            // degrades to "Anything" rather than losing its list-ness with it.
+            val list = rawType.endsWith(LIST_SUFFIX)
+            val bare = if (list) rawType.dropLast(LIST_SUFFIX.length) else rawType
+            return PortSpec(trimmed.substring(0, separator).trim(), parseType(bare), list)
         }
 
         private fun parseLine(line: String): PortSpec? =

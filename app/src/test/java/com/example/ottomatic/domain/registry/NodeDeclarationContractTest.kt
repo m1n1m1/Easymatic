@@ -3,9 +3,12 @@ package com.example.ottomatic.domain.registry
 import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.schema.ItemSchema
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -300,20 +303,58 @@ class NodeDeclarationContractTest {
      * [effectivePorts]. A typeId missing from that `when` would keep the wildcard
      * forever, so every edge out of it would be accepted and nothing downstream
      * would ever narrow — the failure is silent, hence the check.
+     *
+     * The retyping is *provoked* rather than assumed: a list transform reads its
+     * answer from whatever is wired in, so unwired it is a wildcard quite
+     * legitimately, and only feeding it a list of known type tells "resolved to
+     * wildcard because nothing is connected" apart from "resolved to wildcard
+     * because nobody added it to the `when`". The config-typed ones
+     * (`transform.convert`, `transform.json_read`) ignore the edge and answer from
+     * their own defaults, which is equally a pass.
      */
     @Test
     fun `every adaptive transform is retyped by effectivePorts`() {
-        val workflow = com.example.ottomatic.domain.model.Workflow(id = "w", name = "w")
         for (transform in transforms.filter { it.definition.hasDynamicPorts }) {
             val definition = transform.definition.nodeType
-            val resolved = effectivePorts(definition, workflow, placed(transform.typeId))
+            val node = placed(transform.typeId)
+            val resolved = effectivePorts(definition, fedWithAList(node), node)
                 .single { it.kind == PortKind.DATA && it.direction == Direction.OUT }
             assertTrue(
                 "${transform.typeId}: adaptive output was left as ${resolved.schema}; " +
                     "add it to effectivePorts",
-                resolved.schema is com.example.ottomatic.domain.model.schema.ItemSchema.Primitive,
+                resolved.schema !is ItemSchema.Wildcard,
             )
         }
+    }
+
+    /**
+     * A one-edge graph feeding [node]'s first declared data input from a list of
+     * text — `transform.split_text` being the shortest way to name one.
+     */
+    private fun fedWithAList(node: WorkflowNode): Workflow {
+        val source = WorkflowNode(
+            id = NodeId("source"),
+            typeId = NodeTypeId("transform.split_text"),
+            name = "source",
+            x = 0f,
+            y = 0f,
+        )
+        val into = NodeTypeRegistry.byId(node.typeId)!!.ports
+            .first { it.kind == PortKind.DATA && it.direction == Direction.IN }
+        return Workflow(
+            id = "w",
+            name = "w",
+            nodes = listOf(source, node),
+            dataConnections = listOf(
+                DataConnection(
+                    id = "e1",
+                    fromNodeId = source.id,
+                    fromPort = TRANSFORM_OUT,
+                    toNodeId = node.id,
+                    toPort = into.name,
+                ),
+            ),
+        )
     }
 
     private fun allConfigSchemas(): List<NodeConfigSchema> =

@@ -55,6 +55,7 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.domain.registry.matchesSearch
 
 /**
  * Below this many matching nodes the whole palette opens expanded: a list this
@@ -89,14 +90,7 @@ fun NodePaletteOverlay(
     val searching = searchTerm.isNotEmpty()
     val matchingDefinitions = NodeTypeRegistry.all
         .filter { restriction == null || it.typeId in restriction }
-        .filter { definition ->
-            searchTerm.isEmpty() || listOf(
-                definition.displayName,
-                definition.description,
-                definition.typeId.value,
-                definition.category.displayName,
-            ).any { it.contains(searchTerm, ignoreCase = true) }
-        }
+        .filter { it.matchesSearch(searchTerm) }
     // Searching and short result sets expand everything without touching
     // [expandedCategories], so clearing the search restores what the user opened.
     val expandAll = searching || matchingDefinitions.size <= AUTO_EXPAND_THRESHOLD

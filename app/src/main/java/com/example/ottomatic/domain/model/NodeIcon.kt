@@ -41,4 +41,6 @@ enum class NodeIcon {
     HEADSET,
     DOCK,
     DARK_MODE,
+    LOOP,
+    LIST,
 }
