@@ -5,6 +5,8 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.Picker
+import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.VariableChange
 import com.example.ottomatic.domain.model.schema.DateTime
@@ -17,24 +19,32 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 
 /**
- * Config for `trigger.variable_change`. The name was previously read without
- * being declared, so the trigger silently never fired until the config map was
- * edited by hand.
+ * Config for `trigger.variable_change`. Holds a
+ * [com.example.ottomatic.domain.model.VariableRef] spec chosen from the picker.
  */
 @Serializable
 data class VariableChangeConfig(
-    @Label("Variable name") val name: String = "",
+    @Label("Variable") @Picker(PickerKind.VARIABLE) val name: String = "",
 )
 
 /**
- * Trigger for `trigger.variable_change`. Fires when the named variable changes
+ * Trigger for `trigger.variable_change`. Fires when the chosen variable changes
  * value. Subscribes to variable-change events via [TriggerHost.variableChanges].
  *
  * Produces a typed [VariableChange] item on the `variable` data port.
  *
  * Payload contract with the host:
- * - `name` — the variable name
+ * - `name` — the variable's *name*, not the ref it was armed with
  * - `value` — the new string value
+ *
+ * The ref goes in and a name comes out because the host is wrapped, per arm, in a
+ * [BoundTriggerHost] that resolves the scope on the way in and the declaration on
+ * the way out. This node therefore hands its config straight through and never
+ * learns that scopes exist — and a store key can never leak into a notification.
+ *
+ * The `value` field stays text. Retyping one field of a trigger's `@Serializable`
+ * output struct is a different mechanism from retyping a whole port, and a
+ * comparison against the new value has `action.if`'s type chooser already.
  */
 class VariableChangeTrigger : Trigger<VariableChangeConfig, VariableChange> {
 

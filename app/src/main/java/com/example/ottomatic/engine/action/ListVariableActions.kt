@@ -2,9 +2,12 @@ package com.example.ottomatic.engine.action
 
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.core.service.VariableWrite
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.Picker
+import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.model.schema.anyToJsonElement
 import com.example.ottomatic.domain.model.wildcardDataIn
@@ -44,15 +47,22 @@ private const val EMPTY_LIST = "[]"
 
 private val LIST_JSON = Json { ignoreUnknownKeys = true; isLenient = true }
 
-/** The stored array for [name], or empty when it is unset or holds something else. */
-private fun readList(context: ExecutionContext, name: String): List<JsonElement> = runCatching {
-    LIST_JSON.parseToJsonElement(context.variables.get(name) ?: EMPTY_LIST) as? JsonArray
+/** The stored array for [ref], or empty when it is unset or holds something else. */
+private fun readList(context: ExecutionContext, ref: String): List<JsonElement> = runCatching {
+    LIST_JSON.parseToJsonElement(context.variables.get(ref) ?: EMPTY_LIST) as? JsonArray
 }.getOrNull().orEmpty()
 
-/** Config for `action.list_clear`. */
+/**
+ * Config for `action.list_clear`.
+ *
+ * Neither list action is adaptive, unlike `action.set_variable`. A list variable's
+ * declared type describes what its *elements* are, not what the node's port
+ * carries — and `action.list_add`'s port is a deliberate wildcard so the raw item
+ * arrives with its type intact.
+ */
 @Serializable
 data class ListClearConfig(
-    @Label("List variable name") val name: String = "",
+    @Label("List variable") @Picker(PickerKind.VARIABLE) val name: String = "",
 )
 
 /**
@@ -73,21 +83,22 @@ class ListClearAction : Action<ListClearConfig, Unit> {
     )
 
     override suspend fun execute(input: ListClearConfig, context: ExecutionContext): NodeOutput<Unit> {
-        val name = input.name.trim()
-        if (name.isEmpty()) {
-            context.log("Empty List: no name configured, nothing stored", LogLevel.WARN)
-            return NodeOutput(Unit)
+        val result = context.variables.set(input.name, EMPTY_LIST)
+        if (!context.reportRefusal(NODE, input.name, result)) {
+            context.log("$NODE: ${context.variableName(input.name)}")
         }
-        context.variables.set(name, EMPTY_LIST)
-        context.log("Empty List: $name")
         return NodeOutput(Unit)
+    }
+
+    private companion object {
+        const val NODE = "Empty List"
     }
 }
 
-/** Config for `action.list_add`. */
+/** Config for `action.list_add`. See [ListClearConfig] on why this stays non-adaptive. */
 @Serializable
 data class ListAddConfig(
-    @Label("List variable name") val name: String = "",
+    @Label("List variable") @Picker(PickerKind.VARIABLE) val name: String = "",
 )
 
 /** The DATA input carrying what to append. */
@@ -114,25 +125,35 @@ class ListAddAction : RawAction<ListAddConfig> {
         extraPorts = listOf(wildcardDataIn(LIST_ADD_VALUE_IN.value, label = "Item")),
     )
 
-    @Suppress("ReturnCount") // Two guards and the result; the alternative is nesting.
+    @Suppress("ReturnCount") // Three guards and the result; the alternative is nesting.
     override suspend fun executeRaw(
         config: ListAddConfig,
         input: NodeInput,
         context: ExecutionContext,
     ): NodeOutput<Map<PortName, Item>> {
-        val name = config.name.trim()
-        if (name.isEmpty()) {
-            context.log("Add to List: no name configured, nothing stored", LogLevel.WARN)
+        // Refuse before reading anything: appending to a constant and then throwing
+        // the result away would be work done for a write that was never going to land.
+        if (context.isConstantVariable(config.name)) {
+            context.reportRefusal(NODE, config.name, VariableWrite.REFUSED_CONSTANT)
             return NodeOutput(emptyMap())
         }
         val item = input.item(LIST_ADD_VALUE_IN)
         if (item == null) {
-            context.log("Add to List: nothing wired in, $name unchanged", LogLevel.WARN)
+            context.log(
+                "$NODE: nothing wired in, ${context.variableName(config.name)} unchanged",
+                LogLevel.WARN,
+            )
             return NodeOutput(emptyMap())
         }
-        val appended = readList(context, name) + anyToJsonElement(item.value, item.schema)
-        context.variables.set(name, JsonArray(appended).toString())
-        context.log("Add to List: $name now holds ${appended.size} item(s)")
+        val appended = readList(context, config.name) + anyToJsonElement(item.value, item.schema)
+        val result = context.variables.set(config.name, JsonArray(appended).toString())
+        if (!context.reportRefusal(NODE, config.name, result)) {
+            context.log("$NODE: ${context.variableName(config.name)} now holds ${appended.size} item(s)")
+        }
         return NodeOutput(emptyMap())
+    }
+
+    private companion object {
+        const val NODE = "Add to List"
     }
 }

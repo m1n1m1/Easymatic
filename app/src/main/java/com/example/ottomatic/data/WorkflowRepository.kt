@@ -2,6 +2,7 @@ package com.example.ottomatic.data
 
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowSummary
+import com.example.ottomatic.domain.registry.repairVariableRefs
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
@@ -21,8 +22,12 @@ import kotlinx.serialization.json.Json
  * The list screen uses [list] which only deserialises the lightweight
  * [WorkflowSummary] fields (id/name/enabled) per file, avoiding the cost of
  * decoding every full graph.
+ *
+ * [globals] is optional so tests can build a repository with no library behind it.
+ * When it is present, [load] repairs the variable references of a workflow saved
+ * before variables were declared — see [repairVariableRefs].
  */
-class WorkflowRepository(directory: File) {
+class WorkflowRepository(directory: File, private val globals: GlobalVariableRepository? = null) {
 
     private val json = Json {
         prettyPrint = true
@@ -61,7 +66,29 @@ class WorkflowRepository(directory: File) {
             json.decodeFromString(Workflow.serializer(), file.readText())
                 .takeIf { it.schemaVersion >= Workflow.CURRENT_SCHEMA_VERSION }
                 ?.copy(id = id)
+                ?.let(::repaired)
         }.getOrNull()
+    }
+
+    /**
+     * The graph with any legacy variable *names* turned into references to real
+     * declarations, and those declarations adopted into the global library.
+     *
+     * The repaired graph is returned **in memory and not written back**. Writing on
+     * load would turn `MacroEngineService.rearmAll` — which loads every enabled
+     * workflow on boot — into a write storm, and would race the editor's debounced
+     * save. The rewritten refs persist on the next ordinary save; until then this
+     * reapplies on every load, which is free because it is idempotent.
+     *
+     * The adopted *declarations* are persisted immediately, because they are the
+     * part that must survive: a ref pointing at a declaration nobody wrote down
+     * reads as deleted.
+     */
+    private fun repaired(workflow: Workflow): Workflow {
+        val library = globals ?: return workflow
+        val result = repairVariableRefs(workflow, library.list().associate { it.name to it.id })
+        library.adopt(result.adopted)
+        return result.workflow
     }
 
     suspend fun save(workflow: Workflow) {

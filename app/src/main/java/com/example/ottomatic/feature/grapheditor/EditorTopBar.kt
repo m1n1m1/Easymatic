@@ -43,8 +43,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ottomatic.engine.validation.GraphValidation
-import kotlinx.coroutines.flow.StateFlow
 
 /**
  * The editor's chrome, in two mutually exclusive modes.
@@ -64,11 +62,11 @@ import kotlinx.coroutines.flow.StateFlow
  * Everything workflow-level that is not one of the four primary controls goes in
  * the overflow menu, so the bar does not have to grow again for the next action.
  *
- * [ProblemsAction] is the one exception, and it earns it by **not being there most
- * of the time**: it draws nothing at all while the graph is clean, so the width it
- * costs is width the title only loses on a graph that has something wrong with it.
- * That is also why it is not in the overflow — a badge nobody can see until they
- * open a menu is not a warning.
+ * The console and the problems panel used to be icons here, and a third — the
+ * variables panel — would have left the title about seventy dp again. All three are
+ * now items of [EditorBottomBar], where they cost this bar nothing. Their badges
+ * are still permanently visible, on the bar's own items; a warning nobody can see
+ * until they open something is not a warning.
  *
  * The [Surface] and its 60.dp height sit *outside* the [Crossfade], so switching
  * modes is a pure fade over a fixed box — the chrome never changes height and
@@ -76,8 +74,8 @@ import kotlinx.coroutines.flow.StateFlow
  *
  * Parameters are scalars rather than the [GraphEditorUiState] they come from, so
  * that panning the canvas — which rewrites `transform` on every frame — does not
- * recompose the bar. [ConsoleAction] takes the problem count the same way, and
- * for the same reason.
+ * recompose the bar. [EditorBottomBar]'s badges take their counts the same way,
+ * and for the same reason.
  */
 @Composable
 @Suppress("LongParameterList") // Two bars' worth of controls; see the mode split above.
@@ -88,11 +86,7 @@ fun EditorTopBar(
     selectionLabel: String?,
     canConfigure: Boolean,
     isMacroEnabled: Boolean,
-    problems: StateFlow<Int>,
-    validation: StateFlow<GraphValidation>,
     onBack: () -> Unit,
-    onOpenConsole: () -> Unit,
-    onOpenProblems: () -> Unit,
     onToggleEnabled: (Boolean) -> Unit,
     onRename: (String) -> Unit,
     onDeleteWorkflow: () -> Unit,
@@ -125,11 +119,7 @@ fun EditorTopBar(
                         title = title,
                         nodeCount = nodeCount,
                         isMacroEnabled = isMacroEnabled,
-                        problems = problems,
-                        validation = validation,
                         onBack = onBack,
-                        onOpenConsole = onOpenConsole,
-                        onOpenProblems = onOpenProblems,
                         onToggleEnabled = onToggleEnabled,
                         onRename = { renaming = true },
                         onDelete = { deleting = true },
@@ -170,20 +160,23 @@ fun EditorTopBar(
     }
 }
 
-private val BAR_HEIGHT = 60.dp
+/**
+ * The editor's chrome height, below the status bar.
+ *
+ * Not private: [PanelTopBar] *replaces* this bar rather than stacking under it, so
+ * the two must be the same height or the canvas would appear to jump when a surface
+ * opens.
+ */
+val BAR_HEIGHT = 60.dp
+
 private const val MODE_FADE_MS = 150
 
 @Composable
-@Suppress("LongParameterList") // The workflow's four controls plus its identity.
 private fun WorkflowBar(
     title: String,
     nodeCount: Int,
     isMacroEnabled: Boolean,
-    problems: StateFlow<Int>,
-    validation: StateFlow<GraphValidation>,
     onBack: () -> Unit,
-    onOpenConsole: () -> Unit,
-    onOpenProblems: () -> Unit,
     onToggleEnabled: (Boolean) -> Unit,
     onRename: () -> Unit,
     onDelete: () -> Unit,
@@ -214,8 +207,6 @@ private fun WorkflowBar(
                 fontSize = 11.sp,
             )
         }
-        ProblemsAction(validation, onOpenProblems)
-        ConsoleAction(problems, onOpenConsole)
         // No "Enabled" label beside it any more — it cost more width than the
         // control it described. The switch keeps the name for TalkBack.
         Switch(

@@ -8,6 +8,8 @@ import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.GeofencePlaceRepository
+import com.example.ottomatic.data.GlobalVariableRepository
+import com.example.ottomatic.domain.registry.GlobalVariables
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.log.RunLogStore
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
@@ -56,6 +58,14 @@ object ServiceLocator {
     lateinit var geofencePlaceRepository: GeofencePlaceRepository
         private set
 
+    /**
+     * The global variable declarations, shared by the globals screen, every config
+     * picker and the legacy repair. Its contents are also published to
+     * [GlobalVariables], which is how `domain` resolves a global reference.
+     */
+    lateinit var globalVariableRepository: GlobalVariableRepository
+        private set
+
     lateinit var systemServices: SystemServices
         private set
 
@@ -100,7 +110,12 @@ object ServiceLocator {
 
     fun init(context: Context) {
         val appContext = context.applicationContext
-        workflowRepository = WorkflowRepository(appContext.filesDir)
+        // Published before anything else touches a workflow: `effectivePorts` and
+        // `GraphValidator` resolve a global reference through this, and both run
+        // from paths that can neither suspend nor be injected into.
+        globalVariableRepository = GlobalVariableRepository(appContext.filesDir)
+        GlobalVariables.hydrate(globalVariableRepository.list())
+        workflowRepository = WorkflowRepository(appContext.filesDir, globalVariableRepository)
         geofencePlaceRepository = GeofencePlaceRepository(appContext.filesDir)
         systemServices = AndroidSystemServices(appContext)
         deviceState = AndroidDeviceState(appContext)

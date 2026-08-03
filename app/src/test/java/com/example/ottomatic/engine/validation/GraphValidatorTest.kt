@@ -7,6 +7,8 @@ import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.VariableDeclaration
+import com.example.ottomatic.domain.model.VariableRef
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import org.junit.Assert.assertFalse
@@ -31,6 +33,61 @@ class GraphValidatorTest {
         val issues = GraphValidator(wf).validate().issues
         val errors = issues.filter { it.severity == Severity.ERROR }
         assertTrue("expected no errors, got: $errors", errors.isEmpty())
+    }
+
+    /**
+     * A node pointing at a variable that is not there — never chosen, or since
+     * deleted — is a warning that blocks nothing.
+     *
+     * The node degrades exactly as it always has: it logs that it stored nothing
+     * and pulses `out`. Quarantining an action because one of its fields is unset
+     * would take out work the user can see is otherwise fine, which is the same
+     * stance "'X' is not wired to anything" already takes. Deliberately *not* the
+     * stance a broken data edge gets: there, falling back would substitute a form
+     * value for a wire drawn on the canvas.
+     */
+    @Test
+    fun `a variable reference that resolves to nothing warns and blocks nothing`() {
+        val node = WorkflowNode(
+            NodeId("set"), NodeTypeId("action.set_variable"), "Remember", 0f, 0f,
+            config = mapOf(ConfigKey("name") to "not-a-declaration"),
+        )
+        val validation = GraphValidator(Workflow(nodes = listOf(node))).validate()
+
+        assertTrue(
+            validation.warnings.toString(),
+            validation.warnings.any { it.message.contains("no longer exists") && node.id in it.nodes },
+        )
+        assertTrue(validation.blockedNodes.isEmpty())
+        assertTrue(validation.isRunnable)
+    }
+
+    @Test
+    fun `a node with no variable chosen warns that it will do nothing`() {
+        val node = WorkflowNode(
+            NodeId("set"), NodeTypeId("action.set_variable"), "Remember", 0f, 0f,
+        )
+        val validation = GraphValidator(Workflow(nodes = listOf(node))).validate()
+
+        assertTrue(
+            validation.warnings.toString(),
+            validation.warnings.any { it.message.contains("no variable chosen") },
+        )
+        assertTrue(validation.isRunnable)
+    }
+
+    @Test
+    fun `a declared variable raises nothing`() {
+        val declaration = VariableDeclaration(id = "v1", name = "counter")
+        val node = WorkflowNode(
+            NodeId("set"), NodeTypeId("action.set_variable"), "Remember", 0f, 0f,
+            config = mapOf(ConfigKey("name") to VariableRef.localSpec(declaration.id)),
+        )
+        val validation = GraphValidator(
+            Workflow(nodes = listOf(node), variables = listOf(declaration)),
+        ).validate()
+
+        assertTrue(validation.warnings.none { it.message.contains("variable") })
     }
 
     @Test

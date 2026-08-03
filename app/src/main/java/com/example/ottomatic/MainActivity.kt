@@ -35,6 +35,8 @@ import com.example.ottomatic.feature.geofence.GeofencePlacesScreen
 import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
 import com.example.ottomatic.feature.grapheditor.GraphEditorScreen
 import com.example.ottomatic.feature.grapheditor.GraphEditorViewModel
+import com.example.ottomatic.feature.variables.GlobalVariablesScreen
+import com.example.ottomatic.feature.variables.GlobalVariablesViewModel
 import com.example.ottomatic.feature.workflowlist.WorkflowListScreen
 import com.example.ottomatic.feature.workflowlist.WorkflowListViewModel
 import com.example.ottomatic.ui.theme.OttomaticTheme
@@ -57,6 +59,16 @@ class MainActivity : ComponentActivity() {
         GeofencePlacesViewModel.factory(
             repository = ServiceLocator.geofencePlaceRepository,
             locationLookup = AndroidLocationLookup(applicationContext),
+            appContext = applicationContext,
+        )
+    }
+
+    // Activity-scoped for the same reason the place library is: a global variable
+    // is global, so the standalone screen and every open editor's picker must see
+    // one instance or an edit in either would be invisible in the other.
+    private val globalVariablesViewModel: GlobalVariablesViewModel by viewModels {
+        GlobalVariablesViewModel.factory(
+            repository = ServiceLocator.globalVariableRepository,
             appContext = applicationContext,
         )
     }
@@ -117,7 +129,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** The app's three destinations: workflow list, geofence library, graph editor. */
+    /**
+     * The app's four destinations: workflow list, geofence library, global
+     * variable library, graph editor.
+     */
     @Composable
     private fun AppNavHost() {
         val navController = rememberNavController()
@@ -137,11 +152,18 @@ class MainActivity : ComponentActivity() {
                     viewModel = listViewModel,
                     onOpenWorkflow = { id -> navController.navigate("$ROUTE_GRAPH_EDITOR/$id") },
                     onOpenGeofences = { navController.navigate(ROUTE_GEOFENCES) },
+                    onOpenVariables = { navController.navigate(ROUTE_VARIABLES) },
                 )
             }
             composable(ROUTE_GEOFENCES) {
                 GeofencePlacesScreen(
                     viewModel = geofencePlacesViewModel,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(ROUTE_VARIABLES) {
+                GlobalVariablesScreen(
+                    viewModel = globalVariablesViewModel,
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -172,11 +194,13 @@ class MainActivity : ComponentActivity() {
                         appContext = applicationContext,
                         appScope = ServiceLocator.appScope,
                         workflowId = workflowId,
+                        globalVariables = ServiceLocator.globalVariableRepository.variables,
                     ),
                 )
                 GraphEditorScreen(
                     viewModel = editorViewModel,
                     geofencePlaces = geofencePlacesViewModel,
+                    globalVariables = globalVariablesViewModel,
                     onBack = { navController.popBackStack() },
                     showBatteryPrompt = showBatteryPrompt,
                     onDismissBatteryPrompt = { showBatteryPrompt = false },
@@ -252,6 +276,7 @@ class MainActivity : ComponentActivity() {
         const val ROUTE_WORKFLOW_LIST = "workflowList"
         const val ROUTE_GRAPH_EDITOR = "graphEditor"
         const val ROUTE_GEOFENCES = "geofences"
+        const val ROUTE_VARIABLES = "variables"
         const val ARG_WORKFLOW_ID = "workflowId"
     }
 }

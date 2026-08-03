@@ -1,3 +1,9 @@
+// One builder per node shape, and the shapes are the point: a value, an adaptive
+// value, a transform, a raw transform, an adaptive transform, a trigger, a pulse
+// trigger, an action, an effect, an adaptive action, a loop. Splitting the file
+// would only make the set harder to read as a set.
+@file:Suppress("TooManyFunctions")
+
 package com.example.ottomatic.engine
 
 import com.example.ottomatic.core.permissions.PermissionRequirement
@@ -136,6 +142,12 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
  * Purity is a contract, not a convention: `NodeDeclarationContractTest` asserts
  * that every value node declares no exec ports, no DATA inputs and no permission
  * requirements. Anything expensive, failable or side-effecting is an action.
+ *
+ * [outputPort] is the declared port and [output] the encoder, split for the reason
+ * [TransformNodeDefinition] splits them: a value whose *type* comes from its own
+ * config declares a wildcard port and no encoder, emitting its own [Item] instead.
+ * `value.variable` is the one — a variable's type is stated by its declaration, not
+ * by the node.
  */
 @Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
 class ValueNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor(
@@ -145,7 +157,9 @@ class ValueNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor(
     val category: NodeCategory,
     val icon: NodeIcon,
     val schema: NodeSchema<C>,
-    val output: DataOut<O>,
+    val outputPort: Port,
+    @PublishedApi internal val output: DataOut<O>?,
+    val hasDynamicPorts: Boolean,
 ) {
     /** Static metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
     val nodeType: NodeTypeDefinition
@@ -155,8 +169,9 @@ class ValueNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor(
             description = description,
             kind = NodeKind.VALUE,
             category = category,
-            ports = listOf(output.port),
+            ports = listOf(outputPort),
             icon = icon,
+            hasDynamicPorts = hasDynamicPorts,
         )
 
     /** Static config-form view for [com.example.ottomatic.domain.registry.ConfigSchemaRegistry]. */
@@ -164,7 +179,8 @@ class ValueNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor(
         get() = schema.fields.takeIf { it.isNotEmpty() }?.let { NodeConfigSchema(typeId, it) }
 
     /** Wraps a successful read in the [Item] this node's output port carries. */
-    internal fun encode(value: O): Item = output.encode(value)
+    internal fun encode(value: O): Item =
+        requireNotNull(output) { "Value $typeId is adaptive and emits raw items" }.encode(value)
 }
 
 /**
@@ -334,7 +350,40 @@ inline fun <reified C : Any, O : Any> valueNode(
     category = category,
     icon = icon,
     schema = nodeSchema<C>(),
+    outputPort = output.port,
     output = output,
+    hasDynamicPorts = false,
+)
+
+/**
+ * Declares a value node whose output *schema* comes from its own config, and is
+ * therefore resolved at design time by
+ * [com.example.ottomatic.domain.registry.effectivePorts]. [output] is the declared
+ * placeholder; it must carry
+ * [com.example.ottomatic.domain.model.schema.ItemSchema.Wildcard].
+ *
+ * The mirror of [adaptiveTransformNode], and there is exactly one of these:
+ * `value.variable`, whose type is whatever its declaration says. Every other value
+ * reads a device property whose type the node itself knows.
+ */
+@Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
+inline fun <reified C : Any> adaptiveValueNode(
+    typeId: String,
+    displayName: String,
+    description: String,
+    category: NodeCategory,
+    icon: NodeIcon,
+    output: Port,
+): ValueNodeDefinition<C, Unit> = ValueNodeDefinition(
+    typeId = NodeTypeId(typeId),
+    displayName = displayName,
+    description = description,
+    category = category,
+    icon = icon,
+    schema = nodeSchema<C>(),
+    outputPort = output,
+    output = null,
+    hasDynamicPorts = true,
 )
 
 /**
@@ -373,6 +422,12 @@ inline fun <reified I : Any, O : Any> actionNode(
  * append an item with its type intact. That does not make the node adaptive:
  * nothing about these ports depends on the graph, so `hasDynamicPorts` stays false
  * and no schema resolution ever walks an edge looking for them.
+ *
+ * [hasDynamicPorts] is here rather than in [adaptiveNode] because the one effect
+ * that needs it is not a [RawAction] or a [LoopAction], which is all that builder
+ * is for: `action.set_variable` keeps its ordinary typed config and only wants its
+ * `value` port retyped to whatever the variable it writes was declared as. Same
+ * shape [loopNode] already offers, and for the same reason.
  */
 @Suppress("LongParameterList")
 inline fun <reified I : Any> effectNode(
@@ -383,6 +438,7 @@ inline fun <reified I : Any> effectNode(
     icon: NodeIcon,
     execOutputs: ExecOutputs = ExecOutputs.SINGLE,
     extraPorts: List<Port> = emptyList(),
+    hasDynamicPorts: Boolean = false,
 ): ActionNodeDefinition<I, Unit> = ActionNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -393,7 +449,7 @@ inline fun <reified I : Any> effectNode(
     output = null,
     execOutputs = execOutputs,
     extraPorts = extraPorts,
-    hasDynamicPorts = false,
+    hasDynamicPorts = hasDynamicPorts,
 )
 
 /**

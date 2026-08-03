@@ -15,11 +15,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.data.WorkflowRepository
+import com.example.ottomatic.data.trigger.VariableStore
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.VariableDeclaration
+import com.example.ottomatic.domain.model.VariableRef
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.conversionTarget
@@ -52,6 +55,8 @@ import com.example.ottomatic.engine.trigger.ManualTrigger
 import com.example.ottomatic.engine.trigger.TriggerHost
 import com.example.ottomatic.engine.validation.GraphValidation
 import com.example.ottomatic.engine.validation.GraphValidator
+import com.example.ottomatic.feature.variables.VariableScope
+import com.example.ottomatic.feature.variables.specFor
 import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
@@ -62,8 +67,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -130,6 +138,13 @@ class GraphEditorViewModel(
     private val appContext: android.content.Context,
     private val appScope: CoroutineScope,
     private val workflowId: String,
+    /**
+     * The shared global declarations. Passed in rather than read from
+     * [com.example.ottomatic.domain.registry.GlobalVariables] so the editor sees an
+     * edit made on the globals screen without polling — and so a test can state the
+     * library inline.
+     */
+    private val globalVariables: StateFlow<List<VariableDeclaration>> = MutableStateFlow(emptyList()),
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GraphEditorUiState())
@@ -206,6 +221,88 @@ class GraphEditorViewModel(
         .distinctUntilChangedBy { workflow -> workflow.runtimeSignature() to workflow.nodes.map { it.name } }
         .map { GraphValidator(it).validate() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_STOP_TIMEOUT_MS), GraphValidation.EMPTY)
+
+    // region Variables
+
+    /** This workflow's own declarations, for the dock and the config pickers. */
+    val localVariables: StateFlow<List<VariableDeclaration>> = uiState
+        .map { it.workflow.variables }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_STOP_TIMEOUT_MS), emptyList())
+
+    /**
+     * What each visible variable holds right now, keyed by its ref spec.
+     *
+     * This is what makes the dock's Variables tab a debugger rather than a list of
+     * declarations: the console says what a run *did*, and this says what the state
+     * *is*, both beside the graph.
+     *
+     * A sibling flow for the same reason [console] and [validation] are — a loop
+     * writing a counter would otherwise repaint the canvas once per pass — and
+     * `WhileSubscribed` means it costs nothing while the tab is closed.
+     *
+     * `VariableStore.changes` is used as a *tick* rather than as the data: the store
+     * emits one event per write, and re-reading the whole small map cannot drift
+     * from what a `value.variable` would read, where applying a diff could.
+     */
+    val variableValues: StateFlow<Map<String, String>> = combine(
+        localVariables,
+        globalVariables,
+        VariableStore.changes.map { }.onStart { emit(Unit) },
+    ) { locals, globals, _ ->
+        val stored = VariableStore.snapshot()
+        fun entries(declarations: List<VariableDeclaration>, scope: VariableScope) =
+            declarations.map { declaration ->
+                val spec = specFor(scope, declaration)
+                val ref = requireNotNull(VariableRef.parse(spec))
+                // A constant answers from its own declaration and is never stored,
+                // exactly as `BoundVariables` reads it.
+                val value = when {
+                    declaration.constant -> declaration.initialValue
+                    else -> stored[VariableRef.storeKey(ref, workflowId)] ?: declaration.initialValue
+                }
+                spec to value
+            }
+        (entries(locals, VariableScope.LOCAL) + entries(globals, VariableScope.GLOBAL)).toMap()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_STOP_TIMEOUT_MS), emptyMap())
+
+    /**
+     * Creates or replaces a declaration in this workflow's own set.
+     *
+     * It goes through the ordinary graph state and the ordinary debounced save, so
+     * a declaration edit persists and re-arms exactly as a config edit does — which
+     * is what [Workflow.runtimeSignature] including `variables` is for.
+     */
+    fun upsertVariable(declaration: VariableDeclaration) {
+        _uiState.update { state ->
+            val current = state.workflow.variables
+            val index = current.indexOfFirst { it.id == declaration.id }
+            val updated = if (index >= 0) {
+                current.toMutableList().apply { this[index] = declaration }
+            } else {
+                current + declaration
+            }
+            state.copy(workflow = state.workflow.copy(variables = updated.sortedBy { it.name.lowercase() }))
+        }
+        persist()
+    }
+
+    /**
+     * Removes a local declaration and the value it was holding.
+     *
+     * References to it are left exactly where they are: the Problems panel names
+     * them, and silently unwiring nodes the user did not ask about would be a much
+     * bigger edit than the one they made.
+     */
+    fun deleteVariable(id: String) {
+        VariableStore.remove(VariableRef.storeKey(VariableRef.Local(id), workflowId))
+        _uiState.update { state ->
+            state.copy(workflow = state.workflow.copy(variables = state.workflow.variables.filterNot { it.id == id }))
+        }
+        persist()
+    }
+
+    // endregion
 
     /**
      * The [Workflow.runtimeSignature] the background service is currently
@@ -790,6 +887,10 @@ class GraphEditorViewModel(
         saveJob?.cancel()
         MacroEngineService.start(appContext, MacroEngineService.ACTION_DISABLE, id)
         runLog.clear(id)
+        // Its console goes with it, and so should what it remembered — otherwise
+        // the values file accumulates entries keyed by a workflow id nothing will
+        // ever look up again.
+        VariableStore.clearScope(id)
         // viewModelScope survives this: the ViewModel is cleared by the
         // navigation that [onDeleted] performs, which is the last thing here.
         viewModelScope.launch {
@@ -1008,6 +1109,7 @@ class GraphEditorViewModel(
             appContext: android.content.Context,
             appScope: CoroutineScope,
             workflowId: String,
+            globalVariables: StateFlow<List<VariableDeclaration>>,
         ): ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 GraphEditorViewModel(
@@ -1018,6 +1120,7 @@ class GraphEditorViewModel(
                     appContext,
                     appScope,
                     workflowId,
+                    globalVariables,
                 )
             }
         }

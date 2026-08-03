@@ -208,12 +208,17 @@ interface TriggerHost {
     fun sensorMaximumRange(kind: SensorKind): Float? = null
 
     /**
-     * Stream of variable-change events ([TriggerSource.VARIABLE]) for the
-     * variable named [name]. The default implementation is empty; the
-     * Android-backed implementation reads from a process-wide variable store.
+     * Stream of variable-change events ([TriggerSource.VARIABLE]) for the variable
+     * [name] identifies. The default implementation is empty; the Android-backed
+     * implementation reads from a process-wide variable store.
+     *
+     * The host is process-global and the store is keyed by scope, so what reaches
+     * here is a **store key**, not the ref the trigger was configured with —
+     * [BoundTriggerHost] translates one into the other per arm and puts the
+     * variable's display name back into the payload.
      *
      * Payload contract:
-     * - `name` — the variable name
+     * - `name` — the variable's name
      * - `value` — the new string value
      */
     fun variableChanges(name: String): Flow<TriggerEvent> = kotlinx.coroutines.flow.emptyFlow()

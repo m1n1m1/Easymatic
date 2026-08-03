@@ -1,9 +1,10 @@
 package com.example.ottomatic.engine.action
 
-import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.Picker
+import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.engine.Action
 import com.example.ottomatic.engine.ExecutionContext
@@ -16,14 +17,17 @@ import kotlinx.serialization.Serializable
  *
  * [value] is `@Wired` and [name] is not, on purpose. The value is the thing that
  * comes from upstream — a script's result, a sensor reading, a broken-out field.
- * The name is what the *macro* calls it, and a variable whose name came down a
- * wire could not be found by `value.variable` or armed by
- * `trigger.variable_change`, both of which need to know it while the graph is
- * being edited rather than while it runs.
+ * The name is which variable the *macro* means, and one that came down a wire
+ * could not be found by `value.variable` or armed by `trigger.variable_change`,
+ * both of which need to know it while the graph is being edited rather than while
+ * it runs.
+ *
+ * It holds a [com.example.ottomatic.domain.model.VariableRef] spec chosen from the
+ * picker, never a typed name — see [PickerKind.VARIABLE].
  */
 @Serializable
 data class SetVariableConfig(
-    @Label("Variable name") val name: String = "",
+    @Label("Variable") @Picker(PickerKind.VARIABLE) val name: String = "",
     @Label("Value") @Wired val value: String = "",
 )
 
@@ -41,27 +45,37 @@ data class SetVariableConfig(
  * means "when this changes", so a macro that rewrites a variable on a timer must
  * not fire it on every tick.
  *
- * A blank name is ignored rather than writing to `""` — a half-configured node
- * should do nothing, not quietly accumulate a variable nobody can find.
+ * The node is adaptive so its `value` port can take the *declared* type of the
+ * variable it writes: a number wired at a text variable is then a refused drop
+ * carrying a visible `transform.convert`, rather than a silent flattening. That
+ * types the **connection**, not the storage — what lands in the store is still the
+ * flat text `NodeSchema.decode` produced through `asText()`.
+ *
+ * A write that is refused — nothing chosen, a declaration since deleted, or a
+ * constant — logs at WARN and still pulses `out`. It is a runtime disappointment,
+ * not a structurally broken graph, and stopping the macro dead would be a far
+ * bigger surprise than one step that says it did nothing.
  */
 class SetVariableAction : Action<SetVariableConfig, Unit> {
 
     override val definition = effectNode<SetVariableConfig>(
         typeId = "action.set_variable",
         displayName = "Set Variable",
-        description = "Remembers a value under a name, readable by later runs and other macros",
+        description = "Remembers a value in a variable, readable by later runs",
         category = NodeCategory.DATA,
         icon = NodeIcon.VARIABLE,
+        hasDynamicPorts = true,
     )
 
     override suspend fun execute(input: SetVariableConfig, context: ExecutionContext): NodeOutput<Unit> {
-        val name = input.name.trim()
-        if (name.isEmpty()) {
-            context.log("Set Variable: no name configured, nothing stored", LogLevel.WARN)
-            return NodeOutput(Unit)
+        val result = context.variables.set(input.name, input.value)
+        if (!context.reportRefusal(NODE, input.name, result)) {
+            context.log("$NODE: ${context.variableName(input.name)} = ${input.value}")
         }
-        context.variables.set(name, input.value)
-        context.log("Set Variable: $name = ${input.value}")
         return NodeOutput(Unit)
+    }
+
+    private companion object {
+        const val NODE = "Set Variable"
     }
 }

@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.trigger
 
+import com.example.ottomatic.domain.model.VariableRef
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -132,6 +133,42 @@ class VariableStoreTest {
         assertEquals("ignored", withTimeout(TIMEOUT_MS) { received.receive() })
         assertEquals("wanted", withTimeout(TIMEOUT_MS) { received.receive() })
         collector.cancel()
+    }
+
+    @Test
+    fun `deleting a workflow drops its values and leaves everyone else's`() {
+        val mine = VariableRef.storeKey(VariableRef.Local("v"), "wf1")
+        val theirs = VariableRef.storeKey(VariableRef.Local("v"), "wf2")
+        val shared = VariableRef.storeKey(VariableRef.Global("g"), "wf1")
+        VariableStore.set(mine, "a")
+        VariableStore.set(theirs, "b")
+        VariableStore.set(shared, "c")
+
+        VariableStore.clearScope("wf1")
+
+        assertNull(VariableStore.get(mine))
+        assertEquals("b", VariableStore.get(theirs))
+        assertEquals("c", VariableStore.get(shared))
+    }
+
+    @Test
+    fun `a legacy bare key is adopted, so a counter keeps counting`() {
+        // Before scoping, a variable *was* its name and every key was bare. The
+        // move is what stops a user finding a fresh zero where their count was.
+        val key = VariableRef.storeKey(VariableRef.Global("g1"), "")
+        VariableStore.set("counter", "42")
+
+        VariableStore.adoptLegacy("counter", key)
+
+        assertEquals("42", VariableStore.get(key))
+        assertNull(VariableStore.get("counter"))
+    }
+
+    @Test
+    fun `adopting a name nothing ever wrote is silent`() {
+        // Most names are adopted from a graph that has never run.
+        VariableStore.adoptLegacy("never-written", "g:g1")
+        assertNull(VariableStore.get("g:g1"))
     }
 
     /** Waits for the background file writes [scope] has been given. */

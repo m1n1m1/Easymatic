@@ -10,6 +10,7 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.TriggerRegistry
+import com.example.ottomatic.engine.trigger.BoundTriggerHost
 import com.example.ottomatic.engine.trigger.MacroEventBus
 import com.example.ottomatic.engine.trigger.TriggerHost
 import com.example.ottomatic.engine.trigger.TriggerOutput
@@ -63,7 +64,14 @@ class WorkflowRunner(
      * every `trigger.macro_enabled` node on every edit.
      */
     fun run(scope: CoroutineScope, workflow: Workflow, announceEnabled: Boolean = true): Job {
-        val executor = WorkflowExecutor(context)
+        // Both bindings happen exactly here, and this is the only place they can:
+        // it is the one site that holds the workflow, builds the executor *and*
+        // activates the triggers. Once per arm, so the declarations are snapshotted
+        // with the graph — and editing one re-arms, because `runtimeSignature`
+        // includes them.
+        val bound = context.boundTo(workflow)
+        val boundHost = BoundTriggerHost(host, workflow.id, workflow.variables)
+        val executor = WorkflowExecutor(bound)
         val triggers = workflow.nodes.filter {
             NodeTypeRegistry.byId(it.typeId)?.kind == NodeKind.TRIGGER
         }
@@ -74,7 +82,7 @@ class WorkflowRunner(
         // Activate all triggers synchronously so their flows are registered
         // before this method returns. Otherwise a caller that fires a manual
         // trigger immediately after run() would race with coroutine startup.
-        val activeTriggers = triggers.mapNotNull { node -> activate(workflow, node) }
+        val activeTriggers = triggers.mapNotNull { node -> activate(workflow, node, boundHost) }
         return scope.launch {
             supervisorScope {
                 for (active in activeTriggers) {
@@ -93,7 +101,7 @@ class WorkflowRunner(
      * after the bad one silently unarmed.
      */
     @Suppress("TooGenericExceptionCaught") // Whatever a trigger's activation throws, the others must still arm.
-    private fun activate(workflow: Workflow, node: WorkflowNode): ActiveTrigger? {
+    private fun activate(workflow: Workflow, node: WorkflowNode, host: TriggerHost): ActiveTrigger? {
         val trigger = TriggerRegistry.byId(node.typeId) ?: return null
         return try {
             ActiveTrigger(node, trigger.activateEncoded(node, host))

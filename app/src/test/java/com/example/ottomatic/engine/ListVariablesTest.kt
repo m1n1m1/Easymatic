@@ -1,13 +1,16 @@
-package com.example.ottomatic.engine
+﻿package com.example.ottomatic.engine
 
 import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.core.service.VariableWrite
 import com.example.ottomatic.core.service.Variables
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.ExecPorts
+import com.example.ottomatic.domain.model.VariableDeclaration
+import com.example.ottomatic.domain.model.VariableRef
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.FOR_EACH_ITEM_OUT
@@ -32,23 +35,29 @@ import org.junit.Test
  */
 class ListVariablesTest {
 
-    private class FakeVariables : Variables {
+    private class FakeStore : Variables {
         val written = LinkedHashMap<String, String>()
-        override fun get(name: String): String? = written[name]
-        override fun set(name: String, value: String) {
-            written[name] = value
+        override fun get(ref: String): String? = written[ref]
+        override fun set(ref: String, value: String): VariableWrite {
+            written[ref] = value
+            return VariableWrite.STORED
         }
     }
 
-    private val variables = FakeVariables()
+    private val collected = VariableDeclaration(id = "col", name = "collected")
+    private val collectedRef = VariableRef.localSpec(collected.id)
+
+    private val store = FakeStore()
     private val services = RecordingSystemServices()
     private val logs = mutableListOf<String>()
     private val context = DefaultExecutionContext(
         systemServices = services,
-        variables = variables,
+        variables = store,
         logger = { logs += it.message },
     )
-    private val executor = WorkflowExecutor(context)
+
+    /** What the list ends up under, once the run's workflow binding has scoped it. */
+    private val collectedKey = VariableRef.storeKey(VariableRef.Local(collected.id), Workflow().id)
 
     private val trigger = NodeId("trigger")
     private val items = NodeId("items")
@@ -57,10 +66,11 @@ class ListVariablesTest {
     private val add = NodeId("add")
 
     /**
-     * `trigger.manual` → `action.list_clear` → `action.for_each` over [values],
+     * `trigger.manual` -> `action.list_clear` -> `action.for_each` over [values],
      * whose body appends each item to the "collected" variable.
      */
     private fun collectingWorkflow(values: List<String>) = Workflow(
+        variables = listOf(collected),
         nodes = listOf(
             WorkflowNode(trigger, NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
             WorkflowNode(
@@ -69,12 +79,12 @@ class ListVariablesTest {
             ),
             WorkflowNode(
                 clear, NodeTypeId("action.list_clear"), "Empty", 0f, 100f,
-                config = mapOf(ConfigKey("name") to "collected"),
+                config = mapOf(ConfigKey("name") to collectedRef),
             ),
             WorkflowNode(loop, NodeTypeId("action.for_each"), "For each", 0f, 150f),
             WorkflowNode(
                 add, NodeTypeId("action.list_add"), "Add", 0f, 200f,
-                config = mapOf(ConfigKey("name") to "collected"),
+                config = mapOf(ConfigKey("name") to collectedRef),
             ),
         ),
         execConnections = listOf(
@@ -88,15 +98,20 @@ class ListVariablesTest {
         ),
     )
 
+    /**
+     * Runs [workflow] through a context bound to it, which is what `WorkflowRunner`
+     * does once per arm — and what turns the nodes' refs into scoped store keys.
+     */
     private suspend fun run(workflow: Workflow) {
-        executor.executeFrom(workflow, workflow.node(trigger)!!, TriggerOutput(emptyMap()))
+        WorkflowExecutor(context.boundTo(workflow))
+            .executeFrom(workflow, workflow.node(trigger)!!, TriggerOutput(emptyMap()))
         assertTrue(logs.toString(), logs.none { it.contains("problem") })
     }
 
     @Test
     fun `a loop collects into a list variable`() = runBlocking {
         run(collectingWorkflow(listOf("a", "b", "c")))
-        assertEquals("""["a","b","c"]""", variables.written["collected"])
+        assertEquals("""["a","b","c"]""", store.written[collectedKey])
     }
 
     @Test
@@ -104,7 +119,7 @@ class ListVariablesTest {
         val workflow = collectingWorkflow(listOf("a"))
         run(workflow)
         run(workflow)
-        assertEquals("""["a"]""", variables.written["collected"])
+        assertEquals("""["a"]""", store.written[collectedKey])
     }
 
     @Test
@@ -120,7 +135,7 @@ class ListVariablesTest {
         )
         run(workflow)
         run(workflow)
-        assertEquals("""["a","a"]""", variables.written["collected"])
+        assertEquals("""["a","a"]""", store.written[collectedKey])
     }
 
     @Test
@@ -129,7 +144,7 @@ class ListVariablesTest {
         // back into a list. This is the whole round trip that lets the store stay
         // flat text.
         run(collectingWorkflow(listOf("x", "y")))
-        val read = readBack(variables.written["collected"]!!)
+        val read = readBack(store.written[collectedKey]!!)
         assertEquals(listOf("x", "y"), read)
     }
 
@@ -151,7 +166,7 @@ class ListVariablesTest {
             ),
         )
         run(workflow)
-        assertEquals("[1,2]", variables.written["collected"])
+        assertEquals("[1,2]", store.written[collectedKey])
     }
 
     @Test
@@ -159,8 +174,19 @@ class ListVariablesTest {
         val base = collectingWorkflow(listOf("a"))
         val workflow = base.copy(dataConnections = base.dataConnections.filterNot { it.id == "d2" })
         run(workflow)
-        assertEquals("[]", variables.written["collected"])
+        assertEquals("[]", store.written[collectedKey])
         assertTrue(logs.toString(), logs.any { it.contains("nothing wired in") })
+    }
+
+    @Test
+    fun `both list actions refuse a constant, and adding does not even read it`() = runBlocking {
+        val fixed = VariableDeclaration(id = "col", name = "collected", initialValue = "[\"kept\"]", constant = true)
+        val workflow = collectingWorkflow(listOf("a")).copy(variables = listOf(fixed))
+        run(workflow)
+        // Nothing was written by either node — and `action.list_add` refused before
+        // its read-modify-write, so the constant's own value is untouched.
+        assertTrue(store.written.toString(), store.written.isEmpty())
+        assertEquals(2, logs.count { it.contains("'collected' is a constant") })
     }
 
     /** Reads [json] back through `transform.json_read` in list mode. */
@@ -178,3 +204,4 @@ class ListVariablesTest {
         return transform.transformRaw(node, emptyMap(), context)?.value
     }
 }
+

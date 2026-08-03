@@ -4,11 +4,14 @@ import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.core.service.VariableWrite
 import com.example.ottomatic.core.service.Variables
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.ExecPorts
 import com.example.ottomatic.domain.model.ValueSource
+import com.example.ottomatic.domain.model.VariableDeclaration
+import com.example.ottomatic.domain.model.VariableRef
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.ComparisonOperator
@@ -43,15 +46,20 @@ import org.junit.Test
  */
 class WhileLoopTest {
 
-    private class FakeVariables : Variables {
+    private class FakeStore : Variables {
         val written = LinkedHashMap<String, String>()
-        override fun get(name: String): String? = written[name]
-        override fun set(name: String, value: String) {
-            written[name] = value
+        override fun get(ref: String): String? = written[ref]
+        override fun set(ref: String, value: String): VariableWrite {
+            written[ref] = value
+            return VariableWrite.STORED
         }
     }
 
-    private val variables = FakeVariables()
+    /** The flag the body writes and the condition reads. */
+    private val flag = VariableDeclaration(id = "flag", name = "flag")
+    private val flagRef = VariableRef.localSpec(flag.id)
+
+    private val variables = FakeStore()
     private val services = RecordingSystemServices()
     private val logs = mutableListOf<String>()
     private val context = DefaultExecutionContext(
@@ -59,7 +67,6 @@ class WhileLoopTest {
         variables = variables,
         logger = { logs += it.message },
     )
-    private val executor = WorkflowExecutor(context)
 
     private val trigger = NodeId("trigger")
     private val init = NodeId("init")
@@ -91,6 +98,7 @@ class WhileLoopTest {
     private fun counterWorkflow(limit: String, initialise: Boolean = true): Workflow {
         val entry = if (initialise) init else loop
         return Workflow(
+            variables = listOf(flag),
             nodes = counterNodes(limit, initialise),
             execConnections = listOfNotNull(
                 ExecConnection("e0", trigger, ExecPorts.OUT, entry, ExecPorts.IN),
@@ -114,11 +122,11 @@ class WhileLoopTest {
         WorkflowNode(trigger, NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
         WorkflowNode(
             init, NodeTypeId("action.set_variable"), "Start", 0f, 50f,
-            config = mapOf(ConfigKey("name") to "flag", ConfigKey("value") to "go"),
+            config = mapOf(ConfigKey("name") to flagRef, ConfigKey("value") to "go"),
         ).takeIf { initialise },
         WorkflowNode(
             counter, NodeTypeId("value.variable"), "Flag", 200f, 80f,
-            config = mapOf(ConfigKey("name") to "flag"),
+            config = mapOf(ConfigKey("name") to flagRef),
         ),
         WorkflowNode(
             loop, WHILE_TYPE_ID, "Repeat while", 0f, 100f,
@@ -147,7 +155,7 @@ class WhileLoopTest {
         ),
         WorkflowNode(
             finish, NodeTypeId("action.set_variable"), "Stop", 0f, 300f,
-            config = mapOf(ConfigKey("name") to "flag", ConfigKey("value") to "stop"),
+            config = mapOf(ConfigKey("name") to flagRef, ConfigKey("value") to "stop"),
         ),
         WorkflowNode(
             after, NodeTypeId("action.notify"), "After", 0f, 350f,
@@ -155,8 +163,10 @@ class WhileLoopTest {
         ),
     )
 
+    /** Bound to the workflow, as `WorkflowRunner` binds it once per arm. */
     private suspend fun run(workflow: Workflow) {
-        executor.executeFrom(workflow, workflow.node(trigger)!!, TriggerOutput(emptyMap()))
+        WorkflowExecutor(context.boundTo(workflow))
+            .executeFrom(workflow, workflow.node(trigger)!!, TriggerOutput(emptyMap()))
         // A blocked node is skipped in near-silence, so a graph that failed validation
         // would otherwise present as "the loop ran zero times".
         assertTrue(logs.toString(), logs.none { it.contains("problem") })

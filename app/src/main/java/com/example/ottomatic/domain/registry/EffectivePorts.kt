@@ -15,6 +15,8 @@ import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.ValueSource
+import com.example.ottomatic.domain.model.VariableDeclaration
+import com.example.ottomatic.domain.model.VariableRef
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.ComparisonOperator
@@ -138,6 +140,21 @@ val TEXT_TYPE_ID = NodeTypeId("transform.text")
 /** typeId of the scripting action — the graph's escape hatch into real code. */
 val SCRIPT_TYPE_ID = NodeTypeId("action.script")
 
+/** typeId of the variable reader, whose output type its declaration states. */
+val VARIABLE_VALUE_TYPE_ID = NodeTypeId("value.variable")
+
+/** typeId of the variable writer, whose input port its declaration states. */
+val SET_VARIABLE_TYPE_ID = NodeTypeId("action.set_variable")
+
+/** The config key every variable-referencing node holds its ref spec in. */
+val VARIABLE_REF_KEY = ConfigKey("name")
+
+/** The DATA output port on `value.variable`. */
+val VARIABLE_VALUE_OUT = PortName("value")
+
+/** The DATA input port on `action.set_variable` carrying what to store. */
+val SET_VARIABLE_VALUE_IN = PortName("value")
+
 /** The config key holding a script's input ports (a list of [com.example.ottomatic.domain.model.PortSpec]). */
 val SCRIPT_INPUTS_KEY = ConfigKey("inputs")
 
@@ -211,6 +228,8 @@ private fun effectivePorts(
         JSON_READ_TYPE_ID ->
             typedTransformPorts(definition, workflow, node, JSON_READ_TYPE_KEY, JSON_READ_LIST_KEY, deeper)
         SCRIPT_TYPE_ID -> scriptEffectivePorts(definition, node)
+        VARIABLE_VALUE_TYPE_ID -> variableValuePorts(definition, workflow, node, deeper)
+        SET_VARIABLE_TYPE_ID -> variableWritePorts(definition, workflow, node)
         FOR_EACH_TYPE_ID -> forEachEffectivePorts(workflow, node, deeper)
         LIST_ITEM_TYPE_ID -> listOutputPorts(definition, workflow, node, deeper) { it.element }
         LIST_SORT_TYPE_ID, LIST_SLICE_TYPE_ID -> listOutputPorts(definition, workflow, node, deeper) { it }
@@ -335,11 +354,99 @@ private fun typedTransformPorts(
     val schema = if (asList) {
         ItemSchema.ListSchema(selected.schema)
     } else {
-        resolveOutputSchema(workflow, node, TRANSFORM_OUT, visiting)?.takeIf { selected.covers(it) }
-            ?: selected.schema
+        narrowedToConsumer(selected, workflow, node, TRANSFORM_OUT, visiting)
     }
     return definition.ports.map { port ->
         if (port.name == TRANSFORM_OUT && port.direction == Direction.OUT) port.copy(schema = schema) else port
+    }
+}
+
+/**
+ * [type]'s schema, narrowed to the consuming port when that port asks for a
+ * *narrower* primitive of the same family — a `Long` counter, a `Float` accuracy.
+ *
+ * "Whole number" is one choice in a form because nobody wants to pick between Int
+ * and Long, but the edge still has to type-check exactly. Written once here because
+ * both things that announce a config-chosen type — an adaptive transform and
+ * `value.variable` — have to answer the question the same way, or the same wire
+ * would be legal from one and refused from the other.
+ */
+private fun narrowedToConsumer(
+    type: ValueType,
+    workflow: Workflow,
+    node: WorkflowNode,
+    port: PortName,
+    visiting: Set<NodeId>,
+): ItemSchema = resolveOutputSchema(workflow, node, port, visiting)?.takeIf { type.covers(it) } ?: type.schema
+
+/**
+ * The declaration the ref [spec] names, local or global, or null when nothing is
+ * chosen or the declaration has been deleted.
+ *
+ * The single answer to "which variable is this node talking about?", shared by the
+ * two port resolutions below, by `GraphValidator`'s dangling-ref warning, by the
+ * legacy repair and by the config form's picker. A second copy of this would be a
+ * second opinion about what a deleted variable means.
+ */
+fun declarationFor(workflow: Workflow, spec: String?): VariableDeclaration? =
+    when (val ref = VariableRef.parse(spec.orEmpty())) {
+        null -> null
+        is VariableRef.Local -> workflow.variable(ref.id)
+        is VariableRef.Global -> GlobalVariables.byId(ref.id)
+    }
+
+/**
+ * Ports for `value.variable`: its one DATA output, typed from the declaration it
+ * reads.
+ *
+ * This is what makes a declared type worth having. A counter declared "Whole
+ * number" drops straight into a numeric port, where a text-only variable used to
+ * need a `transform.convert` in every wire leaving it — and because the type is
+ * *declared* rather than guessed, the conversion `value.variable` performs on the
+ * stored text has something visible standing behind it.
+ *
+ * An undeclared or unchosen ref leaves the wildcard alone. That is the honest
+ * answer — "not known yet", which is what a wildcard already means everywhere else
+ * — and `GraphValidator` is what says so out loud.
+ */
+private fun variableValuePorts(
+    definition: NodeTypeDefinition,
+    workflow: Workflow,
+    node: WorkflowNode,
+    visiting: Set<NodeId>,
+): List<Port> {
+    val type = declarationFor(workflow, node.config[VARIABLE_REF_KEY])?.type ?: return definition.ports
+    val schema = narrowedToConsumer(type, workflow, node, VARIABLE_VALUE_OUT, visiting)
+    return definition.ports.map { port ->
+        if (port.name == VARIABLE_VALUE_OUT && port.direction == Direction.OUT) port.copy(schema = schema) else port
+    }
+}
+
+/**
+ * Ports for `action.set_variable`: its `value` DATA input, typed from the
+ * declaration it writes.
+ *
+ * The mirror of [variableValuePorts], and it walks no edges — there is nothing
+ * downstream of an input to narrow against, and the type comes from the node's own
+ * config either way.
+ *
+ * What it types is the **connection**, not the storage: a number wired at a text
+ * variable is a refused drop that picks up a visible `transform.convert`, while
+ * what actually lands in the store is still the flat text `NodeSchema.decode`
+ * produced through `asText()`.
+ */
+private fun variableWritePorts(
+    definition: NodeTypeDefinition,
+    workflow: Workflow,
+    node: WorkflowNode,
+): List<Port> {
+    val type = declarationFor(workflow, node.config[VARIABLE_REF_KEY]) ?: return definition.ports
+    return definition.ports.map { port ->
+        if (port.name == SET_VARIABLE_VALUE_IN && port.direction == Direction.IN) {
+            port.copy(schema = type.type.schema)
+        } else {
+            port
+        }
     }
 }
 
@@ -431,18 +538,29 @@ fun effectiveConfigSchema(
 
 /**
  * The sources a comparison may inspect, as form options: whatever is wired into its
- * own `source` port, plus every value node.
+ * own `source` port, plus every value node **except `value.variable`**.
  *
- * Value nodes are always offered because they are pure — they can be read on demand
- * with no edge and no execution position, so choosing one needs nothing else on the
- * canvas.
+ * Value nodes are otherwise always offered because they are pure — they can be read
+ * on demand with no edge and no execution position, so choosing one needs nothing
+ * else on the canvas.
+ *
+ * `value.variable` is the one that cannot honour that. A `val:` source is read with
+ * *no config at all* (`resolveValueSource` passes an empty map), and every other
+ * value gives the same answer wherever it is read; this one's answer is entirely a
+ * matter of which variable was chosen, which the spec has nowhere to carry. Offering
+ * it would offer a comparison that silently never matches — the worst kind of
+ * affordance, and one that used to be there. Comparing a variable means wiring the
+ * node into `source`, which is one drag.
+ *
+ * The alternative was a third spec form (`val:value.variable:<ref>`), growing the
+ * persisted grammar and `resolveValueSource`'s signature for a single node.
  */
 private fun sourceOptions(): List<ConfigOption> =
     listOf(ConfigOption(ValueSource.WIRED_SPEC, "Wired input")) +
-        ValueRegistry.all().map { value ->
-            val definition = value.definition.nodeType
-            ConfigOption(ValueSource.valueSpec(definition.typeId), definition.displayName)
-        }
+        ValueRegistry.all()
+            .map { it.definition.nodeType }
+            .filterNot { it.typeId == VARIABLE_VALUE_TYPE_ID }
+            .map { ConfigOption(ValueSource.valueSpec(it.typeId), it.displayName) }
 
 /**
  * The [ItemSchema] of the value the [spec] source yields on [node], or null when it

@@ -60,58 +60,47 @@ import java.time.format.DateTimeFormatter
  * that calls it, so collecting one level up would invalidate `GraphEditorContent`
  * on every log line and re-run `GraphCanvas` — which will not skip, because a
  * ViewModel is not a stable type to Compose. The whole graph would repaint per
- * line. Collecting here keeps the invalidation inside the overlay.
+ * line. Collecting here keeps the invalidation inside this body, wherever it is
+ * mounted.
+ *
+ * It fills the region above [EditorBottomBar], in place of the canvas, under the
+ * [PanelTopBar] that carries its title and its Clear button.
+ *
+ * [onSelectNode] is a parameter rather than baked in because picking a line is a
+ * request to go and look at the node it names — so the host both selects it and
+ * puts the canvas back.
  */
 @Composable
-fun ConsoleOverlay(
+fun ConsoleBody(
     entries: StateFlow<List<LogEntry>>,
     minLevel: StateFlow<LogLevel>,
     onMinLevelChange: (LogLevel) -> Unit,
-    onClear: () -> Unit,
     onSelectNode: (NodeId) -> Unit,
-    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val all by entries.collectAsState()
     val level by minLevel.collectAsState()
     val visible = remember(all, level) { all.filter { it.level >= level } }
 
-    EditorOverlay(
-        title = "Console",
-        onClose = onDismiss,
-        action = {
-            IconButton(onClick = onClear) {
-                Icon(
-                    imageVector = Icons.Filled.DeleteSweep,
-                    contentDescription = "Clear console",
-                    tint = EditorColors.textSecondary,
-                )
-            }
-        },
-    ) { dismiss ->
+    Column(modifier = modifier.fillMaxSize()) {
         LevelFilter(selected = level, onSelect = onMinLevelChange)
         if (visible.isEmpty()) {
             EmptyConsole(filtered = all.isNotEmpty())
         } else {
-            LogList(
-                entries = visible,
-                onSelectNode = { nodeId ->
-                    onSelectNode(nodeId)
-                    dismiss()
-                },
-            )
+            LogList(entries = visible, onSelectNode = onSelectNode)
         }
     }
 }
 
 /**
- * The top bar's way in, and the only sign anything went wrong.
+ * The console's badge: how many lines are worth looking at.
  *
- * Its own composable so it can collect [problems] itself: a count that ticks up
- * during a run would otherwise invalidate the whole top bar, and through it
- * everything the bar is composed with.
+ * Its own composable so it can collect [problems] itself — a count that ticks up
+ * during a run would otherwise invalidate whatever it is drawn inside, and through
+ * that everything composed alongside.
  */
 @Composable
-fun ConsoleAction(problems: StateFlow<Int>, onOpen: () -> Unit) {
+fun ConsoleBadge(problems: StateFlow<Int>, content: @Composable () -> Unit) {
     val count by problems.collectAsState()
     BadgedBox(
         badge = {
@@ -119,15 +108,8 @@ fun ConsoleAction(problems: StateFlow<Int>, onOpen: () -> Unit) {
                 Badge(containerColor = EditorColors.triggerAccent) { Text("$count") }
             }
         },
-    ) {
-        IconButton(onClick = onOpen) {
-            Icon(
-                imageVector = Icons.Filled.Terminal,
-                contentDescription = "Console",
-                tint = EditorColors.textPrimary,
-            )
-        }
-    }
+        content = { content() },
+    )
 }
 
 /**

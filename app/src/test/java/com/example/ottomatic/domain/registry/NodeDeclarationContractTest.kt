@@ -6,8 +6,11 @@ import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.VariableDeclaration
+import com.example.ottomatic.domain.model.VariableRef
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.ValueType
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -322,6 +325,30 @@ class NodeDeclarationContractTest {
             assertTrue(
                 "${transform.typeId}: adaptive output was left as ${resolved.schema}; " +
                     "add it to effectivePorts",
+                resolved.schema !is ItemSchema.Wildcard,
+            )
+        }
+    }
+
+    /**
+     * The same check for the one adaptive *value*, which the transform test above
+     * cannot cover because it filters the transform registry.
+     *
+     * `value.variable` declares a wildcard and takes its type from the declaration
+     * it names, so the retyping is provoked by giving the workflow one — an
+     * undeclared ref legitimately stays a wildcard, and only a declared one tells
+     * "nothing chosen" apart from "nobody added it to the `when`".
+     */
+    @Test
+    fun `every adaptive value is retyped by effectivePorts`() {
+        val declaration = VariableDeclaration(id = "v1", name = "counter", type = ValueType.WHOLE_NUMBER)
+        for (value in values.filter { it.definition.hasDynamicPorts }) {
+            val node = placed(value.typeId).copy(config = mapOf(VARIABLE_REF_KEY to VariableRef.localSpec("v1")))
+            val workflow = Workflow(id = "w", name = "w", nodes = listOf(node), variables = listOf(declaration))
+            val resolved = effectivePorts(value.definition.nodeType, workflow, node)
+                .single { it.kind == PortKind.DATA && it.direction == Direction.OUT }
+            assertTrue(
+                "${value.typeId}: adaptive output was left as ${resolved.schema}; add it to effectivePorts",
                 resolved.schema !is ItemSchema.Wildcard,
             )
         }

@@ -14,8 +14,10 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.domain.registry.declarationFor
 import com.example.ottomatic.domain.registry.effectivePort
 import com.example.ottomatic.domain.registry.isDataAssignable
+import com.example.ottomatic.domain.registry.variableRefKeys
 
 /**
  * One finding produced by validating a [Workflow] graph.
@@ -77,7 +79,37 @@ class GraphValidator(private val workflow: Workflow) {
         validateValueNodesAreUsed(issues)
         validateTriggers(issues)
         validateLoopBodies(issues)
+        validateVariableRefs(issues)
         return GraphValidation(issues)
+    }
+
+    /**
+     * A node that names no variable, or one whose declaration has been deleted.
+     *
+     * Both are warnings and both block nothing. The node degrades exactly as it
+     * always has — it logs that it stored nothing and pulses `out` — the rest of the
+     * graph is structurally sound, and quarantining an action because one of its
+     * fields is unset would take out work the user can see is otherwise fine. Same
+     * family as "'X' is not wired to anything".
+     *
+     * This is deliberately not the stance a broken *data edge* gets. There, falling
+     * back would substitute a form value for a wire drawn on the canvas, which is a
+     * lie about what the graph says; here there is no wire and nothing is
+     * substituted, only a step that does nothing and says so.
+     */
+    private fun validateVariableRefs(out: MutableList<ValidationIssue>) {
+        for (node in workflow.nodes) {
+            for (key in variableRefKeys(node.typeId)) {
+                val spec = node.config[key].orEmpty()
+                val message = when {
+                    spec.isBlank() -> "'${node.name}' has no variable chosen, so it will do nothing"
+                    declarationFor(workflow, spec) == null ->
+                        "'${node.name}' uses a variable that no longer exists"
+                    else -> continue
+                }
+                out += ValidationIssue(Severity.WARNING, message, nodes = setOf(node.id))
+            }
+        }
     }
 
     /**

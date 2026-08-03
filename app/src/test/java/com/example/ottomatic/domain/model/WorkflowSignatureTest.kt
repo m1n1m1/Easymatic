@@ -29,6 +29,28 @@ class WorkflowSignatureTest {
     private fun workflow(vararg nodes: WorkflowNode) =
         Workflow(id = "w1", name = "W", nodes = nodes.toList())
 
+    /**
+     * A declaration is not cosmetic, so editing one has to re-arm.
+     *
+     * The runner snapshots the declarations when it arms, so a live macro would
+     * otherwise keep the old type, the old initial value and the old constant flag
+     * until something restarted it.
+     */
+    @Test
+    fun `editing a variable declaration changes the signature`() {
+        val declaration = VariableDeclaration(id = "v1", name = "counter")
+        val before = workflow(node()).copy(variables = listOf(declaration))
+        val after = before.copy(variables = listOf(declaration.copy(constant = true)))
+        assertNotEquals(before.runtimeSignature(), after.runtimeSignature())
+    }
+
+    @Test
+    fun `declaring a variable changes the signature`() {
+        val before = workflow(node())
+        val after = before.copy(variables = listOf(VariableDeclaration(id = "v1", name = "counter")))
+        assertNotEquals(before.runtimeSignature(), after.runtimeSignature())
+    }
+
     // region Cosmetic edits must not re-arm
 
     @Test

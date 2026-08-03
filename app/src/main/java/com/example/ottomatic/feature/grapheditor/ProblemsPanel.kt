@@ -44,13 +44,13 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * What is wrong with the graph, before it is ever run.
  *
- * The counterpart to [ConsoleOverlay] and deliberately not folded into it: the
+ * The counterpart to [ConsoleBody] and deliberately not folded into it: the
  * console is a record of what *happened*, kept until it is cleared, while this is
  * a statement about what the graph *is* right now and goes away the moment the
  * wire is fixed. Sharing one list would have last night's failed run sitting
  * beside a live structural error with nothing to tell them apart.
  *
- * It takes the flow and collects it here for the reason [ConsoleOverlay] records:
+ * It takes the flow and collects it here for the reason [ConsoleBody] records:
  * collecting a level up invalidates `GraphEditorContent`, and `GraphCanvas` cannot
  * skip.
  *
@@ -60,75 +60,67 @@ import kotlinx.coroutines.flow.StateFlow
  * rightly keeps the name the node had then.
  */
 @Composable
-fun ProblemsOverlay(
+fun ProblemsBody(
     validation: StateFlow<GraphValidation>,
     workflow: Workflow,
     onSelectNode: (NodeId) -> Unit,
     onSelectConnection: (String) -> Unit,
-    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val problems by validation.collectAsState()
     // Errors first: one of them is stopping something from running, and a warning
     // never is.
     val rows = problems.errors + problems.warnings
 
-    EditorOverlay(title = "Problems", onClose = onDismiss) { dismiss ->
+    Column(modifier = modifier.fillMaxSize()) {
         if (rows.isEmpty()) {
             NoProblems()
-        } else {
-            Summary(problems)
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .navigationBarsPadding(),
-                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp),
-            ) {
-                items(rows) { issue ->
-                    ProblemRow(
-                        issue = issue,
-                        workflow = workflow,
-                        onSelect = {
-                            // The node is what the user can act on; an edge is only
-                            // worth selecting when the finding names no node at all.
-                            val node = issue.nodes.firstOrNull { workflow.node(it) != null }
-                            when {
-                                node != null -> onSelectNode(node)
-                                issue.connectionId != null -> onSelectConnection(issue.connectionId)
-                            }
-                            dismiss()
-                        },
-                    )
-                }
+            return@Column
+        }
+        Summary(problems)
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding(),
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp),
+        ) {
+            items(rows) { issue ->
+                ProblemRow(
+                    issue = issue,
+                    workflow = workflow,
+                    onSelect = {
+                        // The node is what the user can act on; an edge is only
+                        // worth selecting when the finding names no node at all.
+                        val node = issue.nodes.firstOrNull { workflow.node(it) != null }
+                        when {
+                            node != null -> onSelectNode(node)
+                            issue.connectionId != null -> onSelectConnection(issue.connectionId)
+                        }
+                    },
+                )
             }
         }
     }
 }
 
 /**
- * The top bar's warning light.
+ * The Problems tab's warning light: a count, tinted by the worst thing in it.
  *
- * Shown only when there is something to say. [EditorTopBar] is explicit that its
- * width is spoken for, and a permanent control that is empty in the ordinary case
- * teaches people to stop looking at it — the same argument the engine
- * notification's "Stop sound" button already makes.
+ * Its own composable so it collects [validation] itself — a badge that invalidated
+ * its parent would take the whole bar with it on every keystroke in the editor.
  */
 @Composable
-fun ProblemsAction(validation: StateFlow<GraphValidation>, onOpen: () -> Unit) {
+fun ProblemsBadge(validation: StateFlow<GraphValidation>, content: @Composable () -> Unit) {
     val problems by validation.collectAsState()
-    if (problems.isEmpty) return
-    val count = problems.issues.size
+    if (problems.isEmpty) {
+        content()
+        return
+    }
     val tint = if (problems.errors.isEmpty()) EditorColors.warnAccent else EditorColors.errorAccent
     BadgedBox(
-        badge = { Badge(containerColor = tint) { Text("$count") } },
-    ) {
-        IconButton(onClick = onOpen) {
-            Icon(
-                imageVector = Icons.Filled.ReportProblem,
-                contentDescription = "Problems",
-                tint = tint,
-            )
-        }
-    }
+        badge = { Badge(containerColor = tint) { Text("${problems.issues.size}") } },
+        content = { content() },
+    )
 }
 
 @Composable

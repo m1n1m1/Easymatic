@@ -1,3 +1,7 @@
+// One composable per widget a config field can be, plus one per PickerKind. The
+// count tracks the number of field *types*, which is the file's whole subject.
+@file:Suppress("TooManyFunctions")
+
 package com.example.ottomatic.feature.grapheditor
 
 import androidx.compose.foundation.clickable
@@ -11,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -52,6 +57,10 @@ import com.example.ottomatic.domain.registry.enumConfigOptions
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
 import com.example.ottomatic.feature.sound.SoundPickerField
+import com.example.ottomatic.feature.variables.LocalVariables
+import com.example.ottomatic.feature.variables.VariablePickerOverlay
+import com.example.ottomatic.feature.variables.VariableScope
+import com.example.ottomatic.feature.variables.resolve
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -488,6 +497,50 @@ private fun PickerField(
     when (kind) {
         PickerKind.GEOFENCE_PLACE -> GeofencePickerField(value, onValueChange, labelSlot, colors)
         PickerKind.SOUND -> SoundPickerField(value, onValueChange, labelSlot, colors)
+        PickerKind.VARIABLE -> VariablePickerField(value, onValueChange, labelSlot, colors)
+    }
+}
+
+@Composable
+private fun VariablePickerField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
+    var picking by remember { mutableStateOf(false) }
+    val library = LocalVariables.current
+    val resolved = library?.resolve(value)
+
+    PickerFieldChrome(
+        display = when {
+            value.isBlank() -> ""
+            // No library in scope (preview/test) or the declaration was deleted:
+            // the raw ref, rather than an empty field that reads as unconfigured
+            // when it is really dangling. The Problems panel says which it is.
+            resolved == null -> value
+            // The scope is shown because two variables may legitimately share a
+            // name, and "which one did I pick?" is otherwise unanswerable here.
+            resolved.first == VariableScope.GLOBAL -> "Global · ${resolved.second.name}"
+            else -> resolved.second.name
+        },
+        icon = Icons.Filled.Tag,
+        enabled = library != null,
+        onTap = { picking = true },
+        labelSlot = labelSlot,
+        colors = colors,
+    )
+
+    if (picking && library != null) {
+        VariablePickerOverlay(
+            library = library,
+            selectedSpec = value.takeIf { it.isNotBlank() },
+            onPick = { spec ->
+                onValueChange(spec)
+                picking = false
+            },
+            onDismiss = { picking = false },
+        )
     }
 }
 

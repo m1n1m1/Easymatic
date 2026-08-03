@@ -71,6 +71,20 @@ enum class PickerKind {
      * node's — which is exactly why it cannot be an enum.
      */
     SOUND,
+
+    /**
+     * A [com.example.ottomatic.domain.model.VariableRef] spec, chosen from this
+     * workflow's variables and the global ones.
+     *
+     * Typed names were the old design and its failure was quiet: a mistyped name
+     * simply named a *different* variable, which read as unset and looked like a
+     * broken node. Choosing from a list makes the mistake unmakeable, and makes a
+     * reference to something deleted a warning the Problems panel can raise.
+     *
+     * It also cannot be typed even in principle any more: a ref carries a
+     * declaration's id, not its name, so that renaming stays free.
+     */
+    VARIABLE,
 }
 
 /**

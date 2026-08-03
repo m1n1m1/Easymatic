@@ -4,6 +4,7 @@ import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.ConfigKey
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
@@ -58,23 +59,33 @@ import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.effectiveConfigSchema
 import com.example.ottomatic.domain.registry.effectiveInputPorts
 import com.example.ottomatic.engine.trigger.GeofenceTrigger
+import com.example.ottomatic.engine.validation.GraphValidation
 import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
+import com.example.ottomatic.feature.variables.GlobalVariablesViewModel
+import com.example.ottomatic.feature.variables.LocalVariables
 import kotlin.math.roundToInt
 
 @Composable
 fun GraphEditorScreen(
     viewModel: GraphEditorViewModel,
     geofencePlaces: GeofencePlacesViewModel,
+    globalVariables: GlobalVariablesViewModel,
     onBack: () -> Unit,
     showBatteryPrompt: Boolean = false,
     onDismissBatteryPrompt: () -> Unit = {},
     onConfirmBatteryPrompt: () -> Unit = {},
 ) {
-    // Published rather than passed down: the `@Picker` config field and the node
-    // cards both need the place library, and neither is reachable from here
-    // without threading a geofence-shaped parameter through generic code.
-    CompositionLocalProvider(LocalGeofencePlaces provides geofencePlaces) {
+    // Published rather than passed down: the `@Picker` config fields and the node
+    // cards need these libraries, and none of them is reachable from here without
+    // threading a geofence- or variable-shaped parameter through generic code.
+    val variables = remember(viewModel, globalVariables) {
+        EditorVariableLibrary(viewModel, globalVariables)
+    }
+    CompositionLocalProvider(
+        LocalGeofencePlaces provides geofencePlaces,
+        LocalVariables provides variables,
+    ) {
         GraphEditorContent(
             viewModel = viewModel,
             onBack = onBack,
@@ -98,9 +109,11 @@ private fun GraphEditorContent(
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
     var showPalette by remember { mutableStateOf(false) }
     var showConfig by remember { mutableStateOf(false) }
-    var showConsole by remember { mutableStateOf(false) }
-    var showProblems by remember { mutableStateOf(false) }
     var hasAutoFitted by remember { mutableStateOf(false) }
+    // Which of the bottom bar's surfaces is showing in place of the canvas, or null
+    // for the canvas itself. It lives here rather than in the bar because the bar is
+    // not what it swaps — see EditorBottomBar.
+    var openTab by remember { mutableStateOf<EditorTab?>(null) }
     // Read here rather than inside the canvas: the cards and the wires both need
     // it, and it changes only when the graph does — which is already a recompose.
     val validation by viewModel.validation.collectAsState()
@@ -109,6 +122,9 @@ private fun GraphEditorContent(
     // contextual bar's ✕ does, from the system gesture. The overlays are each a
     // Dialog with its own window, so they still consume back ahead of this.
     BackHandler(enabled = state.selection.isNotEmpty) { viewModel.clearSelection() }
+    // Registered second, so it outranks the one above: with a surface open the
+    // canvas is not on screen, and back is a request to get back to it.
+    BackHandler(enabled = openTab != null) { openTab = null }
 
     // Center the workflow in the viewport once it is loaded and the canvas is measured.
     LaunchedEffect(state.isLoaded, canvasSize) {
@@ -123,96 +139,84 @@ private fun GraphEditorContent(
             .fillMaxSize()
             .background(EditorColors.canvasBackground),
     ) {
-        EditorTopBar(
-            title = state.workflow.name,
-            nodeCount = state.workflow.nodes.size,
-            selectionLabel = state.selection.takeIf { it.isNotEmpty }?.let(::selectionLabel),
-            canConfigure = state.selection.singleNodeId != null,
-            isMacroEnabled = state.isMacroEnabled,
-            problems = viewModel.consoleProblems,
-            validation = viewModel.validation,
-            onBack = onBack,
-            onOpenConsole = { showConsole = true },
-            onOpenProblems = { showProblems = true },
-            onToggleEnabled = { viewModel.setMacroEnabled(it) },
-            onRename = { viewModel.renameWorkflow(it) },
-            onDeleteWorkflow = { viewModel.deleteWorkflow(onDeleted = onBack) },
-            onClearSelection = { viewModel.clearSelection() },
-            onConfigure = { showConfig = true },
-            onDeleteSelection = { viewModel.deleteSelection() },
-        )
-        Box(modifier = Modifier.fillMaxSize()) {
-            GraphCanvas(
-                state = state,
-                validation = validation,
-                viewModel = viewModel,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .onSizeChanged { canvasSize = it },
-            )
-            if (state.isLoaded && state.workflow.nodes.isEmpty()) {
-                EmptyHint(modifier = Modifier.align(Alignment.Center))
+        // Everything above the bottom bar, top bar included: a surface *replaces*
+        // the editor's chrome rather than stacking under it, so it rises over the
+        // whole screen bar the navigation items — the same gesture the full-screen
+        // overlays make.
+        //
+        // Weighted, not fillMaxSize: the bottom bar below is a real child of this
+        // Column, and a region that took every remaining pixel would measure it to
+        // nothing.
+        //
+        // AnimatedContent, not a Box with an AnimatedVisibility over it, because it
+        // drops the outgoing content once the transition ends — so at rest the
+        // canvas is genuinely not composed while a surface is open, and no drag can
+        // reach its gesture detectors through the panel. It also gives the three
+        // surfaces one transition to share; see `surfaceTransition` for which way
+        // each one moves and why.
+        AnimatedContent(
+            targetState = openTab,
+            modifier = Modifier.weight(1f),
+            label = "editor surface",
+            transitionSpec = { surfaceTransition() },
+        ) { tab ->
+            if (tab != null) {
+                EditorTabPanel(
+                    tab = tab,
+                    workflow = state.workflow,
+                    validation = viewModel.validation,
+                    console = viewModel.console,
+                    consoleMinLevel = viewModel.consoleMinLevel,
+                    variableValues = viewModel.variableValues,
+                    onMinLevelChange = { viewModel.setConsoleMinLevel(it) },
+                    onClearConsole = { viewModel.clearConsole() },
+                    onClose = { openTab = null },
+                    // Picking a finding is a request to go and look at what it
+                    // names, so it selects the node *and* brings the canvas back.
+                    onSelectNode = { viewModel.selectNode(it); openTab = null },
+                    onSelectConnection = { viewModel.selectConnection(it); openTab = null },
+                    modifier = Modifier.fillMaxSize(),
+                )
+                return@AnimatedContent
             }
-            ZoomControls(
-                scale = state.transform.scale,
-                onZoomIn = { viewModel.zoomBy(1.2f, canvasSize.centerPx()) },
-                onZoomOut = { viewModel.zoomBy(1f / 1.2f, canvasSize.centerPx()) },
-                onResetZoom = { viewModel.zoomBy(1f / state.transform.scale, canvasSize.centerPx()) },
-                onFit = {
-                    viewModel.fitToContent(Size(canvasSize.width.toFloat(), canvasSize.height.toFloat()), density)
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .navigationBarsPadding()
-                    .padding(start = 14.dp, bottom = 18.dp),
-            )
-            FloatingActionButton(
-                onClick = { showPalette = true },
-                containerColor = EditorColors.actionAccent,
-                contentColor = EditorColors.textPrimary,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .navigationBarsPadding()
-                    .padding(end = 18.dp, bottom = 18.dp),
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add node")
-            }
-            if (state.isRunning) {
-                FloatingActionButton(
-                    onClick = { viewModel.stopWorkflow() },
-                    containerColor = EditorColors.triggerAccent,
-                    contentColor = EditorColors.textPrimary,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .navigationBarsPadding()
-                        .padding(end = 88.dp, bottom = 18.dp),
-                ) {
-                    Icon(Icons.Filled.Stop, contentDescription = "Stop workflow")
-                }
-            } else {
-                FloatingActionButton(
-                    onClick = { viewModel.runWorkflow() },
-                    containerColor = EditorColors.triggerAccent,
-                    contentColor = EditorColors.textPrimary,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .navigationBarsPadding()
-                        .padding(end = 88.dp, bottom = 18.dp),
-                ) {
-                    Icon(Icons.Filled.PlayArrow, contentDescription = "Run workflow")
-                }
+            Column(modifier = Modifier.fillMaxSize()) {
+                EditorTopBar(
+                    title = state.workflow.name,
+                    nodeCount = state.workflow.nodes.size,
+                    selectionLabel = state.selection.takeIf { it.isNotEmpty }?.let(::selectionLabel),
+                    canConfigure = state.selection.singleNodeId != null,
+                    isMacroEnabled = state.isMacroEnabled,
+                    onBack = onBack,
+                    onToggleEnabled = { viewModel.setMacroEnabled(it) },
+                    onRename = { viewModel.renameWorkflow(it) },
+                    onDeleteWorkflow = { viewModel.deleteWorkflow(onDeleted = onBack) },
+                    onClearSelection = { viewModel.clearSelection() },
+                    onConfigure = { showConfig = true },
+                    onDeleteSelection = { viewModel.deleteSelection() },
+                )
+                CanvasRegion(
+                    state = state,
+                    validation = validation,
+                    viewModel = viewModel,
+                    canvasSize = canvasSize,
+                    density = density,
+                    onCanvasSizeChange = { canvasSize = it },
+                    onAddNode = { showPalette = true },
+                    modifier = Modifier.weight(1f),
+                )
             }
         }
+        // Below the region above rather than over it, so it covers nothing and
+        // steals no pan, and stays put and tappable whichever surface is showing.
+        // It pads itself for the gesture bar, which is why nothing above it carries
+        // `navigationBarsPadding()` any more.
+        EditorBottomBar(
+            selected = openTab,
+            onSelect = { openTab = it },
+            validation = viewModel.validation,
+            consoleProblems = viewModel.consoleProblems,
+        )
     }
-
-    DiagnosticsOverlays(
-        viewModel = viewModel,
-        workflow = state.workflow,
-        showConsole = showConsole,
-        showProblems = showProblems,
-        onCloseConsole = { showConsole = false },
-        onCloseProblems = { showProblems = false },
-    )
 
     if (showPalette) {
         NodePaletteOverlay(
@@ -289,45 +293,78 @@ private fun GraphEditorContent(
     }
 }
 
-private fun IntSize.centerPx(): Offset = Offset(width / 2f, height / 2f)
-
 /**
- * The two surfaces that answer "why did this not work": what the graph *is*
- * (Problems) and what a run *did* (Console).
+ * The graph itself, with the controls that only make sense over it.
  *
- * Grouped rather than left inline so [GraphEditorContent] stays a description of
- * the editor rather than a list of every overlay it can put on top of it. Each
- * still takes its own flow and collects it internally — see [ConsoleOverlay].
+ * Its own composable so that opening one of [EditorBottomBar]'s surfaces removes
+ * all of this from the composition in one move — the FABs and the zoom controls
+ * belong to the canvas, not to the editor, and a Run button floating over the
+ * console would be a button aimed at something you cannot see.
  */
 @Composable
-private fun DiagnosticsOverlays(
+@Suppress("LongParameterList") // The canvas and its controls; every parameter is one of theirs.
+private fun CanvasRegion(
+    state: GraphEditorUiState,
+    validation: GraphValidation,
     viewModel: GraphEditorViewModel,
-    workflow: com.example.ottomatic.domain.model.Workflow,
-    showConsole: Boolean,
-    showProblems: Boolean,
-    onCloseConsole: () -> Unit,
-    onCloseProblems: () -> Unit,
+    canvasSize: IntSize,
+    density: Float,
+    onCanvasSizeChange: (IntSize) -> Unit,
+    onAddNode: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    if (showConsole) {
-        ConsoleOverlay(
-            entries = viewModel.console,
-            minLevel = viewModel.consoleMinLevel,
-            onMinLevelChange = { viewModel.setConsoleMinLevel(it) },
-            onClear = { viewModel.clearConsole() },
-            onSelectNode = { viewModel.selectNode(it) },
-            onDismiss = onCloseConsole,
+    Box(modifier = modifier.fillMaxSize()) {
+        GraphCanvas(
+            state = state,
+            validation = validation,
+            viewModel = viewModel,
+            modifier = Modifier
+                .fillMaxSize()
+                .onSizeChanged(onCanvasSizeChange),
         )
-    }
-    if (showProblems) {
-        ProblemsOverlay(
-            validation = viewModel.validation,
-            workflow = workflow,
-            onSelectNode = { viewModel.selectNode(it) },
-            onSelectConnection = { viewModel.selectConnection(it) },
-            onDismiss = onCloseProblems,
+        if (state.isLoaded && state.workflow.nodes.isEmpty()) {
+            EmptyHint(modifier = Modifier.align(Alignment.Center))
+        }
+        ZoomControls(
+            scale = state.transform.scale,
+            onZoomIn = { viewModel.zoomBy(1.2f, canvasSize.centerPx()) },
+            onZoomOut = { viewModel.zoomBy(1f / 1.2f, canvasSize.centerPx()) },
+            onResetZoom = { viewModel.zoomBy(1f / state.transform.scale, canvasSize.centerPx()) },
+            onFit = {
+                viewModel.fitToContent(Size(canvasSize.width.toFloat(), canvasSize.height.toFloat()), density)
+            },
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 14.dp, bottom = 18.dp),
         )
+        FloatingActionButton(
+            onClick = onAddNode,
+            containerColor = EditorColors.actionAccent,
+            contentColor = EditorColors.textPrimary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 18.dp, bottom = 18.dp),
+        ) {
+            Icon(Icons.Filled.Add, contentDescription = "Add node")
+        }
+        FloatingActionButton(
+            onClick = { if (state.isRunning) viewModel.stopWorkflow() else viewModel.runWorkflow() },
+            containerColor = EditorColors.triggerAccent,
+            contentColor = EditorColors.textPrimary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 88.dp, bottom = 18.dp),
+        ) {
+            if (state.isRunning) {
+                Icon(Icons.Filled.Stop, contentDescription = "Stop workflow")
+            } else {
+                Icon(Icons.Filled.PlayArrow, contentDescription = "Run workflow")
+            }
+        }
     }
 }
+
+private fun IntSize.centerPx(): Offset = Offset(width / 2f, height / 2f)
 
 @Composable
 private fun EmptyHint(modifier: Modifier = Modifier) {

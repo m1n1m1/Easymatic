@@ -11,6 +11,7 @@ import com.example.ottomatic.domain.model.config.ComparisonOperator
 import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.model.schema.ItemSchema
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -35,15 +36,32 @@ class ValueRegistryTest {
     }
 
     @Test
-    fun `every value is offered as a comparison source`() {
+    fun `every value but the variable is offered as a comparison source`() {
         val options = sourceFieldOptions(ifNode())
 
-        for (value in ValueRegistry.all()) {
+        for (value in ValueRegistry.all().filterNot { it.typeId == VARIABLE_VALUE_TYPE_ID }) {
             assertTrue(
                 "${value.typeId} cannot be picked as a comparison source",
                 options.contains(ValueSource.valueSpec(value.typeId)),
             )
         }
+    }
+
+    /**
+     * `value.variable` is the one value node a `val:` source cannot carry.
+     *
+     * A `val:` read is performed with no config at all, and every other value gives
+     * the same answer wherever it is read — a battery level is a battery level.
+     * This one's answer is entirely a matter of *which* variable was chosen, which
+     * the spec has nowhere to put. Offering it would offer a comparison that
+     * silently never matched, which is worse than not offering it: comparing a
+     * variable means wiring the node into `source`, which is one drag.
+     */
+    @Test
+    fun `the variable value is not offered, because a val source carries no config`() {
+        assertFalse(
+            sourceFieldOptions(ifNode()).contains(ValueSource.valueSpec(VARIABLE_VALUE_TYPE_ID)),
+        )
     }
 
     /**

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -58,6 +59,7 @@ fun WorkflowListScreen(
     viewModel: WorkflowListViewModel,
     onOpenWorkflow: (String) -> Unit,
     onOpenGeofences: () -> Unit,
+    onOpenVariables: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -97,9 +99,18 @@ fun WorkflowListScreen(
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.weight(1f),
                     )
-                    // Places are edited independently of any macro, so the
-                    // library needs a way in that does not start with "open a
-                    // workflow that happens to use one".
+                    // Both libraries are edited independently of any macro, so
+                    // each needs a way in that does not start with "open a
+                    // workflow that happens to use one". A workflow's *own*
+                    // variables have no button here: they live in that workflow's
+                    // dock, beside the graph that uses them.
+                    IconButton(onClick = onOpenVariables) {
+                        Icon(
+                            imageVector = Icons.Filled.Tag,
+                            contentDescription = "Global variables",
+                            tint = EditorColors.textPrimary,
+                        )
+                    }
                     IconButton(onClick = onOpenGeofences) {
                         Icon(
                             imageVector = Icons.Filled.Place,

@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.data.WorkflowRepository
+import com.example.ottomatic.data.trigger.VariableStore
 import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.engine.validation.GraphValidator
@@ -82,6 +83,10 @@ class WorkflowListViewModel(
         // recreates one by hand, but a new macro inheriting a deleted one's
         // errors would be baffling, and the file would otherwise never be freed.
         runLog.clear(id)
+        // And so does what it remembered, for the same reason: its declarations
+        // are in the file about to be deleted, so their values would sit in
+        // variables.json under a workflow id nothing will ever look up again.
+        VariableStore.clearScope(id)
         viewModelScope.launch {
             repository.delete(id)
             refresh()

@@ -70,6 +70,13 @@ data class DataConnection(
  * background (driven by [com.example.ottomatic.engine.service.MacroEngineService]).
  * It is orthogonal to the in-editor "Run" preview, which executes the workflow
  * once on the ViewModel scope without persisting this flag.
+ *
+ * [variables] are this workflow's *own* variables, as opposed to the shared global
+ * ones. They live here rather than in a library of their own because everything
+ * that has to resolve one already holds the workflow: `effectivePorts` takes it,
+ * `GraphValidator` takes it, the snapshot `arm()` loads is one, and the editor's
+ * debounced save writes it. Deleting the macro takes them with it, exactly as it
+ * takes the run log.
  */
 @Serializable
 data class Workflow(
@@ -80,7 +87,11 @@ data class Workflow(
     val execConnections: List<ExecConnection> = emptyList(),
     val dataConnections: List<DataConnection> = emptyList(),
     val enabled: Boolean = false,
+    val variables: List<VariableDeclaration> = emptyList(),
 ) {
+    /** The local declaration [id] names, or null when it was deleted. */
+    fun variable(id: String): VariableDeclaration? = variables.firstOrNull { it.id == id }
+
     fun node(id: NodeId): WorkflowNode? = nodes.firstOrNull { it.id == id }
 
     /** All exec edges leaving [nodeId] from any output port. */
@@ -114,12 +125,19 @@ data class Workflow(
      * renaming it therefore costs nothing, while a config edit or a new edge
      * re-arms. Re-arming is not free (it re-registers geofences and re-enqueues
      * periodic work), so the gate matters.
+     *
+     * [variables] is in here in full, name included, because a declaration is not
+     * cosmetic: its type retypes a port, its initial value is what an unset read
+     * returns, and its constant flag decides whether a write is refused. The runner
+     * snapshots the declarations when it arms, so an edit that did not re-arm would
+     * leave the live macro running against the old ones.
      */
     fun runtimeSignature(): RuntimeSignature = RuntimeSignature(
         nodes = nodes.map { RuntimeNode(it.id, it.typeId, it.config) },
         execConnections = execConnections,
         dataConnections = dataConnections,
         enabled = enabled,
+        variables = variables,
     )
 
     /** The execution-relevant projection of a [WorkflowNode]. */
@@ -135,6 +153,7 @@ data class Workflow(
         val execConnections: List<ExecConnection>,
         val dataConnections: List<DataConnection>,
         val enabled: Boolean,
+        val variables: List<VariableDeclaration>,
     )
 
     companion object {

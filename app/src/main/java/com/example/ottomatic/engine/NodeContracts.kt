@@ -115,6 +115,31 @@ interface ValueNode<C : Any, O : Any> {
 }
 
 /**
+ * Escape hatch for a value whose output *schema* is chosen in its own config and so
+ * cannot be a static type parameter — `value.variable`, which carries whatever type
+ * the variable it names was declared as. It emits an [Item] directly, the same trade
+ * [RawTransform] makes, for the same reason.
+ *
+ * Overriding [readRaw] rather than [read] is what keeps the promise the [ValueNode]
+ * KDoc makes: both placements — the wired pull and the edge-free `val:` read — come
+ * through one method, so a value cannot mean one thing wired and another named.
+ */
+interface RawValue<C : Any> : ValueNode<C, Unit> {
+    override val definition: ValueNodeDefinition<C, Unit>
+
+    /** The value right now as a typed item, or null when it cannot be read. */
+    suspend fun readItem(config: C, context: ExecutionContext): Item?
+
+    /** Never called: [readRaw] answers directly. */
+    override suspend fun read(config: C, context: ExecutionContext): Unit? = null
+
+    override suspend fun readRaw(
+        config: Map<ConfigKey, String>,
+        context: ExecutionContext,
+    ): Item? = readItem(definition.schema.decode(config), context)
+}
+
+/**
  * Non-generic pull bridge used by the heterogeneous transform registry.
  *
  * A transform is a pure *function* of its data inputs — the other half of the
