@@ -85,7 +85,74 @@ enum class PickerKind {
      * declaration's id, not its name, so that renaming stays free.
      */
     VARIABLE,
+
+    /**
+     * An installed app's package name, chosen from the apps that can actually be
+     * *opened*. Offering a package with no launcher activity here would be
+     * offering a guaranteed failure.
+     */
+    APP,
+
+    /**
+     * An installed app's package name, for a field that *filters* events by app.
+     *
+     * A separate kind from [APP] because the two ask different questions and have
+     * different answer sets: a package with no launcher activity posts
+     * notifications perfectly well, and "any app" is a valid answer to a filter
+     * and not to "which app do I open?". Encoding that in the annotation is what
+     * makes each field right by declaration rather than by the user knowing which
+     * of the two cases they are in.
+     */
+    APP_FILTER,
+
+    /**
+     * Another macro's id, chosen from the workflows on this device.
+     *
+     * A macro id is a UUID. Before this, `action.enable_macro` asked the user to
+     * type one, which nobody can do and nothing could check — the node simply did
+     * nothing and said nothing about why.
+     */
+    MACRO,
 }
+
+/**
+ * Renders the `String` property as a phone-number field: a text field the user can
+ * type into, with a button beside it that fills it in from the device's contacts.
+ *
+ * Unlike a [Picker] this stays **editable**, and that is the point rather than a
+ * concession — a number that is in nobody's address book has nothing to pick from,
+ * so a read-only field would make it unreachable. This is the shape
+ * [com.example.ottomatic.domain.model.schema.DateTime] already wears, and the
+ * boundary is worth stating: a picker is for identifiers nobody can type, this is
+ * for values people legitimately do.
+ *
+ * The stored value is a [com.example.ottomatic.domain.model.PhoneRef] spec — a
+ * literal number, or a reference to a contact resolved when the node runs, so the
+ * macro follows an edit made in the Contacts app instead of dialling a number
+ * snapshotted months ago.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class PhoneNumber
+
+/**
+ * Renders the `String` property as an `HH:mm` field with a clock face beside it.
+ *
+ * Deliberately not a [Picker] and deliberately not a
+ * [com.example.ottomatic.domain.model.schema.DateTime]: a picker's option set is
+ * open-ended and lives outside the node, which a clock face is not, and a time of
+ * day is not an instant. Like [PhoneNumber] it stays editable, so a field can still
+ * be cleared back to blank — which is how a schedule window says "unbounded".
+ *
+ * Parsed by [com.example.ottomatic.domain.model.TimeOfDay], the same parser the
+ * schedule trigger reads through, so the picker and the trigger cannot disagree
+ * about what was written.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class TimeOfDay
 
 /**
  * Renders the `String` property as an editor for a list of **output ports** —

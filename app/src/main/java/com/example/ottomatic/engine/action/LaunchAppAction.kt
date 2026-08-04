@@ -4,6 +4,8 @@ import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.Picker
+import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.engine.Action
 import com.example.ottomatic.engine.ExecutionContext
@@ -11,10 +13,18 @@ import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.effectNode
 import kotlinx.serialization.Serializable
 
-/** Config for `action.launch_app`. */
+/**
+ * Config for `action.launch_app`.
+ *
+ * The app is chosen from the installed ones rather than typed — nobody knows
+ * `com.google.android.apps.maps` by heart, and a typo produced a node that simply
+ * logged a failure. It stays `@Wired` all the same: the port is hidden until the
+ * socket beside the field is switched on, and launching an app whose package a
+ * script worked out is a real capability nothing else in the palette can express.
+ */
 @Serializable
 data class LaunchAppConfig(
-    @Label("Package name") @Wired val packageName: String = "",
+    @Label("App") @Picker(PickerKind.APP) @Wired val packageName: String = "",
 )
 
 /**

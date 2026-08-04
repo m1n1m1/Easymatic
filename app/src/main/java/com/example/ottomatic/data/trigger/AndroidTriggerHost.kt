@@ -12,8 +12,10 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.sensor.SensorBridge
+import com.example.ottomatic.data.service.AndroidContacts
 import com.example.ottomatic.domain.model.GeofencePlace
 import com.example.ottomatic.engine.trigger.BatteryDirection
 import com.example.ottomatic.engine.trigger.GeofenceTransition
@@ -47,6 +49,12 @@ class AndroidTriggerHost(
      * rather than two. Defaults to its own for callers that only need triggers.
      */
     private val sensorBridge: SensorBridge = SensorBridge(context),
+    /**
+     * The address book `trigger.sms`'s sender filter resolves a chosen contact
+     * against. Shared with the execution context so an action and a trigger see one
+     * instance; defaults to its own for callers that only need triggers.
+     */
+    private val contacts: Contacts = AndroidContacts(context),
 ) : TriggerHost {
 
     private val appContext = context.applicationContext
@@ -132,6 +140,8 @@ class AndroidTriggerHost(
     }
 
     override fun geofencePlace(id: String): GeofencePlace? = geofencePlaces.get(id)
+
+    override fun contactNumber(lookupKey: String): String? = contacts.phoneNumber(lookupKey)
 
     @SuppressLint("MissingPermission")
     override fun armGeofence(

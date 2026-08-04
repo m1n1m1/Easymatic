@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
@@ -36,6 +38,7 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +50,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ottomatic.domain.model.PortSpec
+import com.example.ottomatic.domain.model.TimeOfDay
+import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.ValueType
 import com.example.ottomatic.domain.model.schema.DateTime
@@ -54,6 +59,8 @@ import com.example.ottomatic.domain.registry.ConfigField
 import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.domain.registry.ConfigOption
 import com.example.ottomatic.domain.registry.enumConfigOptions
+import com.example.ottomatic.feature.apps.AppPickerField
+import com.example.ottomatic.feature.contacts.PhoneNumberField
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
 import com.example.ottomatic.feature.sound.SoundPickerField
@@ -61,8 +68,12 @@ import com.example.ottomatic.feature.variables.LocalVariables
 import com.example.ottomatic.feature.variables.VariablePickerOverlay
 import com.example.ottomatic.feature.variables.VariableScope
 import com.example.ottomatic.feature.variables.resolve
+import com.example.ottomatic.feature.workflowlist.LocalMacros
+import com.example.ottomatic.feature.workflowlist.MacroPickerOverlay
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -184,6 +195,22 @@ internal fun ConfigFieldEditor(
             }
             ConfigFieldType.DATE_TIME -> {
                 DateTimeField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    labelSlot = labelSlot,
+                    colors = colors,
+                )
+            }
+            ConfigFieldType.TIME_OF_DAY -> {
+                TimeOfDayField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    labelSlot = labelSlot,
+                    colors = colors,
+                )
+            }
+            ConfigFieldType.PHONE -> {
+                PhoneNumberField(
                     value = value,
                     onValueChange = onValueChange,
                     labelSlot = labelSlot,
@@ -319,6 +346,77 @@ private fun DateTimeField(
                 },
             )
         }
+    }
+}
+
+/**
+ * A `@TimeOfDay` field: a text field the user can type `HH:mm` into, with a clock
+ * face that fills it in from a time picker.
+ *
+ * A clock rather than [DateTimeField]'s calendar, because a time of day is not an
+ * instant — "only between 22:00 and 07:00" is true every night and belongs to no
+ * date. Editable for the same reason that one is, plus one this one has alone: the
+ * field has to be **clearable**, since a blank schedule window is how the trigger
+ * says it is unbounded, and a read-only picker can never give a value back.
+ *
+ * The dial is seeded from whatever the field currently holds, re-read on every open,
+ * so typing moves the dial too. [TimeOfDay.toString] is what writes the canonical
+ * zero-padded form, which is also what the trigger parses — so the two agree by
+ * construction rather than by both being careful.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimeOfDayField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
+    var picking by remember { mutableStateOf(false) }
+
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = labelSlot,
+        colors = colors,
+        placeholder = { Text(text = "HH:mm", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        trailingIcon = {
+            IconButton(onClick = { picking = true }) {
+                Icon(imageVector = Icons.Filled.Schedule, contentDescription = "Pick a time")
+            }
+        },
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+    )
+
+    if (picking) {
+        // Whatever is in the field, or the current time when it is empty or
+        // unreadable — the same rule DateTimeField's seed follows.
+        val seed = TimeOfDay.parse(value)
+            ?: LocalTime.now().let { TimeOfDay.of(it.hour, it.minute) }
+        val state = rememberTimePickerState(
+            initialHour = seed.hour,
+            initialMinute = seed.minute,
+            // Fixed 24-hour, matching DateTimeField: a 12-hour dial over a field
+            // that shows and stores HH:mm would have the two disagree about the
+            // same value, which costs more than the locale nicety buys.
+            is24Hour = true,
+        )
+        AlertDialog(
+            onDismissRequest = { picking = false },
+            text = { TimePicker(state = state) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onValueChange(TimeOfDay.of(state.hour, state.minute).toString())
+                        picking = false
+                    },
+                ) { Text("Set") }
+            },
+            dismissButton = {
+                TextButton(onClick = { picking = false }) { Text("Cancel") }
+            },
+        )
     }
 }
 
@@ -498,6 +596,63 @@ private fun PickerField(
         PickerKind.GEOFENCE_PLACE -> GeofencePickerField(value, onValueChange, labelSlot, colors)
         PickerKind.SOUND -> SoundPickerField(value, onValueChange, labelSlot, colors)
         PickerKind.VARIABLE -> VariablePickerField(value, onValueChange, labelSlot, colors)
+        // The two app kinds share one field and one overlay; all they disagree
+        // about is which apps are worth offering and whether "any" is an answer.
+        PickerKind.APP ->
+            AppPickerField(value, onValueChange, launchableOnly = true, allowAny = false, labelSlot, colors)
+        PickerKind.APP_FILTER ->
+            AppPickerField(value, onValueChange, launchableOnly = false, allowAny = true, labelSlot, colors)
+        PickerKind.MACRO -> MacroPickerField(value, onValueChange, labelSlot, colors)
+    }
+}
+
+/**
+ * A `@Picker(MACRO)` field: the name of the macro this node acts on.
+ *
+ * Follows [VariablePickerField]'s three-way display rule exactly, and for the same
+ * reason: a blank field is unconfigured, a resolvable id is a name, and an id that
+ * resolves to nothing shows as **itself** rather than as an empty box — an empty
+ * box reads as "never set" when the truth is "pointing at something deleted", and
+ * only the Problems panel can say which. See `validateMacroRefs`.
+ */
+@Composable
+private fun MacroPickerField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
+    var picking by remember { mutableStateOf(false) }
+    val library = LocalMacros.current
+    // Unconditional `remember`, even though the fallback is only used with no
+    // library in scope: a `remember` behind an elvis is a conditional call, and its
+    // slot would shift the moment the local went from present to absent.
+    val empty = remember { MutableStateFlow(emptyList<WorkflowSummary>()) }
+    val macros by (library?.macros ?: empty).collectAsState()
+
+    PickerFieldChrome(
+        display = when {
+            value.isBlank() -> ""
+            else -> macros.firstOrNull { it.id == value }?.name ?: value
+        },
+        icon = Icons.Filled.AccountTree,
+        enabled = library != null,
+        onTap = { picking = true },
+        labelSlot = labelSlot,
+        colors = colors,
+    )
+
+    if (picking && library != null) {
+        MacroPickerOverlay(
+            macros = macros,
+            selectedId = value.takeIf { it.isNotBlank() },
+            editingId = library.editingId,
+            onPick = { id ->
+                onValueChange(id)
+                picking = false
+            },
+            onDismiss = { picking = false },
+        )
     }
 }
 

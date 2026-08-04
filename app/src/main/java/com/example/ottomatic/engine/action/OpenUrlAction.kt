@@ -3,6 +3,7 @@ package com.example.ottomatic.engine.action
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.WebUrl
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.engine.Action
@@ -20,21 +21,35 @@ data class OpenUrlConfig(
 /**
  * Action for `action.open_url`. Opens a URL in the default handler (browser or
  * app via intent). The URL may be wired from upstream data or set as a static
- * literal. Pulses `out` either way; a missing handler is logged.
+ * literal.
+ *
+ * The **scheme is optional** — `google.com` opens exactly as
+ * `https://google.com` does, through [WebUrl.normalize]. Pulses `out` in every
+ * case; text that is not a URL and a URL nothing can handle are two different
+ * log lines, because they send the user to two different places.
  */
 class OpenUrlAction : Action<OpenUrlConfig, Unit> {
 
     override val definition = effectNode<OpenUrlConfig>(
         typeId = "action.open_url",
         displayName = "Open URL",
-        description = "Opens a URL in the default handler (browser or app)",
+        description = "Opens a URL in the default handler (browser or app). Typing google.com is enough",
         category = NodeCategory.NETWORK,
         icon = NodeIcon.BOLT,
     )
 
     override suspend fun execute(input: OpenUrlConfig, context: ExecutionContext): NodeOutput<Unit> {
-        val ok = context.systemServices.openUrl(input.url)
-        if (!ok) context.log("Open url failed: ${input.url}", LogLevel.ERROR)
+        val url = WebUrl.normalize(input.url)
+        if (url == null) {
+            val typed = input.url.trim()
+            context.log(
+                if (typed.isEmpty()) "No URL set" else "Not a URL: \"$typed\"",
+                LogLevel.ERROR,
+            )
+            return NodeOutput(Unit)
+        }
+        val ok = context.systemServices.openUrl(url)
+        if (!ok) context.log("No app can open $url", LogLevel.ERROR)
         return NodeOutput(Unit)
     }
 }

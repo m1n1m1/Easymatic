@@ -40,6 +40,28 @@ sealed interface ConfigFieldType<out T> {
      */
     data object DATE_TIME : ConfigFieldType<String>
 
+    /**
+     * A phone number, rendered as a text field with a contact button beside it
+     * (declared with `@PhoneNumber`).
+     *
+     * Editable for the reason [DATE_TIME] is: the stored text is a
+     * [com.example.ottomatic.domain.model.PhoneRef] spec, and its commonest form
+     * is a number the user simply typed — one that is in no address book has
+     * nothing to pick from.
+     */
+    data object PHONE : ConfigFieldType<String>
+
+    /**
+     * A wall-clock `HH:mm`, rendered as a text field with a clock face beside it
+     * (declared with `@TimeOfDay`).
+     *
+     * Distinct from [DATE_TIME] because a time of day is not an instant: it gets a
+     * clock rather than a calendar, and it stays clearable, which is how a schedule
+     * window says it is unbounded. Parsed by
+     * [com.example.ottomatic.domain.model.TimeOfDay].
+     */
+    data object TIME_OF_DAY : ConfigFieldType<String>
+
     /** One of [options], stored as the option's [ConfigOption.value]. */
     data class ENUM(val options: List<ConfigOption>) : ConfigFieldType<String>
 

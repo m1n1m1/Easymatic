@@ -4,6 +4,7 @@ import com.example.ottomatic.core.model.NodeId
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.example.ottomatic.data.apps.InstalledApps
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
@@ -22,6 +23,9 @@ class PackageReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
+        // The app picker's list is exactly what these broadcasts invalidate, and
+        // this receiver is already running for every one of them.
+        InstalledApps.invalidate()
         val packageName = intent.data?.schemeSpecificPart
         val event = when (action) {
             Intent.ACTION_PACKAGE_ADDED -> "installed"

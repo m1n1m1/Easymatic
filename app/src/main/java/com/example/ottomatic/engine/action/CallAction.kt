@@ -1,8 +1,13 @@
 package com.example.ottomatic.engine.action
 
+import com.example.ottomatic.core.permissions.PermissionRequirement
+import com.example.ottomatic.core.permissions.Permissions
+import com.example.ottomatic.core.permissions.PrerequisiteType
+import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.PhoneNumber
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.CallInitiated
@@ -10,18 +15,29 @@ import com.example.ottomatic.engine.Action
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.actionNode
+import com.example.ottomatic.engine.resolvePhone
 import kotlinx.serialization.Serializable
 
-/** Config for `action.call`. */
+/**
+ * Config for `action.call`.
+ *
+ * `number` holds a [com.example.ottomatic.domain.model.PhoneRef] spec — a number
+ * typed into the field, or a contact chosen from the address book and resolved when
+ * the node runs. It stays `@Wired`, which is what makes "call whoever just texted
+ * me" expressible; a wired value is resolved through the same rule.
+ */
 @Serializable
 data class CallConfig(
-    @Label("Number") @Wired val number: String = "",
+    @Label("Number") @PhoneNumber @Wired val number: String = "",
 )
 
 /**
- * Action for `action.call`. Initiates a phone call via `ACTION_CALL` (requires
- * `CALL_PHONE`). The number may be wired from upstream data or set as a static
- * literal. Reports [CallInitiated] on its `state` data port.
+ * Action for `action.call`. Initiates a phone call via `ACTION_CALL`. Reports
+ * [CallInitiated] on its `state` data port.
+ *
+ * The port carries the **resolved** number rather than the stored spec, so a
+ * `contact:` reference never leaks onto a wire as an opaque string — what came out
+ * of this node is the number it actually dialled.
  */
 class CallAction : Action<CallConfig, CallInitiated> {
 
@@ -32,10 +48,23 @@ class CallAction : Action<CallConfig, CallInitiated> {
         category = NodeCategory.NOTIFICATIONS,
         icon = NodeIcon.BOLT,
         output = dataOut<CallInitiated>("state"),
+        // Without this the action returned false and said nothing about why.
+        permissions = listOf(
+            PermissionRequirement(
+                manifestPermission = Permissions.CALL_PHONE.manifest,
+                type = PrerequisiteType.RUNTIME,
+                rationaleKey = "call.phone",
+            ),
+        ),
     )
 
     override suspend fun execute(input: CallConfig, context: ExecutionContext): NodeOutput<CallInitiated> {
-        val initiated = context.systemServices.call(input.number)
-        return NodeOutput(CallInitiated(number = input.number, initiated = initiated))
+        val number = context.resolvePhone(input.number)
+        if (number == null) {
+            context.log("No number to call — nothing chosen, or the contact could not be read", LogLevel.ERROR)
+            return NodeOutput(CallInitiated(number = "", initiated = false))
+        }
+        val initiated = context.systemServices.call(number)
+        return NodeOutput(CallInitiated(number = number, initiated = initiated))
     }
 }

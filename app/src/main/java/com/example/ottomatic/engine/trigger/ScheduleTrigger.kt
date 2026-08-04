@@ -5,6 +5,7 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.TimeOfDay
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.ScheduleFire
@@ -71,7 +72,8 @@ data class ScheduleConfig(
     val everyUnit: IntervalUnit = IntervalUnit.MINUTES,
 
     @VisibleWhen("mode", "AT_TIME")
-    @Label("At (HH:mm)")
+    @Label("At")
+    @TimeOfDay
     val atTime: String = "07:30",
 
     @Label("Mondays") val monday: Boolean = false,
@@ -88,11 +90,13 @@ data class ScheduleConfig(
     val windowEnabled: Boolean = false,
 
     @VisibleWhen("windowEnabled", "true")
-    @Label("Active from (HH:mm)")
+    @Label("Active from")
+    @TimeOfDay
     val windowFrom: String = "22:00",
 
     @VisibleWhen("windowEnabled", "true")
-    @Label("Active until (HH:mm — earlier than 'from' runs past midnight)")
+    @Label("Active until (earlier than 'from' runs past midnight)")
+    @TimeOfDay
     val windowUntil: String = "07:00",
 ) {
     /**

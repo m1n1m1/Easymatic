@@ -64,6 +64,8 @@ import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
 import com.example.ottomatic.feature.variables.GlobalVariablesViewModel
 import com.example.ottomatic.feature.variables.LocalVariables
+import com.example.ottomatic.feature.workflowlist.LocalMacros
+import com.example.ottomatic.feature.workflowlist.MacroLibrary
 import kotlin.math.roundToInt
 
 @Composable
@@ -82,9 +84,11 @@ fun GraphEditorScreen(
     val variables = remember(viewModel, globalVariables) {
         EditorVariableLibrary(viewModel, globalVariables)
     }
+    val macros = remember(viewModel) { MacroLibrary(viewModel.macros, viewModel.workflowId) }
     CompositionLocalProvider(
         LocalGeofencePlaces provides geofencePlaces,
         LocalVariables provides variables,
+        LocalMacros provides macros,
     ) {
         GraphEditorContent(
             viewModel = viewModel,
@@ -504,7 +508,7 @@ private fun NodeConfigOverlay(
                 fontSize = 12.sp,
             )
             Spacer(modifier = Modifier.height(12.dp))
-            NodePermissionNotice(definition = definition)
+            NodePermissionNotice(definition = definition, node = node)
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
                 value = node.name,

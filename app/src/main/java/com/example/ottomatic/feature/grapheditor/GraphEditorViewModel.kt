@@ -25,7 +25,9 @@ import com.example.ottomatic.domain.model.VariableDeclaration
 import com.example.ottomatic.domain.model.VariableRef
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.domain.model.schema.conversionTarget
+import com.example.ottomatic.domain.registry.MacroDirectory
 import com.example.ottomatic.domain.registry.CONVERT_IN
 import com.example.ottomatic.domain.registry.CONVERT_TO_KEY
 import com.example.ottomatic.domain.registry.CONVERT_TYPE_ID
@@ -137,7 +139,8 @@ class GraphEditorViewModel(
     private val runLog: RunLog,
     private val appContext: android.content.Context,
     private val appScope: CoroutineScope,
-    private val workflowId: String,
+    /** Public so a `@Picker(MACRO)` field can mark the row for this very workflow. */
+    val workflowId: String,
     /**
      * The shared global declarations. Passed in rather than read from
      * [com.example.ottomatic.domain.registry.GlobalVariables] so the editor sees an
@@ -311,6 +314,18 @@ class GraphEditorViewModel(
      */
     private var lastArmedSignature: Workflow.RuntimeSignature? = null
 
+    /**
+     * Every macro on the device, for the `@Picker(MACRO)` fields.
+     *
+     * Loaded once when the editor opens rather than observed, because
+     * [WorkflowRepository] has no flow to observe and a macro is not created from
+     * inside another macro's config form. The cost is that a workflow created
+     * elsewhere while this editor is open will not be listed until it is reopened,
+     * which is cheaper than a second read path for a case that barely arises.
+     */
+    private val _macros = MutableStateFlow<List<WorkflowSummary>>(emptyList())
+    val macros: StateFlow<List<WorkflowSummary>> = _macros.asStateFlow()
+
     init {
         viewModelScope.launch {
             val workflow = repository.load(workflowId) ?: Workflow(id = workflowId)
@@ -318,6 +333,13 @@ class GraphEditorViewModel(
             _uiState.update {
                 it.copy(workflow = workflow, isLoaded = true, isMacroEnabled = workflow.enabled)
             }
+        }
+        viewModelScope.launch {
+            val summaries = repository.list()
+            _macros.value = summaries
+            // The same list, for the validator: it runs on every keystroke from a
+            // pure function that can neither suspend nor hold a repository.
+            MacroDirectory.hydrate(summaries)
         }
     }
 

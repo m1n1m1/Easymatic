@@ -10,6 +10,8 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.NoConfig
+import com.example.ottomatic.domain.model.config.PhoneNumber
+import com.example.ottomatic.domain.model.config.TimeOfDay
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.schema.DateTime
@@ -270,6 +272,42 @@ class NodeSchemaTest {
         assertTrue(
             "should name the offending property, got: ${error.message}",
             error.message.orEmpty().contains("nested"),
+        )
+    }
+
+    @Serializable
+    data class NumericPhone(@PhoneNumber val number: Int = 0)
+
+    @Serializable
+    data class NumericTime(@TimeOfDay val at: Int = 0)
+
+    /**
+     * Every widget annotation stores a plain string, so putting one on a number is
+     * a declaration error rather than something to render around.
+     */
+    @Test
+    fun `a widget annotation on a non-String property is rejected at declaration time`() {
+        assertTrue(
+            assertThrows(IllegalStateException::class.java) { nodeSchema<NumericPhone>() }
+                .message.orEmpty().contains("@PhoneNumber"),
+        )
+        assertTrue(
+            assertThrows(IllegalStateException::class.java) { nodeSchema<NumericTime>() }
+                .message.orEmpty().contains("@TimeOfDay"),
+        )
+    }
+
+    @Serializable
+    data class TwoWidgets(@PhoneNumber @TimeOfDay val value: String = "")
+
+    /** A property has one editor; two annotations claiming the field is ambiguous. */
+    @Test
+    fun `two widget annotations on one property are rejected at declaration time`() {
+        val error = assertThrows(IllegalStateException::class.java) { nodeSchema<TwoWidgets>() }
+
+        assertTrue(
+            "should say a property has one editor, got: ${error.message}",
+            error.message.orEmpty().contains("one editor"),
         )
     }
 

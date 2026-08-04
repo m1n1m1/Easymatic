@@ -1,7 +1,9 @@
 package com.example.ottomatic.engine
 
+import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.NoScripts
@@ -10,6 +12,7 @@ import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.Variables
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.core.service.UnknownDeviceState
+import com.example.ottomatic.domain.model.PhoneRef
 import com.example.ottomatic.engine.trigger.NoSensors
 import com.example.ottomatic.engine.trigger.SensorReader
 
@@ -69,6 +72,15 @@ interface ExecutionContext {
      */
     val variables: Variables get() = NoVariables
 
+    /**
+     * The device's address book, for the nodes that take a phone number. Defaults
+     * to [NoContacts] so an engine-only test resolves nothing and the action fails
+     * closed rather than dialling a number no address book ever held.
+     *
+     * An action's, never a value node's: see [Contacts].
+     */
+    val contacts: Contacts get() = NoContacts
+
     /** Optional handle to enable/disable other macros at runtime, or null. */
     val macroControl: MacroControl? get() = null
 
@@ -100,4 +112,24 @@ interface ExecutionContext {
      * Defaults to `this`, so an engine-only test needs no attribution machinery.
      */
     fun scoped(source: LogSource): ExecutionContext = this
+}
+
+/**
+ * The number [spec] means right now: a literal as it stands, a contact resolved
+ * through the address book, and null when nothing is chosen or the contact cannot
+ * be reached.
+ *
+ * Shared by `action.call` and `action.send_sms` so the rule is written once.
+ *
+ * It runs *after* [com.example.ottomatic.domain.registry.NodeSchema.decode] has
+ * already resolved wire over form, so it sees whichever won — which means a wired
+ * plain number behaves exactly as it always did, and a `contact:` spec that arrived
+ * over a wire (read out of a variable, say) resolves too. That second case is a
+ * deliberate consequence rather than an accident: a reference is a reference
+ * wherever it came from.
+ */
+internal fun ExecutionContext.resolvePhone(spec: String): String? = when (val ref = PhoneRef.parse(spec)) {
+    null -> null
+    is PhoneRef.Literal -> ref.number
+    is PhoneRef.Contact -> contacts.phoneNumber(ref.lookupKey)
 }

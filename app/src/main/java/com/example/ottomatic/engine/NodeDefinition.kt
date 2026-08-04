@@ -47,6 +47,7 @@ class ActionNodeDefinition<I : Any, O : Any> @PublishedApi internal constructor(
     val execOutputs: ExecOutputs,
     val extraPorts: List<Port>,
     val hasDynamicPorts: Boolean,
+    val permissions: List<PermissionRequirement> = emptyList(),
 ) {
     /** Static metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
     val nodeType: NodeTypeDefinition
@@ -60,6 +61,7 @@ class ActionNodeDefinition<I : Any, O : Any> @PublishedApi internal constructor(
                 listOfNotNull(output?.port),
             icon = icon,
             hasDynamicPorts = hasDynamicPorts,
+            permissionRequirements = permissions,
         )
 
     /** Static config-form view for [com.example.ottomatic.domain.registry.ConfigSchemaRegistry]. */
@@ -391,6 +393,11 @@ inline fun <reified C : Any> adaptiveValueNode(
  *
  * The config class [I] supplies the config form, the DATA input ports and the
  * decoder; see [com.example.ottomatic.domain.model.config.Label] and friends.
+ *
+ * [permissions] are the runtime grants the action cannot work without, declared
+ * here for the reason [triggerNode]'s are: so the config form can say so. Until
+ * this existed only a trigger could declare one, and `action.call` simply returned
+ * false without `CALL_PHONE` with nothing anywhere explaining it.
  */
 @Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
 inline fun <reified I : Any, O : Any> actionNode(
@@ -401,6 +408,7 @@ inline fun <reified I : Any, O : Any> actionNode(
     icon: NodeIcon,
     output: DataOut<O>,
     execOutputs: ExecOutputs = ExecOutputs.SINGLE,
+    permissions: List<PermissionRequirement> = emptyList(),
 ): ActionNodeDefinition<I, O> = ActionNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -412,6 +420,7 @@ inline fun <reified I : Any, O : Any> actionNode(
     execOutputs = execOutputs,
     extraPorts = emptyList(),
     hasDynamicPorts = false,
+    permissions = permissions,
 )
 
 /**
@@ -439,6 +448,7 @@ inline fun <reified I : Any> effectNode(
     execOutputs: ExecOutputs = ExecOutputs.SINGLE,
     extraPorts: List<Port> = emptyList(),
     hasDynamicPorts: Boolean = false,
+    permissions: List<PermissionRequirement> = emptyList(),
 ): ActionNodeDefinition<I, Unit> = ActionNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -450,6 +460,7 @@ inline fun <reified I : Any> effectNode(
     execOutputs = execOutputs,
     extraPorts = extraPorts,
     hasDynamicPorts = hasDynamicPorts,
+    permissions = permissions,
 )
 
 /**

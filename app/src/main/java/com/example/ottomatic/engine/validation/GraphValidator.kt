@@ -13,8 +13,10 @@ import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.ItemSchema
+import com.example.ottomatic.domain.registry.MacroDirectory
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.declarationFor
+import com.example.ottomatic.domain.registry.macroRefKeys
 import com.example.ottomatic.domain.registry.effectivePort
 import com.example.ottomatic.domain.registry.isDataAssignable
 import com.example.ottomatic.domain.registry.variableRefKeys
@@ -80,7 +82,37 @@ class GraphValidator(private val workflow: Workflow) {
         validateTriggers(issues)
         validateLoopBodies(issues)
         validateVariableRefs(issues)
+        validateMacroRefs(issues)
         return GraphValidation(issues)
+    }
+
+    /**
+     * A node that names no macro, or one whose workflow has been deleted.
+     *
+     * The same family and the same stance as [validateVariableRefs]: a warning that
+     * blocks nothing, because `MacroControl.enable` already returns false, the node
+     * already reports `changed = false` and pulses `out`, and until now nothing
+     * anywhere said why.
+     *
+     * The [MacroDirectory.isHydrated] guard is the one line worth reading twice.
+     * Nothing has to have listed the workflows for this to run — the executor
+     * validates a disk snapshot on boot — and an unhydrated directory answers "not
+     * found" to everything, so without the guard every macro reference in the graph
+     * would be reported as dangling. Empty and unasked are different states.
+     */
+    private fun validateMacroRefs(out: MutableList<ValidationIssue>) {
+        for (node in workflow.nodes) {
+            for (key in macroRefKeys(node.typeId)) {
+                val spec = node.config[key].orEmpty()
+                val message = when {
+                    spec.isBlank() -> "'${node.name}' has no macro chosen, so it will do nothing"
+                    MacroDirectory.isHydrated && MacroDirectory.byId(spec) == null ->
+                        "'${node.name}' points at a macro that no longer exists"
+                    else -> continue
+                }
+                out += ValidationIssue(Severity.WARNING, message, nodes = setOf(node.id))
+            }
+        }
     }
 
     /**
@@ -113,6 +145,21 @@ class GraphValidator(private val workflow: Workflow) {
     }
 
     /**
+     * Whether this node is a loop, i.e. declares `body` as an **exec output**.
+     *
+     * The kind and direction are load-bearing, not decoration. [NodeTypeDefinition.port]
+     * matches by name alone, and a port name is only unique per kind and direction —
+     * so `action.send_sms` and `action.http`, whose `@Wired` message property is
+     * called `body`, each have a DATA *input* of that name and were both being
+     * reported as loops with nothing in their body.
+     */
+    private fun WorkflowNode.isLoop(): Boolean =
+        NodeTypeRegistry.byId(typeId)
+            ?.outputs(PortKind.EXECUTION)
+            .orEmpty()
+            .any { it.name == ExecPorts.BODY }
+
+    /**
      * A loop whose `body` output goes nowhere walks its list and does nothing with
      * it. Structurally fine — `completed` may well be wired — so it is a warning in
      * the same family as an unwired trigger: the graph works, it just cannot do
@@ -120,7 +167,7 @@ class GraphValidator(private val workflow: Workflow) {
      */
     private fun validateLoopBodies(out: MutableList<ValidationIssue>) {
         val emptyLoops = workflow.nodes
-            .filter { NodeTypeRegistry.byId(it.typeId)?.port(ExecPorts.BODY) != null }
+            .filter { it.isLoop() }
             .filter { workflow.outgoingExec(it.id, ExecPorts.BODY).isEmpty() }
         for (node in emptyLoops) {
             out += ValidationIssue(

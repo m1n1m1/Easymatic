@@ -11,6 +11,8 @@ import com.example.ottomatic.domain.model.VariableDeclaration
 import com.example.ottomatic.domain.model.VariableRef
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.WorkflowSummary
+import com.example.ottomatic.domain.registry.MacroDirectory
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import com.example.ottomatic.domain.model.config.ValueType
@@ -74,6 +76,97 @@ class GraphValidatorTest {
             validation.warnings.any { it.message.contains("no variable chosen") },
         )
         assertTrue(validation.isRunnable)
+    }
+
+    /**
+     * A macro reference that resolves to nothing is the same family as a dangling
+     * variable reference and gets the same stance: `MacroControl.enable` already
+     * returns false and the node already pulses `out`, so there is nothing to block
+     * — but until this warning existed nothing anywhere said why.
+     */
+    /**
+     * A port name is unique per kind and direction, not globally, so a node may
+     * legitimately have a DATA input called `body` — `action.send_sms` and
+     * `action.http` both do, and both were being reported as loops with nothing in
+     * their body because the loop check matched the name alone.
+     */
+    @Test
+    fun `a data input named body does not make a node a loop`() {
+        val sms = WorkflowNode(NodeId("sms"), NodeTypeId("action.send_sms"), "Text me", 0f, 0f)
+        val http = WorkflowNode(NodeId("http"), NodeTypeId("action.http"), "Post it", 0f, 0f)
+
+        val validation = GraphValidator(Workflow(nodes = listOf(sms, http))).validate()
+
+        assertFalse(
+            validation.warnings.toString(),
+            validation.warnings.any { it.message.contains("loop body") },
+        )
+    }
+
+    /** The other half of the same rule: a real loop is still reported. */
+    @Test
+    fun `a loop with nothing wired to its body still warns`() {
+        val loop = WorkflowNode(NodeId("rep"), NodeTypeId("action.repeat"), "Repeat", 0f, 0f)
+
+        val validation = GraphValidator(Workflow(nodes = listOf(loop))).validate()
+
+        assertTrue(
+            validation.warnings.toString(),
+            validation.warnings.any { it.message.contains("loop body") && loop.id in it.nodes },
+        )
+    }
+
+    @Test
+    fun `a macro reference that resolves to nothing warns and blocks nothing`() {
+        MacroDirectory.hydrate(listOf(WorkflowSummary(id = "other", name = "Other")))
+        try {
+            val node = WorkflowNode(
+                NodeId("en"), NodeTypeId("action.enable_macro"), "Enable", 0f, 0f,
+                config = mapOf(ConfigKey("macroId") to "deleted"),
+            )
+            val validation = GraphValidator(Workflow(nodes = listOf(node))).validate()
+
+            assertTrue(
+                validation.warnings.toString(),
+                validation.warnings.any { it.message.contains("no longer exists") && node.id in it.nodes },
+            )
+            assertTrue(validation.blockedNodes.isEmpty())
+            assertTrue(validation.isRunnable)
+        } finally {
+            MacroDirectory.reset()
+        }
+    }
+
+    @Test
+    fun `a node with no macro chosen warns that it will do nothing`() {
+        val node = WorkflowNode(NodeId("en"), NodeTypeId("action.enable_macro"), "Enable", 0f, 0f)
+        val validation = GraphValidator(Workflow(nodes = listOf(node))).validate()
+
+        assertTrue(
+            validation.warnings.toString(),
+            validation.warnings.any { it.message.contains("no macro chosen") },
+        )
+        assertTrue(validation.isRunnable)
+    }
+
+    /**
+     * Empty and unasked are different states. A process that has never listed
+     * workflows — the executor validating a disk snapshot on boot — must not report
+     * every macro reference in the graph as dangling.
+     */
+    @Test
+    fun `an unhydrated macro directory reports nothing dangling`() {
+        MacroDirectory.reset()
+        val node = WorkflowNode(
+            NodeId("en"), NodeTypeId("action.enable_macro"), "Enable", 0f, 0f,
+            config = mapOf(ConfigKey("macroId") to "some-id"),
+        )
+        val validation = GraphValidator(Workflow(nodes = listOf(node))).validate()
+
+        assertFalse(
+            validation.warnings.toString(),
+            validation.warnings.any { it.message.contains("no longer exists") },
+        )
     }
 
     @Test

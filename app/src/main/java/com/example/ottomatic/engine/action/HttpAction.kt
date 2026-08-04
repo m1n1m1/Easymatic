@@ -2,8 +2,10 @@ package com.example.ottomatic.engine.action
 
 import com.example.ottomatic.core.service.HttpMethod
 import com.example.ottomatic.core.service.HttpRequest
+import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.WebUrl
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Wired
@@ -35,6 +37,12 @@ data class HttpConfig(
  * Action for `action.http`. Performs an HTTP request via
  * [com.example.ottomatic.core.service.SystemServices] and exposes the typed
  * [HttpResponseItem] on its `response` data port.
+ *
+ * The **scheme is optional** — `api.example.com/v1` is fetched over https,
+ * through the same [WebUrl] reading `action.open_url` uses. Text that is not a
+ * web URL never reaches the network: it comes back as [INVALID_URL] on the
+ * `response` port, which is the status the platform already reports for a
+ * request that could not be made, so a downstream `action.if` sees no new shape.
  */
 class HttpAction : Action<HttpConfig, HttpResponseItem> {
 
@@ -48,7 +56,14 @@ class HttpAction : Action<HttpConfig, HttpResponseItem> {
     )
 
     override suspend fun execute(input: HttpConfig, context: ExecutionContext): NodeOutput<HttpResponseItem> {
-        val request = HttpRequest(input.method, input.url, parseHeaders(input.headers), input.body)
+        val url = WebUrl.webOnly(input.url)
+        if (url == null) {
+            val typed = input.url.trim()
+            val problem = if (typed.isEmpty()) "No URL set" else "Not a web URL: \"$typed\""
+            context.log(problem, LogLevel.ERROR)
+            return NodeOutput(HttpResponseItem(statusCode = INVALID_URL, body = problem))
+        }
+        val request = HttpRequest(input.method, url, parseHeaders(input.headers), input.body)
         val response = withContext(Dispatchers.IO) { context.systemServices.httpRequest(request) }
         return NodeOutput(
             HttpResponseItem(
@@ -62,5 +77,10 @@ class HttpAction : Action<HttpConfig, HttpResponseItem> {
     private fun parseHeaders(json: String): Map<String, String> {
         if (json.isBlank()) return emptyMap()
         return runCatching { Json.decodeFromString<Map<String, String>>(json) }.getOrDefault(emptyMap())
+    }
+
+    private companion object {
+        /** What the platform already reports for a request that never happened. */
+        const val INVALID_URL = -1
     }
 }

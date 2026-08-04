@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine.trigger
 
+import com.example.ottomatic.domain.model.TimeOfDay
 import java.util.Calendar
 
 /**
@@ -23,13 +24,16 @@ private const val MS_PER_MINUTE = 60_000L
 /** Upper bound on the forward scan in [nextFireTime] — a full leap year. */
 private const val MAX_DAYS_SCANNED = 366
 
-/** Minutes past midnight of an `HH:mm` string; 0 when unparseable. */
-internal fun minutesOfDay(hhmm: String): Int {
-    val parts = hhmm.split(':')
-    val hours = parts.getOrNull(0)?.trim()?.toIntOrNull() ?: 0
-    val minutes = parts.getOrNull(1)?.trim()?.toIntOrNull() ?: 0
-    return hours * MINUTES_PER_HOUR + minutes
-}
+/**
+ * Minutes past midnight of an `HH:mm` string; 0 when unparseable.
+ *
+ * Reads through [TimeOfDay], the same parser the config form's clock face writes
+ * with, so what the picker stores and what the window compares can no longer
+ * disagree — and so `25:99` is a clamped 23:59 rather than 1 599 minutes past
+ * midnight, which is not a time of day and made the window silently unsatisfiable.
+ */
+internal fun minutesOfDay(hhmm: String): Int =
+    TimeOfDay.parse(hhmm)?.minutesPastMidnight ?: 0
 
 /** Minutes past midnight of an epoch timestamp, in the device's timezone. */
 internal fun minutesOfDay(epochMs: Long): Int {

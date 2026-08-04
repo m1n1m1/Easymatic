@@ -102,6 +102,20 @@ interface TriggerHost {
      */
     fun geofencePlace(id: String): GeofencePlace? = null
 
+    /**
+     * The number the contact [lookupKey] names can be reached on, or null.
+     *
+     * Reaches the trigger through the host for the reason [geofencePlace] does:
+     * [Trigger.activate] is handed a host and nothing else, and the address book
+     * lives on the Android side.
+     *
+     * The default returns null, so a trigger with no address book behind it matches
+     * nothing — fail closed, because a sender filter that silently widened to "any
+     * sender" would run the macro on every text from anyone, which is far worse than
+     * not running at all.
+     */
+    fun contactNumber(lookupKey: String): String? = null
+
     @Suppress("LongParameterList") // Mirrors the GMS Geofence.Builder API surface.
     fun armGeofence(
         nodeId: NodeId,

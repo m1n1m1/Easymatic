@@ -18,6 +18,16 @@ value class Permission(val manifest: String) {
  */
 object Permissions {
     val RECEIVE_SMS = Permission("android.permission.RECEIVE_SMS")
+    val SEND_SMS = Permission("android.permission.SEND_SMS")
+    val CALL_PHONE = Permission("android.permission.CALL_PHONE")
+
+    /**
+     * Reading the address book. Needed only to *resolve* a chosen contact when a
+     * node runs — choosing one costs nothing, because the system picker hands its
+     * row back under a transient grant. That is why no node declares this
+     * statically; see `usesContacts`.
+     */
+    val READ_CONTACTS = Permission("android.permission.READ_CONTACTS")
     val POST_NOTIFICATIONS = Permission("android.permission.POST_NOTIFICATIONS")
     val ACCESS_FINE_LOCATION = Permission("android.permission.ACCESS_FINE_LOCATION")
     val ACCESS_COARSE_LOCATION = Permission("android.permission.ACCESS_COARSE_LOCATION")

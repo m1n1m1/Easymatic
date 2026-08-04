@@ -4,6 +4,8 @@ import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.Picker
+import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.MacroControlState
@@ -14,10 +16,18 @@ import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.actionNode
 import kotlinx.serialization.Serializable
 
-/** Config shared by `action.enable_macro` and `action.disable_macro`. */
+/**
+ * Config shared by `action.enable_macro` and `action.disable_macro`.
+ *
+ * A macro id is a UUID, so it is chosen rather than typed: before the picker, this
+ * field asked the user for a value nobody can produce and nothing could check, and a
+ * wrong one looked exactly like a right one until the node quietly did nothing. It
+ * stays `@Wired` for the same reason `action.launch_app`'s package does — the port
+ * only appears once its socket is switched on, and an existing graph may feed it.
+ */
 @Serializable
 data class MacroConfig(
-    @Label("Macro id") @Wired val macroId: String = "",
+    @Label("Macro") @Picker(PickerKind.MACRO) @Wired val macroId: String = "",
 )
 
 /**

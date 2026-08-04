@@ -10,9 +10,11 @@ import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
+import com.example.ottomatic.domain.model.config.PhoneNumber
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.Ports
+import com.example.ottomatic.domain.model.config.TimeOfDay
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.schema.DateTime
@@ -133,6 +135,8 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                         multiline = annotations.any { it is Multiline },
                         picker = annotations.filterIsInstance<Picker>().firstOrNull()?.kind,
                         ports = annotations.any { it is Ports },
+                        phone = annotations.any { it is PhoneNumber },
+                        timeOfDay = annotations.any { it is TimeOfDay },
                         key = key,
                     ),
                     defaultValue = defaultValues[key].orEmpty(),
@@ -154,27 +158,24 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         multiline: Boolean,
         picker: PickerKind?,
         ports: Boolean,
+        phone: Boolean,
+        timeOfDay: Boolean,
         key: String,
     ): ConfigFieldType<*> {
         // A DateTime reports `STRING`, so it has to be recognised by name before the
         // kind is consulted or it renders as a plain text field.
         if (element.serialName == DateTime.SERIAL_NAME) {
-            check(picker == null && !ports) {
-                "Config property '${descriptor.serialName}.$key' is annotated @Picker or @Ports but is a date; " +
+            check(picker == null && !ports && !phone && !timeOfDay) {
+                "Config property '${descriptor.serialName}.$key' is annotated with a widget but is a date; " +
                     "dates have their own picker, so the annotation is redundant"
             }
             return ConfigFieldType.DATE_TIME
         }
-        checkWidgetAnnotations(element, picker, ports, key)
+        checkWidgetAnnotations(element, picker, ports, phone, timeOfDay, key)
         return when (element.kind) {
             SerialKind.ENUM -> ConfigFieldType.ENUM(enumOptions(element))
-            PrimitiveKind.STRING, PrimitiveKind.CHAR -> when {
-                // A picker still stores a string; it only replaces the widget.
-                ports -> ConfigFieldType.PORT_LIST
-                picker != null -> ConfigFieldType.PICKER(picker)
-                multiline -> ConfigFieldType.MULTILINE
-                else -> ConfigFieldType.STR
-            }
+            PrimitiveKind.STRING, PrimitiveKind.CHAR ->
+                stringFormType(multiline, picker, ports, phone, timeOfDay)
             PrimitiveKind.INT, PrimitiveKind.LONG, PrimitiveKind.SHORT, PrimitiveKind.BYTE -> ConfigFieldType.INT
             PrimitiveKind.BOOLEAN -> ConfigFieldType.BOOL
             PrimitiveKind.DOUBLE, PrimitiveKind.FLOAT -> ConfigFieldType.DOUBLE
@@ -186,15 +187,42 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
     }
 
     /**
-     * The annotations that replace a property's widget both store a plain string
-     * and both claim the whole field, so each needs a `String` and the two
-     * cannot appear together. Split out from [formTypeOf] to keep the type table
-     * readable next to the rules that guard it.
+     * Which widget a `String` property gets. Every one of these still *stores* a
+     * plain string — they only replace how it is entered — which is why they can be
+     * one table rather than one type each.
+     *
+     * Split from [formTypeOf] so the Kotlin-type table and the annotation table can
+     * each be read on their own.
      */
+    @Suppress("LongParameterList") // One parameter per widget annotation; they are independent.
+    private fun stringFormType(
+        multiline: Boolean,
+        picker: PickerKind?,
+        ports: Boolean,
+        phone: Boolean,
+        timeOfDay: Boolean,
+    ): ConfigFieldType<String> = when {
+        ports -> ConfigFieldType.PORT_LIST
+        picker != null -> ConfigFieldType.PICKER(picker)
+        phone -> ConfigFieldType.PHONE
+        timeOfDay -> ConfigFieldType.TIME_OF_DAY
+        multiline -> ConfigFieldType.MULTILINE
+        else -> ConfigFieldType.STR
+    }
+
+    /**
+     * The annotations that replace a property's widget all store a plain string and
+     * all claim the whole field, so each needs a `String` and no two may appear
+     * together. Split out from [formTypeOf] to keep the type table readable next to
+     * the rules that guard it.
+     */
+    @Suppress("LongParameterList") // Mirrors [formTypeOf]; one parameter per widget annotation.
     private fun checkWidgetAnnotations(
         element: SerialDescriptor,
         picker: PickerKind?,
         ports: Boolean,
+        phone: Boolean,
+        timeOfDay: Boolean,
         key: String,
     ) {
         check(picker == null || element.kind == PrimitiveKind.STRING) {
@@ -205,9 +233,18 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             "Config property '${descriptor.serialName}.$key' is annotated @Ports but is a " +
                 "${element.kind}; a port list is persisted as one 'name:TYPE' line per port, so it must be a String"
         }
-        check(picker == null || !ports) {
-            "Config property '${descriptor.serialName}.$key' is annotated both @Picker and @Ports; " +
-                "a property has one editor"
+        check(!phone || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @PhoneNumber but is a " +
+                "${element.kind}; a phone field stores a number or a contact reference, so it must be a String"
+        }
+        check(!timeOfDay || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @TimeOfDay but is a " +
+                "${element.kind}; a time of day is persisted as 'HH:mm', so it must be a String"
+        }
+        val widgets = listOf(picker != null, ports, phone, timeOfDay).count { it }
+        check(widgets <= 1) {
+            "Config property '${descriptor.serialName}.$key' is annotated with $widgets widgets " +
+                "(@Picker, @Ports, @PhoneNumber, @TimeOfDay); a property has one editor"
         }
     }
 

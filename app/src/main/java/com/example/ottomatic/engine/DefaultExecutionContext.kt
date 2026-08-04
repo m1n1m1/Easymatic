@@ -1,7 +1,9 @@
 package com.example.ottomatic.engine
 
+import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.LogEntry
+import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
@@ -33,6 +35,7 @@ class DefaultExecutionContext(
     override val sensors: SensorReader = NoSensors,
     override val scripts: ScriptEngine = NoScripts,
     override val variables: Variables = NoVariables,
+    override val contacts: Contacts = NoContacts,
     private val logger: (LogEntry) -> Unit = {},
 ) : ExecutionContext {
 

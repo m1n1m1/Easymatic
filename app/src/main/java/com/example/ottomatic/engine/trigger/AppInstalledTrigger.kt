@@ -5,6 +5,8 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.Picker
+import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.PackageEvent
 import com.example.ottomatic.engine.NodeOutput
@@ -26,7 +28,7 @@ enum class PackageAction {
 @Serializable
 data class AppInstalledConfig(
     @Label("Action") val action: PackageAction? = null,
-    @Label("Package filter (e.g. com.example.app, optional)") val packageFilter: String = "",
+    @Label("App (optional)") @Picker(PickerKind.APP_FILTER) val packageFilter: String = "",
 )
 
 /**

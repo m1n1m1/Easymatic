@@ -15,6 +15,7 @@ import com.example.ottomatic.data.log.RunLogStore
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
 import com.example.ottomatic.data.script.WebViewScriptEngine
 import com.example.ottomatic.data.sensor.SensorBridge
+import com.example.ottomatic.data.service.AndroidContacts
 import com.example.ottomatic.data.service.AndroidDeviceState
 import com.example.ottomatic.data.service.AndroidMacroControl
 import com.example.ottomatic.data.service.AndroidSystemServices
@@ -134,6 +135,9 @@ object ServiceLocator {
         val sensorBridge = SensorBridge(appContext)
         val log = RunLogStore().apply { attach(appContext.filesDir, appScope) }
         runLog = log
+        // One address book for the process, so an action resolving a contact and a
+        // trigger matching against one cannot disagree about the same person.
+        val contacts = AndroidContacts(appContext)
         executionContext = DefaultExecutionContext(
             systemServices = systemServices,
             deviceState = deviceState,
@@ -141,6 +145,7 @@ object ServiceLocator {
             sensors = sensorBridge,
             scripts = scriptEngine,
             variables = VariableStore,
+            contacts = contacts,
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.
@@ -149,7 +154,7 @@ object ServiceLocator {
                 android.util.Log.i("Ottomatic", entry.message)
             },
         )
-        triggerHost = AndroidTriggerHost(appContext, geofencePlaceRepository, sensorBridge)
+        triggerHost = AndroidTriggerHost(appContext, geofencePlaceRepository, sensorBridge, contacts)
         permissionChecker = AndroidPermissionChecker(appContext)
     }
 }

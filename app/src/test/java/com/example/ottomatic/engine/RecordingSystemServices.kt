@@ -34,6 +34,9 @@ class RecordingSystemServices : SystemServices {
     val launchedApps = mutableListOf<String>()
     val openedUrls = mutableListOf<String>()
 
+    /** One entry per [httpRequest] call: what actually reached the network. */
+    val httpRequests = mutableListOf<HttpRequest>()
+
     /** One entry per clipboard call: the text set, or null for a clear. */
     val clipboard = mutableListOf<String?>()
 
@@ -66,7 +69,10 @@ class RecordingSystemServices : SystemServices {
         return enabled
     }
 
-    override fun httpRequest(request: HttpRequest): HttpResponse = HttpResponse(HTTP_OK, "")
+    override fun httpRequest(request: HttpRequest): HttpResponse {
+        httpRequests += request
+        return HttpResponse(HTTP_OK, "")
+    }
 
     override fun setVolume(stream: AudioStream, mode: VolumeMode, value: Int): VolumeResult? {
         volume = Triple(stream, mode, value)

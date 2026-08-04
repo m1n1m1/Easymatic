@@ -23,8 +23,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ottomatic.core.permissions.Permission
 import com.example.ottomatic.core.permissions.PermissionRequirement
+import com.example.ottomatic.core.permissions.Permissions
 import com.example.ottomatic.core.permissions.PrerequisiteType
+import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
+import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.registry.usesContacts
 import com.example.ottomatic.feature.permissions.rememberPermissionState
 import com.example.ottomatic.feature.permissions.rememberPrerequisiteState
 
@@ -42,10 +46,14 @@ private val CARD_SHAPE = RoundedCornerShape(14.dp)
  *
  * Renders nothing when the node declares no runtime permissions or they are all
  * granted.
+ *
+ * Takes the placed [node] as well as its type, because one requirement is not a
+ * property of the type at all: see [ContactsPermissionNotice].
  */
 @Composable
-internal fun NodePermissionNotice(definition: NodeTypeDefinition?) {
+internal fun NodePermissionNotice(definition: NodeTypeDefinition?, node: WorkflowNode) {
     RuntimePermissionNotice(definition)
+    ContactsPermissionNotice(node)
     // Prerequisites granted on a Settings page rather than through the runtime
     // dialog. Without this they were invisible: `trigger.notification` looked
     // fully configured while silently never firing, because nothing in the app
@@ -54,6 +62,29 @@ internal fun NodePermissionNotice(definition: NodeTypeDefinition?) {
         ?.filter { it.type != PrerequisiteType.RUNTIME }
         ?.distinctBy { it.type }
         ?.forEach { SettingsPrerequisiteNotice(it) }
+}
+
+/**
+ * Asks for contacts access, but **only once the node actually points at a contact**.
+ *
+ * The one requirement derived from a node's config rather than declared on its type,
+ * and the reason is that declaring it statically would be a lie most of the time:
+ * `action.call` holding a typed number needs no address book at all, so an amber
+ * card on every call node would be permanently on — and a warning that is always
+ * there is one people learn to scroll past. See `usesContacts`.
+ */
+@Composable
+private fun ContactsPermissionNotice(node: WorkflowNode) {
+    if (!usesContacts(node)) return
+    val permissionState = rememberPermissionState(listOf(Permissions.READ_CONTACTS))
+    if (permissionState.allGranted) return
+
+    NoticeCard(
+        message = "This node needs contacts access to look up the number you chose. " +
+            "Without it, it will do nothing when it runs.",
+        actionLabel = "Grant",
+        onAction = permissionState::request,
+    )
 }
 
 @Composable
@@ -96,8 +127,16 @@ private fun RuntimePermissionNotice(definition: NodeTypeDefinition?) {
     val permissionState = rememberPermissionState(required)
     if (permissionState.allGranted) return
 
+    // An action does not "fire"; it runs and fails. The card was written when only
+    // triggers could declare a permission, and one false sentence on three nodes is
+    // worth one `when`.
+    val consequence = if (definition?.kind == NodeKind.TRIGGER) {
+        "will never fire"
+    } else {
+        "will fail every time it runs"
+    }
     NoticeCard(
-        message = "This node will never fire until you grant " +
+        message = "This node $consequence until you grant " +
             permissionState.missing.joinToString(" and ") { it.readableName() } + ".",
         actionLabel = "Grant",
         onAction = permissionState::request,

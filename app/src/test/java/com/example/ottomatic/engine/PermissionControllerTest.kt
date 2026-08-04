@@ -6,6 +6,7 @@ import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.permissions.Permission
 import com.example.ottomatic.core.permissions.PermissionChecker
 import com.example.ottomatic.core.permissions.PermissionStatus
+import com.example.ottomatic.core.permissions.Permissions
 import com.example.ottomatic.core.permissions.PrerequisiteType
 import com.example.ottomatic.domain.model.WorkflowNode
 import org.junit.Assert.assertEquals
@@ -60,14 +61,48 @@ class PermissionControllerTest {
         assertFalse(PermissionController(bare).allSatisfied(listOf(notificationNode)))
     }
 
+    /**
+     * Until `actionNode` grew a `permissions` parameter, only triggers could declare
+     * one — so `action.call` returned false without `CALL_PHONE` and nothing in the
+     * app, this controller included, could say so.
+     */
+    @Test
+    fun `an action's declared runtime permission is reported`() {
+        val call = WorkflowNode(
+            id = NodeId("n2"),
+            typeId = NodeTypeId("action.call"),
+            name = "Call",
+            x = 0f,
+            y = 0f,
+        )
+        val controller = PermissionController(
+            FakeChecker(satisfied = emptySet(), granted = emptySet()),
+        )
+
+        val unsatisfied = controller.unsatisfiedFor(listOf(call))
+
+        assertEquals(
+            listOf(Permissions.CALL_PHONE.manifest),
+            unsatisfied.mapNotNull { it.manifestPermission },
+        )
+    }
+
     private companion object {
         val NOTIFICATION_LISTENER = PrerequisiteType.NOTIFICATION_LISTENER
     }
 }
 
-private class FakeChecker(private val satisfied: Set<PrerequisiteType>) : PermissionChecker {
+private class FakeChecker(
+    private val satisfied: Set<PrerequisiteType>,
+    private val granted: Set<String>? = null,
+) : PermissionChecker {
 
-    override fun status(permission: Permission): PermissionStatus = PermissionStatus.Granted
+    override fun status(permission: Permission): PermissionStatus =
+        if (granted == null || permission.manifest in granted) {
+            PermissionStatus.Granted
+        } else {
+            PermissionStatus.Denied(showRationale = false)
+        }
 
     override fun isPrerequisiteSatisfied(type: PrerequisiteType): Boolean = type in satisfied
 }

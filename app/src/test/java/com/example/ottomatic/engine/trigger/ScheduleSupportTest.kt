@@ -40,6 +40,20 @@ class ScheduleSupportTest {
         assertFalse(config.matchesDay(at(2026, Calendar.JULY, 16, 9, 0)))
     }
 
+    /**
+     * `minutesOfDay` now reads through the one `TimeOfDay` parser the config form's
+     * clock face writes with, so an out-of-range time is clamped into a real day
+     * rather than arriving as a minute count no clock could show — which used to
+     * make a window built on it silently unsatisfiable.
+     */
+    @Test
+    fun `an out-of-range time is clamped into a real day`() {
+        assertEquals(23 * 60 + 59, minutesOfDay("25:99"))
+        assertEquals(0, minutesOfDay("nonsense"))
+        assertEquals(0, minutesOfDay(""))
+        assertEquals(7 * 60, minutesOfDay("7"))
+    }
+
     @Test
     fun `a window contains the minutes between its ends, the start included`() {
         val window = ScheduleWindow(minutesOfDay("09:00"), minutesOfDay("17:00"))
