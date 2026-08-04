@@ -35,6 +35,15 @@ object ExecPorts {
     /** A loop's after-the-last-iteration pulse. */
     val COMPLETED = PortName("completed")
 
+    /** A dialog node's "the user said yes" pulse. See `action.dialog_confirm`. */
+    val CONFIRMED = PortName("confirmed")
+
+    /** A dialog node's "the user said no, or dismissed it" pulse. */
+    val CANCELLED = PortName("cancelled")
+
+    /** A dialog node's "nobody answered in time" pulse. */
+    val TIMED_OUT = PortName("timed_out")
+
     /**
      * What a loop's two exec outputs are *called* on the card.
      *
@@ -45,6 +54,16 @@ object ExecPorts {
      */
     const val BODY_LABEL = "Repeat this"
     const val COMPLETED_LABEL = "When finished"
+
+    /**
+     * What a dialog's exec outputs are called on the card, for the same reason the
+     * loop's two are glossed: these are *outcomes of a question*, and a bare
+     * "confirmed" beside a bare "cancelled" reads as a state the node is in rather
+     * than as the branch taken when the user answered.
+     */
+    const val CONFIRMED_LABEL = "When confirmed"
+    const val CANCELLED_LABEL = "When cancelled"
+    const val TIMED_OUT_LABEL = "When time runs out"
 }
 
 /** EXECUTION input port. */

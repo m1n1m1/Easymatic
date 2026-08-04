@@ -50,6 +50,7 @@ enum class NodeCategory(
     DEVICE_STATE(NodeKind.TRIGGER, "Device State"),
     SENSORS(NodeKind.TRIGGER, "Sensors & Gestures"),
     FLOW_CONTROL(NodeKind.ACTION, "Flow Control"),
+    INTERACTION(NodeKind.ACTION, "Ask the User"),
     NETWORK(NodeKind.ACTION, "Network"),
     NOTIFICATIONS(NodeKind.ACTION, "Notifications"),
     TIMING(NodeKind.ACTION, "Timing"),

@@ -43,4 +43,8 @@ enum class NodeIcon {
     DARK_MODE,
     LOOP,
     LIST,
+    DIALOG,
+    QUESTION,
+    INPUT,
+    CHOICE,
 }

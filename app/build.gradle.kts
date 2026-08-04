@@ -72,6 +72,12 @@ dependencies {
     implementation(libs.androidx.javascriptengine)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    // The app's UI is Compose; this is here for the one surface that cannot be.
+    // A macro's dialog is drawn from a background service into a raw overlay
+    // window, where Compose would need a lifecycle owner, a saved-state registry
+    // and a view-model store stood up by hand — so it uses the Material 3 dialog
+    // the view toolkit already ships, including its dynamic-colour support.
+    implementation(libs.material)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.play.services.location)

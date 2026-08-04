@@ -20,6 +20,14 @@ enum class PrerequisiteType {
     /** Accessibility service — granted on the system Settings page. */
     ACCESSIBILITY_SERVICE,
 
+    /**
+     * Drawing over other apps (`SYSTEM_ALERT_WINDOW`) — granted on the system
+     * Settings page. What the dialog nodes need: the engine that runs a macro is
+     * a background service, so a window it puts on screen has to survive whatever
+     * app the user is actually looking at.
+     */
+    OVERLAY,
+
     /** Device administrator — granted via `DeviceAdminReceiver` enabling. */
     DEVICE_ADMIN,
 }

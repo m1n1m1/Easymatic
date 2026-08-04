@@ -112,6 +112,9 @@ private fun rationaleFor(requirement: PermissionRequirement): String? = when (re
         "Ottomatic needs notification access to see notifications from other apps."
     "dnd.policy" ->
         "Ottomatic needs Do Not Disturb access to change your ringer mode."
+    "overlay.dialog" ->
+        "Ottomatic needs permission to draw over other apps so this dialog can reach you while " +
+            "you are somewhere else on your phone. Without it the node cancels instead of asking."
     else -> null
 }
 

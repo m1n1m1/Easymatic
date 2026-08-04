@@ -140,6 +140,47 @@ val TEXT_TYPE_ID = NodeTypeId("transform.text")
 /** typeId of the scripting action — the graph's escape hatch into real code. */
 val SCRIPT_TYPE_ID = NodeTypeId("action.script")
 
+/** typeId of the dialog that is only acknowledged. */
+val DIALOG_MESSAGE_TYPE_ID = NodeTypeId("action.dialog_message")
+
+/** typeId of the yes/no dialog. */
+val DIALOG_CONFIRM_TYPE_ID = NodeTypeId("action.dialog_confirm")
+
+/** typeId of the dialog asking for one typed value. */
+val DIALOG_INPUT_TYPE_ID = NodeTypeId("action.dialog_input")
+
+/** typeId of the dialog offering a list of options. */
+val DIALOG_CHOICE_TYPE_ID = NodeTypeId("action.dialog_choice")
+
+/**
+ * The nodes that put a question to the user.
+ *
+ * Grouped for the reason [COMPARISON_TYPE_IDS] is: all four resolve their ports
+ * through one function, because the rule that hides an unreachable `timed_out`
+ * branch has to be the same rule on every one of them.
+ */
+val DIALOG_TYPE_IDS = setOf(
+    DIALOG_MESSAGE_TYPE_ID,
+    DIALOG_CONFIRM_TYPE_ID,
+    DIALOG_INPUT_TYPE_ID,
+    DIALOG_CHOICE_TYPE_ID,
+)
+
+/** The config key holding how long a dialog waits, in seconds. Zero means forever. */
+val DIALOG_TIMEOUT_KEY = ConfigKey("timeoutSeconds")
+
+/** The config key naming what `action.dialog_input` asks for (a [ValueType]). */
+val DIALOG_INPUT_TYPE_KEY = ConfigKey("answerType")
+
+/** The DATA output port on `action.dialog_input` carrying what the user typed. */
+val DIALOG_VALUE_OUT = PortName("value")
+
+/** The DATA output port on `action.dialog_choice` carrying the option picked. */
+val DIALOG_CHOICE_OUT = PortName("choice")
+
+/** The DATA output port on `action.dialog_choice` carrying that option's position. */
+val DIALOG_INDEX_OUT = PortName("index")
+
 /** typeId of the variable reader, whose output type its declaration states. */
 val VARIABLE_VALUE_TYPE_ID = NodeTypeId("value.variable")
 
@@ -211,6 +252,7 @@ fun effectivePorts(
  * declared ports, which is exactly the "not known yet" answer the wildcard already
  * means.
  */
+@Suppress("CyclomaticComplexMethod") // A flat dispatch table over typeIds, not branching logic.
 private fun effectivePorts(
     definition: NodeTypeDefinition,
     workflow: Workflow,
@@ -228,6 +270,7 @@ private fun effectivePorts(
         JSON_READ_TYPE_ID ->
             typedTransformPorts(definition, workflow, node, JSON_READ_TYPE_KEY, JSON_READ_LIST_KEY, deeper)
         SCRIPT_TYPE_ID -> scriptEffectivePorts(definition, node)
+        in DIALOG_TYPE_IDS -> dialogEffectivePorts(definition, workflow, node, deeper)
         VARIABLE_VALUE_TYPE_ID -> variableValuePorts(definition, workflow, node, deeper)
         SET_VARIABLE_TYPE_ID -> variableWritePorts(definition, workflow, node)
         FOR_EACH_TYPE_ID -> forEachEffectivePorts(workflow, node, deeper)
@@ -322,6 +365,44 @@ private fun scriptEffectivePorts(definition: NodeTypeDefinition, node: WorkflowN
     return definition.ports +
         ports(PortSpec.parse(node.config[SCRIPT_INPUTS_KEY]), Direction.IN) +
         ports(PortSpec.parseOutputs(node.config[SCRIPT_OUTPUTS_KEY]), Direction.OUT)
+}
+
+/**
+ * Ports for the dialog nodes: the declared ports, minus the `timed_out` branch
+ * when no timeout is configured, plus `action.dialog_input`'s answer port retyped
+ * to whatever it asks for.
+ *
+ * **Why the branch is hidden rather than simply always there.** All three routes
+ * are declared statically on [com.example.ottomatic.engine.ExecOutputs.DECISION],
+ * because separating "the user said no" from "nobody was there" is the point of
+ * having a third one at all. But a dialog that waits forever can never take it,
+ * and an exec port that cannot fire is an invitation to wire a branch that will
+ * never run. So the *declaration* is unconditional and the *handle* follows the
+ * config — the same rule `action.script` keeps, where a port exists once it has
+ * been asked for.
+ *
+ * The consequence is that clearing the timeout can strand an edge on a port that
+ * is no longer drawn. `GraphValidator` will not catch it — exec edges validate
+ * against the static declaration — so `GraphEditorViewModel.pruneRetypedEdges`
+ * drops it at the moment the config changes.
+ */
+private fun dialogEffectivePorts(
+    definition: NodeTypeDefinition,
+    workflow: Workflow,
+    node: WorkflowNode,
+    visiting: Set<NodeId>,
+): List<Port> {
+    val waits = (node.config[DIALOG_TIMEOUT_KEY]?.toIntOrNull() ?: 0) > 0
+    return definition.ports
+        .filterNot { it.name == ExecPorts.TIMED_OUT && !waits }
+        .map { port ->
+            if (port.name != DIALOG_VALUE_OUT || port.direction != Direction.OUT) {
+                port
+            } else {
+                val type = configuredValueType(node, DIALOG_INPUT_TYPE_KEY)
+                port.copy(schema = narrowedToConsumer(type, workflow, node, DIALOG_VALUE_OUT, visiting))
+            }
+        }
 }
 
 /**

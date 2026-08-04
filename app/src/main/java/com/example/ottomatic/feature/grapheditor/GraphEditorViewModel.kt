@@ -19,6 +19,7 @@ import com.example.ottomatic.data.trigger.VariableStore
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecConnection
+import com.example.ottomatic.domain.model.ExecPorts
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.VariableDeclaration
@@ -40,6 +41,10 @@ import com.example.ottomatic.domain.registry.DragOrigin
 import com.example.ottomatic.domain.registry.NodeSuggestion
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.COMPARISON_TYPE_IDS
+import com.example.ottomatic.domain.registry.DIALOG_INPUT_TYPE_ID
+import com.example.ottomatic.domain.registry.DIALOG_INPUT_TYPE_KEY
+import com.example.ottomatic.domain.registry.DIALOG_TIMEOUT_KEY
+import com.example.ottomatic.domain.registry.DIALOG_TYPE_IDS
 import com.example.ottomatic.domain.registry.JSON_READ_LIST_KEY
 import com.example.ottomatic.domain.registry.JSON_READ_TYPE_ID
 import com.example.ottomatic.domain.registry.JSON_READ_TYPE_KEY
@@ -1012,58 +1017,6 @@ class GraphEditorViewModel(
         persist()
     }
 
-    /**
-     * Drops the data edges a config change has just invalidated.
-     *
-     * Two config keys retype a placed node's ports through [effectivePorts], and
-     * an edge left behind on a port that no longer exists — or no longer has the
-     * type it was checked against — is worse than no edge: it draws, it saves,
-     * and it silently carries nothing.
-     *
-     * Both are gated on the node's own typeId as well as the key, because
-     * neither "type" nor "outputs" is a reserved config name.
-     */
-    private fun pruneRetypedEdges(workflow: Workflow, nodeId: NodeId, key: ConfigKey): Workflow {
-        val typeId = workflow.node(nodeId)?.typeId
-        return when {
-            // A comparison's type chooser (`action.if`, `action.while`): the
-            // `source`/`value` schemas are about to change and the old connections
-            // would likely fail the new check.
-            key == IF_TYPE_CONFIG_KEY && typeId in COMPARISON_TYPE_IDS -> workflow.copy(
-                dataConnections = workflow.dataConnections.filterNot {
-                    it.toNodeId == nodeId && (it.toPort == IF_SOURCE_IN || it.toPort == IF_VALUE_IN)
-                },
-            )
-            // A script's port lists: an edited row can rename a port, delete it
-            // or retype it, so every edge touching this node is re-checked
-            // against the ports it now has.
-            key in SCRIPT_PORT_KEYS && typeId == SCRIPT_TYPE_ID ->
-                workflow.copy(dataConnections = workflow.dataConnections.filter { it.stillValid(workflow, nodeId) })
-            // A JSON read's result type and its list switch both retype the one
-            // output port, so an edge that fitted a Text no longer fits a list of
-            // them. Re-checked rather than dropped, for the same reason as above.
-            key in JSON_READ_PORT_KEYS && typeId == JSON_READ_TYPE_ID ->
-                workflow.copy(dataConnections = workflow.dataConnections.filter { it.stillValid(workflow, nodeId) })
-            else -> workflow
-        }
-    }
-
-    /**
-     * True when this edge still connects two ports that exist and type-check.
-     *
-     * Re-checking beats dropping every edge on the node the way `action.if`'s
-     * type chooser does: a port list is edited one character at a time, so
-     * clearing the lot on each keystroke would delete work the user can see is
-     * still correct. An edge only goes when its port is genuinely gone or its
-     * type no longer fits.
-     */
-    private fun DataConnection.stillValid(workflow: Workflow, nodeId: NodeId): Boolean {
-        if (toNodeId != nodeId && fromNodeId != nodeId) return true
-        val from = resolvePort(workflow, PortRef(fromNodeId, fromPort, isOutput = true, kind = PortKind.DATA))
-        val to = resolvePort(workflow, PortRef(toNodeId, toPort, isOutput = false, kind = PortKind.DATA))
-        return from != null && to != null && isDataAssignable(from, to)
-    }
-
     fun setNodeDataInputVisible(nodeId: NodeId, portName: PortName, visible: Boolean) {
         _uiState.update { state ->
             val workflow = state.workflow
@@ -1117,11 +1070,6 @@ class GraphEditorViewModel(
         /** Keeps derived console state alive across a configuration change. */
         private const val FLOW_STOP_TIMEOUT_MS = 5_000L
 
-        /** The two `@Ports` config keys on `action.script`, both of which retype its ports. */
-        private val SCRIPT_PORT_KEYS = setOf(SCRIPT_INPUTS_KEY, SCRIPT_OUTPUTS_KEY)
-
-        private val JSON_READ_PORT_KEYS = setOf(JSON_READ_TYPE_KEY, JSON_READ_LIST_KEY)
-
         @Suppress("LongParameterList") // Mirrors the ViewModel's injected dependencies 1:1.
         fun factory(
             repository: WorkflowRepository,
@@ -1147,6 +1095,86 @@ class GraphEditorViewModel(
             }
         }
     }
+}
+
+/** The two `@Ports` config keys on `action.script`, both of which retype its ports. */
+private val SCRIPT_PORT_KEYS = setOf(SCRIPT_INPUTS_KEY, SCRIPT_OUTPUTS_KEY)
+
+private val JSON_READ_PORT_KEYS = setOf(JSON_READ_TYPE_KEY, JSON_READ_LIST_KEY)
+
+/**
+ * Drops the edges a config change has just invalidated.
+ *
+ * A handful of config keys rewrite a placed node's ports through
+ * [effectivePorts], and an edge left behind on a port that no longer exists — or
+ * no longer has the type it was checked against — is worse than no edge: it
+ * draws, it saves, and it silently carries nothing.
+ *
+ * Every case is gated on the node's own typeId as well as the key, because none
+ * of "type", "outputs" or "timeoutSeconds" is a reserved config name.
+ */
+private fun pruneRetypedEdges(workflow: Workflow, nodeId: NodeId, key: ConfigKey): Workflow {
+    val typeId = workflow.node(nodeId)?.typeId
+    return when {
+        // A comparison's type chooser (`action.if`, `action.while`): the
+        // `source`/`value` schemas are about to change and the old connections
+        // would likely fail the new check.
+        key == IF_TYPE_CONFIG_KEY && typeId in COMPARISON_TYPE_IDS -> workflow.copy(
+            dataConnections = workflow.dataConnections.filterNot {
+                it.toNodeId == nodeId && (it.toPort == IF_SOURCE_IN || it.toPort == IF_VALUE_IN)
+            },
+        )
+        retypesDataPorts(key, typeId) ->
+            workflow.copy(dataConnections = workflow.dataConnections.filter { it.stillValid(workflow, nodeId) })
+        key == DIALOG_TIMEOUT_KEY && typeId in DIALOG_TYPE_IDS -> workflow.withoutStrandedTimeoutBranch(nodeId)
+        else -> workflow
+    }
+}
+
+/**
+ * Whether [key] rewrites the DATA ports of a node of type [typeId], so that every
+ * edge touching it has to be re-checked.
+ *
+ * Re-checking beats dropping every edge the way `action.if`'s type chooser does:
+ * a port list is edited one character at a time, so clearing the lot on each
+ * keystroke would delete work the user can see is still correct.
+ */
+private fun retypesDataPorts(key: ConfigKey, typeId: NodeTypeId?): Boolean = when (typeId) {
+    // An edited row can rename a port, delete it or retype it.
+    SCRIPT_TYPE_ID -> key in SCRIPT_PORT_KEYS
+    // The result type and the list switch both retype the one output port, so an
+    // edge that fitted a Text no longer fits a list of them.
+    JSON_READ_TYPE_ID -> key in JSON_READ_PORT_KEYS
+    // A dialog's answer type retypes its one output port, exactly as a JSON read's does.
+    DIALOG_INPUT_TYPE_ID -> key == DIALOG_INPUT_TYPE_KEY
+    else -> false
+}
+
+/**
+ * Drops the wire leaving [nodeId]'s `timed_out` port once that port has stopped
+ * being drawn — i.e. once the dialog waits forever again.
+ *
+ * The only *exec* edge any of this prunes, and it has to happen here:
+ * `GraphValidator` resolves exec edges against the static declaration, where the
+ * port still exists, so nothing downstream would ever report the wire. It would
+ * simply stop being drawn and never fire again.
+ */
+private fun Workflow.withoutStrandedTimeoutBranch(nodeId: NodeId): Workflow {
+    val waits = (node(nodeId)?.config?.get(DIALOG_TIMEOUT_KEY)?.toIntOrNull() ?: 0) > 0
+    if (waits) return this
+    return copy(
+        execConnections = execConnections.filterNot {
+            it.fromNodeId == nodeId && it.fromPort == ExecPorts.TIMED_OUT
+        },
+    )
+}
+
+/** True when this edge still connects two ports that exist and type-check. */
+private fun DataConnection.stillValid(workflow: Workflow, nodeId: NodeId): Boolean {
+    if (toNodeId != nodeId && fromNodeId != nodeId) return true
+    val from = resolvePort(workflow, PortRef(fromNodeId, fromPort, isOutput = true, kind = PortKind.DATA))
+    val to = resolvePort(workflow, PortRef(toNodeId, toPort, isOutput = false, kind = PortKind.DATA))
+    return from != null && to != null && isDataAssignable(from, to)
 }
 
 /**

@@ -13,6 +13,7 @@ import com.example.ottomatic.domain.registry.GlobalVariables
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.log.RunLogStore
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
+import com.example.ottomatic.data.prompt.OverlayPrompts
 import com.example.ottomatic.data.script.WebViewScriptEngine
 import com.example.ottomatic.data.sensor.SensorBridge
 import com.example.ottomatic.data.service.AndroidContacts
@@ -138,6 +139,10 @@ object ServiceLocator {
         // One address book for the process, so an action resolving a contact and a
         // trigger matching against one cannot disagree about the same person.
         val contacts = AndroidContacts(appContext)
+        // One renderer for the process, which is what makes "one dialog at a time"
+        // true across macros rather than just within one: the mutex serialising it
+        // lives on this instance.
+        val prompts = OverlayPrompts(appContext)
         executionContext = DefaultExecutionContext(
             systemServices = systemServices,
             deviceState = deviceState,
@@ -146,6 +151,7 @@ object ServiceLocator {
             scripts = scriptEngine,
             variables = VariableStore,
             contacts = contacts,
+            prompts = prompts,
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.

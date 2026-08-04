@@ -30,6 +30,12 @@
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- The dialog nodes (`action.dialog_*`). The engine is a background service,
+         which since Android 10 may not start an Activity at all; holding this is
+         both what lets the window be drawn and the documented exemption from that
+         restriction. Granted on a Settings page, never through a runtime dialog —
+         see PrerequisiteType.OVERLAY. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <!-- Held only while a gesture trigger is armed with "keep working when the

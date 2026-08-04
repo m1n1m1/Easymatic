@@ -2,6 +2,9 @@ package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.engine.ExecutableAction
+import com.example.ottomatic.engine.action.AskChoiceAction
+import com.example.ottomatic.engine.action.AskConfirmAction
+import com.example.ottomatic.engine.action.AskInputAction
 import com.example.ottomatic.engine.action.AutoRotateAction
 import com.example.ottomatic.engine.action.BluetoothAction
 import com.example.ottomatic.engine.action.BreakStructAction
@@ -28,6 +31,7 @@ import com.example.ottomatic.engine.action.RingerModeAction
 import com.example.ottomatic.engine.action.ScreenTimeoutAction
 import com.example.ottomatic.engine.action.ScriptAction
 import com.example.ottomatic.engine.action.SetVariableAction
+import com.example.ottomatic.engine.action.ShowMessageAction
 import com.example.ottomatic.engine.action.SendSmsAction
 import com.example.ottomatic.engine.action.StopAction
 import com.example.ottomatic.engine.action.StopSoundAction
@@ -71,6 +75,13 @@ object ActionRegistry {
         CallAction(),
         ClipboardAction(),
         DelayAction(),
+        // The four dialog nodes are one family and are kept together for the reason
+        // the three loops are, with the plainest first: a message is what somebody
+        // reaches for before they need an answer at all.
+        ShowMessageAction(),
+        AskConfirmAction(),
+        AskInputAction(),
+        AskChoiceAction(),
         DisableMacroAction(),
         DndAction(),
         EnableMacroAction(),

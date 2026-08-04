@@ -60,6 +60,7 @@ class AndroidPermissionChecker(
         PrerequisiteType.NOTIFICATION_LISTENER ->
             NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
         PrerequisiteType.ACCESSIBILITY_SERVICE -> isAccessibilityServiceEnabled()
+        PrerequisiteType.OVERLAY -> Settings.canDrawOverlays(context)
         // Neither is declared by any node; reporting them unsatisfied keeps the
         // safe default rather than claiming something unverified is working.
         PrerequisiteType.FOREGROUND_SERVICE, PrerequisiteType.DEVICE_ADMIN -> false

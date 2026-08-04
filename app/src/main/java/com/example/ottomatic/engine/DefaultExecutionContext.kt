@@ -7,8 +7,10 @@ import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
+import com.example.ottomatic.core.service.NoPrompts
 import com.example.ottomatic.core.service.NoScripts
 import com.example.ottomatic.core.service.NoVariables
+import com.example.ottomatic.core.service.Prompts
 import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.Variables
 import com.example.ottomatic.core.service.SystemServices
@@ -36,6 +38,7 @@ class DefaultExecutionContext(
     override val scripts: ScriptEngine = NoScripts,
     override val variables: Variables = NoVariables,
     override val contacts: Contacts = NoContacts,
+    override val prompts: Prompts = NoPrompts,
     private val logger: (LogEntry) -> Unit = {},
 ) : ExecutionContext {
 

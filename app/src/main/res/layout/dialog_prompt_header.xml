@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The title area of a *list* dialog, hand-built because the platform will not
+    show one otherwise.
+
+    `AlertController.setupContent` only attaches the list where no message was
+    set: asking `setMessage` and `setItems` for the same dialog leaves the
+    question on screen with no options under it, which reads as a broken node. So
+    a dialog that offers options carries its question here instead.
+
+    Every style is the Material 3 one the component would have used, referenced
+    rather than copied, so this reads identically to the dialogs that do use
+    setIcon/setTitle/setMessage.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="24dp">
+
+    <ImageView
+        android:id="@+id/prompt_icon"
+        style="@style/Ottomatic.DialogIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_dialog_ottomatic" />
+
+    <TextView
+        android:id="@+id/prompt_title"
+        style="@style/Ottomatic.DialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/prompt_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textAlignment="center"
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        android:textColor="?android:attr/textColorSecondary" />
+</LinearLayout>

@@ -28,6 +28,9 @@ enum class ExecutionRoute(val portName: PortName, val label: String) {
     FALSE(ExecPorts.FALSE, ExecPorts.FALSE.value),
     BODY(ExecPorts.BODY, ExecPorts.BODY_LABEL),
     COMPLETED(ExecPorts.COMPLETED, ExecPorts.COMPLETED_LABEL),
+    CONFIRMED(ExecPorts.CONFIRMED, ExecPorts.CONFIRMED_LABEL),
+    CANCELLED(ExecPorts.CANCELLED, ExecPorts.CANCELLED_LABEL),
+    TIMED_OUT(ExecPorts.TIMED_OUT, ExecPorts.TIMED_OUT_LABEL),
 }
 
 /** The set of EXECUTION output ports a node exposes. */
@@ -45,6 +48,23 @@ enum class ExecOutputs(val routes: List<ExecutionRoute>) {
      * See [LoopAction].
      */
     LOOP(listOf(ExecutionRoute.BODY, ExecutionRoute.COMPLETED)),
+
+    /**
+     * `out` / `timed_out`: a dialog with nothing to decide — it was seen, or it
+     * was not. The plain `out` is deliberately first and deliberately unrenamed:
+     * acknowledging a message is the ordinary continuation every other action has.
+     */
+    ACKNOWLEDGED(listOf(ExecutionRoute.OUT, ExecutionRoute.TIMED_OUT)),
+
+    /**
+     * `confirmed` / `cancelled` / `timed_out`: a question put to the user.
+     *
+     * The third route is declared here rather than being folded into `cancelled`
+     * because "the user said no" and "nobody was there" send a macro to two
+     * different places. It is still *shown* only when a timeout is configured —
+     * see `dialogEffectivePorts` — so the card carries no branch that cannot fire.
+     */
+    DECISION(listOf(ExecutionRoute.CONFIRMED, ExecutionRoute.CANCELLED, ExecutionRoute.TIMED_OUT)),
     ;
 
     val ports: List<Port> get() = routes.map { execOut(it.portName, it.label) }

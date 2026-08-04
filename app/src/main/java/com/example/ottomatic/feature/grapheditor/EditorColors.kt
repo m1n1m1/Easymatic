@@ -2,6 +2,7 @@ package com.example.ottomatic.feature.grapheditor
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CallSplit
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.BatteryChargingFull
@@ -9,11 +10,14 @@ import androidx.compose.material.icons.filled.BatterySaver
 import androidx.compose.material.icons.filled.BatteryStd
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.Dock
 import androidx.compose.material.icons.filled.DoNotDisturb
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.LightMode
@@ -223,4 +227,8 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.DARK_MODE -> Icons.Filled.DarkMode
     NodeIcon.LOOP -> Icons.Filled.Loop
     NodeIcon.LIST -> Icons.AutoMirrored.Filled.FormatListBulleted
+    NodeIcon.DIALOG -> Icons.Filled.ChatBubbleOutline
+    NodeIcon.QUESTION -> Icons.AutoMirrored.Filled.HelpOutline
+    NodeIcon.INPUT -> Icons.Filled.EditNote
+    NodeIcon.CHOICE -> Icons.Filled.Checklist
 }

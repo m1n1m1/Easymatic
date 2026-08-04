@@ -6,8 +6,10 @@ import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
+import com.example.ottomatic.core.service.NoPrompts
 import com.example.ottomatic.core.service.NoScripts
 import com.example.ottomatic.core.service.NoVariables
+import com.example.ottomatic.core.service.Prompts
 import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.Variables
 import com.example.ottomatic.core.service.SystemServices
@@ -80,6 +82,18 @@ interface ExecutionContext {
      * An action's, never a value node's: see [Contacts].
      */
     val contacts: Contacts get() = NoContacts
+
+    /**
+     * Puts a question to the user and waits for the answer — the dialog nodes.
+     * Defaults to [NoPrompts] so engine-only tests need no renderer: they then
+     * see the same [com.example.ottomatic.core.service.PromptAnswer.Unavailable]
+     * a phone without the overlay permission reports, which the nodes already
+     * have to handle.
+     *
+     * An action's, never a value node's: it waits for a human, which is the
+     * opposite of the pull side's "cheap and cannot fail".
+     */
+    val prompts: Prompts get() = NoPrompts
 
     /** Optional handle to enable/disable other macros at runtime, or null. */
     val macroControl: MacroControl? get() = null

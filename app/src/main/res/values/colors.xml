@@ -3,4 +3,10 @@
     <!-- Mirrors EditorColors.canvasBackground. Used as the window background so
          nav transitions never expose a lighter surface underneath. -->
     <color name="canvas_background">#FF17181D</color>
+
+    <!-- Only the fallback accent for a macro's dialog below Android 12, where
+         there is no system palette to take. Mirrors EditorColors.actionAccent, so
+         a phone without dynamic colour gets the colour the action nodes that
+         raised the dialog are drawn in rather than Material's baseline purple. -->
+    <color name="dialog_accent">#FF5B8DEF</color>
 </resources>

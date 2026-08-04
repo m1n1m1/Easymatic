@@ -18,6 +18,7 @@ playServicesMaps = "19.0.0"
 mapsCompose = "6.4.1"
 fragment = "1.8.9"
 javascriptengine = "1.1.0"
+material = "1.13.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,6 +45,9 @@ play-services-maps = { group = "com.google.android.gms", name = "play-services-m
 maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
 androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
 androidx-javascriptengine = { group = "androidx.javascriptengine", name = "javascriptengine", version.ref = "javascriptengine" }
+# Material Components (views), for the one screen that cannot be Compose: the
+# dialog `OverlayPrompts` puts on screen from a background service.
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

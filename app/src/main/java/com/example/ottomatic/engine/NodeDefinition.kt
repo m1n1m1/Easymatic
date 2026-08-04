@@ -473,6 +473,12 @@ inline fun <reified I : Any> effectNode(
  * input to read, and (for a loop) the per-iteration DATA outputs. They are
  * declared statically even when `effectivePorts` will retype them, because the
  * drag-into-empty-space palette reads declared ports.
+ *
+ * [permissions] are declared here for the same reason [actionNode] takes them.
+ * Being adaptive says something about a node's *ports*, nothing about what it
+ * needs to run: `action.dialog_input` retypes its answer port from its own
+ * config and still cannot show anything without permission to draw over other
+ * apps.
  */
 @Suppress("LongParameterList")
 inline fun <reified I : Any> adaptiveNode(
@@ -483,6 +489,7 @@ inline fun <reified I : Any> adaptiveNode(
     icon: NodeIcon,
     extraPorts: List<Port>,
     execOutputs: ExecOutputs = ExecOutputs.SINGLE,
+    permissions: List<PermissionRequirement> = emptyList(),
 ): ActionNodeDefinition<I, Unit> = ActionNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -494,6 +501,7 @@ inline fun <reified I : Any> adaptiveNode(
     execOutputs = execOutputs,
     extraPorts = extraPorts,
     hasDynamicPorts = true,
+    permissions = permissions,
 )
 
 /**

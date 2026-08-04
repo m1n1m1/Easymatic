@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.ottomatic.core.permissions.PrerequisiteType
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
@@ -74,6 +75,10 @@ private fun Context.openSettingsFor(type: PrerequisiteType) {
         PrerequisiteType.NOTIFICATION_LISTENER -> notificationListenerIntent()
         PrerequisiteType.NOTIFICATION_POLICY ->
             Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+        // The `package:` uri is what opens *our* row rather than the full list of
+        // every app on the phone.
+        PrerequisiteType.OVERLAY ->
+            Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, "package:$packageName".toUri())
         // Nothing to open: RUNTIME goes through the permission dialog, and no
         // node declares the other two.
         PrerequisiteType.RUNTIME,
