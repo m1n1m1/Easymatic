@@ -9,6 +9,7 @@ import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.engine.trigger.BatteryDirection
+import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.ManualTrigger
 import com.example.ottomatic.engine.trigger.ScheduleHandle
@@ -128,6 +129,7 @@ class WorkflowRunnerTest {
             radiusMeters: Float,
             transitions: Set<GeofenceTransition>,
             dwellDelayMs: Int,
+            onResult: (GeofenceArmResult) -> Unit,
         ): ScheduleHandle = ScheduleHandle {}
 
         override fun armSchedule(nodeId: NodeId, intervalMinutes: Long) = ScheduleHandle {}

@@ -11,6 +11,7 @@ import com.example.ottomatic.engine.trigger.DeviceOrientationConfig
 import com.example.ottomatic.engine.trigger.DeviceOrientationTrigger
 import com.example.ottomatic.engine.trigger.DeviceTapConfig
 import com.example.ottomatic.engine.trigger.DeviceTapTrigger
+import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.MotionEvent
 import com.example.ottomatic.engine.trigger.ProximityConfig
@@ -266,5 +267,6 @@ private class FakeSensorHost(
         radiusMeters: Float,
         transitions: Set<GeofenceTransition>,
         dwellDelayMs: Int,
+        onResult: (GeofenceArmResult) -> Unit,
     ) = ScheduleHandle { }
 }

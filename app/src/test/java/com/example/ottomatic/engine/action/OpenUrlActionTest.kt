@@ -1,6 +1,9 @@
 package com.example.ottomatic.engine.action
 
 import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.core.service.LaunchOutcome
+import com.example.ottomatic.core.service.LogEntry
+import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.engine.DefaultExecutionContext
 import com.example.ottomatic.engine.RecordingSystemServices
@@ -57,6 +60,22 @@ class OpenUrlActionTest {
     fun `text that is not a url opens nothing`() = runBlocking {
         action.execute(OpenUrlConfig(url = "hello world"), context)
         assertTrue("a sentence must never be launched as an intent", services.openedUrls.isEmpty())
+    }
+
+    /**
+     * The URL half of the same defect as `action.launch_app`: Android drops a
+     * background Activity start silently, so this used to pass cleanly.
+     */
+    @Test
+    fun `a url Android blocked is reported as blocked`() = runBlocking {
+        val entries = mutableListOf<LogEntry>()
+        val blocked = RecordingSystemServices().apply { launchOutcome = LaunchOutcome.Blocked }
+        val context = DefaultExecutionContext(systemServices = blocked) { entries += it }
+
+        OpenUrlAction().execute(OpenUrlConfig(url = "google.com"), context)
+
+        val message = entries.single { it.level == LogLevel.ERROR }.message
+        assertTrue("the message must name the grant that fixes it", message.contains("Display over other apps"))
     }
 
     /**

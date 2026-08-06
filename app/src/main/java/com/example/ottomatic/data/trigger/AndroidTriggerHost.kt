@@ -1,23 +1,28 @@
 package com.example.ottomatic.data.trigger
 
+import android.Manifest
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.annotation.SuppressLint
 import android.os.Build
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.service.Contacts
+import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.sensor.SensorBridge
 import com.example.ottomatic.data.service.AndroidContacts
 import com.example.ottomatic.domain.model.GeofencePlace
 import com.example.ottomatic.engine.trigger.BatteryDirection
+import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.ScheduleHandle
 import com.example.ottomatic.engine.trigger.ScreenOffMode
@@ -25,7 +30,10 @@ import com.example.ottomatic.engine.trigger.SensorKind
 import com.example.ottomatic.engine.trigger.SensorRate
 import com.example.ottomatic.engine.trigger.SensorSample
 import com.example.ottomatic.engine.trigger.TriggerHost
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.flow.Flow
@@ -139,6 +147,11 @@ class AndroidTriggerHost(
         return ScheduleHandle { workManager.cancelUniqueWork(workName) }
     }
 
+    // The one host that serves the real bus, so the one that can hand over what
+    // was held for a node while this process was starting.
+    override fun busEventsFor(nodeId: NodeId): Flow<com.example.ottomatic.core.trigger.TriggerEvent> =
+        TriggerBus.eventsFor(nodeId)
+
     override fun geofencePlace(id: String): GeofencePlace? = geofencePlaces.get(id)
 
     override fun contactNumber(lookupKey: String): String? = contacts.phoneNumber(lookupKey)
@@ -151,30 +164,123 @@ class AndroidTriggerHost(
         radiusMeters: Float,
         transitions: Set<GeofenceTransition>,
         dwellDelayMs: Int,
+        onResult: (GeofenceArmResult) -> Unit,
     ): ScheduleHandle {
+        // Asked before the request is built, not after it is refused. Play
+        // Services answers a missing grant with DEVELOPER_ERROR — a code that
+        // names the developer rather than the thing the *user* has to change —
+        // so the one failure with an obvious fix would otherwise be the one
+        // reported least usefully.
+        missingLocationPermission()?.let { reason ->
+            Log.w(TAG, "not arming geofence for node $nodeId: $reason")
+            onResult(GeofenceArmResult.Refused(GeofenceStatusCodes.GEOFENCE_INSUFFICIENT_LOCATION_PERMISSION, reason))
+            return ScheduleHandle { }
+        }
         val transitionTypes = transitions.fold(0) { acc, t -> acc or t.toGmsConstant() }
         val geofence = Geofence.Builder()
             .setRequestId(nodeId.value)
             .setCircularRegion(latitude, longitude, radiusMeters)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(transitionTypes)
-            .setLoiteringDelay(dwellDelayMs)
+            // Only alongside DWELL. The loitering delay *is* the gap between ENTER
+            // and DWELL, so on a fence that does not watch for DWELL it describes
+            // an alert that can never be sent — the two are one setting, and the
+            // API pairs them.
+            .apply { if (GeofenceTransition.DWELL in transitions) setLoiteringDelay(dwellDelayMs) }
             .build()
         val request = GeofencingRequest.Builder()
             .addGeofence(geofence)
             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
             .build()
         val pendingIntent = geofencePendingIntent(nodeId)
-        // Replace any existing geofence for this node, then add the new one.
-        // removeGeofences is fire-and-forget; addGeofences is too — failures
-        // are logged but do not block the trigger flow from collecting.
+        // Replace any existing geofence for this node, then add the new one —
+        // *chained*, not fired side by side. Both act on the same PendingIntent
+        // key, so a remove that resolves after the add deletes the fence the add
+        // just registered, and the trigger then collects a bus that will never
+        // speak again. The remove's own outcome is ignored on purpose: removing a
+        // fence that was never registered is a no-op, and either way the add is
+        // the part with an answer worth having.
+        //
+        // Neither blocks the trigger flow from collecting; the verdict reaches the
+        // user through onResult instead, because before it did, a refusal was one
+        // Logcat line under a macro that looked perfectly armed.
         geofencingClient.removeGeofences(pendingIntent)
-        geofencingClient.addGeofences(request, pendingIntent)
-            .addOnFailureListener { e -> Log.w(TAG, "addGeofences failed for node $nodeId: $e") }
+            .continueWithTask { geofencingClient.addGeofences(request, pendingIntent) }
+            .addOnSuccessListener { onResult(GeofenceArmResult.Registered) }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "addGeofences failed for node $nodeId: $e")
+                val code = (e as? ApiException)?.statusCode ?: GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE
+                onResult(GeofenceArmResult.Refused(code, refusalReason(code)))
+            }
         return ScheduleHandle {
             geofencingClient.removeGeofences(pendingIntent)
                 .addOnFailureListener { e -> Log.w(TAG, "removeGeofences failed for node $nodeId: $e") }
         }
+    }
+
+    /**
+     * Why a geofence cannot be registered right now, or null when it can.
+     *
+     * Both grants are needed and they are granted separately: `ACCESS_FINE_LOCATION`
+     * comes from the ordinary runtime dialog, while `ACCESS_BACKGROUND_LOCATION` on
+     * API 29+ cannot be prompted for in the same round and on API 30+ cannot be
+     * prompted for at all — the user has to pick "Allow all the time" on the
+     * Settings page. So the second one is missing far more often than the first, and
+     * naming it is most of the value here.
+     */
+    private fun missingLocationPermission(): String? = when {
+        !granted(Manifest.permission.ACCESS_FINE_LOCATION) ->
+            "Ottomatic is not allowed to use your precise location. " +
+                "Grant it on this node, or in Android settings under Location."
+
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            !granted(Manifest.permission.ACCESS_BACKGROUND_LOCATION) ->
+            "Ottomatic is only allowed to use your location while the app is open. " +
+                "A geofence has to work when it is not, so set Location to " +
+                "\"Allow all the time\" in Android settings → Apps → Ottomatic → Permissions → Location."
+
+        else -> null
+    }
+
+    private fun granted(permission: String): Boolean =
+        ContextCompat.checkSelfPermission(appContext, permission) == PackageManager.PERMISSION_GRANTED
+
+    /**
+     * What a Play Services status code means to somebody holding the phone.
+     *
+     * `GeofenceStatusCodes.getStatusCodeString` answers with the constant's own
+     * name, which is jargon at best and misdirection at worst — "DEVELOPER_ERROR"
+     * names the developer, and a user reading it has no idea whether it is their
+     * problem or ours.
+     *
+     * Which, for that code, it is: [missingLocationPermission] has already run by
+     * the time anything reaches here, so a refusal at this point is not about
+     * permissions. It means Play Services rejected the *request*, and the fix is
+     * in this file. Saying so plainly is worth more than a settings tour that
+     * cannot help — this exact code, blamed on permissions, is what sent the first
+     * investigation of it down the wrong path.
+     */
+    private fun refusalReason(code: Int): String = when (code) {
+        CommonStatusCodes.DEVELOPER_ERROR ->
+            "Play Services rejected the geofence request itself. Location permissions are already " +
+                "granted, so this is a bug in Ottomatic rather than a setting you can change — " +
+                "please report it."
+
+        GeofenceStatusCodes.GEOFENCE_INSUFFICIENT_LOCATION_PERMISSION ->
+            "Ottomatic does not have permission to use your location in the background. " +
+                "Set Location to \"Allow all the time\" in Android settings."
+
+        GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE ->
+            "Geofencing is unavailable. Switch Location on, and check that Google Location Accuracy " +
+                "is enabled — geofences use network location rather than GPS."
+
+        GeofenceStatusCodes.GEOFENCE_TOO_MANY_GEOFENCES ->
+            "This device already has the maximum of 100 geofences registered."
+
+        GeofenceStatusCodes.GEOFENCE_TOO_MANY_PENDING_INTENTS ->
+            "Too many separate geofence registrations from Ottomatic."
+
+        else -> GeofenceStatusCodes.getStatusCodeString(code)
     }
 
     override fun appLifecycleEvents(): Flow<com.example.ottomatic.core.trigger.TriggerEvent> =
@@ -183,12 +289,34 @@ class AndroidTriggerHost(
     override fun variableChanges(name: String): Flow<com.example.ottomatic.core.trigger.TriggerEvent> =
         VariableStore.changesFor(name)
 
+    /**
+     * The broadcast Play Services sends when this node's fence is crossed.
+     *
+     * **Mutable, and it has to be.** `GeofencingClient.addGeofences` documents that
+     * the PendingIntent passed to it must be mutable, because the whole payload —
+     * which transition, which fences, the triggering location — is written into the
+     * intent by Play Services at delivery time. That is exactly what an immutable
+     * PendingIntent forbids, so a modern Play Services rejects the registration
+     * outright with `DEVELOPER_ERROR`: the fence is never registered, the receiver
+     * never fires, and the macro simply never runs.
+     *
+     * This is the opposite of the rule everywhere else in the app, and deliberately
+     * so. The usual danger of a mutable PendingIntent is another app filling in an
+     * unspecified target and having us send it somewhere of their choosing; this
+     * intent names [GeofenceReceiver] by class, so there is no target to fill in.
+     * `FLAG_MUTABLE` exists only from API 31 — below it a PendingIntent is mutable
+     * unless `FLAG_IMMUTABLE` says otherwise, so omitting both is the same thing.
+     */
     private fun geofencePendingIntent(nodeId: NodeId): PendingIntent {
         val intent = Intent(appContext, GeofenceReceiver::class.java).apply {
             action = GeofenceReceiver.ACTION_GEOFENCE_TRANSITION
         }
         val requestCode = nodeId.hashCode() and Int.MAX_VALUE
-        val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
         return PendingIntent.getBroadcast(appContext, requestCode, intent, flags)
     }
 

@@ -13,6 +13,7 @@ import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.ItemSchema
+import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.domain.registry.MacroDirectory
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.declarationFor
@@ -83,7 +84,51 @@ class GraphValidator(private val workflow: Workflow) {
         validateLoopBodies(issues)
         validateVariableRefs(issues)
         validateMacroRefs(issues)
+        validatePrerequisites(issues)
         return GraphValidation(issues)
+    }
+
+    /**
+     * A node needing a permission the user has not granted.
+     *
+     * The same family and the same stance as [validateMacroRefs] and
+     * [validateVariableRefs]: a warning that blocks nothing. The graph is
+     * structurally perfect — this is a fact about the phone, not about the wiring
+     * — and quarantining the node would take out work that starts running the
+     * moment a switch is flipped in Settings, with no edit here at all.
+     *
+     * What it adds is *reach*. The node's config form has always shown this, but
+     * only to somebody who opened that node, and a macro missing a grant is
+     * exactly the one that looks fine from the outside: the geofence that is never
+     * registered, the Launch App that Android drops because the app is in the
+     * background. Both fail silently and both look identical to a macro that is
+     * simply waiting. Here it lands in the Problems panel and on the workflow
+     * list's count, where it is visible without knowing to go looking.
+     *
+     * The [GrantedPrerequisites.isHydrated] guard is the same one
+     * [validateMacroRefs] needs, and matters more: unhydrated, this would badge
+     * every permission-declaring node in every macro.
+     *
+     * Only *declared* prerequisites are covered. `action.call`'s contacts access
+     * is derived from its config rather than its type — see `usesContacts` — so it
+     * stays a card on the node, where the config it depends on is in view.
+     */
+    private fun validatePrerequisites(out: MutableList<ValidationIssue>) {
+        if (!GrantedPrerequisites.isHydrated) return
+        for (node in workflow.nodes) {
+            val missing = NodeTypeRegistry.byId(node.typeId)
+                ?.permissionRequirements
+                .orEmpty()
+                .distinctBy { it.key }
+                .filterNot { GrantedPrerequisites.isSatisfied(it) }
+            if (missing.isEmpty()) continue
+            val needs = missing.joinToString(" and ") { it.label }
+            out += ValidationIssue(
+                Severity.WARNING,
+                "'${node.name}' needs $needs, which has not been granted — it may do nothing when it runs",
+                nodes = setOf(node.id),
+            )
+        }
     }
 
     /**

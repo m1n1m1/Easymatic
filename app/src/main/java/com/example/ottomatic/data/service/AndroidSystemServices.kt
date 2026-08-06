@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.service
 
+import android.app.ActivityManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.bluetooth.BluetoothManager
@@ -35,6 +36,7 @@ import com.example.ottomatic.core.service.DndLevel
 import com.example.ottomatic.core.service.DndResult
 import com.example.ottomatic.core.service.HttpRequest
 import com.example.ottomatic.core.service.HttpResponse
+import com.example.ottomatic.core.service.LaunchOutcome
 import com.example.ottomatic.core.service.RingerMode
 import com.example.ottomatic.core.service.RingerResult
 import com.example.ottomatic.core.service.ScreenTimeoutResult
@@ -493,20 +495,59 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
         .build()
 
-    override fun launchApp(packageName: String): Boolean = runCatching {
-        val intent = context.packageManager.getLaunchIntentForPackage(packageName) ?: return@runCatching false
+    override fun launchApp(packageName: String): LaunchOutcome {
+        val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+            ?: return LaunchOutcome.NoSuchApp
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
-        true
-    }.getOrDefault(false)
+        return startActivityForNode(intent)
+    }
 
-    override fun openUrl(url: String): Boolean = runCatching {
-        val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        context.startActivity(intent)
-        true
-    }.getOrDefault(false)
+    override fun openUrl(url: String): LaunchOutcome = startActivityForNode(
+        Intent(Intent.ACTION_VIEW, url.toUri()).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) },
+    )
+
+    /**
+     * Starts [intent] on behalf of a node, saying honestly what became of it.
+     *
+     * The [LaunchOutcome.Blocked] check has to happen *before* the call, because
+     * the platform will not tell us afterwards: a background activity start that
+     * is refused throws nothing and returns nothing, it is simply dropped with a
+     * "Background activity launch blocked!" line in Logcat. Every node that puts
+     * another app on screen goes through here so they cannot disagree about it.
+     */
+    private fun startActivityForNode(intent: Intent): LaunchOutcome {
+        if (!canStartActivity()) return LaunchOutcome.Blocked
+        return runCatching {
+            context.startActivity(intent)
+            LaunchOutcome.Launched
+        }.getOrDefault(LaunchOutcome.NoHandler)
+    }
+
+    /**
+     * Whether an Activity started from here will actually appear.
+     *
+     * The two documented exemptions this app can ever be in: holding the overlay
+     * grant, and having a visible window. The engine's own foreground-service
+     * notification does **not** satisfy either — `IMPORTANCE_FOREGROUND` (100) is
+     * strictly above `IMPORTANCE_FOREGROUND_SERVICE` (125), and a foreground
+     * service is not on the exemption list at all. That is the whole defect this
+     * exists to report.
+     *
+     * The visible-window half is what keeps the editor's Run button working for
+     * somebody who has not granted the overlay permission.
+     *
+     * This is a prediction, not a guarantee — the grant can be revoked between
+     * here and the call, and the platform still reports that to nobody. Which is
+     * why the message the node writes says Android *would not let* it rather than
+     * claiming certainty.
+     */
+    private fun canStartActivity(): Boolean = Settings.canDrawOverlays(context) || isVisibleToUser()
+
+    private fun isVisibleToUser(): Boolean {
+        val state = ActivityManager.RunningAppProcessInfo()
+        ActivityManager.getMyMemoryState(state)
+        return state.importance <= ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+    }
 
     override fun sendSms(to: String, body: String): Boolean = runCatching {
         val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -519,13 +560,11 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         true
     }.getOrDefault(false)
 
-    override fun call(number: String): Boolean = runCatching {
-        val intent = Intent(Intent.ACTION_CALL, "tel:$number".toUri()).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        context.startActivity(intent)
-        true
-    }.getOrDefault(false)
+    // A missing CALL_PHONE throws SecurityException, which lands on NoHandler —
+    // the node already declares that permission, so its card covers that case.
+    override fun call(number: String): LaunchOutcome = startActivityForNode(
+        Intent(Intent.ACTION_CALL, "tel:$number".toUri()).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) },
+    )
 
     override fun setClipboard(text: String): Boolean = runCatching {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager

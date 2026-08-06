@@ -4,8 +4,10 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.domain.model.GeofencePlace
+import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.engine.trigger.BatteryDirection
+import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofenceConfig
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.GeofenceTrigger
@@ -86,6 +88,65 @@ class GeofenceActivationTest {
 
         assertTrue("the handle must be cancelled when collection ends", host.cancelled)
     }
+
+    /**
+     * The four lines below are the whole point of the arm-time console: before
+     * them, a macro watching nowhere and a macro watching correctly and seeing
+     * nothing were indistinguishable from the editor.
+     */
+    @Test
+    fun `a trigger with no place says so`() = runBlocking {
+        val host = FakeTriggerHost(places = mapOf(home.id to home))
+
+        GeofenceTrigger().activate(GeofenceConfig(placeId = ""), node, host).toList()
+
+        val warning = host.reported.single { it.level == LogLevel.WARN }
+        assertEquals(node.id, warning.nodeId)
+        assertTrue(warning.message.contains("No place chosen"))
+    }
+
+    @Test
+    fun `a trigger whose place was deleted says so`() = runBlocking {
+        val host = FakeTriggerHost(places = emptyMap())
+
+        GeofenceTrigger().activate(GeofenceConfig(placeId = home.id), node, host).toList()
+
+        val warning = host.reported.single { it.level == LogLevel.WARN }
+        assertTrue(warning.message.contains("no longer exists"))
+    }
+
+    @Test
+    fun `a registered fence is announced with its place and radius`() = runBlocking {
+        val host = FakeTriggerHost(places = mapOf(home.id to home))
+
+        GeofenceTrigger().activate(GeofenceConfig(placeId = home.id), node, host).toList()
+
+        val line = host.reported.single { it.level == LogLevel.INFO }
+        assertTrue(line.message.contains("Home"))
+        assertTrue(line.message.contains("250 m"))
+    }
+
+    /**
+     * The line that would have answered the original question. A refusal used to
+     * be one `Log.w` in Logcat, under a macro whose switch still read "on".
+     *
+     * The reason is passed through verbatim rather than decorated: the host has
+     * already turned the Play Services code into something a person can act on,
+     * and a second generic sentence appended here would bury it.
+     */
+    @Test
+    fun `a refused fence reports the reason it was given`() = runBlocking {
+        val host = FakeTriggerHost(
+            places = mapOf(home.id to home),
+            armResult = GeofenceArmResult.Refused(1004, "Set Location to \"Allow all the time\"."),
+        )
+
+        GeofenceTrigger().activate(GeofenceConfig(placeId = home.id), node, host).toList()
+
+        val error = host.reported.single { it.level == LogLevel.ERROR }
+        assertTrue("the place has to be named", error.message.contains("Home"))
+        assertTrue("the reason must survive intact", error.message.contains("Allow all the time"))
+    }
 }
 
 private data class ArmedGeofence(
@@ -97,8 +158,20 @@ private data class ArmedGeofence(
     val dwellDelayMs: Int,
 )
 
-/** Records what was armed instead of touching Play Services. */
-private class FakeTriggerHost(private val places: Map<String, GeofencePlace>) : TriggerHost {
+/** One line the trigger wrote to its workflow's console. */
+private data class Reported(val nodeId: NodeId, val message: String, val level: LogLevel)
+
+/**
+ * Records what was armed instead of touching Play Services.
+ *
+ * [armResult] stands in for the platform's asynchronous verdict — the real one
+ * arrives on a GMS callback well after `armGeofence` has returned, so a test can
+ * only get at it by choosing what to hand back.
+ */
+private class FakeTriggerHost(
+    private val places: Map<String, GeofencePlace>,
+    private val armResult: GeofenceArmResult = GeofenceArmResult.Registered,
+) : TriggerHost {
 
     var armed: ArmedGeofence? = null
         private set
@@ -106,9 +179,15 @@ private class FakeTriggerHost(private val places: Map<String, GeofencePlace>) : 
     var cancelled: Boolean = false
         private set
 
+    val reported = mutableListOf<Reported>()
+
     override fun busEvents(): Flow<TriggerEvent> = emptyFlow()
 
     override fun geofencePlace(id: String): GeofencePlace? = places[id]
+
+    override fun report(node: WorkflowNode, message: String, level: LogLevel) {
+        reported += Reported(node.id, message, level)
+    }
 
     override fun armGeofence(
         nodeId: NodeId,
@@ -117,8 +196,10 @@ private class FakeTriggerHost(private val places: Map<String, GeofencePlace>) : 
         radiusMeters: Float,
         transitions: Set<GeofenceTransition>,
         dwellDelayMs: Int,
+        onResult: (GeofenceArmResult) -> Unit,
     ): ScheduleHandle {
         armed = ArmedGeofence(nodeId, latitude, longitude, radiusMeters, transitions, dwellDelayMs)
+        onResult(armResult)
         return ScheduleHandle { cancelled = true }
     }
 

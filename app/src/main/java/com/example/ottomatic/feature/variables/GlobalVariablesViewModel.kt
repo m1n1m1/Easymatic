@@ -52,7 +52,7 @@ class GlobalVariablesViewModel(
         viewModelScope.launch {
             change()
             GlobalVariables.hydrate(repository.list())
-            runCatching { MacroEngineService.start(appContext, MacroEngineService.ACTION_REARM_ALL) }
+            runCatching { MacroEngineService.start(appContext, MacroEngineService.ACTION_REARM_CHANGED) }
         }
     }
 

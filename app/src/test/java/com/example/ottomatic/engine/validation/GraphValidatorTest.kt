@@ -12,6 +12,8 @@ import com.example.ottomatic.domain.model.VariableRef
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.WorkflowSummary
+import com.example.ottomatic.core.permissions.PrerequisiteType
+import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.domain.registry.MacroDirectory
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -535,6 +537,91 @@ class GraphValidatorTest {
         // A warning blocks nothing, by construction.
         assertTrue(validation.blockedNodes.isEmpty())
         assertTrue(validation.blockedConnections.isEmpty())
+    }
+
+    /**
+     * The Problems-panel half of a missing grant.
+     *
+     * The node's own config form has always shown this, but a macro missing a
+     * permission is exactly the one that looks fine from the outside — so the
+     * point of the warning is that it is visible without opening the node.
+     */
+    @Test
+    fun `an ungranted prerequisite warns and blocks nothing`() {
+        GrantedPrerequisites.hydrate(emptySet())
+        try {
+            val node = WorkflowNode(NodeId("la"), NodeTypeId("action.launch_app"), "Launch App", 0f, 0f)
+
+            val validation = GraphValidator(Workflow(nodes = listOf(node))).validate()
+
+            assertTrue(
+                validation.warnings.toString(),
+                validation.warnings.any { "draw over other apps" in it.message && node.id in it.nodes },
+            )
+            // A fact about the phone, not about the wiring: flipping a switch in
+            // Settings makes this node work with no edit here at all.
+            assertTrue(validation.blockedNodes.isEmpty())
+            assertTrue(validation.isRunnable)
+        } finally {
+            GrantedPrerequisites.reset()
+        }
+    }
+
+    @Test
+    fun `a granted prerequisite says nothing`() {
+        GrantedPrerequisites.hydrate(setOf(PrerequisiteType.OVERLAY.name))
+        try {
+            val node = WorkflowNode(NodeId("la"), NodeTypeId("action.launch_app"), "Launch App", 0f, 0f)
+
+            val validation = GraphValidator(Workflow(nodes = listOf(node))).validate()
+
+            assertFalse(
+                validation.warnings.toString(),
+                validation.warnings.any { "has not been granted" in it.message },
+            )
+        } finally {
+            GrantedPrerequisites.reset()
+        }
+    }
+
+    /**
+     * The guard that keeps this honest. Nothing has to have asked Android for the
+     * validator to run — the executor validates a disk snapshot on boot — and a
+     * registry that answered "not granted" to everything would badge every
+     * permission-declaring node in every macro. Empty and unasked differ.
+     */
+    @Test
+    fun `nothing is reported while the grants are unknown`() {
+        GrantedPrerequisites.reset()
+        val node = WorkflowNode(NodeId("la"), NodeTypeId("action.launch_app"), "Launch App", 0f, 0f)
+
+        val validation = GraphValidator(Workflow(nodes = listOf(node))).validate()
+
+        assertFalse(
+            validation.warnings.toString(),
+            validation.warnings.any { "has not been granted" in it.message },
+        )
+    }
+
+    /**
+     * The message has to name the *setting*, not the constant. "Allow all the
+     * time" is the wording on the Android page the user has to reach;
+     * ACCESS_BACKGROUND_LOCATION is the wording that sends them nowhere.
+     */
+    @Test
+    fun `the warning names the permission in the words Android uses`() {
+        GrantedPrerequisites.hydrate(emptySet())
+        try {
+            val node = WorkflowNode(NodeId("gf"), NodeTypeId("trigger.geofence"), "Geofence", 0f, 0f)
+
+            val validation = GraphValidator(Workflow(nodes = listOf(node))).validate()
+
+            val warning = validation.warnings.single { "has not been granted" in it.message }
+            assertTrue(warning.message, "Allow all the time" in warning.message)
+            assertFalse("no manifest constants in a user-facing line", "ACCESS_" in warning.message)
+        } finally {
+            GrantedPrerequisites.reset()
+        }
     }
 
     @Suppress("unused")

@@ -36,6 +36,7 @@ class OpenUrlAction : Action<OpenUrlConfig, Unit> {
         description = "Opens a URL in the default handler (browser or app). Typing google.com is enough",
         category = NodeCategory.NETWORK,
         icon = NodeIcon.BOLT,
+        permissions = listOf(LAUNCH_OVERLAY_PERMISSION),
     )
 
     override suspend fun execute(input: OpenUrlConfig, context: ExecutionContext): NodeOutput<Unit> {
@@ -48,8 +49,7 @@ class OpenUrlAction : Action<OpenUrlConfig, Unit> {
             )
             return NodeOutput(Unit)
         }
-        val ok = context.systemServices.openUrl(url)
-        if (!ok) context.log("No app can open $url", LogLevel.ERROR)
+        context.reportLaunch(context.systemServices.openUrl(url), url)
         return NodeOutput(Unit)
     }
 }

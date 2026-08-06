@@ -4,7 +4,10 @@ import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.permissions.PermissionRequirement
 import com.example.ottomatic.core.permissions.Permissions
 import com.example.ottomatic.core.permissions.PrerequisiteType
+import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.domain.model.GeofencePlace
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
@@ -97,14 +100,35 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
         ),
     )
 
+    /**
+     * The place this node watches, or null having said in the console why not.
+     *
+     * No place chosen, or the chosen one since deleted: nothing to arm. Not
+     * arming beats arming a fence at (0, 0) — but staying *silent* about it does
+     * not, which is what this used to do. A macro watching nowhere looked exactly
+     * like one watching correctly and never seeing anything.
+     */
+    private fun resolvePlace(config: GeofenceConfig, node: WorkflowNode, host: TriggerHost): GeofencePlace? {
+        if (config.placeId.isBlank()) {
+            host.report(node, "No place chosen, so this trigger is not watching anywhere", LogLevel.WARN)
+            return null
+        }
+        return host.geofencePlace(config.placeId) ?: run {
+            host.report(
+                node,
+                "The place this trigger points at no longer exists, so it is not watching anywhere",
+                LogLevel.WARN,
+            )
+            null
+        }
+    }
+
     override fun activate(
         config: GeofenceConfig,
         node: WorkflowNode,
         host: TriggerHost,
     ): Flow<NodeOutput<GeofenceEvent>> {
-        // No place chosen, or the chosen one has since been deleted: nothing to
-        // arm. Staying silent beats arming a fence at (0, 0).
-        val place = config.placeId.takeIf { it.isNotBlank() }?.let(host::geofencePlace) ?: return emptyFlow()
+        val place = resolvePlace(config, node, host) ?: return emptyFlow()
         val latitude = place.latitude
         val longitude = place.longitude
         val transitions = config.transitions
@@ -117,12 +141,36 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
                 radiusMeters = place.radiusMeters,
                 transitions = transitions,
                 dwellDelayMs = config.dwellDelayMs,
+                onResult = { result ->
+                    when (result) {
+                        is GeofenceArmResult.Registered -> host.report(
+                            node,
+                            "Watching '${place.name}' — ${place.radiusMeters.toInt()} m, " +
+                                "on ${armedNames.joinToString("/")}",
+                        )
+
+                        // The reason arrives already written for a person: a raw
+                        // Play Services code names the developer, not the setting
+                        // the user has to change.
+                        is GeofenceArmResult.Refused -> host.report(
+                            node,
+                            "Not watching '${place.name}'. ${result.message}",
+                            LogLevel.ERROR,
+                        )
+                    }
+                },
             )
             try {
-                host.busEvents()
+                // busEventsFor, not busEvents: a transition that arrived while
+                // this process was still starting is waiting on the bus for this
+                // node, and is handed over the moment the collector registers.
+                host.busEventsFor(node.id)
                     .filter { it.source == TriggerSource.GEOFENCE && it.triggerNodeId == node.id }
                     .filter { it.payload[KEY_EVENT] in armedNames }
                     .collect { bus ->
+                        if (bus.payload[TriggerBus.KEY_HELD] != null) {
+                            host.report(node, "Arrived at '${place.name}' while the engine was starting; running now")
+                        }
                         emit(
                             NodeOutput(
                                 GeofenceEvent(

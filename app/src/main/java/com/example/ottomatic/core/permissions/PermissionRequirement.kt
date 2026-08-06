@@ -48,4 +48,49 @@ data class PermissionRequirement(
     val manifestPermission: String?,
     val type: PrerequisiteType,
     val rationaleKey: String = "",
-)
+) {
+    /**
+     * A stable identity for this prerequisite, so which ones are satisfied can be
+     * published as plain strings for anything to read.
+     *
+     * Two nodes needing the same grant must produce the same key, which is why a
+     * [PrerequisiteType.RUNTIME] one is keyed by its manifest name — there are
+     * many of those — while the rest are keyed by type, since each is a single
+     * system-wide switch. See `GrantedPrerequisites`.
+     */
+    val key: String
+        get() = if (type == PrerequisiteType.RUNTIME) manifestPermission.orEmpty() else type.name
+
+    /**
+     * What to call this in a sentence aimed at the user.
+     *
+     * Lives here rather than beside the editor's rationale strings because the
+     * *validator* needs it too, and that runs in `engine` where no UI is
+     * reachable. The two are different registers on purpose: a rationale is a
+     * paragraph explaining why a node is asking, this is a noun phrase that fits
+     * inside "'Launch App' needs ___".
+     *
+     * The fallback is the manifest name's last segment — ugly, but it only shows
+     * for a permission no node declares yet, and naming it wrongly would be worse
+     * than naming it bluntly.
+     */
+    val label: String
+        get() = when {
+            type == PrerequisiteType.OVERLAY -> "permission to draw over other apps"
+            type == PrerequisiteType.NOTIFICATION_LISTENER -> "notification access"
+            type == PrerequisiteType.NOTIFICATION_POLICY -> "Do Not Disturb access"
+            type == PrerequisiteType.ACCESSIBILITY_SERVICE -> "accessibility access"
+            type != PrerequisiteType.RUNTIME -> "a system permission"
+            manifestPermission == Permissions.ACCESS_FINE_LOCATION.manifest -> "location access"
+            manifestPermission == Permissions.ACCESS_COARSE_LOCATION.manifest -> "location access"
+            manifestPermission == Permissions.ACCESS_BACKGROUND_LOCATION.manifest ->
+                "location access set to \"Allow all the time\""
+            manifestPermission == Permissions.CALL_PHONE.manifest -> "permission to make calls"
+            manifestPermission == Permissions.SEND_SMS.manifest -> "permission to send texts"
+            manifestPermission == Permissions.RECEIVE_SMS.manifest -> "permission to receive texts"
+            manifestPermission == Permissions.READ_CONTACTS.manifest -> "contacts access"
+            manifestPermission == Permissions.POST_NOTIFICATIONS.manifest ->
+                "permission to post notifications"
+            else -> manifestPermission.orEmpty().substringAfterLast('.')
+        }
+}

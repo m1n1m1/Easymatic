@@ -120,15 +120,39 @@ class MacroEngineService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
-            ACTION_REARM_ALL -> scope.launch { armMutex.withLock { rearmAll() } }
-            ACTION_ENABLE -> intent.getStringExtra(EXTRA_WORKFLOW_ID)?.let { id ->
+        // A START_STICKY restart redelivers a *null* intent. Without this elvis the
+        // service came back, promoted itself to the foreground in onCreate, and
+        // armed nothing at all — a healthy-looking notification over an engine
+        // holding no triggers, while every geofence, alarm and work item was still
+        // registered against it. The reason the platform restarted us is that
+        // macros are supposed to be armed, which is exactly what REARM_ALL means.
+        dispatch(intent?.action ?: ACTION_REARM_ALL, intent)
+        return START_STICKY
+    }
+
+    /**
+     * Runs one start command, with [action] already resolved.
+     *
+     * Split from [onStartCommand] so that method says only what a null intent
+     * means. Every branch below needs the intent's extras and is unreachable
+     * without one, but the compiler cannot see that — hence [workflowIdOf], which
+     * carries the null the old `when (intent?.action)` smart cast used to remove.
+     */
+    private fun dispatch(action: String, intent: Intent?) {
+        when (action) {
+            // One branch rather than two: the actions differ only in whether an
+            // already-armed macro is left alone, and a null intent (the sticky
+            // restart) reads as REARM_ALL, so it skips.
+            ACTION_REARM_ALL, ACTION_REARM_CHANGED -> scope.launch {
+                armMutex.withLock { rearmAll(skipArmed = action != ACTION_REARM_CHANGED) }
+            }
+            ACTION_ENABLE -> workflowIdOf(intent)?.let { id ->
                 scope.launch {
                     repository.setEnabled(id, true)
                     armMutex.withLock { arm(id) }
                 }
             }
-            ACTION_DISABLE -> intent.getStringExtra(EXTRA_WORKFLOW_ID)?.let { id ->
+            ACTION_DISABLE -> workflowIdOf(intent)?.let { id ->
                 scope.launch {
                     repository.setEnabled(id, false)
                     armMutex.withLock { disarm(id) }
@@ -138,7 +162,7 @@ class MacroEngineService : Service() {
             // effect without the user toggling it off and on. Deliberately does
             // not arm an unarmed macro: enabling is [ACTION_ENABLE]'s job, and a
             // RELOAD must never resurrect a macro the user just disabled.
-            ACTION_RELOAD -> intent.getStringExtra(EXTRA_WORKFLOW_ID)?.let { id ->
+            ACTION_RELOAD -> workflowIdOf(intent)?.let { id ->
                 scope.launch {
                     // The armed check must be inside the lock with the arm it
                     // guards, or a concurrent disable can slip between them.
@@ -163,7 +187,7 @@ class MacroEngineService : Service() {
             //
             // It therefore needs no [armMutex]: it starts nothing and stops
             // nothing, it only walks a graph.
-            ACTION_RUN_MANUAL -> scope.launch { runManual(intent) }
+            ACTION_RUN_MANUAL -> intent?.let { scope.launch { runManual(it) } }
             // The notification's "Stop sound" button. Silencing is immediate;
             // nothing here touches the armed macros.
             ACTION_STOP_SOUNDS -> {
@@ -172,8 +196,10 @@ class MacroEngineService : Service() {
                 if (activeJobs.isEmpty()) stopSelf()
             }
         }
-        return START_STICKY
     }
+
+    /** The macro an action names, or null — which every such branch already treats as "nothing to do". */
+    private fun workflowIdOf(intent: Intent?): String? = intent?.getStringExtra(EXTRA_WORKFLOW_ID)
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -206,15 +232,22 @@ class MacroEngineService : Service() {
      * a config that no longer decodes, a platform source that refuses — used to
      * abort the loop and leave every macro *after* it in the list silently
      * unarmed, with nothing anywhere saying why.
+     *
+     * [skipArmed] is the difference between the two REARM actions, and it is
+     * load-bearing in both directions: with it, two overlapping cold-start
+     * re-arms cannot cancel each other's freshly started runners; without it, a
+     * geofence place the user just moved would never actually move, because a
+     * trigger reads its place only at activation.
      */
     @Suppress("TooGenericExceptionCaught") // One macro that cannot arm must not stop the rest.
-    private suspend fun rearmAll() {
+    private suspend fun rearmAll(skipArmed: Boolean) {
         val enabled = repository.list().filter { it.enabled }
         if (enabled.isEmpty()) {
             if (activeJobs.isEmpty()) stopSelf()
             return
         }
         for (workflow in enabled) {
+            if (skipArmed && activeJobs.containsKey(workflow.id)) continue
             try {
                 arm(workflow.id)
             } catch (e: CancellationException) {
@@ -366,7 +399,28 @@ class MacroEngineService : Service() {
     }
 
     companion object {
+        /**
+         * Make sure every enabled macro is armed, leaving the ones that already
+         * are alone.
+         *
+         * The cold-start / boot / geofence-transition action. Several of those
+         * routinely overlap — a geofence broadcast spawns the process, so
+         * `OttomaticApplication` and `GeofenceReceiver` both send this within
+         * milliseconds — and re-arming an already-armed macro cancels and joins
+         * its runner, which would kill the run a just-delivered transition had
+         * started. Use [ACTION_REARM_CHANGED] when the point *is* to re-arm.
+         */
         const val ACTION_REARM_ALL = "com.example.ottomatic.action.REARM_ALL"
+
+        /**
+         * Re-arm every enabled macro, armed or not.
+         *
+         * For a library edit — a geofence place moved, a global variable renamed —
+         * where the whole purpose is to make running macros pick the change up.
+         * A trigger reads its place once, at activation, so nothing short of a
+         * genuine re-arm moves a fence.
+         */
+        const val ACTION_REARM_CHANGED = "com.example.ottomatic.action.REARM_CHANGED"
         const val ACTION_ENABLE = "com.example.ottomatic.action.ENABLE"
         const val ACTION_DISABLE = "com.example.ottomatic.action.DISABLE"
         const val ACTION_RELOAD = "com.example.ottomatic.action.RELOAD"

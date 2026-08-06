@@ -7,6 +7,7 @@ import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.data.accessibility.OttomaticAccessibilityService as Service
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.engine.trigger.BatteryDirection
+import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.ScheduleHandle
 import com.example.ottomatic.engine.trigger.TriggerHost
@@ -143,5 +144,6 @@ private class FakeKeyHost(private vararg val events: TriggerEvent) : TriggerHost
         radiusMeters: Float,
         transitions: Set<GeofenceTransition>,
         dwellDelayMs: Int,
+        onResult: (GeofenceArmResult) -> Unit,
     ) = ScheduleHandle { }
 }

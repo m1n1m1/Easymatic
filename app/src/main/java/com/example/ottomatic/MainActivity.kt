@@ -30,6 +30,7 @@ import com.example.ottomatic.core.permissions.Permissions
 import com.example.ottomatic.data.BootFailureStore
 import com.example.ottomatic.data.location.AndroidLocationLookup
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
+import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.feature.geofence.GeofencePlacesScreen
 import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
@@ -256,6 +257,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Every one of these is granted by leaving the app — a runtime dialog or a
+        // Settings page — so coming back is exactly when the answer can have
+        // changed, and is the only signal we get that it did. Cheap enough to
+        // repeat: a handful of synchronous checks over the distinct grants the node
+        // types declare.
+        GrantedPrerequisites.hydrateFrom(ServiceLocator.permissionChecker)
         // Surface the battery-optimisation prompt only when a background start
         // actually failed AND at least one macro is armed (no point prompting if
         // nothing is enabled). Consume the flag so it shows at most once per

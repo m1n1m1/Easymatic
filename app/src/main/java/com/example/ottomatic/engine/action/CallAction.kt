@@ -48,13 +48,17 @@ class CallAction : Action<CallConfig, CallInitiated> {
         category = NodeCategory.NOTIFICATIONS,
         icon = NodeIcon.BOLT,
         output = dataOut<CallInitiated>("state"),
-        // Without this the action returned false and said nothing about why.
+        // Without these the action returned false and said nothing about why.
+        // The overlay grant is the second half of that: an unattended macro
+        // dialling from the background is refused by Android silently, which on a
+        // "call for help" node is the worst possible way to fail.
         permissions = listOf(
             PermissionRequirement(
                 manifestPermission = Permissions.CALL_PHONE.manifest,
                 type = PrerequisiteType.RUNTIME,
                 rationaleKey = "call.phone",
             ),
+            LAUNCH_OVERLAY_PERMISSION,
         ),
     )
 
@@ -64,7 +68,7 @@ class CallAction : Action<CallConfig, CallInitiated> {
             context.log("No number to call — nothing chosen, or the contact could not be read", LogLevel.ERROR)
             return NodeOutput(CallInitiated(number = "", initiated = false))
         }
-        val initiated = context.systemServices.call(number)
+        val initiated = context.reportLaunch(context.systemServices.call(number), number)
         return NodeOutput(CallInitiated(number = number, initiated = initiated))
     }
 }

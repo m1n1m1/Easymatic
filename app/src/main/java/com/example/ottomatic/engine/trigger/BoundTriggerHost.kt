@@ -1,9 +1,13 @@
 package com.example.ottomatic.engine.trigger
 
+import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.domain.model.VariableDeclaration
 import com.example.ottomatic.domain.model.VariableRef
+import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.GlobalVariables
+import com.example.ottomatic.engine.ExecutionContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
@@ -34,7 +38,23 @@ class BoundTriggerHost(
     private val delegate: TriggerHost,
     private val workflowId: String,
     private val locals: List<VariableDeclaration>,
+    private val context: ExecutionContext,
 ) : TriggerHost by delegate {
+
+    /**
+     * The workflow half of [TriggerHost.report] — the reason this class exists at
+     * all applied to a second member.
+     *
+     * This **overrides** rather than inheriting: `by delegate` would forward to the
+     * process-global host, which is precisely the object that does not know which
+     * workflow is arming, so the line would have nowhere to go.
+     *
+     * [LogSource.NO_RUN] because this is arm time, not a run — the same attribution
+     * [WorkflowRunner] already uses for "could not arm" and "stopped listening".
+     */
+    override fun report(node: WorkflowNode, message: String, level: LogLevel) {
+        context.scoped(LogSource(workflowId, LogSource.NO_RUN, node.id.value, node.name)).log(message, level)
+    }
 
     @Suppress("ReturnCount") // Two "nothing to watch" guards and the flow.
     override fun variableChanges(name: String): Flow<TriggerEvent> {

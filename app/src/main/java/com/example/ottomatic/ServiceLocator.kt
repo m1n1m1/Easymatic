@@ -10,6 +10,7 @@ import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.GlobalVariableRepository
 import com.example.ottomatic.domain.registry.GlobalVariables
+import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.log.RunLogStore
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
@@ -162,5 +163,10 @@ object ServiceLocator {
         )
         triggerHost = AndroidTriggerHost(appContext, geofencePlaceRepository, sensorBridge, contacts)
         permissionChecker = AndroidPermissionChecker(appContext)
+        // Published for `GraphValidator`, which asks whether a node can actually do
+        // its job and runs from paths that can neither suspend nor be injected
+        // into. Re-read on every return to the foreground by `MainActivity`, since
+        // granting one of these means leaving the app for a Settings page.
+        GrantedPrerequisites.hydrateFrom(permissionChecker)
     }
 }

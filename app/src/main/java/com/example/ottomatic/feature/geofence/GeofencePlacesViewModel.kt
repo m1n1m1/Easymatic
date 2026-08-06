@@ -241,7 +241,7 @@ class GeofencePlacesViewModel(
      * re-adds it at the new centre.
      */
     private fun rearmEngine() {
-        runCatching { MacroEngineService.start(appContext, MacroEngineService.ACTION_REARM_ALL) }
+        runCatching { MacroEngineService.start(appContext, MacroEngineService.ACTION_REARM_CHANGED) }
     }
 
     private fun updateDraft(transform: (GeofenceDraft) -> GeofenceDraft) {

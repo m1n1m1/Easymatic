@@ -115,6 +115,10 @@ private fun rationaleFor(requirement: PermissionRequirement): String? = when (re
     "overlay.dialog" ->
         "Ottomatic needs permission to draw over other apps so this dialog can reach you while " +
             "you are somewhere else on your phone. Without it the node cancels instead of asking."
+    "overlay.launch" ->
+        "Ottomatic needs permission to draw over other apps so it can open one while you are " +
+            "somewhere else on your phone. Android blocks a background app from opening another, " +
+            "and without this the node does nothing and says so in the console."
     else -> null
 }
 

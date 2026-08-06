@@ -2,6 +2,7 @@ package com.example.ottomatic.engine.action
 
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.service.Contacts
+import com.example.ottomatic.core.service.LaunchOutcome
 import com.example.ottomatic.domain.model.PhoneRef
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.engine.DefaultExecutionContext
@@ -79,6 +80,19 @@ class PhoneActionsTest {
         )
         assertTrue(services.smsSent.isEmpty())
         assertFalse(out.value.sent)
+    }
+
+    /**
+     * On an unattended macro this is the worst of the three blocked launches — a
+     * "call for help" node that dialled nothing and reported success.
+     */
+    @Test
+    fun `a call Android blocked does not report itself as initiated`() = runBlocking {
+        services.launchOutcome = LaunchOutcome.Blocked
+
+        val out = CallAction().execute(CallConfig(number = "+436761234567"), context())
+
+        assertFalse("a blocked dial must not claim it happened", out.value.initiated)
     }
 
     /**

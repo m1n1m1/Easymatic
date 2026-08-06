@@ -8,6 +8,7 @@ import com.example.ottomatic.core.service.DndLevel
 import com.example.ottomatic.core.service.DndResult
 import com.example.ottomatic.core.service.HttpRequest
 import com.example.ottomatic.core.service.HttpResponse
+import com.example.ottomatic.core.service.LaunchOutcome
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.RingerMode
 import com.example.ottomatic.core.service.RingerResult
@@ -125,14 +126,23 @@ class RecordingSystemServices : SystemServices {
         return stopped
     }
 
-    override fun launchApp(packageName: String): Boolean {
+    /**
+     * What the next [launchApp] / [openUrl] / [call] answers.
+     *
+     * Settable because [LaunchOutcome.Blocked] is the interesting case and is
+     * unreachable otherwise — it is the platform refusing a background Activity
+     * start, which no unit test can provoke for real.
+     */
+    var launchOutcome: LaunchOutcome = LaunchOutcome.Launched
+
+    override fun launchApp(packageName: String): LaunchOutcome {
         launchedApps += packageName
-        return true
+        return launchOutcome
     }
 
-    override fun openUrl(url: String): Boolean {
+    override fun openUrl(url: String): LaunchOutcome {
         openedUrls += url
-        return true
+        return launchOutcome
     }
 
     override fun sendSms(to: String, body: String): Boolean {
@@ -140,9 +150,9 @@ class RecordingSystemServices : SystemServices {
         return true
     }
 
-    override fun call(number: String): Boolean {
+    override fun call(number: String): LaunchOutcome {
         calls += number
-        return true
+        return launchOutcome
     }
 
     override fun setClipboard(text: String): Boolean {

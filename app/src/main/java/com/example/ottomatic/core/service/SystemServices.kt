@@ -108,15 +108,21 @@ interface SystemServices {
 
     /**
      * Launches the app with [packageName] (its main launcher activity).
-     * Returns false on failure (package not installed / no launcher activity).
+     *
+     * [LaunchOutcome.NoSuchApp] when it is not installed or has no launcher
+     * activity; [LaunchOutcome.Blocked] when Ottomatic has no visible window and
+     * has not been granted `SYSTEM_ALERT_WINDOW`, which is the only way this can
+     * fail while looking as though it worked.
      */
-    fun launchApp(packageName: String): Boolean
+    fun launchApp(packageName: String): LaunchOutcome
 
     /**
-     * Opens [url] in the default handler (browser/app via intent). Returns
-     * false when no handler is available.
+     * Opens [url] in the default handler (browser/app via intent).
+     *
+     * [LaunchOutcome.NoHandler] when nothing on the device handles it,
+     * [LaunchOutcome.Blocked] for the reason given on [launchApp].
      */
-    fun openUrl(url: String): Boolean
+    fun openUrl(url: String): LaunchOutcome
 
     /**
      * Sends an SMS to [to] with [body]. Returns false on failure (requires
@@ -125,11 +131,12 @@ interface SystemServices {
     fun sendSms(to: String, body: String): Boolean
 
     /**
-     * Initiates a phone call to [number] (ACTION_CALL — requires `CALL_PHONE`;
-     * use `ACTION_DIAL` semantics by returning false when the permission is
-     * missing). Returns false on failure.
+     * Initiates a phone call to [number] (ACTION_CALL — requires `CALL_PHONE`).
+     *
+     * [LaunchOutcome.NoHandler] when the permission is missing or nothing can
+     * dial, [LaunchOutcome.Blocked] for the reason given on [launchApp].
      */
-    fun call(number: String): Boolean
+    fun call(number: String): LaunchOutcome
 
     /**
      * Sets the clipboard primary clip to [text]. Returns false on failure.
@@ -240,3 +247,36 @@ data class TorchResult(
     val enabled: Boolean,
     val changed: Boolean,
 )
+
+/**
+ * What happened when a node asked to put *something else* on screen —
+ * [SystemServices.launchApp], [SystemServices.openUrl], [SystemServices.call].
+ *
+ * A boolean cannot carry [Blocked], and [Blocked] is the one the user can
+ * actually fix. From Android 10 an app with no visible window may not start an
+ * Activity, and the system logs "Background activity launch blocked!" to Logcat
+ * while returning **nothing** to the caller — so before this existed,
+ * `startActivity` "succeeded", the node reported success, and the run log showed
+ * a clean pass for a launch that never happened. Running a foreground service is
+ * *not* an exemption from that rule; holding `SYSTEM_ALERT_WINDOW` is, which is
+ * why the check behind this is the same one
+ * [com.example.ottomatic.data.prompt.OverlayPrompts] already makes.
+ *
+ * The three failures are kept apart because they send the user to three
+ * different places: install the app, install something that handles it, or grant
+ * a permission.
+ */
+sealed interface LaunchOutcome {
+
+    /** Handed to the platform, which accepted it. */
+    data object Launched : LaunchOutcome
+
+    /** No app with that package, or it has no launcher activity. */
+    data object NoSuchApp : LaunchOutcome
+
+    /** Nothing on the device handles it — no browser, no dialler, no permission to dial. */
+    data object NoHandler : LaunchOutcome
+
+    /** Android refused the start: Ottomatic is in the background and may not draw over other apps. */
+    data object Blocked : LaunchOutcome
+}

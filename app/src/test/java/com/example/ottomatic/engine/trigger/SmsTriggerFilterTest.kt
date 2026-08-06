@@ -6,6 +6,7 @@ import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.PhoneRef
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
@@ -36,6 +37,7 @@ class SmsTriggerFilterTest {
             radiusMeters: Float,
             transitions: Set<GeofenceTransition>,
             dwellDelayMs: Int,
+            onResult: (GeofenceArmResult) -> Unit,
         ): ScheduleHandle = ScheduleHandle {}
 
         override fun armSchedule(nodeId: NodeId, intervalMinutes: Long) = ScheduleHandle {}

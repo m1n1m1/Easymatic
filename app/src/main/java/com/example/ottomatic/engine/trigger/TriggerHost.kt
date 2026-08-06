@@ -1,10 +1,12 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.GeofencePlace
+import com.example.ottomatic.domain.model.WorkflowNode
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -19,6 +21,41 @@ interface TriggerHost {
 
     /** Stream of all events pushed into [TriggerBus]. Filter by source/node. */
     fun busEvents(): Flow<com.example.ottomatic.core.trigger.TriggerEvent> = TriggerBus.events
+
+    /**
+     * Bus events, preceded by any that were held for [nodeId] while nothing was
+     * collecting — see [TriggerBus.emitOrHold].
+     *
+     * For a trigger whose platform source keeps firing after the process dies: a
+     * geofence transition can arrive at a manifest receiver seconds before the
+     * engine it is meant for has finished starting, and on a bus with `replay = 0`
+     * that event was simply lost.
+     *
+     * Defaults to [busEvents] rather than to `TriggerBus.eventsFor` so a test
+     * double that serves its own bus — usually an empty flow, so a collection
+     * terminates — keeps serving it. Only the real host overrides this.
+     */
+    fun busEventsFor(nodeId: NodeId): Flow<TriggerEvent> = busEvents()
+
+    /**
+     * Writes [message] into the console of the workflow arming against this host,
+     * attributed to [node].
+     *
+     * [Trigger.activate] is handed a host and nothing else — deliberately, since a
+     * trigger describes an event source and not the graph that wants it — so this
+     * is the only route from an arming trigger to a run log. Without it a trigger
+     * that cannot arm, or that the platform refused, has no way to say so: the
+     * failures land in Logcat if anywhere, and "why won't this run" is a question
+     * asked in the editor.
+     *
+     * The default is a no-op, so an unbound host and a test double stay silent.
+     * [BoundTriggerHost] is where the real one lives, because [WorkflowRunner] is
+     * the one place that activates triggers *and* holds both the workflow id and
+     * the [com.example.ottomatic.engine.ExecutionContext].
+     */
+    fun report(node: WorkflowNode, message: String, level: LogLevel = LogLevel.INFO) {
+        // No-op: an unbound host has no workflow to attribute this to.
+    }
 
     /**
      * Arms a periodic schedule that emits a bus event for [nodeId] every
@@ -73,22 +110,6 @@ interface TriggerHost {
     ): ScheduleHandle
 
     /**
-     * Arms a geofence for [nodeId] centred at ([latitude], [longitude]) with a
-     * radius of [radiusMeters] metres. When the device undergoes any of the
-     * transitions in [transitions] (enter / exit / dwell), the implementation
-     * pushes a bus event with source `GEOFENCE` and `triggerNodeId = nodeId`.
-     *
-     * [dwellDelayMs] is forwarded to the platform as the loitering delay
-     * (only effective when [transitions] contains [GeofenceTransition.DWELL]).
-     *
-     * Geofences are monitored by the OS in the background and persist across
-     * app process death and device reboot, so the manifest-registered
-     * `GeofenceReceiver` keeps firing without the runner being active.
-     *
-     * Returns a [ScheduleHandle] whose [ScheduleHandle.cancel] removes the
-     * geofence when the trigger flow is cancelled.
-     */
-    /**
      * Looks up a stored [GeofencePlace] by id, or null when the place has been
      * deleted (or was never chosen).
      *
@@ -116,6 +137,29 @@ interface TriggerHost {
      */
     fun contactNumber(lookupKey: String): String? = null
 
+    /**
+     * Arms a geofence for [nodeId] centred at ([latitude], [longitude]) with a
+     * radius of [radiusMeters] metres. When the device undergoes any of the
+     * transitions in [transitions] (enter / exit / dwell), the implementation
+     * pushes a bus event with source `GEOFENCE` and `triggerNodeId = nodeId`.
+     *
+     * [dwellDelayMs] is forwarded to the platform as the loitering delay
+     * (only effective when [transitions] contains [GeofenceTransition.DWELL]).
+     *
+     * Geofences are monitored by the OS in the background and persist across
+     * app process death and device reboot, so the manifest-registered
+     * `GeofenceReceiver` keeps firing without the runner being active.
+     *
+     * [onResult] is invoked once the platform has an answer, which is **after
+     * this method returns** — registration is asynchronous, so the return value
+     * says only that the request was made. Before it existed, a refused
+     * registration (location switched off, background location not granted, too
+     * many fences) produced a macro that looked armed, a console with nothing in
+     * it, and one line in Logcat nobody was reading.
+     *
+     * Returns a [ScheduleHandle] whose [ScheduleHandle.cancel] removes the
+     * geofence when the trigger flow is cancelled.
+     */
     @Suppress("LongParameterList") // Mirrors the GMS Geofence.Builder API surface.
     fun armGeofence(
         nodeId: NodeId,
@@ -124,6 +168,7 @@ interface TriggerHost {
         radiusMeters: Float,
         transitions: Set<GeofenceTransition>,
         dwellDelayMs: Int = DEFAULT_DWELL_DELAY_MS,
+        onResult: (GeofenceArmResult) -> Unit = {},
     ): ScheduleHandle
 
     /**
@@ -236,6 +281,22 @@ interface TriggerHost {
      * - `value` — the new string value
      */
     fun variableChanges(name: String): Flow<TriggerEvent> = kotlinx.coroutines.flow.emptyFlow()
+}
+
+/**
+ * What Play Services said about a geofence registration, once it had an answer.
+ *
+ * Reported through [TriggerHost.armGeofence]'s `onResult` rather than returned,
+ * because the platform answers asynchronously — the request is made, the trigger
+ * starts collecting, and the verdict arrives later.
+ */
+sealed interface GeofenceArmResult {
+
+    /** The platform is now watching this fence. */
+    data object Registered : GeofenceArmResult
+
+    /** The platform refused. [message] is the GMS status string for [code]. */
+    data class Refused(val code: Int, val message: String) : GeofenceArmResult
 }
 
 /** Geofence transition kinds, mirroring `com.google.android.gms.location.Geofence`. */

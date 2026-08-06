@@ -69,7 +69,7 @@ class WorkflowRunner(
         // activates the triggers. Once per arm, so the declarations are snapshotted
         // with the graph — and editing one re-arms, because `runtimeSignature`
         // includes them.
-        val boundHost = BoundTriggerHost(host, workflow.id, workflow.variables)
+        val boundHost = BoundTriggerHost(host, workflow.id, workflow.variables, context)
         val triggers = workflow.nodes.filter {
             NodeTypeRegistry.byId(it.typeId)?.kind == NodeKind.TRIGGER
         }

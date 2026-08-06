@@ -30,8 +30,9 @@ data class LaunchAppConfig(
 /**
  * Action for `action.launch_app`. Launches another app by its package name via
  * its main launcher activity. The package may be wired from upstream data or set
- * as a static literal. Pulses `out` either way; failures (package not installed
- * / no launcher activity) are logged.
+ * as a static literal. Pulses `out` either way, and every way of failing says so
+ * in the console — including the one Android reports to nobody, which is why this
+ * node declares [LAUNCH_OVERLAY_PERMISSION].
  */
 class LaunchAppAction : Action<LaunchAppConfig, Unit> {
 
@@ -41,11 +42,19 @@ class LaunchAppAction : Action<LaunchAppConfig, Unit> {
         description = "Launches another app by package name",
         category = NodeCategory.NETWORK,
         icon = NodeIcon.BOLT,
+        permissions = listOf(LAUNCH_OVERLAY_PERMISSION),
     )
 
     override suspend fun execute(input: LaunchAppConfig, context: ExecutionContext): NodeOutput<Unit> {
-        val ok = context.systemServices.launchApp(input.packageName)
-        if (!ok) context.log("Launch app failed: ${input.packageName}", LogLevel.ERROR)
+        // Without this a blank package reaches getLaunchIntentForPackage(""), which
+        // reports "not installed" — sending the user to look for an app they never
+        // chose. Same guard, and the same reason, as Open URL's "No URL set".
+        val packageName = input.packageName.trim()
+        if (packageName.isEmpty()) {
+            context.log("No app chosen", LogLevel.ERROR)
+            return NodeOutput(Unit)
+        }
+        context.reportLaunch(context.systemServices.launchApp(packageName), packageName)
         return NodeOutput(Unit)
     }
 }
