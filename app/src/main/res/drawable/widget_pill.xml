@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    A fully-rounded filled container, for the status widget's problem count.
+
+    A count that matters said as a filled pill rather than as coloured text is
+    the M3 way of raising it above the line it sits on, and it is what lets the
+    error colour be a *background* — legible at 12sp in a way red-on-surface
+    text is not.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="100dp" />
+    <solid android:color="#FFFFFFFF" />
+</shape>

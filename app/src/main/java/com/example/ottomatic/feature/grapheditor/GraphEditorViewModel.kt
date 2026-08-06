@@ -20,6 +20,8 @@ import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.ExecPorts
+import com.example.ottomatic.domain.model.MacroAccent
+import com.example.ottomatic.domain.model.MacroIcon
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.VariableDeclaration
@@ -879,19 +881,21 @@ class GraphEditorViewModel(
     // region Workflow-level actions
 
     /**
-     * Renames the workflow.
+     * Applies the Edit dialog: the workflow's name and its two appearance fields.
      *
-     * Deliberately not `repository.rename`, the way the workflow list does it:
+     * Deliberately not `repository.updateMacro`, the way the workflow list does it:
      * the editor holds the whole graph in memory and [flush] writes all of it,
-     * so a repository-side rename would be overwritten by the next debounced
+     * so a repository-side write would be overwritten by the next debounced
      * save, and again by [onCleared]'s final one. Going through [persist] is the
      * same route `updateNodeName` takes.
      *
-     * [Workflow.runtimeSignature] omits the name, so renaming an armed macro
+     * [Workflow.runtimeSignature] omits all three, so editing an armed macro
      * never re-arms it.
      */
-    fun renameWorkflow(name: String) {
-        _uiState.update { it.copy(workflow = it.workflow.copy(name = name)) }
+    fun updateMacro(name: String, icon: MacroIcon, accent: MacroAccent) {
+        _uiState.update {
+            it.copy(workflow = it.workflow.copy(name = name, icon = icon, accent = accent))
+        }
         persist()
     }
 

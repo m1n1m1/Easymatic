@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The one static shortcut. Everything else in the long-press menu is dynamic
+    and published by MacroShortcuts — those are the macros the user actually
+    runs, which is not something that can be written down at build time.
+
+    This one can: "make a new macro" is the only action the app offers that does
+    not depend on what is already in it, and it is the entry point somebody has
+    when they have nothing to run yet.
+-->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_new_macro"
+        android:shortcutId="new_macro"
+        android:shortcutLongLabel="@string/shortcut_new_macro_long"
+        android:shortcutShortLabel="@string/shortcut_new_macro_short">
+        <intent
+            android:action="com.example.ottomatic.action.NEW_MACRO"
+            android:targetClass="com.example.ottomatic.MainActivity"
+            android:targetPackage="com.example.ottomatic" />
+    </shortcut>
+</shortcuts>

@@ -76,6 +76,88 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- The launcher reads the static shortcuts from the activity that
+                 declares LAUNCHER, which is why this hangs here rather than on
+                 the application element. The dynamic ones MacroShortcuts
+                 publishes are attached to this same activity at runtime. -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+
+        <!-- What a launcher shortcut opens. Exported because the launcher is a
+             different app and starts it by name; it reads two ids out of its own
+             intent and does nothing else, so there is no surface to abuse.
+
+             Invisible by construction: translucent so nothing is drawn, noHistory
+             so it leaves no back stack, excludeFromRecents so it never appears in
+             the recents list, and an empty taskAffinity so it does not attach
+             itself to MainActivity's task and drag the app's window along with
+             it. -->
+        <activity
+            android:name=".feature.shortcut.RunTriggerActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- ===== Home-screen widgets =====
+
+             Each is a Glance widget: a receiver the launcher talks to, plus (for
+             the two that have something to choose) a configuration activity it
+             opens on drop.
+
+             The receivers are NOT exported. A widget provider only ever receives
+             APPWIDGET_* broadcasts from the system, which is allowed to deliver
+             them to a non-exported receiver in the same way it delivers a boot
+             broadcast; nothing else has any business poking one.
+
+             The configuration activities ARE exported, and have to be: the
+             launcher is a different app and starts them by component name. They
+             take no data and act only on the widget id the launcher supplies. -->
+
+        <receiver
+            android:name=".feature.widget.RunTileReceiver"
+            android:exported="false"
+            android:label="@string/widget_run_tile_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_run_tile" />
+        </receiver>
+
+        <receiver
+            android:name=".feature.widget.PanelReceiver"
+            android:exported="false"
+            android:label="@string/widget_panel_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_panel" />
+        </receiver>
+
+        <activity
+            android:name=".feature.widget.RunTileConfigActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Ottomatic">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".feature.widget.PanelConfigActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Ottomatic">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
         </activity>
 
         <receiver

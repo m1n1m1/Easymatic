@@ -69,15 +69,13 @@ class WorkflowRunner(
         // activates the triggers. Once per arm, so the declarations are snapshotted
         // with the graph — and editing one re-arms, because `runtimeSignature`
         // includes them.
-        val bound = context.boundTo(workflow)
         val boundHost = BoundTriggerHost(host, workflow.id, workflow.variables)
-        val executor = WorkflowExecutor(bound)
         val triggers = workflow.nodes.filter {
             NodeTypeRegistry.byId(it.typeId)?.kind == NodeKind.TRIGGER
         }
         // Signal that this macro has been enabled (its triggers are being armed).
         if (announceEnabled) {
-            MacroEventBus.emit(macroEvent(workflow, "enabled"))
+            MacroEventBus.emit(MacroEventBus.macroEvent(workflow.id, "enabled"))
         }
         // Activate all triggers synchronously so their flows are registered
         // before this method returns. Otherwise a caller that fires a manual
@@ -86,7 +84,7 @@ class WorkflowRunner(
         return scope.launch {
             supervisorScope {
                 for (active in activeTriggers) {
-                    launch { collect(executor, workflow, active) }
+                    launch { collect(workflow, active) }
                 }
             }
         }
@@ -113,41 +111,25 @@ class WorkflowRunner(
         }
     }
 
+    /**
+     * Collects one trigger's events and runs the graph for each.
+     *
+     * The per-event failure is swallowed inside [runFromTrigger]: the flow is still
+     * good, and the next event deserves its chance. That handling — and the
+     * `"finished"` event that has to be emitted whether or not the run threw — is
+     * shared with the widget/shortcut path rather than written here, because two
+     * copies of it would eventually stop agreeing about what a failed run announces.
+     */
     @Suppress("TooGenericExceptionCaught") // A dead trigger source must not take the workflow down.
-    private suspend fun collect(executor: WorkflowExecutor, workflow: Workflow, active: ActiveTrigger) {
+    private suspend fun collect(workflow: Workflow, active: ActiveTrigger) {
         try {
-            active.flow.collect { output -> fire(executor, workflow, active.node, output) }
+            active.flow.collect { output ->
+                runFromTrigger(context, workflow, active.node, output)
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             logAt(workflow, active.node, "'${active.node.name}' stopped listening: ${e.message}")
-        }
-    }
-
-    /**
-     * Runs the graph for one event.
-     *
-     * The failure is swallowed on purpose: the flow is still good, and the next
-     * event deserves its chance. The `finally` matters just as much — without it a
-     * throwing run never emits `"finished"`, so every `trigger.macro_finished`
-     * chained onto this macro would stop firing after the first bad run.
-     */
-    @Suppress("TooGenericExceptionCaught") // One bad event must not end the subscription.
-    private suspend fun fire(
-        executor: WorkflowExecutor,
-        workflow: Workflow,
-        node: WorkflowNode,
-        output: TriggerOutput,
-    ) {
-        try {
-            executor.executeFrom(workflow, node, output)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            logAt(workflow, node, "Run from '${node.name}' failed: ${e.message}")
-        } finally {
-            // tryEmit under the hood, so this still lands on a cancelled coroutine.
-            MacroEventBus.emit(macroEvent(workflow, "finished"))
         }
     }
 
@@ -159,16 +141,6 @@ class WorkflowRunner(
         context.scoped(LogSource(workflow.id, LogSource.NO_RUN, node.id.value, node.name))
             .log(message, LogLevel.ERROR)
     }
-
-    private fun macroEvent(workflow: Workflow, event: String) = TriggerEvent(
-        source = TriggerSource.MACRO,
-        triggerNodeId = NodeId.BROADCAST,
-        payload = mapOf(
-            "event" to event,
-            "macroId" to workflow.id,
-            "timestamp" to System.currentTimeMillis().toString(),
-        ),
-    )
 
     private data class ActiveTrigger(val node: WorkflowNode, val flow: Flow<TriggerOutput>)
 }

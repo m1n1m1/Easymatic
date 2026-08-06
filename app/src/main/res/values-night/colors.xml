@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The dark half of the macro accents. These are the EditorColors hues the app
+    already draws with — errorAccent, triggerAccent, warnAccent, numberPort,
+    actionAccent, valueAccent, stringPort — so a macro the user made "blue" is
+    literally the blue its action nodes are drawn in on the canvas.
+
+    This is the app's first values-night/ folder, and it exists only for widgets:
+    the app itself is forced dark (MainActivity passes darkTheme = true), so
+    nothing inside it ever resolves against this qualifier. A widget follows the
+    system, which is exactly what makes the qualifier do its job.
+-->
+<resources>
+    <color name="macro_accent_red">#FFE5534B</color>
+    <color name="macro_accent_orange">#FFE06C4F</color>
+    <color name="macro_accent_amber">#FFE0A04C</color>
+    <color name="macro_accent_green">#FF6FCF71</color>
+    <color name="macro_accent_teal">#FF56C2A8</color>
+    <color name="macro_accent_blue">#FF5B8DEF</color>
+    <color name="macro_accent_violet">#FFC58AF9</color>
+    <color name="macro_accent_pink">#FFE573B8</color>
+
+    <!-- Tone 80 fills under tone 20 content: bright chips on a dark card, which is
+         the pairing that survived a real home screen. The tone-30 container fills
+         this replaced were within a few percent of widgetBackground's own
+         luminance, so a default-accent chip disappeared into the card it sat on. -->
+    <color name="macro_container_red">#FFFFB4AB</color>
+    <color name="macro_on_container_red">#FF690005</color>
+    <color name="macro_container_orange">#FFFFB68F</color>
+    <color name="macro_on_container_orange">#FF5A2200</color>
+    <color name="macro_container_amber">#FFF0C048</color>
+    <color name="macro_on_container_amber">#FF402D00</color>
+    <color name="macro_container_green">#FF6DDB93</color>
+    <color name="macro_on_container_green">#FF003919</color>
+    <color name="macro_container_teal">#FF7FD5C8</color>
+    <color name="macro_on_container_teal">#FF003731</color>
+    <color name="macro_container_blue">#FFAEC6FF</color>
+    <color name="macro_on_container_blue">#FF002E69</color>
+    <color name="macro_container_violet">#FFD6BAFF</color>
+    <color name="macro_on_container_violet">#FF3B0F72</color>
+    <color name="macro_container_pink">#FFFFAFD6</color>
+    <color name="macro_on_container_pink">#FF521040</color>
+
+    <color name="widget_preview_card">#FF24252D</color>
+    <color name="widget_preview_chip">#1FFFFFFF</color>
+    <color name="widget_preview_text">#FFECEDEF</color>
+    <color name="widget_preview_text_secondary">#FF9A9DA7</color>
+</resources>

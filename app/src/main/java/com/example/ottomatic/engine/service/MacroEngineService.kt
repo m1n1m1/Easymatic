@@ -14,13 +14,18 @@ import android.util.Log
 import com.example.ottomatic.MainActivity
 import com.example.ottomatic.R
 import com.example.ottomatic.ServiceLocator
+import com.example.ottomatic.core.model.ConfigKey
+import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.LogSource
+import com.example.ottomatic.core.service.RunFeedback
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.BootFailureStore
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.WorkflowRunner
+import com.example.ottomatic.engine.runFromTrigger
+import com.example.ottomatic.engine.trigger.ManualTrigger
 import com.example.ottomatic.engine.trigger.TriggerHost
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -28,6 +33,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -107,6 +115,7 @@ class MacroEngineService : Service() {
         // MainActivity doesn't show a stale battery-optimisation prompt for a
         // start that actually worked.
         BootFailureStore.clear(this)
+        _engineRunning.value = true
         startForegroundCompat(buildNotification(activeJobs.size))
     }
 
@@ -143,6 +152,18 @@ class MacroEngineService : Service() {
                     }
                 }
             }
+            // A tap on a home-screen tile, a deck cell or a launcher shortcut.
+            //
+            // Deliberately independent of whether the macro is armed. `enabled` is
+            // the user's intent to keep a macro listening for *background events*;
+            // a tap is a foreground instruction and is not one of those, so a
+            // macro whose switch is off still runs when its button is pressed —
+            // exactly as the editor's Run button has always behaved. The tile shows
+            // an "Off" marker so the state is visible rather than surprising.
+            //
+            // It therefore needs no [armMutex]: it starts nothing and stops
+            // nothing, it only walks a graph.
+            ACTION_RUN_MANUAL -> scope.launch { runManual(intent) }
             // The notification's "Stop sound" button. Silencing is immediate;
             // nothing here touches the armed macros.
             ACTION_STOP_SOUNDS -> {
@@ -161,7 +182,20 @@ class MacroEngineService : Service() {
         // it, so it would outlive the engine itself.
         systemServices.stopSounds()
         scope.cancel()
+        _engineRunning.value = false
+        _armedCount.value = 0
         super.onDestroy()
+    }
+
+    private suspend fun runManual(intent: Intent) {
+        val workflowId = intent.getStringExtra(EXTRA_WORKFLOW_ID) ?: return
+        val nodeId = intent.getStringExtra(EXTRA_NODE_ID) ?: return
+        runManualTrigger(repository, executionContext, workflowId, nodeId)
+        // This branch can have spun the service up for a macro that arms nothing —
+        // a manual-only macro whose switch is off is the common case — and a
+        // foreground service with an empty job map is a permanent notification for
+        // a run that has already ended. Same guard ACTION_RELOAD makes.
+        if (activeJobs.isEmpty()) stopSelf()
     }
 
     /**
@@ -242,9 +276,19 @@ class MacroEngineService : Service() {
         if (activeJobs.isEmpty()) stopSelf()
     }
 
+    /**
+     * Republishes the armed count, to the notification and to [armedCount].
+     *
+     * The status widget reads the second for the same reason the notification shows
+     * the first, so they are refreshed from one place: two counters for one fact
+     * that update on different events is how a home screen ends up claiming eight
+     * macros are armed while the notification says two.
+     */
     private fun refreshNotification() {
+        val count = activeJobs.size
+        _armedCount.value = count
         val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        nm.notify(NOTIFICATION_ID, buildNotification(activeJobs.size))
+        nm.notify(NOTIFICATION_ID, buildNotification(count))
     }
 
     private fun buildNotification(activeCount: Int): Notification {
@@ -327,7 +371,27 @@ class MacroEngineService : Service() {
         const val ACTION_DISABLE = "com.example.ottomatic.action.DISABLE"
         const val ACTION_RELOAD = "com.example.ottomatic.action.RELOAD"
         const val ACTION_STOP_SOUNDS = "com.example.ottomatic.action.STOP_SOUNDS"
+        const val ACTION_RUN_MANUAL = "com.example.ottomatic.action.RUN_MANUAL"
         const val EXTRA_WORKFLOW_ID = "workflowId"
+        const val EXTRA_NODE_ID = "nodeId"
+
+        /**
+         * Whether the engine service is alive, for the status widget's dot.
+         *
+         * A `StateFlow` set from the service's own lifecycle rather than a
+         * `getRunningServices` query: that API has been deprecated since API 26 and
+         * returns only this app's own services anyway, so it would be a slower way
+         * of asking a question the service can simply answer about itself.
+         *
+         * Companion-scoped because the reader is a widget, which has no instance to
+         * ask and may well be composing while the service is dead — which is
+         * precisely the state it needs to render.
+         */
+        private val _engineRunning = MutableStateFlow(false)
+        val engineRunning: StateFlow<Boolean> = _engineRunning.asStateFlow()
+
+        private val _armedCount = MutableStateFlow(0)
+        val armedCount: StateFlow<Int> = _armedCount.asStateFlow()
 
         private const val NOTIFICATION_ID = 4242
         private const val CHANNEL_ID = "ottomatic.engine"
@@ -345,6 +409,82 @@ class MacroEngineService : Service() {
                 if (workflowId != null) putExtra(EXTRA_WORKFLOW_ID, workflowId)
             }
             context.startForegroundService(intent)
+        }
+
+        /**
+         * Runs one manual trigger, from a widget tap or a launcher shortcut.
+         *
+         * Wrapped, and with a fallback, because this is the one caller that starts
+         * the service from outside the app's own UI. Android 12+ forbids starting a
+         * foreground service from the background, and while interacting with a
+         * widget *is* on the exemption list, the exemption is a short window and
+         * OEM builds are not uniform about it. A tap that throws
+         * `ForegroundServiceStartNotAllowedException` would otherwise be a button
+         * that does nothing and says nothing.
+         *
+         * The fallback runs the macro on [appScope] instead. That loses the
+         * service's protection against the process being reaped mid-run, which
+         * matters for a macro with a long `action.delay` in it — but a short macro,
+         * which is what people put on a home-screen button, completes long before
+         * that becomes a question, and running it is strictly better than dropping
+         * the tap.
+         */
+        @Suppress("TooGenericExceptionCaught") // Platform throws vary by OEM; any of them means "fall back".
+        fun runManual(context: Context, workflowId: String, nodeId: String) {
+            val intent = Intent(context, MacroEngineService::class.java).apply {
+                action = ACTION_RUN_MANUAL
+                putExtra(EXTRA_WORKFLOW_ID, workflowId)
+                putExtra(EXTRA_NODE_ID, nodeId)
+            }
+            try {
+                context.startForegroundService(intent)
+            } catch (e: Exception) {
+                Log.w("Ottomatic", "Could not start the engine for a manual run; running in-process", e)
+                ServiceLocator.appScope.launch {
+                    runManualTrigger(
+                        ServiceLocator.workflowRepository,
+                        ServiceLocator.executionContext,
+                        workflowId,
+                        nodeId,
+                    )
+                }
+            }
+        }
+
+        /**
+         * Runs one `trigger.manual` node once, and reports the outcome to
+         * [RunFeedback] so the tile that started it can stop saying "Running…".
+         *
+         * Takes its two collaborators as parameters rather than reading them off a
+         * service instance, because both callers need it and only one of them *is*
+         * a service: the [ACTION_RUN_MANUAL] branch passes the service's own, and
+         * the [runManual] fallback passes [ServiceLocator]'s.
+         *
+         * Every lookup failure here is silent on purpose. A widget outlives the
+         * thing it points at — a macro can be deleted, or its manual trigger removed
+         * from the graph, while a tile for it sits on the home screen — and the
+         * honest answer to a tap on a stale tile is that nothing runs. Reporting it
+         * as a *failed run* would put a red cross on a button that never had a
+         * chance to fail, and the widgets already redraw a stale tile into its
+         * "Missing" state on the next repository change.
+         */
+        private suspend fun runManualTrigger(
+            repository: WorkflowRepository,
+            context: ExecutionContext,
+            workflowId: String,
+            nodeId: String,
+        ) {
+            val workflow = repository.load(workflowId) ?: return
+            val node = workflow.node(NodeId(nodeId))
+                ?.takeIf { it.typeId == ManualTrigger.TYPE_ID }
+                ?: return
+            val label = node.config[ConfigKey(ManualTrigger.LABEL_KEY)]
+                ?.takeIf { it.isNotBlank() }
+                ?: node.name
+            val target = RunFeedback.Target(workflowId, nodeId, workflow.name, label)
+            RunFeedback.running(target, System.currentTimeMillis())
+            val ok = runFromTrigger(context, workflow, node)
+            RunFeedback.finished(target, ok, System.currentTimeMillis())
         }
     }
 }

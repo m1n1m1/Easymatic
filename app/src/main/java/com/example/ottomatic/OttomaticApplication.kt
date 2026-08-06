@@ -2,6 +2,7 @@ package com.example.ottomatic
 
 import android.app.Application
 import com.example.ottomatic.engine.service.MacroEngineService
+import com.example.ottomatic.feature.widget.WidgetUpdater
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -23,6 +24,12 @@ class OttomaticApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         ServiceLocator.init(this)
+        // Here rather than in either of the components that know something
+        // changed: the package rule keeps `data` and `engine` from seeing
+        // `feature`, so the widgets subscribe to those two instead of being
+        // called by them, and this root package is the one place allowed to
+        // introduce them to each other.
+        WidgetUpdater.attach(this, ServiceLocator.appScope)
         appScope.launch {
             if (ServiceLocator.workflowRepository.list().any { it.enabled }) {
                 MacroEngineService.start(this@OttomaticApplication, MacroEngineService.ACTION_REARM_ALL)

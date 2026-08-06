@@ -1,11 +1,16 @@
 package com.example.ottomatic.data
 
+import com.example.ottomatic.domain.model.MacroAccent
+import com.example.ottomatic.domain.model.MacroIcon
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.domain.registry.repairVariableRefs
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -39,6 +44,24 @@ class WorkflowRepository(directory: File, private val globals: GlobalVariableRep
     private val summaryJson = Json { ignoreUnknownKeys = true }
 
     private val workflowsDir = File(directory, DIR_NAME).apply { mkdirs() }
+
+    private val _changes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    /**
+     * Emits once whenever the set of stored workflows, or any one of them, changed.
+     *
+     * The home-screen widgets are the reason this exists: nothing on a home screen
+     * can poll, and the screens that *can* — the workflow list — already re-`list()`
+     * on `ON_RESUME`, so before this there was no signal a background component
+     * could subscribe to at all. It carries no payload on purpose; a widget reloads
+     * the little it renders anyway, and a diff here would be a second model of the
+     * store to keep true.
+     *
+     * `extraBufferCapacity = 1` with the default suspend-free `tryEmit` means a save
+     * never waits on a slow subscriber, and a burst of saves collapses into one
+     * redraw rather than queueing.
+     */
+    val changes: SharedFlow<Unit> = _changes.asSharedFlow()
 
     /**
      * Returns a lightweight summary of every persisted workflow, sorted by name
@@ -91,18 +114,26 @@ class WorkflowRepository(directory: File, private val globals: GlobalVariableRep
         return result.workflow
     }
 
+    /**
+     * The single write path — [create], [rename], [setEnabled] and [updateMacro]
+     * all land here, which is why [changes] is emitted from this one place rather
+     * than from each of them. A failed write emits nothing: there is nothing new to
+     * read.
+     */
     suspend fun save(workflow: Workflow) {
-        withContext(Dispatchers.IO) {
+        val written = withContext(Dispatchers.IO) {
             runCatching {
                 fileFor(workflow.id).writeText(json.encodeToString(Workflow.serializer(), workflow))
-            }
+            }.isSuccess
         }
+        if (written) _changes.tryEmit(Unit)
     }
 
     suspend fun delete(id: String) {
-        withContext(Dispatchers.IO) {
-            runCatching { fileFor(id).delete() }
+        val deleted = withContext(Dispatchers.IO) {
+            runCatching { fileFor(id).delete() }.getOrDefault(false)
         }
+        if (deleted) _changes.tryEmit(Unit)
     }
 
     /**
@@ -141,6 +172,36 @@ class WorkflowRepository(directory: File, private val globals: GlobalVariableRep
         try {
             val current = load(id) ?: return
             save(current.copy(enabled = enabled, schemaVersion = Workflow.CURRENT_SCHEMA_VERSION))
+        } finally {
+            flagMutex.unlock()
+        }
+    }
+
+    /**
+     * Everything the workflow list's Edit dialog can change, in one write.
+     *
+     * Not a [rename] followed by a separate appearance write: the dialog has one
+     * Save button, and two writes can leave the file holding half of what it said —
+     * a crash between them, or a [delete] slipping into the gap. Guarded by
+     * [flagMutex] for the reason [rename] and [setEnabled] are, since it too
+     * rewrites the whole file from a value it just read.
+     *
+     * Deliberately does **not** re-arm the macro. `Workflow.runtimeSignature`
+     * excludes both appearance fields, so the editor's save gate already ignores a
+     * recolour, and this path has no reason to be louder than that one.
+     */
+    suspend fun updateMacro(id: String, name: String, icon: MacroIcon, accent: MacroAccent) {
+        flagMutex.lock()
+        try {
+            val current = load(id) ?: return
+            save(
+                current.copy(
+                    name = name,
+                    icon = icon,
+                    accent = accent,
+                    schemaVersion = Workflow.CURRENT_SCHEMA_VERSION,
+                ),
+            )
         } finally {
             flagMutex.unlock()
         }

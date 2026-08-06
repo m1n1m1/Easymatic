@@ -23,7 +23,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
@@ -43,6 +42,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ottomatic.domain.model.MacroAccent
+import com.example.ottomatic.domain.model.MacroIcon
+import com.example.ottomatic.feature.macro.EditMacroDialog
 
 /**
  * The editor's chrome, in two mutually exclusive modes.
@@ -86,15 +88,17 @@ fun EditorTopBar(
     selectionLabel: String?,
     canConfigure: Boolean,
     isMacroEnabled: Boolean,
+    icon: MacroIcon,
+    accent: MacroAccent,
     onBack: () -> Unit,
     onToggleEnabled: (Boolean) -> Unit,
-    onRename: (String) -> Unit,
+    onEditMacro: (name: String, icon: MacroIcon, accent: MacroAccent) -> Unit,
     onDeleteWorkflow: () -> Unit,
     onClearSelection: () -> Unit,
     onConfigure: () -> Unit,
     onDeleteSelection: () -> Unit,
 ) {
-    var renaming by remember { mutableStateOf(false) }
+    var editing by remember { mutableStateOf(false) }
     var deleting by remember { mutableStateOf(false) }
 
     Surface(color = EditorColors.chrome) {
@@ -121,7 +125,7 @@ fun EditorTopBar(
                         isMacroEnabled = isMacroEnabled,
                         onBack = onBack,
                         onToggleEnabled = onToggleEnabled,
-                        onRename = { renaming = true },
+                        onEdit = { editing = true },
                         onDelete = { deleting = true },
                     )
                 } else {
@@ -137,14 +141,19 @@ fun EditorTopBar(
         }
     }
 
-    if (renaming) {
-        RenameWorkflowDialog(
+    if (editing) {
+        // Literally the workflow list's dialog, not a copy of it. The two used to
+        // mirror each other by hand while there was one field to keep in step;
+        // there are three now, and a copy would be a copy that drifts.
+        EditMacroDialog(
             initialName = title,
-            onConfirm = {
-                onRename(it)
-                renaming = false
+            initialIcon = icon,
+            initialAccent = accent,
+            onConfirm = { name, chosenIcon, chosenAccent ->
+                onEditMacro(name, chosenIcon, chosenAccent)
+                editing = false
             },
-            onDismiss = { renaming = false },
+            onDismiss = { editing = false },
         )
     }
 
@@ -178,7 +187,7 @@ private fun WorkflowBar(
     isMacroEnabled: Boolean,
     onBack: () -> Unit,
     onToggleEnabled: (Boolean) -> Unit,
-    onRename: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Row(
@@ -215,7 +224,7 @@ private fun WorkflowBar(
             colors = editorSwitchColors(),
             modifier = Modifier.semantics { contentDescription = "Enabled" },
         )
-        WorkflowMenu(onRename = onRename, onDelete = onDelete)
+        WorkflowMenu(onEdit = onEdit, onDelete = onDelete)
     }
 }
 
@@ -285,7 +294,7 @@ private fun SelectionBar(
  * the title a single dp.
  */
 @Composable
-private fun WorkflowMenu(onRename: () -> Unit, onDelete: () -> Unit) {
+private fun WorkflowMenu(onEdit: () -> Unit, onDelete: () -> Unit) {
     var menuOpen by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { menuOpen = true }) {
@@ -297,10 +306,10 @@ private fun WorkflowMenu(onRename: () -> Unit, onDelete: () -> Unit) {
         }
         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
             DropdownMenuItem(
-                text = { Text("Rename…") },
+                text = { Text("Edit…") },
                 onClick = {
                     menuOpen = false
-                    onRename()
+                    onEdit()
                 },
                 leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
             )
@@ -321,37 +330,6 @@ private fun WorkflowMenu(onRename: () -> Unit, onDelete: () -> Unit) {
             )
         }
     }
-}
-
-/** Mirrors the workflow list's rename dialog, so renaming reads the same in both places. */
-@Composable
-private fun RenameWorkflowDialog(
-    initialName: String,
-    onConfirm: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var name by remember { mutableStateOf(initialName) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Rename workflow", color = EditorColors.textPrimary) },
-        text = {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                singleLine = true,
-                label = { Text("Name") },
-            )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onConfirm(name.trim()) },
-                enabled = name.isNotBlank(),
-            ) { Text("Save") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
-        },
-    )
 }
 
 @Composable

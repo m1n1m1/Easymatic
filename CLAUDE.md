@@ -132,6 +132,7 @@ The rest of this topic — contact references, the two app pickers, macro refere
 - **Values and transforms** are never pulsed — `WorkflowExecutor.resolveDataIn` pulls them while collecting a consumer's inputs
 - **MacroEngineService** (foreground service) owns the engine, survives UI destruction, re-arms on boot
 - **TriggerBus** is a singleton event bus connecting manifest-registered broadcast receivers to the engine
+- One run of a graph is **`runFromTrigger`** (`engine/ManualRun.kt`), shared by `WorkflowRunner`'s event collector and by `MacroEngineService.ACTION_RUN_MANUAL` — the home-screen widgets' and launcher shortcuts' way in. It is one function because the `finally` that emits `"finished"` is what keeps `trigger.macro_finished` firing after a run that threw, and that is not a rule worth writing down twice. `trigger.manual` needs no activation, so this path runs a macro whether or not it is armed
 
 `arm`/`disarm`/`rearmAll` are read-modify-writes of `activeJobs` spanning suspension points, so **every caller must hold `armMutex`**. Without it two overlapping arms of the same id each find no previous entry, each start a runner, and each store into the map — orphaning a runner that keeps collecting its triggers against a stale graph and is no longer cancellable by anything, including a disable/enable cycle. Both also `cancel()` **and `join()`** the previous job: trigger teardown runs in a `finally` that releases a platform resource keyed by node id, so an un-awaited cancel can tear down what the next arm just registered.
 
@@ -167,4 +168,5 @@ These subsystems each have their own file so they are not resident in every sess
 - **Identifier pickers** (`@Picker`, `PhoneRef`, `InstalledApps`, `MacroDirectory`) — `identifier-pickers` skill
 - **Scripting** (`action.script`, the WebView V8 sandbox) — `node-scripting` skill
 - **The run log** (`ExecutionContext.log`, `RunLogStore`, the editor console) — `run-log` skill
+- **Widgets and shortcuts** (the three Glance widgets, `MacroIcon`/`MacroAccent`, `RunFeedback`, launcher shortcuts) — `widgets-and-shortcuts` skill
 - **The editor UI** (the bottom bar, its three surfaces, `EditorOverlay`) — `app/src/main/java/com/example/ottomatic/feature/CLAUDE.md`, loaded when working under `feature/`

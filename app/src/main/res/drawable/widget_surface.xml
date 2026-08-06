@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    A widget card's background.
+
+    A shape drawable rather than Glance's `cornerRadius` modifier because that
+    modifier is a no-op below API 31, and minSdk here is 26 — without this a
+    third of the supported range would draw square cards on a rounded home
+    screen. The solid colour is a placeholder: every caller tints it through
+    `background(ColorProvider)`, so the value never reaches the screen.
+
+    drawable-v31/ carries the same shape at the system's own widget radius, so
+    on Android 12+ the cards match whatever corner the launcher is using.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="16dp" />
+    <solid android:color="#FFFFFFFF" />
+</shape>

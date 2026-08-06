@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The Ottomatic panel: engine status, problems, last run and a grid of manual
+    triggers, each section switched on or off per widget.
+
+    This replaces the separate "Trigger deck" and "Engine status" providers. They
+    were two configurations of one thing — the status widget already grew a deck
+    when it had the height for one — and splitting them meant every option
+    belonged to whichever provider happened to own it.
+
+    minResizeHeight is one whole cell plus the padding around it, so a panel
+    showing triggers can never be shrunk to where it clips its only row in half.
+    Sections above the grid degrade gracefully below that; the grid says "make
+    this taller" rather than drawing a sliver.
+
+    updatePeriodMillis is 0 in both providers on purpose. The platform's periodic
+    update has a 30-minute floor and would redraw widgets that have nothing new to
+    say, while everything these show changes on an event WidgetUpdater is already
+    collecting. A poll would be strictly worse than the push that exists.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.example.ottomatic.feature.widget.PanelConfigActivity"
+    android:description="@string/widget_panel_description"
+    android:initialLayout="@layout/widget_loading"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:previewLayout="@layout/widget_preview_panel"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="4"
+    android:targetCellHeight="3"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable|configuration_optional" />

@@ -40,6 +40,7 @@ import com.example.ottomatic.feature.variables.GlobalVariablesViewModel
 import com.example.ottomatic.feature.workflowlist.WorkflowListScreen
 import com.example.ottomatic.feature.workflowlist.WorkflowListViewModel
 import com.example.ottomatic.ui.theme.OttomaticTheme
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -130,12 +131,52 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
+     * The launcher's static "New macro" shortcut arrives here when the app is
+     * already running.
+     *
+     * `onNewIntent` and not only `onCreate` because this Activity has no
+     * `launchMode` — the default `standard` reuses the existing instance when the
+     * task is already in front, and a shortcut tapped in that state would
+     * otherwise be delivered to an intent nobody reads. `setIntent` is what makes
+     * the composable below see it: [pendingNewMacro] reads `intent`, which
+     * otherwise still holds the LAUNCHER intent from cold start.
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.action == ACTION_NEW_MACRO) newMacroRequests.tryEmit(Unit)
+    }
+
+    /**
      * The app's four destinations: workflow list, geofence library, global
      * variable library, graph editor.
      */
+    /**
+     * "New macro" taps that arrived while the app was already open.
+     *
+     * A flow rather than a state flag because the request is an *event*: tapping
+     * the shortcut twice should make two macros, and a boolean that is already
+     * true the second time would make one.
+     */
+    private val newMacroRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     @Composable
     private fun AppNavHost() {
         val navController = rememberNavController()
+
+        // The cold-start half: the shortcut launched the app, so the intent is
+        // already sitting on the Activity. Keyed on Unit so it runs once per
+        // composition of the host rather than once per recomposition.
+        LaunchedEffect(Unit) {
+            if (intent?.action == ACTION_NEW_MACRO) {
+                intent.action = null
+                listViewModel.create { id -> navController.navigate("$ROUTE_GRAPH_EDITOR/$id") }
+            }
+            newMacroRequests.collect {
+                listViewModel.create { id -> navController.navigate("$ROUTE_GRAPH_EDITOR/$id") }
+            }
+        }
+
         NavHost(
             navController = navController,
             startDestination = ROUTE_WORKFLOW_LIST,
@@ -272,11 +313,21 @@ class MainActivity : ComponentActivity() {
         requestDndPolicyAccess.launch(intent)
     }
 
-    private companion object {
-        const val ROUTE_WORKFLOW_LIST = "workflowList"
-        const val ROUTE_GRAPH_EDITOR = "graphEditor"
-        const val ROUTE_GEOFENCES = "geofences"
-        const val ROUTE_VARIABLES = "variables"
-        const val ARG_WORKFLOW_ID = "workflowId"
+    companion object {
+        /**
+         * The launcher's static "New macro" shortcut (`res/xml/shortcuts.xml`).
+         *
+         * Public and namespaced because it crosses a process boundary: the
+         * shortcut definition names it as a string, and the launcher delivers it.
+         * A private constant could not be referenced from the XML anyway, and an
+         * un-namespaced one would collide with any other app's.
+         */
+        const val ACTION_NEW_MACRO = "com.example.ottomatic.action.NEW_MACRO"
+
+        private const val ROUTE_WORKFLOW_LIST = "workflowList"
+        private const val ROUTE_GRAPH_EDITOR = "graphEditor"
+        private const val ROUTE_GEOFENCES = "geofences"
+        private const val ROUTE_VARIABLES = "variables"
+        private const val ARG_WORKFLOW_ID = "workflowId"
     }
 }

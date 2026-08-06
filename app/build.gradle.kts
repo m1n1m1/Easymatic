@@ -67,7 +67,18 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
-    // Runs `action.script` on the V8 inside the device's system WebView, out of
+
+    // The three home-screen widgets. Glance renders a Compose-shaped tree down to
+    // RemoteViews; the app's own UI stays Compose UI, which a widget cannot host.
+    // glance-material3 is what supplies the wallpaper-derived colour providers, so
+    // the widgets follow the system theme while the app stays fixed-dark.
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+    // Runs `action.script` on the V8 inside the device's system WebView
+    //
+    //
+    //
+    // , out of
     // process. Adds no engine to the APK — this artifact is only the IPC glue.
     implementation(libs.androidx.javascriptengine)
     implementation(libs.androidx.lifecycle.runtime.ktx)

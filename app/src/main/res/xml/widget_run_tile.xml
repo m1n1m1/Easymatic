@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The Run tile: one manual trigger, as a button.
+
+    targetCellWidth/Height are API 31+ and are the sizes the launcher actually
+    places it at; minWidth/minHeight are the pre-31 fallback and must stay in
+    step with them (2x1 = 110x40dp under the 70n-30 rule).
+
+    reconfigurable, because pointing a tile at a different macro is the one thing
+    a user will want to change and re-placing the widget to do it is absurd.
+    configuration_optional is NOT set: this widget is meaningless until it knows
+    which trigger it is for, so the config screen is mandatory.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="com.example.ottomatic.feature.widget.RunTileConfigActivity"
+    android:description="@string/widget_run_tile_description"
+    android:initialLayout="@layout/widget_loading"
+    android:minWidth="110dp"
+    android:minHeight="40dp"
+    android:minResizeWidth="40dp"
+    android:minResizeHeight="40dp"
+    android:previewLayout="@layout/widget_preview_run_tile"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable" />

@@ -9,4 +9,72 @@
          a phone without dynamic colour gets the colour the action nodes that
          raised the dialog are drawn in rather than Material's baseline purple. -->
     <color name="dialog_accent">#FF5B8DEF</color>
+
+    <!-- A macro's chosen accent, as it appears on a *widget*. These are the light
+         values; values-night holds the dark ones, which are the EditorColors hues
+         the app itself already draws in.
+
+         Two sets rather than one because a widget follows the system theme and the
+         app does not: a hue picked to sit on the editor's #17181D canvas washes out
+         on a white Material You surface, and a hue dark enough for white loses
+         against black. The pairing is what lets the *same* choice — "this macro is
+         the red one" — read correctly on either.
+
+         MacroAccent.SYSTEM has no entry here on purpose: it resolves to the
+         wallpaper accent at render time, which is not a resource. -->
+    <color name="macro_accent_red">#FFC62F2A</color>
+    <color name="macro_accent_orange">#FFC2502F</color>
+    <color name="macro_accent_amber">#FFB0761F</color>
+    <color name="macro_accent_green">#FF2E7D46</color>
+    <color name="macro_accent_teal">#FF10796B</color>
+    <color name="macro_accent_blue">#FF2A5FC7</color>
+    <color name="macro_accent_violet">#FF7B3FC4</color>
+    <color name="macro_accent_pink">#FFB83384</color>
+
+    <!-- The eight accents as Material 3 **filled-button pairs**, which is what the
+         widget chips draw with.
+
+         The single colours above are for the app, where a glyph sits on a fixed
+         dark canvas and only needs to be legible against it. A widget draws the
+         accent as a *filled* chip, and a fill needs two colours: the fill and the
+         content on it.
+
+         These follow the `primary` / `onPrimary` tones — tone 40 under white in
+         light, tone 80 under tone 20 in dark — and **not** the calmer
+         `primaryContainer` tones, which was the first attempt and did not survive
+         contact with a real home screen. In dark mode a container tone sits about
+         as bright as `widgetBackground` itself, so the chips for the default
+         accent were barely visible against the card they were on. This is the
+         treatment Material You gives a filled button, and it is what makes a chip
+         read as something you press.
+
+         It also keeps MacroAccent.SYSTEM consistent with the rest: SYSTEM resolves
+         to `primary` / `onPrimary`, which is these same tones taken from the
+         wallpaper instead of from this file. -->
+    <color name="macro_container_red">#FFBA1A1A</color>
+    <color name="macro_on_container_red">#FFFFFFFF</color>
+    <color name="macro_container_orange">#FFA2470A</color>
+    <color name="macro_on_container_orange">#FFFFFFFF</color>
+    <color name="macro_container_amber">#FF7A5900</color>
+    <color name="macro_on_container_amber">#FFFFFFFF</color>
+    <color name="macro_container_green">#FF006D3B</color>
+    <color name="macro_on_container_green">#FFFFFFFF</color>
+    <color name="macro_container_teal">#FF006A60</color>
+    <color name="macro_on_container_teal">#FFFFFFFF</color>
+    <color name="macro_container_blue">#FF3B5FA8</color>
+    <color name="macro_on_container_blue">#FFFFFFFF</color>
+    <color name="macro_container_violet">#FF6B4FA8</color>
+    <color name="macro_on_container_violet">#FFFFFFFF</color>
+    <color name="macro_container_pink">#FF9C4177</color>
+    <color name="macro_on_container_pink">#FFFFFFFF</color>
+
+    <!-- Only the widget-picker previews and the brief loading card use these.
+         The live widgets take their surface and text from the system palette
+         through GlanceTheme, which a static layout inflated by the launcher has
+         no access to — so the previews approximate it with a neutral of their
+         own, in both themes. -->
+    <color name="widget_preview_card">#FFFFFFFF</color>
+    <color name="widget_preview_chip">#14000000</color>
+    <color name="widget_preview_text">#FF1A1C1E</color>
+    <color name="widget_preview_text_secondary">#FF6B7280</color>
 </resources>

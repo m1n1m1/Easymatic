@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The filled square behind a macro's glyph — Material You's tonal container.
+
+    Opaque, and tinted by the caller with the accent's *container* colour, with
+    the glyph drawn on top in the matching *on-container* colour. The first
+    version filled this at 15% alpha and tinted it with the accent itself, which
+    produced a faint smudge on a flat card and was the single biggest reason the
+    widgets read as unstyled.
+
+    16dp on a 44dp chip is Material's "large" corner at this size — squircle
+    enough to belong beside a launcher icon, not so round it becomes a circle.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="16dp" />
+    <solid android:color="#FFFFFFFF" />
+</shape>

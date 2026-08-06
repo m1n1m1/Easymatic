@@ -9,9 +9,14 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.trigger.VariableStore
+import com.example.ottomatic.domain.model.MacroAccent
+import com.example.ottomatic.domain.model.MacroIcon
 import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.engine.validation.GraphValidator
+import com.example.ottomatic.feature.shortcut.MacroShortcuts
+import com.example.ottomatic.feature.widget.MacroSnapshots
+import com.example.ottomatic.feature.widget.ManualTriggerRef
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +33,14 @@ data class WorkflowListUiState(
      * working one from this screen, which is where the user goes to ask "is it on?".
      */
     val errors: Map<String, Int> = emptyMap(),
+    /**
+     * Each workflow's manual triggers, for the rows that have any.
+     *
+     * Here because "Add to home screen" has to know whether there is anything to
+     * pin *before* it is offered, and because a macro with several manual triggers
+     * has to be asked which one.
+     */
+    val triggers: Map<String, List<ManualTriggerRef>> = emptyMap(),
     val isLoading: Boolean = true,
 )
 
@@ -46,23 +59,34 @@ class WorkflowListViewModel(
     }
 
     /**
-     * Reloads the persisted workflow summaries, and validates each graph.
+     * Reloads the persisted workflow summaries, their problem counts and their
+     * manual triggers.
      *
-     * Validating means loading every workflow in full, which the summary list
-     * deliberately avoids — but a graph is small, the list is short, and this
-     * already runs off the main thread. Caching it would mean invalidating the
-     * cache on every edit made in another screen.
+     * All three come from [MacroSnapshots], which is the same pass this screen
+     * used to make on its own — load every workflow, run [GraphValidator] over it —
+     * now shared with the home-screen widgets, which need exactly the same three
+     * things. One pass rather than two also means the list and the widgets cannot
+     * disagree about how many problems a macro has.
+     *
+     * The cache is dropped first. It is invalidated asynchronously by
+     * `WidgetUpdater` when the repository reports a write, and this method is
+     * called *immediately* after a mutation — so without this it would race that
+     * collector and could redraw the row that was just edited from the state it
+     * was in before.
      */
     fun refresh() {
         viewModelScope.launch {
-            val list = repository.list()
-            val errors = list.mapNotNull { summary ->
-                val workflow = repository.load(summary.id) ?: return@mapNotNull null
-                GraphValidator(workflow).validate().errors.size
-                    .takeIf { it > 0 }
-                    ?.let { summary.id to it }
-            }.toMap()
-            _uiState.update { it.copy(workflows = list, errors = errors, isLoading = false) }
+            MacroSnapshots.invalidate()
+            val snapshots = MacroSnapshots.all()
+            _uiState.update { state ->
+                state.copy(
+                    workflows = repository.list(),
+                    errors = snapshots.filter { it.errorCount > 0 }.associate { it.workflowId to it.errorCount },
+                    triggers = snapshots.filter { it.triggers.isNotEmpty() }
+                        .associate { it.workflowId to it.triggers },
+                    isLoading = false,
+                )
+            }
         }
     }
 
@@ -93,9 +117,19 @@ class WorkflowListViewModel(
         }
     }
 
-    fun rename(id: String, name: String) {
+    /**
+     * Asks the launcher to pin [trigger] to the home screen.
+     *
+     * Returns false when the launcher refuses — several launchers do not support
+     * pinning at all — so the screen can say so rather than leaving the user
+     * waiting for a system dialog that is never going to appear.
+     */
+    fun pin(trigger: ManualTriggerRef): Boolean = MacroShortcuts.requestPin(appContext, trigger)
+
+    /** Applies everything the Edit dialog can change: name, icon and accent. */
+    fun updateMacro(id: String, name: String, icon: MacroIcon, accent: MacroAccent) {
         viewModelScope.launch {
-            repository.rename(id, name)
+            repository.updateMacro(id, name, icon, accent)
             refresh()
         }
     }

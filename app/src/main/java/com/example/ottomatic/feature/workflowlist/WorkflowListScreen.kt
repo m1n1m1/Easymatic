@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddToHomeScreen
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
@@ -51,8 +53,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.feature.grapheditor.EditorColors
 import com.example.ottomatic.feature.grapheditor.editorSwitchColors
+import com.example.ottomatic.feature.macro.EditMacroDialog
+import com.example.ottomatic.feature.macro.editorTextButtonColors
+import com.example.ottomatic.feature.macro.MacroIconChip
+import com.example.ottomatic.feature.widget.ManualTriggerRef
 
 @Composable
 fun WorkflowListScreen(
@@ -74,8 +81,10 @@ fun WorkflowListScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    var renaming by remember { mutableStateOf<com.example.ottomatic.domain.model.WorkflowSummary?>(null) }
-    var deleting by remember { mutableStateOf<com.example.ottomatic.domain.model.WorkflowSummary?>(null) }
+    var editing by remember { mutableStateOf<WorkflowSummary?>(null) }
+    var deleting by remember { mutableStateOf<WorkflowSummary?>(null) }
+    var pinning by remember { mutableStateOf<List<ManualTriggerRef>?>(null) }
+    var pinRefused by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -137,8 +146,21 @@ fun WorkflowListScreen(
                             errors = state.errors[summary.id] ?: 0,
                             onOpen = { onOpenWorkflow(summary.id) },
                             onToggleEnabled = { viewModel.setEnabled(summary.id, it) },
-                            onRename = { renaming = summary },
+                            onEdit = { editing = summary },
                             onDelete = { deleting = summary },
+                            manualTriggers = state.triggers[summary.id].orEmpty(),
+                            onPin = {
+                                val triggers = state.triggers[summary.id].orEmpty()
+                                // One trigger is not a choice, so it is not a
+                                // dialog: pinning goes straight to the launcher's
+                                // own confirmation, which is the only prompt that
+                                // decision actually needs.
+                                if (triggers.size == 1) {
+                                    if (!viewModel.pin(triggers.first())) pinRefused = true
+                                } else {
+                                    pinning = triggers
+                                }
+                            },
                         )
                         HorizontalDivider(color = EditorColors.chromeBorder, thickness = 1.dp)
                     }
@@ -159,14 +181,73 @@ fun WorkflowListScreen(
         }
     }
 
-    renaming?.let { target ->
-        RenameDialog(
+    editing?.let { target ->
+        EditMacroDialog(
             initialName = target.name,
-            onConfirm = { newName ->
-                viewModel.rename(target.id, newName)
-                renaming = null
+            initialIcon = target.icon,
+            initialAccent = target.accent,
+            onConfirm = { name, icon, accent ->
+                viewModel.updateMacro(target.id, name, icon, accent)
+                editing = null
             },
-            onDismiss = { renaming = null },
+            onDismiss = { editing = null },
+        )
+    }
+
+    // Only ever shown for a macro with more than one manual trigger: the question
+    // is which button to pin, and a macro with one has no such question.
+    pinning?.let { triggers ->
+        AlertDialog(
+            onDismissRequest = { pinning = null },
+            containerColor = EditorColors.chrome,
+            title = { Text("Which trigger?", color = EditorColors.textPrimary) },
+            text = {
+                Column {
+                    triggers.forEach { trigger ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    pinning = null
+                                    if (!viewModel.pin(trigger)) pinRefused = true
+                                }
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            MacroIconChip(icon = trigger.icon, accent = trigger.accent)
+                            Spacer(Modifier.width(12.dp))
+                            Text(trigger.label, color = EditorColors.textPrimary, fontSize = 15.sp)
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { pinning = null }, colors = editorTextButtonColors()) {
+                    Text("Cancel")
+                }
+            },
+        )
+    }
+
+    if (pinRefused) {
+        AlertDialog(
+            onDismissRequest = { pinRefused = false },
+            containerColor = EditorColors.chrome,
+            title = { Text("Can't pin here", color = EditorColors.textPrimary) },
+            text = {
+                Text(
+                    "This launcher doesn't support pinning shortcuts. " +
+                        "The Run tile widget does the same job — add it from your home screen's widget list.",
+                    color = EditorColors.textPrimary,
+                    fontSize = 14.sp,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { pinRefused = false }, colors = editorTextButtonColors()) {
+                    Text("OK")
+                }
+            },
         )
     }
 
@@ -182,13 +263,16 @@ fun WorkflowListScreen(
                 )
             },
             confirmButton = {
-                TextButton(onClick = {
-                    viewModel.delete(target.id)
-                    deleting = null
-                }) { Text("Delete") }
+                TextButton(
+                    onClick = {
+                        viewModel.delete(target.id)
+                        deleting = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = EditorColors.errorAccent),
+                ) { Text("Delete") }
             },
             dismissButton = {
-                TextButton(onClick = { deleting = null }) { Text("Cancel") }
+                TextButton(onClick = { deleting = null }, colors = editorTextButtonColors()) { Text("Cancel") }
             },
         )
     }
@@ -210,12 +294,14 @@ private fun statusText(enabled: Boolean, errors: Int): String = when {
 
 @Composable
 private fun WorkflowRow(
-    summary: com.example.ottomatic.domain.model.WorkflowSummary,
+    summary: WorkflowSummary,
     errors: Int,
     onOpen: () -> Unit,
     onToggleEnabled: (Boolean) -> Unit,
-    onRename: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
+    manualTriggers: List<ManualTriggerRef>,
+    onPin: () -> Unit,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     Row(
@@ -225,6 +311,11 @@ private fun WorkflowRow(
             .padding(horizontal = 18.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // The same chip the home-screen tile and the pinned shortcut draw. A list
+        // of names alone gave the user nothing to aim at, and the icon they pick
+        // here is the one they will be looking for on the home screen.
+        MacroIconChip(icon = summary.icon, accent = summary.accent)
+        Spacer(Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = summary.name,
@@ -273,13 +364,27 @@ private fun WorkflowRow(
             }
             DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                 DropdownMenuItem(
-                    text = { Text("Rename") },
+                    text = { Text("Edit") },
                     onClick = {
                         menuOpen = false
-                        onRename()
+                        onEdit()
                     },
                     leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
                 )
+                // Only offered when there is something to pin. A macro with no
+                // manual trigger has no button to put on a home screen, and an
+                // item that explains that after being tapped is worse than an
+                // item that is not there.
+                if (manualTriggers.isNotEmpty()) {
+                    DropdownMenuItem(
+                        text = { Text("Add to home screen") },
+                        onClick = {
+                            menuOpen = false
+                            onPin()
+                        },
+                        leadingIcon = { Icon(Icons.Filled.AddToHomeScreen, contentDescription = null) },
+                    )
+                }
                 DropdownMenuItem(
                     text = { Text("Delete") },
                     onClick = {
@@ -293,31 +398,3 @@ private fun WorkflowRow(
     }
 }
 
-@Composable
-private fun RenameDialog(
-    initialName: String,
-    onConfirm: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var name by remember { mutableStateOf(initialName) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Rename workflow", color = EditorColors.textPrimary) },
-        text = {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                singleLine = true,
-                label = { Text("Name") },
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = { if (name.isNotBlank()) onConfirm(name.trim()) }) {
-                Text("Save")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
-        },
-    )
-}

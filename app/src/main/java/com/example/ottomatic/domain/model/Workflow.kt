@@ -77,6 +77,15 @@ data class DataConnection(
  * `GraphValidator` takes it, the snapshot `arm()` loads is one, and the editor's
  * debounced save writes it. Deleting the macro takes them with it, exactly as it
  * takes the run log.
+ *
+ * [icon] and [accent] are how the macro identifies itself away from the canvas —
+ * on its list row, on a home-screen tile and on a pinned shortcut, where the name
+ * alone is a wall of text and eight identical bolts cannot be told apart. They are
+ * **added with defaults and without a [CURRENT_SCHEMA_VERSION] bump**, which is
+ * load-bearing: `WorkflowRepository.load` discards anything below the current
+ * version rather than migrating it, so bumping for a colour would delete every
+ * workflow on the device. A missing key decodes to the default instead, and
+ * `WorkflowAppearanceTest` pins that.
  */
 @Serializable
 data class Workflow(
@@ -88,6 +97,8 @@ data class Workflow(
     val dataConnections: List<DataConnection> = emptyList(),
     val enabled: Boolean = false,
     val variables: List<VariableDeclaration> = emptyList(),
+    val icon: MacroIcon = MacroIcon.BOLT,
+    val accent: MacroAccent = MacroAccent.SYSTEM,
 ) {
     /** The local declaration [id] names, or null when it was deleted. */
     fun variable(id: String): VariableDeclaration? = variables.firstOrNull { it.id == id }
@@ -118,13 +129,15 @@ data class Workflow(
      * Everything about this graph that the engine actually reads when it arms and
      * runs the workflow — deliberately excluding the purely cosmetic fields
      * ([WorkflowNode.x], [WorkflowNode.y], [WorkflowNode.name],
-     * [WorkflowNode.visibleDataInputs]) and the editor-irrelevant [schemaVersion].
+     * [WorkflowNode.visibleDataInputs], [icon], [accent]) and the
+     * editor-irrelevant [schemaVersion].
      *
      * The editor compares this against the signature it last armed to decide
      * whether a save needs to re-arm the running macro. Dragging a node or
      * renaming it therefore costs nothing, while a config edit or a new edge
      * re-arms. Re-arming is not free (it re-registers geofences and re-enqueues
-     * periodic work), so the gate matters.
+     * periodic work), so the gate matters — and it is why [icon] and [accent] are
+     * out: recolouring a tile must not re-register a geofence.
      *
      * [variables] is in here in full, name included, because a declaration is not
      * cosmetic: its type retypes a port, its initial value is what an unset read

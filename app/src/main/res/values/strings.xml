@@ -7,4 +7,27 @@
     <string name="accessibility_service_label">Ottomatic button triggers</string>
     <string name="accessibility_service_summary">Lets macros start when you press the volume buttons.</string>
     <string name="accessibility_service_description">Ottomatic uses this only to notice volume button presses, so your macros can start when you press them. It never reads screen content, and it never changes what the buttons do — the volume keys keep working normally.</string>
+
+    <!-- The static launcher shortcut. Short label is what fits under an icon;
+         long label is what a launcher with room shows instead. -->
+    <string name="shortcut_new_macro_short">New macro</string>
+    <string name="shortcut_new_macro_long">Create a new macro</string>
+
+    <!-- The widget's name in the picker. Each says what it shows rather than
+         leading with the app name, since the picker already groups them under it. -->
+    <string name="widget_run_tile_label">Run tile</string>
+    <string name="widget_panel_label">Ottomatic panel</string>
+
+    <!-- Shown under each widget's name in the picker. Says what it is *for*
+         rather than what it contains, since the preview beside it already shows
+         the latter. -->
+    <string name="widget_run_tile_description">One macro, one tap. Pick a manual trigger and run it from the home screen.</string>
+    <string name="widget_panel_description">Engine state, problems, the last run and a grid of manual triggers — pick which of those it shows.</string>
+
+    <!-- Sample content for the picker previews. Not shown anywhere at runtime. -->
+    <string name="widget_preview_macro" translatable="false">Morning Routine</string>
+    <string name="widget_preview_ready" translatable="false">Ready</string>
+    <string name="widget_preview_engine" translatable="false">Engine running</string>
+    <string name="widget_preview_counts" translatable="false">8 of 12 armed</string>
+    <string name="widget_preview_last_run" translatable="false">Morning Routine · ok · 4m ago</string>
 </resources>
