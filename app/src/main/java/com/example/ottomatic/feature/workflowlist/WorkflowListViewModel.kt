@@ -14,9 +14,9 @@ import com.example.ottomatic.domain.model.MacroIcon
 import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.engine.validation.GraphValidator
-import com.example.ottomatic.feature.shortcut.MacroShortcuts
 import com.example.ottomatic.feature.widget.MacroSnapshots
 import com.example.ottomatic.feature.widget.ManualTriggerRef
+import com.example.ottomatic.feature.widget.RunTilePin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -118,13 +118,17 @@ class WorkflowListViewModel(
     }
 
     /**
-     * Asks the launcher to pin [trigger] to the home screen.
+     * Asks the launcher to place a Run tile widget for [trigger] on the home screen.
+     *
+     * A widget rather than the launcher shortcut this used to pin: the two occupy the
+     * same grid cell and run the same macro, but a shortcut is a static icon the
+     * launcher owns, while a tile reports what the run is doing. See [RunTilePin].
      *
      * Returns false when the launcher refuses — several launchers do not support
      * pinning at all — so the screen can say so rather than leaving the user
      * waiting for a system dialog that is never going to appear.
      */
-    fun pin(trigger: ManualTriggerRef): Boolean = MacroShortcuts.requestPin(appContext, trigger)
+    fun pin(trigger: ManualTriggerRef): Boolean = RunTilePin.request(appContext, trigger)
 
     /** Applies everything the Edit dialog can change: name, icon and accent. */
     fun updateMacro(id: String, name: String, icon: MacroIcon, accent: MacroAccent) {

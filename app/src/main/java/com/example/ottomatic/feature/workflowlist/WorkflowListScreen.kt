@@ -152,7 +152,7 @@ fun WorkflowListScreen(
                             onPin = {
                                 val triggers = state.triggers[summary.id].orEmpty()
                                 // One trigger is not a choice, so it is not a
-                                // dialog: pinning goes straight to the launcher's
+                                // dialog: placing goes straight to the launcher's
                                 // own confirmation, which is the only prompt that
                                 // decision actually needs.
                                 if (triggers.size == 1) {
@@ -234,11 +234,12 @@ fun WorkflowListScreen(
         AlertDialog(
             onDismissRequest = { pinRefused = false },
             containerColor = EditorColors.chrome,
-            title = { Text("Can't pin here", color = EditorColors.textPrimary) },
+            title = { Text("Can't add it from here", color = EditorColors.textPrimary) },
             text = {
                 Text(
-                    "This launcher doesn't support pinning shortcuts. " +
-                        "The Run tile widget does the same job — add it from your home screen's widget list.",
+                    "This launcher doesn't let an app place a widget for you. " +
+                        "Add the Run tile yourself from your home screen's widget list — " +
+                        "it will ask which trigger it is for.",
                     color = EditorColors.textPrimary,
                     fontSize = 14.sp,
                 )

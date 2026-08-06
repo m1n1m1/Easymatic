@@ -1,6 +1,6 @@
 ---
 name: widgets-and-shortcuts
-description: Read before touching Ottomatic's home-screen widgets or launcher shortcuts — the two Glance widgets (Run tile and the Ottomatic panel), PanelConfig, MacroSnapshots, MacroTile, RunFeedback, MacroShortcuts, RunTriggerActivity, and the MacroIcon/MacroAccent appearance a macro carries. Covers why widgets follow the system theme while the app does not, why a widget tap does not go through ManualTrigger.fire, why the update traffic runs feature-ward, why appearance was added without a schema bump, and why a widget's config must be read back before it is shown.
+description: Read before touching Ottomatic's home-screen widgets or launcher shortcuts — the two Glance widgets (Run tile and the Ottomatic panel), PanelConfig, MacroSnapshots, MacroTile, RunFeedback, MacroShortcuts, RunTilePin, RunTriggerActivity, and the MacroIcon/MacroAccent appearance a macro carries. Covers why widgets follow the system theme while the app does not, why a widget tap does not go through ManualTrigger.fire, why "Add to home screen" places a widget rather than a pinned shortcut and how the trigger reaches it, why the update traffic runs feature-ward, why appearance was added without a schema bump, and why a widget's config must be read back before it is shown.
 ---
 
 # Widgets and shortcuts
@@ -48,6 +48,8 @@ A **deck cell draws no card of its own**, because the widget's card is already `
 
 `CELL_HEIGHT` is **arithmetic, not a chosen number** — `CHIP_SIZE + CHIP_LABEL_GAP + LABEL_LINE_HEIGHT`. A picked 68dp was 10dp short of its own contents and clipped the bottom off every label in every deck. Deck labels are one line for the same reason: two lines needed 28dp of a cell that had 20dp left.
 
+`NARROW_CONTENT_HEIGHT` is the same sum for the Run tile's **1×1** arrangement, which was the chip alone until 2026-08-06 and now carries the label under a smaller chip — a row of accent squares is a row of things you have to remember rather than read, and the icon identifies a macro only until the fourth one is placed beside it. The difference from a deck cell is that there is **nobody to ask for more room**: a 1×1 tile gets what the launcher gives it, so the sum has to fit inside `RunTileWidget`'s smallest responsive bucket (`SMALLEST_SIZE`, 57dp) with the chip already shrunk to 28dp. `MacroTileSizeTest` pins that it does. The stack is **centred rather than top-aligned**, because 57dp is a floor and most launchers hand over half as much again — centring puts the contents in the middle of whatever actually arrives. A height check inside the arrangement would not work: under `SizeMode.Responsive`, `LocalSize.current` is the *bucket*, not the measured size.
+
 Two layout traps, both of which produced visible bugs. Glance's `Row` **wraps its content unless told to `fillMaxWidth()`**, so a `defaultWeight()` inside one has nothing to expand into — that is how the status header rendered as "Engine running5 · 1 armed". And in Compose UI, `LazyVerticalGrid` measures items at a **fixed cell width**, so `Modifier.size()` on the item cannot make it narrower; the Edit dialog's round colour swatches came out as ovals until each was centred inside a full-width cell.
 
 Widgets are unstyled Material by default in one more place: the app's `OttomaticTheme` still carries the Android Studio template's purple scheme, so any *in-app* Material control that is not explicitly coloured renders purple. `editorTextButtonColors()`, `darkFieldColors()` and `editorSwitchColors()` exist for that, and dialog buttons need one of them.
@@ -61,6 +63,19 @@ Instead `MacroEngineService.ACTION_RUN_MANUAL` loads the graph and calls `runFro
 **A tap runs a macro whose switch is off.** `enabled` is the intent to keep a macro listening for *background events*; a tap is not one. The tile says "Off" so it is visible rather than surprising.
 
 `MacroEngineService.runManual` wraps `startForegroundService` and falls back to `appScope`: interacting with a widget is on Android 12's FGS-start exemption list, but the window is short and OEM builds are inconsistent, and a dropped tap is a button that does nothing. A **shortcut** has no such problem — `RunTriggerActivity` is a real foreground activity for the instant it lives, which is why shortcuts need a trampoline at all (a `ShortcutInfo` intent is started with `startActivity`, and the service is not exported).
+
+## "Add to home screen" places a widget, not a shortcut
+
+`MacroShortcuts` is **dynamic shortcuts only**. Pinned ones existed and the workflow list's "Add to home screen" created one; it places a Run tile instead as of 2026-08-06 (`RunTilePin`). The two occupy the same grid cell and run the same macro, but a pinned shortcut is a *bitmap the launcher owns* from the moment it is dropped — it cannot say "Running…", it cannot go red on a failure, it cannot show that the macro is switched off, and its label is the launcher's to truncate. The tile does all four and is already built. Dynamic shortcuts stay, because they are the one thing a widget cannot be: a list that maintains itself under a long-press of the app icon, with nothing to place.
+
+The hard part is **not asking the same question twice**. `RunTileConfigActivity` exists so a tile dropped from the widget picker can be told which trigger it is for, and whether a launcher opens it after a pin is the launcher's decision — nothing in the API lets an app say "don't". So the trigger key travels **two routes**, and whichever arrives first wins:
+
+- the **options bundle** of the pin request, which the launcher stores against the new widget id. `RunTileConfigActivity` looks for it before drawing anything and confirms itself, so the chooser never flashes up on its way to closing.
+- the **success callback**, a broadcast carrying the id the widget was given, for the launchers that never open the config screen. `RunTilePinnedReceiver` writes from there **only into a tile that has no trigger yet**, so it can never overrule a choice made on the config screen in the meantime.
+
+That PendingIntent must be **`FLAG_MUTABLE`** on API 31+: the system fills `EXTRA_APPWIDGET_ID` into it before sending, and an immutable one arrives with no id to write to. Its request code is the trigger's, so pinning a second macro before the first callback fires cannot have `FLAG_UPDATE_CURRENT` rewrite the first one's payload.
+
+The requested key is **consumed, not read** — by both routes. Widget options outlive the placement, so a key left there is found again the next time that tile is *reconfigured*, and reconfiguring would silently re-apply the original trigger instead of offering the list. `updateAppWidgetOptions` merges and cannot remove a key, so consuming means writing a null string over it.
 
 ## RunFeedback, and why it is in `core/`
 
@@ -84,7 +99,7 @@ The label fallback is `config.label` → node name → macro name, with the node
 
 ## Shapes and sizes
 
-`MacroTile` has three arrangements (wide, compact, icon-only) and `TriggerDeck` lays cells out by hand rather than with `LazyVerticalGrid`: the grid is bounded by the widget's measured size, `defaultWeight()` keeps cells genuinely equal, and a lazy grid would bring a `RemoteViewsService` for a dozen cells that never scroll. Anything past the budget is reported by `DeckOverflow` rather than dropped silently.
+`MacroTile` has three arrangements (wide, compact, narrow) and `TriggerDeck` lays cells out by hand rather than with `LazyVerticalGrid`: the grid is bounded by the widget's measured size, `defaultWeight()` keeps cells genuinely equal, and a lazy grid would bring a `RemoteViewsService` for a dozen cells that never scroll. Anything past the budget is reported by `DeckOverflow` rather than dropped silently.
 
 The panel draws its grid only when a *whole* cell row fits below the header, and says "make this taller" instead of drawing a sliver — a half-row reads as a rendering bug rather than as a size the user chose. The grid is centred in whatever the header leaves, because a panel is resized to fit a gap and is routinely taller than its contents.
 

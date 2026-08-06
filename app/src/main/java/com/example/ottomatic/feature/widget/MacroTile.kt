@@ -147,18 +147,48 @@ fun MacroTileCompact(
     }
 }
 
-/** Just the chip, for the size where a label would not fit anyway. */
+/**
+ * The narrowest standalone form: a smaller chip with the label under it.
+ *
+ * This was the chip alone, filling the tile, and the label is why that was wrong: a
+ * 1×1 tile is the size people place *several* of, and a row of accent-coloured
+ * squares is a row of things you have to remember rather than read. The macro's own
+ * icon identifies it only for as long as every macro on the screen has a different
+ * one, which stops being true at about the fourth.
+ *
+ * So the chip shrinks to [CHIP_SIZE_NARROW] to make room, and the whole stack is
+ * **centred rather than padded to the top**. A 1×1 cell is the one size whose real
+ * dimensions vary most between launchers — the 57dp bucket is a floor, and most
+ * hand over half as much again — so centring is what puts the contents in the middle
+ * of whatever actually arrives instead of leaving a gap under them.
+ *
+ * One line of label, for [MacroTileCompact]'s reason: two lines do not fit here at
+ * all, and the labels that would wrap are the long ones, which are unreadable at
+ * this width either way.
+ */
 @Composable
-fun MacroTileIconOnly(
+fun MacroTileNarrow(
     trigger: ManualTriggerRef,
     state: RunFeedback.State?,
     modifier: GlanceModifier = GlanceModifier,
 ) {
     Box(
-        modifier = modifier.runAction(trigger),
+        modifier = modifier.runAction(trigger).padding(horizontal = NARROW_PADDING),
         contentAlignment = Alignment.Center,
     ) {
-        Chip(trigger, state, size = CHIP_SIZE_LARGE, glyph = GLYPH_SIZE_LARGE)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Chip(trigger, state, size = CHIP_SIZE_NARROW, glyph = GLYPH_SIZE_NARROW)
+            Spacer(GlanceModifier.height(NARROW_LABEL_GAP))
+            Text(
+                text = trigger.label,
+                maxLines = 1,
+                style = TextStyle(
+                    color = GlanceTheme.colors.onSurface,
+                    fontSize = NARROW_LABEL_SIZE,
+                    textAlign = TextAlign.Center,
+                ),
+            )
+        }
     }
 }
 
@@ -257,12 +287,20 @@ fun GlanceModifier.tileCard(): GlanceModifier = this.background(
 internal val CHIP_SIZE = 44.dp
 internal val CHIP_LABEL_GAP = 6.dp
 private val GLYPH_SIZE = 24.dp
-private val CHIP_SIZE_LARGE = 56.dp
-private val GLYPH_SIZE_LARGE = 30.dp
 private val TILE_PADDING = 14.dp
+
+/** [MacroTileNarrow]'s smaller chip, and the label that fits beside it because of it. */
+internal val CHIP_SIZE_NARROW = 28.dp
+private val GLYPH_SIZE_NARROW = 16.dp
+internal val NARROW_LABEL_GAP = 3.dp
+private val NARROW_LABEL_SIZE = 11.sp
+private val NARROW_PADDING = 4.dp
 
 /** A 12sp line, with the leading Glance's default text style adds around it. */
 private val LABEL_LINE_HEIGHT = 18.dp
+
+/** The same, for [MacroTileNarrow]'s 11sp. */
+internal val NARROW_LABEL_LINE_HEIGHT = 16.dp
 
 /**
  * How tall one deck cell is: the chip, the gap, and one line of 12sp label.
@@ -273,3 +311,12 @@ private val LABEL_LINE_HEIGHT = 18.dp
  * so changing the chip size cannot silently re-break it.
  */
 internal val CELL_HEIGHT = CHIP_SIZE + CHIP_LABEL_GAP + LABEL_LINE_HEIGHT
+
+/**
+ * How tall [MacroTileNarrow]'s stack is, by the same arithmetic and for the same
+ * reason — except that here there is nobody to ask for more room. A 1×1 tile gets
+ * what the launcher gives it, and `RunTileWidget`'s smallest responsive bucket says
+ * what the floor of that is, so this has to fit inside it with the chip already
+ * shrunk. `MacroTileSizeTest` pins that it does.
+ */
+internal val NARROW_CONTENT_HEIGHT = CHIP_SIZE_NARROW + NARROW_LABEL_GAP + NARROW_LABEL_LINE_HEIGHT

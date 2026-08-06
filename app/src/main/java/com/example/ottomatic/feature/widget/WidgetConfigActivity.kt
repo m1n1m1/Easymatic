@@ -123,13 +123,30 @@ abstract class WidgetConfigActivity : ComponentActivity() {
         Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
 }
 
-/** Picks the one manual trigger a Run tile is a button for. */
+/**
+ * Picks the one manual trigger a Run tile is a button for.
+ *
+ * **Unless the answer already came with the widget.** A tile pinned from the
+ * workflow list was placed *for* a trigger, and some launchers open this screen
+ * afterwards anyway — so the first thing it does is look for a key [RunTilePin] left
+ * in the widget's options, and confirm with it rather than asking a question that has
+ * already been answered. Nothing is drawn while that happens: `triggers` stays null,
+ * which is the same "still loading" state this screen has always had, so the chooser
+ * never flashes up on its way to closing.
+ */
 class RunTileConfigActivity : WidgetConfigActivity() {
 
     @Composable
     override fun Content() {
         var triggers by remember { mutableStateOf<List<ManualTriggerRef>?>(null) }
-        LaunchedEffect(Unit) { triggers = MacroSnapshots.triggers() }
+        LaunchedEffect(Unit) {
+            val requested = RunTilePin.consumeRequestedKey(this@RunTileConfigActivity, appWidgetId)
+            if (requested != null) {
+                confirm { id -> setRunTileTrigger(this@RunTileConfigActivity, id, requested) }
+                return@LaunchedEffect
+            }
+            triggers = MacroSnapshots.triggers()
+        }
 
         ConfigScaffold(title = "Choose a trigger") {
             val loaded = triggers

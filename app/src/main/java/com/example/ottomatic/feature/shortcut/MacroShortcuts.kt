@@ -20,15 +20,21 @@ import androidx.core.content.pm.ShortcutManagerCompat
 
 /**
  * Manual triggers as launcher shortcuts — the other half of "one tap from the
- * home screen", for people who long-press an icon rather than place widgets.
+ * home screen", for people who long-press an app icon rather than look at the home
+ * screen itself.
  *
- * Two kinds, and they answer different questions. **Dynamic** shortcuts appear
- * under a long-press of the app icon and are chosen by the app: the few triggers
- * you used most recently, kept current without anybody configuring anything.
- * **Pinned** shortcuts are chosen by the user and live on the home screen as their
- * own icon, which is the same job a Run tile does — offered because a launcher
- * icon costs one grid cell where the smallest widget usually costs more, and
- * because some launchers make dropping an icon far easier than placing a widget.
+ * **Dynamic only.** These appear under a long-press of the app icon and are chosen
+ * by the app: the few triggers you used most recently, kept current without anybody
+ * configuring anything. They are the one thing a widget cannot be — a widget has to
+ * be placed, and this list maintains itself.
+ *
+ * There were **pinned** shortcuts too, chosen by the user and living on the home
+ * screen as their own icon, and "Add to home screen" in the workflow list used to
+ * create one. It places a Run tile instead as of 2026-08-06, because the two occupy
+ * the same grid cell and the tile is the one that can say anything: a pinned
+ * shortcut is a bitmap the launcher owns from the moment it is dropped, so it cannot
+ * report that a run is under way, that it failed, or that the macro is switched off.
+ * See `RunTilePin`.
  */
 object MacroShortcuts {
 
@@ -50,20 +56,6 @@ object MacroShortcuts {
         val limit = minOf(MAX_DYNAMIC, ShortcutManagerCompat.getMaxShortcutCountPerActivity(context))
         val shortcuts = ranked.take(limit).mapIndexed { rank, trigger -> build(context, trigger, rank) }
         runCatching { ShortcutManagerCompat.setDynamicShortcuts(context, shortcuts) }
-    }
-
-    /**
-     * Asks the launcher to pin [trigger] to the home screen.
-     *
-     * Returns false when the launcher does not support pinning — several do not,
-     * and the caller shows a different message rather than a dialog that will never
-     * appear.
-     */
-    fun requestPin(context: Context, trigger: ManualTriggerRef): Boolean {
-        if (!ShortcutManagerCompat.isRequestPinShortcutSupported(context)) return false
-        return runCatching {
-            ShortcutManagerCompat.requestPinShortcut(context, build(context, trigger, rank = 0), null)
-        }.getOrDefault(false)
     }
 
     /** Drops every dynamic shortcut. Used when the last manual trigger disappears. */

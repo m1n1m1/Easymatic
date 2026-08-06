@@ -6,10 +6,16 @@
     places it at; minWidth/minHeight are the pre-31 fallback and must stay in
     step with them (2x1 = 110x40dp under the 70n-30 rule).
 
+    minResize* is one cell, matching the smallest responsive bucket the tile is
+    drawn for. Below that the narrow arrangement's label clips, and a resize handle
+    that can be dragged into a broken layout is not a size the user chose.
+
     reconfigurable, because pointing a tile at a different macro is the one thing
     a user will want to change and re-placing the widget to do it is absurd.
     configuration_optional is NOT set: this widget is meaningless until it knows
-    which trigger it is for, so the config screen is mandatory.
+    which trigger it is for, so the config screen is mandatory. A tile pinned from
+    the workflow list already knows, and RunTileConfigActivity closes itself for
+    that case rather than asking again — see RunTilePin.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:configure="com.example.ottomatic.feature.widget.RunTileConfigActivity"
@@ -17,8 +23,8 @@
     android:initialLayout="@layout/widget_loading"
     android:minWidth="110dp"
     android:minHeight="40dp"
-    android:minResizeWidth="40dp"
-    android:minResizeHeight="40dp"
+    android:minResizeWidth="57dp"
+    android:minResizeHeight="57dp"
     android:previewLayout="@layout/widget_preview_run_tile"
     android:resizeMode="horizontal|vertical"
     android:targetCellWidth="2"

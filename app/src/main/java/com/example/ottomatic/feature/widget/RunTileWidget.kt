@@ -37,8 +37,10 @@ import com.example.ottomatic.core.service.RunFeedback
  * Responsive builds them all once instead of recomposing on every drag of the
  * resize handle:
  *
- *  - **1×1** — the chip alone. There is no room for a word, and the icon the user
- *    chose is doing the identifying.
+ *  - **1×1** — a smaller chip with the label stacked under it. There is no room for
+ *    a word *beside* the chip, which is not the same as no room for one at all: a
+ *    tile nobody can name is a tile you have to remember, and the icon identifies a
+ *    macro only until the second one is placed next to it.
  *  - **2×1** — chip and label, which is the shape a launcher icon already has.
  *  - **2×2 and up** — chip, label and the state line, which is the only size with
  *    room to say "Failed" as well as show it.
@@ -49,7 +51,7 @@ class RunTileWidget : GlanceAppWidget() {
 
     override val sizeMode = SizeMode.Responsive(
         setOf(
-            DpSize(57.dp, 57.dp),
+            SMALLEST_SIZE,
             DpSize(130.dp, 57.dp),
             DpSize(130.dp, 110.dp),
         ),
@@ -86,7 +88,7 @@ class RunTileWidget : GlanceAppWidget() {
                     // already underneath it.
                     val card = GlanceModifier.fillMaxSize().tileCard()
                     when {
-                        size.width < NARROW_WIDTH -> MacroTileIconOnly(trigger, state, card)
+                        size.width < NARROW_WIDTH -> MacroTileNarrow(trigger, state, card)
                         size.height < SHORT_HEIGHT ->
                             MacroTileWide(trigger, state, showState = false, modifier = card)
 
@@ -127,6 +129,15 @@ class RunTileWidget : GlanceAppWidget() {
         }
     }
 }
+
+/**
+ * The 1×1 bucket: 70n−30 for one cell, the floor a launcher may hand this widget.
+ *
+ * Named because [MacroTileNarrow] has to fit inside it — a responsive bucket is the
+ * size the content is designed against, and the whole point of the arrangement is
+ * that its label is *not* clipped at the smallest size it can be placed at.
+ */
+internal val SMALLEST_SIZE = DpSize(57.dp, 57.dp)
 
 /** Narrower than this and there is no room for a word beside the chip. */
 private val NARROW_WIDTH = 110.dp
