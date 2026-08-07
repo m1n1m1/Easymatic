@@ -51,6 +51,23 @@ enum class PrerequisiteType {
      * without it.
      */
     WRITE_SETTINGS,
+
+    /**
+     * The NFC radio being switched on.
+     *
+     * The odd one out, and worth reading twice: `android.permission.NFC` is an
+     * install-time permission that is always held, so there is nothing here that
+     * a *permission* check would ever find wanting. What actually decides whether
+     * a tag trigger can fire is a system-wide toggle with its own Settings page —
+     * which is exactly the shape this enum already models, and the reason it is
+     * modelled here rather than as a check hidden inside the trigger.
+     *
+     * An app cannot turn it on itself: `NfcAdapter.enable()` is system-only. So
+     * unlike every runtime permission there is no dialog to raise, only a page to
+     * open — and unlike the other entries here, the thing may not exist at all on
+     * this phone. See `AndroidPermissionChecker` for what that answers.
+     */
+    NFC,
 }
 
 /**
@@ -105,6 +122,7 @@ data class PermissionRequirement(
                 "an exemption from battery optimisation"
             type == PrerequisiteType.EXACT_ALARM -> "permission to set exact alarms"
             type == PrerequisiteType.WRITE_SETTINGS -> "permission to change system settings"
+            type == PrerequisiteType.NFC -> "NFC turned on"
             type != PrerequisiteType.RUNTIME -> "a system permission"
             manifestPermission == Permissions.ACCESS_FINE_LOCATION.manifest -> "location access"
             manifestPermission == Permissions.ACCESS_COARSE_LOCATION.manifest -> "location access"

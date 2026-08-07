@@ -33,6 +33,17 @@ interface DeviceState {
      */
     fun currentWifiNetwork(): String?
 
+    /**
+     * Whether the NFC radio is switched on, or null when this phone has no NFC
+     * chip at all.
+     *
+     * The two are worth telling apart here even though most callers will not:
+     * "off" is one tap away from being on, and "absent" never will be. A
+     * comparison sees false either way, which is the right answer to "is NFC on?"
+     * in both cases.
+     */
+    fun isNfcEnabled(): Boolean?
+
     /** Whether Bluetooth is enabled. */
     fun isBluetoothEnabled(): Boolean?
 
@@ -76,6 +87,7 @@ interface DeviceState {
 object UnknownDeviceState : DeviceState {
     override fun isWifiEnabled(): Boolean? = null
     override fun currentWifiNetwork(): String? = null
+    override fun isNfcEnabled(): Boolean? = null
     override fun isBluetoothEnabled(): Boolean? = null
     override fun isAirplaneMode(): Boolean? = null
     override fun isCharging(): Boolean? = null

@@ -18,12 +18,16 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.data.GeofencePlaceRepository
+import com.example.ottomatic.data.NfcTagRepository
+import com.example.ottomatic.data.nfc.NfcReader
 import com.example.ottomatic.data.sensor.SensorBridge
 import com.example.ottomatic.data.service.AndroidContacts
 import com.example.ottomatic.domain.model.GeofencePlace
+import com.example.ottomatic.domain.model.NfcTag
 import com.example.ottomatic.engine.trigger.BatteryDirection
 import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofenceTransition
+import com.example.ottomatic.engine.trigger.NfcStatus
 import com.example.ottomatic.engine.trigger.ScheduleHandle
 import com.example.ottomatic.engine.trigger.ScreenOffMode
 import com.example.ottomatic.engine.trigger.SensorKind
@@ -51,6 +55,8 @@ import java.util.concurrent.TimeUnit
 class AndroidTriggerHost(
     context: Context,
     private val geofencePlaces: GeofencePlaceRepository,
+    /** The tag library `trigger.nfc` resolves a scanned id's name against. */
+    private val nfcTags: NfcTagRepository,
     /**
      * Shared with the execution context's value nodes, so a `value.orientation`
      * read and an armed orientation trigger use one platform registration
@@ -159,6 +165,17 @@ class AndroidTriggerHost(
         TriggerBus.eventsFor(nodeId)
 
     override fun geofencePlace(id: String): GeofencePlace? = geofencePlaces.get(id)
+
+    override fun nfcTag(uid: String): NfcTag? = nfcTags.get(uid)
+
+    // Deliberately does not report "switched off": that one the Permissions screen
+    // and the node's own card already say, and saying it a third time in the
+    // console on every arm would be noise.
+    override fun nfcStatus(): NfcStatus = when {
+        !NfcReader.isAvailable(appContext) -> NfcStatus.NO_HARDWARE
+        !NfcReader.tagIntentsAllowed(appContext) -> NfcStatus.TAG_INTENTS_BLOCKED
+        else -> NfcStatus.OK
+    }
 
     override fun contactNumber(lookupKey: String): String? = contacts.phoneNumber(lookupKey)
 

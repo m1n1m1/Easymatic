@@ -64,7 +64,9 @@ class SmsTrigger : Trigger<SmsTriggerConfig, SmsMessage> {
         host: TriggerHost,
     ): Flow<NodeOutput<SmsMessage>> {
         val senderFilter = PhoneRef.parse(config.sender)
-        return host.busEvents()
+        // Node-addressed, so a text that woke the process is drained rather than
+        // discarded — see `BootTrigger` for the same reasoning.
+        return host.busEventsFor(node.id)
             .filter { it.source == TriggerSource.SMS }
             .filter { event ->
                 senderFilter == null || host.senderMatches(senderFilter, event.payload[KEY_SENDER].orEmpty())

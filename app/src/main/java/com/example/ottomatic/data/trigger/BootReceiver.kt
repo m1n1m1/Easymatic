@@ -31,7 +31,7 @@ class BootReceiver : BroadcastReceiver() {
             "android.intent.action.QUICKBOOT_POWERON",
             "com.htc.intent.action.QUICKBOOT_POWERON",
             -> {
-                TriggerBus.emit(
+                TriggerBus.emitOrHoldBroadcast(
                     TriggerEvent(
                         source = TriggerSource.BOOT,
                         triggerNodeId = NodeId.BROADCAST,

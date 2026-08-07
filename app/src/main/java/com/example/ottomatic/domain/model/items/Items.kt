@@ -180,6 +180,28 @@ data class WifiNetworkEvent(
 )
 
 /**
+ * A tag tap reported by `trigger.nfc` on its `tag` data port.
+ *
+ * - [tagId]: the tag's hardware id as uppercase hex. Always present, because it is
+ *   what the tap *is* — a tag with no readable id never reaches a trigger.
+ * - [tagName]: the name from the tag library, or blank for a tag that was never
+ *   saved. A named field for [WifiNetworkEvent.ssid]'s reason, plus one of its own:
+ *   with the trigger set to "any tag" this is how one macro tells "Desk" from "Car
+ *   dock" in a single `action.if`, instead of needing a macro per sticker.
+ * - [text]: the tag's NDEF content as text, or blank when it holds none. Free to
+ *   read — the platform decodes it at discovery — so a tag can carry data as well
+ *   as identity.
+ * - [timestamp]: when the tag was tapped.
+ */
+@Serializable
+data class NfcScan(
+    val tagId: String,
+    val tagName: String = "",
+    val text: String = "",
+    val timestamp: DateTime,
+)
+
+/**
  * A variable change reported by `trigger.variable_change` on its `variable` data port.
  *
  * - [name]: the variable name.

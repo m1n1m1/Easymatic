@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.AlertDialog
@@ -49,6 +50,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ottomatic.domain.model.NfcTagId
 import com.example.ottomatic.domain.model.PortSpec
 import com.example.ottomatic.domain.model.TimeOfDay
 import com.example.ottomatic.domain.model.WorkflowSummary
@@ -63,6 +65,8 @@ import com.example.ottomatic.feature.apps.AppPickerField
 import com.example.ottomatic.feature.contacts.PhoneNumberField
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
+import com.example.ottomatic.feature.nfc.LocalNfcTags
+import com.example.ottomatic.feature.nfc.NfcTagPickerOverlay
 import com.example.ottomatic.feature.sound.SoundPickerField
 import com.example.ottomatic.feature.variables.LocalVariables
 import com.example.ottomatic.feature.variables.VariablePickerOverlay
@@ -612,6 +616,53 @@ private fun PickerField(
         PickerKind.APP_FILTER ->
             AppPickerField(value, onValueChange, launchableOnly = false, allowAny = true, labelSlot, colors)
         PickerKind.MACRO -> MacroPickerField(value, onValueChange, labelSlot, colors)
+        PickerKind.NFC_TAG -> NfcTagPickerField(value, onValueChange, labelSlot, colors)
+    }
+}
+
+/**
+ * A `@Picker(NFC_TAG)` field: the tag this trigger watches, or any tag.
+ *
+ * Two things set it apart from the pickers above. Blank is a **real answer** rather
+ * than an unset field, so the placeholder says "Any tag" instead of "None selected".
+ * And an id that resolves to no saved tag falls back to the id *formatted for
+ * reading* rather than the raw string: unlike a dangling place or macro id, this one
+ * still works — the library only ever supplied the name — so it should look like a
+ * tag whose name has been forgotten, not like something broken.
+ */
+@Composable
+private fun NfcTagPickerField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
+    var picking by remember { mutableStateOf(false) }
+    val tags = LocalNfcTags.current
+
+    PickerFieldChrome(
+        display = when {
+            value.isBlank() -> ""
+            else -> tags?.tagByUid(value)?.name ?: NfcTagId.display(value)
+        },
+        icon = Icons.Filled.Nfc,
+        enabled = tags != null,
+        onTap = { picking = true },
+        labelSlot = labelSlot,
+        colors = colors,
+        placeholder = "Any tag",
+    )
+
+    if (picking && tags != null) {
+        NfcTagPickerOverlay(
+            viewModel = tags,
+            selectedUid = value.takeIf { it.isNotBlank() },
+            onPick = { uid ->
+                onValueChange(uid)
+                picking = false
+            },
+            onDismiss = { picking = false },
+        )
     }
 }
 
@@ -745,7 +796,14 @@ private fun GeofencePickerField(
     }
 }
 
-/** The read-only field every picker wears, minus whatever opens on a tap. */
+/**
+ * The read-only field every picker wears, minus whatever opens on a tap.
+ *
+ * [placeholder] is what an empty field says, and it is a parameter because blank
+ * does not mean the same thing everywhere: for most pickers it means the node is
+ * unconfigured, but for a tag filter it is the answer "any tag". A field that says
+ * "None selected" about a deliberate choice reads as a job left half-done.
+ */
 @Composable
 internal fun PickerFieldChrome(
     display: String,
@@ -754,6 +812,7 @@ internal fun PickerFieldChrome(
     onTap: () -> Unit,
     labelSlot: @Composable () -> Unit,
     colors: TextFieldColors,
+    placeholder: String = "None selected",
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
@@ -762,7 +821,7 @@ internal fun PickerFieldChrome(
             readOnly = true,
             label = labelSlot,
             colors = colors,
-            placeholder = { Text(text = "None selected", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            placeholder = { Text(text = placeholder, maxLines = 1, overflow = TextOverflow.Ellipsis) },
             trailingIcon = { Icon(imageVector = icon, contentDescription = null) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),

@@ -22,7 +22,7 @@ class SmsReceiver : BroadcastReceiver() {
         val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent) ?: return
         val sender = messages.firstOrNull()?.displayOriginatingAddress.orEmpty()
         val body = messages.joinToString("") { it.displayMessageBody.orEmpty() }
-        TriggerBus.emit(
+        TriggerBus.emitOrHoldBroadcast(
             TriggerEvent(
                 source = TriggerSource.SMS,
                 triggerNodeId = NodeId.BROADCAST,

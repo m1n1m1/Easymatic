@@ -61,6 +61,20 @@ class PickerFieldsTest {
         )
     }
 
+    /**
+     * A tag's hardware id is the most opaque identifier in the app — nobody knows
+     * one, and a mistyped one names a tag that does not exist while looking exactly
+     * like a correct one. So this must never become an editable field the way a
+     * network name legitimately is.
+     */
+    @Test
+    fun `an NFC tag is captured rather than typed`() {
+        assertEquals(
+            ConfigFieldType.PICKER(PickerKind.NFC_TAG),
+            fieldType("trigger.nfc", "tagId"),
+        )
+    }
+
     @Test
     fun `schedule times get a clock face rather than a calendar`() {
         assertEquals(ConfigFieldType.TIME_OF_DAY, fieldType("trigger.schedule", "atTime"))

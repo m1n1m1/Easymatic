@@ -6,6 +6,7 @@ import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.GeofencePlace
+import com.example.ottomatic.domain.model.NfcTag
 import com.example.ottomatic.domain.model.WorkflowNode
 import kotlinx.coroutines.flow.Flow
 
@@ -122,6 +123,29 @@ interface TriggerHost {
      * stays unarmed — which is what test doubles want.
      */
     fun geofencePlace(id: String): GeofencePlace? = null
+
+    /**
+     * The saved [NfcTag] with this hardware id, or null when no name was ever given
+     * to it.
+     *
+     * Reaches the trigger through the host for the reason [geofencePlace] does, but
+     * with one difference worth knowing: null here is **not** a failure. A tag
+     * trigger matches on the id a tap carries, so an unnamed tag still fires it —
+     * all that is missing is a friendly name to put on the output. That is why
+     * nothing validates a tag reference, where a missing place leaves a geofence
+     * watching nowhere.
+     */
+    fun nfcTag(uid: String): NfcTag? = null
+
+    /**
+     * Whether NFC tag scanning can work on this phone at all.
+     *
+     * Two states no permission check reports — no chip, and tag intents switched
+     * off for this app in Android's own NFC settings — plus [NfcStatus.UNKNOWN],
+     * which is what a host with no platform behind it answers so a test double
+     * does not make every armed trigger complain.
+     */
+    fun nfcStatus(): NfcStatus = NfcStatus.UNKNOWN
 
     /**
      * The number the contact [lookupKey] names can be reached on, or null.

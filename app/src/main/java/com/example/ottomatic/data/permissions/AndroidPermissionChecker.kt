@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
+import android.nfc.NfcAdapter
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
@@ -63,10 +64,25 @@ class AndroidPermissionChecker(
         PrerequisiteType.EXACT_ALARM ->
             Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager().canScheduleExactAlarms()
         PrerequisiteType.WRITE_SETTINGS -> Settings.System.canWrite(context)
+        // A phone with no NFC chip answers *satisfied*, for the same reason
+        // `existsOnThisApi` reports granted for a permission the platform has
+        // never heard of: there is nothing here to grant. This screen's question
+        // is "what does the app need and what has it got?", and "go and switch on
+        // hardware you do not have" is not an answer to it — it is a row that can
+        // never go green, on a page whose whole job is telling you what to fix.
+        // The node's question is a different one, and `trigger.nfc` answers that
+        // precisely, in its own console, where the person who placed it will see.
+        PrerequisiteType.NFC -> !hasNfcHardware() || isNfcEnabled()
         // Neither is declared by any node; reporting them unsatisfied keeps the
         // safe default rather than claiming something unverified is working.
         PrerequisiteType.FOREGROUND_SERVICE, PrerequisiteType.DEVICE_ADMIN -> false
     }
+
+    private fun hasNfcHardware(): Boolean =
+        context.packageManager.hasSystemFeature(PackageManager.FEATURE_NFC)
+
+    private fun isNfcEnabled(): Boolean =
+        NfcAdapter.getDefaultAdapter(context)?.isEnabled == true
 
     private fun isIgnoringBatteryOptimizations(): Boolean {
         val power = context.getSystemService(Context.POWER_SERVICE) as PowerManager

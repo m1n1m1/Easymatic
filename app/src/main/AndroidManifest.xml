@@ -25,6 +25,18 @@
       every API level.
     -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!--
+      Install-time, so always held and never checked at runtime: it gets no
+      `Permissions` constant for the same reason WAKE_LOCK and ACCESS_NETWORK_STATE
+      do not. What actually decides whether `trigger.nfc` can fire is the radio
+      being switched on, which is PrerequisiteType.NFC.
+
+      The uses-feature line below is not optional politeness. Declaring
+      android.permission.NFC implies `<uses-feature android:name="android.hardware.nfc"
+      android:required="true">`, which would make the app uninstallable from the Play
+      Store on every phone without an NFC chip — for one trigger out of forty.
+    -->
+    <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -62,6 +74,7 @@
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
     <application
         android:name=".OttomaticApplication"
@@ -117,6 +130,35 @@
             android:noHistory="true"
             android:taskAffinity=""
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- Where a tag tap arrives. Exported because the system dispatches the
+             tag intent to it by name; it reads an id out of that intent and does
+             nothing else, so there is no surface to abuse.
+
+             An Activity rather than a receiver because Android has no background
+             NFC scanning: a tag is dispatched to an activity or to nobody. Given
+             that, it wears RunTriggerActivity's disguise for the same reasons —
+             translucent, noHistory, excludeFromRecents, and an empty taskAffinity
+             so it does not drag MainActivity's window into view behind it.
+
+             TECH_DISCOVERED rather than TAG_DISCOVERED: the last of the three is
+             only consulted when nothing else handled the tag, so a trigger would
+             lose every tag any other app had ever claimed. See nfc_tech_filter.xml
+             for which techs are listed, and why payment cards are not among them. -->
+        <activity
+            android:name=".data.trigger.NfcTagActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.nfc.action.TECH_DISCOVERED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.nfc.action.TECH_DISCOVERED"
+                android:resource="@xml/nfc_tech_filter" />
+        </activity>
 
         <!-- ===== Home-screen widgets =====
 

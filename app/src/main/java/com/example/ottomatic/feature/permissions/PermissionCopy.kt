@@ -33,6 +33,7 @@ internal fun titleFor(requirement: PermissionRequirement): String =
         PrerequisiteType.BATTERY_OPTIMISATION -> "Unrestricted battery use"
         PrerequisiteType.EXACT_ALARM -> "Alarms & reminders"
         PrerequisiteType.WRITE_SETTINGS -> "Modify system settings"
+        PrerequisiteType.NFC -> "NFC"
         PrerequisiteType.FOREGROUND_SERVICE -> "Foreground service"
         PrerequisiteType.DEVICE_ADMIN -> "Device administrator"
         PrerequisiteType.RUNTIME -> runtimeTitle(requirement.manifestPermission)
@@ -82,6 +83,10 @@ internal fun descriptionFor(requirement: PermissionRequirement): String =
                 "batch it with other work, so it may run late."
         PrerequisiteType.WRITE_SETTINGS ->
             "Lets a macro change screen brightness, screen timeout and auto-rotate."
+        PrerequisiteType.NFC ->
+            "Lets a macro run when you hold an NFC tag to the back of your phone. Ottomatic " +
+                "cannot switch NFC on for you, and tags are only read while the screen is on " +
+                "and unlocked."
         PrerequisiteType.FOREGROUND_SERVICE ->
             "Lets Ottomatic keep its engine running while your macros are armed."
         PrerequisiteType.DEVICE_ADMIN ->
@@ -137,6 +142,10 @@ internal fun rationaleFor(requirement: PermissionRequirement): String? =
             "Ottomatic needs permission to draw over other apps so this dialog can reach you " +
                 "while you are somewhere else on your phone. Without it the node cancels " +
                 "instead of asking."
+        "nfc.radio" ->
+            "This trigger needs NFC switched on, which is a system-wide setting rather than " +
+                "something Ottomatic can grant itself. Tags are also only read while the screen " +
+                "is on and unlocked — a tap will not reach a phone asleep in your pocket."
         "overlay.launch" ->
             "Ottomatic needs permission to draw over other apps so it can open one while you " +
                 "are somewhere else on your phone. Android blocks a background app from " +

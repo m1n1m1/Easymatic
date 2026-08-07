@@ -35,6 +35,8 @@ import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.feature.geofence.GeofencePlacesScreen
 import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
+import com.example.ottomatic.feature.nfc.NfcTagsScreen
+import com.example.ottomatic.feature.nfc.NfcTagsViewModel
 import com.example.ottomatic.feature.grapheditor.GraphEditorScreen
 import com.example.ottomatic.feature.grapheditor.GraphEditorViewModel
 import com.example.ottomatic.feature.variables.GlobalVariablesScreen
@@ -66,6 +68,14 @@ class MainActivity : ComponentActivity() {
             locationLookup = AndroidLocationLookup(applicationContext),
             appContext = applicationContext,
         )
+    }
+
+    // Activity-scoped for the same reason the place library is, and needing less
+    // than either: the tag library has no asynchronous work behind it at all, only
+    // a synchronous repository, so this exists purely so the Tags screen and every
+    // config picker share one list and one open capture.
+    private val nfcTagsViewModel: NfcTagsViewModel by viewModels {
+        NfcTagsViewModel.factory(repository = ServiceLocator.nfcTagRepository)
     }
 
     // Activity-scoped for the same reason the place library is: a global variable
@@ -207,6 +217,7 @@ class MainActivity : ComponentActivity() {
                     viewModel = listViewModel,
                     onOpenWorkflow = { id -> navController.navigate("$ROUTE_GRAPH_EDITOR/$id") },
                     onOpenGeofences = { navController.navigate(ROUTE_GEOFENCES) },
+                    onOpenNfcTags = { navController.navigate(ROUTE_NFC_TAGS) },
                     onOpenVariables = { navController.navigate(ROUTE_VARIABLES) },
                     onOpenPermissions = { navController.navigate(ROUTE_PERMISSIONS) },
                 )
@@ -214,6 +225,12 @@ class MainActivity : ComponentActivity() {
             composable(ROUTE_GEOFENCES) {
                 GeofencePlacesScreen(
                     viewModel = geofencePlacesViewModel,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(ROUTE_NFC_TAGS) {
+                NfcTagsScreen(
+                    viewModel = nfcTagsViewModel,
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -266,6 +283,7 @@ class MainActivity : ComponentActivity() {
                 GraphEditorScreen(
                     viewModel = editorViewModel,
                     geofencePlaces = geofencePlacesViewModel,
+                    nfcTags = nfcTagsViewModel,
                     globalVariables = globalVariablesViewModel,
                     onBack = { navController.popBackStack() },
                 )
@@ -401,6 +419,7 @@ class MainActivity : ComponentActivity() {
         private const val ROUTE_WORKFLOW_LIST = "workflowList"
         private const val ROUTE_GRAPH_EDITOR = "graphEditor"
         private const val ROUTE_GEOFENCES = "geofences"
+        private const val ROUTE_NFC_TAGS = "nfcTags"
         private const val ROUTE_VARIABLES = "variables"
         private const val ROUTE_PERMISSIONS = "permissions"
         private const val ARG_WORKFLOW_ID = "workflowId"

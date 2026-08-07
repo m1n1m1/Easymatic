@@ -147,7 +147,78 @@ class TriggerBusTest {
         assertEquals(TriggerBus.MAX_HELD_PER_NODE, drain(node).size)
     }
 
+    // ---- Broadcasts --------------------------------------------------------
+    //
+    // The fan-out half, which `emitOrHold` cannot serve: it parks under the event's
+    // node id, and a `NodeId.BROADCAST` event parked there is drained by nothing at
+    // all, because no trigger ever collects `eventsFor(BROADCAST)`.
+
+    /**
+     * The failure this exists for. An NFC tap, a boot and an SMS all arrive at the
+     * one moment nothing can be subscribed — the event *is* what started the process
+     * — so a plain emit is discarded and the macro never runs.
+     */
+    @Test
+    fun `a broadcast held while starting reaches the node that arms next`() = runBlocking {
+        TriggerBus.emitOrHoldBroadcast(broadcast())
+
+        assertEquals("true", drain(node).single().payload[TriggerBus.KEY_HELD])
+    }
+
+    /**
+     * The reason a broadcast is parked *and* emitted rather than one or the other:
+     * `rearmAll` arms macros one at a time, so "somebody is subscribed" is no
+     * evidence that the node this matters to is.
+     */
+    @Test
+    fun `every node gets its own copy, and only one`() = runBlocking {
+        TriggerBus.emitOrHoldBroadcast(broadcast())
+
+        assertEquals(1, drain(node).size)
+        assertEquals("a second node arming later must get it too", 1, drain(other).size)
+        assertTrue("but neither may take it twice", drain(node).isEmpty())
+    }
+
+    /** Nothing parks once the engine has finished arming. */
+    @Test
+    fun `a broadcast after engineReady is not held`() = runBlocking {
+        TriggerBus.engineReady()
+        TriggerBus.emitOrHoldBroadcast(broadcast())
+
+        assertTrue(drain(node).isEmpty())
+    }
+
+    /**
+     * `engineReady` deliberately leaves the queue alone — the last-armed macro has
+     * probably not subscribed yet — so the age cap is what finally clears it, and it
+     * is much shorter than the per-node one: a tap this old is no longer something
+     * the user just did.
+     */
+    @Test
+    fun `a broadcast older than the cap never fires`() = runBlocking {
+        val stale = System.currentTimeMillis() - TriggerBus.BROADCAST_HOLD_MAX_AGE_MS - 1
+        TriggerBus.emitOrHoldBroadcast(broadcast(firedAtEpochMs = stale))
+
+        assertTrue(drain(node).isEmpty())
+    }
+
+    /** A tag tapped repeatedly must not grow the queue without bound. */
+    @Test
+    fun `the broadcast buffer is bounded`() = runBlocking {
+        repeat(BROADCAST_FLOOD) { TriggerBus.emitOrHoldBroadcast(broadcast()) }
+
+        assertTrue("must be capped well below the flood", drain(node).size < BROADCAST_FLOOD)
+    }
+
+    private fun broadcast(firedAtEpochMs: Long = System.currentTimeMillis()) = TriggerEvent(
+        source = TriggerSource.NFC,
+        triggerNodeId = NodeId.BROADCAST,
+        payload = mapOf("tagId" to "04A23F1B"),
+        firedAtEpochMs = firedAtEpochMs,
+    )
+
     private companion object {
         const val TIMEOUT_MS = 300L
+        const val BROADCAST_FLOOD = 32
     }
 }

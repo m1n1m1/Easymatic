@@ -20,6 +20,7 @@ import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.RunFeedback
 import com.example.ottomatic.core.service.SystemServices
+import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.data.BootFailureStore
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.engine.ExecutionContext
@@ -239,8 +240,19 @@ class MacroEngineService : Service() {
      * geofence place the user just moved would never actually move, because a
      * trigger reads its place only at activation.
      */
-    @Suppress("TooGenericExceptionCaught") // One macro that cannot arm must not stop the rest.
     private suspend fun rearmAll(skipArmed: Boolean) {
+        // Closes TriggerBus's waking-up window on every way out, including the
+        // no-macros-enabled one: an event parked for an engine that then armed
+        // nothing has nobody left to arrive and take it.
+        try {
+            rearmEnabled(skipArmed)
+        } finally {
+            TriggerBus.engineReady()
+        }
+    }
+
+    @Suppress("TooGenericExceptionCaught") // One macro that cannot arm must not stop the rest.
+    private suspend fun rearmEnabled(skipArmed: Boolean) {
         val enabled = repository.list().filter { it.enabled }
         if (enabled.isEmpty()) {
             if (activeJobs.isEmpty()) stopSelf()

@@ -12,6 +12,7 @@ import com.example.ottomatic.engine.value.DndValue
 import com.example.ottomatic.engine.value.DockValue
 import com.example.ottomatic.engine.value.HeadsetValue
 import com.example.ottomatic.engine.value.LightLevelValue
+import com.example.ottomatic.engine.value.NfcValue
 import com.example.ottomatic.engine.value.NowValue
 import com.example.ottomatic.engine.value.PowerSaveValue
 import com.example.ottomatic.engine.value.ProximityValue
@@ -52,6 +53,7 @@ object ValueRegistry {
         DockValue(),
         HeadsetValue(),
         LightLevelValue(),
+        NfcValue(),
         NowValue(),
         PowerSaveValue(),
         ProximityValue(),

@@ -26,8 +26,13 @@ class BootTrigger : Trigger<NoConfig, Unit> {
         icon = NodeIcon.BOOT,
     )
 
+    // `busEventsFor` rather than `busEvents`, and it is the whole reason this
+    // trigger works at all: BOOT_COMPLETED arrives at the one moment nothing can
+    // be collecting, so the receiver parks the event and only a node-addressed
+    // collector drains it. Collecting the raw flow meant racing the engine's own
+    // start and usually losing.
     override fun activate(config: NoConfig, node: WorkflowNode, host: TriggerHost): Flow<NodeOutput<Unit>> =
-        host.busEvents()
+        host.busEventsFor(node.id)
             .filter { it.source == TriggerSource.BOOT }
             .map { NodeOutput(Unit) }
 }

@@ -24,6 +24,9 @@ object TriggerRegistry {
         add(com.example.ottomatic.engine.trigger.ChargingTrigger())
         add(com.example.ottomatic.engine.trigger.BatteryLevelTrigger())
         add(com.example.ottomatic.engine.trigger.GeofenceTrigger())
+        // Not a Tier 1 broadcast trigger: an NFC tap is dispatched to an
+        // Activity, because Android does no background tag scanning at all.
+        add(com.example.ottomatic.engine.trigger.NfcTagTrigger())
         // Tier 0 — engine-internal triggers.
         add(com.example.ottomatic.engine.trigger.EmptyTrigger())
         add(com.example.ottomatic.engine.trigger.AppInitTrigger())

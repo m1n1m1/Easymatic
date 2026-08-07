@@ -17,6 +17,7 @@ enum class NodeIcon {
     SEND,
     HTTP,
     WIFI,
+    NFC,
     BLUETOOTH,
     VOLUME,
     MUSIC,

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tag
@@ -67,6 +68,7 @@ fun WorkflowListScreen(
     viewModel: WorkflowListViewModel,
     onOpenWorkflow: (String) -> Unit,
     onOpenGeofences: () -> Unit,
+    onOpenNfcTags: () -> Unit,
     onOpenVariables: () -> Unit,
     onOpenPermissions: () -> Unit,
 ) {
@@ -110,11 +112,14 @@ fun WorkflowListScreen(
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.weight(1f),
                     )
-                    // Both libraries are edited independently of any macro, so
-                    // each needs a way in that does not start with "open a
+                    // The three libraries are edited independently of any macro,
+                    // so each needs a way in that does not start with "open a
                     // workflow that happens to use one". A workflow's *own*
                     // variables have no button here: they live in that workflow's
                     // dock, beside the graph that uses them.
+                    //
+                    // Four icons is the ceiling for this bar. A fifth library would
+                    // have to go behind an overflow rather than squeeze the title.
                     IconButton(onClick = onOpenVariables) {
                         Icon(
                             imageVector = Icons.Filled.Tag,
@@ -134,6 +139,13 @@ fun WorkflowListScreen(
                     // screen rather than inside a macro for the same reason the
                     // libraries do: a missing grant is not a property of whichever
                     // macro you happen to have open.
+                    IconButton(onClick = onOpenNfcTags) {
+                        Icon(
+                            imageVector = Icons.Filled.Nfc,
+                            contentDescription = "NFC tags",
+                            tint = EditorColors.textPrimary,
+                        )
+                    }
                     IconButton(onClick = onOpenPermissions) {
                         Icon(
                             imageVector = Icons.Filled.Shield,

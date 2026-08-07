@@ -178,6 +178,27 @@ class ValueRegistryTest {
         )
     }
 
+    /**
+     * `value.nfc` is the one value node with no trigger counterpart — the pairing
+     * rule runs trigger → value, and the platform publishes no NFC-adapter broadcast
+     * worth arming on. It still has to behave like every other boolean source.
+     */
+    @Test
+    fun `the nfc value is a boolean source like any other`() {
+        val schema = schemaOf(ifNode(ValueSource.valueSpec(NodeTypeId("value.nfc"))))
+
+        val operators = (schema.fields.single { it.key == IF_OPERATOR_KEY }.type as ConfigFieldType.ENUM)
+            .options.map { it.value }
+        assertEquals(
+            listOf(ComparisonOperator.EQUALS.name, ComparisonOperator.NOT_EQUALS.name),
+            operators,
+        )
+        assertEquals(
+            ConfigFieldType.BOOL,
+            schema.fields.single { it.key == ConfigKey(IF_VALUE_IN.value) }.type,
+        )
+    }
+
     /** A placed `action.if` reading [source], with nothing wired into it. */
     private fun ifNode(source: String = ValueSource.WIRED_SPEC) = WorkflowNode(
         NodeId("if"), IF_TYPE_ID, "If", 0f, 0f,

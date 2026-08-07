@@ -113,6 +113,27 @@ enum class PickerKind {
      * nothing and said nothing about why.
      */
     MACRO,
+
+    /**
+     * An NFC tag's hardware id, captured by holding the tag to the phone.
+     *
+     * A picker rather than a [WifiNetwork]-style editable field, and the two are
+     * worth contrasting because the chooser here is the weaker of the two: a
+     * network you cannot scan can still be *typed*, whereas `04A23F1B` is not
+     * something anybody knows or can check, so a text field would offer only a
+     * way to be silently wrong. That is the opaque-versus-legible line, and this
+     * falls on the same side as a macro id.
+     *
+     * Its chooser is unlike every other one here in a second way: the option set
+     * is not something to browse but something to **produce**. A tag that has
+     * never been scanned is not in any list, so the chooser has to be able to read
+     * one — which is why this opens a capture flow with the saved tags above it,
+     * rather than a list with a "new" row that opens a form.
+     *
+     * Blank is a real answer meaning **any tag**, the way a blank SSID means any
+     * network — so the field says "Any tag" rather than "None selected".
+     */
+    NFC_TAG,
 }
 
 /**

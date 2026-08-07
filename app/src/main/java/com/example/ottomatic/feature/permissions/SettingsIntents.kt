@@ -34,6 +34,10 @@ internal fun Context.openSettingsFor(type: PrerequisiteType) {
             Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, packageUri())
         PrerequisiteType.WRITE_SETTINGS ->
             Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, packageUri())
+        // System-wide and with no per-app row, so no `package:` uri: this is the
+        // one toggle here that is not about Ottomatic at all. It also toggles both
+        // ways, which is why `openRevokeFor` needs no branch for it.
+        PrerequisiteType.NFC -> Intent(Settings.ACTION_NFC_SETTINGS)
         // Nothing to open below API 31: an exact alarm needs no permission there,
         // so there is no page and nothing to grant.
         PrerequisiteType.EXACT_ALARM ->

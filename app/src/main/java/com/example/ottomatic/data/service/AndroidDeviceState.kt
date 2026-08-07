@@ -8,6 +8,7 @@ import android.content.res.Configuration
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.net.wifi.WifiManager
+import android.nfc.NfcAdapter
 import android.os.BatteryManager
 import android.os.PowerManager
 import android.provider.Settings
@@ -46,6 +47,15 @@ class AndroidDeviceState(private val context: Context) : DeviceState {
         // Blank covers both "not on Wi-Fi" and "not allowed to say", which is one
         // answer to the consumer either way: nothing to compare against.
         WifiSsid.normalise(wifiManager.connectionInfo?.ssid).takeIf { it.isNotBlank() }
+    }.getOrNull()
+
+    /**
+     * Null rather than false when there is no adapter, because "this phone cannot
+     * do NFC" and "NFC is switched off" are different facts and only one of them
+     * is worth telling somebody to go and fix.
+     */
+    override fun isNfcEnabled(): Boolean? = runCatching {
+        NfcAdapter.getDefaultAdapter(context.applicationContext)?.isEnabled
     }.getOrNull()
 
     override fun isBluetoothEnabled(): Boolean? = runCatching {

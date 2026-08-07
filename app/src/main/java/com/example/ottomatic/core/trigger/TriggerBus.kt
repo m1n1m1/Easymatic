@@ -28,6 +28,7 @@ enum class TriggerSource {
     SYSTEM,
     PACKAGE,
     MEDIA,
+    NFC,
 }
 
 /**
@@ -53,6 +54,7 @@ data class TriggerEvent(
  * every macro, so a replaying bus would re-fire every fence on every edit.
  * [emitOrHold] is how the one case replay would have covered is covered instead.
  */
+@Suppress("TooManyFunctions") // Two emit modes and two hold queues, each with its own drain.
 object TriggerBus {
 
     private val _events = MutableSharedFlow<TriggerEvent>(
@@ -65,6 +67,22 @@ object TriggerBus {
     /** Events parked for a node that had nothing collecting. Guarded by [heldLock]. */
     private val heldLock = Any()
     private val held = LinkedHashMap<NodeId, MutableList<TriggerEvent>>()
+
+    /**
+     * Broadcast events parked while the engine was still coming up, each carrying
+     * the set of nodes that have already taken it.
+     */
+    private class HeldBroadcast(val event: TriggerEvent, val deliveredTo: MutableSet<NodeId>)
+
+    private val heldBroadcasts = mutableListOf<HeldBroadcast>()
+
+    /**
+     * Whether the engine is still arming its macros for the first time this
+     * process. Starts true at class load — which is *before* anything can have
+     * started arming — and is closed by [engineReady].
+     */
+    @Volatile
+    private var starting = true
 
     /**
      * Delivers [event] to whoever is collecting, and drops it if nobody is.
@@ -105,7 +123,56 @@ object TriggerBus {
     }
 
     /**
-     * Live events, preceded by whatever was held for [nodeId].
+     * Delivers [event] live **and** parks a copy while the engine is still waking
+     * up, for a fan-out source addressed to [NodeId.BROADCAST].
+     *
+     * The counterpart to [emitOrHold] for events that are not addressed to a node,
+     * and it needs its own function because the two differ where it matters:
+     * [emitOrHold]'s branches are *exclusive*, which is exactly right when
+     * "somebody is collecting" answers "is the one node this is for collecting?".
+     * For a broadcast it answers nothing of the kind — `rearmAll` arms macros one
+     * at a time, so a tap during arming finds macro A subscribed, takes the live
+     * branch, and is delivered to a macro that was never interested while the one
+     * that was is still being read off disk.
+     *
+     * Delivering *and* parking would double-run without [HeldBroadcast.deliveredTo],
+     * which is the piece that keeps "one transition, one run" true: a collector
+     * that got the live copy never drains (a collection subscribes once), and a
+     * collector that drains marks itself so a later re-arm cannot take it again.
+     *
+     * Parking stops at [engineReady]; what is already parked expires on
+     * [BROADCAST_HOLD_MAX_AGE_MS].
+     */
+    fun emitOrHoldBroadcast(event: TriggerEvent) {
+        _events.tryEmit(event)
+        if (starting) holdBroadcast(event)
+    }
+
+    /**
+     * Called once the engine has armed everything it is going to: nothing parks
+     * after this, so a macro armed an hour later cannot replay an old event.
+     *
+     * It deliberately does **not** empty the queue, which is the tempting version
+     * and would be wrong. Arming only *launches* a trigger's collector, so the last
+     * macro `rearmAll` touched has almost certainly not subscribed by the time this
+     * runs — clearing here would throw away the event a fraction of a second before
+     * the node it was parked for arrived to take it. What is already parked is
+     * therefore left to expire on its own, a window measured in seconds.
+     *
+     * The residue that leaves is one narrow case: a node that received an event
+     * *live* is not recorded in [HeldBroadcast.deliveredTo], so re-arming it inside
+     * that window — editing the macro, which is the only thing that re-arms one —
+     * lets it drain the copy as well and run a second time. One extra run of a macro
+     * you are actively editing is a far smaller fault than the one this exists to
+     * fix, where a tag tapped on a cold start ran nothing at all.
+     */
+    fun engineReady() {
+        starting = false
+    }
+
+    /**
+     * Live events, preceded by whatever was held for [nodeId] and by any broadcast
+     * this node has not yet been handed.
      *
      * The drain runs inside [onSubscription] — after this collector is registered
      * on the shared flow but before it is handed anything live. That is the exact
@@ -114,8 +181,10 @@ object TriggerBus {
      * arming mutex. Draining after arming *returns* would not work: arming only
      * launches the collectors, so it finishes before any of them has subscribed.
      */
-    fun eventsFor(nodeId: NodeId): Flow<TriggerEvent> =
-        _events.onSubscription { takeHeld(nodeId).forEach { emit(it) } }
+    fun eventsFor(nodeId: NodeId): Flow<TriggerEvent> = _events.onSubscription {
+        takeHeld(nodeId).forEach { emit(it) }
+        takeBroadcasts(nodeId).forEach { emit(it) }
+    }
 
     private fun hold(event: TriggerEvent) = synchronized(heldLock) {
         prune()
@@ -128,6 +197,25 @@ object TriggerBus {
     private fun takeHeld(nodeId: NodeId): List<TriggerEvent> = synchronized(heldLock) {
         prune()
         held.remove(nodeId).orEmpty()
+    }
+
+    private fun holdBroadcast(event: TriggerEvent) = synchronized(heldLock) {
+        prune()
+        heldBroadcasts += HeldBroadcast(
+            event.copy(payload = event.payload + (KEY_HELD to "true")),
+            mutableSetOf(),
+        )
+        while (heldBroadcasts.size > MAX_HELD_BROADCASTS) heldBroadcasts.removeAt(0)
+    }
+
+    /**
+     * Everything parked that [nodeId] has not already been given, marking each as
+     * taken. Marking rather than removing is what lets a second trigger node arm a
+     * moment later and still receive the same tap.
+     */
+    private fun takeBroadcasts(nodeId: NodeId): List<TriggerEvent> = synchronized(heldLock) {
+        prune()
+        heldBroadcasts.filter { it.deliveredTo.add(nodeId) }.map { it.event }
     }
 
     /**
@@ -144,10 +232,16 @@ object TriggerBus {
             queue.removeAll { it.firedAtEpochMs < cutoff }
             if (queue.isEmpty()) entries.remove()
         }
+        val broadcastCutoff = System.currentTimeMillis() - BROADCAST_HOLD_MAX_AGE_MS
+        heldBroadcasts.removeAll { it.event.firedAtEpochMs < broadcastCutoff }
     }
 
-    /** Drops every held event. Test seam; nothing in the app calls it. */
-    internal fun clearHeld() = synchronized(heldLock) { held.clear() }
+    /** Drops every held event, and reopens the starting window. Test seam. */
+    internal fun clearHeld() = synchronized(heldLock) {
+        held.clear()
+        heldBroadcasts.clear()
+        starting = true
+    }
 
     /** Marks a payload as having waited in [held] rather than arriving live. */
     const val KEY_HELD = "heldWhileStarting"
@@ -168,4 +262,15 @@ object TriggerBus {
     internal const val MAX_HELD_PER_NODE = 4
 
     private const val MAX_HELD_NODES = 16
+
+    /**
+     * Shorter than [HOLD_MAX_AGE_MS], because this is a backstop rather than the
+     * mechanism: [engineReady] normally clears the queue, and what this covers is a
+     * start that never finished. An NFC tap or a boot broadcast older than this has
+     * stopped being something the user just did.
+     */
+    internal const val BROADCAST_HOLD_MAX_AGE_MS = 15_000L
+
+    /** A fan-out event reaches every node, so far fewer are needed than per node. */
+    private const val MAX_HELD_BROADCASTS = 8
 }

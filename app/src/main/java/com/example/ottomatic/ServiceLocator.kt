@@ -8,6 +8,7 @@ import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.GeofencePlaceRepository
+import com.example.ottomatic.data.NfcTagRepository
 import com.example.ottomatic.data.GlobalVariableRepository
 import com.example.ottomatic.domain.registry.GlobalVariables
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
@@ -59,6 +60,8 @@ object ServiceLocator {
 
     /** The geofence place library, shared by the editor UI and the trigger host. */
     lateinit var geofencePlaceRepository: GeofencePlaceRepository
+
+    lateinit var nfcTagRepository: NfcTagRepository
         private set
 
     /**
@@ -120,6 +123,7 @@ object ServiceLocator {
         GlobalVariables.hydrate(globalVariableRepository.list())
         workflowRepository = WorkflowRepository(appContext.filesDir, globalVariableRepository)
         geofencePlaceRepository = GeofencePlaceRepository(appContext.filesDir)
+        nfcTagRepository = NfcTagRepository(appContext.filesDir)
         systemServices = AndroidSystemServices(appContext)
         deviceState = AndroidDeviceState(appContext)
         macroControl = AndroidMacroControl(appContext)
@@ -161,7 +165,8 @@ object ServiceLocator {
                 android.util.Log.i("Ottomatic", entry.message)
             },
         )
-        triggerHost = AndroidTriggerHost(appContext, geofencePlaceRepository, sensorBridge, contacts)
+        triggerHost =
+            AndroidTriggerHost(appContext, geofencePlaceRepository, nfcTagRepository, sensorBridge, contacts)
         permissionChecker = AndroidPermissionChecker(appContext)
         // Published for `GraphValidator`, which asks whether a node can actually do
         // its job and runs from paths that can neither suspend nor be injected

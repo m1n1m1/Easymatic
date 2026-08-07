@@ -97,6 +97,7 @@ object PermissionCatalogue {
         special(PrerequisiteType.BATTERY_OPTIMISATION, "battery.optimisation"),
         special(PrerequisiteType.EXACT_ALARM, "alarm.exact"),
         special(PrerequisiteType.WRITE_SETTINGS, "settings.write"),
+        special(PrerequisiteType.NFC, "nfc.radio"),
     )
 }
 

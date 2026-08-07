@@ -62,6 +62,8 @@ import com.example.ottomatic.engine.trigger.GeofenceTrigger
 import com.example.ottomatic.engine.validation.GraphValidation
 import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
+import com.example.ottomatic.feature.nfc.LocalNfcTags
+import com.example.ottomatic.feature.nfc.NfcTagsViewModel
 import com.example.ottomatic.feature.variables.GlobalVariablesViewModel
 import com.example.ottomatic.feature.variables.LocalVariables
 import com.example.ottomatic.feature.workflowlist.LocalMacros
@@ -72,6 +74,7 @@ import kotlin.math.roundToInt
 fun GraphEditorScreen(
     viewModel: GraphEditorViewModel,
     geofencePlaces: GeofencePlacesViewModel,
+    nfcTags: NfcTagsViewModel,
     globalVariables: GlobalVariablesViewModel,
     onBack: () -> Unit,
 ) {
@@ -84,6 +87,7 @@ fun GraphEditorScreen(
     val macros = remember(viewModel) { MacroLibrary(viewModel.macros, viewModel.workflowId) }
     CompositionLocalProvider(
         LocalGeofencePlaces provides geofencePlaces,
+        LocalNfcTags provides nfcTags,
         LocalVariables provides variables,
         LocalMacros provides macros,
     ) {

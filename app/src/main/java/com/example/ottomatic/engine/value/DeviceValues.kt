@@ -115,6 +115,36 @@ class WifiNetworkValue : DeviceValue<String>() {
     override fun readValue(context: ExecutionContext) = context.deviceState.currentWifiNetwork()
 }
 
+/**
+ * `value.nfc` — whether the NFC radio is switched on.
+ *
+ * Two things about this one are exceptions, and both are deliberate.
+ *
+ * It is the only value node with **no trigger counterpart**. The pairing rule runs
+ * the other way — every trigger over a readable state earns a value — and there is
+ * no `trigger.nfc_state` because the platform publishes no adapter-state broadcast
+ * worth arming a macro on. A value with no trigger costs nothing and answers a real
+ * question, so the absence of the other half is not a reason to leave it out.
+ *
+ * It also declares **no permission**, unlike [WifiNetworkValue], and the reason is
+ * sharper than "it does not need one": a node whose entire job is to answer *"is the
+ * radio on?"* must not be badged in the Problems panel for the radio being off. That
+ * is the node working. The prerequisite belongs on `trigger.nfc`, which genuinely
+ * cannot fire without it.
+ */
+class NfcValue : DeviceValue<Boolean>() {
+    override val definition = valueNode<NoConfig, Boolean>(
+        typeId = "value.nfc",
+        displayName = "NFC enabled",
+        description = "Whether NFC is currently switched on",
+        category = NodeCategory.VALUE_CONNECTIVITY,
+        icon = NodeIcon.NFC,
+        output = dataOut("enabled", label = "Enabled"),
+    )
+
+    override fun readValue(context: ExecutionContext) = context.deviceState.isNfcEnabled()
+}
+
 /** `value.bluetooth` — whether Bluetooth is enabled. */
 class BluetoothValue : DeviceValue<Boolean>() {
     override val definition = valueNode<NoConfig, Boolean>(
