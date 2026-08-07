@@ -68,6 +68,7 @@ import com.example.ottomatic.feature.variables.LocalVariables
 import com.example.ottomatic.feature.variables.VariablePickerOverlay
 import com.example.ottomatic.feature.variables.VariableScope
 import com.example.ottomatic.feature.variables.resolve
+import com.example.ottomatic.feature.wifi.WifiNetworkField
 import com.example.ottomatic.feature.workflowlist.LocalMacros
 import com.example.ottomatic.feature.workflowlist.MacroPickerOverlay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -211,6 +212,14 @@ internal fun ConfigFieldEditor(
             }
             ConfigFieldType.PHONE -> {
                 PhoneNumberField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    labelSlot = labelSlot,
+                    colors = colors,
+                )
+            }
+            ConfigFieldType.WIFI_NETWORK -> {
+                WifiNetworkField(
                     value = value,
                     onValueChange = onValueChange,
                     labelSlot = labelSlot,

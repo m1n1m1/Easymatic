@@ -62,6 +62,18 @@ sealed interface ConfigFieldType<out T> {
      */
     data object TIME_OF_DAY : ConfigFieldType<String>
 
+    /**
+     * A Wi-Fi network name, rendered as a text field with a button that lists the
+     * networks in range (declared with `@WifiNetwork`).
+     *
+     * The third of the editable-with-a-chooser fields, and it earns that shape more
+     * plainly than the other two: the network somebody is automating for is usually
+     * not the one they are standing next to, so a read-only picker could not express
+     * the commonest case. Blank means any network. Read through
+     * [com.example.ottomatic.domain.model.WifiSsid].
+     */
+    data object WIFI_NETWORK : ConfigFieldType<String>
+
     /** One of [options], stored as the option's [ConfigOption.value]. */
     data class ENUM(val options: List<ConfigOption>) : ConfigFieldType<String>
 

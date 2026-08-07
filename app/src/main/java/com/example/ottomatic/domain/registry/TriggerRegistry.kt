@@ -33,6 +33,7 @@ object TriggerRegistry {
         add(com.example.ottomatic.engine.trigger.VariableChangeTrigger())
         // Tier 1 — broadcast-receiver triggers.
         add(com.example.ottomatic.engine.trigger.WifiStateTrigger())
+        add(com.example.ottomatic.engine.trigger.WifiNetworkTrigger())
         add(com.example.ottomatic.engine.trigger.BluetoothTrigger())
         add(com.example.ottomatic.engine.trigger.BluetoothConnectTrigger())
         add(com.example.ottomatic.engine.trigger.AirplaneModeTrigger())

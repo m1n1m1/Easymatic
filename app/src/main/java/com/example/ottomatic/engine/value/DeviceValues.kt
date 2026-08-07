@@ -1,5 +1,8 @@
 package com.example.ottomatic.engine.value
 
+import com.example.ottomatic.core.permissions.PermissionRequirement
+import com.example.ottomatic.core.permissions.Permissions
+import com.example.ottomatic.core.permissions.PrerequisiteType
 import com.example.ottomatic.core.service.RingerMode
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
@@ -77,6 +80,39 @@ class WifiValue : DeviceValue<Boolean>() {
     )
 
     override fun readValue(context: ExecutionContext) = context.deviceState.isWifiEnabled()
+}
+
+/**
+ * `value.wifi_network` — the name of the Wi-Fi network currently joined.
+ *
+ * The one value node that declares a permission, and the reason the contract was
+ * written to allow it: naming a network needs `ACCESS_FINE_LOCATION`, but the read is
+ * otherwise exactly as cheap and repeatable as [BatteryLevelValue]'s. Declaring the
+ * grant is what puts the node in the Problems panel and the Permissions screen when
+ * it has not been given — undeclared, it would simply read null forever with nothing
+ * anywhere saying why.
+ *
+ * Reads null both when the device is off Wi-Fi and when the platform withholds the
+ * name, so a comparison over it fails closed either way.
+ */
+class WifiNetworkValue : DeviceValue<String>() {
+    override val definition = valueNode<NoConfig, String>(
+        typeId = "value.wifi_network",
+        displayName = "Wi-Fi network",
+        description = "The name of the Wi-Fi network the device is currently connected to",
+        category = NodeCategory.VALUE_CONNECTIVITY,
+        icon = NodeIcon.WIFI,
+        output = dataOut("ssid", label = "Network"),
+        permissions = listOf(
+            PermissionRequirement(
+                manifestPermission = Permissions.ACCESS_FINE_LOCATION.manifest,
+                type = PrerequisiteType.RUNTIME,
+                rationaleKey = "wifi.network",
+            ),
+        ),
+    )
+
+    override fun readValue(context: ExecutionContext) = context.deviceState.currentWifiNetwork()
 }
 
 /** `value.bluetooth` — whether Bluetooth is enabled. */

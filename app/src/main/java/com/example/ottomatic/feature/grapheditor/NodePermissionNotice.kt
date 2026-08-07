@@ -109,13 +109,16 @@ private fun RuntimePermissionNotice(definition: NodeTypeDefinition?) {
     val permissionState = rememberPermissionState(required)
     if (permissionState.allGranted) return
 
-    // An action does not "fire"; it runs and fails. The card was written when only
-    // triggers could declare a permission, and one false sentence on three nodes is
-    // worth one `when`.
-    val consequence = if (definition?.kind == NodeKind.TRIGGER) {
-        "will never fire"
-    } else {
-        "will fail every time it runs"
+    // Three different things happen, so three sentences. The card was written when
+    // only triggers could declare a permission; an action does not "fire", it runs
+    // and fails, and a value does neither — it is *read*, answers nothing, and lets
+    // whatever asked fall back to its own form value. Telling somebody their value
+    // node "will fail every time it runs" would send them looking for an error that
+    // is never going to appear in the console.
+    val consequence = when (definition?.kind) {
+        NodeKind.TRIGGER -> "will never fire"
+        NodeKind.VALUE -> "will read as nothing"
+        else -> "will fail every time it runs"
     }
     NoticeCard(
         message = "This node $consequence until you grant " +

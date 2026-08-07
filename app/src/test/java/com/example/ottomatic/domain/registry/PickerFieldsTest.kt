@@ -68,6 +68,16 @@ class PickerFieldsTest {
         assertEquals(ConfigFieldType.TIME_OF_DAY, fieldType("trigger.schedule", "windowUntil"))
     }
 
+    /**
+     * The third editable-with-a-chooser field, and the one whose editability is least
+     * negotiable: the network somebody is automating for is usually not the one they
+     * are standing next to, so this must never quietly become a `PICKER`.
+     */
+    @Test
+    fun `a network is typed with a scan beside it rather than picked from one`() {
+        assertEquals(ConfigFieldType.WIFI_NETWORK, fieldType("trigger.wifi_network", "ssid"))
+    }
+
     @Test
     fun `macro ref keys are derived from the schema`() {
         assertEquals(

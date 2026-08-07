@@ -155,6 +155,32 @@ annotation class PhoneNumber
 annotation class TimeOfDay
 
 /**
+ * Renders the `String` property as a Wi-Fi network name: a text field the user can
+ * type into, with a button beside it that lists the networks currently in range.
+ *
+ * Editable rather than a [Picker], and the reason is the one thing a scan cannot do:
+ * the network somebody is automating for is usually **not** the one they are standing
+ * next to. "When I connect to my office Wi-Fi" is configured at home, where the office
+ * network cannot be scanned — a read-only field would make the commonest case
+ * unreachable. Scanning also needs a location grant, so a picker would additionally
+ * make a *denied* permission mean the field can never be set at all, rather than
+ * merely unassisted.
+ *
+ * That puts it with [PhoneNumber] and [TimeOfDay] rather than with [Picker]: a
+ * picker's option set *is* the answer set, and here the scan is only a suggestion.
+ * The stored value is the SSID itself, so blank means **any network** — which is what
+ * the chooser's "Any network" row writes.
+ *
+ * Read through [com.example.ottomatic.domain.model.WifiSsid], the same reading the
+ * trigger and the value node use, so the chooser and the matcher cannot disagree
+ * about what was written.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class WifiNetwork
+
+/**
  * Renders the `String` property as an editor for a list of **output ports** —
  * a name and a type per row — rather than as a text field.
  *

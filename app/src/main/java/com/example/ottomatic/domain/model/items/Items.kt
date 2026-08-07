@@ -160,6 +160,26 @@ data class GeofenceEvent(
 )
 
 /**
+ * A Wi-Fi network being joined or left, reported by `trigger.wifi_network` on its
+ * `network` data port.
+ *
+ * - [event]: discriminator — `"connected"` or `"disconnected"`.
+ * - [ssid]: the network's name. A **named field rather than a `SystemState.detail`**,
+ *   because the whole point of this trigger is what you do with the name: it goes
+ *   straight into a notification template or an `action.if`, and `detail` would make
+ *   that an untyped string alongside a stringly event.
+ *   Blank when Android would not name the network — see
+ *   [com.example.ottomatic.domain.model.WifiSsid].
+ * - [timestamp]: when the transition was produced.
+ */
+@Serializable
+data class WifiNetworkEvent(
+    val event: String,
+    val ssid: String = "",
+    val timestamp: DateTime,
+)
+
+/**
  * A variable change reported by `trigger.variable_change` on its `variable` data port.
  *
  * - [name]: the variable name.

@@ -237,10 +237,19 @@ class NodeDeclarationContractTest {
      * A value node is read *outside* the execution order — with no pulse, at a moment
      * decided by whoever consumes it. That is only sound while a read is cheap,
      * repeatable and cannot fail loudly, so the shape that guarantees it is enforced
-     * here rather than left to convention: no exec ports (nothing to sequence), no
-     * data inputs (a leaf, so no recursive resolution), and no permission
-     * requirements (nothing that could prompt mid-read). Anything expensive or
-     * failable belongs in an action, where it has a place in the exec chain.
+     * here rather than left to convention: no exec ports (nothing to sequence) and no
+     * data inputs (a leaf, so no recursive resolution). Anything expensive or failable
+     * belongs in an action, where it has a place in the exec chain.
+     *
+     * A **permission is deliberately not on that list**, though it used to be. The
+     * contract is about ports and effects, and a grant is neither: `value.wifi_network`
+     * needs `ACCESS_FINE_LOCATION` to name a network and is otherwise exactly as cheap
+     * and repeatable as `value.battery`. Forbidding the declaration did not make such a
+     * read safe, it only made it *silent* — the node returned null forever and neither
+     * the Problems panel nor the Permissions screen, both of which walk node
+     * declarations, had anything to say about why. What a value still may not do is
+     * fail loudly: a missing grant has to come back as null so the consumer falls back,
+     * which is a property of the reader and not something a port count can check.
      */
     @Test
     fun `every value is a pure leaf with exactly one data output`() {
@@ -258,10 +267,6 @@ class NodeDeclarationContractTest {
                 "${value.typeId}: a value must expose exactly one data output",
                 1,
                 ports.count { it.kind == PortKind.DATA && it.direction == Direction.OUT },
-            )
-            assertTrue(
-                "${value.typeId}: a value must not require a permission — a read cannot prompt",
-                value.definition.nodeType.permissionRequirements.isEmpty(),
             )
         }
     }

@@ -16,6 +16,7 @@ import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.Ports
 import com.example.ottomatic.domain.model.config.TimeOfDay
 import com.example.ottomatic.domain.model.config.VisibleWhen
+import com.example.ottomatic.domain.model.config.WifiNetwork
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.model.schema.Item
@@ -137,6 +138,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                         ports = annotations.any { it is Ports },
                         phone = annotations.any { it is PhoneNumber },
                         timeOfDay = annotations.any { it is TimeOfDay },
+                        wifi = annotations.any { it is WifiNetwork },
                         key = key,
                     ),
                     defaultValue = defaultValues[key].orEmpty(),
@@ -160,22 +162,23 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         ports: Boolean,
         phone: Boolean,
         timeOfDay: Boolean,
+        wifi: Boolean,
         key: String,
     ): ConfigFieldType<*> {
         // A DateTime reports `STRING`, so it has to be recognised by name before the
         // kind is consulted or it renders as a plain text field.
         if (element.serialName == DateTime.SERIAL_NAME) {
-            check(picker == null && !ports && !phone && !timeOfDay) {
+            check(picker == null && !ports && !phone && !timeOfDay && !wifi) {
                 "Config property '${descriptor.serialName}.$key' is annotated with a widget but is a date; " +
                     "dates have their own picker, so the annotation is redundant"
             }
             return ConfigFieldType.DATE_TIME
         }
-        checkWidgetAnnotations(element, picker, ports, phone, timeOfDay, key)
+        checkWidgetAnnotations(element, picker, ports, phone, timeOfDay, wifi, key)
         return when (element.kind) {
             SerialKind.ENUM -> ConfigFieldType.ENUM(enumOptions(element))
             PrimitiveKind.STRING, PrimitiveKind.CHAR ->
-                stringFormType(multiline, picker, ports, phone, timeOfDay)
+                stringFormType(multiline, picker, ports, phone, timeOfDay, wifi)
             PrimitiveKind.INT, PrimitiveKind.LONG, PrimitiveKind.SHORT, PrimitiveKind.BYTE -> ConfigFieldType.INT
             PrimitiveKind.BOOLEAN -> ConfigFieldType.BOOL
             PrimitiveKind.DOUBLE, PrimitiveKind.FLOAT -> ConfigFieldType.DOUBLE
@@ -201,11 +204,13 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         ports: Boolean,
         phone: Boolean,
         timeOfDay: Boolean,
+        wifi: Boolean,
     ): ConfigFieldType<String> = when {
         ports -> ConfigFieldType.PORT_LIST
         picker != null -> ConfigFieldType.PICKER(picker)
         phone -> ConfigFieldType.PHONE
         timeOfDay -> ConfigFieldType.TIME_OF_DAY
+        wifi -> ConfigFieldType.WIFI_NETWORK
         multiline -> ConfigFieldType.MULTILINE
         else -> ConfigFieldType.STR
     }
@@ -223,6 +228,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         ports: Boolean,
         phone: Boolean,
         timeOfDay: Boolean,
+        wifi: Boolean,
         key: String,
     ) {
         check(picker == null || element.kind == PrimitiveKind.STRING) {
@@ -241,10 +247,14 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             "Config property '${descriptor.serialName}.$key' is annotated @TimeOfDay but is a " +
                 "${element.kind}; a time of day is persisted as 'HH:mm', so it must be a String"
         }
-        val widgets = listOf(picker != null, ports, phone, timeOfDay).count { it }
+        check(!wifi || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @WifiNetwork but is a " +
+                "${element.kind}; a network field stores an SSID, so it must be a String"
+        }
+        val widgets = listOf(picker != null, ports, phone, timeOfDay, wifi).count { it }
         check(widgets <= 1) {
             "Config property '${descriptor.serialName}.$key' is annotated with $widgets widgets " +
-                "(@Picker, @Ports, @PhoneNumber, @TimeOfDay); a property has one editor"
+                "(@Picker, @Ports, @PhoneNumber, @TimeOfDay, @WifiNetwork); a property has one editor"
         }
     }
 

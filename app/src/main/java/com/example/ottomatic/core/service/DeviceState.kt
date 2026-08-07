@@ -21,6 +21,18 @@ interface DeviceState {
     /** Whether Wi-Fi is enabled. */
     fun isWifiEnabled(): Boolean?
 
+    /**
+     * The name of the Wi-Fi network currently joined, or null when the device is not
+     * on Wi-Fi **or** the platform would not disclose the name.
+     *
+     * The two collapse into one answer on purpose: naming a network needs
+     * `ACCESS_FINE_LOCATION`, and without it the platform reports a placeholder
+     * rather than an error. Null for both keeps the "an unknowable state is not a
+     * passing one" rule that every other reader here follows — the node that
+     * *declares* the grant is where the missing permission gets said out loud.
+     */
+    fun currentWifiNetwork(): String?
+
     /** Whether Bluetooth is enabled. */
     fun isBluetoothEnabled(): Boolean?
 
@@ -63,6 +75,7 @@ interface DeviceState {
 @Suppress("TooManyFunctions") // Mirrors the DeviceState facade.
 object UnknownDeviceState : DeviceState {
     override fun isWifiEnabled(): Boolean? = null
+    override fun currentWifiNetwork(): String? = null
     override fun isBluetoothEnabled(): Boolean? = null
     override fun isAirplaneMode(): Boolean? = null
     override fun isCharging(): Boolean? = null

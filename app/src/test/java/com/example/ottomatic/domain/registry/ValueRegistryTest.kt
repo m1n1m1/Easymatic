@@ -158,6 +158,26 @@ class ValueRegistryTest {
         )
     }
 
+    /**
+     * `value.wifi_network` is the first value node whose answer is *text*, so it is
+     * the first to exercise the fall-through in `literalTypeFor`. Nothing had to be
+     * added for it — which is exactly the sort of claim worth a test, because the
+     * failure would be a comparison offering a decimal field for a network name.
+     */
+    @Test
+    fun `a text value source gets a text literal and something to compare with`() {
+        val schema = schemaOf(ifNode(ValueSource.valueSpec(NodeTypeId("value.wifi_network"))))
+
+        val operators = (schema.fields.single { it.key == IF_OPERATOR_KEY }.type as ConfigFieldType.ENUM)
+            .options.map { it.value }
+        assertTrue("a text source must offer at least equality, got $operators", operators.isNotEmpty())
+        assertTrue(operators.contains(ComparisonOperator.EQUALS.name))
+        assertEquals(
+            ConfigFieldType.STR,
+            schema.fields.single { it.key == ConfigKey(IF_VALUE_IN.value) }.type,
+        )
+    }
+
     /** A placed `action.if` reading [source], with nothing wired into it. */
     private fun ifNode(source: String = ValueSource.WIRED_SPEC) = WorkflowNode(
         NodeId("if"), IF_TYPE_ID, "If", 0f, 0f,

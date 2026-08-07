@@ -13,6 +13,7 @@ import android.os.PowerManager
 import android.provider.Settings
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.RingerMode
+import com.example.ottomatic.domain.model.WifiSsid
 
 /**
  * Android-backed implementation of [DeviceState].
@@ -28,6 +29,23 @@ class AndroidDeviceState(private val context: Context) : DeviceState {
     override fun isWifiEnabled(): Boolean? = runCatching {
         val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         wifiManager.isWifiEnabled
+    }.getOrNull()
+
+    /**
+     * `getConnectionInfo()` is deprecated from API 31 in favour of pulling a
+     * `WifiInfo` off a `NetworkCapabilities`, but that route needs a registered
+     * network callback and a `Network` to ask about — machinery for watching
+     * *changes*, which is [com.example.ottomatic.data.trigger.WifiNetworkBridge]'s
+     * job. This is a synchronous "what is it right now?", the deprecated call still
+     * answers it on every supported version, and going through the callback API for
+     * a one-shot read would mean registering and tearing down a callback per pull.
+     */
+    @Suppress("DEPRECATION")
+    override fun currentWifiNetwork(): String? = runCatching {
+        val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        // Blank covers both "not on Wi-Fi" and "not allowed to say", which is one
+        // answer to the consumer either way: nothing to compare against.
+        WifiSsid.normalise(wifiManager.connectionInfo?.ssid).takeIf { it.isNotBlank() }
     }.getOrNull()
 
     override fun isBluetoothEnabled(): Boolean? = runCatching {

@@ -141,9 +141,19 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
  * `action.if` source with no edge drawn to it (see
  * [com.example.ottomatic.domain.model.ValueSource]).
  *
- * Purity is a contract, not a convention: `NodeDeclarationContractTest` asserts
- * that every value node declares no exec ports, no DATA inputs and no permission
- * requirements. Anything expensive, failable or side-effecting is an action.
+ * Purity is a contract, not a convention: `NodeDeclarationContractTest` asserts that
+ * every value node declares no exec ports and no DATA inputs. Anything expensive,
+ * failable or side-effecting is an action.
+ *
+ * A value **may** declare [permissions], and that is not a hole in the contract —
+ * the contract is about ports and effects, not about grants. A grant does not make a
+ * read expensive or repeat-unsafe; `value.wifi_network` needs `ACCESS_FINE_LOCATION`
+ * to name a network and is otherwise as cheap as `value.battery`. Declaring it is
+ * what makes the missing grant *visible*: the Problems panel, the Permissions screen
+ * and the node's own card all walk these declarations, so a value that stayed silent
+ * about its grant would read null forever with nothing anywhere saying why. What a
+ * grant does not buy is permission to fail loudly — a read must still answer null and
+ * let the consumer fall back.
  *
  * [outputPort] is the declared port and [output] the encoder, split for the reason
  * [TransformNodeDefinition] splits them: a value whose *type* comes from its own
@@ -162,6 +172,7 @@ class ValueNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor(
     val outputPort: Port,
     @PublishedApi internal val output: DataOut<O>?,
     val hasDynamicPorts: Boolean,
+    val permissions: List<PermissionRequirement> = emptyList(),
 ) {
     /** Static metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
     val nodeType: NodeTypeDefinition
@@ -174,6 +185,7 @@ class ValueNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor(
             ports = listOf(outputPort),
             icon = icon,
             hasDynamicPorts = hasDynamicPorts,
+            permissionRequirements = permissions,
         )
 
     /** Static config-form view for [com.example.ottomatic.domain.registry.ConfigSchemaRegistry]. */
@@ -336,6 +348,10 @@ inline fun <reified C : Any> adaptiveTransformNode(
  * Unlike an action or a trigger, a value node takes no [Port] arguments — its one
  * port is [output], and declaring a DATA input (via a `@Wired` config property)
  * is a contract violation because a value node is a leaf.
+ *
+ * [permissions] is for the read that the *platform* gates — see
+ * [ValueNodeDefinition] for why that does not break purity. A value that declares
+ * one must still answer null when the grant is missing rather than throwing.
  */
 @Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
 inline fun <reified C : Any, O : Any> valueNode(
@@ -345,6 +361,7 @@ inline fun <reified C : Any, O : Any> valueNode(
     category: NodeCategory,
     icon: NodeIcon,
     output: DataOut<O>,
+    permissions: List<PermissionRequirement> = emptyList(),
 ): ValueNodeDefinition<C, O> = ValueNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -355,6 +372,7 @@ inline fun <reified C : Any, O : Any> valueNode(
     outputPort = output.port,
     output = output,
     hasDynamicPorts = false,
+    permissions = permissions,
 )
 
 /**

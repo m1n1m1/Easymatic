@@ -74,6 +74,12 @@ class AndroidTriggerHost(
     @Suppress("UnusedPrivateProperty") // Kept alive so its receiver stays registered.
     private val screenBridge = ScreenBroadcastBridge(appContext)
 
+    // Registered here rather than per-arm so its first observation lands while
+    // nothing is collecting: a NetworkCallback replays the current network on
+    // registration, and that replay must be absorbed rather than reported.
+    @Suppress("UnusedPrivateProperty") // Kept alive so its callback stays registered.
+    private val wifiNetworkBridge = WifiNetworkBridge(appContext)
+
     override fun sensorSamples(kind: SensorKind, rate: SensorRate): Flow<SensorSample> =
         sensorBridge.samples(kind, rate)
 
