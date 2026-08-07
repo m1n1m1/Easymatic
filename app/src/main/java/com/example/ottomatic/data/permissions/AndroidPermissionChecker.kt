@@ -1,10 +1,13 @@
 package com.example.ottomatic.data.permissions
 
 import android.app.Activity
+import android.app.AlarmManager
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
@@ -31,23 +34,16 @@ class AndroidPermissionChecker(
     private val activity: Activity? = null,
 ) : PermissionChecker {
 
-    override fun status(permission: Permission): PermissionStatus {
-        if (permission == Permissions.ACCESS_NOTIFICATION_POLICY) {
-            return dndPolicyStatus()
-        }
-        val granted = ContextCompat.checkSelfPermission(
-            context,
-            permission.manifest,
-        ) == PackageManager.PERMISSION_GRANTED
-        return if (granted) {
-            PermissionStatus.Granted
-        } else {
-            PermissionStatus.Denied(
-                showRationale = activity?.let {
-                    ActivityCompat.shouldShowRequestPermissionRationale(it, permission.manifest)
-                } ?: false,
-            )
-        }
+    override fun status(permission: Permission): PermissionStatus = when {
+        permission == Permissions.ACCESS_NOTIFICATION_POLICY -> dndPolicyStatus()
+        !permission.existsOnThisApi() -> PermissionStatus.Granted
+        ContextCompat.checkSelfPermission(context, permission.manifest) ==
+            PackageManager.PERMISSION_GRANTED -> PermissionStatus.Granted
+        else -> PermissionStatus.Denied(
+            showRationale = activity?.let {
+                ActivityCompat.shouldShowRequestPermissionRationale(it, permission.manifest)
+            } ?: false,
+        )
     }
 
     /**
@@ -61,10 +57,24 @@ class AndroidPermissionChecker(
             NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
         PrerequisiteType.ACCESSIBILITY_SERVICE -> isAccessibilityServiceEnabled()
         PrerequisiteType.OVERLAY -> Settings.canDrawOverlays(context)
+        PrerequisiteType.BATTERY_OPTIMISATION -> isIgnoringBatteryOptimizations()
+        // Below API 31 an exact alarm needs no permission at all, so there is
+        // nothing to grant and "satisfied" is the truth rather than a guess.
+        PrerequisiteType.EXACT_ALARM ->
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager().canScheduleExactAlarms()
+        PrerequisiteType.WRITE_SETTINGS -> Settings.System.canWrite(context)
         // Neither is declared by any node; reporting them unsatisfied keeps the
         // safe default rather than claiming something unverified is working.
         PrerequisiteType.FOREGROUND_SERVICE, PrerequisiteType.DEVICE_ADMIN -> false
     }
+
+    private fun isIgnoringBatteryOptimizations(): Boolean {
+        val power = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        return power.isIgnoringBatteryOptimizations(context.packageName)
+    }
+
+    private fun alarmManager(): AlarmManager =
+        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     /**
      * Whether *our* accessibility service is among the enabled ones.
@@ -97,6 +107,24 @@ class AndroidPermissionChecker(
         } else {
             PermissionStatus.Denied(showRationale = false)
         }
+    }
+
+    /**
+     * Whether this permission is a thing the platform knows about at all on the
+     * version we are running.
+     *
+     * `checkSelfPermission` answers DENIED for a name the platform has never
+     * heard of, which is indistinguishable from a refusal — so on API 30 a
+     * `BLUETOOTH_CONNECT` check reads as "the user said no" when in fact the
+     * install-time `BLUETOOTH` is what applies and everything works. Reporting
+     * *granted* is the honest answer: there is nothing here to grant. Both
+     * callers that would otherwise be misled — the permissions screen and the
+     * node card — are about telling the user what to fix.
+     */
+    private fun Permission.existsOnThisApi(): Boolean = when (this) {
+        Permissions.POST_NOTIFICATIONS -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+        Permissions.BLUETOOTH_CONNECT -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        else -> true
     }
 
     companion object {

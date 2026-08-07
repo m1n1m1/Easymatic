@@ -28,6 +28,7 @@ import android.telephony.SmsManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import com.example.ottomatic.core.permissions.Permissions
 import com.example.ottomatic.core.service.AudioStream
 import com.example.ottomatic.core.service.AutoRotateResult
 import com.example.ottomatic.core.service.BluetoothResult
@@ -187,7 +188,7 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
             ?: return@runCatching null
         val adapter = bm.adapter ?: return@runCatching null
         val perm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            android.Manifest.permission.BLUETOOTH_CONNECT
+            Permissions.BLUETOOTH_CONNECT.manifest
         } else {
             android.Manifest.permission.BLUETOOTH
         }

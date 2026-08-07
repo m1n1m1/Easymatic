@@ -34,6 +34,14 @@ object Permissions {
     val ACCESS_BACKGROUND_LOCATION = Permission("android.permission.ACCESS_BACKGROUND_LOCATION")
 
     /**
+     * Talking to the Bluetooth adapter, from API 31. Below that the platform does
+     * not know the name at all and `BLUETOOTH` — an install-time permission — is
+     * what applies, so a check against this one answers *denied* on an older
+     * phone where nothing is actually wrong. See `AndroidSystemServices.setBluetooth`.
+     */
+    val BLUETOOTH_CONNECT = Permission("android.permission.BLUETOOTH_CONNECT")
+
+    /**
      * Do-Not-Disturb policy access. Not a standard runtime permission — the
      * user must grant it on the `ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS`
      * page (see `MainActivity.requestDndPermissionIfNeeded`). The

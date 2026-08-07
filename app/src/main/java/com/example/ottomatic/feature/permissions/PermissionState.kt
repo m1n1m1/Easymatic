@@ -111,7 +111,11 @@ private fun Permission.isGranted(context: Context): Boolean =
  * True for permissions the system refuses to grant alongside others — currently
  * only background location, which must be requested on its own, after
  * foreground location has been granted.
+ *
+ * `internal` so the permissions screen, which drives its own launcher rather
+ * than a [PermissionState] per row, shares this one definition of the rule
+ * instead of restating it.
  */
-private fun Permission.isDeferred(): Boolean =
+internal fun Permission.isDeferred(): Boolean =
     Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
         manifest == android.Manifest.permission.ACCESS_BACKGROUND_LOCATION

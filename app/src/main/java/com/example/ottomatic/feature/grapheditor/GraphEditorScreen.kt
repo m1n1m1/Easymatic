@@ -74,9 +74,6 @@ fun GraphEditorScreen(
     geofencePlaces: GeofencePlacesViewModel,
     globalVariables: GlobalVariablesViewModel,
     onBack: () -> Unit,
-    showBatteryPrompt: Boolean = false,
-    onDismissBatteryPrompt: () -> Unit = {},
-    onConfirmBatteryPrompt: () -> Unit = {},
 ) {
     // Published rather than passed down: the `@Picker` config fields and the node
     // cards need these libraries, and none of them is reachable from here without
@@ -90,24 +87,12 @@ fun GraphEditorScreen(
         LocalVariables provides variables,
         LocalMacros provides macros,
     ) {
-        GraphEditorContent(
-            viewModel = viewModel,
-            onBack = onBack,
-            showBatteryPrompt = showBatteryPrompt,
-            onDismissBatteryPrompt = onDismissBatteryPrompt,
-            onConfirmBatteryPrompt = onConfirmBatteryPrompt,
-        )
+        GraphEditorContent(viewModel = viewModel, onBack = onBack)
     }
 }
 
 @Composable
-private fun GraphEditorContent(
-    viewModel: GraphEditorViewModel,
-    onBack: () -> Unit,
-    showBatteryPrompt: Boolean,
-    onDismissBatteryPrompt: () -> Unit,
-    onConfirmBatteryPrompt: () -> Unit,
-) {
+private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
     val density = LocalDensity.current.density
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
@@ -272,31 +257,6 @@ private fun GraphEditorContent(
         }
     }
 
-    if (showBatteryPrompt) {
-        androidx.compose.material3.AlertDialog(
-            onDismissRequest = onDismissBatteryPrompt,
-            title = { Text("Disable battery optimisation") },
-            text = {
-                Text(
-                    "Ottomatic couldn't resume your macros in the background after the last reboot. " +
-                        "To keep automation running without intervention, allow Ottomatic to run " +
-                        "without battery restrictions.",
-                    color = EditorColors.textPrimary,
-                    fontSize = 14.sp,
-                )
-            },
-            confirmButton = {
-                androidx.compose.material3.TextButton(onClick = onConfirmBatteryPrompt) {
-                    Text("Allow")
-                }
-            },
-            dismissButton = {
-                androidx.compose.material3.TextButton(onClick = onDismissBatteryPrompt) {
-                    Text("Not now")
-                }
-            },
-        )
-    }
 }
 
 /**

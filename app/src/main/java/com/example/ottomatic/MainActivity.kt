@@ -27,6 +27,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.ottomatic.core.permissions.PermissionStatus
 import com.example.ottomatic.core.permissions.Permissions
+import com.example.ottomatic.core.permissions.PrerequisiteType
 import com.example.ottomatic.data.BootFailureStore
 import com.example.ottomatic.data.location.AndroidLocationLookup
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
@@ -37,6 +38,8 @@ import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
 import com.example.ottomatic.feature.grapheditor.GraphEditorScreen
 import com.example.ottomatic.feature.grapheditor.GraphEditorViewModel
 import com.example.ottomatic.feature.variables.GlobalVariablesScreen
+import com.example.ottomatic.feature.permissions.BatteryOptimisationDialog
+import com.example.ottomatic.feature.permissions.PermissionsScreen
 import com.example.ottomatic.feature.variables.GlobalVariablesViewModel
 import com.example.ottomatic.feature.workflowlist.WorkflowListScreen
 import com.example.ottomatic.feature.workflowlist.WorkflowListViewModel
@@ -107,9 +110,19 @@ class MainActivity : ComponentActivity() {
             // page and returns. They can always re-open it via the DND node.
         }
 
+    // The result code is meaningless here — the dialog reports RESULT_CANCELED
+    // whichever button was pressed — so the only way to know what happened is to
+    // read the exemption back.
     private val requestIgnoreBatteryOptimizations =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
-            // Result is ignored; the user grants or denies in the system dialog.
+            if (isBatteryExempt()) {
+                // It took. Bring the engine up now so this session matches what the
+                // next reboot will manage on its own.
+                MacroEngineService.start(this, MacroEngineService.ACTION_REARM_ALL)
+            }
+            // If it did not, the user declined, and pushing them somewhere else
+            // would be arguing with an answer they just gave. The Permissions
+            // screen is there whenever they change their mind.
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -149,8 +162,8 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * The app's four destinations: workflow list, geofence library, global
-     * variable library, graph editor.
+     * The app's five destinations: workflow list, geofence library, global
+     * variable library, permissions, graph editor.
      */
     /**
      * "New macro" taps that arrived while the app was already open.
@@ -195,6 +208,7 @@ class MainActivity : ComponentActivity() {
                     onOpenWorkflow = { id -> navController.navigate("$ROUTE_GRAPH_EDITOR/$id") },
                     onOpenGeofences = { navController.navigate(ROUTE_GEOFENCES) },
                     onOpenVariables = { navController.navigate(ROUTE_VARIABLES) },
+                    onOpenPermissions = { navController.navigate(ROUTE_PERMISSIONS) },
                 )
             }
             composable(ROUTE_GEOFENCES) {
@@ -206,6 +220,16 @@ class MainActivity : ComponentActivity() {
             composable(ROUTE_VARIABLES) {
                 GlobalVariablesScreen(
                     viewModel = globalVariablesViewModel,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(ROUTE_PERMISSIONS) {
+                // No ViewModel: the state is a handful of synchronous platform
+                // reads that have to be taken again on every resume anyway, which
+                // is the one thing a StateFlow would not give for free. The
+                // checker is passed in so the screen needs no import from `data`.
+                PermissionsScreen(
+                    checker = ServiceLocator.permissionChecker,
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -244,14 +268,23 @@ class MainActivity : ComponentActivity() {
                     geofencePlaces = geofencePlacesViewModel,
                     globalVariables = globalVariablesViewModel,
                     onBack = { navController.popBackStack() },
-                    showBatteryPrompt = showBatteryPrompt,
-                    onDismissBatteryPrompt = { showBatteryPrompt = false },
-                    onConfirmBatteryPrompt = {
-                        showBatteryPrompt = false
-                        requestBatteryOptimizationExemption()
-                    },
                 )
             }
+        }
+
+        // Outside the NavHost, because it is about the app rather than about
+        // whichever destination happens to be showing. Inside the editor it could
+        // only appear once the user opened a macro — which is both later than the
+        // prompt was raised and somewhere that implied opening that macro had
+        // caused it.
+        if (showBatteryPrompt) {
+            BatteryOptimisationDialog(
+                onDismiss = { showBatteryPrompt = false },
+                onConfirm = {
+                    showBatteryPrompt = false
+                    requestBatteryOptimizationExemption()
+                },
+            )
         }
     }
 
@@ -264,27 +297,61 @@ class MainActivity : ComponentActivity() {
         // types declare.
         GrantedPrerequisites.hydrateFrom(ServiceLocator.permissionChecker)
         // Surface the battery-optimisation prompt only when a background start
-        // actually failed AND at least one macro is armed (no point prompting if
-        // nothing is enabled). Consume the flag so it shows at most once per
-        // failure. Also reached when the user taps the BootFailureNotifier.
+        // actually failed, at least one macro is enabled (no point prompting about
+        // a failure to arm nothing), AND the exemption is not already in hand.
+        //
+        // That last condition is the one that was missing. The flag says only that
+        // a boot start failed, which on Android 12+ and restricted OEM builds it
+        // can do for reasons battery optimisation has nothing to do with — and it
+        // is set again on every reboot. So an app that already had the exemption
+        // was told to go and grant it, over and over, with the popup landing in
+        // the editor because that was the only screen that drew it.
+        //
+        // Assigned rather than only set true, so a prompt raised while the answer
+        // was still "no" is taken down again once it is "yes".
         lifecycleScope.launch {
             val needsPrompt = BootFailureStore.consume(this@MainActivity)
-            if (needsPrompt && ServiceLocator.workflowRepository.list().any { it.enabled }) {
-                showBatteryPrompt = true
+            showBatteryPrompt = needsPrompt &&
+                !isBatteryExempt() &&
+                ServiceLocator.workflowRepository.list().any { it.enabled }
+        }
+    }
+
+    /**
+     * Asks the system for the exemption, and makes sure the ask is one that can
+     * actually be answered.
+     *
+     * The short-circuit is the load-bearing part: launching
+     * `ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` when the app is *already*
+     * exempt shows a dialog that grants nothing, or on some builds no dialog at
+     * all, so "Allow" appeared to do nothing and the prompt came back. It should
+     * never get this far now — [showBatteryPrompt] is gated on the same read —
+     * but the button must not lie either way.
+     *
+     * The fallback covers the other way the ask can fail to appear: the activity
+     * is optional, and a build without it used to throw straight out of
+     * `launch()`. That is the one case where sending the user to the list page is
+     * right, because they have not declined anything yet.
+     */
+    private fun requestBatteryOptimizationExemption() {
+        if (isBatteryExempt()) {
+            MacroEngineService.start(this, MacroEngineService.ACTION_REARM_ALL)
+            return
+        }
+        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+            data = "package:$packageName".toUri()
+        }
+        runCatching { requestIgnoreBatteryOptimizations.launch(intent) }.onFailure {
+            runCatching {
+                startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
             }
         }
     }
 
-    private fun requestBatteryOptimizationExemption() {
-        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-            data = "package:$packageName".toUri()
-        }
-        requestIgnoreBatteryOptimizations.launch(intent)
-        // We are now in the foreground, so this session's re-arm will succeed
-        // regardless of the exemption outcome. The exemption above helps the
-        // *next* reboot succeed without intervention.
-        MacroEngineService.start(this, MacroEngineService.ACTION_REARM_ALL)
-    }
+    /** Whether the app is currently exempt from battery optimisation. */
+    private fun isBatteryExempt(): Boolean =
+        ServiceLocator.permissionChecker
+            .isPrerequisiteSatisfied(PrerequisiteType.BATTERY_OPTIMISATION)
 
     private fun requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
@@ -335,6 +402,7 @@ class MainActivity : ComponentActivity() {
         private const val ROUTE_GRAPH_EDITOR = "graphEditor"
         private const val ROUTE_GEOFENCES = "geofences"
         private const val ROUTE_VARIABLES = "variables"
+        private const val ROUTE_PERMISSIONS = "permissions"
         private const val ARG_WORKFLOW_ID = "workflowId"
     }
 }

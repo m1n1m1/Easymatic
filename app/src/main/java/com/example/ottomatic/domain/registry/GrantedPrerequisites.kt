@@ -2,9 +2,7 @@ package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.core.permissions.PermissionChecker
 import com.example.ottomatic.core.permissions.PermissionRequirement
-import com.example.ottomatic.core.permissions.PermissionStatus
-import com.example.ottomatic.core.permissions.Permission
-import com.example.ottomatic.core.permissions.PrerequisiteType
+import com.example.ottomatic.core.permissions.isSatisfied
 
 /**
  * Which permission prerequisites the user has granted, as a lookup anything in
@@ -60,16 +58,20 @@ object GrantedPrerequisites {
      * definition — the same single-registration rule the node system has
      * everywhere else.
      *
-     * [PrerequisiteType.RUNTIME] goes through [PermissionChecker.status] and the
-     * rest through [PermissionChecker.isPrerequisiteSatisfied]; they are genuinely
-     * different questions, and the Android checker answers `false` to a RUNTIME
-     * type asked the wrong way.
+     * Reads through [PermissionChecker.isSatisfied], which knows to ask a RUNTIME
+     * requirement and a Settings-page one different questions.
+     *
+     * Deliberately walks [NodeTypeRegistry] rather than [PermissionCatalogue],
+     * even though the catalogue is a superset: this publishes what *nodes*
+     * declare, for a validator that only ever asks about a node's own
+     * requirements, and adding the app-level keys would widen the set for no
+     * consumer to read.
      */
     fun hydrateFrom(checker: PermissionChecker) {
         granted = NodeTypeRegistry.all
             .flatMap { it.permissionRequirements }
             .distinctBy { it.key }
-            .filter { checker.isGranted(it) }
+            .filter { checker.isSatisfied(it) }
             .mapTo(mutableSetOf()) { it.key }
     }
 
@@ -83,11 +85,3 @@ object GrantedPrerequisites {
         granted = null
     }
 }
-
-private fun PermissionChecker.isGranted(requirement: PermissionRequirement): Boolean =
-    if (requirement.type == PrerequisiteType.RUNTIME) {
-        val manifest = requirement.manifestPermission
-        manifest != null && status(Permission(manifest)) is PermissionStatus.Granted
-    } else {
-        isPrerequisiteSatisfied(requirement.type)
-    }

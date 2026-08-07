@@ -29,6 +29,7 @@ import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.usesContacts
+import com.example.ottomatic.feature.permissions.rationaleFor
 import com.example.ottomatic.feature.permissions.rememberPermissionState
 import com.example.ottomatic.feature.permissions.rememberPrerequisiteState
 
@@ -94,32 +95,6 @@ private fun SettingsPrerequisiteNotice(requirement: PermissionRequirement) {
     val explanation = rationaleFor(requirement) ?: return
 
     NoticeCard(message = explanation, actionLabel = "Open settings", onAction = state::openSettings)
-}
-
-/**
- * The user-facing sentence for a prerequisite, keyed by
- * [PermissionRequirement.rationaleKey].
- *
- * A node that declares a Settings-granted prerequisite without a rationale gets
- * no card at all: sending someone to a system page with no explanation of what
- * to switch on, or why, is worse than saying nothing.
- */
-private fun rationaleFor(requirement: PermissionRequirement): String? = when (requirement.rationaleKey) {
-    "accessibility.keys" ->
-        "Ottomatic needs accessibility access to see button presses. It never reads screen " +
-            "content. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first."
-    "notification.listener" ->
-        "Ottomatic needs notification access to see notifications from other apps."
-    "dnd.policy" ->
-        "Ottomatic needs Do Not Disturb access to change your ringer mode."
-    "overlay.dialog" ->
-        "Ottomatic needs permission to draw over other apps so this dialog can reach you while " +
-            "you are somewhere else on your phone. Without it the node cancels instead of asking."
-    "overlay.launch" ->
-        "Ottomatic needs permission to draw over other apps so it can open one while you are " +
-            "somewhere else on your phone. Android blocks a background app from opening another, " +
-            "and without this the node does nothing and says so in the console."
-    else -> null
 }
 
 @Composable

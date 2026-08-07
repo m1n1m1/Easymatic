@@ -32,3 +32,21 @@ interface PermissionChecker {
 /** True when every permission in [permissions] is [PermissionStatus.Granted]. */
 fun PermissionChecker.areAllGranted(permissions: Iterable<Permission>): Boolean =
     permissions.all { status(it) is PermissionStatus.Granted }
+
+/**
+ * Whether [requirement] is currently satisfied, asking the right question for
+ * its kind.
+ *
+ * [PrerequisiteType.RUNTIME] goes through [status] and the rest through
+ * [isPrerequisiteSatisfied]; they are genuinely different questions, and the
+ * Android checker answers `false` to a RUNTIME type asked the wrong way. Shared
+ * so that `GrantedPrerequisites` and the permissions screen — which must not
+ * read each other, see that object's KDoc — cannot drift on the branch itself.
+ */
+fun PermissionChecker.isSatisfied(requirement: PermissionRequirement): Boolean =
+    if (requirement.type == PrerequisiteType.RUNTIME) {
+        val manifest = requirement.manifestPermission
+        manifest != null && status(Permission(manifest)) is PermissionStatus.Granted
+    } else {
+        isPrerequisiteSatisfied(requirement.type)
+    }

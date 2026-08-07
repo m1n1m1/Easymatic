@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -67,6 +68,7 @@ fun WorkflowListScreen(
     onOpenWorkflow: (String) -> Unit,
     onOpenGeofences: () -> Unit,
     onOpenVariables: () -> Unit,
+    onOpenPermissions: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -124,6 +126,18 @@ fun WorkflowListScreen(
                         Icon(
                             imageVector = Icons.Filled.Place,
                             contentDescription = "Geofences",
+                            tint = EditorColors.textPrimary,
+                        )
+                    }
+                    // Last, because the other two open something you *edit* and
+                    // this opens a statement about the phone. It belongs on this
+                    // screen rather than inside a macro for the same reason the
+                    // libraries do: a missing grant is not a property of whichever
+                    // macro you happen to have open.
+                    IconButton(onClick = onOpenPermissions) {
+                        Icon(
+                            imageVector = Icons.Filled.Shield,
+                            contentDescription = "Permissions",
                             tint = EditorColors.textPrimary,
                         )
                     }

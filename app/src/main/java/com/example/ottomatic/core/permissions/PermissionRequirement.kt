@@ -30,6 +30,27 @@ enum class PrerequisiteType {
 
     /** Device administrator — granted via `DeviceAdminReceiver` enabling. */
     DEVICE_ADMIN,
+
+    /**
+     * Exemption from battery optimisation. Not a permission the platform gates
+     * any single call on: it governs whether the engine survives Doze, and so
+     * whether *anything* re-arms after a reboot.
+     */
+    BATTERY_OPTIMISATION,
+
+    /**
+     * Scheduling alarms that fire at an exact time (API 31+, granted by default
+     * below that). Without it a schedule still runs, but the platform is free to
+     * batch it — which is why the schedule trigger degrades rather than fails.
+     */
+    EXACT_ALARM,
+
+    /**
+     * Writing system settings (`Settings.System.canWrite`). What brightness,
+     * screen timeout and auto-rotate need; each of them returns "did nothing"
+     * without it.
+     */
+    WRITE_SETTINGS,
 }
 
 /**
@@ -80,6 +101,10 @@ data class PermissionRequirement(
             type == PrerequisiteType.NOTIFICATION_LISTENER -> "notification access"
             type == PrerequisiteType.NOTIFICATION_POLICY -> "Do Not Disturb access"
             type == PrerequisiteType.ACCESSIBILITY_SERVICE -> "accessibility access"
+            type == PrerequisiteType.BATTERY_OPTIMISATION ->
+                "an exemption from battery optimisation"
+            type == PrerequisiteType.EXACT_ALARM -> "permission to set exact alarms"
+            type == PrerequisiteType.WRITE_SETTINGS -> "permission to change system settings"
             type != PrerequisiteType.RUNTIME -> "a system permission"
             manifestPermission == Permissions.ACCESS_FINE_LOCATION.manifest -> "location access"
             manifestPermission == Permissions.ACCESS_COARSE_LOCATION.manifest -> "location access"
