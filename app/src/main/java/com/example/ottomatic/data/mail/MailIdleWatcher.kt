@@ -106,12 +106,28 @@ internal class MailIdleWatcher(
                 // A NOOP over the same connection, which is what unblocks idle().
                 runCatching { mailbox.messageCount }
             }
+            val enteredAt = System.currentTimeMillis()
             try {
-                mailbox.idle()
+                // `idle(true)`, never the no-argument `idle()`. That one is
+                // `idle(false)`, which notifies listeners and then **carries on
+                // idling** — so a flag set from the listener is not seen by
+                // anything until something else breaks the IDLE, which here is the
+                // 25-minute watchdog. Mail arriving one minute after the macro was
+                // armed then fired twenty-four minutes later, on a connection whose
+                // console output said, correctly, that push was on. `true` is the
+                // documented shape for exactly this loop: abort on the first
+                // notification, handle it, re-issue.
+                mailbox.idle(true)
             } finally {
                 watchdog.cancel()
             }
-            if (arrived.getAndSet(false)) onArrival()
+            // Any return that beat our own NOOP means the *server* spoke unprompted,
+            // and that is worth a look whether or not it arrived as a message-count
+            // event: this is the one place where trusting a single listener to fire
+            // would put the whole feature back to silence. A check that finds
+            // nothing new is one cheap query above the mark.
+            val spontaneous = System.currentTimeMillis() - enteredAt < IDLE_REISSUE_MS - REISSUE_SLACK_MS
+            if (arrived.getAndSet(false) || spontaneous) onArrival()
         }
     }
 
@@ -147,6 +163,9 @@ internal class MailIdleWatcher(
          * NOOP always lands first on a live one.
          */
         const val IDLE_SOCKET_TIMEOUT_MS = 30 * 60 * 1000
+
+        /** Slack for the round trip, so our own re-issue is never read as server chatter. */
+        private const val REISSUE_SLACK_MS = 60L * 1000
 
         private const val IMAP = "imap"
         private const val IDLE_CAPABILITY = "IDLE"
