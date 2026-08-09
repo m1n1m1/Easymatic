@@ -304,6 +304,7 @@ class MainActivity : ComponentActivity() {
                     viewModel = editorViewModel,
                     geofencePlaces = geofencePlacesViewModel,
                     nfcTags = nfcTagsViewModel,
+                    mailAccounts = mailAccountsViewModel,
                     globalVariables = globalVariablesViewModel,
                     onBack = { navController.popBackStack() },
                 )

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.DoNotDisturb
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Http
+import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MusicNote
@@ -200,6 +201,7 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.NOTIFICATION -> Icons.Filled.NotificationsActive
     NodeIcon.SMS -> Icons.Filled.Sms
     NodeIcon.SEND -> Icons.AutoMirrored.Filled.Send
+    NodeIcon.MAIL -> Icons.Filled.Mail
     NodeIcon.HTTP -> Icons.Filled.Http
     NodeIcon.WIFI -> Icons.Filled.Wifi
     NodeIcon.NFC -> Icons.Filled.Nfc

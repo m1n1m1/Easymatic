@@ -403,6 +403,23 @@ data class SmsSent(
 )
 
 /**
+ * Result of `action.send_mail` on its `state` data port.
+ *
+ * [SmsSent]'s shape plus an [error], and the extra field is the whole difference
+ * between the two: an SMS send fails for essentially one reason, where a mail send
+ * fails for a wrong password, an unreachable host, a provider that has not had
+ * IMAP switched on, a malformed recipient or no network — and "which one" is the
+ * entire question when a macro stops working. Blank when [sent].
+ */
+@Serializable
+data class MailSent(
+    val to: String,
+    val subject: String,
+    val sent: Boolean,
+    val error: String = "",
+)
+
+/**
  * Result of the call action on its `state` data port.
  *
  * - [number]: the destination phone number.

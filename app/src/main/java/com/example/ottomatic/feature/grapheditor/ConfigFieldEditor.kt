@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Tag
@@ -65,6 +66,8 @@ import com.example.ottomatic.feature.apps.AppPickerField
 import com.example.ottomatic.feature.contacts.PhoneNumberField
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
+import com.example.ottomatic.feature.mail.LocalMailAccounts
+import com.example.ottomatic.feature.mail.MailAccountPickerOverlay
 import com.example.ottomatic.feature.nfc.LocalNfcTags
 import com.example.ottomatic.feature.nfc.NfcTagPickerOverlay
 import com.example.ottomatic.feature.sound.SoundPickerField
@@ -617,6 +620,52 @@ private fun PickerField(
             AppPickerField(value, onValueChange, launchableOnly = false, allowAny = true, labelSlot, colors)
         PickerKind.MACRO -> MacroPickerField(value, onValueChange, labelSlot, colors)
         PickerKind.NFC_TAG -> NfcTagPickerField(value, onValueChange, labelSlot, colors)
+        PickerKind.MAIL_ACCOUNT -> MailAccountPickerField(value, onValueChange, labelSlot, colors)
+    }
+}
+
+/**
+ * A `@Picker(MAIL_ACCOUNT)` field: which account this node sends or reads through.
+ *
+ * The mirror image of [NfcTagPickerField] on both of its peculiarities. Blank is
+ * **not** an answer — there is no account to fall back on — so the placeholder is
+ * the ordinary "None selected". And an id that resolves to nothing is genuinely
+ * broken rather than merely unnamed, since the account carried the host, the
+ * username and the password: it falls back to a phrase saying so instead of to a
+ * prettified id, because there is nothing about a deleted account left to format.
+ */
+@Composable
+private fun MailAccountPickerField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
+    var picking by remember { mutableStateOf(false) }
+    val accounts = LocalMailAccounts.current
+
+    PickerFieldChrome(
+        display = when {
+            value.isBlank() -> ""
+            else -> accounts?.accountById(value)?.name ?: "Deleted account"
+        },
+        icon = Icons.Filled.Mail,
+        enabled = accounts != null,
+        onTap = { picking = true },
+        labelSlot = labelSlot,
+        colors = colors,
+    )
+
+    if (picking && accounts != null) {
+        MailAccountPickerOverlay(
+            viewModel = accounts,
+            selectedId = value.takeIf { it.isNotBlank() },
+            onPick = { id ->
+                onValueChange(id)
+                picking = false
+            },
+            onDismiss = { picking = false },
+        )
     }
 }
 

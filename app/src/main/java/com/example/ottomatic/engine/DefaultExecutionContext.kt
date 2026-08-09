@@ -7,6 +7,8 @@ import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
+import com.example.ottomatic.core.service.Mail
+import com.example.ottomatic.core.service.NoMail
 import com.example.ottomatic.core.service.NoPrompts
 import com.example.ottomatic.core.service.NoScripts
 import com.example.ottomatic.core.service.NoVariables
@@ -42,6 +44,7 @@ class DefaultExecutionContext(
     override val contacts: Contacts = NoContacts,
     override val prompts: Prompts = NoPrompts,
     override val waits: Waits = DelayWaits,
+    override val mail: Mail = NoMail,
     private val logger: (LogEntry) -> Unit = {},
 ) : ExecutionContext {
 

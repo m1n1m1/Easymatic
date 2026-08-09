@@ -6,6 +6,8 @@ import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
+import com.example.ottomatic.core.service.Mail
+import com.example.ottomatic.core.service.NoMail
 import com.example.ottomatic.core.service.NoPrompts
 import com.example.ottomatic.core.service.NoScripts
 import com.example.ottomatic.core.service.NoVariables
@@ -105,6 +107,19 @@ interface ExecutionContext {
      * An action's, never a value node's, for the reason [prompts] is: it waits.
      */
     val waits: Waits get() = DelayWaits
+
+    /**
+     * Sends and reads email — the mail nodes. Defaults to [NoMail] so engine-only
+     * tests need no SMTP server: they then see exactly what a phone with an empty
+     * account library reports, which the nodes already have to handle.
+     *
+     * An action's, never a value node's, and this is the clearest case of that
+     * rule in the whole interface: every call is a network round trip, so it is
+     * both of the things the pull side may not be — slow and failable. "How many
+     * unread do I have?" is `action.fetch_mail` feeding `transform.list_count`,
+     * on the exec wire where the latency is visible.
+     */
+    val mail: Mail get() = NoMail
 
     /** Optional handle to enable/disable other macros at runtime, or null. */
     val macroControl: MacroControl? get() = null

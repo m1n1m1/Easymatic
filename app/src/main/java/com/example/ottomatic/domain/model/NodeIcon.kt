@@ -15,6 +15,7 @@ enum class NodeIcon {
     NOTIFICATION,
     SMS,
     SEND,
+    MAIL,
     HTTP,
     WIFI,
     NFC,

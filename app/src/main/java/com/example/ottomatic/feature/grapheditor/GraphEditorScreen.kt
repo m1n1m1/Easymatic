@@ -62,6 +62,8 @@ import com.example.ottomatic.engine.trigger.GeofenceTrigger
 import com.example.ottomatic.engine.validation.GraphValidation
 import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
+import com.example.ottomatic.feature.mail.LocalMailAccounts
+import com.example.ottomatic.feature.mail.MailAccountsViewModel
 import com.example.ottomatic.feature.nfc.LocalNfcTags
 import com.example.ottomatic.feature.nfc.NfcTagsViewModel
 import com.example.ottomatic.feature.variables.GlobalVariablesViewModel
@@ -75,6 +77,7 @@ fun GraphEditorScreen(
     viewModel: GraphEditorViewModel,
     geofencePlaces: GeofencePlacesViewModel,
     nfcTags: NfcTagsViewModel,
+    mailAccounts: MailAccountsViewModel,
     globalVariables: GlobalVariablesViewModel,
     onBack: () -> Unit,
 ) {
@@ -88,6 +91,7 @@ fun GraphEditorScreen(
     CompositionLocalProvider(
         LocalGeofencePlaces provides geofencePlaces,
         LocalNfcTags provides nfcTags,
+        LocalMailAccounts provides mailAccounts,
         LocalVariables provides variables,
         LocalMacros provides macros,
     ) {

@@ -1,13 +1,18 @@
 package com.example.ottomatic.data.mail
 
 import com.example.ottomatic.core.service.MailLimits
+import com.example.ottomatic.core.service.MailSend
 import com.example.ottomatic.domain.model.MailAccount
 import com.example.ottomatic.domain.model.MailSecurity
 import java.net.UnknownHostException
+import java.util.Date
 import java.util.Properties
 import javax.mail.AuthenticationFailedException
+import javax.mail.Message
 import javax.mail.MessagingException
 import javax.mail.Session
+import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeMessage
 
 /**
  * The one place in the app that speaks SMTP and IMAP — and therefore the only
@@ -56,6 +61,50 @@ object MailTransport {
         store.close()
         null
     }.getOrElse { failure -> "Receiving: " + explain(failure) }
+
+    /**
+     * Sends one message. Throws on failure — [AndroidMail] is what turns that into
+     * a result, because it is the layer that promised never to throw.
+     *
+     * The charset is stated on every part rather than left to the platform
+     * default. Without it a subject with an umlaut in it arrives as mojibake on
+     * some servers and correctly on others, which is the worst kind of bug to be
+     * told about second-hand.
+     */
+    fun sendMessage(account: MailAccount, password: String, request: MailSend) {
+        val session = Session.getInstance(smtpProperties(account))
+        val message = MimeMessage(session).apply {
+            setFrom(InternetAddress(account.address))
+            setRecipients(Message.RecipientType.TO, parseAddresses(request.to))
+            if (request.cc.isNotBlank()) setRecipients(Message.RecipientType.CC, parseAddresses(request.cc))
+            if (request.bcc.isNotBlank()) setRecipients(Message.RecipientType.BCC, parseAddresses(request.bcc))
+            setSubject(request.subject, CHARSET)
+            if (request.html) {
+                setContent(request.body, "text/html; charset=$CHARSET")
+            } else {
+                setText(request.body, CHARSET)
+            }
+            sentDate = Date()
+        }
+        val transport = session.getTransport(SMTP)
+        transport.connect(account.smtpHost, account.smtpPort, account.effectiveUsername, password)
+        try {
+            transport.sendMessage(message, message.allRecipients)
+        } finally {
+            transport.close()
+        }
+    }
+
+    /**
+     * Splits a comma-separated recipient field.
+     *
+     * `strict = false` is deliberate: the strict parser rejects a bare `Ann
+     * <a@b.c>` without a fully quoted display name, which is exactly what somebody
+     * pastes out of their address book. A genuinely malformed address still throws,
+     * and lands on the node's `error` field naming itself.
+     */
+    fun parseAddresses(field: String): Array<InternetAddress> =
+        InternetAddress.parse(field.trim(), false)
 
     /**
      * Properties for an outgoing connection.
@@ -125,4 +174,5 @@ object MailTransport {
 
     private const val SMTP = "smtp"
     private const val IMAP = "imap"
+    private const val CHARSET = "UTF-8"
 }

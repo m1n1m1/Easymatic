@@ -134,6 +134,23 @@ enum class PickerKind {
      * network — so the field says "Any tag" rather than "None selected".
      */
     NFC_TAG,
+
+    /**
+     * A [com.example.ottomatic.domain.model.MailAccount] id, chosen from the mail
+     * account library.
+     *
+     * On the opaque side of the line with [MACRO] and [NFC_TAG], and for the same
+     * reason: the stored value is a UUID, so a typed one names nothing and looks
+     * exactly like a correct one. What it identifies is not typeable either — an
+     * account is a host, a port, a username and a sealed password, which is a
+     * thing to be *set up* once rather than referred to by name.
+     *
+     * The one place it parts company with [NFC_TAG] is that **blank is not an
+     * answer**. "Any tag" is a coherent filter; "any account" is not a thing to
+     * send from, so the field reads "None selected" and the node reports it rather
+     * than picking one.
+     */
+    MAIL_ACCOUNT,
 }
 
 /**

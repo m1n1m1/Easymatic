@@ -24,6 +24,7 @@ import com.example.ottomatic.engine.action.ListAddAction
 import com.example.ottomatic.engine.action.ListClearAction
 import com.example.ottomatic.engine.action.LogAction
 import com.example.ottomatic.engine.action.NotifyAction
+import com.example.ottomatic.engine.action.SendMailAction
 import com.example.ottomatic.engine.action.OpenUrlAction
 import com.example.ottomatic.engine.action.PlaySoundAction
 import com.example.ottomatic.engine.action.RepeatAction
@@ -97,6 +98,7 @@ object ActionRegistry {
         ListClearAction(),
         LogAction(),
         NotifyAction(),
+        SendMailAction(),
         OpenUrlAction(),
         PlaySoundAction(),
         // The palette renders in registry order, so the three loops are kept

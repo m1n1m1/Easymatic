@@ -75,6 +75,20 @@ class PickerFieldsTest {
         )
     }
 
+    /**
+     * A mail account id is a UUID, so it belongs with the macro id and the tag id
+     * on the opaque side of the line: a typed one names nothing and looks exactly
+     * like a correct one. What it stands for is not typeable either — a host, a
+     * port, a username and a sealed password.
+     */
+    @Test
+    fun `a mail account is chosen rather than typed`() {
+        assertEquals(
+            ConfigFieldType.PICKER(PickerKind.MAIL_ACCOUNT),
+            fieldType("action.send_mail", "accountId"),
+        )
+    }
+
     @Test
     fun `schedule times get a clock face rather than a calendar`() {
         assertEquals(ConfigFieldType.TIME_OF_DAY, fieldType("trigger.schedule", "atTime"))

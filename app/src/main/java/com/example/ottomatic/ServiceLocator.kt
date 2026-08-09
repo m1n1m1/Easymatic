@@ -10,6 +10,7 @@ import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.MailAccountRepository
 import com.example.ottomatic.data.NfcTagRepository
+import com.example.ottomatic.data.mail.AndroidMail
 import com.example.ottomatic.data.mail.AndroidMailSecrets
 import com.example.ottomatic.data.GlobalVariableRepository
 import com.example.ottomatic.domain.registry.GlobalVariables
@@ -178,6 +179,10 @@ object ServiceLocator {
             // Alarm-backed, so "wait until 07:00" means 07:00 rather than
             // "whenever the phone next woke up after 07:00".
             waits = AndroidWaits(appContext),
+            // Resolves an account and its password through the library on every
+            // call rather than holding either: an account edited mid-run must not
+            // be sent from with the settings it had when the engine started.
+            mail = AndroidMail(mailAccountRepository),
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.
