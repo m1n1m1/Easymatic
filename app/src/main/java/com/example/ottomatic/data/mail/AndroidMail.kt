@@ -58,11 +58,24 @@ class AndroidMail(
         }
     }
 
-    // Implemented by the stage that adds action.mail_update. Until then it answers
-    // the way NoMail does rather than throwing, so a graph that somehow reaches it
-    // degrades instead of taking the run down.
-    override suspend fun update(request: MailUpdate): MailUpdateResult =
-        MailUpdateResult(changed = false, error = NOT_YET)
+    override suspend fun update(request: MailUpdate): MailUpdateResult {
+        val resolved = resolve(request.accountId)
+        return when (resolved) {
+            is Resolved.Missing -> MailUpdateResult(changed = false, error = resolved.reason)
+            is Resolved.Ready -> withContext(Dispatchers.IO) {
+                runCatching { MailTransport.applyOp(resolved.account, resolved.password, request) }
+                    .fold(
+                        onSuccess = { changed ->
+                            MailUpdateResult(
+                                changed = changed,
+                                error = if (changed) "" else GONE,
+                            )
+                        },
+                        onFailure = { MailUpdateResult(changed = false, error = MailTransport.explain(it)) },
+                    )
+            }
+        }
+    }
 
     /**
      * An account and a password, or the reason there is not one.
@@ -91,6 +104,6 @@ class AndroidMail(
     }
 
     private companion object {
-        const val NOT_YET = "Acting on a message is not available in this build"
+        const val GONE = "That message is no longer in this mailbox — it may have been moved or deleted"
     }
 }

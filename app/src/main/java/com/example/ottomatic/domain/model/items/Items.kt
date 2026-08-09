@@ -452,6 +452,22 @@ data class MailSent(
 )
 
 /**
+ * Result of `action.mail_update` on its `state` data port.
+ *
+ * [changed] is false both when the server refused and when the reference named
+ * nothing — a message that has been moved or expunged since the macro was handed
+ * it. Those are one answer on purpose: neither is something the graph can retry,
+ * and [error] says which it was.
+ */
+@Serializable
+data class MailFlagged(
+    val ref: String,
+    val op: String,
+    val changed: Boolean,
+    val error: String = "",
+)
+
+/**
  * Result of the call action on its `state` data port.
  *
  * - [number]: the destination phone number.

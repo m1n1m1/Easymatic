@@ -23,6 +23,8 @@ import com.example.ottomatic.engine.action.LaunchAppAction
 import com.example.ottomatic.engine.action.ListAddAction
 import com.example.ottomatic.engine.action.ListClearAction
 import com.example.ottomatic.engine.action.LogAction
+import com.example.ottomatic.engine.action.FetchMailAction
+import com.example.ottomatic.engine.action.MailUpdateAction
 import com.example.ottomatic.engine.action.NotifyAction
 import com.example.ottomatic.engine.action.SendMailAction
 import com.example.ottomatic.engine.action.OpenUrlAction
@@ -98,7 +100,11 @@ object ActionRegistry {
         ListClearAction(),
         LogAction(),
         NotifyAction(),
+        // The mail family, kept together the way the loops and the dialogs are:
+        // send, read, and act on what was read.
         SendMailAction(),
+        FetchMailAction(),
+        MailUpdateAction(),
         OpenUrlAction(),
         PlaySoundAction(),
         // The palette renders in registry order, so the three loops are kept
