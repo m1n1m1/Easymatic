@@ -34,9 +34,40 @@ android {
 
     buildTypes {
         release {
+            // Shrinking is off, so `proguard-rules.pro` is deliberately NOT wired
+            // here — a `proguardFiles` line that reads as active and is not would
+            // be worse than none. The file exists and is the thing to wire the day
+            // this flag flips: JavaMail instantiates its providers by class name
+            // from a META-INF resource, so R8 sees no reference and strips them,
+            // and the symptom appears only in a release build.
             optimization {
                 enable = false
             }
+        }
+    }
+    packaging {
+        resources {
+            // android-mail and android-activation each ship their own copy of the
+            // licence and notice, under identical paths. Taking either is correct —
+            // they are the same EPL/EDL text — so this is a pickFirst rather than
+            // an exclude, which would drop the licence text from the APK entirely.
+            pickFirsts += setOf(
+                "META-INF/LICENSE.md",
+                "META-INF/NOTICE.md",
+                "META-INF/LICENSE.txt",
+                "META-INF/NOTICE.txt",
+                "META-INF/LICENSE",
+                "META-INF/NOTICE",
+            )
+            // Nothing under META-INF may be added to `excludes` without reading
+            // this first. `javamail.providers`, `javamail.default.providers`,
+            // `javamail.address.map`, `javamail.default.address.map` and `mailcap`
+            // are how the mail library finds IMAPProvider and SMTPProvider at
+            // runtime. Excluding any of them — the reflex when Gradle reports a
+            // duplicate META-INF entry — turns every send into
+            // `NoSuchProviderException: smtp`, which names nothing about packaging
+            // and is a day lost. AGP's own default exclude set matches none of
+            // them, so the only way this breaks is by hand.
         }
     }
     compileOptions {
@@ -89,6 +120,13 @@ dependencies {
     // and a view-model store stood up by hand — so it uses the Material 3 dialog
     // the view toolkit already ships, including its dynamic-colour support.
     implementation(libs.material)
+    // SMTP and IMAP for the mail nodes; the only networking dependency in the app,
+    // since everything else goes through HttpURLConnection. Roughly 600-800 KB of
+    // dex, which makes it the largest single dependency after the Maps SDK — the
+    // trade for not hand-rolling MIME parsing, RFC 2047 decoding and a
+    // literal-aware IMAP response reader, all of which fail quietly and wrongly.
+    implementation(libs.javamail.android)
+    implementation(libs.javamail.android.activation)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.play.services.location)

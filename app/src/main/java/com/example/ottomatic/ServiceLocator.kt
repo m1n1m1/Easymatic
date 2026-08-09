@@ -8,7 +8,9 @@ import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.GeofencePlaceRepository
+import com.example.ottomatic.data.MailAccountRepository
 import com.example.ottomatic.data.NfcTagRepository
+import com.example.ottomatic.data.mail.AndroidMailSecrets
 import com.example.ottomatic.data.GlobalVariableRepository
 import com.example.ottomatic.domain.registry.GlobalVariables
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
@@ -63,6 +65,16 @@ object ServiceLocator {
     lateinit var geofencePlaceRepository: GeofencePlaceRepository
 
     lateinit var nfcTagRepository: NfcTagRepository
+        private set
+
+    /**
+     * The mail account library, shared by the accounts screen, every config picker
+     * and the mail facade.
+     *
+     * The one library holding a secret, which is why it is constructed with a
+     * [com.example.ottomatic.data.mail.MailSecrets] rather than a directory alone.
+     */
+    lateinit var mailAccountRepository: MailAccountRepository
         private set
 
     /**
@@ -125,6 +137,11 @@ object ServiceLocator {
         workflowRepository = WorkflowRepository(appContext.filesDir, globalVariableRepository)
         geofencePlaceRepository = GeofencePlaceRepository(appContext.filesDir)
         nfcTagRepository = NfcTagRepository(appContext.filesDir)
+        // Keystore-backed, and safe to build here for exactly one reason: it never
+        // throws. Both of its members answer null on failure, so an OEM keystore
+        // that misbehaves costs the user a re-typed password rather than taking
+        // Application.onCreate — and the whole app — down with it.
+        mailAccountRepository = MailAccountRepository(appContext.filesDir, AndroidMailSecrets())
         systemServices = AndroidSystemServices(appContext)
         deviceState = AndroidDeviceState(appContext)
         macroControl = AndroidMacroControl(appContext)

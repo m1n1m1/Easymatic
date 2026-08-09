@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.AddToHomeScreen
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Place
@@ -69,6 +70,7 @@ fun WorkflowListScreen(
     onOpenWorkflow: (String) -> Unit,
     onOpenGeofences: () -> Unit,
     onOpenNfcTags: () -> Unit,
+    onOpenMailAccounts: () -> Unit,
     onOpenVariables: () -> Unit,
     onOpenPermissions: () -> Unit,
 ) {
@@ -112,37 +114,29 @@ fun WorkflowListScreen(
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.weight(1f),
                     )
-                    // The three libraries are edited independently of any macro,
-                    // so each needs a way in that does not start with "open a
-                    // workflow that happens to use one". A workflow's *own*
-                    // variables have no button here: they live in that workflow's
-                    // dock, beside the graph that uses them.
+                    // The libraries are edited independently of any macro, so each
+                    // needs a way in that does not start with "open a workflow that
+                    // happens to use one". A workflow's *own* variables have no
+                    // button here: they live in that workflow's dock, beside the
+                    // graph that uses them.
                     //
-                    // Four icons is the ceiling for this bar. A fifth library would
-                    // have to go behind an overflow rather than squeeze the title.
+                    // This bar used to carry four icons and a comment saying four
+                    // was the ceiling. A fourth library arrived, and adding an
+                    // overflow *beside* the four would have made it five 48 dp
+                    // targets — about two thirds of the bar — which is the thing
+                    // that comment was guarding against. So the overflow absorbs
+                    // icons rather than joining them.
+                    //
+                    // Variables stays out because every macro touches it, and
+                    // Permissions stays out because it is not a library at all but
+                    // the standing statement about the phone that the Problems
+                    // panel sends people to. What moved is used by one or two node
+                    // types each, and one of them is meaningless on a phone with no
+                    // NFC chip. A fifth library now costs one DropdownMenuItem.
                     IconButton(onClick = onOpenVariables) {
                         Icon(
                             imageVector = Icons.Filled.Tag,
                             contentDescription = "Global variables",
-                            tint = EditorColors.textPrimary,
-                        )
-                    }
-                    IconButton(onClick = onOpenGeofences) {
-                        Icon(
-                            imageVector = Icons.Filled.Place,
-                            contentDescription = "Geofences",
-                            tint = EditorColors.textPrimary,
-                        )
-                    }
-                    // Last, because the other two open something you *edit* and
-                    // this opens a statement about the phone. It belongs on this
-                    // screen rather than inside a macro for the same reason the
-                    // libraries do: a missing grant is not a property of whichever
-                    // macro you happen to have open.
-                    IconButton(onClick = onOpenNfcTags) {
-                        Icon(
-                            imageVector = Icons.Filled.Nfc,
-                            contentDescription = "NFC tags",
                             tint = EditorColors.textPrimary,
                         )
                     }
@@ -153,6 +147,11 @@ fun WorkflowListScreen(
                             tint = EditorColors.textPrimary,
                         )
                     }
+                    LibraryMenu(
+                        onOpenGeofences = onOpenGeofences,
+                        onOpenNfcTags = onOpenNfcTags,
+                        onOpenMailAccounts = onOpenMailAccounts,
+                    )
                 }
             }
 
@@ -302,6 +301,57 @@ fun WorkflowListScreen(
                 TextButton(onClick = { deleting = null }, colors = editorTextButtonColors()) { Text("Cancel") }
             },
         )
+    }
+}
+
+/**
+ * The libraries that no longer have room for an icon of their own.
+ *
+ * Each item keeps the glyph it used to wear in the bar, now as a leading icon
+ * beside a name — which is a small gain rather than a consolation: a place pin and
+ * an NFC mark had to be recognised, where "Geofences" and "NFC tags" are read.
+ */
+@Composable
+private fun LibraryMenu(
+    onOpenGeofences: () -> Unit,
+    onOpenNfcTags: () -> Unit,
+    onOpenMailAccounts: () -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                imageVector = Icons.Filled.MoreVert,
+                contentDescription = "Libraries",
+                tint = EditorColors.textPrimary,
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text("Geofences") },
+                leadingIcon = { Icon(Icons.Filled.Place, contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    onOpenGeofences()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("NFC tags") },
+                leadingIcon = { Icon(Icons.Filled.Nfc, contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    onOpenNfcTags()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("Mail accounts") },
+                leadingIcon = { Icon(Icons.Filled.Mail, contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    onOpenMailAccounts()
+                },
+            )
+        }
     }
 }
 
