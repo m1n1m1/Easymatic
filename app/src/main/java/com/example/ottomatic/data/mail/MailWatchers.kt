@@ -3,7 +3,9 @@ package com.example.ottomatic.data.mail
 import android.content.Context
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
@@ -109,14 +111,23 @@ class MailWatchers(
         onReport: (String, LogLevel) -> Unit = { _, _ -> },
     ): ScheduleHandle {
         val key = key(accountId, spec.folder)
-        synchronized(lock) {
+        val pushing = synchronized(lock) {
             val watch = watches.getOrPut(key) { Watch(accountId, spec.folder) }
             watch.watchers[nodeId] = Watcher(spec, onReport)
-            armPoll(nodeId, accountId, spec, demoted = watch.pushing)
             if (watch.job == null && spec.mode == MailWatchMode.AUTOMATIC && accounts != null) {
                 watch.job = scope.launch { hold(key) }
             }
+            watch.pushing
         }
+        armPoll(nodeId, accountId, spec, demoted = pushing)
+        // A PeriodicWorkRequest does not run when it is enqueued — it runs at the
+        // end of its first interval. Without this, arming leaves a fifteen-minute
+        // window in which nothing has established where this node has read up to,
+        // and the first poll then *baselines* over everything that arrived in it
+        // rather than reporting it. Sending yourself a test mail immediately after
+        // switching a macro on is exactly that window, so the one case everybody
+        // tries first was the one case that silently did nothing.
+        kickCheck(nodeId, accountId, spec)
         return ScheduleHandle { disarm(nodeId, key) }
     }
 
@@ -131,6 +142,7 @@ class MailWatchers(
             watch
         }
         workManager.cancelUniqueWork(workName(nodeId))
+        workManager.cancelUniqueWork(kickName(nodeId))
         // Closing the socket is what unblocks a thread parked in idle(); the job is
         // cancelled but deliberately not joined, since joining would block a
         // `finally` inside a cancellation for as long as a close takes.
@@ -164,6 +176,14 @@ class MailWatchers(
                 failures = 0
                 backoffMs = INITIAL_BACKOFF_MS
             }
+            // The first drop of a streak is reported with the server's own words.
+            // Staying silent until the third one meant several minutes in which
+            // push was plainly not working and the console said nothing about it —
+            // which is the state this whole reporting channel exists to prevent.
+            if (failures == 0) {
+                val reason = outcome.exceptionOrNull()?.let(MailTransport::explain).orEmpty()
+                report(key, "Push connection dropped ($reason). Reconnecting.", LogLevel.DEBUG)
+            }
             failures++
             if (failures >= MAX_IDLE_FAILURES) {
                 report(
@@ -196,6 +216,10 @@ class MailWatchers(
             onOpen = {
                 setPushing(key, true)
                 report(key, "Push is on: new mail will start this macro within seconds.")
+                // A connection only announces mail that arrives *while it is open*,
+                // so everything delivered during the gap — a reconnect, a tunnel, a
+                // night in doze — would otherwise wait for the hourly backstop.
+                scope.launch { check(key) }
             },
             onUnsupported = {
                 report(key, "This mail server does not support push, so Ottomatic checks on a schedule instead.")
@@ -257,14 +281,7 @@ class MailWatchers(
             spec.intervalMinutes.coerceAtLeast(DEFAULT_MAIL_POLL_MINUTES)
         }
         val request = PeriodicWorkRequestBuilder<MailPollWorker>(minutes, TimeUnit.MINUTES)
-            .setInputData(
-                workDataOf(
-                    MailPollWorker.KEY_NODE_ID to nodeId.value,
-                    MailPollWorker.KEY_ACCOUNT_ID to accountId,
-                    MailPollWorker.KEY_FOLDER to spec.folder,
-                    MailPollWorker.KEY_UNREAD_ONLY to spec.unreadOnly,
-                ),
-            )
+            .setInputData(inputFor(nodeId, accountId, spec))
             // The one departure from `armBatteryLevelPoll`: a mail check with no
             // network is a socket guaranteed to fail, and WorkManager will re-run
             // it the moment connectivity returns — cheaper and more timely than
@@ -280,7 +297,34 @@ class MailWatchers(
         )
     }
 
+    /**
+     * One check, now, so the node knows where it has read up to before the first
+     * periodic run comes round.
+     *
+     * A separate unique name from the periodic work because WorkManager keeps the
+     * two kinds in different namespaces — `enqueueUniqueWork` and
+     * `enqueueUniquePeriodicWork` will not manage each other's requests.
+     */
+    private fun kickCheck(nodeId: NodeId, accountId: String, spec: MailWatchSpec) {
+        val request = OneTimeWorkRequestBuilder<MailPollWorker>()
+            .setInputData(inputFor(nodeId, accountId, spec))
+            .setConstraints(
+                Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+            )
+            .build()
+        workManager.enqueueUniqueWork(kickName(nodeId), ExistingWorkPolicy.REPLACE, request)
+    }
+
+    private fun inputFor(nodeId: NodeId, accountId: String, spec: MailWatchSpec) = workDataOf(
+        MailPollWorker.KEY_NODE_ID to nodeId.value,
+        MailPollWorker.KEY_ACCOUNT_ID to accountId,
+        MailPollWorker.KEY_FOLDER to spec.folder,
+        MailPollWorker.KEY_UNREAD_ONLY to spec.unreadOnly,
+    )
+
     private fun workName(nodeId: NodeId) = MailPollWorker.WORK_NAME_PREFIX + nodeId.value
+
+    private fun kickName(nodeId: NodeId) = MailPollWorker.WORK_NAME_PREFIX + "now_" + nodeId.value
 
     // A connection selects exactly one folder, so two nodes on two folders of one
     // account are two connections — which is what IMAP requires, not a choice.

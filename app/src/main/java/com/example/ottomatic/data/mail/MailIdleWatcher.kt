@@ -79,7 +79,8 @@ internal class MailIdleWatcher(
 
     /** The selected folder, or null when the server does not support IDLE at all. */
     private fun connect(): IMAPFolder? {
-        val opened = Session.getInstance(MailTransport.imapProperties(account)).getStore(IMAP) as IMAPStore
+        val properties = MailTransport.imapProperties(account, readTimeoutMs = IDLE_SOCKET_TIMEOUT_MS)
+        val opened = Session.getInstance(properties).getStore(IMAP) as IMAPStore
         store = opened
         opened.connect(account.imapHost, account.imapPort, account.effectiveUsername, password)
         if (!opened.hasCapability(IDLE_CAPABILITY)) return null
@@ -131,6 +132,21 @@ internal class MailIdleWatcher(
          * under both.
          */
         const val IDLE_REISSUE_MS = 25L * 60 * 1000
+
+        /**
+         * The socket read timeout for an IDLE connection, and the one number here
+         * that must never be lowered to match the ordinary one.
+         *
+         * `idle()` blocks on a read until the server has something to say, which on
+         * a quiet mailbox is hours. Anything shorter than [IDLE_REISSUE_MS] turns a
+         * perfectly healthy connection into a `SocketTimeoutException` on a
+         * metronome — the connection dies, the watcher backs off, three failures
+         * later it gives up on push for an hour, and the whole feature silently
+         * degrades to the poll. It is still finite so a genuinely wedged socket
+         * eventually errors rather than hanging a thread forever; the watchdog's
+         * NOOP always lands first on a live one.
+         */
+        const val IDLE_SOCKET_TIMEOUT_MS = 30 * 60 * 1000
 
         private const val IMAP = "imap"
         private const val IDLE_CAPABILITY = "IDLE"

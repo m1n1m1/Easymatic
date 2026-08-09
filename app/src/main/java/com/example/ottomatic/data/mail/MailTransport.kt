@@ -320,12 +320,26 @@ object MailTransport {
         }
     }
 
-    /** Properties for an incoming connection. See [smtpProperties] on the timeouts. */
-    fun imapProperties(account: MailAccount): Properties = Properties().apply {
+    /**
+     * Properties for an incoming connection. See [smtpProperties] on the timeouts.
+     *
+     * [readTimeoutMs] is a parameter for one reason, and it is not a tuning knob:
+     * `mail.imap.timeout` is the socket read timeout, and **`IMAPFolder.idle()`
+     * spends its whole life blocked on a socket read waiting for the server to
+     * speak**. A healthy, quiet mailbox says nothing for hours, so the ordinary
+     * 30-second timeout does not protect an IDLE connection — it kills one every
+     * thirty seconds, which reads exactly like a flaky server. A watcher therefore
+     * passes something longer than its own re-issue interval; see
+     * [MailIdleWatcher.IDLE_SOCKET_TIMEOUT_MS].
+     */
+    fun imapProperties(
+        account: MailAccount,
+        readTimeoutMs: Int = MailLimits.READ_TIMEOUT_MS,
+    ): Properties = Properties().apply {
         put("mail.imap.host", account.imapHost)
         put("mail.imap.port", account.imapPort.toString())
         put("mail.imap.connectiontimeout", MailLimits.CONNECT_TIMEOUT_MS.toString())
-        put("mail.imap.timeout", MailLimits.READ_TIMEOUT_MS.toString())
+        put("mail.imap.timeout", readTimeoutMs.toString())
         when (account.imapSecurity) {
             MailSecurity.TLS -> put("mail.imap.ssl.enable", "true")
             MailSecurity.STARTTLS -> {
