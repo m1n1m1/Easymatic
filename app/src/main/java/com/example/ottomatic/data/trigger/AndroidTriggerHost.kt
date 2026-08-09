@@ -17,6 +17,7 @@ import androidx.work.workDataOf
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.trigger.TriggerBus
+import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.MailAccountRepository
 import com.example.ottomatic.data.NfcTagRepository
@@ -99,12 +100,16 @@ class AndroidTriggerHost(
     // One per process, holding the poll registrations and (once IDLE lands) the
     // connections, reference-counted per account. Owned here for SensorBridge's
     // reason: a trigger is handed a host and nothing else.
-    private val mailWatchers = MailWatchers(appContext)
+    private val mailWatchers = MailWatchers(appContext, mailAccounts)
 
     override fun mailAccount(id: String): MailAccount? = mailAccounts?.get(id)
 
-    override fun armMailWatch(nodeId: NodeId, accountId: String, spec: MailWatchSpec): ScheduleHandle =
-        mailWatchers.arm(nodeId, accountId, spec)
+    override fun armMailWatch(
+        nodeId: NodeId,
+        accountId: String,
+        spec: MailWatchSpec,
+        onReport: (String, LogLevel) -> Unit,
+    ): ScheduleHandle = mailWatchers.arm(nodeId, accountId, spec, onReport)
 
     override fun sensorSamples(kind: SensorKind, rate: SensorRate): Flow<SensorSample> =
         sensorBridge.samples(kind, rate)

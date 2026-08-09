@@ -116,6 +116,11 @@ class MailTrigger : Trigger<MailTriggerConfig, MailMessage> {
                 mode = config.mode,
                 intervalMinutes = config.intervalMinutes,
             ),
+            // Everything interesting about a mail connection happens after arming
+            // — a server with no push, a socket that keeps dropping, a mailbox the
+            // server renumbered — and this is the only route from there back to
+            // the console somebody will actually read.
+            onReport = { message, level -> host.report(node, message, level) },
         )
         try {
             host.busEventsFor(node.id)

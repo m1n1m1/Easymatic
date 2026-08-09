@@ -8,10 +8,23 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.data.MailAccountRepository
 import com.example.ottomatic.engine.trigger.DEFAULT_MAIL_POLL_MINUTES
+import com.example.ottomatic.engine.trigger.MailWatchMode
 import com.example.ottomatic.engine.trigger.MailWatchSpec
 import com.example.ottomatic.engine.trigger.ScheduleHandle
 import java.util.concurrent.TimeUnit
+import kotlin.math.min
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 /**
  * Watches mailboxes on behalf of armed `trigger.mail` nodes.
@@ -20,56 +33,229 @@ import java.util.concurrent.TimeUnit
  * in `ServiceLocator`, exactly as `SensorBridge` is — not by `MacroEngineService`,
  * which lives in `engine/` and may not import `data/`.
  *
- * The substrate is a **WorkManager poll**, which is what makes this survive
- * process death and reboot. Interest is reference-counted per **account** rather
- * than per node, because several trigger nodes may watch one inbox and must cost
- * one connection between them once IDLE is layered on — the contract `SensorBridge`
- * states for a single sensor registration shared by every subscriber.
+ * **Two mechanisms, deliberately not two modes.** The substrate is a WorkManager
+ * poll, which is what makes this survive process death and reboot. [MailIdleWatcher]
+ * is layered on top when the server offers IDLE, cutting latency from minutes to
+ * seconds — and the poll is not torn down when it comes up, only **slowed** to
+ * [IDLE_BACKSTOP_MINUTES]. That is the belt-and-braces call and it earns its keep:
+ * a socket dropped by carrier NAT sits parked in IDLE *believing it is healthy*,
+ * with no error to back off from, and an hourly authenticated round trip is the
+ * only thing that would ever notice. It also means nothing has to be *started*
+ * when IDLE dies.
+ *
+ * Interest is reference-counted per **mailbox**, not per node: several trigger
+ * nodes may watch one inbox and must cost one connection between them — the
+ * contract `SensorBridge` states for a single sensor registration shared by every
+ * subscriber. The poll stays per node, because WorkManager's unique-name model
+ * leaves no choice and a 15-minute floor makes the duplication cheap.
  *
  * Teardown has one rule that is not obvious and is load-bearing:
  * `MacroEngineService.arm()` cancels **and joins** the previous runner, and a
  * trigger's `finally { handle.cancel() }` runs inside that cancellation — so a
  * cancel must be effective by the time it returns, or it lands on top of whatever
- * the *next* arm just registered.
+ * the next arm just registered.
  */
+@Suppress("TooManyFunctions") // Two mechanisms plus their bookkeeping; splitting them would only hide the seam.
 class MailWatchers(
     context: Context,
+    private val accounts: MailAccountRepository? = null,
 ) {
 
     private val workManager = WorkManager.getInstance(context.applicationContext)
 
     private val lock = Any()
 
-    /** Which nodes are watching each account, and with what. */
-    private val interested = mutableMapOf<String, MutableMap<NodeId, MailWatchSpec>>()
+    private val watches = mutableMapOf<String, Watch>()
+
+    /**
+     * The handler is the part that matters, for `ServiceLocator.appScope`'s stated
+     * reason: a [SupervisorJob] stops one child cancelling its siblings and does
+     * nothing at all about the exception, which would otherwise reach the thread's
+     * default handler and take the process down over a dropped socket.
+     */
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, error ->
+            android.util.Log.e("Ottomatic", "Mail watcher failed", error)
+        },
+    )
+
+    /** One node's interest in a mailbox, and where to report back to. */
+    private class Watcher(val spec: MailWatchSpec, val report: (String, LogLevel) -> Unit)
+
+    /** One mailbox, and everything watching it. */
+    private class Watch(val accountId: String, val folder: String) {
+        val watchers = mutableMapOf<NodeId, Watcher>()
+        var job: Job? = null
+        var idle: MailIdleWatcher? = null
+
+        /** Whether a connection is currently believed to be delivering pushes. */
+        var pushing = false
+    }
 
     /**
      * Registers [nodeId]'s interest in [accountId] and starts checking.
      *
-     * The returned handle withdraws that interest. It removes the account's entry
+     * The returned handle withdraws that interest. It removes the mailbox's entry
      * from the map **before** doing anything slower, so a subsequent arm builds a
      * fresh entry this teardown can no longer reach — the guarantee
      * `activeJobs.remove(workflowId, job)`'s two-argument form gives
      * `MacroEngineService`, and the same failure (a stale close landing on a new
      * registration) it prevents.
      */
-    fun arm(nodeId: NodeId, accountId: String, spec: MailWatchSpec): ScheduleHandle {
+    fun arm(
+        nodeId: NodeId,
+        accountId: String,
+        spec: MailWatchSpec,
+        onReport: (String, LogLevel) -> Unit = { _, _ -> },
+    ): ScheduleHandle {
+        val key = key(accountId, spec.folder)
         synchronized(lock) {
-            interested.getOrPut(accountId) { mutableMapOf() }[nodeId] = spec
-        }
-        armPoll(nodeId, accountId, spec)
-        return ScheduleHandle {
-            synchronized(lock) {
-                val watchers = interested[accountId]
-                watchers?.remove(nodeId)
-                if (watchers != null && watchers.isEmpty()) interested.remove(accountId)
+            val watch = watches.getOrPut(key) { Watch(accountId, spec.folder) }
+            watch.watchers[nodeId] = Watcher(spec, onReport)
+            armPoll(nodeId, accountId, spec, demoted = watch.pushing)
+            if (watch.job == null && spec.mode == MailWatchMode.AUTOMATIC && accounts != null) {
+                watch.job = scope.launch { hold(key) }
             }
-            workManager.cancelUniqueWork(workName(nodeId))
+        }
+        return ScheduleHandle { disarm(nodeId, key) }
+    }
+
+    private fun disarm(nodeId: NodeId, key: String) {
+        val closing = synchronized(lock) {
+            val watch = watches[key] ?: return@synchronized null
+            watch.watchers.remove(nodeId)
+            if (watch.watchers.isNotEmpty()) return@synchronized null
+            // Removed before the connection is touched, so a re-arm arriving now
+            // builds a fresh Watch that this teardown cannot reach.
+            watches.remove(key)
+            watch
+        }
+        workManager.cancelUniqueWork(workName(nodeId))
+        // Closing the socket is what unblocks a thread parked in idle(); the job is
+        // cancelled but deliberately not joined, since joining would block a
+        // `finally` inside a cancellation for as long as a close takes.
+        closing?.idle?.disconnect()
+        closing?.job?.cancel()
+    }
+
+    // ---- The held-open connection ------------------------------------------
+
+    /**
+     * Keeps a connection up for one mailbox, reconnecting with backoff, and gives
+     * up on IDLE after [MAX_IDLE_FAILURES] consecutive failures.
+     *
+     * Giving up is never permanent: networks change, and a user who walked off a
+     * hostile Wi-Fi should get push back without re-arming anything. So it waits
+     * [IDLE_RETRY_AFTER_MS] and tries again, with the poll restored to its
+     * configured interval in the meantime.
+     */
+    private suspend fun hold(key: String) {
+        var failures = 0
+        var backoffMs = INITIAL_BACKOFF_MS
+        while (currentCoroutineContext().isActive) {
+            val startedAt = System.currentTimeMillis()
+            val outcome = runCatching { connectAndHold(key) }
+            setPushing(key, false)
+            if (outcome.isSuccess) return // No IDLE on this server; the poll is the answer.
+            // Reset on a connection that *lasted*, not on one that merely opened:
+            // a server that accepts and immediately drops would otherwise look
+            // healthy and produce a hot reconnect loop.
+            if (System.currentTimeMillis() - startedAt > HEALTHY_MS) {
+                failures = 0
+                backoffMs = INITIAL_BACKOFF_MS
+            }
+            failures++
+            if (failures >= MAX_IDLE_FAILURES) {
+                report(
+                    key,
+                    "Push delivery keeps dropping on this connection, so Ottomatic has fallen back " +
+                        "to checking on a schedule. It will try push again in an hour.",
+                    LogLevel.WARN,
+                )
+                delay(IDLE_RETRY_AFTER_MS)
+                failures = 0
+                backoffMs = INITIAL_BACKOFF_MS
+            } else {
+                delay(backoffMs)
+                backoffMs = min(backoffMs * 2, MAX_BACKOFF_MS)
+            }
         }
     }
 
-    private fun armPoll(nodeId: NodeId, accountId: String, spec: MailWatchSpec) {
-        val minutes = spec.intervalMinutes.coerceAtLeast(DEFAULT_MAIL_POLL_MINUTES)
+    private suspend fun connectAndHold(key: String) {
+        val watch = snapshot(key)
+        val account = watch?.let { accounts?.get(it.accountId) }
+        // A deleted account or an unreadable password is not a connection failure
+        // to back off from: the trigger already reported it at arm time, and the
+        // poll will report it again on its own schedule.
+        val password = account?.let { accounts?.password(watch.accountId) } ?: return
+        val idle = MailIdleWatcher(account, password, watch.folder)
+        synchronized(lock) { watches[key]?.idle = idle }
+        idle.run(
+            scope = scope,
+            onOpen = {
+                setPushing(key, true)
+                report(key, "Push is on: new mail will start this macro within seconds.")
+            },
+            onUnsupported = {
+                report(key, "This mail server does not support push, so Ottomatic checks on a schedule instead.")
+            },
+            onArrival = { check(key) },
+        )
+    }
+
+    /** Runs a check for every node watching this mailbox, each with its own mark. */
+    private suspend fun check(key: String) {
+        val mail = MailRuntime.mail
+        val seen = MailRuntime.seen
+        val watch = snapshot(key)
+        if (mail == null || seen == null || watch == null) return
+        val watchers = synchronized(lock) { watches[key]?.watchers?.toMap() }.orEmpty()
+        watchers.forEach { (nodeId, watcher) ->
+            val reason = MailCheck(mail, seen).run(
+                nodeId = nodeId.value,
+                accountId = watch.accountId,
+                folder = watch.folder,
+                unreadOnly = watcher.spec.unreadOnly,
+            )
+            reason?.let { watcher.report(it, LogLevel.WARN) }
+        }
+    }
+
+    // ---- Bookkeeping --------------------------------------------------------
+
+    private fun snapshot(key: String): Watch? = synchronized(lock) { watches[key] }
+
+    private fun report(key: String, message: String, level: LogLevel = LogLevel.INFO) {
+        val watchers = synchronized(lock) { watches[key]?.watchers?.values?.toList() }.orEmpty()
+        watchers.forEach { it.report(message, level) }
+    }
+
+    /**
+     * Records whether push is live and re-arms the polls to match.
+     *
+     * The poll is never cancelled here, only moved between its configured interval
+     * and the hourly backstop — which is what makes a dead IDLE a non-event rather
+     * than something that has to be detected.
+     */
+    private fun setPushing(key: String, pushing: Boolean) {
+        val (accountId, watchers) = synchronized(lock) {
+            val watch = watches[key] ?: return
+            if (watch.pushing == pushing) return
+            watch.pushing = pushing
+            watch.accountId to watch.watchers.toMap()
+        }
+        watchers.forEach { (nodeId, watcher) -> armPoll(nodeId, accountId, watcher.spec, demoted = pushing) }
+    }
+
+    // ---- The poll underneath -------------------------------------------------
+
+    private fun armPoll(nodeId: NodeId, accountId: String, spec: MailWatchSpec, demoted: Boolean) {
+        val minutes = if (demoted) {
+            maxOf(spec.intervalMinutes, IDLE_BACKSTOP_MINUTES)
+        } else {
+            spec.intervalMinutes.coerceAtLeast(DEFAULT_MAIL_POLL_MINUTES)
+        }
         val request = PeriodicWorkRequestBuilder<MailPollWorker>(minutes, TimeUnit.MINUTES)
             .setInputData(
                 workDataOf(
@@ -81,8 +267,8 @@ class MailWatchers(
             )
             // The one departure from `armBatteryLevelPoll`: a mail check with no
             // network is a socket guaranteed to fail, and WorkManager will re-run
-            // it the moment connectivity returns — which is both cheaper and more
-            // timely than burning the slot on a failure.
+            // it the moment connectivity returns — cheaper and more timely than
+            // burning the slot on a failure.
             .setConstraints(
                 Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
             )
@@ -95,4 +281,21 @@ class MailWatchers(
     }
 
     private fun workName(nodeId: NodeId) = MailPollWorker.WORK_NAME_PREFIX + nodeId.value
+
+    // A connection selects exactly one folder, so two nodes on two folders of one
+    // account are two connections — which is what IMAP requires, not a choice.
+    private fun key(accountId: String, folder: String) = "$accountId $folder"
+
+    private companion object {
+        /** How often the poll still runs while push is believed to be working. */
+        const val IDLE_BACKSTOP_MINUTES = 60L
+
+        const val MAX_IDLE_FAILURES = 3
+        const val INITIAL_BACKOFF_MS = 30_000L
+        const val MAX_BACKOFF_MS = 30L * 60 * 1000
+        const val IDLE_RETRY_AFTER_MS = 60L * 60 * 1000
+
+        /** A connection that lasted this long counts as having worked. */
+        const val HEALTHY_MS = 60_000L
+    }
 }

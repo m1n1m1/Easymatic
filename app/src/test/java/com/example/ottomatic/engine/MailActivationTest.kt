@@ -209,7 +209,12 @@ private class MailFakeHost(
 
     override fun mailAccount(id: String): MailAccount? = account
 
-    override fun armMailWatch(nodeId: NodeId, accountId: String, spec: MailWatchSpec): ScheduleHandle {
+    override fun armMailWatch(
+        nodeId: NodeId,
+        accountId: String,
+        spec: MailWatchSpec,
+        onReport: (String, LogLevel) -> Unit,
+    ): ScheduleHandle {
         armedWith += spec
         return ScheduleHandle { cancelled++ }
     }

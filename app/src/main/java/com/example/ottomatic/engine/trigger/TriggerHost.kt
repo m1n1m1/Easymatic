@@ -321,12 +321,23 @@ interface TriggerHost {
      * may watch one inbox and must cost one connection between them, which is the
      * contract [sensorSamples] states for a single sensor registration.
      *
+     * [onReport] carries a line back to the macro's own console, and exists for
+     * [armGeofence]'s `onResult` reason: everything interesting here happens
+     * *after* this method returns — a server with no IDLE, a connection that keeps
+     * dropping, a mailbox the server renumbered — and none of it has anywhere else
+     * to be said. It may be called from a background thread at any time until the
+     * handle is cancelled.
+     *
      * Returns a [ScheduleHandle] whose [ScheduleHandle.cancel] withdraws this
      * node's interest when the trigger flow is cancelled. The default is a no-op,
      * so a host with no mail behind it leaves the trigger silent.
      */
-    fun armMailWatch(nodeId: NodeId, accountId: String, spec: MailWatchSpec): ScheduleHandle =
-        ScheduleHandle { }
+    fun armMailWatch(
+        nodeId: NodeId,
+        accountId: String,
+        spec: MailWatchSpec,
+        onReport: (String, LogLevel) -> Unit = { _, _ -> },
+    ): ScheduleHandle = ScheduleHandle { }
 
     /**
      * Stream of variable-change events ([TriggerSource.VARIABLE]) for the variable
