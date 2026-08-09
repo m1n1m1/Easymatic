@@ -502,6 +502,10 @@ private fun NodeConfigOverlay(
                         reserveToggleGutter = gutter,
                         onValueChange = { onConfigChange(field.key, it) },
                         onWiredChange = { port?.let { p -> onDataInputVisibilityChange(p.name, it) } },
+                        // A field whose editor depends on a neighbour reads it from
+                        // here; `@MailFolder` is the only one so far, and it needs
+                        // the account chosen beside it to know which server to ask.
+                        siblingValue = { key -> node.config[key].orEmpty() },
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                 }

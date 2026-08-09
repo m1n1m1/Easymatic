@@ -8,6 +8,7 @@ import com.example.ottomatic.domain.model.MailRef
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.MailFolder
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.Wired
@@ -24,7 +25,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class FetchMailConfig(
     @Label("Account") @Picker(PickerKind.MAIL_ACCOUNT) val accountId: String = "",
-    @Label("Folder") @Wired val folder: String = "INBOX",
+    @Label("Folder") @MailFolder @Wired val folder: String = "INBOX",
     @Label("Only unread") val unreadOnly: Boolean = true,
     @Label("From contains") @Wired val fromContains: String = "",
     @Label("Subject contains") @Wired val subjectContains: String = "",

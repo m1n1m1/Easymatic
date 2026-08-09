@@ -154,6 +154,40 @@ enum class PickerKind {
 }
 
 /**
+ * Renders the `String` property as a mailbox field: a text field the user can type
+ * into, with a button beside it that lists the folders on the mail server.
+ *
+ * The **fourth** editable-with-a-chooser annotation, and it has to answer the bar
+ * [WifiNetwork] sets for exactly that proposal. It clears it, but by a different
+ * route than the other three, and the difference is worth stating.
+ *
+ * A folder name is *nominally* legible, which was the original argument for
+ * leaving it a plain text field — `INBX` reads back as obviously wrong where a
+ * mistyped UUID does not. That argument turns out to be false in the case that
+ * matters most: Gmail's folders are bracketed *and localised*, so a German account
+ * wants `[Gmail]/Alle Nachrichten` and nobody can be expected to guess the
+ * spelling, the brackets or the language. Legible after the fact is not the same
+ * as typeable in advance.
+ *
+ * So why not a [Picker], read-only? Because the option set lives on a server
+ * reached over a network, behind a password that may be wrong and a radio that may
+ * be off. A read-only field would be unfillable in precisely the situations where
+ * the account is misconfigured — which is [WifiNetwork]'s "a chooser can only offer
+ * what is reachable right now" in its second form. The difference from Wi-Fi is
+ * that here the thing usually *is* reachable, which is what makes the chooser worth
+ * having; the typing is the fallback rather than the main road.
+ *
+ * [accountKey] names the sibling config property holding the account whose folders
+ * to list. When that property does not exist, or is blank, the chooser asks which
+ * account first — which is what `action.mail_update` needs, since its account
+ * arrives inside a wired message reference rather than from a field.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class MailFolder(val accountKey: String = "accountId")
+
+/**
  * Renders the `String` property as a phone-number field: a text field the user can
  * type into, with a button beside it that fills it in from the device's contacts.
  *

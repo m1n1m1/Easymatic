@@ -7,6 +7,7 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.MailFolder
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.VisibleWhen
@@ -27,13 +28,19 @@ import kotlinx.serialization.Serializable
  * Blank [fromContains] and [subjectContains] mean "any", the way a blank SSID
  * means any network and a blank tag id means any tag.
  *
- * [folder] is a plain typed field rather than a picker, which is the opposite call
- * from [accountId] on the same form and worth keeping straight. An account id is a
- * UUID — opaque, so a typed one names nothing while looking correct. A folder name
- * is legible: `INBX` reads back as obviously wrong. And listing folders needs a
- * working authenticated connection, so a picker would be unfillable exactly when
- * the account is misconfigured — `@WifiNetwork`'s "a chooser can only offer what
- * is reachable right now" argument, in its second form.
+ * [folder] and [accountId] take deliberately different shapes, and the pair is
+ * worth keeping straight. An account id is a UUID — opaque, so a typed one names
+ * nothing while looking correct, which makes it a read-only [Picker]. A folder
+ * name is text the user can read back, so it stays **editable**, with a chooser
+ * beside it that lists what is actually on the server.
+ *
+ * That chooser was originally left out on the grounds that a folder name is
+ * legible enough to type. It is not: Gmail's folders are bracketed *and localised*,
+ * so a German account's archive is `[Gmail]/Alle Nachrichten`, which nobody guesses
+ * and which reads as a typo when it is right. What keeps it editable rather than
+ * read-only is the other half of that argument — listing folders needs a network
+ * and a working password, so a read-only field would be unfillable exactly when
+ * the account is misconfigured.
  *
  * [mode] exists because AUTOMATIC quietly falling back to a poll would be
  * invisible, and how often the phone wakes to check mail is a battery decision the
@@ -42,7 +49,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MailTriggerConfig(
     @Label("Account") @Picker(PickerKind.MAIL_ACCOUNT) val accountId: String = "",
-    @Label("Folder") val folder: String = "INBOX",
+    @Label("Folder") @MailFolder val folder: String = "INBOX",
     @Label("From contains") val fromContains: String = "",
     @Label("Subject contains") val subjectContains: String = "",
     @Label("Only unread") val unreadOnly: Boolean = true,

@@ -89,6 +89,31 @@ class PickerFieldsTest {
         )
     }
 
+    /**
+     * The fourth editable-with-a-chooser field, and the one whose editability is
+     * least obvious: a folder name looks typeable, which is why it was a plain text
+     * field first. Gmail's are bracketed and localised — `[Gmail]/Alle Nachrichten`
+     * — so the chooser is what makes it usable, and the field stays editable
+     * because listing folders needs a network and a working password.
+     */
+    @Test
+    fun `a mailbox is typed with a folder list beside it`() {
+        assertEquals(
+            ConfigFieldType.MAIL_FOLDER(accountKey = "accountId"),
+            fieldType("trigger.mail", "folder"),
+        )
+        assertEquals(
+            ConfigFieldType.MAIL_FOLDER(accountKey = "accountId"),
+            fieldType("action.fetch_mail", "folder"),
+        )
+        // No sibling holds this node's account — it arrives inside the wired
+        // message reference — so the chooser asks which account first.
+        assertEquals(
+            ConfigFieldType.MAIL_FOLDER(accountKey = ""),
+            fieldType("action.mail_update", "targetFolder"),
+        )
+    }
+
     @Test
     fun `schedule times get a clock face rather than a calendar`() {
         assertEquals(ConfigFieldType.TIME_OF_DAY, fieldType("trigger.schedule", "atTime"))

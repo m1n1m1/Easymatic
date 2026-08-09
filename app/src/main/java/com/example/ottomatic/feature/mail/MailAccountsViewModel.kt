@@ -213,6 +213,26 @@ class MailAccountsViewModel(
         }
     }
 
+    /**
+     * The folders on [accountId]'s server, or a sentence saying why not.
+     *
+     * Lives here rather than on the execution context because listing folders is
+     * the *editor's* need, not a node's — nothing in a running graph asks what
+     * mailboxes exist, and routing it through `ExecutionContext` would put
+     * `feature/` on the reading side of a facade built for the engine.
+     */
+    suspend fun folders(accountId: String): Result<List<String>> {
+        val account = repository.get(accountId)
+        val password = account?.let { repository.password(accountId) }
+        return when {
+            account == null -> Result.failure(IllegalStateException("That account has been deleted"))
+            password == null -> Result.failure(
+                IllegalStateException("This account needs its password typed in again"),
+            )
+            else -> withContext(Dispatchers.IO) { runCatching { MailTransport.folders(account, password) } }
+        }
+    }
+
     /** Saves the open draft. [onSaved] receives the id, so a picker can select it. */
     fun save(onSaved: (String) -> Unit = {}) {
         val draft = _uiState.value.draft?.takeIf { it.canSave } ?: return

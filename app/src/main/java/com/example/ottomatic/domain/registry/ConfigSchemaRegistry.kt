@@ -74,6 +74,16 @@ sealed interface ConfigFieldType<out T> {
      */
     data object WIFI_NETWORK : ConfigFieldType<String>
 
+    /**
+     * A mailbox name, rendered as a text field with a button that lists the folders
+     * on the server (declared with `@MailFolder`).
+     *
+     * The fourth editable-with-a-chooser field. [accountKey] names the sibling
+     * property holding the account whose folders to offer; blank, or naming a
+     * property that is itself unset, makes the chooser ask which account first.
+     */
+    data class MAIL_FOLDER(val accountKey: String) : ConfigFieldType<String>
+
     /** One of [options], stored as the option's [ConfigOption.value]. */
     data class ENUM(val options: List<ConfigOption>) : ConfigFieldType<String>
 

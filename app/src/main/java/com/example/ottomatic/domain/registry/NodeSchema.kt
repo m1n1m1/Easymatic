@@ -13,6 +13,7 @@ import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.PhoneNumber
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
+import com.example.ottomatic.domain.model.config.MailFolder
 import com.example.ottomatic.domain.model.config.Ports
 import com.example.ottomatic.domain.model.config.TimeOfDay
 import com.example.ottomatic.domain.model.config.VisibleWhen
@@ -139,6 +140,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                         phone = annotations.any { it is PhoneNumber },
                         timeOfDay = annotations.any { it is TimeOfDay },
                         wifi = annotations.any { it is WifiNetwork },
+                        mailFolder = annotations.filterIsInstance<MailFolder>().firstOrNull(),
                         key = key,
                     ),
                     defaultValue = defaultValues[key].orEmpty(),
@@ -163,22 +165,23 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         phone: Boolean,
         timeOfDay: Boolean,
         wifi: Boolean,
+        mailFolder: MailFolder?,
         key: String,
     ): ConfigFieldType<*> {
         // A DateTime reports `STRING`, so it has to be recognised by name before the
         // kind is consulted or it renders as a plain text field.
         if (element.serialName == DateTime.SERIAL_NAME) {
-            check(picker == null && !ports && !phone && !timeOfDay && !wifi) {
+            check(picker == null && !ports && !phone && !timeOfDay && !wifi && mailFolder == null) {
                 "Config property '${descriptor.serialName}.$key' is annotated with a widget but is a date; " +
                     "dates have their own picker, so the annotation is redundant"
             }
             return ConfigFieldType.DATE_TIME
         }
-        checkWidgetAnnotations(element, picker, ports, phone, timeOfDay, wifi, key)
+        checkWidgetAnnotations(element, picker, ports, phone, timeOfDay, wifi, mailFolder, key)
         return when (element.kind) {
             SerialKind.ENUM -> ConfigFieldType.ENUM(enumOptions(element))
             PrimitiveKind.STRING, PrimitiveKind.CHAR ->
-                stringFormType(multiline, picker, ports, phone, timeOfDay, wifi)
+                stringFormType(multiline, picker, ports, phone, timeOfDay, wifi, mailFolder)
             PrimitiveKind.INT, PrimitiveKind.LONG, PrimitiveKind.SHORT, PrimitiveKind.BYTE -> ConfigFieldType.INT
             PrimitiveKind.BOOLEAN -> ConfigFieldType.BOOL
             PrimitiveKind.DOUBLE, PrimitiveKind.FLOAT -> ConfigFieldType.DOUBLE
@@ -205,12 +208,14 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         phone: Boolean,
         timeOfDay: Boolean,
         wifi: Boolean,
+        mailFolder: MailFolder?,
     ): ConfigFieldType<String> = when {
         ports -> ConfigFieldType.PORT_LIST
         picker != null -> ConfigFieldType.PICKER(picker)
         phone -> ConfigFieldType.PHONE
         timeOfDay -> ConfigFieldType.TIME_OF_DAY
         wifi -> ConfigFieldType.WIFI_NETWORK
+        mailFolder != null -> ConfigFieldType.MAIL_FOLDER(mailFolder.accountKey)
         multiline -> ConfigFieldType.MULTILINE
         else -> ConfigFieldType.STR
     }
@@ -229,6 +234,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         phone: Boolean,
         timeOfDay: Boolean,
         wifi: Boolean,
+        mailFolder: MailFolder?,
         key: String,
     ) {
         check(picker == null || element.kind == PrimitiveKind.STRING) {
@@ -251,10 +257,15 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             "Config property '${descriptor.serialName}.$key' is annotated @WifiNetwork but is a " +
                 "${element.kind}; a network field stores an SSID, so it must be a String"
         }
-        val widgets = listOf(picker != null, ports, phone, timeOfDay, wifi).count { it }
+        check(mailFolder == null || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @MailFolder but is a " +
+                "${element.kind}; a mailbox field stores a folder name, so it must be a String"
+        }
+        val widgets = listOf(picker != null, ports, phone, timeOfDay, wifi, mailFolder != null).count { it }
         check(widgets <= 1) {
             "Config property '${descriptor.serialName}.$key' is annotated with $widgets widgets " +
-                "(@Picker, @Ports, @PhoneNumber, @TimeOfDay, @WifiNetwork); a property has one editor"
+                "(@Picker, @Ports, @PhoneNumber, @TimeOfDay, @WifiNetwork, @MailFolder); " +
+                "a property has one editor"
         }
     }
 

@@ -4,6 +4,7 @@
 
 package com.example.ottomatic.feature.grapheditor
 
+import com.example.ottomatic.core.model.ConfigKey
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,6 +68,7 @@ import com.example.ottomatic.feature.contacts.PhoneNumberField
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
 import com.example.ottomatic.feature.mail.LocalMailAccounts
+import com.example.ottomatic.feature.mail.MailFolderField
 import com.example.ottomatic.feature.mail.MailAccountPickerOverlay
 import com.example.ottomatic.feature.nfc.LocalNfcTags
 import com.example.ottomatic.feature.nfc.NfcTagPickerOverlay
@@ -104,6 +106,7 @@ internal fun ConfigFieldEditor(
     onValueChange: (String) -> Unit,
     label: String = field.label,
     tint: ConfigFieldTint? = null,
+    siblingValue: (ConfigKey) -> String = { "" },
 ) {
     val type = field.type
     var expanded by remember { mutableStateOf(false) }
@@ -220,6 +223,19 @@ internal fun ConfigFieldEditor(
             ConfigFieldType.PHONE -> {
                 PhoneNumberField(
                     value = value,
+                    onValueChange = onValueChange,
+                    labelSlot = labelSlot,
+                    colors = colors,
+                )
+            }
+            is ConfigFieldType.MAIL_FOLDER -> {
+                // The only field whose editor depends on another field's value:
+                // folders live on a server, and which server is the account named
+                // beside it. Hence [siblingValue] — everything else here is
+                // answerable from the field alone.
+                MailFolderField(
+                    value = value,
+                    accountId = siblingValue(ConfigKey(type.accountKey)),
                     onValueChange = onValueChange,
                     labelSlot = labelSlot,
                     colors = colors,

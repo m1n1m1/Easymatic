@@ -1,5 +1,6 @@
 package com.example.ottomatic.feature.grapheditor
 
+import com.example.ottomatic.core.model.ConfigKey
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -75,6 +76,7 @@ internal fun ConfigFieldRow(
     reserveToggleGutter: Boolean,
     onValueChange: (String) -> Unit,
     onWiredChange: (Boolean) -> Unit,
+    siblingValue: (ConfigKey) -> String = { "" },
 ) {
     if (port == null) {
         Box(
@@ -82,7 +84,12 @@ internal fun ConfigFieldRow(
                 .fillMaxWidth()
                 .padding(end = if (reserveToggleGutter) ConfigFieldToggleGutter else 0.dp),
         ) {
-            ConfigFieldEditor(field = field, value = value, onValueChange = onValueChange)
+            ConfigFieldEditor(
+                field = field,
+                value = value,
+                onValueChange = onValueChange,
+                siblingValue = siblingValue,
+            )
         }
         return
     }
@@ -102,6 +109,7 @@ internal fun ConfigFieldRow(
                 onValueChange = onValueChange,
                 label = if (connected) "${field.label} ← $sourceLabel" else field.label,
                 tint = if (connected) wiredFieldTint(portColor) else null,
+                siblingValue = siblingValue,
             )
         }
         Spacer(modifier = Modifier.width(4.dp))

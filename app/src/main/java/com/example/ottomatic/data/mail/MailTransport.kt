@@ -107,6 +107,33 @@ object MailTransport {
     }
 
     /**
+     * Every mailbox on the server that can hold messages, by full name.
+     *
+     * Full names, not display names, because the full name is what every other
+     * call here takes and what is stored in the node — `[Gmail]/All Mail` rather
+     * than `All Mail`. Folders that only hold other folders are dropped: they
+     * cannot be watched or fetched from, so offering one would be offering a
+     * guaranteed empty result.
+     *
+     * Sorted with INBOX pinned first. It is the answer nine times in ten and is
+     * the one name that is the same on every server in the world, so alphabetising
+     * it into the middle of a Gmail account's bracketed folders would bury the
+     * obvious choice.
+     */
+    fun folders(account: MailAccount, password: String): List<String> {
+        val store = Session.getInstance(imapProperties(account)).getStore(IMAP)
+        store.connect(account.imapHost, account.imapPort, account.effectiveUsername, password)
+        try {
+            return store.defaultFolder.list("*")
+                .filter { folder -> runCatching { folder.type and Folder.HOLDS_MESSAGES != 0 }.getOrDefault(false) }
+                .map { it.fullName }
+                .sortedWith(compareBy({ !it.equals(INBOX, ignoreCase = true) }, { it.lowercase() }))
+        } finally {
+            runCatching { store.close() }
+        }
+    }
+
+    /**
      * Reads messages from one mailbox. Throws on failure; [AndroidMail] converts.
      *
      * Two ways in, and which one is used is what keeps a large mailbox cheap.
@@ -373,6 +400,7 @@ object MailTransport {
     private const val SMTP = "smtp"
     private const val IMAP = "imap"
     private const val CHARSET = "UTF-8"
+    private const val INBOX = "INBOX"
 
     /**
      * Where a deleted message goes, in the order servers name it. Gmail's is

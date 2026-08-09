@@ -7,6 +7,7 @@ import com.example.ottomatic.domain.model.MailRef
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.MailFolder
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.dataOut
@@ -28,7 +29,14 @@ import kotlinx.serialization.Serializable
 data class MailUpdateConfig(
     @Label("Message") @Wired val ref: String = "",
     @Label("What to do") val op: MailOp = MailOp.MARK_READ,
-    @Label("Move to folder") @VisibleWhen("op", "MOVE") @Wired val targetFolder: String = "",
+    // No `accountKey` to name: this node's account arrives inside the wired
+    // reference rather than from a field, so the chooser asks which account
+    // first. Blank is the honest answer to "which sibling holds it?" here.
+    @Label("Move to folder")
+    @MailFolder(accountKey = "")
+    @VisibleWhen("op", "MOVE")
+    @Wired
+    val targetFolder: String = "",
 )
 
 /**
