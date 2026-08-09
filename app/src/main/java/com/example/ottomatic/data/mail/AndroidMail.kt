@@ -47,12 +47,20 @@ class AndroidMail(
         }
     }
 
-    // Implemented in the stages that add the trigger and the message actions. Until
-    // then they answer the way NoMail does rather than throwing, so a graph that
-    // somehow reaches one degrades instead of taking the run down.
-    override suspend fun fetch(request: MailFetch): MailFetchResult =
-        MailFetchResult(error = NOT_YET)
+    override suspend fun fetch(request: MailFetch): MailFetchResult {
+        val resolved = resolve(request.accountId)
+        return when (resolved) {
+            is Resolved.Missing -> MailFetchResult(error = resolved.reason)
+            is Resolved.Ready -> withContext(Dispatchers.IO) {
+                runCatching { MailTransport.listMessages(resolved.account, resolved.password, request) }
+                    .getOrElse { MailFetchResult(error = MailTransport.explain(it)) }
+            }
+        }
+    }
 
+    // Implemented by the stage that adds action.mail_update. Until then it answers
+    // the way NoMail does rather than throwing, so a graph that somehow reaches it
+    // degrades instead of taking the run down.
     override suspend fun update(request: MailUpdate): MailUpdateResult =
         MailUpdateResult(changed = false, error = NOT_YET)
 
@@ -83,6 +91,6 @@ class AndroidMail(
     }
 
     private companion object {
-        const val NOT_YET = "Reading mail is not available in this build"
+        const val NOT_YET = "Acting on a message is not available in this build"
     }
 }

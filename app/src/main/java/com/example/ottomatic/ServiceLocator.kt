@@ -12,6 +12,8 @@ import com.example.ottomatic.data.MailAccountRepository
 import com.example.ottomatic.data.NfcTagRepository
 import com.example.ottomatic.data.mail.AndroidMail
 import com.example.ottomatic.data.mail.AndroidMailSecrets
+import com.example.ottomatic.data.mail.MailRuntime
+import com.example.ottomatic.data.mail.MailSeenStore
 import com.example.ottomatic.data.GlobalVariableRepository
 import com.example.ottomatic.domain.registry.GlobalVariables
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
@@ -167,6 +169,9 @@ object ServiceLocator {
         // true across macros rather than just within one: the mutex serialising it
         // lives on this instance.
         val prompts = OverlayPrompts(appContext)
+        // One facade for the process, shared by the nodes and by the poll worker,
+        // so an account edited in the app is the account the next check uses.
+        val mailFacade = AndroidMail(mailAccountRepository)
         executionContext = DefaultExecutionContext(
             systemServices = systemServices,
             deviceState = deviceState,
@@ -182,7 +187,7 @@ object ServiceLocator {
             // Resolves an account and its password through the library on every
             // call rather than holding either: an account edited mid-run must not
             // be sent from with the settings it had when the engine started.
-            mail = AndroidMail(mailAccountRepository),
+            mail = mailFacade,
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.
@@ -191,8 +196,18 @@ object ServiceLocator {
                 android.util.Log.i("Ottomatic", entry.message)
             },
         )
-        triggerHost =
-            AndroidTriggerHost(appContext, geofencePlaceRepository, nfcTagRepository, sensorBridge, contacts)
+        // Published for MailPollWorker, which WorkManager builds from a
+        // (Context, WorkerParameters) constructor and nothing else — the same
+        // problem VariableStore.attach solves the same way.
+        MailRuntime.attach(mail = mailFacade, seen = MailSeenStore(appContext))
+        triggerHost = AndroidTriggerHost(
+            appContext,
+            geofencePlaceRepository,
+            nfcTagRepository,
+            sensorBridge,
+            contacts,
+            mailAccountRepository,
+        )
         permissionChecker = AndroidPermissionChecker(appContext)
         // Published for `GraphValidator`, which asks whether a node can actually do
         // its job and runs from paths that can neither suspend nor be injected

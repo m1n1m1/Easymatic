@@ -1,6 +1,9 @@
 package com.example.ottomatic.data.mail
 
+import com.example.ottomatic.core.service.MailFetch
+import com.example.ottomatic.core.service.MailFetchResult
 import com.example.ottomatic.core.service.MailLimits
+import com.example.ottomatic.core.service.MailMessageData
 import com.example.ottomatic.core.service.MailSend
 import com.example.ottomatic.domain.model.MailAccount
 import com.example.ottomatic.domain.model.MailSecurity
@@ -8,9 +11,13 @@ import java.net.UnknownHostException
 import java.util.Date
 import java.util.Properties
 import javax.mail.AuthenticationFailedException
+import javax.mail.FetchProfile
+import javax.mail.Flags
+import javax.mail.Folder
 import javax.mail.Message
 import javax.mail.MessagingException
 import javax.mail.Session
+import javax.mail.UIDFolder
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
@@ -29,6 +36,7 @@ import javax.mail.internet.MimeMessage
  * and its picker: two readings of one message would eventually disagree, and the
  * one that disagreed would be the one nobody was looking at.
  */
+@Suppress("TooManyFunctions") // One member per protocol operation, plus their readers. IMAP sets the count.
 object MailTransport {
 
     /**
@@ -93,6 +101,115 @@ object MailTransport {
         } finally {
             transport.close()
         }
+    }
+
+    /**
+     * Reads messages from one mailbox. Throws on failure; [AndroidMail] converts.
+     *
+     * Two ways in, and which one is used is what keeps a large mailbox cheap.
+     * [MailFetch.sinceUid] above zero asks the **server** for everything newer than
+     * the caller's high-water mark, so a forty-thousand-message inbox costs the
+     * same as an empty one — that is the poll's path, on every run after the first.
+     * Zero falls back to the last [MailFetch.limit] by sequence number, which is
+     * what a first sync and `action.fetch_mail` want.
+     *
+     * The folder is opened **read-only**. Reading mail must not mark it read: that
+     * is `action.mail_update`'s job, on the exec wire, where the user asked for it.
+     */
+    fun listMessages(account: MailAccount, password: String, request: MailFetch): MailFetchResult {
+        val store = Session.getInstance(imapProperties(account)).getStore(IMAP)
+        store.connect(account.imapHost, account.imapPort, account.effectiveUsername, password)
+        try {
+            val folder = store.getFolder(request.folder)
+            folder.open(Folder.READ_ONLY)
+            try {
+                return read(folder, request, account.id)
+            } finally {
+                runCatching { folder.close(false) }
+            }
+        } finally {
+            runCatching { store.close() }
+        }
+    }
+
+    private fun read(folder: Folder, request: MailFetch, accountId: String): MailFetchResult {
+        val uidFolder = folder as UIDFolder
+        val validity = uidFolder.uidValidity
+        val candidates = when {
+            request.sinceUid > 0 -> uidFolder.getMessagesByUID(request.sinceUid + 1, UIDFolder.LASTUID)
+            folder.messageCount == 0 -> emptyArray()
+            else -> {
+                val first = maxOf(1, folder.messageCount - request.limit.coerceAtMost(MailLimits.MAX_FETCH) + 1)
+                folder.getMessages(first, folder.messageCount)
+            }
+        }
+        // One round trip for the envelopes and flags of every candidate instead of
+        // one per message. Bodies are still fetched individually, which is why the
+        // filters below run before the mapping rather than after it.
+        if (candidates.isNotEmpty()) {
+            folder.fetch(
+                candidates,
+                FetchProfile().apply {
+                    add(FetchProfile.Item.ENVELOPE)
+                    add(FetchProfile.Item.FLAGS)
+                    add(UIDFolder.FetchProfileItem.UID)
+                },
+            )
+        }
+        val messages = candidates
+            .filter { matches(it, request) }
+            .takeLast(request.limit.coerceAtMost(MailLimits.MAX_FETCH))
+            .map { toMessageData(it, uidFolder.getUID(it), validity, folder.fullName, accountId) }
+        return MailFetchResult(messages = messages, uidValidity = validity)
+    }
+
+    private fun matches(message: Message, request: MailFetch): Boolean = runCatching {
+        val unreadOk = !request.unreadOnly || !message.isSet(Flags.Flag.SEEN)
+        val fromOk = request.fromContains.isBlank() ||
+            message.from.orEmpty().any { it.toString().contains(request.fromContains, ignoreCase = true) }
+        val subjectOk = request.subjectContains.isBlank() ||
+            MailBodyText.decodeHeader(message.subject).contains(request.subjectContains, ignoreCase = true)
+        unreadOk && fromOk && subjectOk
+    }.getOrDefault(false)
+
+    /**
+     * One message, read once.
+     *
+     * Shared by the fetch action, the poll worker and the IDLE watcher, for the
+     * reason [com.example.ottomatic.domain.model.TimeOfDay] is shared by the
+     * schedule trigger and its picker: two readings of one message would eventually
+     * disagree, and the one that disagreed would be the one nobody was watching.
+     */
+    fun toMessageData(
+        message: Message,
+        uid: Long,
+        uidValidity: Long,
+        folder: String,
+        accountId: String,
+    ): MailMessageData {
+        val sender = runCatching { message.from?.firstOrNull() as? InternetAddress }.getOrNull()
+        val body = MailBodyText.extract(message)
+        return MailMessageData(
+            uid = uid,
+            uidValidity = uidValidity,
+            folder = folder,
+            accountId = accountId,
+            from = sender?.address.orEmpty(),
+            fromName = MailBodyText.decodeHeader(sender?.personal),
+            to = runCatching { message.getRecipients(Message.RecipientType.TO)?.joinToString() }
+                .getOrNull()
+                .orEmpty(),
+            subject = MailBodyText.decodeHeader(runCatching { message.subject }.getOrNull()),
+            body = body.text,
+            bodyTruncated = body.truncated,
+            unread = runCatching { !message.isSet(Flags.Flag.SEEN) }.getOrDefault(true),
+            hasAttachments = MailBodyText.hasAttachments(message),
+            // Some servers report no received date at all; the sent date is the
+            // honest fallback, and zero would render as 1970 in a notification.
+            receivedAtEpochMs = runCatching { (message.receivedDate ?: message.sentDate)?.time }
+                .getOrNull()
+                ?: 0L,
+        )
     }
 
     /**

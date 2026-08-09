@@ -18,15 +18,19 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.data.GeofencePlaceRepository
+import com.example.ottomatic.data.MailAccountRepository
 import com.example.ottomatic.data.NfcTagRepository
+import com.example.ottomatic.data.mail.MailWatchers
 import com.example.ottomatic.data.nfc.NfcReader
 import com.example.ottomatic.data.sensor.SensorBridge
 import com.example.ottomatic.data.service.AndroidContacts
 import com.example.ottomatic.domain.model.GeofencePlace
+import com.example.ottomatic.domain.model.MailAccount
 import com.example.ottomatic.domain.model.NfcTag
 import com.example.ottomatic.engine.trigger.BatteryDirection
 import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofenceTransition
+import com.example.ottomatic.engine.trigger.MailWatchSpec
 import com.example.ottomatic.engine.trigger.NfcStatus
 import com.example.ottomatic.engine.trigger.ScheduleHandle
 import com.example.ottomatic.engine.trigger.ScreenOffMode
@@ -69,6 +73,12 @@ class AndroidTriggerHost(
      * instance; defaults to its own for callers that only need triggers.
      */
     private val contacts: Contacts = AndroidContacts(context),
+    /**
+     * The account library `trigger.mail` resolves its chosen account against.
+     * Null for callers that only need the other triggers, which then leaves every
+     * mail trigger unarmed rather than watching nothing.
+     */
+    private val mailAccounts: MailAccountRepository? = null,
 ) : TriggerHost {
 
     private val appContext = context.applicationContext
@@ -85,6 +95,16 @@ class AndroidTriggerHost(
     // registration, and that replay must be absorbed rather than reported.
     @Suppress("UnusedPrivateProperty") // Kept alive so its callback stays registered.
     private val wifiNetworkBridge = WifiNetworkBridge(appContext)
+
+    // One per process, holding the poll registrations and (once IDLE lands) the
+    // connections, reference-counted per account. Owned here for SensorBridge's
+    // reason: a trigger is handed a host and nothing else.
+    private val mailWatchers = MailWatchers(appContext)
+
+    override fun mailAccount(id: String): MailAccount? = mailAccounts?.get(id)
+
+    override fun armMailWatch(nodeId: NodeId, accountId: String, spec: MailWatchSpec): ScheduleHandle =
+        mailWatchers.arm(nodeId, accountId, spec)
 
     override fun sensorSamples(kind: SensorKind, rate: SensorRate): Flow<SensorSample> =
         sensorBridge.samples(kind, rate)

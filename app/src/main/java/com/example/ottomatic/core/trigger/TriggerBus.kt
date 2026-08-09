@@ -29,6 +29,7 @@ enum class TriggerSource {
     PACKAGE,
     MEDIA,
     NFC,
+    MAIL,
 }
 
 /**

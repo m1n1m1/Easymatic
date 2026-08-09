@@ -19,6 +19,10 @@ object TriggerRegistry {
         add(com.example.ottomatic.engine.trigger.ManualTrigger())
         add(com.example.ottomatic.engine.trigger.ScheduleTrigger())
         add(com.example.ottomatic.engine.trigger.SmsTrigger())
+        // Beside the SMS trigger because it answers the same question, and not
+        // among the broadcast tiers below because nothing broadcasts it: mail is
+        // reached over the network, by a poll and by a held-open connection.
+        add(com.example.ottomatic.engine.trigger.MailTrigger())
         add(com.example.ottomatic.engine.trigger.NotificationTrigger())
         add(com.example.ottomatic.engine.trigger.BootTrigger())
         add(com.example.ottomatic.engine.trigger.ChargingTrigger())

@@ -6,6 +6,7 @@ import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.GeofencePlace
+import com.example.ottomatic.domain.model.MailAccount
 import com.example.ottomatic.domain.model.NfcTag
 import com.example.ottomatic.domain.model.WorkflowNode
 import kotlinx.coroutines.flow.Flow
@@ -289,6 +290,43 @@ interface TriggerHost {
      * *covered* on the short-range ones.
      */
     fun sensorMaximumRange(kind: SensorKind): Float? = null
+
+    /**
+     * The [MailAccount] with this id, or null when it was deleted or never chosen.
+     *
+     * Reaches the trigger through the host for [geofencePlace]'s reason, but null
+     * means something different here than it does for [nfcTag], and the difference
+     * decides what the trigger does about it. A missing tag costs a firing macro
+     * its friendly name and nothing else; a missing *account* is the host, the
+     * username and the password all at once, so there is nothing to connect to.
+     * `trigger.mail` therefore stays unarmed and says so, the way an unresolvable
+     * geofence place does.
+     */
+    fun mailAccount(id: String): MailAccount? = null
+
+    /**
+     * Watches [accountId]'s mailbox for [nodeId], emitting a bus event (source
+     * `MAIL`, `triggerNodeId = nodeId`) for each newly arrived message.
+     *
+     * Two mechanisms behind one call, deliberately not two modes. The substrate is
+     * a WorkManager poll clamped to the 15-minute floor, which is what makes this
+     * work from a killed app and across a reboot. IMAP IDLE is layered on top when
+     * the server offers it, cutting latency from minutes to seconds — and the poll
+     * is **not torn down** when IDLE comes up, only slowed, because a socket
+     * dropped by carrier NAT stays parked in IDLE believing it is healthy and
+     * nothing else would ever notice. Which one is live is reported into the
+     * node's own console.
+     *
+     * Interest is reference-counted per **account**, not per node: several nodes
+     * may watch one inbox and must cost one connection between them, which is the
+     * contract [sensorSamples] states for a single sensor registration.
+     *
+     * Returns a [ScheduleHandle] whose [ScheduleHandle.cancel] withdraws this
+     * node's interest when the trigger flow is cancelled. The default is a no-op,
+     * so a host with no mail behind it leaves the trigger silent.
+     */
+    fun armMailWatch(nodeId: NodeId, accountId: String, spec: MailWatchSpec): ScheduleHandle =
+        ScheduleHandle { }
 
     /**
      * Stream of variable-change events ([TriggerSource.VARIABLE]) for the variable

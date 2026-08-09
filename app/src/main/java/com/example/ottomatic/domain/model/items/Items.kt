@@ -403,6 +403,38 @@ data class SmsSent(
 )
 
 /**
+ * A mail message, on `trigger.mail`'s `mail` port and `action.fetch_mail`'s
+ * `messages` port.
+ *
+ * - [ref]: the durable handle `action.mail_update` acts on — see
+ *   [com.example.ottomatic.domain.model.MailRef]. Text rather than a nested struct,
+ *   so one `action.break` reaches it and it can be wired into a scalar port.
+ * - [from] and [fromName] are separate on purpose: the address is what a filter or
+ *   an `action.if` compares, the display name is what belongs in a notification.
+ *   One field would put a `transform` in front of every use of the other.
+ * - [body]: plain text, capped at [com.example.ottomatic.core.service.MailLimits.BODY_CHARS]
+ *   **as it is extracted**, so a large HTML mail is never materialised whole.
+ *   [bodyTruncated] says whether that happened, so a macro can branch on it rather
+ *   than a notification quietly showing half a message.
+ * - [receivedAt] is a [DateTime], not a Long: a timestamp is a DateTime everywhere.
+ */
+@Serializable
+data class MailMessage(
+    val ref: String,
+    val from: String,
+    val fromName: String = "",
+    val to: String = "",
+    val subject: String = "",
+    val body: String = "",
+    val bodyTruncated: Boolean = false,
+    val unread: Boolean = true,
+    val hasAttachments: Boolean = false,
+    val folder: String = "INBOX",
+    val accountId: String = "",
+    val receivedAt: DateTime,
+)
+
+/**
  * Result of `action.send_mail` on its `state` data port.
  *
  * [SmsSent]'s shape plus an [error], and the extra field is the whole difference
