@@ -9,6 +9,7 @@ import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.model.schema.asText
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * The EXECUTION output a node pulses after running. A node declares which
@@ -31,6 +32,17 @@ enum class ExecutionRoute(val portName: PortName, val label: String) {
     CONFIRMED(ExecPorts.CONFIRMED, ExecPorts.CONFIRMED_LABEL),
     CANCELLED(ExecPorts.CANCELLED, ExecPorts.CANCELLED_LABEL),
     TIMED_OUT(ExecPorts.TIMED_OUT, ExecPorts.TIMED_OUT_LABEL),
+
+    /**
+     * A fork's immediate branch. Deliberately the **same port** as [OUT] — a fork
+     * carries on exactly where a plain action would, so a saved graph wired to
+     * `out` keeps working if a node ever grows a second branch — and differs only
+     * in what the card calls it. See [ExecPorts.CONTINUE_LABEL].
+     */
+    CONTINUE(ExecPorts.OUT, ExecPorts.CONTINUE_LABEL),
+
+    /** A fork's deferred branch, pulsed when the awaited moment arrives. */
+    RESUMED(ExecPorts.RESUMED, ExecPorts.RESUMED_LABEL),
 }
 
 /** The set of EXECUTION output ports a node exposes. */
@@ -65,6 +77,19 @@ enum class ExecOutputs(val routes: List<ExecutionRoute>) {
      * see `dialogEffectivePorts` — so the card carries no branch that cannot fire.
      */
     DECISION(listOf(ExecutionRoute.CONFIRMED, ExecutionRoute.CANCELLED, ExecutionRoute.TIMED_OUT)),
+
+    /**
+     * `out` / `resumed`: the node carries on at once **and** again later. Both are
+     * *forward* outputs — nothing is wired back — so the graph stays acyclic and
+     * neither [com.example.ottomatic.engine.validation.GraphValidator]'s cycle
+     * rule nor the executor's `onPath` guard needs an exception carved into it,
+     * exactly as for [LOOP].
+     *
+     * The first port is the ordinary `out`, following [ACKNOWLEDGED]'s precedent:
+     * a fork is wired in where a plain action was, and only what the card *calls*
+     * the port changes. See [ForkAction].
+     */
+    FORK(listOf(ExecutionRoute.CONTINUE, ExecutionRoute.RESUMED)),
     ;
 
     val ports: List<Port> get() = routes.map { execOut(it.portName, it.label) }
@@ -394,6 +419,139 @@ interface ConditionalLoopAction<C : Any> : ExecutableAction {
         dataOut = emptyMap(),
         halt = false,
     )
+}
+
+/**
+ * An action that pulses **`out` at once and `resumed` later**, with the two
+ * branches walked independently.
+ *
+ * The third shape the executor drives itself, after [LoopAction] and
+ * [ConditionalLoopAction], and for the same reason: a route is a choice between
+ * outputs, and this is not a choice — both fire. Expressing it as a
+ * [NodeOutput.route] could only ever pick one.
+ *
+ * The node **declares** the wait rather than performing the walk, exactly as a
+ * loop declares its iterations: [begin] returns what each branch carries plus a
+ * suspending [Fork.resume], and
+ * [com.example.ottomatic.engine.WorkflowExecutor.runFork] does the rest.
+ * Driving the walk from inside a node would mean duplicating the quarantine
+ * rules, the log attribution and the halt propagation that already live in one
+ * place.
+ *
+ * What a fork costs, stated once so it is not discovered in the field:
+ *
+ *  - the deferred branch runs on the **arm's** job, so it survives the run that
+ *    started it (and `trigger.macro_finished` fires before it) but dies when the
+ *    macro is disabled;
+ *  - it walks a **snapshot** of the data taken at the fork, so a wire from the
+ *    `out` branch into the `resumed` branch would read nothing — which
+ *    `GraphValidator` refuses rather than letting it fall back silently;
+ *  - `action.stop` downstream of `out` cancels a wait that has not fired yet,
+ *    but cannot un-run a `resumed` branch that has already started.
+ *
+ * [ExecOutputs.FORK] is not optional: `out` and `resumed` are the only ports the
+ * executor pulses for one of these.
+ */
+interface ForkAction<C : Any> : ExecutableAction {
+    override val definition: ActionNodeDefinition<C, Unit>
+
+    /**
+     * What this node produces, and when — decided before either branch is pulsed.
+     *
+     * Returning a plan rather than blocking is what keeps the timing in the
+     * executor: this call must not itself wait.
+     */
+    suspend fun begin(config: C, input: NodeInput, context: ExecutionContext): Fork
+
+    /** Decoding entry point, mirroring [RawAction.run]. */
+    suspend fun beginRaw(
+        node: WorkflowNode,
+        data: Map<PortName, Item>,
+        context: ExecutionContext,
+    ): Fork = begin(definition.schema.decode(node, data), NodeInput(node, data), context)
+
+    /**
+     * Never reached: [com.example.ottomatic.engine.WorkflowExecutor] tests for
+     * `is ForkAction` before it calls this. It pulses the immediate branch rather
+     * than throwing, so a caller which does not know about forks degrades to
+     * "never resumed" instead of failing the run — the same trade [LoopAction]
+     * makes with "ran zero times".
+     */
+    override suspend fun run(
+        node: WorkflowNode,
+        data: Map<PortName, Item>,
+        context: ExecutionContext,
+    ): EncodedNodeOutput = EncodedNodeOutput(
+        execOut = listOf(ExecPorts.OUT),
+        dataOut = emptyMap(),
+        halt = false,
+    )
+}
+
+/**
+ * A [ForkAction]'s plan: what each of its two branches carries, and how to wait
+ * for the second one.
+ *
+ * @param values the items this node's DATA outputs carry on the **immediate**
+ *   branch, cached before it is walked.
+ * @param resume suspends until the deferred branch should pulse, then returns
+ *   what that branch's DATA outputs carry. **Null means it never pulses** — the
+ *   moment is unreachable, which the node reports itself. Resuming instantly
+ *   instead would be indistinguishable from a bug.
+ *
+ * [resume] returns a map rather than the plan carrying one up front because the
+ * interesting fact about the deferred branch is *when it actually woke*, and
+ * that is not known at fork time: under an inexact alarm it differs from the
+ * moment that was asked for, and that difference is the whole reason the port is
+ * worth having.
+ */
+class Fork(
+    val values: Map<PortName, Item> = emptyMap(),
+    val resume: (suspend () -> Map<PortName, Item>)?,
+)
+
+/**
+ * The most deferred branches that may be waiting across the whole process.
+ *
+ * A `Repeat` of a thousand around a `Wait Until` would otherwise arm a thousand
+ * platform alarms — well past the point AlarmManager starts throttling an app —
+ * and hold a thousand graph snapshots against them. Over the cap the immediate
+ * branch still runs and the deferred one is skipped **with a line in the run
+ * log**, never silently: a fork that quietly stopped forking would read exactly
+ * like a moment that had not arrived yet.
+ */
+const val MAX_PENDING_WAITS: Int = 64
+
+/**
+ * The deferred fork branches currently waiting, counted across every workflow.
+ *
+ * Process-wide because what it bounds is process-wide — the platform alarms
+ * behind those branches, which are throttled per app and which no single macro's
+ * count would limit.
+ *
+ * [count] is readable from outside the executor for one specific reason: a
+ * foreground service that stops itself the moment nothing is armed would take a
+ * pending wait down with it, and a macro run from a home-screen tile has no arm
+ * to keep it up. Something waiting is something still to do.
+ */
+object PendingWaits {
+
+    private val waiting = AtomicInteger()
+
+    /** How many deferred branches are waiting right now. */
+    val count: Int get() = waiting.get()
+
+    /** Takes a slot, or answers false when [MAX_PENDING_WAITS] are already taken. */
+    internal fun reserve(): Boolean {
+        if (waiting.incrementAndGet() <= MAX_PENDING_WAITS) return true
+        waiting.decrementAndGet()
+        return false
+    }
+
+    /** Gives back a slot taken by [reserve]. */
+    internal fun release() {
+        waiting.decrementAndGet()
+    }
 }
 
 /**

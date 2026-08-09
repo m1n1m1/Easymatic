@@ -15,6 +15,8 @@ import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.Variables
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.core.service.UnknownDeviceState
+import com.example.ottomatic.core.service.DelayWaits
+import com.example.ottomatic.core.service.Waits
 import com.example.ottomatic.engine.trigger.NoSensors
 import com.example.ottomatic.engine.trigger.SensorReader
 
@@ -39,6 +41,7 @@ class DefaultExecutionContext(
     override val variables: Variables = NoVariables,
     override val contacts: Contacts = NoContacts,
     override val prompts: Prompts = NoPrompts,
+    override val waits: Waits = DelayWaits,
     private val logger: (LogEntry) -> Unit = {},
 ) : ExecutionContext {
 

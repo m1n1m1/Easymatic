@@ -14,6 +14,8 @@ import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.Variables
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.core.service.UnknownDeviceState
+import com.example.ottomatic.core.service.DelayWaits
+import com.example.ottomatic.core.service.Waits
 import com.example.ottomatic.domain.model.PhoneRef
 import com.example.ottomatic.engine.trigger.NoSensors
 import com.example.ottomatic.engine.trigger.SensorReader
@@ -94,6 +96,15 @@ interface ExecutionContext {
      * opposite of the pull side's "cheap and cannot fail".
      */
     val prompts: Prompts get() = NoPrompts
+
+    /**
+     * Sleeps until a wall-clock moment — `action.delay` and `action.wait_until`.
+     * Defaults to [DelayWaits] so engine-only tests need no alarm manager: they
+     * then get a plain coroutine sleep, which `runTest`'s virtual clock skips.
+     *
+     * An action's, never a value node's, for the reason [prompts] is: it waits.
+     */
+    val waits: Waits get() = DelayWaits
 
     /** Optional handle to enable/disable other macros at runtime, or null. */
     val macroControl: MacroControl? get() = null

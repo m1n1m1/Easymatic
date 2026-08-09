@@ -8,6 +8,7 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.engine.trigger.MacroEventBus
 import com.example.ottomatic.engine.trigger.TriggerOutput
+import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
@@ -42,6 +43,13 @@ val PULSE_ONLY: TriggerOutput = NodeOutput(emptyMap<PortName, Item>())
  *
  * Returns whether the run completed without throwing. [WorkflowRunner] ignores
  * that; a widget tile draws it.
+ *
+ * [deferredScope] is where a `Wait Until` on this graph parks its second branch.
+ * That branch deliberately outlives this function — which is what keeps
+ * `"finished"` meaning "the macro got going", rather than waiting until morning
+ * for a wait set the night before — so it needs a scope of its own, and the one
+ * with the right lifetime is the arm's. Null runs it inline; see
+ * [WorkflowExecutor].
  */
 @Suppress("TooGenericExceptionCaught") // One bad run must not end the subscription, or crash a widget tap.
 suspend fun runFromTrigger(
@@ -49,8 +57,9 @@ suspend fun runFromTrigger(
     workflow: Workflow,
     node: WorkflowNode,
     output: TriggerOutput = PULSE_ONLY,
+    deferredScope: CoroutineScope? = null,
 ): Boolean {
-    val executor = WorkflowExecutor(context.boundTo(workflow))
+    val executor = WorkflowExecutor(context.boundTo(workflow), deferredScope)
     return try {
         executor.executeFrom(workflow, node, output)
         true

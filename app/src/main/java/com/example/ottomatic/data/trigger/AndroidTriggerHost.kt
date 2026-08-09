@@ -113,20 +113,9 @@ class AndroidTriggerHost(
 
     override fun armAlarm(nodeId: NodeId, atEpochMs: Long): ScheduleHandle {
         val pendingIntent = alarmPendingIntent(nodeId)
-        // setExact* needs SCHEDULE_EXACT_ALARM from API 31; without it the call
-        // throws, so fall back to the inexact variant rather than failing the
-        // whole trigger. Both variants fire through doze.
-        if (canScheduleExactAlarms()) {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atEpochMs, pendingIntent)
-        } else {
-            Log.w(TAG, "Exact alarms not permitted; node $nodeId falls back to an inexact alarm")
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atEpochMs, pendingIntent)
-        }
+        alarmManager.setWakeup(atEpochMs, pendingIntent, "node $nodeId")
         return ScheduleHandle { alarmManager.cancel(pendingIntent) }
     }
-
-    private fun canScheduleExactAlarms(): Boolean =
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
 
     private fun alarmPendingIntent(nodeId: NodeId): PendingIntent {
         val intent = Intent(appContext, AlarmReceiver::class.java).apply {

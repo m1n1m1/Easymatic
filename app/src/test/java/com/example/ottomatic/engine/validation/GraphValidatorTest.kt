@@ -624,6 +624,89 @@ class GraphValidatorTest {
         }
     }
 
+    // region A fork's two branches
+
+    /**
+     * The rule that would otherwise be invisible: the deferred branch walks a
+     * snapshot taken when the fork ran, so a wire from the immediate branch
+     * carries **nothing** into it — and the consumer would quietly fall back to
+     * its form value, which is exactly the substitution this validator exists to
+     * prevent. Raw exec reachability cannot see it: the source really is upstream.
+     */
+    @Test
+    fun `a data wire across a fork's two branches is refused`() {
+        val validation = GraphValidator(forkWorkflow(fromNow = true)).validate()
+
+        val error = validation.errors.single { "opposite" in it.message }
+        assertTrue(error.message, "Wait Until" in error.message)
+        // The consumer is held back; the source ran perfectly well.
+        assertTrue(error.blockedNodes.toString(), error.blockedNodes == setOf(NodeId("later")))
+    }
+
+    /** Both directions are wrong; the deferred-to-immediate one even more obviously. */
+    @Test
+    fun `a data wire from the deferred branch back to the immediate one is refused too`() {
+        val validation = GraphValidator(forkWorkflow(fromNow = false)).validate()
+
+        assertTrue(validation.errors.toString(), validation.errors.any { "opposite" in it.message })
+    }
+
+    /**
+     * The negative half, and the one that would make the rule useless if it were
+     * wrong: everything before the fork ran before the snapshot was taken, so it
+     * is visible to both branches and its wires are ordinary.
+     */
+    @Test
+    fun `a wire from before the fork into either branch stays legal`() {
+        val validation = GraphValidator(forkWorkflow(fromNow = null)).validate()
+
+        // Not just "no fork error" — no error at all, which is what makes this a
+        // statement about the graph rather than about one rule's wording.
+        assertTrue(validation.errors.toString(), validation.errors.isEmpty())
+    }
+
+    /**
+     * Manual → Ask to Choose → Wait Until, with another Ask to Choose on each
+     * branch. That node is the subject only because it has both a `String` output
+     * and a `String` input, so every wire below is type-clean and the only errors
+     * a run can produce are the ones under test.
+     *
+     * [fromNow] chooses which wire is drawn: true feeds the immediate branch into
+     * the deferred one, false the reverse, and null feeds the node *before* the
+     * fork into the deferred branch — the case that must stay legal.
+     */
+    private fun forkWorkflow(fromNow: Boolean?): Workflow {
+        val from = when (fromNow) {
+            true -> "now"
+            false -> "later"
+            null -> "ask"
+        }
+        val to = if (fromNow == false) "now" else "later"
+        return Workflow(
+            nodes = listOf(
+                WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
+                choice("ask", "Ask"),
+                WorkflowNode(NodeId("w"), NodeTypeId("action.wait_until"), "Wait Until", 0f, 80f),
+                choice("now", "Now"),
+                choice("later", "Later"),
+            ),
+            execConnections = listOf(
+                ExecConnection("c0", NodeId("n1"), PortName("out"), NodeId("ask"), PortName("in")),
+                ExecConnection("c1", NodeId("ask"), PortName("confirmed"), NodeId("w"), PortName("in")),
+                ExecConnection("c2", NodeId("w"), PortName("out"), NodeId("now"), PortName("in")),
+                ExecConnection("c3", NodeId("w"), PortName("resumed"), NodeId("later"), PortName("in")),
+            ),
+            dataConnections = listOf(
+                DataConnection("d1", NodeId(from), PortName("choice"), NodeId(to), PortName("message")),
+            ),
+        )
+    }
+
+    private fun choice(id: String, name: String) =
+        WorkflowNode(NodeId(id), NodeTypeId("action.dialog_choice"), name, 0f, 120f)
+
+    // endregion
+
     @Suppress("unused")
     private fun portKindUnused(): PortKind = PortKind.EXECUTION
 

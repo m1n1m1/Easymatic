@@ -79,8 +79,8 @@ internal fun descriptionFor(requirement: PermissionRequirement): String =
             "Keeps Android from stopping the engine in the background. Without it, macros may " +
                 "not re-arm after a reboot and time-based triggers can be delayed."
         PrerequisiteType.EXACT_ALARM ->
-            "Lets a schedule fire at the minute you asked for. Without it Android is free to " +
-                "batch it with other work, so it may run late."
+            "Lets a schedule fire, and a wait end, at the minute you asked for. Without it " +
+                "Android is free to batch it with other work, so it may run late."
         PrerequisiteType.WRITE_SETTINGS ->
             "Lets a macro change screen brightness, screen timeout and auto-rotate."
         PrerequisiteType.NFC ->
@@ -146,6 +146,10 @@ internal fun rationaleFor(requirement: PermissionRequirement): String? =
             "This trigger needs NFC switched on, which is a system-wide setting rather than " +
                 "something Ottomatic can grant itself. Tags are also only read while the screen " +
                 "is on and unlocked — a tap will not reach a phone asleep in your pocket."
+        "alarm.exact" ->
+            "Ottomatic needs permission to set exact alarms so this wait ends at the minute you " +
+                "asked for. Without it the wait still happens, but Android batches the wake-up " +
+                "with other work and it can be minutes late."
         "overlay.launch" ->
             "Ottomatic needs permission to draw over other apps so it can open one while you " +
                 "are somewhere else on your phone. Android blocks a background app from " +

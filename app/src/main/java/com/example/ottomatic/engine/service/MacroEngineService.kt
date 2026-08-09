@@ -24,6 +24,7 @@ import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.data.BootFailureStore
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.engine.ExecutionContext
+import com.example.ottomatic.engine.PendingWaits
 import com.example.ottomatic.engine.WorkflowRunner
 import com.example.ottomatic.engine.runFromTrigger
 import com.example.ottomatic.engine.trigger.ManualTrigger
@@ -34,6 +35,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -170,9 +172,9 @@ class MacroEngineService : Service() {
                     armMutex.withLock {
                         if (activeJobs.containsKey(id)) {
                             arm(id, announce = false)
-                        } else if (activeJobs.isEmpty()) {
+                        } else {
                             // startForegroundService spun us up for nothing.
-                            stopSelf()
+                            stopIfIdle()
                         }
                     }
                 }
@@ -194,7 +196,7 @@ class MacroEngineService : Service() {
             ACTION_STOP_SOUNDS -> {
                 systemServices.stopSounds()
                 refreshNotification()
-                if (activeJobs.isEmpty()) stopSelf()
+                stopIfIdle()
             }
         }
     }
@@ -217,12 +219,30 @@ class MacroEngineService : Service() {
     private suspend fun runManual(intent: Intent) {
         val workflowId = intent.getStringExtra(EXTRA_WORKFLOW_ID) ?: return
         val nodeId = intent.getStringExtra(EXTRA_NODE_ID) ?: return
-        runManualTrigger(repository, executionContext, workflowId, nodeId)
-        // This branch can have spun the service up for a macro that arms nothing —
-        // a manual-only macro whose switch is off is the common case — and a
-        // foreground service with an empty job map is a permanent notification for
-        // a run that has already ended. Same guard ACTION_RELOAD makes.
-        if (activeJobs.isEmpty()) stopSelf()
+        runManualTrigger(repository, executionContext, workflowId, nodeId, ServiceLocator.appScope)
+        // A `Wait Until` this run set is still to come, and the foreground service
+        // is the only thing between it and the process being reaped — so stay up
+        // for it, then stop. The loop ends as soon as the wait does, or as soon as
+        // something else arms and takes over the reason to keep running.
+        while (activeJobs.isEmpty() && PendingWaits.count > 0) delay(IDLE_POLL_MS)
+        stopIfIdle()
+    }
+
+    /**
+     * Stops the service when there is nothing left for it to hold up.
+     *
+     * A manual run can have spun the service up for a macro that arms nothing — a
+     * manual-only macro whose switch is off is the common case — and a foreground
+     * service with an empty job map is a permanent notification for a run that has
+     * already ended.
+     *
+     * A pending `Wait Until` counts as something left to do even though it arms no
+     * trigger: half the macro has yet to happen. It is not enough on its own to
+     * *keep* the service up — nothing here re-checks — which is why the one path
+     * that can create a wait with nothing armed waits for it in [runManual].
+     */
+    private fun stopIfIdle() {
+        if (activeJobs.isEmpty() && PendingWaits.count == 0) stopSelf()
     }
 
     /**
@@ -255,7 +275,7 @@ class MacroEngineService : Service() {
     private suspend fun rearmEnabled(skipArmed: Boolean) {
         val enabled = repository.list().filter { it.enabled }
         if (enabled.isEmpty()) {
-            if (activeJobs.isEmpty()) stopSelf()
+            stopIfIdle()
             return
         }
         for (workflow in enabled) {
@@ -318,7 +338,10 @@ class MacroEngineService : Service() {
         // after the macro that asked for it is gone.
         systemServices.stopSounds()
         refreshNotification()
-        if (activeJobs.isEmpty()) stopSelf()
+        // Any wait this macro had is already gone: cancelling the arm cancels its
+        // deferred branches, and the `join` above is what makes that true by now
+        // rather than shortly afterwards. What is left belongs to somebody else.
+        stopIfIdle()
     }
 
     /**
@@ -459,6 +482,9 @@ class MacroEngineService : Service() {
         private val _armedCount = MutableStateFlow(0)
         val armedCount: StateFlow<Int> = _armedCount.asStateFlow()
 
+        /** How often [runManual] re-checks whether the wait it is holding up for is done. */
+        private const val IDLE_POLL_MS = 60_000L
+
         private const val NOTIFICATION_ID = 4242
         private const val CHANNEL_ID = "ottomatic.engine"
         private const val OPEN_APP_REQUEST_CODE = 0
@@ -512,6 +538,7 @@ class MacroEngineService : Service() {
                         ServiceLocator.executionContext,
                         workflowId,
                         nodeId,
+                        ServiceLocator.appScope,
                     )
                 }
             }
@@ -526,6 +553,14 @@ class MacroEngineService : Service() {
          * a service: the [ACTION_RUN_MANUAL] branch passes the service's own, and
          * the [runManual] fallback passes [ServiceLocator]'s.
          *
+         * [deferredScope] is where a `Wait Until` on this graph parks its second
+         * branch, and both callers pass [ServiceLocator.appScope] rather than the
+         * service's own. A manual run has no *arm* behind it — the switch may well
+         * be off — so the service is free to stop the moment this returns, and
+         * parking the wait on a scope that is about to be cancelled would cancel
+         * the wait. The process is the honest owner here. See [stopIfIdle] for the
+         * other half of keeping it alive.
+         *
          * Every lookup failure here is silent on purpose. A widget outlives the
          * thing it points at — a macro can be deleted, or its manual trigger removed
          * from the graph, while a tile for it sits on the home screen — and the
@@ -539,6 +574,7 @@ class MacroEngineService : Service() {
             context: ExecutionContext,
             workflowId: String,
             nodeId: String,
+            deferredScope: CoroutineScope,
         ) {
             val workflow = repository.load(workflowId) ?: return
             val node = workflow.node(NodeId(nodeId))
@@ -549,7 +585,7 @@ class MacroEngineService : Service() {
                 ?: node.name
             val target = RunFeedback.Target(workflowId, nodeId, workflow.name, label)
             RunFeedback.running(target, System.currentTimeMillis())
-            val ok = runFromTrigger(context, workflow, node)
+            val ok = runFromTrigger(context, workflow, node, deferredScope = deferredScope)
             RunFeedback.finished(target, ok, System.currentTimeMillis())
         }
     }

@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine.trigger
 
+import com.example.ottomatic.domain.model.MINUTES_PER_DAY
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull

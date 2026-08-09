@@ -37,6 +37,7 @@ import com.example.ottomatic.engine.action.StopAction
 import com.example.ottomatic.engine.action.StopSoundAction
 import com.example.ottomatic.engine.action.VibrateAction
 import com.example.ottomatic.engine.action.VolumeAction
+import com.example.ottomatic.engine.action.WaitUntilAction
 import com.example.ottomatic.engine.action.WhileAction
 import com.example.ottomatic.engine.action.WifiAction
 
@@ -74,7 +75,10 @@ object ActionRegistry {
         BrightnessAction(),
         CallAction(),
         ClipboardAction(),
+        // The two waits, together and in that order: waiting a while is the simpler
+        // idea, and waiting *until* something is the one that also carries on.
         DelayAction(),
+        WaitUntilAction(),
         // The four dialog nodes are one family and are kept together for the reason
         // the three loops are, with the plainest first: a message is what somebody
         // reaches for before they need an answer at all.

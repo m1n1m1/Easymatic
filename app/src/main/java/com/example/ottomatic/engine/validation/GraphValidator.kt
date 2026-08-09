@@ -2,6 +2,7 @@ package com.example.ottomatic.engine.validation
 
 import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.ExecConnection
@@ -79,6 +80,7 @@ class GraphValidator(private val workflow: Workflow) {
         validateExecAcyclicity(issues)
         validateDataAcyclicity(issues)
         validateStrictDataSemantics(issues)
+        validateForkBranches(issues)
         validateValueNodesAreUsed(issues)
         validateTriggers(issues)
         validateLoopBodies(issues)
@@ -203,6 +205,17 @@ class GraphValidator(private val workflow: Workflow) {
             ?.outputs(PortKind.EXECUTION)
             .orEmpty()
             .any { it.name == ExecPorts.BODY }
+
+    /**
+     * Whether this node is a fork, i.e. declares `resumed` as an **exec output** —
+     * derived from the declaration for the reason [isLoop] is, so a second fork
+     * node needs nothing registered here.
+     */
+    private fun WorkflowNode.isFork(): Boolean =
+        NodeTypeRegistry.byId(typeId)
+            ?.outputs(PortKind.EXECUTION)
+            .orEmpty()
+            .any { it.name == ExecPorts.RESUMED }
 
     /**
      * A loop whose `body` output goes nowhere walks its list and does nothing with
@@ -520,6 +533,77 @@ class GraphValidator(private val workflow: Workflow) {
                 )
             }
         }
+    }
+
+    /**
+     * A data wire from one side of a fork to the other carries nothing, and must
+     * say so rather than falling back in silence.
+     *
+     * [validateStrictDataSemantics] cannot catch this: it walks raw exec edges, in
+     * which both of a fork's outputs are ordinary forward edges, so the source
+     * *is* upstream of the consumer and the wire looks fine. What it cannot see is
+     * that the deferred branch walks a **snapshot** taken when the fork ran — so a
+     * node on the immediate branch may have run, and produced exactly what the
+     * wire promises, and the consumer will still read nothing and quietly use its
+     * form value instead. Which is the one thing this validator exists to prevent:
+     * substituting a typed-in value for a wire drawn on the canvas.
+     *
+     * Both directions are wrong and both are reported. Immediate → deferred is the
+     * snapshot; deferred → immediate is worse still, since the immediate branch
+     * has finished by the time the deferred one starts.
+     *
+     * Nothing *before* the fork is affected: it ran before the snapshot was taken,
+     * so it is visible to both branches. This costs a graph with no fork nothing
+     * at all.
+     */
+    @Suppress("LoopWithTooManyJumpStatements") // Two independent "not this edge" guards; nesting them reads worse.
+    private fun validateForkBranches(out: MutableList<ValidationIssue>) {
+        val forks = workflow.nodes.filter { it.isFork() }
+        if (forks.isEmpty()) return
+        val execForward = mutableMapOf<NodeId, MutableList<NodeId>>()
+        workflow.execConnections.forEach {
+            execForward.getOrPut(it.fromNodeId) { mutableListOf() } += it.toNodeId
+        }
+        for (fork in forks) {
+            val fromOut = execReachableFrom(execForward, fork.id, ExecPorts.OUT)
+            val fromResumed = execReachableFrom(execForward, fork.id, ExecPorts.RESUMED)
+            // Only what one branch reaches and the other does not. A node both
+            // reach is a diamond: it runs once per incoming pulse, so on each walk
+            // it sees whatever that walk produced, and a wire into it is fine.
+            val immediate = fromOut - fromResumed
+            val deferred = fromResumed - fromOut
+            for (conn in workflow.dataConnections) {
+                if (isPullNode(conn.fromNodeId)) continue
+                val crosses = (conn.fromNodeId in immediate && conn.toNodeId in deferred) ||
+                    (conn.fromNodeId in deferred && conn.toNodeId in immediate)
+                if (!crosses) continue
+                out += ValidationIssue(
+                    Severity.ERROR,
+                    "'${nameOf(conn.fromNodeId)}' and '${nameOf(conn.toNodeId)}' are on opposite " +
+                        "branches of '${fork.name}', so nothing can be passed between them",
+                    nodes = setOf(conn.fromNodeId, conn.toNodeId),
+                    connectionId = conn.id,
+                    // Only the consumer, as everywhere else: the source is fine.
+                    blockedNodes = executedConsumers(conn.toNodeId),
+                    blockedConnections = setOf(conn.id),
+                )
+            }
+        }
+    }
+
+    /** Every node reached by following exec edges out of [port] on [from], excluding [from]. */
+    private fun execReachableFrom(
+        execForward: Map<NodeId, List<NodeId>>,
+        from: NodeId,
+        port: PortName,
+    ): Set<NodeId> {
+        val seen = mutableSetOf<NodeId>()
+        val stack = ArrayDeque(workflow.outgoingExec(from, port).map { it.toNodeId })
+        while (stack.isNotEmpty()) {
+            val current = stack.removeLast()
+            if (seen.add(current)) execForward[current]?.forEach { stack.addLast(it) }
+        }
+        return seen
     }
 
     /**

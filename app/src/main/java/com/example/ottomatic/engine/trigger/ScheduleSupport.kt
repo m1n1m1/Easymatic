@@ -1,28 +1,28 @@
 package com.example.ottomatic.engine.trigger
 
+import com.example.ottomatic.domain.model.MAX_DAYS_SCANNED
+import com.example.ottomatic.domain.model.MINUTES_PER_DAY
 import com.example.ottomatic.domain.model.TimeOfDay
+import com.example.ottomatic.domain.model.minuteOfDay
+import com.example.ottomatic.domain.model.nextTimeOfDay
+import com.example.ottomatic.domain.model.startOfDayAt
 import java.util.Calendar
 
 /**
- * Shared wall-clock helpers for `trigger.schedule`: the [ScheduleWindow] its
- * ticks are filtered against, the day filters applied alongside it, and the
- * next-fire-time search behind both the "at a time of day" mode and the exact,
- * window-aligned interval mode.
+ * Wall-clock helpers specific to `trigger.schedule`: the [ScheduleWindow] its
+ * ticks are filtered against, and the next-fire-time search behind both the "at
+ * a time of day" mode and the exact, window-aligned interval mode.
+ *
+ * The day filters themselves are **not** here. They live in
+ * [com.example.ottomatic.domain.model.DayFilter], because `action.wait_until`
+ * reads them too and one copy of "which day is this?" is the point.
  */
 
 /** WorkManager's periodic-work floor, and the default cadence for the poller. */
 internal const val DEFAULT_INTERVAL_MINUTES = 15L
 
-/** Minutes in an hour, and in a day; the latter is also the open end of an
- * unbounded time-of-day window. */
-internal const val MINUTES_PER_HOUR = 60
-internal const val MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR
-
 /** Milliseconds in a minute, for offsetting interval slots within a window. */
 private const val MS_PER_MINUTE = 60_000L
-
-/** Upper bound on the forward scan in [nextFireTime] — a full leap year. */
-private const val MAX_DAYS_SCANNED = 366
 
 /**
  * Minutes past midnight of an `HH:mm` string; 0 when unparseable.
@@ -34,20 +34,6 @@ private const val MAX_DAYS_SCANNED = 366
  */
 internal fun minutesOfDay(hhmm: String): Int =
     TimeOfDay.parse(hhmm)?.minutesPastMidnight ?: 0
-
-/** Minutes past midnight of an epoch timestamp, in the device's timezone. */
-internal fun minutesOfDay(epochMs: Long): Int {
-    val calendar = Calendar.getInstance().apply { timeInMillis = epochMs }
-    return calendar.get(Calendar.HOUR_OF_DAY) * MINUTES_PER_HOUR + calendar.get(Calendar.MINUTE)
-}
-
-/** The [Calendar] day-of-week of an epoch timestamp. */
-internal fun dayOfWeek(epochMs: Long): Int =
-    Calendar.getInstance().apply { timeInMillis = epochMs }.get(Calendar.DAY_OF_WEEK)
-
-/** The day of the month (1-31) of an epoch timestamp. */
-internal fun dayOfMonth(epochMs: Long): Int =
-    Calendar.getInstance().apply { timeInMillis = epochMs }.get(Calendar.DAY_OF_MONTH)
 
 /**
  * A daily active window, in minutes past midnight.
@@ -87,7 +73,7 @@ internal data class ScheduleWindow(val startMinute: Int, val endMinute: Int) {
      * hours, so it stays correct across DST transitions.
      */
     fun anchorDay(epochMs: Long): Long {
-        if (!wraps || minutesOfDay(epochMs) >= startMinute) return epochMs
+        if (!wraps || minuteOfDay(epochMs) >= startMinute) return epochMs
         return Calendar.getInstance().apply {
             timeInMillis = epochMs
             add(Calendar.DAY_OF_YEAR, -1)
@@ -102,41 +88,30 @@ internal data class ScheduleWindow(val startMinute: Int, val endMinute: Int) {
  * caller then arms nothing rather than looping forever.
  *
  * Two shapes are covered:
- *  - [ScheduleMode.AT_TIME] fires once per matching day, at `atTime`.
+ *  - [ScheduleMode.AT_TIME] fires once per matching day, at `atTime`. That half
+ *    is [nextTimeOfDay], shared with `action.wait_until`.
  *  - [ScheduleMode.INTERVAL] with an active window fires on slots offset from
  *    the window's start, so "every 30 minutes from 23:00" lands on 23:00,
  *    23:30, 00:00, 00:30 rather than on whatever phase the poller was armed at.
- *
- * Candidate days are stepped through a [Calendar], so the daily anchor follows
- * the device timezone's DST transitions. Slots *within* a window are offset in
- * raw milliseconds, so a DST change mid-window shifts the later slots by an
- * hour — not worth the complexity of correcting.
  */
 internal fun nextFireTime(config: ScheduleConfig, fromEpochMs: Long): Long? {
     val window = config.window
     return if (config.mode == ScheduleMode.AT_TIME || window == null) {
-        nextDailyTime(config, minutesOfDay(config.atTime), fromEpochMs)
+        nextTimeOfDay(minutesOfDay(config.atTime), config.dayFilter, fromEpochMs)
     } else {
         nextWindowSlot(config, window, fromEpochMs)
     }
-}
-
-/** The next occurrence of [minuteOfDay] on a day [config]'s day filters accept. */
-private fun nextDailyTime(config: ScheduleConfig, minuteOfDay: Int, fromEpochMs: Long): Long? {
-    val calendar = startOfDayAt(fromEpochMs, minuteOfDay)
-    // Today's slot may already have passed; the first candidate is tomorrow then.
-    if (calendar.timeInMillis <= fromEpochMs) calendar.add(Calendar.DAY_OF_YEAR, 1)
-    repeat(MAX_DAYS_SCANNED) {
-        if (config.matchesDay(calendar.timeInMillis)) return calendar.timeInMillis
-        calendar.add(Calendar.DAY_OF_YEAR, 1)
-    }
-    return null
 }
 
 /**
  * The next interval slot inside [window]. Walks candidate window *openings*
  * forward and, for each accepted one, jumps straight to the first slot after
  * [fromEpochMs] instead of stepping through every slot.
+ *
+ * Candidate days are stepped through a [Calendar], so the daily anchor follows
+ * the device timezone's DST transitions. Slots *within* a window are offset in
+ * raw milliseconds, so a DST change mid-window shifts the later slots by an
+ * hour — not worth the complexity of correcting.
  */
 private fun nextWindowSlot(config: ScheduleConfig, window: ScheduleWindow, fromEpochMs: Long): Long? {
     val intervalMs = config.intervalMinutes * MS_PER_MINUTE
@@ -157,13 +132,3 @@ private fun nextWindowSlot(config: ScheduleConfig, window: ScheduleWindow, fromE
     }
     return null
 }
-
-/** [epochMs]'s own day, at [minuteOfDay] past midnight, seconds cleared. */
-private fun startOfDayAt(epochMs: Long, minuteOfDay: Int): Calendar =
-    Calendar.getInstance().apply {
-        timeInMillis = epochMs
-        set(Calendar.HOUR_OF_DAY, minuteOfDay / MINUTES_PER_HOUR)
-        set(Calendar.MINUTE, minuteOfDay % MINUTES_PER_HOUR)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }

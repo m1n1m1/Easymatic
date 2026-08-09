@@ -83,8 +83,14 @@ class WorkflowRunner(
         val activeTriggers = triggers.mapNotNull { node -> activate(workflow, node, boundHost) }
         return scope.launch {
             supervisorScope {
+                // This scope *is* the arm: cancelled by a disarm, cancelled and
+                // joined by a re-arm, and by nothing else. That is exactly the
+                // lifetime a `Wait Until`'s deferred branch wants — it has to
+                // outlive the run that set it, and it must not outlive the macro
+                // being switched off.
+                val armScope = this
                 for (active in activeTriggers) {
-                    launch { collect(workflow, active) }
+                    launch { collect(workflow, active, armScope) }
                 }
             }
         }
@@ -119,12 +125,17 @@ class WorkflowRunner(
      * `"finished"` event that has to be emitted whether or not the run threw — is
      * shared with the widget/shortcut path rather than written here, because two
      * copies of it would eventually stop agreeing about what a failed run announces.
+     *
+     * [armScope] is handed on so a `Wait Until` can park its deferred branch
+     * somewhere that outlives the run. This must **not** be the collecting
+     * coroutine: `collect` is sequential, so awaiting an eight-hour wait inside it
+     * would silently swallow every event the trigger fired meanwhile.
      */
     @Suppress("TooGenericExceptionCaught") // A dead trigger source must not take the workflow down.
-    private suspend fun collect(workflow: Workflow, active: ActiveTrigger) {
+    private suspend fun collect(workflow: Workflow, active: ActiveTrigger, armScope: CoroutineScope) {
         try {
             active.flow.collect { output ->
-                runFromTrigger(context, workflow, active.node, output)
+                runFromTrigger(context, workflow, active.node, output, armScope)
             }
         } catch (e: CancellationException) {
             throw e

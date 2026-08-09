@@ -24,6 +24,7 @@ import com.example.ottomatic.data.service.AndroidMacroControl
 import com.example.ottomatic.data.service.AndroidSystemServices
 import com.example.ottomatic.data.trigger.AndroidTriggerHost
 import com.example.ottomatic.data.trigger.VariableStore
+import com.example.ottomatic.data.wait.AndroidWaits
 import com.example.ottomatic.engine.DefaultExecutionContext
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.trigger.TriggerHost
@@ -157,6 +158,9 @@ object ServiceLocator {
             variables = VariableStore,
             contacts = contacts,
             prompts = prompts,
+            // Alarm-backed, so "wait until 07:00" means 07:00 rather than
+            // "whenever the phone next woke up after 07:00".
+            waits = AndroidWaits(appContext),
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.

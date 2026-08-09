@@ -45,6 +45,15 @@ object ExecPorts {
     val TIMED_OUT = PortName("timed_out")
 
     /**
+     * A fork's "the moment has arrived" pulse — `action.wait_until`'s second
+     * branch. Its *first* branch is the ordinary [OUT], deliberately unrenamed:
+     * carrying straight on is what every other action does, and keeping the name
+     * means a fork can be wired into a graph exactly where a plain action was.
+     * See [com.example.ottomatic.engine.ForkAction].
+     */
+    val RESUMED = PortName("resumed")
+
+    /**
      * What a loop's two exec outputs are *called* on the card.
      *
      * Wiring the wrong one of the two is the single mistake everybody makes with a
@@ -64,6 +73,18 @@ object ExecPorts {
     const val CONFIRMED_LABEL = "When confirmed"
     const val CANCELLED_LABEL = "When cancelled"
     const val TIMED_OUT_LABEL = "When time runs out"
+
+    /**
+     * What a fork's two exec outputs are called on the card.
+     *
+     * A dialog can leave its first output as a bare "out" because there is only
+     * one way to read it. A fork cannot: both of its outputs mean "go", they mean
+     * it at two *different times*, and wiring the wrong one is the whole mistake
+     * to design against — an unglossed "out" beside "resumed" says nothing about
+     * which of the two happens now. The port names are untouched, as above.
+     */
+    const val CONTINUE_LABEL = "Carry on now"
+    const val RESUMED_LABEL = "When the time comes"
 }
 
 /** EXECUTION input port. */

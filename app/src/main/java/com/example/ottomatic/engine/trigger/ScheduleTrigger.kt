@@ -1,6 +1,9 @@
 package com.example.ottomatic.engine.trigger
 
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.domain.model.DayFilter
+import com.example.ottomatic.domain.model.MINUTES_PER_DAY
+import com.example.ottomatic.domain.model.MINUTES_PER_HOUR
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
@@ -8,6 +11,7 @@ import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.TimeOfDay
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.dataOut
+import com.example.ottomatic.domain.model.minuteOfDay
 import com.example.ottomatic.domain.model.items.ScheduleFire
 import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.engine.NodeOutput
@@ -100,23 +104,29 @@ data class ScheduleConfig(
     val windowUntil: String = "07:00",
 ) {
     /**
-     * The selected [Calendar] day-of-week constants, or an empty set meaning
-     * "every day" (no day filter).
+     * The days this schedule is allowed to fire on — the seven checkboxes and
+     * the days-of-month field read as one thing.
+     *
+     * Shared with `action.wait_until` rather than derived here, so "which day is
+     * this?" is answered in one place for both.
      */
-    val daysOfWeek: Set<Int>
-        get() = buildSet {
-            if (sunday) add(Calendar.SUNDAY)
-            if (monday) add(Calendar.MONDAY)
-            if (tuesday) add(Calendar.TUESDAY)
-            if (wednesday) add(Calendar.WEDNESDAY)
-            if (thursday) add(Calendar.THURSDAY)
-            if (friday) add(Calendar.FRIDAY)
-            if (saturday) add(Calendar.SATURDAY)
-        }
+    val dayFilter: DayFilter
+        get() = DayFilter.of(
+            monday = monday,
+            tuesday = tuesday,
+            wednesday = wednesday,
+            thursday = thursday,
+            friday = friday,
+            saturday = saturday,
+            sunday = sunday,
+            daysOfMonth = daysOfMonth,
+        )
+
+    /** The selected [Calendar] day-of-week constants; empty means "every day". */
+    val daysOfWeek: Set<Int> get() = dayFilter.weekdays
 
     /** The selected days of the month, or an empty set meaning "every day". */
-    val monthDays: Set<Int>
-        get() = daysOfMonth.split(',').mapNotNullTo(mutableSetOf()) { it.trim().toIntOrNull() }
+    val monthDays: Set<Int> get() = dayFilter.monthDays
 
     /** The repeat cadence in minutes, at least one. */
     val intervalMinutes: Long get() = (every.toLong() * everyUnit.minutes).coerceAtLeast(1L)
@@ -152,17 +162,11 @@ data class ScheduleConfig(
      */
     fun matches(epochMs: Long): Boolean {
         val window = window ?: return matchesDay(epochMs)
-        return window.contains(minutesOfDay(epochMs)) && matchesDay(window.anchorDay(epochMs))
+        return window.contains(minuteOfDay(epochMs)) && matchesDay(window.anchorDay(epochMs))
     }
 
     /** True when [epochMs] falls on a day the day-of-week/day-of-month filters accept. */
-    fun matchesDay(epochMs: Long): Boolean {
-        val weekdays = daysOfWeek
-        val monthDays = monthDays
-        val weekOk = weekdays.isEmpty() || dayOfWeek(epochMs) in weekdays
-        val monthOk = monthDays.isEmpty() || dayOfMonth(epochMs) in monthDays
-        return weekOk && monthOk
-    }
+    fun matchesDay(epochMs: Long): Boolean = dayFilter.matches(epochMs)
 }
 
 /**
@@ -270,7 +274,7 @@ class ScheduleTrigger : Trigger<ScheduleConfig, ScheduleFire> {
         val offset = config.window?.startMinute ?: 0
         host.busEvents()
             .filter { it.source == TriggerSource.SYSTEM && it.payload[KEY_TRIGGER_TYPE] == TIME_TICK_TYPE }
-            .filter { Math.floorMod(minutesOfDay(it.firedAtEpochMs) - offset, everyMinutes) == 0 }
+            .filter { Math.floorMod(minuteOfDay(it.firedAtEpochMs) - offset, everyMinutes) == 0 }
             .filter { config.matches(it.firedAtEpochMs) }
             .collect { bus -> emit(NodeOutput(session.fire(bus.firedAtEpochMs))) }
     }

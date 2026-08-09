@@ -95,7 +95,9 @@ object PermissionCatalogue {
         runtime(Permissions.BLUETOOTH_CONNECT.manifest, "bluetooth.connect"),
         special(PrerequisiteType.NOTIFICATION_POLICY, "dnd.policy"),
         special(PrerequisiteType.BATTERY_OPTIMISATION, "battery.optimisation"),
-        special(PrerequisiteType.EXACT_ALARM, "alarm.exact"),
+        // EXACT_ALARM used to be here. `action.wait_until` declares it, so it is a
+        // node entry now and listing it twice is what `PermissionCatalogueTest`
+        // forbids — the derivation described above, doing what it was built to do.
         special(PrerequisiteType.WRITE_SETTINGS, "settings.write"),
         special(PrerequisiteType.NFC, "nfc.radio"),
     )

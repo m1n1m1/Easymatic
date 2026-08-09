@@ -16,8 +16,11 @@ import com.example.ottomatic.engine.trigger.TriggerOutput
 import com.example.ottomatic.engine.validation.GraphValidation
 import com.example.ottomatic.engine.validation.GraphValidator
 import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
@@ -62,6 +65,13 @@ import kotlin.coroutines.cancellation.CancellationException
  * this class pulses `body` for each, then `completed`. Nothing is wired back into the
  * loop, so the graph is still acyclic and both the validator's cycle rule and the
  * `onPath` guard below apply unchanged.
+ *
+ * A fork ([ForkAction], [runFork]) is the one place the walk **splits**: `out` is
+ * pulsed now and `resumed` when the node's wait is over, and the second branch is
+ * detached onto a scope that outlives the run. From there on the two are
+ * genuinely separate walks over a shared graph, each with its own copy of the run
+ * state — see [Run.fork] for why copying rather than sharing is required, and
+ * [ForkAction] for what that costs.
  */
 /** Items produced so far, addressed by the port they were produced on. */
 private typealias DataCache = MutableMap<Pair<NodeId, PortName>, Item>
@@ -73,6 +83,21 @@ private typealias DataCache = MutableMap<Pair<NodeId, PortName>, Item>
 @Suppress("TooManyFunctions")
 class WorkflowExecutor(
     private val context: ExecutionContext,
+    /**
+     * Where a [ForkAction]'s deferred branch runs, or null to run it **inline**.
+     *
+     * It cannot run under the caller's own coroutine: that would keep
+     * [runFromTrigger] suspended for the whole wait, which stops the trigger
+     * collecting further events, delays `trigger.macro_finished` by hours and
+     * leaves a widget tile on "running" — i.e. exactly the blocking a fork exists
+     * to remove. So it is launched on a scope that outlives the run, and the one
+     * with the right lifetime is the **arm**: cancelled when the macro is
+     * disabled or re-armed, and by nothing else.
+     *
+     * Null runs the deferred branch inline instead, which is what an engine-only
+     * test wants — no scope to supply, and the assertions stay deterministic.
+     */
+    private val deferredScope: CoroutineScope? = null,
 ) {
 
     /**
@@ -93,7 +118,30 @@ class WorkflowExecutor(
          * have run. See [pulse].
          */
         val onPath: MutableSet<NodeId> = HashSet(),
-    )
+    ) {
+        /**
+         * A copy of this run for a [ForkAction]'s deferred branch, taken at the
+         * moment of the fork.
+         *
+         * Copied rather than shared for two independent reasons, either of which
+         * would be enough:
+         *
+         *  - **[onPath]**. [pulse]'s `finally` removes the fork node once
+         *    [runFork] returns, while the deferred branch is still to come. A
+         *    shared set would leave that branch unguarded, so a `resumed` wire
+         *    reaching back would recurse until the stack gave out — the exact
+         *    failure the guard exists to prevent. A copy holds the ancestor
+         *    chain, and re-entry hits the ordinary "Execution cycle" error.
+         *  - **[dataCache]**. The deferred branch runs minutes or hours later.
+         *    "It sees the graph as it was at the fork" is the only rule that can
+         *    be explained; "it sees whatever the other branch had got round to
+         *    writing" is not a rule at all. [Item] is immutable, so a shallow
+         *    copy is enough — and it is also what makes the two branches safe to
+         *    walk in parallel, which on the service's dispatcher they genuinely
+         *    are.
+         */
+        fun fork(): Run = Run(workflow, runId, validation, HashMap(dataCache), HashSet(onPath))
+    }
 
     /**
      * Runs the graph once, under a fresh run id.
@@ -151,6 +199,11 @@ class WorkflowExecutor(
      * true loop, in a graph that reached the engine hand-edited or armed before the
      * cycle rule existed — where the previous version recursed until the stack gave
      * out.
+     *
+     * The return value describes **this** walk. A [ForkAction]'s deferred branch is
+     * a second one, and whether it halted is not reported here — by the time it
+     * runs, the caller that would have unwound is long gone. [runFork] answers for
+     * the immediate branch only.
      */
     @Suppress("LoopWithTooManyJumpStatements")
     private suspend fun pulse(run: Run, node: WorkflowNode, port: PortName): Boolean {
@@ -213,6 +266,7 @@ class WorkflowExecutor(
     ): Boolean {
         if (action is LoopAction<*>) return runLoop(run, action, target, at)
         if (action is ConditionalLoopAction<*>) return runConditionalLoop(run, action, target, at)
+        if (action is ForkAction<*>) return runFork(run, action, target, at)
         val dataIn = collectDataIn(run, target)
         at.log("→ ${target.name}", LogLevel.DEBUG)
         logData(at, IN_LABEL, dataIn)
@@ -246,6 +300,11 @@ class WorkflowExecutor(
      * snapshot or restore them: [collectDataIn] builds a fresh memo per consuming
      * node, so a value node or transform inside the body is re-read every pass
      * rather than frozen at the value it had on the first one.
+     *
+     * The one thing that *is* snapshotted is a [ForkAction] in the body, and this
+     * is why it has to be: iteration 3's deferred branch fires after the loop has
+     * moved on, and only a copy taken at its own fork still carries iteration 3's
+     * item and index.
      *
      * `completed` fires even when the body never ran. An empty list is not a
      * failure — "there was nothing to send" is a perfectly good outcome, and a
@@ -286,6 +345,118 @@ class WorkflowExecutor(
             if (!pulse(run, target, ExecutionRoute.BODY.portName)) return false
         }
         return pulse(run, target, ExecutionRoute.COMPLETED.portName)
+    }
+
+    /**
+     * Runs a [ForkAction]: pulse `out` now, and `resumed` when its wait is over.
+     *
+     * The deferred branch is **detached** onto [deferredScope] rather than awaited
+     * here. Awaiting it would suspend [runFromTrigger] for the length of the wait,
+     * and three things downstream read that as the run still being in progress —
+     * the trigger's `flow.collect`, which would swallow every event meanwhile;
+     * `trigger.macro_finished`, emitted from that function's `finally`; and a
+     * widget tile, which would sit on "running" all night. With no scope supplied
+     * it runs inline instead ([forkInline]), which is what a test wants.
+     *
+     * The branch walks [Run.fork]'s snapshot, taken here and synchronously — doing
+     * it inside the launched block would race the immediate branch, which by then
+     * is already writing into the original.
+     *
+     * The launched block carries its own `catch` because it has escaped
+     * [runFromTrigger]'s: an exception thrown hours later has no caller left to
+     * report it, and on the service's scope it would reach the process handler.
+     */
+    @Suppress("ReturnCount") // Skipped-because-capped, never-resumes and halted are three different endings.
+    private suspend fun runFork(
+        run: Run,
+        fork: ForkAction<*>,
+        target: WorkflowNode,
+        at: ExecutionContext,
+    ): Boolean {
+        val dataIn = collectDataIn(run, target)
+        at.log("→ ${target.name}", LogLevel.DEBUG)
+        logData(at, IN_LABEL, dataIn)
+        val begun = runCatching { fork.beginRaw(target, dataIn, at) }.getOrElse { cause ->
+            if (cause is CancellationException) throw cause
+            at.log("Action ${target.typeId} failed: ${cause.message}", LogLevel.ERROR)
+            null
+        } ?: return true
+        begun.values.forEach { (producedOn, item) -> run.dataCache[target.id to producedOn] = item }
+        logData(at, OUT_LABEL, begun.values)
+        val snapshot = run.fork()
+        val resume = begun.resume
+        if (resume == null) {
+            at.log("'${target.name}' has nothing left to wait for, so it will not resume", LogLevel.WARN)
+            return pulse(run, target, ExecutionRoute.CONTINUE.portName)
+        }
+        // The cap is announced rather than silent, for the reason MAX_ITERATIONS is:
+        // a fork that quietly stopped forking reads exactly like a moment that has
+        // not come yet. The immediate branch still runs.
+        if (!PendingWaits.reserve()) {
+            at.log(
+                "'${target.name}' is not waiting: $MAX_PENDING_WAITS waits are already pending",
+                LogLevel.WARN,
+            )
+            return pulse(run, target, ExecutionRoute.CONTINUE.portName)
+        }
+        val scope = deferredScope
+            ?: return forkInline(run, snapshot, target, at, resume)
+        val deferred = scope.launch { awaitAndPulse(snapshot, target, at, resume) }
+        if (!pulse(run, target, ExecutionRoute.CONTINUE.portName)) {
+            // `action.stop` on the immediate branch, while the moment is still
+            // ahead. Stopping a macro that is visibly still waiting has to stop
+            // the wait too, or "Stop Macro" would not stop the macro.
+            deferred.cancel()
+            return false
+        }
+        return true
+    }
+
+    /**
+     * A fork with nowhere to detach to: walk the immediate branch, then wait here.
+     *
+     * The order matters even though there is no concurrency — `out` still means
+     * "now" and `resumed` still means "later", so an assertion written against one
+     * mode holds in the other. A halted immediate branch skips the wait outright,
+     * which is what cancelling the job does in the detached case.
+     */
+    private suspend fun forkInline(
+        run: Run,
+        snapshot: Run,
+        target: WorkflowNode,
+        at: ExecutionContext,
+        resume: suspend () -> Map<PortName, Item>,
+    ): Boolean {
+        val kept = pulse(run, target, ExecutionRoute.CONTINUE.portName)
+        if (kept) {
+            awaitAndPulse(snapshot, target, at, resume)
+        } else {
+            // Nothing will run the `finally` that normally gives the slot back.
+            PendingWaits.release()
+        }
+        return kept
+    }
+
+    /** One deferred branch: wait, cache what it produced, walk it. */
+    @Suppress("TooGenericExceptionCaught") // Hours later there is no caller left to report to.
+    private suspend fun awaitAndPulse(
+        snapshot: Run,
+        target: WorkflowNode,
+        at: ExecutionContext,
+        resume: suspend () -> Map<PortName, Item>,
+    ) {
+        try {
+            val values = resume()
+            values.forEach { (producedOn, item) -> snapshot.dataCache[target.id to producedOn] = item }
+            logData(at, OUT_LABEL, values)
+            pulse(snapshot, target, ExecutionRoute.RESUMED.portName)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            at.log("Action ${target.typeId} failed while waiting: ${e.message}", LogLevel.ERROR)
+        } finally {
+            PendingWaits.release()
+        }
     }
 
     /**

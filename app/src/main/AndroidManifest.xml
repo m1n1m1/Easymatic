@@ -268,6 +268,18 @@
             </intent-filter>
         </receiver>
 
+        <!-- The alarm behind `action.wait_until` and `action.delay`. Separate from
+             AlarmReceiver above because a wait resumes one suspended coroutine by
+             token, where a schedule alarm publishes an event onto the trigger bus
+             for whichever node id it names. -->
+        <receiver
+            android:name=".data.wait.WaitAlarmReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.ottomatic.WAIT_ALARM" />
+            </intent-filter>
+        </receiver>
+
         <receiver
             android:name=".data.trigger.SystemStateReceiver"
             android:exported="false">
