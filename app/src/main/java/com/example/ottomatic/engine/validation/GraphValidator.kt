@@ -18,7 +18,10 @@ import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.domain.registry.MacroDirectory
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.declarationFor
+import com.example.ottomatic.domain.model.SmartHomeRef
+import com.example.ottomatic.domain.registry.SmartHomeHubs
 import com.example.ottomatic.domain.registry.macroRefKeys
+import com.example.ottomatic.domain.registry.smartHomeRefKeys
 import com.example.ottomatic.domain.registry.effectivePort
 import com.example.ottomatic.domain.registry.isDataAssignable
 import com.example.ottomatic.domain.registry.variableRefKeys
@@ -86,6 +89,7 @@ class GraphValidator(private val workflow: Workflow) {
         validateLoopBodies(issues)
         validateVariableRefs(issues)
         validateMacroRefs(issues)
+        validateSmartHomeRefs(issues)
         validatePrerequisites(issues)
         return GraphValidation(issues)
     }
@@ -155,6 +159,40 @@ class GraphValidator(private val workflow: Workflow) {
                     spec.isBlank() -> "'${node.name}' has no macro chosen, so it will do nothing"
                     MacroDirectory.isHydrated && MacroDirectory.byId(spec) == null ->
                         "'${node.name}' points at a macro that no longer exists"
+                    else -> continue
+                }
+                out += ValidationIssue(Severity.WARNING, message, nodes = setOf(node.id))
+            }
+        }
+    }
+
+    /**
+     * A light node that names nothing, or whose hub has been removed.
+     *
+     * The third member of the [validateVariableRefs] / [validateMacroRefs] family,
+     * with the same stance — a warning that blocks nothing, because the node already
+     * reports the failure on its `state` port and pulses `out`.
+     *
+     * The argument for it is stronger than for either of the others, and the reason
+     * is the thing that makes the target spec good: it caches the name it was given,
+     * so a node pointing at a deleted hub renders **perfectly**. The field still
+     * reads "Kitchen ceiling". Nothing on the canvas is wrong, and nothing happens.
+     * That is precisely the failure the Problems panel exists to surface.
+     *
+     * A reference that will not parse is deliberately *not* reported here: a wired
+     * field can hold anything at design time, and the node names what it read when
+     * it runs, which is more use than a warning that cannot see the value the wire
+     * will carry.
+     */
+    private fun validateSmartHomeRefs(out: MutableList<ValidationIssue>) {
+        for (node in workflow.nodes) {
+            for (key in smartHomeRefKeys(node.typeId)) {
+                val spec = node.config[key].orEmpty()
+                val hubId = SmartHomeRef.parse(spec)?.hubId
+                val message = when {
+                    spec.isBlank() -> "'${node.name}' has nothing chosen, so it will do nothing"
+                    hubId != null && SmartHomeHubs.isHydrated && !SmartHomeHubs.exists(hubId) ->
+                        "'${node.name}' points at a hub that is no longer set up"
                     else -> continue
                 }
                 out += ValidationIssue(Severity.WARNING, message, nodes = setOf(node.id))

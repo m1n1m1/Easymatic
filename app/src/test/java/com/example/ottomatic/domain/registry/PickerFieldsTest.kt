@@ -114,6 +114,29 @@ class PickerFieldsTest {
         )
     }
 
+    /**
+     * A bridge names its lights with UUIDs, so this is on the opaque side of the
+     * line with the macro, tag and account ids. What is stored is a whole
+     * `SmartHomeRef` spec rather than a bare id, and that is what keeps the hub out
+     * of a second field beside it: two fields could name a hub and a light that do
+     * not belong together, with nothing to detect it.
+     */
+    @Test
+    fun `a light and a scene are chosen rather than typed`() {
+        assertEquals(
+            ConfigFieldType.PICKER(PickerKind.LIGHT_TARGET),
+            fieldType("action.light_control", "target"),
+        )
+        assertEquals(
+            ConfigFieldType.PICKER(PickerKind.LIGHT_TARGET),
+            fieldType("action.light_state", "target"),
+        )
+        assertEquals(
+            ConfigFieldType.PICKER(PickerKind.LIGHT_SCENE),
+            fieldType("action.light_scene", "scene"),
+        )
+    }
+
     @Test
     fun `schedule times get a clock face rather than a calendar`() {
         assertEquals(ConfigFieldType.TIME_OF_DAY, fieldType("trigger.schedule", "atTime"))

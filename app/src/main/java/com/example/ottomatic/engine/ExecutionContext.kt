@@ -9,6 +9,8 @@ import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.Mail
 import com.example.ottomatic.core.service.NoMail
 import com.example.ottomatic.core.service.NoPrompts
+import com.example.ottomatic.core.service.NoSmartHome
+import com.example.ottomatic.core.service.SmartHome
 import com.example.ottomatic.core.service.NoScripts
 import com.example.ottomatic.core.service.NoVariables
 import com.example.ottomatic.core.service.Prompts
@@ -120,6 +122,19 @@ interface ExecutionContext {
      * on the exec wire where the latency is visible.
      */
     val mail: Mail get() = NoMail
+
+    /**
+     * Controls lights and other smart-home devices — the light nodes. Defaults to
+     * [NoSmartHome] so engine-only tests need no bridge: they then see exactly what
+     * a phone with an empty hub library reports, which the nodes already have to
+     * handle.
+     *
+     * An action's, never a value node's, for the reason [mail] is and with the same
+     * proof: every call is a network round trip, so it is both of the things the
+     * pull side may not be. "Is the hall light on?" is `action.light_state` feeding
+     * an `action.if`, on the exec wire where the latency is visible.
+     */
+    val smartHome: SmartHome get() = NoSmartHome
 
     /** Optional handle to enable/disable other macros at runtime, or null. */
     val macroControl: MacroControl? get() = null

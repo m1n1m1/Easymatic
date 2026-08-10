@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.AddToHomeScreen
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Nfc
@@ -71,6 +72,7 @@ fun WorkflowListScreen(
     onOpenGeofences: () -> Unit,
     onOpenNfcTags: () -> Unit,
     onOpenMailAccounts: () -> Unit,
+    onOpenSmartHome: () -> Unit,
     onOpenVariables: () -> Unit,
     onOpenPermissions: () -> Unit,
 ) {
@@ -151,6 +153,7 @@ fun WorkflowListScreen(
                         onOpenGeofences = onOpenGeofences,
                         onOpenNfcTags = onOpenNfcTags,
                         onOpenMailAccounts = onOpenMailAccounts,
+                        onOpenSmartHome = onOpenSmartHome,
                     )
                 }
             }
@@ -316,6 +319,7 @@ private fun LibraryMenu(
     onOpenGeofences: () -> Unit,
     onOpenNfcTags: () -> Unit,
     onOpenMailAccounts: () -> Unit,
+    onOpenSmartHome: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box {
@@ -349,6 +353,14 @@ private fun LibraryMenu(
                 onClick = {
                     expanded = false
                     onOpenMailAccounts()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("Smart home") },
+                leadingIcon = { Icon(Icons.Filled.Lightbulb, contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    onOpenSmartHome()
                 },
             )
         }

@@ -15,7 +15,9 @@ import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.AccountTree
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Nfc
@@ -52,8 +54,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ottomatic.core.service.SmartHomeTargetKind
 import com.example.ottomatic.domain.model.NfcTagId
 import com.example.ottomatic.domain.model.PortSpec
+import com.example.ottomatic.domain.model.SmartHomeRef
 import com.example.ottomatic.domain.model.TimeOfDay
 import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.domain.model.config.PickerKind
@@ -72,6 +76,8 @@ import com.example.ottomatic.feature.mail.MailFolderField
 import com.example.ottomatic.feature.mail.MailAccountPickerOverlay
 import com.example.ottomatic.feature.nfc.LocalNfcTags
 import com.example.ottomatic.feature.nfc.NfcTagPickerOverlay
+import com.example.ottomatic.feature.smarthome.LightTargetPickerOverlay
+import com.example.ottomatic.feature.smarthome.LocalSmartHome
 import com.example.ottomatic.feature.sound.SoundPickerField
 import com.example.ottomatic.feature.variables.LocalVariables
 import com.example.ottomatic.feature.variables.VariablePickerOverlay
@@ -637,6 +643,67 @@ private fun PickerField(
         PickerKind.MACRO -> MacroPickerField(value, onValueChange, labelSlot, colors)
         PickerKind.NFC_TAG -> NfcTagPickerField(value, onValueChange, labelSlot, colors)
         PickerKind.MAIL_ACCOUNT -> MailAccountPickerField(value, onValueChange, labelSlot, colors)
+        // The two light kinds share one field and one overlay, on the app kinds'
+        // precedent: same hub, same snapshot, different section of it.
+        PickerKind.LIGHT_TARGET ->
+            SmartHomePickerField(value, onValueChange, SmartHomeTargetKind.LIGHT, labelSlot, colors)
+        PickerKind.LIGHT_SCENE ->
+            SmartHomePickerField(value, onValueChange, SmartHomeTargetKind.SCENE, labelSlot, colors)
+    }
+}
+
+/**
+ * A `@Picker(LIGHT_TARGET)` or `@Picker(LIGHT_SCENE)` field: which light, room, zone
+ * or scene this node acts on.
+ *
+ * It is the one picker whose field is **usable with no library in scope**, and that
+ * is not an oversight in the others. What is stored here is a whole
+ * [SmartHomeRef] spec carrying the name it had when it was chosen, so this field can
+ * render "Kitchen ceiling" with no ViewModel provided, nothing cached on disk and
+ * the bridge unplugged — which no id-based picker can manage. The overlay still
+ * needs the library, as everywhere else; only the *reading* is free.
+ *
+ * A spec that parses but names a hub which is gone reads as "… · hub removed"
+ * rather than falling back to a raw id: the name is right there and still the most
+ * useful thing to show, and what is broken is the hub, not the reference.
+ */
+@Composable
+private fun SmartHomePickerField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    kind: SmartHomeTargetKind,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
+    var picking by remember { mutableStateOf(false) }
+    val hubs = LocalSmartHome.current
+    val parsed = SmartHomeRef.parse(value)
+
+    PickerFieldChrome(
+        display = when {
+            value.isBlank() -> ""
+            parsed == null -> value
+            hubs != null && hubs.hubById(parsed.hubId) == null -> "${parsed.name} · hub removed"
+            else -> parsed.name
+        },
+        icon = if (kind == SmartHomeTargetKind.SCENE) Icons.Filled.AutoAwesome else Icons.Filled.Lightbulb,
+        enabled = hubs != null,
+        onTap = { picking = true },
+        labelSlot = labelSlot,
+        colors = colors,
+    )
+
+    if (picking && hubs != null) {
+        LightTargetPickerOverlay(
+            viewModel = hubs,
+            kind = kind,
+            selected = value,
+            onPick = { spec ->
+                onValueChange(spec)
+                picking = false
+            },
+            onDismiss = { picking = false },
+        )
     }
 }
 

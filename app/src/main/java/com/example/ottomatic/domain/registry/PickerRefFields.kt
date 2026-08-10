@@ -22,6 +22,22 @@ fun macroRefKeys(typeId: NodeTypeId): List<ConfigKey> =
         .filter { (it.type as? ConfigFieldType.PICKER)?.kind == PickerKind.MACRO }
         .map { it.key }
 
+/**
+ * The config keys of [typeId] that hold a
+ * [com.example.ottomatic.domain.model.SmartHomeRef] spec.
+ *
+ * Both light kinds, because the question the validator asks of them is the same one:
+ * is the hub inside this reference still set up? Which section of the hub the
+ * reference names is the picker's business and not this one's.
+ */
+fun smartHomeRefKeys(typeId: NodeTypeId): List<ConfigKey> =
+    ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
+        .filter {
+            val kind = (it.type as? ConfigFieldType.PICKER)?.kind
+            kind == PickerKind.LIGHT_TARGET || kind == PickerKind.LIGHT_SCENE
+        }
+        .map { it.key }
+
 /** The config keys of [typeId] that hold a [PhoneRef] spec. */
 fun phoneRefKeys(typeId: NodeTypeId): List<ConfigKey> =
     ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()

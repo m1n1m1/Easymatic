@@ -10,6 +10,8 @@ import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.Mail
 import com.example.ottomatic.core.service.NoMail
 import com.example.ottomatic.core.service.NoPrompts
+import com.example.ottomatic.core.service.NoSmartHome
+import com.example.ottomatic.core.service.SmartHome
 import com.example.ottomatic.core.service.NoScripts
 import com.example.ottomatic.core.service.NoVariables
 import com.example.ottomatic.core.service.Prompts
@@ -45,6 +47,7 @@ class DefaultExecutionContext(
     override val prompts: Prompts = NoPrompts,
     override val waits: Waits = DelayWaits,
     override val mail: Mail = NoMail,
+    override val smartHome: SmartHome = NoSmartHome,
     private val logger: (LogEntry) -> Unit = {},
 ) : ExecutionContext {
 

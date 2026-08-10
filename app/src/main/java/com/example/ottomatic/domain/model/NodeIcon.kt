@@ -49,4 +49,6 @@ enum class NodeIcon {
     QUESTION,
     INPUT,
     CHOICE,
+    LIGHTBULB,
+    SCENE,
 }

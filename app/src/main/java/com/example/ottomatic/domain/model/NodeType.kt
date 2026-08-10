@@ -55,6 +55,7 @@ enum class NodeCategory(
     NOTIFICATIONS(NodeKind.ACTION, "Notifications"),
     TIMING(NodeKind.ACTION, "Timing"),
     DEVICE_SETTINGS(NodeKind.ACTION, "Device Settings"),
+    SMART_HOME(NodeKind.ACTION, "Smart Home"),
     DATA(NodeKind.ACTION, "Data"),
     VALUE_POWER(NodeKind.VALUE, "Power & Battery"),
     VALUE_CONNECTIVITY(NodeKind.VALUE, "Connectivity"),

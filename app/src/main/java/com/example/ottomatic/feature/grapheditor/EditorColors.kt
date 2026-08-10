@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatterySaver
 import androidx.compose.material.icons.filled.BatteryStd
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.MusicOff
@@ -235,4 +237,8 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.QUESTION -> Icons.AutoMirrored.Filled.HelpOutline
     NodeIcon.INPUT -> Icons.Filled.EditNote
     NodeIcon.CHOICE -> Icons.Filled.Checklist
+    // Distinct from LIGHT, which is the ambient-light sensor: one is a bulb you
+    // switch, the other is how bright the room is.
+    NodeIcon.LIGHTBULB -> Icons.Filled.Lightbulb
+    NodeIcon.SCENE -> Icons.Filled.AutoAwesome
 }

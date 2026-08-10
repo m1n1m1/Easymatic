@@ -8,6 +8,8 @@ import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.VariableDeclaration
+import com.example.ottomatic.core.service.SmartHomeTargetKind
+import com.example.ottomatic.domain.model.SmartHomeRef
 import com.example.ottomatic.domain.model.VariableRef
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
@@ -15,6 +17,7 @@ import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.core.permissions.PrerequisiteType
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.domain.registry.MacroDirectory
+import com.example.ottomatic.domain.registry.SmartHomeHubs
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import com.example.ottomatic.domain.model.config.ValueType
@@ -168,6 +171,72 @@ class GraphValidatorTest {
         assertFalse(
             validation.warnings.toString(),
             validation.warnings.any { it.message.contains("no longer exists") },
+        )
+    }
+
+    /**
+     * The reason this warning is worth more than the macro one: the target spec
+     * caches the name it was given, so a light node whose hub has been removed
+     * renders *perfectly* — the field still reads "Kitchen ceiling" — and then does
+     * nothing at all. Nothing on the canvas looks wrong.
+     */
+    @Test
+    fun `a light pointing at a removed hub warns and blocks nothing`() {
+        SmartHomeHubs.hydrate(listOf("other-hub"))
+        try {
+            val node = WorkflowNode(
+                NodeId("l1"), NodeTypeId("action.light_control"), "Control Light", 0f, 0f,
+                config = mapOf(
+                    ConfigKey("target") to
+                        SmartHomeRef.format("gone", SmartHomeTargetKind.LIGHT, "rid", "Kitchen ceiling"),
+                ),
+            )
+            val validation = GraphValidator(Workflow(nodes = listOf(node))).validate()
+
+            assertTrue(
+                validation.warnings.toString(),
+                validation.warnings.any { it.message.contains("no longer set up") && node.id in it.nodes },
+            )
+            assertTrue(validation.blockedNodes.isEmpty())
+            assertTrue(validation.isRunnable)
+        } finally {
+            SmartHomeHubs.reset()
+        }
+    }
+
+    @Test
+    fun `a light on a hub that is still there raises nothing`() {
+        SmartHomeHubs.hydrate(listOf("hub-1"))
+        try {
+            val node = WorkflowNode(
+                NodeId("l1"), NodeTypeId("action.light_control"), "Control Light", 0f, 0f,
+                config = mapOf(
+                    ConfigKey("target") to SmartHomeRef.format("hub-1", SmartHomeTargetKind.LIGHT, "rid", "Lamp"),
+                ),
+            )
+            val validation = GraphValidator(Workflow(nodes = listOf(node))).validate()
+
+            assertTrue(validation.warnings.toString(), validation.warnings.none { it.message.contains("hub") })
+        } finally {
+            SmartHomeHubs.reset()
+        }
+    }
+
+    /** Empty and unasked are different states, exactly as for the macro directory. */
+    @Test
+    fun `an unhydrated hub registry reports nothing dangling`() {
+        SmartHomeHubs.reset()
+        val node = WorkflowNode(
+            NodeId("l1"), NodeTypeId("action.light_control"), "Control Light", 0f, 0f,
+            config = mapOf(
+                ConfigKey("target") to SmartHomeRef.format("hub-1", SmartHomeTargetKind.LIGHT, "rid", "Lamp"),
+            ),
+        )
+        val validation = GraphValidator(Workflow(nodes = listOf(node))).validate()
+
+        assertFalse(
+            validation.warnings.toString(),
+            validation.warnings.any { it.message.contains("no longer set up") },
         )
     }
 

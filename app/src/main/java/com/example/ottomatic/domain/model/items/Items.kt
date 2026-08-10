@@ -468,6 +468,80 @@ data class MailFlagged(
 )
 
 /**
+ * Result of `action.light_control` on its `state` data port.
+ *
+ * [MailFlagged]'s shape and its reasoning: [changed] is false both when the bridge
+ * refused and when the reference named nothing — a bulb unpaired from the bridge
+ * since the macro was written. Those are one answer on purpose, because neither is
+ * something the graph can retry, and [error] says which it was.
+ *
+ * [target] is echoed back so a `for-each` over several lights can tell one receipt
+ * from another.
+ */
+@Serializable
+data class LightChanged(
+    val target: String,
+    val op: String,
+    val changed: Boolean,
+    val error: String = "",
+)
+
+/**
+ * Result of `action.light_scene` on its `state` data port. [LightChanged]'s shape,
+ * field for field, and for the same reason: the node takes an operation, so the
+ * receipt has to say which one it carried out.
+ *
+ * [changed] rather than "activated", because two of the three operations do not
+ * activate anything — a `false` after a successful turn-off would read to an
+ * `action.if` as a failure.
+ */
+@Serializable
+data class SceneChanged(
+    val scene: String,
+    val op: String,
+    val changed: Boolean,
+    val error: String = "",
+)
+
+/**
+ * One light or group as `action.light_state` read it, on its `state` data port.
+ *
+ * [target] is echoed back so it can be fed straight into `action.light_control` —
+ * the reason [MailMessage.ref] is text rather than a nested struct.
+ *
+ * [colour] is **hex text, not a number**, for three reasons pointing the same way:
+ * `Item.asText()` renders it into a notification unchanged, `action.if` compares it
+ * as written, and it wires straight back into Control Light's Colour field with no
+ * `transform.convert` in between. Blank for a bulb with no colour gamut, and for a
+ * group — a group reports aggregate on-ness and brightness and nothing else.
+ *
+ * [brightness] is a percentage carried as a `Double` because the bridge reports
+ * fractions, and rounding here would make "has it changed?" answer wrongly at the
+ * edges.
+ *
+ * [reachable] costs a second request — the bridge keeps connectivity on a resource
+ * of its own rather than on the light — and is worth it, because "is that lamp
+ * actually powered, or did somebody flip the wall switch?" is the question this
+ * node exists to answer. False for a group, where there is nothing to base it on.
+ *
+ * [found] and [error] are the pair that stops "the light is off" and "the bridge
+ * was unreachable" looking the same to an `action.if`. Everything above them is
+ * meaningless when [found] is false.
+ */
+@Serializable
+data class LightState(
+    val target: String,
+    val name: String = "",
+    val on: Boolean = false,
+    val brightness: Double = 0.0,
+    val colour: String = "",
+    val kelvin: Int = 0,
+    val reachable: Boolean = false,
+    val found: Boolean = false,
+    val error: String = "",
+)
+
+/**
  * Result of the call action on its `state` data port.
  *
  * - [number]: the destination phone number.

@@ -26,6 +26,18 @@
     -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!--
+      Normal permission, needed to hold a WifiManager.MulticastLock while browsing
+      for smart-home hubs over mDNS. Without the lock the Wi-Fi driver filters out
+      multicast frames not addressed to this device, so the browse finds nothing —
+      silently, and on some devices and not others.
+
+      It gets no `Permissions` constant, for the reason WAKE_LOCK and
+      ACCESS_NETWORK_STATE do not: it is granted at install and never checked. It is
+      also held only while the pairing screen is open; nothing in a running macro
+      touches it, because a node is handed an address rather than asked to find one.
+    -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <!--
       Install-time, so always held and never checked at runtime: it gets no
       `Permissions` constant for the same reason WAKE_LOCK and ACCESS_NETWORK_STATE
       do not. What actually decides whether `trigger.nfc` can fire is the radio

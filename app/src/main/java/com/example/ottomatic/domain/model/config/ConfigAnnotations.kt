@@ -151,6 +151,36 @@ enum class PickerKind {
      * than picking one.
      */
     MAIL_ACCOUNT,
+
+    /**
+     * A [com.example.ottomatic.domain.model.SmartHomeRef] spec naming one light,
+     * room or zone on one hub.
+     *
+     * On the opaque side of the line with [MACRO], [NFC_TAG] and [MAIL_ACCOUNT]: a
+     * bridge names its lights with UUIDs, so a typed one is indistinguishable from
+     * a correct one and the node simply does nothing. The option set is also the
+     * definition of open-ended — it is whatever is plugged in right now.
+     *
+     * What it stores is a whole *spec* rather than a bare id, and that is what
+     * keeps the hub out of a second config field beside it: two fields could name a
+     * hub and a light that do not belong together, with nothing to detect it. See
+     * [com.example.ottomatic.domain.model.SmartHomeRef] for the full argument.
+     *
+     * Blank is not an answer, on [MAIL_ACCOUNT]'s reasoning: "any light" is not a
+     * thing to turn on.
+     */
+    LIGHT_TARGET,
+
+    /**
+     * A [com.example.ottomatic.domain.model.SmartHomeRef] spec naming one scene.
+     *
+     * A separate kind from [LIGHT_TARGET] for the reason [APP_FILTER] is separate
+     * from [APP]: the two ask different questions with different answer sets, and a
+     * property may carry only one `@Picker`, so one field's chooser can never
+     * change with a mode enum. Encoding it in the annotation is what makes each
+     * field right by declaration.
+     */
+    LIGHT_SCENE,
 }
 
 /**

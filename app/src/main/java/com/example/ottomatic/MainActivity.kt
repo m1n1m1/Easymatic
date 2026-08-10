@@ -36,6 +36,8 @@ import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.feature.geofence.GeofencePlacesScreen
 import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
 import com.example.ottomatic.feature.mail.MailAccountsScreen
+import com.example.ottomatic.feature.smarthome.SmartHomeScreen
+import com.example.ottomatic.feature.smarthome.SmartHomeViewModel
 import com.example.ottomatic.feature.mail.MailAccountsViewModel
 import com.example.ottomatic.feature.nfc.NfcTagsScreen
 import com.example.ottomatic.feature.nfc.NfcTagsViewModel
@@ -88,6 +90,17 @@ class MainActivity : ComponentActivity() {
         MailAccountsViewModel.factory(
             repository = ServiceLocator.mailAccountRepository,
             appContext = applicationContext,
+        )
+    }
+
+    // Activity-scoped for the same reason the mail library is, and with the same
+    // edge: a bridge paired from inside a Control Light node's picker has to be the
+    // hub the Smart home screen is showing, since "pair it again" is a fix somebody
+    // may reach for from either place.
+    private val smartHomeViewModel: SmartHomeViewModel by viewModels {
+        SmartHomeViewModel.factory(
+            repository = ServiceLocator.smartHomeHubRepository,
+            setup = ServiceLocator.smartHomeSetup,
         )
     }
 
@@ -232,6 +245,7 @@ class MainActivity : ComponentActivity() {
                     onOpenGeofences = { navController.navigate(ROUTE_GEOFENCES) },
                     onOpenNfcTags = { navController.navigate(ROUTE_NFC_TAGS) },
                     onOpenMailAccounts = { navController.navigate(ROUTE_MAIL_ACCOUNTS) },
+                    onOpenSmartHome = { navController.navigate(ROUTE_SMART_HOME) },
                     onOpenVariables = { navController.navigate(ROUTE_VARIABLES) },
                     onOpenPermissions = { navController.navigate(ROUTE_PERMISSIONS) },
                 )
@@ -251,6 +265,12 @@ class MainActivity : ComponentActivity() {
             composable(ROUTE_MAIL_ACCOUNTS) {
                 MailAccountsScreen(
                     viewModel = mailAccountsViewModel,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(ROUTE_SMART_HOME) {
+                SmartHomeScreen(
+                    viewModel = smartHomeViewModel,
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -305,6 +325,7 @@ class MainActivity : ComponentActivity() {
                     geofencePlaces = geofencePlacesViewModel,
                     nfcTags = nfcTagsViewModel,
                     mailAccounts = mailAccountsViewModel,
+                    smartHome = smartHomeViewModel,
                     globalVariables = globalVariablesViewModel,
                     onBack = { navController.popBackStack() },
                 )
@@ -442,6 +463,7 @@ class MainActivity : ComponentActivity() {
         private const val ROUTE_GEOFENCES = "geofences"
         private const val ROUTE_NFC_TAGS = "nfcTags"
         private const val ROUTE_MAIL_ACCOUNTS = "mailAccounts"
+        private const val ROUTE_SMART_HOME = "smartHome"
         private const val ROUTE_VARIABLES = "variables"
         private const val ROUTE_PERMISSIONS = "permissions"
         private const val ARG_WORKFLOW_ID = "workflowId"

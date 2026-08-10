@@ -10,12 +10,17 @@ import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.MailAccountRepository
 import com.example.ottomatic.data.NfcTagRepository
+import com.example.ottomatic.data.SmartHomeHubRepository
+import com.example.ottomatic.data.hue.AndroidSmartHome
+import com.example.ottomatic.data.hue.SmartHomeSetup
+import com.example.ottomatic.data.security.KeystoreSecrets
 import com.example.ottomatic.data.mail.AndroidMail
 import com.example.ottomatic.data.mail.AndroidMailSecrets
 import com.example.ottomatic.data.mail.MailRuntime
 import com.example.ottomatic.data.mail.MailSeenStore
 import com.example.ottomatic.data.GlobalVariableRepository
 import com.example.ottomatic.domain.registry.GlobalVariables
+import com.example.ottomatic.domain.registry.SmartHomeHubs
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.log.RunLogStore
@@ -37,6 +42,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /**
  * Minimal manual dependency container (Hilt deferred). Initialised once from
@@ -78,6 +84,25 @@ object ServiceLocator {
      * [com.example.ottomatic.data.mail.MailSecrets] rather than a directory alone.
      */
     lateinit var mailAccountRepository: MailAccountRepository
+        private set
+
+    /**
+     * The smart-home hub library, shared by the Smart home screen, both light
+     * pickers and the smart-home facade.
+     *
+     * The second library holding a secret, and it seals it under its **own**
+     * keystore alias rather than sharing the mail one: two features with one key is
+     * two features that cannot be revoked separately, and the alias costs nothing.
+     */
+    lateinit var smartHomeHubRepository: SmartHomeHubRepository
+        private set
+
+    /**
+     * Pairing, refreshing and re-trusting a hub — the editor's half, which no node
+     * has any use for. Separate from the facade on `MailAccountsViewModel.folders`'
+     * reasoning: nothing in a running graph pairs a bridge.
+     */
+    lateinit var smartHomeSetup: SmartHomeSetup
         private set
 
     /**
@@ -145,6 +170,20 @@ object ServiceLocator {
         // that misbehaves costs the user a re-typed password rather than taking
         // Application.onCreate — and the whole app — down with it.
         mailAccountRepository = MailAccountRepository(appContext.filesDir, AndroidMailSecrets())
+        // Its own keystore alias, so revoking one feature's stored credential never
+        // touches the other's.
+        smartHomeHubRepository = SmartHomeHubRepository(
+            appContext.filesDir,
+            KeystoreSecrets(SMART_HOME_KEY_ALIAS),
+        )
+        smartHomeSetup = SmartHomeSetup(smartHomeHubRepository)
+        // Published for `GraphValidator`, which asks whether a light node's hub is
+        // still set up. Collected rather than hydrated once, because pairing and
+        // removing a hub both happen long after startup — and a node pointing at a
+        // removed hub is the case this exists for.
+        appScope.launch {
+            smartHomeHubRepository.hubs.collect { hubs -> SmartHomeHubs.hydrate(hubs.map { it.id }) }
+        }
         systemServices = AndroidSystemServices(appContext)
         deviceState = AndroidDeviceState(appContext)
         macroControl = AndroidMacroControl(appContext)
@@ -188,6 +227,10 @@ object ServiceLocator {
             // call rather than holding either: an account edited mid-run must not
             // be sent from with the settings it had when the engine started.
             mail = mailFacade,
+            // Resolves its hub on every call for the same reason, and paces its
+            // commands per hub so a loop over twenty lights does not have half of
+            // them dropped by the bridge without anything saying so.
+            smartHome = AndroidSmartHome(smartHomeHubRepository),
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.
@@ -215,4 +258,12 @@ object ServiceLocator {
         // granting one of these means leaving the app for a Settings page.
         GrantedPrerequisites.hydrateFrom(permissionChecker)
     }
+
+    /**
+     * The AndroidKeyStore alias the hub library seals its application keys under.
+     *
+     * Carries its scheme version, as the mail one does, so a future rotation is a
+     * parse branch rather than a schema bump.
+     */
+    private const val SMART_HOME_KEY_ALIAS = "ottomatic.smarthome.v1"
 }

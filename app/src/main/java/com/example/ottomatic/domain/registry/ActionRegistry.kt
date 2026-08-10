@@ -20,6 +20,9 @@ import com.example.ottomatic.engine.action.ForEachAction
 import com.example.ottomatic.engine.action.HttpAction
 import com.example.ottomatic.engine.action.IfAction
 import com.example.ottomatic.engine.action.LaunchAppAction
+import com.example.ottomatic.engine.action.LightControlAction
+import com.example.ottomatic.engine.action.LightSceneAction
+import com.example.ottomatic.engine.action.LightStateAction
 import com.example.ottomatic.engine.action.ListAddAction
 import com.example.ottomatic.engine.action.ListClearAction
 import com.example.ottomatic.engine.action.LogAction
@@ -96,6 +99,11 @@ object ActionRegistry {
         HttpAction(),
         IfAction(),
         LaunchAppAction(),
+        // The light family, kept together for the mail family's reason: control one,
+        // recall a whole arrangement, and read back what is actually on right now.
+        LightControlAction(),
+        LightSceneAction(),
+        LightStateAction(),
         ListAddAction(),
         ListClearAction(),
         LogAction(),
