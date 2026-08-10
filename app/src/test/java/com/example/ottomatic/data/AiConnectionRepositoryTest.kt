@@ -157,4 +157,48 @@ class AiConnectionRepositoryTest {
         folder.root.resolve("ai/key.json").writeText("""{"secret":""}""")
         assertTrue(repository().list().isEmpty())
     }
+
+    @Test
+    fun `a provider's address, models and standing instruction survive a restart`() = runBlocking {
+        val repository = repository()
+        val created = repository.create("Local", AiProvider.OPENAI_COMPATIBLE)
+        repository.upsert(
+            repository.get(created.id)!!.copy(
+                baseUrl = "http://192.168.1.10:8000/v1",
+                fastModel = "Qwen/Qwen3-8B",
+                thoroughModel = "Qwen/Qwen3-32B",
+                systemPrompt = "Answer in German.",
+            ),
+        )
+        val reopened = repository().get(created.id)!!
+        assertEquals(AiProvider.OPENAI_COMPATIBLE, reopened.provider)
+        assertEquals("http://192.168.1.10:8000/v1", reopened.baseUrl)
+        assertEquals("Qwen/Qwen3-8B", reopened.fastModel)
+        assertEquals("Qwen/Qwen3-32B", reopened.thoroughModel)
+        assertEquals("Answer in German.", reopened.systemPrompt)
+    }
+
+    /**
+     * **The no-migration claim, pinned.** Every property added after the first
+     * release defaults to blank, which is the whole reason a `connections.json`
+     * written before they existed still loads: kotlinx fills an absent property from
+     * its default and the repository decodes with `ignoreUnknownKeys`. A future
+     * property without a default would break this test rather than somebody's phone.
+     */
+    @Test
+    fun `a library file written before these fields existed still loads`() = runBlocking {
+        val sealed = secrets.seal("AIza-old")!!
+        folder.root.resolve("ai").mkdirs()
+        folder.root.resolve("ai/connections.json").writeText(
+            """[{"id":"old-id","name":"Personal","provider":"GEMINI","secret":"$sealed"}]""",
+        )
+        val repository = repository()
+        val loaded = repository.list().single()
+        assertEquals("Personal", loaded.name)
+        assertEquals(AiProvider.GEMINI, loaded.provider)
+        assertEquals("AIza-old", repository.apiKey("old-id"))
+        assertEquals("", loaded.baseUrl)
+        assertEquals("", loaded.systemPrompt)
+        assertEquals("", loaded.fastModel)
+    }
 }

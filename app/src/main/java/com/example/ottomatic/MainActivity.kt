@@ -114,6 +114,7 @@ class MainActivity : ComponentActivity() {
         AiConnectionsViewModel.factory(
             repository = ServiceLocator.aiConnectionRepository,
             ai = ServiceLocator.executionContext.ai,
+            catalog = ServiceLocator.aiModelCatalog,
         )
     }
 

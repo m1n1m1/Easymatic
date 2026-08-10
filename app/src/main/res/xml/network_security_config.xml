@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Permits unencrypted HTTP, which Android has blocked by default since API 28.
+
+  This exists for one feature: a self-hosted AI connection. A model server on the
+  user's own network is reached at something like http://192.168.1.5:8000, because
+  vLLM, Ollama, LM Studio and llama.cpp all serve plain HTTP and there is no
+  certificate a LAN address could present anyway — the address moves with the DHCP
+  lease. Without this file that connection fails at the socket, before any request,
+  with an error that says nothing about why.
+
+  IT IS APP-WIDE BECAUSE IT CANNOT BE ANYTHING ELSE. A domain-config needs literal
+  hostnames written here at build time, and the whole point of the field is that only
+  the user knows the address. There is no runtime API to permit one host either:
+  NetworkSecurityPolicy is a process-wide, read-only fact. So the choice was between
+  this and making the commonest self-hosted setup unreachable without a reverse
+  proxy, which is not a thing to ask of somebody who just wants their own model to
+  answer a macro.
+
+  Two consequences, both deliberate. `action.http` gains the same reach, which is a
+  gain rather than a cost — a LAN endpoint was previously unreachable from it for the
+  same invisible reason. And an AI connection *can* now be pointed at an unencrypted
+  address across the internet, which would put an API key on the wire in the clear;
+  the connection editor warns whenever the address starts with http:// (see
+  AiBaseUrl.isCleartext), because only the user knows whether the far end is their
+  own living room or somebody else's server.
+
+  Everything else keeps the platform defaults: the system trust anchors are
+  unchanged, and the Hue bridge's pinned certificate is handled in code
+  (HueTransport) rather than here, since no static config can pin against an address
+  that moves.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

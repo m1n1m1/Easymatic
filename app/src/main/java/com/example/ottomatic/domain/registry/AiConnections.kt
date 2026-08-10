@@ -26,19 +26,46 @@ object AiConnections {
     @Volatile
     private var current: Set<String>? = null
 
+    @Volatile
+    private var configured: Set<String> = emptySet()
+
     /** Whether anything has published a list yet; see the class KDoc. */
     val isHydrated: Boolean get() = current != null
 
     /** Whether [connectionId] names a connection that is still set up on this device. */
     fun exists(connectionId: String): Boolean = current?.contains(connectionId) == true
 
-    /** Publishes [connectionIds] as the current set. Called as the connection library emits. */
-    fun hydrate(connectionIds: Collection<String>) {
+    /**
+     * Whether [connectionId] has everything its provider needs to answer a prompt —
+     * `AiConnection.isConfigured`, published rather than recomputed here.
+     *
+     * A **second** question rather than a stricter [exists], because the two have
+     * different fixes and want different sentences: a deleted connection means the
+     * node has to point somewhere else, where an unfinished one means opening the AI
+     * screen and filling in a field. Folding them would put "no longer exists" on a
+     * connection sitting right there in the list.
+     *
+     * This is the case that most needs catching, and it is new with the open-ended
+     * providers: a self-hosted connection with no server address renders *perfectly*
+     * — a name, a provider, a key — and answers nothing at all.
+     */
+    fun isConfigured(connectionId: String): Boolean = connectionId in configured
+
+    /**
+     * Publishes the library: every id, and the subset that is ready to use.
+     *
+     * Two collections rather than one filtered list, because [exists] must go on
+     * seeing a half-finished connection — otherwise the Problems panel would report
+     * it as deleted, which is the wrong sentence about a connection the user can see.
+     */
+    fun hydrate(connectionIds: Collection<String>, configuredIds: Collection<String> = connectionIds) {
         current = connectionIds.toSet()
+        configured = configuredIds.toSet()
     }
 
     /** Returns to the unhydrated state. Test seam, mirroring [MacroDirectory.reset]. */
     internal fun reset() {
         current = null
+        configured = emptySet()
     }
 }

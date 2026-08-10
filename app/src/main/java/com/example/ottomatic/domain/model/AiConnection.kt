@@ -6,21 +6,43 @@ import kotlinx.serialization.Serializable
 /**
  * Which service an [AiConnection] talks to.
  *
- * One member today, and the enum exists anyway for the reason
- * [SmartHomeKind] does: the *shape* of the library is what makes a second one a
- * constant and a branch rather than a parallel copy of the screen, the storage and
- * the sealed credential. A single-member enum that is never extended costs one
- * dropdown with one row; a library rebuilt to hold two providers after the fact
- * costs a schema migration on every saved workflow.
+ * The enum shipped with **one member and no second provider in sight**, on
+ * [SmartHomeKind]'s reasoning: the *shape* of the library is what makes a second one
+ * a constant and a branch rather than a parallel copy of the screen, the storage and
+ * the sealed credential. That bet paid — adding these four touched no workflow, no
+ * node, no schema version and nothing in `core/` or `engine/`.
  *
  * Persisted by **name** inside the connection, so a member may be added but never
  * renamed — an unknown name is a discarded schema rather than a migration, exactly
  * as for a node's typeId.
+ *
+ * **There is deliberately no `OLLAMA`, `LMSTUDIO`, `VLLM`, `GROQ` or `DEEPSEEK`.**
+ * Every one of them serves OpenAI-compatible `/v1/chat/completions`, so each would
+ * be [OPENAI_COMPATIBLE] with a different default host — a member that buys a
+ * prefilled text field and costs a permanent branch in every `when` over this enum.
+ * What those services actually need is a *base URL preset* in the editor, which is
+ * `MailProvider`'s shape and where they live. The one mainstream service that
+ * genuinely does not fit is Azure OpenAI, whose auth is an `api-key` header plus an
+ * `api-version` query parameter rather than a bearer token; that one would earn a
+ * member.
  */
 @Serializable
 enum class AiProvider {
     @Label("Google Gemini")
     GEMINI,
+
+    @Label("Anthropic Claude")
+    ANTHROPIC,
+
+    @Label("OpenAI (ChatGPT)")
+    OPENAI,
+
+    @Label("OpenRouter")
+    OPENROUTER,
+
+    /** Any server speaking OpenAI's chat-completions API — vLLM, Ollama, LM Studio, llama.cpp. */
+    @Label("Self-hosted / OpenAI-compatible")
+    OPENAI_COMPATIBLE,
 }
 
 /**
@@ -53,6 +75,12 @@ enum class AiProvider {
  * trip to a device that may be unplugged; resolving this id is a lookup in a local
  * file, so the picker can always render the real name and a renamed connection
  * follows everywhere at once.
+ *
+ * **Every property added after the first release defaults to blank**, which is what
+ * makes a `connections.json` written by an older build load unchanged: the
+ * repository decodes with `ignoreUnknownKeys` and kotlinx fills an absent property
+ * from its default, so there is no migration here and no version gate. That is only
+ * true while every added property has a default, which is why they all do.
  */
 @Serializable
 data class AiConnection(
@@ -62,4 +90,83 @@ data class AiConnection(
     val provider: AiProvider = AiProvider.GEMINI,
     /** Sealed by `Secrets`. Never the key itself, and never read back into the UI. */
     val secret: String = "",
+
+    /**
+     * A standing instruction sent ahead of every prompt through this connection.
+     *
+     * **Combined with `action.ai_prompt`'s own "Standing instruction" rather than
+     * replacing it**, connection first, joined by a blank line. The two answer
+     * different questions and both are worth keeping: this one is about the
+     * *connection* — the persona, the language, the house rules that should hold
+     * wherever it is used — where the node's is about the one task it is doing. An
+     * override would mean any node that set a single task instruction silently threw
+     * the connection's rules away, which is exactly the failure that is invisible
+     * from the card.
+     *
+     * Combining happens in `data/ai/`, where the connection can be resolved. Nothing
+     * in `core/` or `engine/` knows this field exists.
+     */
+    val systemPrompt: String = "",
+
+    /**
+     * Where to send requests, when it is not the provider's own published endpoint.
+     *
+     * **Required for [AiProvider.OPENAI_COMPATIBLE]** and blank everywhere else,
+     * where it is an escape hatch for a proxy or a regional endpoint. Parsed by
+     * [AiBaseUrl], which refuses a scheme-less host rather than guessing — see there
+     * for why [WebUrl] must not be reused for this field.
+     */
+    val baseUrl: String = "",
+
+    /** Overrides the provider's own [com.example.ottomatic.core.service.AiModel] FAST id. Blank uses it. */
+    val fastModel: String = "",
+
+    /** Overrides the provider's own BALANCED id. Blank uses it. */
+    val balancedModel: String = "",
+
+    /** Overrides the provider's own THOROUGH id. Blank uses it. */
+    val thoroughModel: String = "",
 )
+
+/**
+ * Whether this provider has no endpoint of its own, so the user must give one.
+ *
+ * The three rules below live in `domain` rather than beside the wire formats in
+ * `data/ai/` because **three different layers ask the same question** — the editor's
+ * Save button, `GraphValidator`'s Problems entry, and the facade before it sends
+ * anything — and none of the first two may import `data`. One rule with three
+ * consumers, on `MailProvider`'s reasoning: a provider's requirements are a fact
+ * about the *library*, where its JSON envelope is a fact about the wire.
+ */
+val AiProvider.needsBaseUrl: Boolean get() = this == AiProvider.OPENAI_COMPATIBLE
+
+/**
+ * Whether this provider publishes no model table worth defaulting to, so the id has
+ * to be named.
+ *
+ * True for the two open-ended ones and for opposite reasons, which is why it is a
+ * property rather than a list: OpenRouter serves a catalogue of hundreds where no
+ * three ids are the obvious tiers, and a self-hosted server serves exactly one model
+ * whose name only the person who started it knows.
+ */
+val AiProvider.needsModelIds: Boolean
+    get() = this == AiProvider.OPENAI_COMPATIBLE || this == AiProvider.OPENROUTER
+
+/**
+ * Whether this connection has everything its provider needs to answer a prompt.
+ *
+ * Only the **Fast** model is required even when [needsModelIds] is true, because the
+ * dominant self-hosted case is a machine serving one model: naming it once and
+ * having all three tiers use it is what somebody means, where demanding three copies
+ * of the same string is a form to fill in for nothing. A tier left blank falls back
+ * to the Fast id — see `OpenAiProtocol`.
+ *
+ * The key is deliberately **not** part of this. A connection whose key is missing or
+ * unreadable is a different state with a different fix, already answered by
+ * `AiConnectionRepository.needsKey`, and folding the two would make the Problems
+ * panel say "not finished being set up" about a restored phone whose setup was
+ * finished months ago.
+ */
+val AiConnection.isConfigured: Boolean
+    get() = (!provider.needsBaseUrl || baseUrl.isNotBlank()) &&
+        (!provider.needsModelIds || fastModel.isNotBlank())

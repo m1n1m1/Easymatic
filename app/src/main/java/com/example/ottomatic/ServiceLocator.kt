@@ -8,7 +8,9 @@ import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.AiConnectionRepository
-import com.example.ottomatic.data.ai.GeminiAi
+import com.example.ottomatic.data.ai.AiModelCatalog
+import com.example.ottomatic.data.ai.RoutingAi
+import com.example.ottomatic.domain.model.isConfigured
 import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.MailAccountRepository
@@ -128,6 +130,16 @@ object ServiceLocator {
     lateinit var aiConnectionRepository: AiConnectionRepository
         private set
 
+    /**
+     * Lists the models a connection can reach, for the editor's chooser.
+     *
+     * A second class over the same repository holding the *editor's* needs and no
+     * node's, exactly as [smartHomeSetup] is — no macro ever lists models, and the
+     * facade the engine can see should not gain a method it must never call.
+     */
+    lateinit var aiModelCatalog: AiModelCatalog
+        private set
+
     lateinit var systemServices: SystemServices
         private set
 
@@ -196,6 +208,7 @@ object ServiceLocator {
         // a paired bridge — and so an AI key, which the user can regenerate in a
         // browser in ten seconds, is never the reason a light stops working.
         aiConnectionRepository = AiConnectionRepository(appContext.filesDir, KeystoreSecrets(AI_KEY_ALIAS))
+        aiModelCatalog = AiModelCatalog(aiConnectionRepository)
         publishAiConnections()
         publishSmartHomeHubs()
         systemServices = AndroidSystemServices(appContext)
@@ -249,10 +262,12 @@ object ServiceLocator {
             // commands per hub so a loop over twenty lights does not have half of
             // them dropped by the bridge without anything saying so.
             smartHome = AndroidSmartHome(smartHomeHubRepository),
-            // Resolves the key on every call for the same reason: a key pasted in
-            // mid-run must be the one the next prompt uses, and a revoked one must
-            // stop working without waiting for the process to die.
-            ai = GeminiAi(aiConnectionRepository),
+            // Resolves the connection on every call for the same reason: a key
+            // pasted in mid-run must be the one the next prompt uses, and a revoked
+            // one must stop working without waiting for the process to die. Which
+            // *provider* is therefore also a per-call fact, so one instance serves
+            // every connection on the phone and this line names none of them.
+            ai = RoutingAi(aiConnectionRepository),
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.
@@ -314,7 +329,10 @@ object ServiceLocator {
     private fun publishAiConnections() {
         appScope.launch {
             aiConnectionRepository.connections.collect { list ->
-                AiConnections.hydrate(list.map { it.id })
+                AiConnections.hydrate(
+                    connectionIds = list.map { it.id },
+                    configuredIds = list.filter { it.isConfigured }.map { it.id },
+                )
             }
         }
     }

@@ -3,15 +3,13 @@ package com.example.ottomatic.data.ai
 import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.AiReply
 import com.example.ottomatic.core.service.AiRequest
+import com.example.ottomatic.domain.model.AiConnection
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -20,22 +18,23 @@ import kotlinx.serialization.json.putJsonObject
 /**
  * The Gemini `generateContent` wire format, as pure functions.
  *
- * Split out from [GeminiAi] and holding no platform types at all, for
+ * Holding no platform types at all, for
  * [com.example.ottomatic.domain.model.WebUrl]'s and
- * [com.example.ottomatic.domain.model.MessengerLink]'s reason: the interesting
- * half of this integration is *what the response means*, and that deserves JVM
- * tests where the transport half would need a device and a live key. Every
- * failure shape below — a refused key, an exhausted quota, a blocked prompt, an
- * answer cut off at the token bound, an empty candidate list — is a real response
- * this has to read correctly, and none of them can be produced on demand from a
- * real server.
+ * [com.example.ottomatic.domain.model.MessengerLink]'s reason: the interesting half
+ * of this integration is *what the response means*, and that deserves JVM tests
+ * where the transport half would need a device and a live key. Every failure shape
+ * below — a refused key, an exhausted quota, a blocked prompt, an answer cut off at
+ * the token bound, an empty candidate list — is a real response this has to read
+ * correctly, and none of them can be produced on demand from a real server.
  *
- * **Model ids live here and nowhere above.** That is the whole point of
- * [AiModel] naming a trade-off rather than a product: when Google retires the id
- * a workflow was saved against, the fix is [modelId] and every persisted macro
- * keeps working.
+ * **Model ids live here and nowhere above.** That is the whole point of [AiModel]
+ * naming a trade-off rather than a product: when Google retires the id a workflow was
+ * saved against, the fix is [modelId] and every persisted macro keeps working — or,
+ * since the library grew per-connection overrides, a text field the user can fix
+ * without waiting for an update at all.
  */
-internal object GeminiProtocol {
+@Suppress("TooManyFunctions") // One member per wire concern; the API's own envelope sets the count.
+internal object GeminiProtocol : AiProtocol {
 
     /**
      * A tolerant reader, deliberately. The response carries far more than is read
@@ -113,8 +112,18 @@ internal object GeminiProtocol {
         AiModel.THOROUGH -> HIGH_THINKING_HEADROOM
     }
 
-    /** Where a [modelId] is asked. */
-    fun endpoint(modelId: String): String = "$BASE_URL/$modelId:generateContent"
+    override fun endpoint(connection: AiConnection, model: AiModel): String {
+        val id = modelIdFor(connection, model, modelId(model))
+        return "${modelsEndpoint(connection)}/$id:$GENERATE_CONTENT"
+    }
+
+    override fun modelsEndpoint(connection: AiConnection): String =
+        "${baseUrlFor(connection, BASE_URL)}/models"
+
+    override fun headers(key: String): Map<String, String> = mapOf(
+        CONTENT_TYPE_HEADER to JSON_CONTENT_TYPE,
+        "x-goog-api-key" to key,
+    )
 
     /**
      * The request body for [request].
@@ -123,7 +132,7 @@ internal object GeminiProtocol {
      * rejects a `parts` array containing an empty string, so "no standing
      * instruction" has to be an absent field and not an empty one.
      */
-    fun requestBody(request: AiRequest): String = buildJsonObject {
+    override fun requestBody(request: AiRequest, connection: AiConnection): String = buildJsonObject {
         if (request.systemInstruction.isNotBlank()) {
             putJsonObject(SYSTEM_KEY) {
                 putJsonArray(PARTS_KEY) { add(buildJsonObject { put(TEXT_KEY, request.systemInstruction) }) }
@@ -158,7 +167,7 @@ internal object GeminiProtocol {
      * rather than becoming a parse error that names nothing.
      */
     @Suppress("ReturnCount") // Each exit names a distinct outcome; folding them is what loses the diagnosis.
-    fun readReply(status: Int, body: String): AiReply {
+    override fun readReply(status: Int, body: String): AiReply {
         val root = runCatching { json.parseToJsonElement(body).jsonObject }.getOrNull()
         if (status !in SUCCESS_RANGE) return AiReply(error = errorText(status, root))
         root ?: return AiReply(error = "The model returned something unreadable (HTTP $status)")
@@ -175,6 +184,30 @@ internal object GeminiProtocol {
         // with silence, and downstream nodes would act on nothing.
         if (text.isBlank()) return AiReply(error = emptyAnswerText(finish))
         return AiReply(text = text, truncated = finish == MAX_TOKENS_FINISH)
+    }
+
+    /**
+     * The listing, with `models/` stripped off each name.
+     *
+     * Gemini answers with the *resource* name — `models/gemini-3.5-flash` — where
+     * every other use of the id, including the URL a prompt is sent to, wants the
+     * bare one. Entries that cannot answer a prompt at all (embedding models) are
+     * dropped rather than offered, since choosing one produces a 400 that says
+     * nothing about the field it came from.
+     */
+    override fun readModels(status: Int, body: String): AiModels {
+        val root = runCatching { json.parseToJsonElement(body).jsonObject }.getOrNull()
+        if (status !in SUCCESS_RANGE) return AiModels(error = errorText(status, root))
+        val entries = root?.get(MODELS_KEY)?.arrayOrNull().orEmpty()
+        val ids = entries.mapNotNull { entry ->
+            val model = entry.objectOrNull() ?: return@mapNotNull null
+            val supported = model[METHODS_KEY]?.arrayOrNull()
+                ?.mapNotNull { it.stringOrNull() }
+                .orEmpty()
+            if (supported.isNotEmpty() && GENERATE_CONTENT !in supported) return@mapNotNull null
+            model[NAME_KEY]?.stringOrNull()?.removePrefix(MODEL_NAME_PREFIX)
+        }
+        return AiModels(ids = ids)
     }
 
     /**
@@ -201,9 +234,9 @@ internal object GeminiProtocol {
     /** `error.message` if the body carries one, else the bare status. */
     private fun errorText(status: Int, root: JsonObject?): String {
         val error = root?.get(ERROR_KEY)?.objectOrNull()
-        val message = error?.get(MESSAGE_KEY)?.stringOrNull()
+        val message = errorMessage(root)
         val code = error?.get(CODE_KEY)?.let { (it as? JsonPrimitive)?.intOrNull } ?: status
-        return if (message.isNullOrBlank()) httpOnlyText(status) else "$message (HTTP $code)"
+        return if (message == null) httpOnlyText(status) else "$message (HTTP $code)"
     }
 
     /**
@@ -216,15 +249,9 @@ internal object GeminiProtocol {
         else -> "The model refused the request (HTTP $status)"
     }
 
-    /**
-     * What the transport reports for a request that never happened, matching
-     * [com.example.ottomatic.core.service.SystemServices.httpRequest]'s own `-1`
-     * so the two failure paths read the same way.
-     */
-    const val NO_RESPONSE = -1
-
-    private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
-    private val SUCCESS_RANGE = 200..299
+    private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
+    private const val GENERATE_CONTENT = "generateContent"
+    private const val MODEL_NAME_PREFIX = "models/"
     private const val MAX_TOKENS_FINISH = "MAX_TOKENS"
     private const val STOP_FINISH = "STOP"
     private const val USER_ROLE = "user"
@@ -251,22 +278,8 @@ internal object GeminiProtocol {
     private const val FINISH_KEY = "finishReason"
     private const val FEEDBACK_KEY = "promptFeedback"
     private const val BLOCK_KEY = "blockReason"
-    private const val ERROR_KEY = "error"
-    private const val MESSAGE_KEY = "message"
     private const val CODE_KEY = "code"
+    private const val MODELS_KEY = "models"
+    private const val METHODS_KEY = "supportedGenerationMethods"
+    private const val NAME_KEY = "name"
 }
-
-/**
- * Three readers that answer null rather than throwing on a field that is not the
- * shape it was last time.
- *
- * File-level rather than members of [GeminiProtocol] so the object stays about the
- * protocol; they are also the reason nothing here needs a typed response class.
- * A response envelope this permissive would otherwise need an `@Serializable`
- * mirror of every optional field Google has ever shipped.
- */
-private fun JsonElement.objectOrNull(): JsonObject? = runCatching { jsonObject }.getOrNull()
-
-private fun JsonElement.arrayOrNull(): JsonArray? = runCatching { jsonArray }.getOrNull()
-
-private fun JsonElement.stringOrNull(): String? = (this as? JsonPrimitive)?.takeIf { it.isString }?.content

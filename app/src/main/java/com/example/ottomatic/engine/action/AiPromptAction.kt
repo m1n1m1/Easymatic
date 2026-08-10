@@ -89,7 +89,13 @@ class AiPromptAction : Action<AiPromptConfig, String> {
         // is discarded rather than migrated, so a rename is not available later.
         // `NodeSuggestions` searches descriptions, so palette search still finds
         // this by the name people actually have in mind.
-        description = "Sends a prompt to an AI model (Google Gemini) and returns its reply as text",
+        // Every provider is named here rather than in the display name because
+        // `NodeSuggestions` searches descriptions: somebody looking for "claude" or
+        // "ChatGPT" in the palette finds this node, while the node itself stays
+        // "Ask AI" and its typeId stays `action.ai_prompt` — a persisted string that
+        // could never have been vendor-shaped.
+        description = "Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter " +
+            "or a self-hosted model — and returns its reply as text",
         category = NodeCategory.AI,
         icon = NodeIcon.AI,
         output = dataOut<String>("answer", label = "Answer"),

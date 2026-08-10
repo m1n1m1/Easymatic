@@ -220,16 +220,30 @@ class GraphValidator(private val workflow: Workflow) {
     private fun validateAiConnectionRefs(out: MutableList<ValidationIssue>) {
         for (node in workflow.nodes) {
             for (key in aiConnectionRefKeys(node.typeId)) {
-                val id = node.config[key].orEmpty()
-                val message = when {
-                    id.isBlank() -> "'${node.name}' has no AI connection chosen, so it will do nothing"
-                    AiConnections.isHydrated && !AiConnections.exists(id) ->
-                        "'${node.name}' points at an AI connection that no longer exists"
-                    else -> continue
+                aiConnectionProblem(node, node.config[key].orEmpty())?.let { message ->
+                    out += ValidationIssue(Severity.WARNING, message, nodes = setOf(node.id))
                 }
-                out += ValidationIssue(Severity.WARNING, message, nodes = setOf(node.id))
             }
         }
+    }
+
+    /**
+     * What is wrong with [node]'s AI connection, or null when nothing is.
+     *
+     * The three cases get three sentences because they have three different fixes:
+     * pick a connection, point somewhere that still exists, or finish setting the
+     * one you have up. The third arrived with the open-ended providers and is the
+     * one that most needs saying — a self-hosted connection with no server address
+     * renders perfectly in the picker, name and provider and key, and answers
+     * nothing.
+     */
+    private fun aiConnectionProblem(node: WorkflowNode, id: String): String? = when {
+        id.isBlank() -> "'${node.name}' has no AI connection chosen, so it will do nothing"
+        !AiConnections.isHydrated -> null
+        !AiConnections.exists(id) -> "'${node.name}' points at an AI connection that no longer exists"
+        !AiConnections.isConfigured(id) ->
+            "'${node.name}' points at an AI connection that is not finished being set up"
+        else -> null
     }
 
     /**

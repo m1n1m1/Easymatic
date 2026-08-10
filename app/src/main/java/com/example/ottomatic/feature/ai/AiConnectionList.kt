@@ -158,7 +158,7 @@ private fun ConnectionRow(
                     )
                 }
                 Text(
-                    text = if (needsKey) "Key needs pasting in again" else providerLabel(connection),
+                    text = if (needsKey) "Key needs pasting in again" else connection.provider.label(),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (needsKey) EditorColors.warnAccent else EditorColors.textSecondary,
                     maxLines = 1,
@@ -170,9 +170,4 @@ private fun ConnectionRow(
             Icon(Icons.Filled.Edit, contentDescription = "Edit", tint = EditorColors.textSecondary)
         }
     }
-}
-
-/** The provider's own name, as the enum's `@Label` gives it. */
-private fun providerLabel(connection: AiConnection): String = when (connection.provider) {
-    com.example.ottomatic.domain.model.AiProvider.GEMINI -> "Google Gemini"
 }

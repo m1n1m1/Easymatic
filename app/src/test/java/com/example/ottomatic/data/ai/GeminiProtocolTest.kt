@@ -2,6 +2,8 @@ package com.example.ottomatic.data.ai
 
 import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.AiRequest
+import com.example.ottomatic.domain.model.AiConnection
+import com.example.ottomatic.domain.model.AiProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -21,11 +23,18 @@ class GeminiProtocolTest {
 
     /**
      * Any id at all. Which connection a prompt is billed to is resolved by
-     * `GeminiAi` before this object is reached, so nothing here reads it — it is
+     * [RoutingAi] before this object is reached, so nothing here reads it — it is
      * carried only because [AiRequest] refuses to be built without one, which is
      * itself the point: there is no implicit connection to fall back on.
      */
     private val testConnection = "connection-id"
+
+    /** A plain Gemini connection with nothing overridden. */
+    private val connection = AiConnection(
+        id = testConnection,
+        name = "Gemini",
+        provider = AiProvider.GEMINI,
+    )
 
     /** A request with only the fields this object reads varied. */
     private fun request(model: AiModel, maxOutputTokens: Int = 100) =
@@ -36,10 +45,13 @@ class GeminiProtocolTest {
             maxOutputTokens = maxOutputTokens,
         )
 
+    private fun body(request: AiRequest, on: AiConnection = connection) =
+        GeminiProtocol.requestBody(request, on)
+
     /** The `maxOutputTokens` actually sent for [model], less the [asked] reply limit. */
     private fun headroomOf(model: AiModel, asked: Int = 100): Int {
-        val body = GeminiProtocol.requestBody(request(model, asked))
-        return Regex("\"maxOutputTokens\":(\\d+)").find(body)!!.groupValues[1].toInt() - asked
+        val sent = body(request(model, asked))
+        return Regex("\"maxOutputTokens\":(\\d+)").find(sent)!!.groupValues[1].toInt() - asked
     }
 
     @Test
@@ -142,7 +154,7 @@ class GeminiProtocolTest {
     /** What the transport reports for a request that never left the phone. */
     @Test
     fun `no response at all reads as a connection problem and names no HTTP status`() {
-        val reply = GeminiProtocol.readReply(status = GeminiProtocol.NO_RESPONSE, body = "")
+        val reply = GeminiProtocol.readReply(status = NO_RESPONSE, body = "")
         assertTrue(reply.error.contains("connection"))
         assertFalse(reply.error.contains("HTTP"))
     }
@@ -161,18 +173,41 @@ class GeminiProtocolTest {
 
     @Test
     fun `a blank standing instruction is left out of the body entirely`() {
-        val body = GeminiProtocol.requestBody(AiRequest(connectionId = testConnection, prompt = "hello"))
-        assertFalse(body.contains("systemInstruction"))
-        assertTrue(body.contains("hello"))
+        val sent = body(AiRequest(connectionId = testConnection, prompt = "hello"))
+        assertFalse(sent.contains("systemInstruction"))
+        assertTrue(sent.contains("hello"))
     }
 
     @Test
     fun `a standing instruction that was given is sent as its own field`() {
-        val body = GeminiProtocol.requestBody(
+        val sent = body(
             AiRequest(connectionId = testConnection, prompt = "hello", systemInstruction = "Answer in German"),
         )
-        assertTrue(body.contains("systemInstruction"))
-        assertTrue(body.contains("Answer in German"))
+        assertTrue(sent.contains("systemInstruction"))
+        assertTrue(sent.contains("Answer in German"))
+    }
+
+    /**
+     * The table has been broken twice by Google and once would have been enough:
+     * an override is what turns "wait for an app update" into a text field.
+     */
+    @Test
+    fun `a model named on the connection wins over the built-in table`() {
+        val overridden = connection.copy(balancedModel = "gemini-9-something")
+        // Gemini carries the model in the URL rather than the body, so that is where
+        // the override has to land.
+        assertTrue(
+            GeminiProtocol.endpoint(overridden, AiModel.BALANCED).contains("gemini-9-something"),
+        )
+    }
+
+    @Test
+    fun `a tier nobody overrode still comes off the table`() {
+        val overridden = connection.copy(balancedModel = "gemini-9-something")
+        assertTrue(
+            GeminiProtocol.endpoint(overridden, AiModel.FAST)
+                .contains(GeminiProtocol.modelId(AiModel.FAST)),
+        )
     }
 
     /**
@@ -184,9 +219,9 @@ class GeminiProtocolTest {
     @Test
     fun `the thinking level is sent and the legacy budget field never is`() {
         for (model in AiModel.entries) {
-            val body = GeminiProtocol.requestBody(request(model))
-            assertTrue("$model sends no thinking level", body.contains("\"thinkingLevel\""))
-            assertFalse("$model still sends the legacy budget field", body.contains("thinkingBudget"))
+            val sent = body(request(model))
+            assertTrue("$model sends no thinking level", sent.contains("\"thinkingLevel\""))
+            assertFalse("$model still sends the legacy budget field", sent.contains("thinkingBudget"))
         }
     }
 
@@ -216,8 +251,8 @@ class GeminiProtocolTest {
 
     @Test
     fun `a zero reply limit still asks for at least one token beyond the headroom`() {
-        val zero = GeminiProtocol.requestBody(request(AiModel.FAST, maxOutputTokens = 0))
-        val one = GeminiProtocol.requestBody(request(AiModel.FAST, maxOutputTokens = 1))
+        val zero = body(request(AiModel.FAST, maxOutputTokens = 0))
+        val one = body(request(AiModel.FAST, maxOutputTokens = 1))
         assertEquals(
             Regex("\"maxOutputTokens\":(\\d+)").find(one)!!.groupValues[1],
             Regex("\"maxOutputTokens\":(\\d+)").find(zero)!!.groupValues[1],
@@ -249,7 +284,7 @@ class GeminiProtocolTest {
         for (model in AiModel.entries) {
             val id = GeminiProtocol.modelId(model)
             assertTrue("$model has no model id", id.isNotBlank())
-            val endpoint = GeminiProtocol.endpoint(id)
+            val endpoint = GeminiProtocol.endpoint(connection, model)
             assertTrue(endpoint.startsWith("https://"))
             assertTrue(endpoint.endsWith(":generateContent"))
             assertTrue(endpoint.contains(id))
