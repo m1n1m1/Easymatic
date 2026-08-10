@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.AlertDialog
@@ -73,6 +74,7 @@ fun WorkflowListScreen(
     onOpenNfcTags: () -> Unit,
     onOpenMailAccounts: () -> Unit,
     onOpenSmartHome: () -> Unit,
+    onOpenAi: () -> Unit,
     onOpenVariables: () -> Unit,
     onOpenPermissions: () -> Unit,
 ) {
@@ -154,6 +156,7 @@ fun WorkflowListScreen(
                         onOpenNfcTags = onOpenNfcTags,
                         onOpenMailAccounts = onOpenMailAccounts,
                         onOpenSmartHome = onOpenSmartHome,
+                        onOpenAi = onOpenAi,
                     )
                 }
             }
@@ -320,6 +323,7 @@ private fun LibraryMenu(
     onOpenNfcTags: () -> Unit,
     onOpenMailAccounts: () -> Unit,
     onOpenSmartHome: () -> Unit,
+    onOpenAi: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box {
@@ -361,6 +365,18 @@ private fun LibraryMenu(
                 onClick = {
                     expanded = false
                     onOpenSmartHome()
+                },
+            )
+            // Last, and the one entry here that is not a library of many things:
+            // it is one key for the phone. It belongs in this menu anyway, because
+            // what the menu really collects is "the things a macro needs that are
+            // set up once and shared by all of them".
+            DropdownMenuItem(
+                text = { Text("AI") },
+                leadingIcon = { Icon(Icons.Filled.Psychology, contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    onOpenAi()
                 },
             )
         }

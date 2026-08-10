@@ -7,6 +7,9 @@ import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.SystemServices
+import com.example.ottomatic.data.AiConnectionRepository
+import com.example.ottomatic.data.ai.GeminiAi
+import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.MailAccountRepository
 import com.example.ottomatic.data.NfcTagRepository
@@ -114,6 +117,17 @@ object ServiceLocator {
     lateinit var globalVariableRepository: GlobalVariableRepository
         private set
 
+    /**
+     * The AI connection library, shared by the AI screen, the Ask AI node's picker
+     * and the model facade.
+     *
+     * The third library holding a secret, sealed under its **own** keystore alias
+     * for the reason the hub library has one: two features with one key is two
+     * features that cannot be revoked separately, and the alias costs nothing.
+     */
+    lateinit var aiConnectionRepository: AiConnectionRepository
+        private set
+
     lateinit var systemServices: SystemServices
         private set
 
@@ -178,13 +192,12 @@ object ServiceLocator {
             KeystoreSecrets(SMART_HOME_KEY_ALIAS),
         )
         smartHomeSetup = SmartHomeSetup(smartHomeHubRepository)
-        // Published for `GraphValidator`, which asks whether a light node's hub is
-        // still set up. Collected rather than hydrated once, because pairing and
-        // removing a hub both happen long after startup — and a node pointing at a
-        // removed hub is the case this exists for.
-        appScope.launch {
-            smartHomeHubRepository.hubs.collect { hubs -> SmartHomeHubs.hydrate(hubs.map { it.id }) }
-        }
+        // Its own keystore alias too, so revoking the AI key never touches mail or
+        // a paired bridge — and so an AI key, which the user can regenerate in a
+        // browser in ten seconds, is never the reason a light stops working.
+        aiConnectionRepository = AiConnectionRepository(appContext.filesDir, KeystoreSecrets(AI_KEY_ALIAS))
+        publishAiConnections()
+        publishSmartHomeHubs()
         systemServices = AndroidSystemServices(appContext)
         deviceState = AndroidDeviceState(appContext)
         macroControl = AndroidMacroControl(appContext)
@@ -236,6 +249,10 @@ object ServiceLocator {
             // commands per hub so a loop over twenty lights does not have half of
             // them dropped by the bridge without anything saying so.
             smartHome = AndroidSmartHome(smartHomeHubRepository),
+            // Resolves the key on every call for the same reason: a key pasted in
+            // mid-run must be the one the next prompt uses, and a revoked one must
+            // stop working without waiting for the process to die.
+            ai = GeminiAi(aiConnectionRepository),
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.
@@ -271,4 +288,42 @@ object ServiceLocator {
      * parse branch rather than a schema bump.
      */
     private const val SMART_HOME_KEY_ALIAS = "ottomatic.smarthome.v1"
+
+    /**
+     * Keeps [SmartHomeHubs] in step with the library, for `GraphValidator`, which
+     * asks whether a light node's hub is still set up.
+     *
+     * Collected rather than hydrated once, because pairing and removing a hub both
+     * happen long after startup — and a node pointing at a removed hub is the case
+     * this exists for.
+     */
+    private fun publishSmartHomeHubs() {
+        appScope.launch {
+            smartHomeHubRepository.hubs.collect { hubs -> SmartHomeHubs.hydrate(hubs.map { it.id }) }
+        }
+    }
+
+    /**
+     * Keeps [AiConnections] in step with the library, for `GraphValidator`, which
+     * asks whether an AI node's connection still exists.
+     *
+     * Collected rather than hydrated once, on the hub library's reasoning:
+     * connections are added and deleted long after startup, and a node pointing at
+     * a deleted one is the case this exists for.
+     */
+    private fun publishAiConnections() {
+        appScope.launch {
+            aiConnectionRepository.connections.collect { list ->
+                AiConnections.hydrate(list.map { it.id })
+            }
+        }
+    }
+
+    /**
+     * The AndroidKeyStore alias the AI key is sealed under.
+     *
+     * Carries its scheme version, as the other two do, so a future rotation is a
+     * parse branch rather than a schema bump.
+     */
+    private const val AI_KEY_ALIAS = "ottomatic.ai.v1"
 }

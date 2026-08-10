@@ -58,4 +58,11 @@ enum class NodeIcon {
      * another person messaging them.
      */
     CHAT,
+
+    /**
+     * A language model being asked something. Distinct from [CHAT], which is a
+     * conversation with a *person* in a messenger, and from [SCENE]'s sparkles,
+     * which are a saved lighting arrangement.
+     */
+    AI,
 }

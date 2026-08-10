@@ -62,6 +62,8 @@ import com.example.ottomatic.engine.trigger.GeofenceTrigger
 import com.example.ottomatic.engine.validation.GraphValidation
 import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
+import com.example.ottomatic.feature.ai.AiConnectionsViewModel
+import com.example.ottomatic.feature.ai.LocalAiConnections
 import com.example.ottomatic.feature.mail.LocalMailAccounts
 import com.example.ottomatic.feature.mail.MailAccountsViewModel
 import com.example.ottomatic.feature.nfc.LocalNfcTags
@@ -81,6 +83,7 @@ fun GraphEditorScreen(
     nfcTags: NfcTagsViewModel,
     mailAccounts: MailAccountsViewModel,
     smartHome: SmartHomeViewModel,
+    aiConnections: AiConnectionsViewModel,
     globalVariables: GlobalVariablesViewModel,
     onBack: () -> Unit,
 ) {
@@ -96,6 +99,7 @@ fun GraphEditorScreen(
         LocalNfcTags provides nfcTags,
         LocalMailAccounts provides mailAccounts,
         LocalSmartHome provides smartHome,
+        LocalAiConnections provides aiConnections,
         LocalVariables provides variables,
         LocalMacros provides macros,
     ) {

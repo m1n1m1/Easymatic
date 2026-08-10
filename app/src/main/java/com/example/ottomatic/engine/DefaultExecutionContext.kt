@@ -1,8 +1,10 @@
 package com.example.ottomatic.engine
 
+import com.example.ottomatic.core.service.Ai
 import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.LogEntry
+import com.example.ottomatic.core.service.NoAi
 import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.LogSource
@@ -51,6 +53,7 @@ class DefaultExecutionContext(
     override val mail: Mail = NoMail,
     override val messaging: Messaging = NoMessaging,
     override val smartHome: SmartHome = NoSmartHome,
+    override val ai: Ai = NoAi,
     private val logger: (LogEntry) -> Unit = {},
 ) : ExecutionContext {
 

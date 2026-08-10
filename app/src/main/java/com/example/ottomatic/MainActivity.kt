@@ -33,6 +33,8 @@ import com.example.ottomatic.data.location.AndroidLocationLookup
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.engine.service.MacroEngineService
+import com.example.ottomatic.feature.ai.AiConnectionsScreen
+import com.example.ottomatic.feature.ai.AiConnectionsViewModel
 import com.example.ottomatic.feature.geofence.GeofencePlacesScreen
 import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
 import com.example.ottomatic.feature.mail.MailAccountsScreen
@@ -101,6 +103,17 @@ class MainActivity : ComponentActivity() {
         SmartHomeViewModel.factory(
             repository = ServiceLocator.smartHomeHubRepository,
             setup = ServiceLocator.smartHomeSetup,
+        )
+    }
+
+    // Activity-scoped for the mail library's reason, and with the same edge: a
+    // connection added from inside an Ask AI node's picker has to be the connection
+    // the standalone screen is showing, since "paste the key again" is a fix
+    // somebody may reach for from either place.
+    private val aiConnectionsViewModel: AiConnectionsViewModel by viewModels {
+        AiConnectionsViewModel.factory(
+            repository = ServiceLocator.aiConnectionRepository,
+            ai = ServiceLocator.executionContext.ai,
         )
     }
 
@@ -246,6 +259,7 @@ class MainActivity : ComponentActivity() {
                     onOpenNfcTags = { navController.navigate(ROUTE_NFC_TAGS) },
                     onOpenMailAccounts = { navController.navigate(ROUTE_MAIL_ACCOUNTS) },
                     onOpenSmartHome = { navController.navigate(ROUTE_SMART_HOME) },
+                    onOpenAi = { navController.navigate(ROUTE_AI) },
                     onOpenVariables = { navController.navigate(ROUTE_VARIABLES) },
                     onOpenPermissions = { navController.navigate(ROUTE_PERMISSIONS) },
                 )
@@ -271,6 +285,12 @@ class MainActivity : ComponentActivity() {
             composable(ROUTE_SMART_HOME) {
                 SmartHomeScreen(
                     viewModel = smartHomeViewModel,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(ROUTE_AI) {
+                AiConnectionsScreen(
+                    viewModel = aiConnectionsViewModel,
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -326,6 +346,7 @@ class MainActivity : ComponentActivity() {
                     nfcTags = nfcTagsViewModel,
                     mailAccounts = mailAccountsViewModel,
                     smartHome = smartHomeViewModel,
+                    aiConnections = aiConnectionsViewModel,
                     globalVariables = globalVariablesViewModel,
                     onBack = { navController.popBackStack() },
                 )
@@ -464,6 +485,7 @@ class MainActivity : ComponentActivity() {
         private const val ROUTE_NFC_TAGS = "nfcTags"
         private const val ROUTE_MAIL_ACCOUNTS = "mailAccounts"
         private const val ROUTE_SMART_HOME = "smartHome"
+        private const val ROUTE_AI = "ai"
         private const val ROUTE_VARIABLES = "variables"
         private const val ROUTE_PERMISSIONS = "permissions"
         private const val ARG_WORKFLOW_ID = "workflowId"

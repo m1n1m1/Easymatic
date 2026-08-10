@@ -1,8 +1,10 @@
 package com.example.ottomatic.engine
 
+import com.example.ottomatic.core.service.Ai
 import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.core.service.NoAi
 import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
@@ -148,6 +150,20 @@ interface ExecutionContext {
      * an `action.if`, on the exec wire where the latency is visible.
      */
     val smartHome: SmartHome get() = NoSmartHome
+
+    /**
+     * Asks a language model something — `action.ai_prompt`. Defaults to [NoAi] so
+     * engine-only tests need no key and no network: they then see exactly what a
+     * phone that has never been given an API key reports, which the node already
+     * has to handle.
+     *
+     * An action's, never a value node's, for the reason [mail] and [smartHome]
+     * are, and with the same proof: every call is a network round trip, so it is
+     * both of the things the pull side may not be — and this one also *bills* for
+     * itself, which makes "read it again just in case" the wrong default in a way
+     * it never was for a light.
+     */
+    val ai: Ai get() = NoAi
 
     /** Optional handle to enable/disable other macros at runtime, or null. */
     val macroControl: MacroControl? get() = null

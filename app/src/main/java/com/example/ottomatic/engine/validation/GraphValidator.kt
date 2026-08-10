@@ -19,7 +19,9 @@ import com.example.ottomatic.domain.registry.MacroDirectory
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.declarationFor
 import com.example.ottomatic.domain.model.SmartHomeRef
+import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.domain.registry.SmartHomeHubs
+import com.example.ottomatic.domain.registry.aiConnectionRefKeys
 import com.example.ottomatic.domain.registry.macroRefKeys
 import com.example.ottomatic.domain.registry.smartHomeRefKeys
 import com.example.ottomatic.domain.registry.effectivePort
@@ -90,6 +92,7 @@ class GraphValidator(private val workflow: Workflow) {
         validateVariableRefs(issues)
         validateMacroRefs(issues)
         validateSmartHomeRefs(issues)
+        validateAiConnectionRefs(issues)
         validatePrerequisites(issues)
         return GraphValidation(issues)
     }
@@ -193,6 +196,35 @@ class GraphValidator(private val workflow: Workflow) {
                     spec.isBlank() -> "'${node.name}' has nothing chosen, so it will do nothing"
                     hubId != null && SmartHomeHubs.isHydrated && !SmartHomeHubs.exists(hubId) ->
                         "'${node.name}' points at a hub that is no longer set up"
+                    else -> continue
+                }
+                out += ValidationIssue(Severity.WARNING, message, nodes = setOf(node.id))
+            }
+        }
+    }
+
+    /**
+     * An AI node that names no connection, or one that has been deleted.
+     *
+     * The fourth member of the [validateVariableRefs] / [validateMacroRefs] /
+     * [validateSmartHomeRefs] family, with the same stance — a warning that blocks
+     * nothing, because the node already reports the failure in the run log and
+     * pulses `out` onto its fallback.
+     *
+     * The unset case is the one that earns it here. Every other field on `Ask AI`
+     * has a sensible default and a freshly dropped node looks complete, so "no
+     * connection chosen" is easy to miss until a macro runs at three in the morning
+     * and answers nothing — which is exactly the failure the whole AI credential
+     * design is arranged around.
+     */
+    private fun validateAiConnectionRefs(out: MutableList<ValidationIssue>) {
+        for (node in workflow.nodes) {
+            for (key in aiConnectionRefKeys(node.typeId)) {
+                val id = node.config[key].orEmpty()
+                val message = when {
+                    id.isBlank() -> "'${node.name}' has no AI connection chosen, so it will do nothing"
+                    AiConnections.isHydrated && !AiConnections.exists(id) ->
+                        "'${node.name}' points at an AI connection that no longer exists"
                     else -> continue
                 }
                 out += ValidationIssue(Severity.WARNING, message, nodes = setOf(node.id))

@@ -181,6 +181,26 @@ enum class PickerKind {
      * field right by declaration.
      */
     LIGHT_SCENE,
+
+    /**
+     * An [com.example.ottomatic.domain.model.AiConnection] id, chosen from the AI
+     * connection library.
+     *
+     * [MAIL_ACCOUNT]'s twin in every respect that matters, and for the same
+     * reasons. The stored value is a UUID, so a typed one names nothing and looks
+     * exactly like a correct one. What it identifies is not typeable either — a
+     * connection is a provider and a sealed API key, which is a thing to be *set
+     * up* once rather than referred to by name. And **blank is not an answer**:
+     * "any connection" is not a thing to send a prompt through, so the field reads
+     * "None selected" and the node reports it rather than picking one.
+     *
+     * Picking one rather than defaulting to the only one is deliberate even while
+     * most phones will have exactly one. An implicit default is invisible on the
+     * card, so the day a second connection is added every existing node silently
+     * keeps using whichever one happened to sort first — and quota is per key, so
+     * that is a real consequence rather than a cosmetic one.
+     */
+    AI_CONNECTION,
 }
 
 /**

@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.Loop
 import androidx.compose.material.icons.filled.Schedule
@@ -244,4 +245,5 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.SCENE -> Icons.Filled.AutoAwesome
     // Distinct from DIALOG's speech bubble, which is Ottomatic talking to the user.
     NodeIcon.CHAT -> Icons.AutoMirrored.Filled.Message
+    NodeIcon.AI -> Icons.Filled.Psychology
 }

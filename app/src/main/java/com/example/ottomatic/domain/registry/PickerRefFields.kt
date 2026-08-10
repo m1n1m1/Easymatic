@@ -38,6 +38,12 @@ fun smartHomeRefKeys(typeId: NodeTypeId): List<ConfigKey> =
         }
         .map { it.key }
 
+/** The config keys of [typeId] that hold an [com.example.ottomatic.domain.model.AiConnection] id. */
+fun aiConnectionRefKeys(typeId: NodeTypeId): List<ConfigKey> =
+    ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
+        .filter { (it.type as? ConfigFieldType.PICKER)?.kind == PickerKind.AI_CONNECTION }
+        .map { it.key }
+
 /** The config keys of [typeId] that hold a [PhoneRef] spec. */
 fun phoneRefKeys(typeId: NodeTypeId): List<ConfigKey> =
     ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()

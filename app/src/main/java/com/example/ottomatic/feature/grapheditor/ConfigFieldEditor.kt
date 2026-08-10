@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Nfc
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.AlertDialog
@@ -72,6 +73,8 @@ import com.example.ottomatic.feature.contacts.ContactNameField
 import com.example.ottomatic.feature.contacts.PhoneNumberField
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
+import com.example.ottomatic.feature.ai.AiConnectionPickerOverlay
+import com.example.ottomatic.feature.ai.LocalAiConnections
 import com.example.ottomatic.feature.mail.LocalMailAccounts
 import com.example.ottomatic.feature.mail.MailFolderField
 import com.example.ottomatic.feature.mail.MailAccountPickerOverlay
@@ -652,6 +655,7 @@ private fun PickerField(
         PickerKind.MACRO -> MacroPickerField(value, onValueChange, labelSlot, colors)
         PickerKind.NFC_TAG -> NfcTagPickerField(value, onValueChange, labelSlot, colors)
         PickerKind.MAIL_ACCOUNT -> MailAccountPickerField(value, onValueChange, labelSlot, colors)
+        PickerKind.AI_CONNECTION -> AiConnectionPickerField(value, onValueChange, labelSlot, colors)
         // The two light kinds share one field and one overlay, on the app kinds'
         // precedent: same hub, same snapshot, different section of it.
         PickerKind.LIGHT_TARGET ->
@@ -751,6 +755,54 @@ private fun MailAccountPickerField(
     if (picking && accounts != null) {
         MailAccountPickerOverlay(
             viewModel = accounts,
+            selectedId = value.takeIf { it.isNotBlank() },
+            onPick = { id ->
+                onValueChange(id)
+                picking = false
+            },
+            onDismiss = { picking = false },
+        )
+    }
+}
+
+/**
+ * A `@Picker(AI_CONNECTION)` field: which connection this node sends prompts
+ * through.
+ *
+ * [MailAccountPickerField]'s twin on both of its peculiarities, and for the same
+ * reasons. Blank is **not** an answer — there is no connection to fall back on, and
+ * an implicit one would silently bill a key the user did not choose — so the
+ * placeholder is the ordinary "None selected". And an id that resolves to nothing
+ * is genuinely broken rather than merely unnamed, since the connection carried the
+ * provider and the key: it falls back to a phrase saying so instead of to a
+ * prettified id, because there is nothing about a deleted connection left to
+ * format.
+ */
+@Composable
+private fun AiConnectionPickerField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
+    var picking by remember { mutableStateOf(false) }
+    val connections = LocalAiConnections.current
+
+    PickerFieldChrome(
+        display = when {
+            value.isBlank() -> ""
+            else -> connections?.connectionById(value)?.name ?: "Deleted connection"
+        },
+        icon = Icons.Filled.Psychology,
+        enabled = connections != null,
+        onTap = { picking = true },
+        labelSlot = labelSlot,
+        colors = colors,
+    )
+
+    if (picking && connections != null) {
+        AiConnectionPickerOverlay(
+            viewModel = connections,
             selectedId = value.takeIf { it.isNotBlank() },
             onPick = { id ->
                 onValueChange(id)
