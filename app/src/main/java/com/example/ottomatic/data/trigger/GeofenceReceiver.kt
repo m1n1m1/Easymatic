@@ -24,6 +24,14 @@ import com.google.android.gms.location.GeofencingEvent
  * Manifest-registered for [ACTION_GEOFENCE_TRANSITION] so it wakes a killed app.
  * The [PendingIntent] built by `AndroidTriggerHost` targets this action.
  *
+ * It serves a **second** action, [ACTION_GEOFENCE_AWAY], and that one is not
+ * from Play Services at all: there is no "outside for a while" transition, so
+ * the away half of `trigger.geofence` is an alarm armed by
+ * [AndroidTriggerHost.armGeofenceAway]. It lands here rather than in its own
+ * receiver because everything below the parsing — the same `emitOrHold`, the
+ * same engine start, the same node addressing — is what it needs, and a copy of
+ * that is a copy that eventually diverges.
+ *
  * Waking the app is not the same as waking the *engine*, which is the distinction
  * this used to miss: the process came up, the event went onto a `replay = 0` bus
  * with nothing subscribed, and it was gone. So both halves happen here — the event
@@ -77,11 +85,30 @@ class GeofenceReceiver : BroadcastReceiver() {
      * where the attribution already exists, and this half is told to
      * `adb logcat -s Ottomatic`.
      */
+    private fun collectTransitions(intent: Intent): List<Transition> = when (intent.action) {
+        ACTION_GEOFENCE_TRANSITION -> platformTransitions(intent)
+        ACTION_GEOFENCE_AWAY -> awayTransition(intent)
+        else -> emptyList()
+    }
+
+    /**
+     * The away alarm has elapsed for one node.
+     *
+     * It carries no location, and nothing here can supply one: the device is
+     * somewhere outside the place and finding out where would mean a location
+     * request inside `onReceive`. `GeofenceTrigger` substitutes the place's own
+     * coordinates, and its KDoc says so.
+     */
+    private fun awayTransition(intent: Intent): List<Transition> {
+        val nodeId = intent.getStringExtra(EXTRA_NODE_ID) ?: return emptyList()
+        Log.i(TAG, "Geofence $EVENT_AWAY for node $nodeId")
+        return listOf(Transition(NodeId(nodeId), EVENT_AWAY, null, null, null))
+    }
+
     // Four guards and the result. Folding them back into one `?.takeIf { }?.let { }`
     // chain is precisely what swallowed the GMS error code, so the returns stay.
     @Suppress("ReturnCount")
-    private fun collectTransitions(intent: Intent): List<Transition> {
-        if (intent.action != ACTION_GEOFENCE_TRANSITION) return emptyList()
+    private fun platformTransitions(intent: Intent): List<Transition> {
         val event = GeofencingEvent.fromIntent(intent) ?: return emptyList()
         if (event.hasError()) {
             // Swallowing this is what hid "location is switched off" and "too many
@@ -128,9 +155,18 @@ class GeofenceReceiver : BroadcastReceiver() {
 
         const val ACTION_GEOFENCE_TRANSITION = "com.example.ottomatic.GEOFENCE_TRANSITION"
 
+        /** The app's own away alarm, not a Play Services broadcast. */
+        const val ACTION_GEOFENCE_AWAY = "com.example.ottomatic.GEOFENCE_AWAY"
+
+        /** Which node the away alarm belongs to; a fence carries this in its `requestId` instead. */
+        const val EXTRA_NODE_ID = "nodeId"
+
         const val EVENT_ENTER = "enter"
         const val EVENT_EXIT = "exit"
         const val EVENT_DWELL = "dwell"
+
+        /** Mirrors `GeofenceTrigger.EVENT_AWAY`, which `engine` may not import from here. */
+        const val EVENT_AWAY = "away"
 
         const val KEY_EVENT = "event"
         const val KEY_LATITUDE = "lat"

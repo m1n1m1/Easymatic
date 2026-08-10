@@ -275,6 +275,7 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="com.example.ottomatic.GEOFENCE_TRANSITION" />
+                <action android:name="com.example.ottomatic.GEOFENCE_AWAY" />
             </intent-filter>
         </receiver>
 

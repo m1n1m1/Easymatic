@@ -12,6 +12,7 @@ import com.example.ottomatic.engine.trigger.GeofenceConfig
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.GeofenceTrigger
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -54,6 +55,10 @@ class GeofenceRegistryTest {
         assertNotNull(byKey[ConfigKey("placeId")])
         assertNotNull(byKey[ConfigKey("dwellDelayMs")])
         assertEquals("30000", byKey[ConfigKey("dwellDelayMs")]?.defaultValue)
+        assertEquals("false", byKey[ConfigKey("onAway")]?.defaultValue)
+        // Minutes, not the milliseconds its dwell counterpart uses: an away
+        // period is tens of minutes and a doze-batched alarm cannot do better.
+        assertEquals("30", byKey[ConfigKey("awayMinutes")]?.defaultValue)
         // Coordinates and radius moved to the shared place library; a trigger
         // that still declared them would be storing a second copy that could
         // drift from the place it points at.
@@ -90,15 +95,22 @@ class GeofenceRegistryTest {
     }
 
     @Test
+    fun `away delay is only shown when the away countdown is armed`() {
+        val schema = ConfigSchemaRegistry.byId(GeofenceTrigger.TYPE_ID)!!
+        val rule = schema.fields.first { it.key == ConfigKey("awayMinutes") }.visibleWhen
+        assertEquals(VisibilityRule(ConfigKey("onAway"), setOf("true")), rule)
+    }
+
+    @Test
     fun `transition switches derive the armed transition set`() {
-        assertEquals(setOf(GeofenceTransition.ENTER), GeofenceConfig().transitions)
+        assertEquals(setOf(GeofenceTransition.ENTER), GeofenceConfig().platformTransitions)
         assertEquals(
             setOf(GeofenceTransition.ENTER, GeofenceTransition.EXIT),
-            GeofenceConfig(onEnter = true, onExit = true).transitions,
+            GeofenceConfig(onEnter = true, onExit = true).platformTransitions,
         )
         assertEquals(
             setOf(GeofenceTransition.ENTER, GeofenceTransition.EXIT, GeofenceTransition.DWELL),
-            GeofenceConfig(onEnter = true, onExit = true, onDwell = true).transitions,
+            GeofenceConfig(onEnter = true, onExit = true, onDwell = true).platformTransitions,
         )
     }
 
@@ -106,8 +118,60 @@ class GeofenceRegistryTest {
     fun `an empty transition selection still arms enter`() {
         assertEquals(
             setOf(GeofenceTransition.ENTER),
-            GeofenceConfig(onEnter = false, onExit = false, onDwell = false).transitions,
+            GeofenceConfig(onEnter = false, onExit = false, onDwell = false).platformTransitions,
         )
+    }
+
+    /**
+     * The away half is not a platform transition, so the two sets diverge: the
+     * fence has to report enter and exit — one starts the countdown, the other
+     * cancels it — while the node publishes neither.
+     */
+    @Test
+    fun `arming only the away countdown still watches enter and exit`() {
+        val awayOnly = GeofenceConfig(onEnter = false, onAway = true)
+        assertEquals(
+            setOf(GeofenceTransition.ENTER, GeofenceTransition.EXIT),
+            awayOnly.platformTransitions,
+        )
+        assertEquals(setOf("away"), awayOnly.emittedEvents)
+    }
+
+    @Test
+    fun `emitted events name exactly the switches that are on`() {
+        assertEquals(setOf("enter"), GeofenceConfig().emittedEvents)
+        assertEquals(
+            setOf("enter", "exit", "dwell", "away"),
+            GeofenceConfig(onEnter = true, onExit = true, onDwell = true, onAway = true).emittedEvents,
+        )
+        // Same fallback as the transition set: nothing chosen means enter.
+        assertEquals(
+            setOf("enter"),
+            GeofenceConfig(onEnter = false, onExit = false, onDwell = false, onAway = false).emittedEvents,
+        )
+    }
+
+    /**
+     * What `ConfigFormHint` warns on. It listed the switch names itself once,
+     * and adding a fourth left a node configured entirely correctly being told
+     * it had chosen nothing.
+     */
+    @Test
+    fun `choosing only the away countdown counts as having chosen something`() {
+        assertTrue(GeofenceConfig(onEnter = false, onAway = true).hasChosenEvent)
+        assertTrue(GeofenceConfig().hasChosenEvent)
+        assertFalse(
+            GeofenceConfig(onEnter = false, onExit = false, onDwell = false, onAway = false).hasChosenEvent,
+        )
+    }
+
+    @Test
+    fun `the away delay reaches the host in milliseconds and never as zero`() {
+        assertEquals(30 * 60_000L, GeofenceConfig().awayDelayMs)
+        assertEquals(90 * 60_000L, GeofenceConfig(awayMinutes = 90).awayDelayMs)
+        // A countdown of zero would fire the alarm at the instant of the exit,
+        // which is "on exit" wearing the wrong label.
+        assertEquals(60_000L, GeofenceConfig(awayMinutes = 0).awayDelayMs)
     }
 
     @Test

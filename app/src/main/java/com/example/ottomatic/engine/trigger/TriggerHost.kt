@@ -197,6 +197,34 @@ interface TriggerHost {
     ): ScheduleHandle
 
     /**
+     * Starts the "been away long enough" countdown for [nodeId]: in
+     * [awayDelayMs] from now, push a bus event with source `GEOFENCE`,
+     * `triggerNodeId = nodeId` and `event = "away"` — unless
+     * [cancelGeofenceAway] gets there first.
+     *
+     * **Not a parameter of [armGeofence], because it is not a property of the
+     * fence.** Play Services has no "dwell outside" transition — its DWELL is
+     * loitering *inside* — so this is an ordinary alarm, and it starts when the
+     * exit arrives rather than when the fence is registered.
+     *
+     * **And not tied to the trigger flow's lifetime either.** `GeofenceReceiver`
+     * asks the engine to re-arm on every transition, so a countdown cancelled in
+     * the flow's `finally` would be torn down by the very exit that started it.
+     * Being away is a fact about the world, not about whether the engine happened
+     * to restart in the middle. A countdown left behind by a macro that was
+     * switched off is harmless: the event reaches a node that is not collecting
+     * and expires off the bus, or reaches one whose away switch is now off and is
+     * filtered out. Only an enter cancels it.
+     *
+     * The default is a no-op, so a host with no platform behind it simply never
+     * fires the away half — the same shape [geofencePlace] uses.
+     */
+    fun armGeofenceAway(nodeId: NodeId, awayDelayMs: Long) = Unit
+
+    /** Stops [nodeId]'s away countdown; the device is back inside the fence. */
+    fun cancelGeofenceAway(nodeId: NodeId) = Unit
+
+    /**
      * Stream of engine-internal macro lifecycle events
      * ([TriggerSource.MACRO]). Emits when a macro is enabled (its
      * [com.example.ottomatic.engine.WorkflowRunner.run] starts) and when a

@@ -255,6 +255,43 @@ class AndroidTriggerHost(
         }
     }
 
+    // An ordinary alarm rather than anything geofence-shaped, because Play
+    // Services has no "outside for a while" transition to ask for. setWakeup is
+    // the shared helper armAlarm and AndroidWaits already use, so this cannot
+    // drift about which variant to use or how it degrades without
+    // SCHEDULE_EXACT_ALARM — and for a countdown measured in tens of minutes,
+    // an alarm batched a few minutes late is not a failure.
+    override fun armGeofenceAway(nodeId: NodeId, awayDelayMs: Long) {
+        val at = System.currentTimeMillis() + awayDelayMs.coerceAtLeast(0L)
+        alarmManager.setWakeup(at, awayPendingIntent(nodeId), "geofence away for node $nodeId")
+    }
+
+    override fun cancelGeofenceAway(nodeId: NodeId) {
+        alarmManager.cancel(awayPendingIntent(nodeId))
+    }
+
+    /**
+     * The alarm that says this node's place has been left for long enough.
+     *
+     * **Immutable, unlike [geofencePendingIntent] right below it.** That one has
+     * to be mutable because Play Services writes the whole transition payload
+     * into it at delivery time; this one carries everything it will ever carry —
+     * the node id — so the usual rule applies again.
+     *
+     * The request code is the same `nodeId.hashCode()` the fence's uses, which is
+     * safe rather than a collision: `PendingIntent` identity includes the intent's
+     * action, and these two differ.
+     */
+    private fun awayPendingIntent(nodeId: NodeId): PendingIntent {
+        val intent = Intent(appContext, GeofenceReceiver::class.java).apply {
+            action = GeofenceReceiver.ACTION_GEOFENCE_AWAY
+            putExtra(GeofenceReceiver.EXTRA_NODE_ID, nodeId.value)
+        }
+        val requestCode = nodeId.hashCode() and Int.MAX_VALUE
+        val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        return PendingIntent.getBroadcast(appContext, requestCode, intent, flags)
+    }
+
     /**
      * Why a geofence cannot be registered right now, or null when it can.
      *

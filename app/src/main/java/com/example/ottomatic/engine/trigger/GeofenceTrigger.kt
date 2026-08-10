@@ -25,6 +25,9 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.Serializable
 
+/** Default for [GeofenceConfig.awayMinutes] — half an hour out of the house. */
+const val DEFAULT_AWAY_MINUTES = 30
+
 /**
  * Config for `trigger.geofence`.
  *
@@ -35,10 +38,25 @@ import kotlinx.serialization.Serializable
  * and the trigger is not armed — the same failure mode the old null coordinates
  * had.
  *
- * The radius belongs to the place, not here. The armed transitions are three
+ * The radius belongs to the place, not here. The armed transitions are four
  * independent switches rather than a comma-joined enum string, which could
  * express combinations the UI never offered (and vice versa).
+ *
+ * **[onAway] is the mirror image of [onDwell] and the platform has no such
+ * transition.** `GEOFENCE_TRANSITION_DWELL` is loitering *inside* a fence, and
+ * `setLoiteringDelay` is the enter→dwell gap; there is nothing that means
+ * "outside for a while". So the away half is an ordinary alarm, started when the
+ * exit arrives and cancelled when an enter does — which is why [platformTransitions]
+ * and [emittedEvents] are two sets rather than one. Watching for the away
+ * transition means asking Play Services for enter *and* exit whether or not the
+ * user wants an event on either.
+ *
+ * [awayMinutes] is in minutes where [dwellDelayMs] is in milliseconds, and the
+ * mismatch is deliberate: a loitering delay is seconds to minutes and is handed
+ * to the platform in its own unit, where an away period is tens of minutes and a
+ * doze-batched alarm cannot honour sub-minute precision anyway.
  */
+@Suppress("LongParameterList") // One property per form field; a config class is a flat declaration.
 @Serializable
 data class GeofenceConfig(
     @Label("Place") @Picker(PickerKind.GEOFENCE_PLACE) val placeId: String = "",
@@ -48,15 +66,53 @@ data class GeofenceConfig(
     @Label("Dwell delay (ms)")
     @VisibleWhen("onDwell", "true")
     val dwellDelayMs: Int = DEFAULT_DWELL_DELAY_MS,
+    @Label("On staying away") val onAway: Boolean = false,
+    @Label("Away for (minutes)")
+    @VisibleWhen("onAway", "true")
+    val awayMinutes: Int = DEFAULT_AWAY_MINUTES,
 ) {
-    /** The armed transitions; always at least [GeofenceTransition.ENTER]. */
-    val transitions: Set<GeofenceTransition>
+    /**
+     * What Play Services is asked to watch; always at least
+     * [GeofenceTransition.ENTER].
+     *
+     * Wider than [emittedEvents] whenever [onAway] is set: the away countdown is
+     * started by an exit and cancelled by an enter, so both have to arrive even
+     * when neither is an event the user asked for.
+     */
+    val platformTransitions: Set<GeofenceTransition>
         get() = buildSet {
-            if (onEnter) add(GeofenceTransition.ENTER)
-            if (onExit) add(GeofenceTransition.EXIT)
+            if (onEnter || onAway) add(GeofenceTransition.ENTER)
+            if (onExit || onAway) add(GeofenceTransition.EXIT)
             if (onDwell) add(GeofenceTransition.DWELL)
         }.ifEmpty { setOf(GeofenceTransition.ENTER) }
+
+    /**
+     * The `event` payload values that reach the `event` port — what the user
+     * actually asked for, which is also what the arm-time console line announces.
+     */
+    val emittedEvents: Set<String>
+        get() = buildSet {
+            if (onEnter) add(GeofenceTransition.ENTER.payloadValue)
+            if (onExit) add(GeofenceTransition.EXIT.payloadValue)
+            if (onDwell) add(GeofenceTransition.DWELL.payloadValue)
+            if (onAway) add(GeofenceTrigger.EVENT_AWAY)
+        }.ifEmpty { setOf(GeofenceTransition.ENTER.payloadValue) }
+
+    /** [awayMinutes] as the millisecond delay the host arms an alarm for. */
+    val awayDelayMs: Long get() = awayMinutes.coerceAtLeast(1).toLong() * MILLIS_PER_MINUTE
+
+    /**
+     * Whether the user chose anything at all — false is exactly the state the
+     * enter fallback above covers, and the one `ConfigFormHint` warns about.
+     *
+     * It lives here rather than in the editor so the fallback and the sentence
+     * describing it cannot disagree: a fifth switch added to the form and not to
+     * a list in `feature/` would make a configured node claim to be empty.
+     */
+    val hasChosenEvent: Boolean get() = onEnter || onExit || onDwell || onAway
 }
+
+private const val MILLIS_PER_MINUTE = 60_000L
 
 /**
  * Trigger for `trigger.geofence`. Resolves its configured place through the
@@ -71,15 +127,29 @@ data class GeofenceConfig(
  * Produces a typed [GeofenceEvent] item on the `event` data port.
  *
  * Payload contract with `GeofenceReceiver` in `data/` (string keys):
- * - `event` ∈ `"enter"`, `"exit"`, `"dwell"`
+ * - `event` ∈ `"enter"`, `"exit"`, `"dwell"`, `"away"`
  * - `lat`, `lng`, `accuracy`, `timestamp`
+ *
+ * **`"away"` carries no location.** The other three are reported by Play
+ * Services with the fix that produced them; the away event comes from an alarm,
+ * which knows only which node it belongs to. The fallbacks below therefore
+ * substitute the *place's* coordinates — the honest answer to "which fence is
+ * this about", and deliberately not an answer to "where are you".
+ *
+ * One limitation of the away half is worth knowing before it surprises anybody:
+ * the countdown is started by a real departure, so a macro armed while you are
+ * *already* away starts counting only after your next return and departure. The
+ * alternative, asking the platform for an initial exit at registration, delivers
+ * a genuine exit broadcast on every re-arm — which would both restart the
+ * countdown and fire the `exit` branch of any macro that has one.
  */
 class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
 
     override val definition = triggerNode<GeofenceConfig, GeofenceEvent>(
         typeId = TYPE_ID.value,
         displayName = "Geofence",
-        description = "Starts when the device enters, exits or dwells inside a circular area",
+        description = "Starts when the device enters, exits or dwells inside a circular area, " +
+            "or once it has been away from one for a while",
         category = NodeCategory.LOCATION,
         icon = NodeIcon.LOCATION,
         output = dataOut<GeofenceEvent>("event", label = "Event"),
@@ -123,6 +193,26 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
         }
     }
 
+    /**
+     * Starts or stops the away countdown on the two transitions that drive it.
+     *
+     * Called before the emit filter rather than after it: those transitions are
+     * usually *not* events this node publishes, so filtering first would leave
+     * the countdown never started.
+     */
+    private fun driveAwayCountdown(
+        config: GeofenceConfig,
+        node: WorkflowNode,
+        host: TriggerHost,
+        event: String,
+    ) {
+        if (!config.onAway) return
+        when (event) {
+            GeofenceTransition.EXIT.payloadValue -> host.armGeofenceAway(node.id, config.awayDelayMs)
+            GeofenceTransition.ENTER.payloadValue -> host.cancelGeofenceAway(node.id)
+        }
+    }
+
     override fun activate(
         config: GeofenceConfig,
         node: WorkflowNode,
@@ -131,8 +221,8 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
         val place = resolvePlace(config, node, host) ?: return emptyFlow()
         val latitude = place.latitude
         val longitude = place.longitude
-        val transitions = config.transitions
-        val armedNames = transitions.mapTo(mutableSetOf()) { it.payloadValue }
+        val transitions = config.platformTransitions
+        val emitted = config.emittedEvents
         return flow {
             val handle = host.armGeofence(
                 nodeId = node.id,
@@ -143,10 +233,13 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
                 dwellDelayMs = config.dwellDelayMs,
                 onResult = { result ->
                     when (result) {
+                        // What the user asked for, not what the platform was
+                        // told: arming "on away" registers enter and exit too,
+                        // and announcing those would describe a macro nobody wrote.
                         is GeofenceArmResult.Registered -> host.report(
                             node,
                             "Watching '${place.name}' — ${place.radiusMeters.toInt()} m, " +
-                                "on ${armedNames.joinToString("/")}",
+                                "on ${emitted.joinToString("/")}",
                         )
 
                         // The reason arrives already written for a person: a raw
@@ -166,8 +259,10 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
                 // node, and is handed over the moment the collector registers.
                 host.busEventsFor(node.id)
                     .filter { it.source == TriggerSource.GEOFENCE && it.triggerNodeId == node.id }
-                    .filter { it.payload[KEY_EVENT] in armedNames }
                     .collect { bus ->
+                        val event = bus.payload[KEY_EVENT].orEmpty()
+                        driveAwayCountdown(config, node, host, event)
+                        if (event !in emitted) return@collect
                         if (bus.payload[TriggerBus.KEY_HELD] != null) {
                             host.report(node, "Arrived at '${place.name}' while the engine was starting; running now")
                         }
@@ -175,7 +270,7 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
                             NodeOutput(
                                 GeofenceEvent(
                                     triggerNodeId = node.id.value,
-                                    transition = bus.payload[KEY_EVENT].orEmpty(),
+                                    transition = event,
                                     latitude = bus.payload[KEY_LATITUDE]?.toDoubleOrNull() ?: latitude,
                                     longitude = bus.payload[KEY_LONGITUDE]?.toDoubleOrNull() ?: longitude,
                                     accuracyMeters = bus.payload[KEY_ACCURACY]?.toFloatOrNull() ?: 0f,
@@ -185,6 +280,10 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
                         )
                     }
             } finally {
+                // The fence goes; the away countdown deliberately does not. See
+                // TriggerHost.armGeofenceAway — the exit that starts it also asks
+                // the engine to re-arm, so tearing it down here would cancel it
+                // moments after it was armed, every single time.
                 handle.cancel()
             }
         }
@@ -196,5 +295,13 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
         const val KEY_LATITUDE = "lat"
         const val KEY_LONGITUDE = "lng"
         const val KEY_ACCURACY = "accuracy"
+
+        /**
+         * The fourth `event` value, and the one with no [GeofenceTransition]
+         * behind it: nothing in Play Services produces it, so there is no GMS
+         * constant to map. Mirrored by `GeofenceReceiver.EVENT_AWAY`, which
+         * `engine` may not import.
+         */
+        const val EVENT_AWAY = "away"
     }
 }
