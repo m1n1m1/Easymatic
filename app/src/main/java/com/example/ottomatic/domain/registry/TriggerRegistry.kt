@@ -24,6 +24,10 @@ object TriggerRegistry {
         // reached over the network, by a poll and by a held-open connection.
         add(com.example.ottomatic.engine.trigger.MailTrigger())
         add(com.example.ottomatic.engine.trigger.NotificationTrigger())
+        // Directly after the generic notification trigger it is refined from, so the
+        // palette shows the pair together: one fires on every notification, the other
+        // only on the ones that are a message somebody sent.
+        add(com.example.ottomatic.engine.trigger.MessageTrigger())
         add(com.example.ottomatic.engine.trigger.BootTrigger())
         add(com.example.ottomatic.engine.trigger.ChargingTrigger())
         add(com.example.ottomatic.engine.trigger.BatteryLevelTrigger())

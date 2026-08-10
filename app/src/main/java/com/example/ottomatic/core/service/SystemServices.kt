@@ -131,6 +131,40 @@ interface SystemServices {
     fun sendSms(to: String, body: String): Boolean
 
     /**
+     * [number] in international (E.164) form — `+4915112345678` — or null when it
+     * cannot be read as a number at all.
+     *
+     * The thing only the platform can supply: turning a **national** number into an
+     * international one needs to know which country "national" means, and the phone
+     * knows (its SIM) where neither `domain` nor the user's macro does.
+     *
+     * It is a platform call rather than a rule in `domain` because the rule is not
+     * "swap the leading 0 for the country code". That is true across most of Europe
+     * and false in Italy, where the 0 is part of the number, and meaningless in the
+     * NANP, which has no trunk prefix at all. Android's `PhoneNumberUtils` carries
+     * libphonenumber's table for every country; a hand-written version of it is the
+     * kind of near-miss that sends a message to a stranger.
+     *
+     * Null rather than a best effort, so the caller can say the number could not be
+     * normalised instead of quietly addressing the wrong person.
+     */
+    fun toInternationalNumber(number: String): String?
+
+    /**
+     * Opens a messenger with a message ready to send, from the recipe
+     * [com.example.ottomatic.domain.model.MessengerLink] produced.
+     *
+     * A member of its own rather than a call to [openUrl], because only one of the
+     * three apps is addressed by a URL: Signal takes an `smsto:` intent with the text
+     * in an extra. The recipe is built in `domain` where it can be tested, and this
+     * is the two lines of that which need a platform.
+     *
+     * [LaunchOutcome.NoSuchApp] when that messenger is not installed,
+     * [LaunchOutcome.Blocked] for the reason given on [launchApp].
+     */
+    fun openMessenger(recipe: MessengerRecipe): LaunchOutcome
+
+    /**
      * Initiates a phone call to [number] (ACTION_CALL — requires `CALL_PHONE`).
      *
      * [LaunchOutcome.NoHandler] when the permission is missing or nothing can
@@ -241,6 +275,35 @@ data class AutoRotateResult(
     val enabled: Boolean,
     val changed: Boolean,
 )
+
+/**
+ * One way of opening a messenger, as [com.example.ottomatic.domain.model.MessengerLink]
+ * worked it out.
+ *
+ * It lives in `core` rather than beside the function that builds it because
+ * [SystemServices] is the consumer and `core` may not import `domain` — the same
+ * direction [MailSend] runs in, built by a node and carried inwards.
+ *
+ * [body] is carried apart from [uri] because `smsto:` puts the message in an intent
+ * extra rather than in the URI: the one place the messengers genuinely disagree about
+ * shape rather than about text.
+ */
+data class MessengerRecipe(
+    val action: MessengerIntent,
+    val uri: String,
+    val packageName: String,
+    val body: String = "",
+    /**
+     * Whether a recipient was named that this app cannot honour — true only for
+     * Telegram, which can pre-fill the text or preselect the chat but never both.
+     * The node logs it, because "it ignored who I addressed it to" is otherwise
+     * something the user finds out by sending to the wrong person.
+     */
+    val losesRecipient: Boolean = false,
+)
+
+/** Which Android intent action a [MessengerRecipe] needs, named so `domain` imports no platform types. */
+enum class MessengerIntent { VIEW, SENDTO }
 
 /** Result of [SystemServices.setTorch]. */
 data class TorchResult(

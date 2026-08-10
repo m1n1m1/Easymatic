@@ -106,6 +106,12 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
     val icon: NodeIcon,
     val schema: NodeSchema<C>,
     val output: DataOut<O>?,
+    /**
+     * Further DATA outputs projected out of the same event — see
+     * [com.example.ottomatic.domain.model.derivedOut]. Each is filled from the very
+     * value [output] carries, so they cannot disagree with it.
+     */
+    val extraOutputs: List<DataOut<O>> = emptyList(),
     val permissions: List<PermissionRequirement> = emptyList(),
 ) {
     /** Static metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
@@ -116,7 +122,7 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
             description = description,
             kind = NodeKind.TRIGGER,
             category = category,
-            ports = listOf(execOut()) + listOfNotNull(output?.port),
+            ports = listOf(execOut()) + listOfNotNull(output?.port) + extraOutputs.map { it.port },
             icon = icon,
             permissionRequirements = permissions,
         )
@@ -125,9 +131,10 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
     val configSchema: NodeConfigSchema?
         get() = schema.fields.takeIf { it.isNotEmpty() }?.let { NodeConfigSchema(typeId, it) }
 
-    /** Encodes a typed trigger event onto this node's declared data output port. */
+    /** Encodes a typed trigger event onto this node's declared data output ports. */
     internal fun encode(value: O): Map<PortName, Item> =
-        output?.let { mapOf(it.name to it.encode(value)) }.orEmpty()
+        output?.let { mapOf(it.name to it.encode(value)) }.orEmpty() +
+            extraOutputs.associate { it.name to it.encode(value) }
 }
 
 /**
@@ -559,6 +566,11 @@ inline fun <reified I : Any> loopNode(
  * [permissions] are the runtime grants the trigger cannot fire without. They
  * are declared here, next to everything else about the node, so the config form
  * can warn about a missing one instead of the trigger simply never firing.
+ *
+ * [extraOutputs] are further ports projected out of the same event with
+ * [com.example.ottomatic.domain.model.derivedOut] — the sparing exception to "a
+ * trigger emits one struct", for a field that exists only to be wired into a
+ * sibling node.
  */
 @Suppress("LongParameterList")
 inline fun <reified C : Any, O : Any> triggerNode(
@@ -568,6 +580,7 @@ inline fun <reified C : Any, O : Any> triggerNode(
     category: NodeCategory,
     icon: NodeIcon,
     output: DataOut<O>,
+    extraOutputs: List<DataOut<O>> = emptyList(),
     permissions: List<PermissionRequirement> = emptyList(),
 ): TriggerNodeDefinition<C, O> = TriggerNodeDefinition(
     typeId = NodeTypeId(typeId),
@@ -577,6 +590,7 @@ inline fun <reified C : Any, O : Any> triggerNode(
     icon = icon,
     schema = nodeSchema<C>(),
     output = output,
+    extraOutputs = extraOutputs,
     permissions = permissions,
 )
 

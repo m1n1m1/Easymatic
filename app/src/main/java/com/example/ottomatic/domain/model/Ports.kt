@@ -142,6 +142,34 @@ inline fun <reified T : Any> dataOut(
 )
 
 /**
+ * Declares a DATA output port carrying **one field of** the value a node already
+ * emits, projected out by [read].
+ *
+ * The port's payload type is [T] and the node's own is [O], which is the whole
+ * point: a trigger emitting a struct can publish a scalar taken out of it beside
+ * the struct itself, so a downstream node that only wants that one field needs no
+ * `action.break` in between.
+ *
+ * Offered sparingly rather than on every field. Expanding a struct into a port per
+ * field is a *canvas* feature (Unreal's "split struct pin") that this is not, and a
+ * trigger card with nine ports on it is worse than one with two. It earns its place
+ * where the field is the **handle a sibling node takes** — a value that is only ever
+ * wired, never read, and useless anywhere else — because there the break node is
+ * pure ceremony: nobody wiring `trigger.message` into `action.reply_message` wanted
+ * a node in between, they wanted the two connected.
+ */
+inline fun <reified T : Any, O : Any> derivedOut(
+    name: String,
+    label: String = name,
+    noinline read: (O) -> T,
+): DataOut<O> = DataOut(
+    name = PortName(name),
+    schema = schemaOf<T>(),
+    label = label,
+    encoder = { Item.of(read(it)) },
+)
+
+/**
  * DATA input port accepting any schema. The documented escape hatch for the two
  * adaptive nodes (`action.if`, `action.break`), whose effective port
  * schemas are resolved at design time by

@@ -283,6 +283,45 @@ annotation class TimeOfDay
 annotation class WifiNetwork
 
 /**
+ * Renders the `String` property as a person's **name**: a text field the user can
+ * type into, with a button beside it that fills it in from the device's contacts.
+ *
+ * The fourth of the editable-with-a-chooser family, and it earns the shape on
+ * [WifiNetwork]'s argument rather than [PhoneNumber]'s: the chooser offers the
+ * address book, but the **answer set is every name a messenger might print**, which
+ * is wider. A message can come from somebody who was never saved, from a business
+ * account, or under a push name the sender chose themselves — so "when anyone whose
+ * name contains Support messages me" has to stay reachable, and a read-only picker
+ * would delete it. The address book is a suggestion; it is not the set of possible
+ * answers.
+ *
+ * **The stored value is the name itself, not a reference**, which is where this parts
+ * company with [PhoneNumber], and the reason is a fact about notifications rather
+ * than a preference. A `PhoneRef` exists so that a macro follows an edit made in the
+ * Contacts app — it stores a lookup key and resolves the *number* when the node runs.
+ * A messenger's notification carries no number at all, only the name the app chose to
+ * print, so a name is the only thing there is to compare against and a lookup key
+ * would resolve to something no filter could use.
+ *
+ * Three consequences worth stating, because they are all the good kind:
+ *
+ * - it needs **no permission anywhere**. `ACTION_PICK` reads the chosen row under a
+ *   transient grant, and nothing is resolved later, so this is not a `usesContacts`
+ *   node and grows no amber card.
+ * - the field never goes read-only the way a chosen contact makes [PhoneNumber]'s do.
+ *   There is no spec to corrupt: the text *is* the value, so a name filled in from
+ *   the address book can then be shortened to the part that matters.
+ * - renaming the contact afterwards does **not** follow. That is the honest trade for
+ *   the two above, and it is the smaller loss — the messenger prints whatever your
+ *   address book says, so a rename changes what arrives too, and a `contains` match
+ *   on the part that did not change usually still holds.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class ContactName
+
+/**
  * Renders the `String` property as an editor for a list of **output ports** —
  * a name and a type per row — rather than as a text field.
  *

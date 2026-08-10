@@ -51,4 +51,11 @@ enum class NodeIcon {
     CHOICE,
     LIGHTBULB,
     SCENE,
+
+    /**
+     * A messenger conversation. Distinct from [SMS], which is one specific transport,
+     * and from [DIALOG], which is Ottomatic asking the *user* something rather than
+     * another person messaging them.
+     */
+    CHAT,
 }

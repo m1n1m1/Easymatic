@@ -10,6 +10,7 @@ import com.example.ottomatic.core.service.HttpRequest
 import com.example.ottomatic.core.service.HttpResponse
 import com.example.ottomatic.core.service.LaunchOutcome
 import com.example.ottomatic.core.service.MacroControl
+import com.example.ottomatic.core.service.MessengerRecipe
 import com.example.ottomatic.core.service.RingerMode
 import com.example.ottomatic.core.service.RingerResult
 import com.example.ottomatic.core.service.ScreenTimeoutResult
@@ -34,6 +35,9 @@ class RecordingSystemServices : SystemServices {
     val calls = mutableListOf<String>()
     val launchedApps = mutableListOf<String>()
     val openedUrls = mutableListOf<String>()
+
+    /** One entry per [openMessenger] call: the whole recipe, so a test can assert on the URI. */
+    val openedMessengers = mutableListOf<MessengerRecipe>()
 
     /** One entry per [httpRequest] call: what actually reached the network. */
     val httpRequests = mutableListOf<HttpRequest>()
@@ -148,6 +152,36 @@ class RecordingSystemServices : SystemServices {
     override fun sendSms(to: String, body: String): Boolean {
         smsSent += to to body
         return true
+    }
+
+    /**
+     * The country code the fake normaliser assumes, or null for a phone that cannot
+     * work out where it is — which is the interesting case, and unreachable
+     * otherwise.
+     */
+    var callingCode: String? = "43"
+
+    /**
+     * A deliberately crude stand-in for `PhoneNumberUtils`: enough to tell a
+     * national number from an international one, and nothing like the real table.
+     * What the node tests are about is which of the two branches it takes.
+     */
+    override fun toInternationalNumber(number: String): String? {
+        val digits = number.filter { it.isDigit() }
+        val code = callingCode
+        return when {
+            digits.isEmpty() -> null
+            '+' in number -> "+$digits"
+            digits.startsWith("00") -> "+${digits.removePrefix("00")}"
+            code == null -> null
+            digits.startsWith("0") -> "+$code${digits.drop(1)}"
+            else -> "+$code$digits"
+        }
+    }
+
+    override fun openMessenger(recipe: MessengerRecipe): LaunchOutcome {
+        openedMessengers += recipe
+        return launchOutcome
     }
 
     override fun call(number: String): LaunchOutcome {

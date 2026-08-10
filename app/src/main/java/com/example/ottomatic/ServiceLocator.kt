@@ -16,6 +16,7 @@ import com.example.ottomatic.data.hue.SmartHomeSetup
 import com.example.ottomatic.data.security.KeystoreSecrets
 import com.example.ottomatic.data.mail.AndroidMail
 import com.example.ottomatic.data.mail.AndroidMailSecrets
+import com.example.ottomatic.data.notification.AndroidMessaging
 import com.example.ottomatic.data.mail.MailRuntime
 import com.example.ottomatic.data.mail.MailSeenStore
 import com.example.ottomatic.data.GlobalVariableRepository
@@ -227,6 +228,10 @@ object ServiceLocator {
             // call rather than holding either: an account edited mid-run must not
             // be sent from with the settings it had when the engine started.
             mail = mailFacade,
+            // Reads its handle out of ActiveNotifications on every call, because the
+            // handle is a live notification: one held from when the engine started
+            // would be revoked long before a macro got round to using it.
+            messaging = AndroidMessaging(appContext),
             // Resolves its hub on every call for the same reason, and paces its
             // commands per hub so a loop over twenty lights does not have half of
             // them dropped by the bridge without anything saying so.

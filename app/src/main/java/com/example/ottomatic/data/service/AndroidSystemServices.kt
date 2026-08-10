@@ -24,10 +24,14 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.provider.Settings
+import android.telephony.PhoneNumberUtils
 import android.telephony.SmsManager
+import android.telephony.TelephonyManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.core.os.ConfigurationCompat
+import java.util.Locale
 import com.example.ottomatic.core.permissions.Permissions
 import com.example.ottomatic.core.service.AudioStream
 import com.example.ottomatic.core.service.AutoRotateResult
@@ -38,6 +42,8 @@ import com.example.ottomatic.core.service.DndResult
 import com.example.ottomatic.core.service.HttpRequest
 import com.example.ottomatic.core.service.HttpResponse
 import com.example.ottomatic.core.service.LaunchOutcome
+import com.example.ottomatic.core.service.MessengerIntent
+import com.example.ottomatic.core.service.MessengerRecipe
 import com.example.ottomatic.core.service.RingerMode
 import com.example.ottomatic.core.service.RingerResult
 import com.example.ottomatic.core.service.ScreenTimeoutResult
@@ -508,6 +514,62 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
     )
 
     /**
+     * Hands the number to `PhoneNumberUtils`, which carries libphonenumber's table
+     * for every country, together with the region this phone belongs to.
+     *
+     * The region is the **SIM's** country and not the network's, which is the whole
+     * decision here: `getNetworkCountryIso` follows the tower, so a German phone
+     * roaming in France would start reading its owner's own contacts as French
+     * numbers — a macro that worked at home silently messaging strangers on holiday.
+     * The SIM answers where the numbers in the address book were written down. With
+     * no SIM at all (Wi-Fi-only tablet, eSIM not yet provisioned) the phone's own
+     * region setting is the best remaining answer.
+     *
+     * `formatNumberToE164` returns null for anything that is not a valid number in
+     * that region, which includes an already-international number from a *different*
+     * country only in the sense that it parses it correctly and hands it back — the
+     * leading `+` wins over the region, so a contact stored as `+43…` on a German SIM
+     * is untouched.
+     */
+    override fun toInternationalNumber(number: String): String? = runCatching {
+        PhoneNumberUtils.formatNumberToE164(number.trim(), region())
+    }.getOrNull()
+
+    private fun region(): String {
+        val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
+        val sim = telephony?.simCountryIso?.takeIf { it.isNotBlank() }
+        val configured = ConfigurationCompat.getLocales(context.resources.configuration)[0]?.country
+        return (sim ?: configured.orEmpty()).uppercase(Locale.ROOT)
+    }
+
+    /**
+     * Opens a messenger from the recipe `MessengerLink` built.
+     *
+     * The package is pinned rather than left to the chooser, and for two different
+     * reasons at once: a `wa.me` link is an ordinary https URL that a browser would
+     * happily win, and an `smsto:` intent is one the phone's SMS app answers as
+     * readily as Signal does. Either would silently open the wrong thing.
+     *
+     * That makes "not installed" a case worth telling apart, so it is checked up
+     * front — an unpinned intent that finds no handler is a
+     * [LaunchOutcome.NoHandler], which sends the user off to install a browser for a
+     * missing messenger.
+     */
+    override fun openMessenger(recipe: MessengerRecipe): LaunchOutcome {
+        val action = when (recipe.action) {
+            MessengerIntent.VIEW -> Intent.ACTION_VIEW
+            MessengerIntent.SENDTO -> Intent.ACTION_SENDTO
+        }
+        val intent = Intent(action, recipe.uri.toUri()).apply {
+            setPackage(recipe.packageName)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (recipe.body.isNotEmpty()) putExtra(SMS_BODY_EXTRA, recipe.body)
+        }
+        if (intent.resolveActivity(context.packageManager) == null) return LaunchOutcome.NoSuchApp
+        return startActivityForNode(intent)
+    }
+
+    /**
      * Starts [intent] on behalf of a node, saying honestly what became of it.
      *
      * The [LaunchOutcome.Blocked] check has to happen *before* the call, because
@@ -600,5 +662,12 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
 
         /** `VibrationEffect` repeat index meaning "play the waveform once". */
         private const val REPEAT_NEVER = -1
+
+        /**
+         * The extra an `smsto:` intent carries its message in. A plain string rather
+         * than a platform constant because there is none — every SMS app and Signal
+         * agree on this name by convention, and `Intent.EXTRA_TEXT` is not read here.
+         */
+        private const val SMS_BODY_EXTRA = "sms_body"
     }
 }

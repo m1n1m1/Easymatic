@@ -16,6 +16,16 @@ enum class TriggerSource {
     SCHEDULE,
     SMS,
     NOTIFICATION,
+
+    /**
+     * A message read out of a messenger's notification.
+     *
+     * Separate from [NOTIFICATION] rather than a filter over it, because the two
+     * carry different payloads and one post can produce both: `trigger.notification`
+     * still sees every notification exactly as it always did, and only a post that
+     * reads as a message produces this as well.
+     */
+    MESSAGE,
     BATTERY,
     BOOT,
     GEOFENCE,

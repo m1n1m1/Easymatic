@@ -3,6 +3,7 @@ package com.example.ottomatic.feature.grapheditor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -241,4 +242,6 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // switch, the other is how bright the room is.
     NodeIcon.LIGHTBULB -> Icons.Filled.Lightbulb
     NodeIcon.SCENE -> Icons.Filled.AutoAwesome
+    // Distinct from DIALOG's speech bubble, which is Ottomatic talking to the user.
+    NodeIcon.CHAT -> Icons.AutoMirrored.Filled.Message
 }

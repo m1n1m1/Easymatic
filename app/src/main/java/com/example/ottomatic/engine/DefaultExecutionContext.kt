@@ -8,7 +8,9 @@ import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.Mail
+import com.example.ottomatic.core.service.Messaging
 import com.example.ottomatic.core.service.NoMail
+import com.example.ottomatic.core.service.NoMessaging
 import com.example.ottomatic.core.service.NoPrompts
 import com.example.ottomatic.core.service.NoSmartHome
 import com.example.ottomatic.core.service.SmartHome
@@ -47,6 +49,7 @@ class DefaultExecutionContext(
     override val prompts: Prompts = NoPrompts,
     override val waits: Waits = DelayWaits,
     override val mail: Mail = NoMail,
+    override val messaging: Messaging = NoMessaging,
     override val smartHome: SmartHome = NoSmartHome,
     private val logger: (LogEntry) -> Unit = {},
 ) : ExecutionContext {

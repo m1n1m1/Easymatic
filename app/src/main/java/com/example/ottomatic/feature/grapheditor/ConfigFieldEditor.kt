@@ -68,6 +68,7 @@ import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.domain.registry.ConfigOption
 import com.example.ottomatic.domain.registry.enumConfigOptions
 import com.example.ottomatic.feature.apps.AppPickerField
+import com.example.ottomatic.feature.contacts.ContactNameField
 import com.example.ottomatic.feature.contacts.PhoneNumberField
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
@@ -242,6 +243,14 @@ internal fun ConfigFieldEditor(
                 MailFolderField(
                     value = value,
                     accountId = siblingValue(ConfigKey(type.accountKey)),
+                    onValueChange = onValueChange,
+                    labelSlot = labelSlot,
+                    colors = colors,
+                )
+            }
+            ConfigFieldType.CONTACT_NAME -> {
+                ContactNameField(
+                    value = value,
                     onValueChange = onValueChange,
                     labelSlot = labelSlot,
                     colors = colors,

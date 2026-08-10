@@ -26,7 +26,26 @@ class PickerFieldsTest {
     fun `phone numbers get the contact-assisted field`() {
         assertEquals(ConfigFieldType.PHONE, fieldType("action.call", "number"))
         assertEquals(ConfigFieldType.PHONE, fieldType("action.send_sms", "to"))
+        assertEquals(ConfigFieldType.PHONE, fieldType("action.send_message", "to"))
         assertEquals(ConfigFieldType.PHONE, fieldType("trigger.sms", "sender"))
+    }
+
+    /**
+     * The message trigger's sender is a **name**, not a number, and the two must not
+     * be allowed to converge. An SMS arrives with a number, so `trigger.sms` can hold
+     * a `PhoneRef` and resolve it; a messenger notification carries no number at all,
+     * so a `PhoneRef` here would store something nothing could ever compare against —
+     * and would additionally make the node ask for contacts access it never uses.
+     */
+    @Test
+    fun `a message sender is a contact name rather than a phone reference`() {
+        assertEquals(ConfigFieldType.CONTACT_NAME, fieldType("trigger.message", "senderContains"))
+    }
+
+    /** It follows that this node is not one that needs the address book at run time. */
+    @Test
+    fun `the message trigger needs no contacts access`() {
+        assertTrue(phoneRefKeys(NodeTypeId("trigger.message")).isEmpty())
     }
 
     /**

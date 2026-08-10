@@ -168,8 +168,14 @@ private fun readContact(context: Context, uri: Uri): PickedContact? = runCatchin
     }
 }.getOrNull()
 
-/** The named column's text, or blank when the provider did not return it. */
-private fun Cursor.string(column: String): String {
+/**
+ * The named column's text, or blank when the provider did not return it.
+ *
+ * `internal` rather than private so [ContactNameField] reads its row the same way.
+ * Copying four lines would be the alternative, and it is how one of the two ends up
+ * reading a column by index after a refactor and shifting every other one by a place.
+ */
+internal fun Cursor.string(column: String): String {
     val index = getColumnIndex(column)
     return if (index < 0) "" else getString(index).orEmpty()
 }

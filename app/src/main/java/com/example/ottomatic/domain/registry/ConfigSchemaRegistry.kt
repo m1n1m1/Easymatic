@@ -75,10 +75,24 @@ sealed interface ConfigFieldType<out T> {
     data object WIFI_NETWORK : ConfigFieldType<String>
 
     /**
+     * A person's name, rendered as a text field with a button that fills it in from
+     * the device's contacts (declared with `@ContactName`).
+     *
+     * On [WIFI_NETWORK]'s argument rather than [PHONE]'s: the address book is a
+     * suggestion, not the answer set, because a message can arrive from somebody who
+     * was never saved or under a push name they chose themselves. What it stores is
+     * the **name itself and not a reference** — a messenger's notification carries no
+     * number, only the name it printed, so a name is the only thing there is to
+     * compare against. Needing nothing resolved later, it is the one chooser in the
+     * app that costs no permission at either end.
+     */
+    data object CONTACT_NAME : ConfigFieldType<String>
+
+    /**
      * A mailbox name, rendered as a text field with a button that lists the folders
      * on the server (declared with `@MailFolder`).
      *
-     * The fourth editable-with-a-chooser field. [accountKey] names the sibling
+     * The fifth editable-with-a-chooser field. [accountKey] names the sibling
      * property holding the account whose folders to offer; blank, or naming a
      * property that is itself unset, makes the chooser ask which account first.
      */

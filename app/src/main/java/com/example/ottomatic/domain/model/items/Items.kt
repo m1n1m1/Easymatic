@@ -29,6 +29,45 @@ data class NotificationEvent(
 )
 
 /**
+ * One message from a messenger app, exposed on `trigger.message`'s `message` port.
+ *
+ * Read out of the notification the app posted, which is the only channel any of them
+ * offers a third-party app on the same phone — so nothing here is WhatsApp-shaped,
+ * Signal-shaped or Telegram-shaped, and a fourth messenger needs no code.
+ *
+ * - [conversation] and [sender] are separate for [MailMessage]'s reason: in a group
+ *   chat they are different things, and one field would put a transform in front of
+ *   every use of the other. In a one-to-one chat they are usually the same string.
+ * - [conversationId] is the durable handle `action.reply_message` acts on — see
+ *   [com.example.ottomatic.domain.model.ConversationRef]. Text rather than a nested
+ *   struct, so it can be wired into a scalar port. `trigger.message` also publishes
+ *   it as a **port of its own**, so the commonest wiring in the whole family needs
+ *   no `action.break`; it stays a field as well, so a macro that breaks the struct
+ *   for the sender or the text still has it to hand.
+ *   Named against [conversation] deliberately: that one is what the chat is *called*
+ *   and belongs in a notification, this one is opaque and belongs only in a wire.
+ * - [canReply] says whether the app attached a reply action to this notification.
+ *   A named field rather than something to discover at run time, because it is what
+ *   an `action.if` should branch on before wiring a reply that cannot work — an SMS
+ *   app that offers none, or a notification with actions stripped by a launcher.
+ * - [timestamp] is the **message's** own time, not the moment the notification was
+ *   posted. A messenger reposts one notification per chat as the conversation grows,
+ *   so the two drift apart exactly when the history matters.
+ */
+@Serializable
+data class MessageEvent(
+    val packageName: String,
+    val appName: String = "",
+    val conversation: String = "",
+    val sender: String = "",
+    val text: String = "",
+    val isGroup: Boolean = false,
+    val canReply: Boolean = false,
+    val conversationId: String = "",
+    val timestamp: DateTime,
+)
+
+/**
  * A `trigger.schedule` fire, exposed on its `fireTime` port.
  *
  * - [firedAt]: the moment this fire occurred.
@@ -551,4 +590,60 @@ data class LightState(
 data class CallInitiated(
     val number: String,
     val initiated: Boolean,
+)
+
+/**
+ * Result of `action.reply_message` on its `state` data port.
+ *
+ * [MailSent]'s shape and its reasoning: [sent] alone cannot say *why*, and here the
+ * reasons are unusually varied — notification access switched off, a reference that
+ * parses as nothing, a messenger that offers no reply action, and the common one,
+ * a conversation whose notification is gone because the user opened the chat.
+ *
+ * [conversationId] echoes the handle back rather than a display name, so a
+ * `for-each` replying to several chats can tell one receipt from another.
+ */
+@Serializable
+data class MessageReplied(
+    val conversationId: String,
+    val text: String,
+    val sent: Boolean,
+    val error: String = "",
+)
+
+/**
+ * Result of `action.notification_action` on its `state` data port.
+ *
+ * [MailFlagged]'s shape, field for field: the node takes an operation, so the
+ * receipt has to say which one it carried out, and [changed] is false both when the
+ * app refused and when the reference named nothing.
+ */
+@Serializable
+data class NotificationActed(
+    val conversationId: String,
+    val op: String,
+    val changed: Boolean,
+    val error: String = "",
+)
+
+/**
+ * Result of `action.send_message` on its `state` data port.
+ *
+ * [opened] rather than "sent", and the word is the whole point of the node: no
+ * messenger on Android lets a third-party app send a *new* message silently, so
+ * this one opens the app with the recipient and text filled in and the person taps
+ * Send. `action.reply_message` is the one that actually sends, and it can only ever
+ * reply.
+ *
+ * [to] carries the **resolved** recipient rather than the stored
+ * [com.example.ottomatic.domain.model.PhoneRef] spec, as [CallInitiated] does, so a
+ * `contact:` reference never leaks onto a wire as an opaque string.
+ */
+@Serializable
+data class MessageComposed(
+    val app: String,
+    val to: String,
+    val text: String,
+    val opened: Boolean,
+    val error: String = "",
 )

@@ -28,8 +28,11 @@ import com.example.ottomatic.engine.action.ListClearAction
 import com.example.ottomatic.engine.action.LogAction
 import com.example.ottomatic.engine.action.FetchMailAction
 import com.example.ottomatic.engine.action.MailUpdateAction
+import com.example.ottomatic.engine.action.NotificationActionAction
 import com.example.ottomatic.engine.action.NotifyAction
+import com.example.ottomatic.engine.action.ReplyMessageAction
 import com.example.ottomatic.engine.action.SendMailAction
+import com.example.ottomatic.engine.action.SendMessageAction
 import com.example.ottomatic.engine.action.OpenUrlAction
 import com.example.ottomatic.engine.action.PlaySoundAction
 import com.example.ottomatic.engine.action.RepeatAction
@@ -113,6 +116,13 @@ object ActionRegistry {
         SendMailAction(),
         FetchMailAction(),
         MailUpdateAction(),
+        // The messenger family, kept together on the mail family's reasoning and in
+        // the same order: send into a conversation, then act on the notification it
+        // came from. "Send Message" is third because it is the one that cannot send
+        // on its own — it opens the app with the message ready.
+        ReplyMessageAction(),
+        NotificationActionAction(),
+        SendMessageAction(),
         OpenUrlAction(),
         PlaySoundAction(),
         // The palette renders in registry order, so the three loops are kept

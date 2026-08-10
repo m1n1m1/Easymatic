@@ -209,8 +209,22 @@ class NodeDeclarationContractTest {
         }
     }
 
+    /**
+     * A trigger's shape: one exec output, no data inputs, and data outputs that are
+     * **exactly** its declared event port plus whatever it projects out of that same
+     * event.
+     *
+     * This used to say "at most one data output", which was the rule until
+     * `trigger.message` published its `conversationId` beside the struct. The
+     * replacement is stricter where it matters rather than looser: a data output a
+     * trigger declares but never fills would be a socket that silently hands the
+     * consumer nothing, and the old count could not tell the two apart. What the
+     * count was really protecting — that a trigger reports one event — is protected
+     * by every extra port being a projection *of* that event, which is a property of
+     * the type rather than of this assertion.
+     */
     @Test
-    fun `triggers expose one execution output and at most one data output`() {
+    fun `a trigger's data outputs are its event plus the projections of it`() {
         for (trigger in triggers) {
             val ports = trigger.definition.nodeType.ports
             val exec = ports.filter { it.kind == PortKind.EXECUTION }
@@ -224,9 +238,16 @@ class NodeDeclarationContractTest {
                 "${trigger.typeId}: triggers must not expose data inputs",
                 ports.none { it.kind == PortKind.DATA && it.direction == Direction.IN },
             )
-            assertTrue(
-                "${trigger.typeId}: at most one data output",
-                ports.count { it.kind == PortKind.DATA && it.direction == Direction.OUT } <= 1,
+            val declared = ports.filter { it.kind == PortKind.DATA && it.direction == Direction.OUT }.map { it.name }
+            assertEquals(
+                "${trigger.typeId}: every data output must be the event or a projection of it",
+                listOfNotNull(trigger.definition.output?.name) + trigger.definition.extraOutputs.map { it.name },
+                declared,
+            )
+            assertEquals(
+                "${trigger.typeId}: two data outputs share a name",
+                declared.size,
+                declared.toSet().size,
             )
         }
     }

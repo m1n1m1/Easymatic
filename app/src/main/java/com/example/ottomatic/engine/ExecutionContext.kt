@@ -7,7 +7,9 @@ import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.Mail
+import com.example.ottomatic.core.service.Messaging
 import com.example.ottomatic.core.service.NoMail
+import com.example.ottomatic.core.service.NoMessaging
 import com.example.ottomatic.core.service.NoPrompts
 import com.example.ottomatic.core.service.NoSmartHome
 import com.example.ottomatic.core.service.SmartHome
@@ -122,6 +124,17 @@ interface ExecutionContext {
      * on the exec wire where the latency is visible.
      */
     val mail: Mail get() = NoMail
+
+    /**
+     * Answers a messenger through the notification it posted — `action.reply_message`
+     * and `action.notification_action`. Defaults to [NoMessaging] so engine-only tests
+     * need no notification listener: they then see exactly what a phone that has never
+     * granted notification access reports, which the nodes already have to handle.
+     *
+     * An action's, never a value node's, and for a plainer reason than [mail]'s: it
+     * reads nothing at all. Every member sends something on another app's behalf.
+     */
+    val messaging: Messaging get() = NoMessaging
 
     /**
      * Controls lights and other smart-home devices — the light nodes. Defaults to
