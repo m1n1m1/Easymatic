@@ -1,0 +1,400 @@
+package com.example.ottomatic.nodeapi.plugin
+
+import com.example.ottomatic.domain.model.Direction
+import com.example.ottomatic.domain.model.NodeCategory
+import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.NodeKind
+import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.nodeapi.wire.ConfigFieldTypeWire
+import com.example.ottomatic.nodeapi.wire.ConfigFieldWire
+import com.example.ottomatic.nodeapi.wire.ExecOutputsWire
+import com.example.ottomatic.nodeapi.wire.NodeDeclarationWire
+import com.example.ottomatic.nodeapi.wire.OptionWire
+import com.example.ottomatic.nodeapi.wire.PLUGIN_PROTOCOL_VERSION
+import com.example.ottomatic.nodeapi.wire.PluginManifestWire
+import com.example.ottomatic.nodeapi.wire.PortWire
+import com.example.ottomatic.nodeapi.wire.PrimitiveWire
+import com.example.ottomatic.nodeapi.wire.SchemaWire
+import com.example.ottomatic.nodeapi.wire.VisibilityWire
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+/**
+ * A plugin's manifest is untrusted input, and the failure mode to design against is
+ * not a crash but a node that *looks* fine and does nothing. So every rejection here
+ * is asserted to be a rejection of one node with a reason attached, and the two
+ * whole-document refusals are asserted to be exactly two.
+ */
+class PluginDeclarationValidatorTest {
+
+    private val pkg = "com.acme.tools"
+    private val prefix = PluginLimits.typeIdPrefix(pkg)
+    private val text = SchemaWire.Primitive(PrimitiveWire.TEXT)
+
+    /**
+     * A well-formed declaration. Tests that need a different name, icon or execution
+     * shape use `.copy()`, which keeps this from growing a parameter per field.
+     */
+    private fun action(
+        typeId: String = "${prefix}shout",
+        kind: NodeKind = NodeKind.ACTION,
+        dataPorts: List<PortWire> = listOf(PortWire("said", Direction.OUT, text)),
+        config: List<ConfigFieldWire> = emptyList(),
+    ) = NodeDeclarationWire(
+        typeId = typeId,
+        displayName = "Shout",
+        description = "Shouts something",
+        kind = kind,
+        icon = NodeIcon.SEND.name,
+        dataPorts = dataPorts,
+        config = config,
+    )
+
+    private fun validate(vararg nodes: NodeDeclarationWire) =
+        PluginDeclarationValidator.validate(PluginManifestWire(nodes = nodes.toList()), pkg)
+
+    private fun rejectionFor(node: NodeDeclarationWire): String {
+        val result = validate(node)
+        assertTrue("expected ${node.typeId} to be rejected, but it was accepted", result.accepted.isEmpty())
+        assertEquals(1, result.rejected.size)
+        return result.rejected.single().reason
+    }
+
+    // ---- the happy path, and what it produces -------------------------------
+
+    @Test
+    fun `a well-formed action is accepted`() {
+        val result = validate(action())
+
+        assertNull(result.fatal)
+        assertTrue(result.rejected.isEmpty())
+        assertEquals("${prefix}shout", result.accepted.single().definition.typeId.value)
+    }
+
+    @Test
+    fun `an action gets its execution ports derived rather than declared`() {
+        val ports = validate(action()).accepted.single().definition.ports
+
+        val exec = ports.filter { it.kind == PortKind.EXECUTION }
+        assertEquals(listOf("in", "out"), exec.map { it.name.value })
+        assertEquals(listOf(Direction.IN, Direction.OUT), exec.map { it.direction })
+    }
+
+    @Test
+    fun `a branching action gets a true and a false`() {
+        val ports = validate(action().copy(execOutputs = ExecOutputsWire.BRANCH)).accepted.single().definition.ports
+
+        assertEquals(
+            listOf("in", "true", "false"),
+            ports.filter { it.kind == PortKind.EXECUTION }.map { it.name.value },
+        )
+    }
+
+    @Test
+    fun `a value gets no execution ports at all`() {
+        val node = action(typeId = "${prefix}reading", kind = NodeKind.VALUE)
+
+        val ports = validate(node).accepted.single().definition.ports
+
+        assertTrue(ports.none { it.kind == PortKind.EXECUTION })
+    }
+
+    @Test
+    fun `an accepted node is never adaptive`() {
+        // Enforced rather than checked: `effectivePorts` resolves ports by walking the
+        // host's graph, which a plugin cannot be handed.
+        assertFalse(validate(action()).accepted.single().definition.hasDynamicPorts)
+    }
+
+    @Test
+    fun `an accepted node declares no host permission requirement`() {
+        val node = action().copy(permissions = listOf("android.permission.CAMERA"))
+
+        val accepted = validate(node).accepted.single()
+
+        // The permission stays on the declaration, to be checked against the plugin's
+        // own package. It must not enter the host's permission catalogue.
+        assertTrue(accepted.definition.permissionRequirements.isEmpty())
+        assertEquals(listOf("android.permission.CAMERA"), accepted.declaration.permissions)
+    }
+
+    @Test
+    fun `an accepted node lands in the placeholder plugin category`() {
+        assertEquals(NodeCategory.PLUGIN_ACTION, validate(action()).accepted.single().definition.category)
+    }
+
+    @Test
+    fun `an unknown icon falls back rather than costing the node`() {
+        val accepted = validate(action().copy(icon = "SPARKLES_AND_UNICORNS")).accepted.single()
+
+        assertEquals(NodeIcon.BOLT, accepted.definition.icon)
+    }
+
+    @Test
+    fun `config fields become form fields`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire("volume", "Volume", ConfigFieldTypeWire.Int, "3"),
+                ConfigFieldWire(
+                    "tone",
+                    "Tone",
+                    ConfigFieldTypeWire.EnumOf(listOf(OptionWire("warm"), OptionWire("cold"))),
+                    "warm",
+                ),
+            ),
+        )
+
+        val schema = requireNotNull(validate(node).accepted.single().configSchema)
+
+        assertEquals(listOf("volume", "tone"), schema.fields.map { it.key.value })
+    }
+
+    // ---- whole-document refusals, of which there are exactly two ------------
+
+    @Test
+    fun `a manifest speaking another protocol is refused whole`() {
+        val result = PluginDeclarationValidator.validate(
+            PluginManifestWire(protocolVersion = PLUGIN_PROTOCOL_VERSION + 1, nodes = listOf(action())),
+            pkg,
+        )
+
+        assertNotNull(result.fatal)
+        assertTrue(result.accepted.isEmpty())
+    }
+
+    @Test
+    fun `a manifest with more nodes than the cap is refused whole`() {
+        val nodes = (0..PluginLimits.MAX_NODES_PER_PLUGIN).map { action(typeId = "${prefix}node$it") }
+
+        val result = PluginDeclarationValidator.validate(PluginManifestWire(nodes = nodes), pkg)
+
+        assertNotNull(result.fatal)
+    }
+
+    // ---- namespacing --------------------------------------------------------
+
+    @Test
+    fun `a typeId outside the plugin's own namespace is rejected`() {
+        // The prefix is derived from PackageManager, so this is the case where a plugin
+        // tried to claim someone else's — or the app's own — node.
+        assertTrue(rejectionFor(action(typeId = "action.notify")).contains("not this plugin's"))
+        assertTrue(rejectionFor(action(typeId = "plugin:com.evil/x")).contains("not this plugin's"))
+    }
+
+    @Test
+    fun `a typeId that is only the prefix is rejected`() {
+        assertTrue(rejectionFor(action(typeId = prefix)).contains("names nothing"))
+    }
+
+    @Test
+    fun `a typeId longer than the cap is rejected`() {
+        val long = prefix + "x".repeat(PluginLimits.MAX_TYPE_ID_LENGTH)
+
+        assertTrue(rejectionFor(action(typeId = long)).contains("longer than"))
+    }
+
+    @Test
+    fun `the same typeId twice keeps the first and rejects the second`() {
+        val result = validate(action(), action().copy(displayName = "Shout again"))
+
+        assertEquals(1, result.accepted.size)
+        assertEquals("Shout", result.accepted.single().definition.displayName)
+        assertTrue(result.rejected.single().reason.contains("more than once"))
+    }
+
+    // ---- the pull-side contract, per NodeDeclarationRules -------------------
+
+    @Test
+    fun `a value with a data input is rejected`() {
+        val node = action(
+            typeId = "${prefix}reading",
+            kind = NodeKind.VALUE,
+            dataPorts = listOf(
+                PortWire("of", Direction.IN, text),
+                PortWire("value", Direction.OUT, text),
+            ),
+        )
+
+        assertTrue(rejectionFor(node).contains("cannot have data inputs"))
+    }
+
+    @Test
+    fun `a value with two data outputs is rejected`() {
+        val node = action(
+            typeId = "${prefix}reading",
+            kind = NodeKind.VALUE,
+            dataPorts = listOf(PortWire("a", Direction.OUT, text), PortWire("b", Direction.OUT, text)),
+        )
+
+        assertTrue(rejectionFor(node).contains("exactly one data output"))
+    }
+
+    @Test
+    fun `a transform with no data input is rejected`() {
+        val node = action(typeId = "${prefix}shorten", kind = NodeKind.TRANSFORM)
+
+        assertTrue(rejectionFor(node).contains("at least one data input"))
+    }
+
+    @Test
+    fun `a transform with two data outputs is rejected`() {
+        // The executor's pull memo is keyed by node, not by port, so a second output
+        // could never be addressed.
+        val node = action(
+            typeId = "${prefix}shorten",
+            kind = NodeKind.TRANSFORM,
+            dataPorts = listOf(
+                PortWire("in", Direction.IN, text),
+                PortWire("a", Direction.OUT, text),
+                PortWire("b", Direction.OUT, text),
+            ),
+        )
+
+        assertTrue(rejectionFor(node).contains("exactly one data output"))
+    }
+
+    @Test
+    fun `a trigger with a data input is rejected`() {
+        val node = action(
+            typeId = "${prefix}heard",
+            kind = NodeKind.TRIGGER,
+            dataPorts = listOf(PortWire("filter", Direction.IN, text), PortWire("said", Direction.OUT, text)),
+        )
+
+        assertTrue(rejectionFor(node).contains("cannot have data inputs"))
+    }
+
+    // ---- caps and malformed shapes -----------------------------------------
+
+    @Test
+    fun `a duplicate port name is rejected`() {
+        val node = action(
+            dataPorts = listOf(PortWire("said", Direction.OUT, text), PortWire("said", Direction.OUT, text)),
+        )
+
+        assertTrue(rejectionFor(node).contains("more than one"))
+    }
+
+    @Test
+    fun `a port nested deeper than the cap is rejected`() {
+        var schema: SchemaWire = text
+        repeat(PluginLimits.MAX_SCHEMA_DEPTH) { schema = SchemaWire.ListOf(schema) }
+
+        val node = action(dataPorts = listOf(PortWire("said", Direction.OUT, schema)))
+
+        assertTrue(rejectionFor(node).contains("nests its type"))
+    }
+
+    @Test
+    fun `more ports than the cap is rejected`() {
+        val ports = (0..PluginLimits.MAX_PORTS_PER_NODE).map { PortWire("p$it", Direction.OUT, text) }
+
+        assertTrue(rejectionFor(action(dataPorts = ports)).contains("data ports"))
+    }
+
+    @Test
+    fun `more config fields than the cap is rejected`() {
+        val fields = (0..PluginLimits.MAX_CONFIG_FIELDS_PER_NODE).map {
+            ConfigFieldWire("f$it", "Field $it", ConfigFieldTypeWire.Str)
+        }
+
+        assertTrue(rejectionFor(action(config = fields)).contains("config fields"))
+    }
+
+    @Test
+    fun `more enum options than the cap is rejected`() {
+        val options = (0..PluginLimits.MAX_ENUM_OPTIONS).map { OptionWire("o$it") }
+        val node = action(
+            config = listOf(ConfigFieldWire("tone", "Tone", ConfigFieldTypeWire.EnumOf(options), "o0")),
+        )
+
+        assertTrue(rejectionFor(node).contains("choices"))
+    }
+
+    @Test
+    fun `an over-long display name is rejected`() {
+        val long = "x".repeat(PluginLimits.MAX_STRING_LENGTH + 1)
+
+        assertTrue(rejectionFor(action().copy(displayName = long)).contains("longer than"))
+    }
+
+    @Test
+    fun `a blank display name is rejected`() {
+        assertTrue(rejectionFor(action().copy(displayName = "  ")).contains("blank name"))
+    }
+
+    @Test
+    fun `a choice field defaulting to something it cannot be is rejected`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire(
+                    "tone",
+                    "Tone",
+                    ConfigFieldTypeWire.EnumOf(listOf(OptionWire("warm"), OptionWire("cold"))),
+                    defaultValue = "tepid",
+                ),
+            ),
+        )
+
+        assertTrue(rejectionFor(node).contains("not one of its options"))
+    }
+
+    @Test
+    fun `a visibility rule naming a field that does not exist is rejected`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire(
+                    "detail",
+                    "Detail",
+                    ConfigFieldTypeWire.Str,
+                    visibleWhen = VisibilityWire("advanced", setOf("true")),
+                ),
+            ),
+        )
+
+        assertTrue(rejectionFor(node).contains("no such field"))
+    }
+
+    @Test
+    fun `a visibility rule naming a value its controller can never hold is rejected`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire("advanced", "Advanced", ConfigFieldTypeWire.Bool, "false"),
+                ConfigFieldWire(
+                    "detail",
+                    "Detail",
+                    ConfigFieldTypeWire.Str,
+                    visibleWhen = VisibilityWire("advanced", setOf("maybe")),
+                ),
+            ),
+        )
+
+        assertTrue(rejectionFor(node).contains("can never be"))
+    }
+
+    @Test
+    fun `a duplicate config key is rejected`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire("tone", "Tone", ConfigFieldTypeWire.Str),
+                ConfigFieldWire("tone", "Tone again", ConfigFieldTypeWire.Str),
+            ),
+        )
+
+        assertTrue(rejectionFor(node).contains("more than one config field"))
+    }
+
+    @Test
+    fun `one bad node costs its author one node and no more`() {
+        // The quarantine doctrine, at the plugin boundary: the smallest broken thing.
+        val result = validate(action(), action(typeId = "not.mine"))
+
+        assertEquals(1, result.accepted.size)
+        assertEquals(1, result.rejected.size)
+        assertNull(result.fatal)
+    }
+}

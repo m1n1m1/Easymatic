@@ -4,6 +4,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.sp
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.registry.decode
 import com.example.ottomatic.domain.registry.nodeSchema
 import com.example.ottomatic.engine.trigger.GeofenceConfig
 import com.example.ottomatic.engine.trigger.GeofenceTrigger

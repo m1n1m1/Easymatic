@@ -1,0 +1,77 @@
+package com.example.ottomatic.nodeapi.plugin
+
+/**
+ * Bounds on what a plugin may declare and send.
+ *
+ * A plugin's manifest is untrusted input arriving over a binder, so every list and
+ * every string needs a ceiling. What these are *not* is a security boundary: a
+ * plugin runs its own code in its own process under its own permissions, and no
+ * number here changes that. They exist so that a malformed or hostile declaration
+ * degrades into a rejection with a sentence attached, rather than into an
+ * out-of-memory, a `TransactionTooLargeException`, or a palette with forty thousand
+ * rows in it.
+ *
+ * Every one of them is enforced **per node**, not per plugin, following the
+ * quarantine doctrine the graph validator already follows: block the smallest thing
+ * that is actually broken. One node with nine levels of nested schema costs that
+ * node, not the other twelve in the same app.
+ */
+object PluginLimits {
+
+    /** Nodes one plugin may contribute. */
+    const val MAX_NODES_PER_PLUGIN = 64
+
+    /** Ports on one node, across both kinds and both directions. */
+    const val MAX_PORTS_PER_NODE = 16
+
+    /** Rows in one node's config form. */
+    const val MAX_CONFIG_FIELDS_PER_NODE = 24
+
+    /** Choices in one enum config field. */
+    const val MAX_ENUM_OPTIONS = 64
+
+    /**
+     * How deeply a port schema may nest.
+     *
+     * `SchemaWire` is recursive, so without this a few hundred bytes of JSON
+     * declaring a list of a list of a list … expands into a structure that
+     * `isAssignableFrom` walks on every drop check in the editor.
+     */
+    const val MAX_SCHEMA_DEPTH = 8
+
+    /** Display names, descriptions and labels. */
+    const val MAX_STRING_LENGTH = 512
+
+    /** A typeId, including its mandatory `plugin:<package>/` prefix. */
+    const val MAX_TYPE_ID_LENGTH = 128
+
+    /** The whole declarations document. */
+    const val MAX_MANIFEST_BYTES = 256 * 1024
+
+    /**
+     * One [com.example.ottomatic.nodeapi.wire.ItemWire], each way.
+     *
+     * Well under the ~1 MB `TransactionTooLargeException` ceiling, with room for a
+     * whole call's worth of ports beside it.
+     */
+    const val MAX_ITEM_BYTES = 256 * 1024
+
+    /** Run-log lines one call may produce, and characters in each. */
+    const val MAX_LOG_LINES = 50
+    const val MAX_LOG_CHARS = 2_000
+
+    /**
+     * The mandatory typeId prefix for a node from [packageName].
+     *
+     * The host derives this from what `PackageManager` reports the resolved
+     * service's package to be — never from a field the plugin sent — so forging one
+     * is impossible rather than merely detectable. Two properties follow and both
+     * are proofs rather than scans: no built-in typeId contains `plugin:`, so a
+     * collision with the app's own nodes cannot happen; and package names are
+     * unique on a device, so a collision between two plugins cannot either.
+     */
+    fun typeIdPrefix(packageName: String): String = "plugin:$packageName/"
+
+    /** True when [typeId] belongs to some plugin rather than to the app itself. */
+    fun isPluginTypeId(typeId: String): Boolean = typeId.startsWith("plugin:")
+}

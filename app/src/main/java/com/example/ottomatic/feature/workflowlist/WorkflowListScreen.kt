@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Nfc
@@ -75,6 +76,7 @@ fun WorkflowListScreen(
     onOpenMailAccounts: () -> Unit,
     onOpenSmartHome: () -> Unit,
     onOpenAi: () -> Unit,
+    onOpenPlugins: () -> Unit,
     onOpenVariables: () -> Unit,
     onOpenPermissions: () -> Unit,
 ) {
@@ -157,6 +159,7 @@ fun WorkflowListScreen(
                         onOpenMailAccounts = onOpenMailAccounts,
                         onOpenSmartHome = onOpenSmartHome,
                         onOpenAi = onOpenAi,
+                        onOpenPlugins = onOpenPlugins,
                     )
                 }
             }
@@ -324,6 +327,7 @@ private fun LibraryMenu(
     onOpenMailAccounts: () -> Unit,
     onOpenSmartHome: () -> Unit,
     onOpenAi: () -> Unit,
+    onOpenPlugins: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box {
@@ -377,6 +381,19 @@ private fun LibraryMenu(
                 onClick = {
                     expanded = false
                     onOpenAi()
+                },
+            )
+            // Plugins joins this menu rather than becoming a third top-bar icon, on
+            // the ceiling argument above: what this menu collects is "things set up
+            // once and shared by every macro", and a plugin is exactly that. It is
+            // last because it is the only entry whose contents are other people's
+            // apps rather than the user's own records.
+            DropdownMenuItem(
+                text = { Text("Plugins") },
+                leadingIcon = { Icon(Icons.Filled.Extension, contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    onOpenPlugins()
                 },
             )
         }

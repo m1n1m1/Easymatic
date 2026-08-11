@@ -33,6 +33,12 @@ Ottomatic is an Android automation app built on a **node-based workflow graph**.
 
 The five top-level packages under `com.example.ottomatic` are `core/`, `domain/`, `engine/`, `data/` and `feature/`. What each contains is visible from its contents; what is not visible is which may depend on which, and that is strict: `domain ← core only` · `engine ← domain + core` · `data ← domain + core` · `feature ← domain + engine + core`
 
+Those packages now span **two Gradle modules**, and which module a file is in says something the package name does not: whether it is part of the surface a third-party plugin compiles against. `:node-api` holds the *declaration* half — ids, permissions, item schemas, ports, config annotations and `NodeSchema` — as a plain Kotlin JVM library with one dependency and no `android.jar` on its classpath, which is what turns "no Android imports in `domain/`" from a convention `ARCHITECTURE.md` wrongly claimed detekt enforced into a compile error. `:app` holds everything else. Two more modules exist for plugins only: `:plugin-sdk` (the AIDL, the service base class, the six plugin node contracts) and `:sample-plugin`.
+
+### Node authoring, end to end
+
+Adding a node is still: one file, one line in a registry. What changed in 2026-08 is that the *rules* a declaration must satisfy were extracted from `NodeDeclarationContractTest` into `NodeDeclarationRules` (`:node-api`, main), because a plugin's declaration arrives at runtime where no test can reach it — and the rules it must satisfy are not merely similar to a first-party node's, they are the same rules for the same reasons. One rule set, three callers: the plugin loader, a plugin author's own test, and `NodeDeclarationRulesTest` over the app's own hundred-odd nodes. The test still carries what needs more context than a `NodeTypeDefinition` has — the adaptive-port retyping, which resolves through `effectivePorts` and a real `Workflow`.
+
 ### Node system
 
 Every node is declared **exactly once** in its own file under `engine/`, bundling typeId, palette metadata, ports, config fields, and typed contract. There are four kinds (`NodeKind`):
@@ -42,7 +48,7 @@ Every node is declared **exactly once** in its own file under `engine/`, bundlin
 - **Values**: `override val definition = valueNode<C, O>(...)` — a pure leaf reader (see below)
 - **Transforms**: `override val definition = transformNode<C, O>(...)` (or `adaptiveTransformNode` when the output type comes from config) — a pure function of its data inputs (see below)
 
-The **only** registration step is adding one line to `ActionRegistry`, `TriggerRegistry`, `ValueRegistry` or `TransformRegistry` (in `domain/registry/`). `NodeTypeRegistry` and `ConfigSchemaRegistry` are **derived views** — never add entries to them directly.
+The **only** registration step is adding one line to `ActionRegistry`, `TriggerRegistry`, `ValueRegistry` or `TransformRegistry` (in `domain/registry/`). `NodeTypeRegistry` and `ConfigSchemaRegistry` are **derived views** — never add entries to them directly. Since plugins arrived they are derived from **two** sources rather than one: those four compiled registries, and whichever plugin apps are installed *and* enabled at this moment. `NodeTypeRegistry.all` is therefore a `get()` rather than an immutable `val`, and anything reading it during composition must key on `PluginNodes.entries` so Compose knows to look again. The four kind registries themselves stay immutable compiled literals — their order is the palette's, and `all()` must go on describing first-party nodes only so `NodeDeclarationContractTest` keeps meaning something.
 
 Config is declared on a single `@Serializable` data class per node, with annotations (`@Label`, `@Wired`, `@Multiline`, `@VisibleWhen`, `@Picker`, `@Ports`, `@PhoneNumber`, `@TimeOfDay`, `@WifiNetwork`, `@ContactName`) controlling form rendering and data input wiring. The framework derives config decoding, form schema, and data input ports from this class. Every property must be a `String`, a number, a `Boolean`, an `enum` or a `DateTime`.
 
@@ -326,4 +332,5 @@ These subsystems each have their own file so they are not resident in every sess
 - **The run log** (`ExecutionContext.log`, `RunLogStore`, the editor console) — `run-log` skill
 - **Widgets and shortcuts** (the three Glance widgets, `MacroIcon`/`MacroAccent`, `RunFeedback`, launcher shortcuts) — `widgets-and-shortcuts` skill
 - **NFC tags** (`trigger.nfc`, `value.nfc`, the tag library, the capture chooser, `emitOrHoldBroadcast`) — `nfc-tags` skill
+- **Plugins** (`:node-api`, `:plugin-sdk`, the wire format, `PluginNodes`, `PluginRegistry`, the Plugins screen) — `plugins` skill; the author-facing guide is `docs/PLUGINS.md`
 - **The editor UI** (the bottom bar, its three surfaces, `EditorOverlay`) — `app/src/main/java/com/example/ottomatic/feature/CLAUDE.md`, loaded when working under `feature/`

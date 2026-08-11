@@ -39,7 +39,7 @@ fun Item.asText(): String = when {
  * recurse; anything whose type cannot be recovered degrades to its `toString()`
  * rather than failing, because rendering text must never throw.
  */
-internal fun anyToJsonElement(value: Any?, schema: ItemSchema): JsonElement = when (value) {
+fun anyToJsonElement(value: Any?, schema: ItemSchema): JsonElement = when (value) {
     null, kotlin.Unit -> JsonNull
     is JsonElement -> value
     is Boolean -> JsonPrimitive(value)

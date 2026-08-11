@@ -48,6 +48,7 @@ import com.example.ottomatic.feature.grapheditor.GraphEditorViewModel
 import com.example.ottomatic.feature.variables.GlobalVariablesScreen
 import com.example.ottomatic.feature.permissions.BatteryOptimisationDialog
 import com.example.ottomatic.feature.permissions.PermissionsScreen
+import com.example.ottomatic.feature.plugins.PluginsScreen
 import com.example.ottomatic.feature.variables.GlobalVariablesViewModel
 import com.example.ottomatic.feature.workflowlist.WorkflowListScreen
 import com.example.ottomatic.feature.workflowlist.WorkflowListViewModel
@@ -263,6 +264,7 @@ class MainActivity : ComponentActivity() {
                     onOpenAi = { navController.navigate(ROUTE_AI) },
                     onOpenVariables = { navController.navigate(ROUTE_VARIABLES) },
                     onOpenPermissions = { navController.navigate(ROUTE_PERMISSIONS) },
+                    onOpenPlugins = { navController.navigate(ROUTE_PLUGINS) },
                 )
             }
             composable(ROUTE_GEOFENCES) {
@@ -298,6 +300,15 @@ class MainActivity : ComponentActivity() {
             composable(ROUTE_VARIABLES) {
                 GlobalVariablesScreen(
                     viewModel = globalVariablesViewModel,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(ROUTE_PLUGINS) {
+                // No ViewModel, on the Permissions screen's reasoning: the state is a
+                // package-manager scan that has to be taken again on every entry anyway,
+                // because plugins are installed and uninstalled outside this app.
+                PluginsScreen(
+                    registry = ServiceLocator.pluginRegistry,
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -489,6 +500,7 @@ class MainActivity : ComponentActivity() {
         private const val ROUTE_AI = "ai"
         private const val ROUTE_VARIABLES = "variables"
         private const val ROUTE_PERMISSIONS = "permissions"
+        private const val ROUTE_PLUGINS = "plugins"
         private const val ARG_WORKFLOW_ID = "workflowId"
     }
 }

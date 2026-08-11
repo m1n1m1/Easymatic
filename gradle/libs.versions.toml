@@ -21,6 +21,10 @@ javascriptengine = "1.1.0"
 material = "1.13.0"
 glance = "1.1.1"
 javamail = "1.6.7"
+# Pinned to what `:app` already resolves to transitively (via lifecycle-runtime-ktx).
+# `:plugin-sdk` needs it declared rather than inherited: a plugin app depends on the
+# SDK alone and would otherwise have no coroutines at all.
+coroutines = "1.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -60,11 +64,19 @@ material = { group = "com.google.android.material", name = "material", version.r
 # which then fails as an exception on the first send rather than as a build error.
 # This one finds its providers in plain META-INF resource files — see the packaging
 # block in app/build.gradle.kts, which must never exclude them.
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 javamail-android = { group = "com.sun.mail", name = "android-mail", version.ref = "javamail" }
 javamail-android-activation = { group = "com.sun.mail", name = "android-activation", version.ref = "javamail" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+# `:plugin-sdk` — the AIDL and the plugin service base class have to be Android.
+android-library = { id = "com.android.library", version.ref = "agp" }
+# `:node-api` — a plain JVM library, deliberately not an android-library. Nothing
+# under `core/` or `domain/` imports Android, so compiling the node declaration
+# surface without `android.jar` on the classpath turns that convention into a
+# compile error, and it runs plain JUnit with no AGP unit-test variant machinery.
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }

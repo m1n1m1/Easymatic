@@ -17,7 +17,9 @@ import com.example.ottomatic.domain.model.schema.ItemSchema
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.domain.registry.MacroDirectory
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.domain.registry.PluginNodes
 import com.example.ottomatic.domain.registry.declarationFor
+import com.example.ottomatic.nodeapi.plugin.PluginLimits
 import com.example.ottomatic.domain.model.SmartHomeRef
 import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.domain.registry.SmartHomeHubs
@@ -94,6 +96,7 @@ class GraphValidator(private val workflow: Workflow) {
         validateSmartHomeRefs(issues)
         validateAiConnectionRefs(issues)
         validatePrerequisites(issues)
+        validatePluginPermissions(issues)
         return GraphValidation(issues)
     }
 
@@ -135,6 +138,34 @@ class GraphValidator(private val workflow: Workflow) {
             out += ValidationIssue(
                 Severity.WARNING,
                 "'${node.name}' needs $needs, which has not been granted — it may do nothing when it runs",
+                nodes = setOf(node.id),
+            )
+        }
+    }
+
+    /**
+     * A plugin node whose *own app* is missing a permission it says it needs.
+     *
+     * The third member of the [validateVariableRefs] / [validateMacroRefs] /
+     * [validatePrerequisites] family, and it takes the last of those stances exactly:
+     * a WARNING that blocks nothing, because this is a fact about the phone rather than
+     * about the wiring — the graph is perfect, and granting the permission in Settings
+     * starts it working with no edit here at all.
+     *
+     * The sentence names the plugin, because that is where the user has to go: the
+     * permission belongs to *that* app, is granted on *that* app's settings page, and
+     * Ottomatic cannot request it or hold it on the plugin's behalf. Saying "'Scan QR'
+     * needs camera access" without saying whose would send people to the wrong screen.
+     */
+    private fun validatePluginPermissions(out: MutableList<ValidationIssue>) {
+        if (!PluginNodes.isHydrated) return
+        for (node in workflow.nodes) {
+            val entry = PluginNodes.byId(node.typeId)?.takeIf { it.missingPermissions.isNotEmpty() } ?: continue
+            val needs = entry.missingPermissions.joinToString(" and ") { it.substringAfterLast('.') }
+            out += ValidationIssue(
+                Severity.WARNING,
+                "'${node.name}' needs $needs, which ${entry.pluginName} has not been granted — " +
+                    "it may do nothing when it runs",
                 nodes = setOf(node.id),
             )
         }
@@ -326,9 +357,23 @@ class GraphValidator(private val workflow: Workflow) {
      * or one naming a node type since removed — presents as "my macro does nothing"
      * with no diagnostic anywhere. Naming it is most of the value of validating at all.
      */
+    /**
+     * Whether this typeId is one we can say anything about yet.
+     *
+     * A plugin's nodes arrive asynchronously, some way after process start. Without the
+     * second clause, every boot-time snapshot validation would condemn every plugin node
+     * in every macro on the device for the seconds before discovery finished — the exact
+     * mistake `MacroDirectory` guards against, arriving by a new route. Once hydrated, an
+     * uninstalled plugin's typeId falls through to the named ERROR, which quarantines
+     * that node and nothing else.
+     */
+    private fun isKnownType(typeId: com.example.ottomatic.core.model.NodeTypeId): Boolean =
+        NodeTypeRegistry.byId(typeId) != null ||
+            (PluginLimits.isPluginTypeId(typeId.value) && !PluginNodes.isHydrated)
+
     private fun validateNodeTypes(out: MutableList<ValidationIssue>) {
         for (node in workflow.nodes) {
-            if (NodeTypeRegistry.byId(node.typeId) != null) continue
+            if (isKnownType(node.typeId)) continue
             out += ValidationIssue(
                 Severity.ERROR,
                 "'${node.name}' is an unknown node type (${node.typeId.value}) and cannot run",

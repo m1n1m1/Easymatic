@@ -58,6 +58,43 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
+
+    <!--
+      Plugin discovery.
+
+      QUERY_ALL_PACKAGES already makes this work, so the <queries> block below is
+      belt-and-braces on purpose: that permission is Play-policy-restricted and a
+      plausible future removal, and the day it goes, discovery has to keep working.
+      A narrow declaration naming exactly the one action we look for is also a better
+      posture than the blanket grant, and is what the app should be left with.
+    -->
+    <queries>
+        <intent>
+            <action android:name="com.example.ottomatic.action.PLUGIN" />
+        </intent>
+    </queries>
+
+    <!--
+      What a plugin app puts on its exported service, so that no *other* app can bind
+      it and drive somebody's plugin.
+
+      protectionLevel="normal" rather than "signature", and this is the decision worth
+      recording: a third-party plugin is by definition not signed by Ottomatic's key,
+      so a signature-level permission would silently restrict the entire mechanism to
+      plugins we published ourselves — the opposite of the point. "normal" is granted
+      at install without prompting, which is right for something whose only power is
+      "may talk to a plugin".
+
+      The real trust gate is elsewhere and is explicit: a discovered plugin contributes
+      no nodes at all until the user enables it on the Plugins screen.
+    -->
+    <permission
+        android:name="com.example.ottomatic.permission.BIND_PLUGIN"
+        android:label="@string/permission_bind_plugin_label"
+        android:description="@string/permission_bind_plugin_description"
+        android:protectionLevel="normal" />
+
+    <uses-permission android:name="com.example.ottomatic.permission.BIND_PLUGIN" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />

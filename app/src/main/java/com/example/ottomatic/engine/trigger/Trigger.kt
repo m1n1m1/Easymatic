@@ -3,6 +3,7 @@ package com.example.ottomatic.engine.trigger
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.registry.decode
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.TriggerNodeDefinition

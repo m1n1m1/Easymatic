@@ -1,174 +1,6 @@
 package com.example.ottomatic.domain.registry
 
-import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeTypeId
-import com.example.ottomatic.domain.model.config.PickerKind
-
-/**
- * Type of a configurable field on a node, as rendered by the schema-driven
- * config form. The type parameter is a phantom type documenting the Kotlin type
- * the field parses to; the field value itself is stored as a [String] in
- * [com.example.ottomatic.domain.model.WorkflowNode.config].
- *
- * Instances are never written by hand: they are derived from a node's
- * `@Serializable` config class by [NodeSchema], so the field type always agrees
- * with the Kotlin type the node actually reads.
- */
-sealed interface ConfigFieldType<out T> {
-    /** Single-line string. */
-    data object STR : ConfigFieldType<String>
-
-    /** Multi-line string (declared with `@Multiline`). */
-    data object MULTILINE : ConfigFieldType<String>
-
-    /** Integral number. */
-    data object INT : ConfigFieldType<Int>
-
-    /** Boolean, rendered as a switch. */
-    data object BOOL : ConfigFieldType<Boolean>
-
-    /** Floating-point number. */
-    data object DOUBLE : ConfigFieldType<Double>
-
-    /**
-     * A moment, rendered as a text field with a date/time picker beside it.
-     *
-     * Editable rather than picker-only on purpose: the stored text is read through
-     * [com.example.ottomatic.domain.model.schema.DateTime.parse], which also accepts
-     * a bare `18:00` meaning "today at 18:00" — the form a recurring condition wants,
-     * and one no calendar can express.
-     */
-    data object DATE_TIME : ConfigFieldType<String>
-
-    /**
-     * A phone number, rendered as a text field with a contact button beside it
-     * (declared with `@PhoneNumber`).
-     *
-     * Editable for the reason [DATE_TIME] is: the stored text is a
-     * [com.example.ottomatic.domain.model.PhoneRef] spec, and its commonest form
-     * is a number the user simply typed — one that is in no address book has
-     * nothing to pick from.
-     */
-    data object PHONE : ConfigFieldType<String>
-
-    /**
-     * A wall-clock `HH:mm`, rendered as a text field with a clock face beside it
-     * (declared with `@TimeOfDay`).
-     *
-     * Distinct from [DATE_TIME] because a time of day is not an instant: it gets a
-     * clock rather than a calendar, and it stays clearable, which is how a schedule
-     * window says it is unbounded. Parsed by
-     * [com.example.ottomatic.domain.model.TimeOfDay].
-     */
-    data object TIME_OF_DAY : ConfigFieldType<String>
-
-    /**
-     * A Wi-Fi network name, rendered as a text field with a button that lists the
-     * networks in range (declared with `@WifiNetwork`).
-     *
-     * The third of the editable-with-a-chooser fields, and it earns that shape more
-     * plainly than the other two: the network somebody is automating for is usually
-     * not the one they are standing next to, so a read-only picker could not express
-     * the commonest case. Blank means any network. Read through
-     * [com.example.ottomatic.domain.model.WifiSsid].
-     */
-    data object WIFI_NETWORK : ConfigFieldType<String>
-
-    /**
-     * A person's name, rendered as a text field with a button that fills it in from
-     * the device's contacts (declared with `@ContactName`).
-     *
-     * On [WIFI_NETWORK]'s argument rather than [PHONE]'s: the address book is a
-     * suggestion, not the answer set, because a message can arrive from somebody who
-     * was never saved or under a push name they chose themselves. What it stores is
-     * the **name itself and not a reference** — a messenger's notification carries no
-     * number, only the name it printed, so a name is the only thing there is to
-     * compare against. Needing nothing resolved later, it is the one chooser in the
-     * app that costs no permission at either end.
-     */
-    data object CONTACT_NAME : ConfigFieldType<String>
-
-    /**
-     * A mailbox name, rendered as a text field with a button that lists the folders
-     * on the server (declared with `@MailFolder`).
-     *
-     * The fifth editable-with-a-chooser field. [accountKey] names the sibling
-     * property holding the account whose folders to offer; blank, or naming a
-     * property that is itself unset, makes the chooser ask which account first.
-     */
-    data class MAIL_FOLDER(val accountKey: String) : ConfigFieldType<String>
-
-    /** One of [options], stored as the option's [ConfigOption.value]. */
-    data class ENUM(val options: List<ConfigOption>) : ConfigFieldType<String>
-
-    /**
-     * An identifier chosen from a dedicated picker of [kind] rather than typed
-     * (declared with `@Picker`). Stored as a plain string, like [STR]; the
-     * form resolves it to a human name for display.
-     */
-    data class PICKER(val kind: PickerKind) : ConfigFieldType<String>
-
-    /**
-     * A list of output ports — a name and a type per row — declared with
-     * `@Ports` and stored as one `name:TYPE` line per port (see
-     * [com.example.ottomatic.domain.model.OutputSpec]).
-     *
-     * Only `action.script` has this: it is the one node whose output ports are
-     * named by the user rather than derived from an upstream schema the way
-     * `action.break`'s are.
-     */
-    data object PORT_LIST : ConfigFieldType<String>
-}
-
-/**
- * A single choice in a [ConfigFieldType.ENUM] field: [value] is persisted in
- * [com.example.ottomatic.domain.model.WorkflowNode.config], [label] is shown to
- * the user. Derived from an enum class's entries (its `@SerialName`s and
- * `@Label`s), so the persisted value and the displayed text can be chosen
- * independently.
- *
- * A nullable enum property contributes a leading option with a blank [value],
- * meaning "unset" — used by the event-filter triggers, where "no filter
- * selected" means "fire on every event".
- */
-data class ConfigOption(
-    val value: String,
-    val label: String = value,
-)
-
-/**
- * Condition under which a field appears in the form: the sibling field [key]
- * must currently hold one of [values]. Derived from
- * [com.example.ottomatic.domain.model.config.VisibleWhen] and applied by
- * [effectiveConfigSchema], which is the only place that knows a *placed* node's
- * config values.
- */
-data class VisibilityRule(
-    val key: ConfigKey,
-    val values: Set<String>,
-)
-
-/**
- * Describes a single configurable field on a node, so the UI can render a
- * schema-driven form without knowing each node type individually.
- *
- * [visibleWhen] is non-null for a field that only applies to some of the node's
- * modes; it is resolved against the placed node by [effectiveConfigSchema], so
- * the renderer never has to reason about it.
- */
-data class ConfigField<T>(
-    val key: ConfigKey,
-    val label: String,
-    val type: ConfigFieldType<T>,
-    val defaultValue: String = "",
-    val visibleWhen: VisibilityRule? = null,
-)
-
-/** Schema for a node type's configuration form. Looked up by [typeId]. */
-data class NodeConfigSchema(
-    val typeId: NodeTypeId,
-    val fields: List<ConfigField<*>>,
-)
 
 /**
  * Registry of per-node-type configuration schemas.
@@ -178,6 +10,17 @@ data class NodeConfigSchema(
  * config classes of the single node definitions registered in [ActionRegistry],
  * [TriggerRegistry], [ValueRegistry] and [TransformRegistry]. `action.if` narrows
  * its derived schema further at design time (see [effectiveConfigSchema]).
+ *
+ * The *types* this serves — [ConfigFieldType], [ConfigField], [ConfigOption],
+ * [VisibilityRule], [NodeConfigSchema] — live in `:node-api` beside [NodeSchema],
+ * which is what derives them. They are part of the declaration surface a plugin
+ * compiles against; this registry, which walks the app's own compiled node lists,
+ * is not.
+ *
+ * Like [NodeTypeRegistry], it now derives from two sources: those compiled lists, and
+ * whichever plugins are enabled. A plugin's schema is derived by [NodeSchema] too —
+ * on the plugin's side of the boundary, from the plugin's own config class — so a form
+ * row here edits a value that node really reads.
  */
 object ConfigSchemaRegistry {
 
@@ -191,5 +34,5 @@ object ConfigSchemaRegistry {
             .filterNotNull()
             .associateBy { it.typeId }
 
-    fun byId(typeId: NodeTypeId): NodeConfigSchema? = byId[typeId]
+    fun byId(typeId: NodeTypeId): NodeConfigSchema? = byId[typeId] ?: PluginNodes.byId(typeId)?.configSchema
 }

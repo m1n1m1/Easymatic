@@ -5,13 +5,16 @@ import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.domain.model.DataConnection
+import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.model.schema.asText
 import com.example.ottomatic.domain.registry.ActionRegistry
+import com.example.ottomatic.domain.registry.PluginNodes
 import com.example.ottomatic.domain.registry.TransformRegistry
 import com.example.ottomatic.domain.registry.ValueRegistry
+import com.example.ottomatic.engine.plugin.PluginNodeRunner
 import com.example.ottomatic.engine.trigger.TriggerOutput
 import com.example.ottomatic.engine.validation.GraphValidation
 import com.example.ottomatic.engine.validation.GraphValidator
@@ -219,13 +222,23 @@ class WorkflowExecutor(
                 at.log(blocked, LogLevel.ERROR)
                 continue
             }
-            val action = ActionRegistry.byId(target.typeId) ?: continue
+            // A plugin's action is looked up separately rather than through
+            // `ActionRegistry`, because it has no `ActionNodeDefinition` and cannot be
+            // given one: that type is built from a `NodeSchema` over a reified Kotlin
+            // config class, and a plugin's config class does not exist in this process.
+            val action = ActionRegistry.byId(target.typeId)
+            if (action == null && !PluginNodeRunner.isPluginNode(target)) continue
             if (!run.onPath.add(target.id)) {
                 at.log("Execution cycle: '${target.name}' is already running on this path", LogLevel.ERROR)
                 continue
             }
             try {
-                if (!runNode(run, action, target, at)) return false
+                val carriedOn = if (action != null) {
+                    runNode(run, action, target, at)
+                } else {
+                    runPluginNode(run, target, at)
+                }
+                if (!carriedOn) return false
             } finally {
                 run.onPath.remove(target.id)
             }
@@ -277,6 +290,35 @@ class WorkflowExecutor(
             at.log("Action ${target.typeId} failed: ${e.message}", LogLevel.ERROR)
             null
         } ?: return true
+        return applyResult(run, target, at, result)
+    }
+
+    /**
+     * Runs an action that lives in another app.
+     *
+     * The same shape as [runNode]'s ordinary path, minus the three executor-driven
+     * shapes: a plugin node is never a loop, a conditional loop or a fork, which
+     * [PluginDeclarationValidator][com.example.ottomatic.nodeapi.plugin.PluginDeclarationValidator]
+     * guarantees by there being no way to declare one.
+     */
+    private suspend fun runPluginNode(run: Run, target: WorkflowNode, at: ExecutionContext): Boolean {
+        val dataIn = collectDataIn(run, target)
+        at.log("→ ${target.name}", LogLevel.DEBUG)
+        logData(at, IN_LABEL, dataIn)
+        // Failures are reported by the runner, in words naming the plugin, and land on
+        // an unpulsed `out` — so a plugin that is gone stops its branch without the
+        // console saying only "Action … failed".
+        val result = PluginNodeRunner.runAction(target, dataIn, at) ?: return true
+        return applyResult(run, target, at, result)
+    }
+
+    /** Caches a node's outputs, honours its halt, and pulses whatever it routed to. */
+    private suspend fun applyResult(
+        run: Run,
+        target: WorkflowNode,
+        at: ExecutionContext,
+        result: EncodedNodeOutput,
+    ): Boolean {
         logData(at, OUT_LABEL, result.dataOut)
         result.dataOut.forEach { (producedOn, item) ->
             run.dataCache[target.id to producedOn] = item
@@ -285,10 +327,7 @@ class WorkflowExecutor(
             at.log("Action ${target.typeId} halted execution chain")
             return false
         }
-        for (execPort in result.execOut) {
-            if (!pulse(run, target, execPort)) return false
-        }
-        return true
+        return result.execOut.all { execPort -> pulse(run, target, execPort) }
     }
 
     /**
@@ -577,6 +616,20 @@ class WorkflowExecutor(
             return readTransform(run, transform, sourceNode, target, reads, visiting)
                 .also { reads[conn.fromNodeId] = it }
         }
+        // A plugin's pull-side node, memoized exactly as a first-party one is — so two
+        // ports of one consumer still cost a single binder call, and a chain of
+        // transforms still shares one read of whatever feeds it.
+        PluginNodes.byId(sourceNode.typeId)?.let { entry ->
+            when (entry.definition.kind) {
+                NodeKind.VALUE ->
+                    return readPluginValue(run, sourceNode, target).also { reads[conn.fromNodeId] = it }
+                NodeKind.TRANSFORM ->
+                    return readPluginTransform(run, sourceNode, target, reads, visiting)
+                        .also { reads[conn.fromNodeId] = it }
+                // A plugin action's output arrived on the push side like any other's.
+                NodeKind.ACTION, NodeKind.TRIGGER -> Unit
+            }
+        }
         return run.dataCache[conn.fromNodeId to conn.fromPort]
     }
 
@@ -621,6 +674,52 @@ class WorkflowExecutor(
                 at.log("Transform ${transform.typeId.value} = ${item.value} for '${target.name}'", LogLevel.DEBUG)
             }
             item
+        } finally {
+            visiting.remove(sourceNode.id)
+        }
+    }
+
+    /** Reads a plugin value for [target], attributed to the value's own node. */
+    private suspend fun readPluginValue(run: Run, sourceNode: WorkflowNode, target: WorkflowNode): Item? {
+        val at = context.scoped(source(run.workflow, run.runId, sourceNode))
+        val item = PluginNodeRunner.readValue(sourceNode, at)
+        if (item == null) {
+            at.log("Read ${sourceNode.typeId.value} unavailable for '${target.name}'", LogLevel.WARN)
+        }
+        return item
+    }
+
+    /**
+     * Pulls a plugin transform for [target], first pulling whatever *it* depends on.
+     *
+     * Shares [reads] and [visiting] with the first-party path for the same two reasons:
+     * one consistent read per consumer across a whole chain, and a hand-edited data
+     * cycle that stops rather than recursing until the stack gives out.
+     */
+    @Suppress("LongParameterList") // The pull memo and cycle guard travel with the recursion.
+    private suspend fun readPluginTransform(
+        run: Run,
+        sourceNode: WorkflowNode,
+        target: WorkflowNode,
+        reads: MutableMap<NodeId, Item?>,
+        visiting: MutableSet<NodeId>,
+    ): Item? {
+        val at = context.scoped(source(run.workflow, run.runId, sourceNode))
+        if (!visiting.add(sourceNode.id)) {
+            at.log("Transform ${sourceNode.typeId.value} skipped: it depends on itself", LogLevel.ERROR)
+            return null
+        }
+        return try {
+            val data = collectDataIn(run, sourceNode, reads, visiting)
+            logData(at, IN_LABEL, data)
+            PluginNodeRunner.runTransform(sourceNode, data, at).also { item ->
+                if (item == null) {
+                    at.log(
+                        "Transform ${sourceNode.typeId.value} produced nothing for '${target.name}'",
+                        LogLevel.WARN,
+                    )
+                }
+            }
         } finally {
             visiting.remove(sourceNode.id)
         }

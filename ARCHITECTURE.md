@@ -2,6 +2,18 @@
 
 This document defines the rules that every developer (including AI agents) must follow.
 
+## Modules
+- `:node-api`   - The node **declaration** surface: ids, permissions, item schemas,
+                  ports, config annotations and the `NodeSchema` derivation. A plain
+                  Kotlin JVM library — no AGP, no `android.jar`, one dependency
+                  (kotlinx-serialization-json). Third-party plugin apps compile
+                  against this.
+- `:app`        - Everything else: the executor, the platform adapters and the UI.
+
+Packages under `com.example.ottomatic` are shared across the two modules; which
+module a file is in says whether it is part of the plugin-visible declaration
+surface, not which package it belongs to.
+
 ## Package Structure
 - core/      - Infrastructure (DI, logging, permissions, base interfaces)
 - domain/    - Pure business models and contracts (no Android)
@@ -15,7 +27,9 @@ This document defines the rules that every developer (including AI agents) must 
 - engine  ← domain + core
 - data    ← domain + core
 - feature ← domain + engine + core
-- No Android imports allowed in domain/
+- No Android imports allowed in domain/ — **now a compile error** for everything
+  that lives in `:node-api`, which is compiled without `android.jar` on the
+  classpath. The parts of `core/` and `domain/` still in `:app` remain convention.
 
 ## Extension Points
 - Every node (Trigger or Action) is declared **exactly once**, in its own
@@ -34,5 +48,11 @@ This document defines the rules that every developer (including AI agents) must 
   once (inside the definition).
 
 ## Enforcement
-- Detekt architecture rules are enabled (currently as warnings).
-- Run `./gradlew detekt` to verify compliance.
+- The `domain`-has-no-Android rule is enforced by the `:node-api` module boundary
+  (see above) for everything that module holds.
+- The remaining layering rules are convention, checked in review. `detekt.yml`
+  carries no architecture ruleset; `./gradlew detekt` runs the naming, complexity,
+  style and potential-bug rules only.
+- The node declaration contract is enforced by `NodeDeclarationContractTest`, and
+  the same rules are applied to third-party declarations at runtime by
+  `PluginDeclarationValidator` — one rule set, three callers.

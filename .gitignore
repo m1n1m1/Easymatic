@@ -10,6 +10,8 @@
 /.idea/assetWizardSettings.xml
 .DS_Store
 /build
+# Per-module outputs. `/build` only covers the root, and there are five modules now.
+build/
 /captures
 .externalNativeBuild
 .cxx

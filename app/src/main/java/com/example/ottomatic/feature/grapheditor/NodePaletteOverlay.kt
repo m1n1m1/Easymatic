@@ -38,6 +38,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,10 +52,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ottomatic.core.model.NodeTypeId
-import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.domain.registry.PaletteGroup
+import com.example.ottomatic.domain.registry.PluginNodes
 import com.example.ottomatic.domain.registry.matchesSearch
 
 /**
@@ -83,16 +85,23 @@ fun NodePaletteOverlay(
     restrictedTo: Set<NodeTypeId>? = null,
 ) {
     var query by remember { mutableStateOf("") }
-    var expandedCategories by remember { mutableStateOf(emptySet<NodeCategory>()) }
+    var expandedGroups by remember { mutableStateOf(emptySet<PaletteGroup>()) }
     var showAll by remember { mutableStateOf(false) }
     val restriction = restrictedTo?.takeUnless { showAll }
     val searchTerm = query.trim()
     val searching = searchTerm.isNotEmpty()
-    val matchingDefinitions = NodeTypeRegistry.all
+    // `NodeTypeRegistry.all` is no longer a constant: it is the compiled registries plus
+    // whichever plugins are enabled right now. Compose cannot observe a plain function
+    // call, so the plugin set is collected and used as the key — install, uninstall or
+    // a flick of the enable switch then redraws the palette, and nothing else does,
+    // because nothing else can change it.
+    val plugins by PluginNodes.entries.collectAsState()
+    val availableTypes = remember(plugins) { NodeTypeRegistry.all }
+    val matchingDefinitions = availableTypes
         .filter { restriction == null || it.typeId in restriction }
         .filter { it.matchesSearch(searchTerm) }
     // Searching and short result sets expand everything without touching
-    // [expandedCategories], so clearing the search restores what the user opened.
+    // [expandedGroups], so clearing the search restores what the user opened.
     val expandAll = searching || matchingDefinitions.size <= AUTO_EXPAND_THRESHOLD
 
     val listState = rememberLazyListState()
@@ -146,22 +155,26 @@ fun NodePaletteOverlay(
                     }
                 } else {
                     NodeKind.values().forEach { kind ->
-                        val categoryGroups = NodeTypeRegistry.categoriesFor(kind).map { category ->
-                            category to matchingDefinitions.filter { it.category == category }
+                        // Groups rather than categories: a plugin's nodes are headed with
+                        // the plugin's own name, so somebody about to remove one can see
+                        // what will go with it.
+                        val matching = matchingDefinitions.toSet()
+                        val groups = NodeTypeRegistry.groupsFor(kind).map { group ->
+                            group to NodeTypeRegistry.nodesIn(group).filter { it in matching }
                         }.filter { (_, definitions) -> definitions.isNotEmpty() }
-                        if (categoryGroups.isNotEmpty()) {
+                        if (groups.isNotEmpty()) {
                             item(key = "kind-${kind.name}") {
                                 PaletteKindCard(
                                     kind = kind,
-                                    categoryGroups = categoryGroups,
-                                    isExpanded = { category ->
-                                        expandAll || category in expandedCategories
+                                    groups = groups,
+                                    isExpanded = { group ->
+                                        expandAll || group in expandedGroups
                                     },
-                                    onToggle = { category ->
-                                        expandedCategories = if (category in expandedCategories) {
-                                            expandedCategories - category
+                                    onToggle = { group ->
+                                        expandedGroups = if (group in expandedGroups) {
+                                            expandedGroups - group
                                         } else {
-                                            expandedCategories + category
+                                            expandedGroups + group
                                         }
                                     },
                                     onPick = pick,
@@ -222,9 +235,9 @@ private fun PaletteSearchField(
 @Composable
 private fun PaletteKindCard(
     kind: NodeKind,
-    categoryGroups: List<Pair<NodeCategory, List<NodeTypeDefinition>>>,
-    isExpanded: (NodeCategory) -> Boolean,
-    onToggle: (NodeCategory) -> Unit,
+    groups: List<Pair<PaletteGroup, List<NodeTypeDefinition>>>,
+    isExpanded: (PaletteGroup) -> Boolean,
+    onToggle: (PaletteGroup) -> Unit,
     onPick: (NodeTypeDefinition) -> Unit,
 ) {
     val accent = accentColor(kind)
@@ -239,7 +252,7 @@ private fun PaletteKindCard(
         PaletteKindHeader(
             kind = kind,
             accent = accent,
-            count = categoryGroups.sumOf { (_, definitions) -> definitions.size },
+            count = groups.sumOf { (_, definitions) -> definitions.size },
         )
         Box(
             modifier = Modifier
@@ -247,13 +260,13 @@ private fun PaletteKindCard(
                 .height(1.dp)
                 .background(accent.copy(alpha = 0.16f)),
         )
-        categoryGroups.forEach { (category, definitions) ->
-            PaletteCategory(
-                category = category,
+        groups.forEach { (group, definitions) ->
+            PaletteGroupRows(
+                group = group,
                 definitions = definitions,
                 accent = accent,
-                isExpanded = isExpanded(category),
-                onToggle = { onToggle(category) },
+                isExpanded = isExpanded(group),
+                onToggle = { onToggle(group) },
                 onPick = onPick,
             )
         }
@@ -304,10 +317,10 @@ private fun PaletteKindHeader(kind: NodeKind, accent: Color, count: Int) {
     }
 }
 
-/** One collapsible category group with its node rows. */
+/** One collapsible palette group with its node rows. */
 @Composable
-private fun PaletteCategory(
-    category: NodeCategory,
+private fun PaletteGroupRows(
+    group: PaletteGroup,
     definitions: List<NodeTypeDefinition>,
     accent: Color,
     isExpanded: Boolean,
@@ -329,7 +342,7 @@ private fun PaletteCategory(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = category.displayName,
+            text = group.displayName,
             style = MaterialTheme.typography.titleSmall,
             color = EditorColors.textPrimary,
             fontWeight = FontWeight.SemiBold,
@@ -344,9 +357,9 @@ private fun PaletteCategory(
         Icon(
             imageVector = Icons.Filled.ExpandMore,
             contentDescription = if (isExpanded) {
-                "Collapse ${category.displayName}"
+                "Collapse ${group.displayName}"
             } else {
-                "Expand ${category.displayName}"
+                "Expand ${group.displayName}"
             },
             tint = trailingColor,
             modifier = Modifier.rotate(chevronRotation),

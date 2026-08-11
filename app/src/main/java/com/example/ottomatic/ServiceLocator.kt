@@ -31,6 +31,10 @@ import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.log.RunLogStore
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
+import com.example.ottomatic.data.plugin.PluginConnections
+import com.example.ottomatic.data.plugin.PluginPackages
+import com.example.ottomatic.data.plugin.PluginRegistry
+import com.example.ottomatic.data.plugin.PluginRepository
 import com.example.ottomatic.data.prompt.OverlayPrompts
 import com.example.ottomatic.data.script.WebViewScriptEngine
 import com.example.ottomatic.data.sensor.SensorBridge
@@ -43,6 +47,7 @@ import com.example.ottomatic.data.trigger.VariableStore
 import com.example.ottomatic.data.wait.AndroidWaits
 import com.example.ottomatic.engine.DefaultExecutionContext
 import com.example.ottomatic.engine.ExecutionContext
+import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.engine.trigger.TriggerHost
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -182,6 +187,25 @@ object ServiceLocator {
     lateinit var permissionChecker: PermissionChecker
         private set
 
+    /** Which plugin apps the user has enabled, and under which signer. */
+    lateinit var pluginRepository: PluginRepository
+        private set
+
+    /** One refcounted binding per plugin package, kept warm between calls. */
+    lateinit var pluginConnections: PluginConnections
+        private set
+
+    /**
+     * Discovery, validation and publication of plugin nodes.
+     *
+     * The Plugins screen's own needs — enable, disable, refresh — live here rather
+     * than on the repository, which is `SmartHomeSetup`'s and `AiModelCatalog`'s
+     * arrangement for their libraries: a second class over the same store holding the
+     * *editor's* needs, which no node has.
+     */
+    lateinit var pluginRegistry: PluginRegistry
+        private set
+
     fun init(context: Context) {
         val appContext = context.applicationContext
         // Published before anything else touches a workflow: `effectivePorts` and
@@ -288,12 +312,47 @@ object ServiceLocator {
             contacts,
             mailAccountRepository,
         )
+        publishGrantedPrerequisites(appContext)
+        publishPluginNodes(appContext)
+    }
+
+    /**
+     * Publishes what the phone has granted, for `GraphValidator`.
+     *
+     * It asks whether a node can actually do its job and runs from paths that can
+     * neither suspend nor be injected into. Re-read on every return to the foreground
+     * by `MainActivity`, since granting any of these means leaving the app for a
+     * Settings page.
+     */
+    private fun publishGrantedPrerequisites(appContext: Context) {
         permissionChecker = AndroidPermissionChecker(appContext)
-        // Published for `GraphValidator`, which asks whether a node can actually do
-        // its job and runs from paths that can neither suspend nor be injected
-        // into. Re-read on every return to the foreground by `MainActivity`, since
-        // granting one of these means leaving the app for a Settings page.
         GrantedPrerequisites.hydrateFrom(permissionChecker)
+    }
+
+    /**
+     * Discovers plugin apps and publishes whatever the enabled ones contribute.
+     *
+     * Asynchronous, on `publishSmartHomeHubs`' shape, so the first frames after process
+     * start carry no plugin nodes at all. That gap is what `PluginNodes.isHydrated`
+     * names, and `GraphValidator` reads it rather than condemning every plugin node in
+     * every macro on the device for the seconds before discovery finishes.
+     */
+    private fun publishPluginNodes(appContext: Context) {
+        pluginRepository = PluginRepository(appContext.filesDir)
+        pluginConnections = PluginConnections(appContext)
+        pluginRegistry = PluginRegistry(PluginPackages(appContext), pluginRepository, pluginConnections, appScope)
+        // A reconnected binding is not a restored subscription: a plugin trigger's
+        // registration died with its process, and the host-side flow is still open and
+        // silent. Re-arming is what turns that silence back into a working trigger, and
+        // it goes through the ordinary re-arm path rather than a bespoke one.
+        pluginConnections.onConnectionChanged { packageName, connected ->
+            if (connected) {
+                pluginRegistry.onReconnected(packageName) {
+                    MacroEngineService.start(appContext, MacroEngineService.ACTION_REARM_CHANGED)
+                }
+            }
+        }
+        pluginRegistry.refresh()
     }
 
     /**

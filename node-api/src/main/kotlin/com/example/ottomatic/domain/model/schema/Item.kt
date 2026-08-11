@@ -90,8 +90,7 @@ internal inline fun <reified T : Any> flattenItem(value: T): Map<String, String>
  * by [Item.flat]. [JsonNull] must be matched before [JsonPrimitive] — it is a
  * subclass whose `content` is the literal text `"null"`.
  */
-@PublishedApi
-internal fun jsonElementToString(element: JsonElement): String = when (element) {
+fun jsonElementToString(element: JsonElement): String = when (element) {
     is JsonNull -> ""
     is JsonPrimitive -> element.content
     else -> element.toString()
@@ -109,7 +108,7 @@ internal fun jsonElementToString(element: JsonElement): String = when (element) 
  * through JSON is the documented contract for these schemas).
  */
 @Suppress("CyclomaticComplexMethod", "ComplexMethod")
-internal fun jsonElementToValue(element: JsonElement, schema: ItemSchema): Any? = when (schema) {
+fun jsonElementToValue(element: JsonElement, schema: ItemSchema): Any? = when (schema) {
     is ItemSchema.Primitive -> when (schema.kClass) {
         String::class -> (element as? JsonPrimitive)?.contentOrNull ?: ""
         Int::class -> (element as? JsonPrimitive)?.intOrNull ?: 0
@@ -147,7 +146,7 @@ private fun decodeStringMap(element: JsonElement): Map<String, String> {
  * become addressable keys); all other field types resolve via [Item.value]'s
  * `toString()`.
  */
-internal fun flatViewFor(value: Any?, schema: ItemSchema): Map<String, String> =
+fun flatViewFor(value: Any?, schema: ItemSchema): Map<String, String> =
     if (schema is ItemSchema.MapSchema && value is Map<*, *>) {
         @Suppress("UNCHECKED_CAST")
         value as Map<String, String>

@@ -9,6 +9,7 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.items.HttpResponseItem
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.model.schema.asTyped
+import com.example.ottomatic.domain.registry.decode
 import com.example.ottomatic.engine.action.HttpAction
 import com.example.ottomatic.engine.action.IfAction
 import org.junit.Assert.assertEquals

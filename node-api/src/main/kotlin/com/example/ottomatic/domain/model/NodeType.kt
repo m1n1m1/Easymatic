@@ -65,6 +65,18 @@ enum class NodeCategory(
     VALUE_TIME(NodeKind.VALUE, "Date & Time"),
     VALUE_VARIABLES(NodeKind.VALUE, "Variables"),
     TRANSFORM_DATA(NodeKind.TRANSFORM, "Data"),
+
+    // The four below are never drawn. A plugin node needs a non-null [category] so
+    // that `byKindAndCategory` stays total, but grouping it under one of the
+    // categories above would be a lie — a plugin's "Data" transform is not the app's.
+    // The palette groups plugin nodes by `PaletteGroup` instead, heading each with the
+    // plugin's own name, because somebody about to remove a plugin needs to see which
+    // nodes go with it. Four dead entries is cheaper than making [category] nullable
+    // and re-checking every one of its readers.
+    PLUGIN_TRIGGER(NodeKind.TRIGGER, "Plugin"),
+    PLUGIN_ACTION(NodeKind.ACTION, "Plugin"),
+    PLUGIN_VALUE(NodeKind.VALUE, "Plugin"),
+    PLUGIN_TRANSFORM(NodeKind.TRANSFORM, "Plugin"),
 }
 
 /** Whether a port carries control-flow pulse or a typed data value. */

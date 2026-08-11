@@ -59,23 +59,40 @@ class BreakStructAction : RawAction<NoConfig> {
     ): NodeOutput<Map<PortName, Item>> {
         val item = input.item(BREAK_STRUCT_IN)
         val schema = item?.schema as? ItemSchema.Object
-        val kClass = schema?.kClass
-        return if (schema == null || kClass == null) {
-            NodeOutput(emptyMap())
-        } else {
-            NodeOutput(extractFields(item.value, kClass, schema))
-        }
+        val json = schema?.let { jsonObjectOf(item, it) }
+        return NodeOutput(if (json == null) emptyMap() else extractFields(json, schema))
     }
 
-    @Suppress("UNCHECKED_CAST")
+    /**
+     * The struct's fields as JSON, by whichever of the two routes applies.
+     *
+     * Asking for [ItemSchema.Object.kClass] and giving up without one was the whole
+     * implementation until 2026-08-10, and it was wrong in a way that looked right:
+     * `effectivePorts` draws this node's output ports from `schema.fields`, which a
+     * `kClass`-less struct has — so the card sprouted a full set of correctly-typed,
+     * correctly-labelled ports and *nothing ever arrived on any of them*. That is
+     * worse than the "sprouts no output ports at all" failure `structDataIn`'s
+     * `ANY_STRUCT` was chosen to prevent, because there is nothing on screen to see.
+     *
+     * A struct whose value is already a [JsonObject] needs no serializer, and there
+     * are now two sources of those: anything that came through `transform.json_read`,
+     * and every struct a plugin node produces — a plugin's class does not exist in
+     * this process, so its schema can never carry a `kClass`. The serializer route
+     * stays for first-party structs, where the value is a real Kotlin data class.
+     */
+    private fun jsonObjectOf(item: Item, schema: ItemSchema.Object): JsonObject? =
+        item.value as? JsonObject
+            ?: schema.kClass?.let { kClass ->
+                item.value?.let { value -> runCatching { encodeThrough(kClass, value) }.getOrNull() }
+            }
+
+    private fun encodeThrough(kClass: KClass<out Any>, value: Any): JsonObject? =
+        Json.encodeToJsonElement(serializer(kClass.java), value) as? JsonObject
+
     private fun extractFields(
-        value: Any?,
-        kClass: KClass<out Any>,
+        jsonObj: JsonObject,
         schema: ItemSchema.Object,
     ): Map<PortName, Item> {
-        val serializer = serializer(kClass.java)
-        val element = Json.encodeToJsonElement(serializer, value as Any)
-        val jsonObj = (element as? JsonObject) ?: return emptyMap()
         val result = LinkedHashMap<PortName, Item>(schema.fields.size)
         for ((fieldName, fieldSchema) in schema.fields) {
             val child = jsonObj[fieldName] ?: continue

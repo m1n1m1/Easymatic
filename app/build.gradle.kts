@@ -89,6 +89,15 @@ dependencies {
         }
     }
 
+    // The node declaration surface — ports, item schemas, config annotations and the
+    // `NodeSchema` derivation. A plain JVM module, so nothing it holds can reach
+    // Android, which is what makes it safe to hand to a third-party plugin app.
+    implementation(project(":node-api"))
+    // For the AIDL alone. Both sides of a binder must compile the *same* interface
+    // definition, so the host takes the same module a plugin does rather than keeping
+    // a second copy of the .aidl that could drift by one parameter and fail at runtime.
+    implementation(project(":plugin-sdk"))
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)

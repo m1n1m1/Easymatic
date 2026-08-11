@@ -12,6 +12,7 @@ import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.TriggerRegistry
 import com.example.ottomatic.engine.trigger.BoundTriggerHost
 import com.example.ottomatic.engine.trigger.MacroEventBus
+import com.example.ottomatic.engine.plugin.PluginTriggerBridge
 import com.example.ottomatic.engine.trigger.TriggerHost
 import com.example.ottomatic.engine.trigger.TriggerOutput
 import kotlinx.coroutines.CoroutineScope
@@ -106,7 +107,14 @@ class WorkflowRunner(
      */
     @Suppress("TooGenericExceptionCaught") // Whatever a trigger's activation throws, the others must still arm.
     private fun activate(workflow: Workflow, node: WorkflowNode, host: TriggerHost): ActiveTrigger? {
-        val trigger = TriggerRegistry.byId(node.typeId) ?: return null
+        // A plugin's trigger is not an `ExecutableTrigger` and cannot be one: that
+        // interface needs a `TriggerNodeDefinition`, built from a `NodeSchema` over a
+        // reified Kotlin config class the plugin's app owns and this process has never
+        // seen. What it *can* be is the same thing an `ExecutableTrigger` produces — a
+        // cold flow with its teardown in `awaitClose` — so from here down nothing else
+        // in the arming lifetime knows the difference.
+        val trigger = TriggerRegistry.byId(node.typeId)
+            ?: return PluginTriggerBridge.activate(node, context)?.let { ActiveTrigger(node, it) }
         return try {
             ActiveTrigger(node, trigger.activateEncoded(node, host))
         } catch (e: CancellationException) {

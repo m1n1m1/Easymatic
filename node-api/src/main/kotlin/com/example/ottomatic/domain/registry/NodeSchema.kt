@@ -7,7 +7,6 @@ import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.PortKind
-import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.ContactName
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
@@ -103,10 +102,6 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         return runCatching { DECODER.decodeFromJsonElement(serializer, JsonObject(encoded)) }
             .getOrDefault(defaults)
     }
-
-    /** Builds the typed config for a placed [node] from its own config map. */
-    fun decode(node: WorkflowNode, data: Map<PortName, Item> = emptyMap()): T =
-        decode(node.config, data)
 
     private fun decodeDefaults(): T = runCatching {
         DECODER.decodeFromJsonElement(serializer, JsonObject(emptyMap()))

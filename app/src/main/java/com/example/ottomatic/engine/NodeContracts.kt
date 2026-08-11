@@ -1,6 +1,7 @@
 package com.example.ottomatic.engine
 
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.registry.decode
 import com.example.ottomatic.domain.model.execOut
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.ExecPorts

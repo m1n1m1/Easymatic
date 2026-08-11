@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+      A plugin declares its own permissions and Ottomatic never lends it any. This one
+      needs none, which is the honest shape for a sample; a plugin that scanned
+      Bluetooth would declare BLUETOOTH_SCAN here and Ottomatic would check it against
+      *this* package, warn when it is missing, and still not be able to do it on the
+      plugin's behalf.
+    -->
+
+    <application
+        android:allowBackup="true"
+        android:label="Ottomatic Sample Tools"
+        android:supportsRtl="true">
+
+        <!--
+          The whole of a plugin's manifest contribution.
+
+          `exported="true"` because the host is a different app; the custom permission
+          is what stops any *other* app binding it. That permission is declared by
+          Ottomatic at protectionLevel="normal" rather than "signature" — a third-party
+          plugin is by definition not signed by the host, so a signature-level
+          permission would quietly restrict the whole mechanism to first-party plugins.
+          The real gate is the user's enable switch on the Plugins screen.
+        -->
+        <service
+            android:name=".SamplePluginService"
+            android:exported="true"
+            android:permission="com.example.ottomatic.permission.BIND_PLUGIN">
+            <intent-filter>
+                <action android:name="com.example.ottomatic.action.PLUGIN" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

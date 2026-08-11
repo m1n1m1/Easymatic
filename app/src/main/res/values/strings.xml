@@ -30,4 +30,10 @@
     <string name="widget_preview_engine" translatable="false">Engine running</string>
     <string name="widget_preview_counts" translatable="false">8 of 12 armed</string>
     <string name="widget_preview_last_run" translatable="false">Morning Routine · ok · 4m ago</string>
+
+    <!-- Shown by the system if it ever surfaces the plugin-binding permission. -->
+    <string name="permission_bind_plugin_label">Provide Ottomatic nodes</string>
+    <string name="permission_bind_plugin_description">Lets Ottomatic use the extra trigger and action
+        nodes this app provides. The app runs its own code under its own permissions; Ottomatic does
+        not share its permissions with it.</string>
 </resources>
