@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
@@ -48,7 +49,9 @@ import com.example.ottomatic.feature.grapheditor.GraphEditorViewModel
 import com.example.ottomatic.feature.variables.GlobalVariablesScreen
 import com.example.ottomatic.feature.permissions.BatteryOptimisationDialog
 import com.example.ottomatic.feature.permissions.PermissionsScreen
+import com.example.ottomatic.feature.api.ApiAccessScreen
 import com.example.ottomatic.feature.plugins.PluginsScreen
+import com.example.ottomatic.engine.api.listApiTriggers
 import com.example.ottomatic.feature.variables.GlobalVariablesViewModel
 import com.example.ottomatic.feature.workflowlist.WorkflowListScreen
 import com.example.ottomatic.feature.workflowlist.WorkflowListViewModel
@@ -265,6 +268,7 @@ class MainActivity : ComponentActivity() {
                     onOpenVariables = { navController.navigate(ROUTE_VARIABLES) },
                     onOpenPermissions = { navController.navigate(ROUTE_PERMISSIONS) },
                     onOpenPlugins = { navController.navigate(ROUTE_PLUGINS) },
+                    onOpenAppAccess = { navController.navigate(ROUTE_APP_ACCESS) },
                 )
             }
             composable(ROUTE_GEOFENCES) {
@@ -309,6 +313,21 @@ class MainActivity : ComponentActivity() {
                 // because plugins are installed and uninstalled outside this app.
                 PluginsScreen(
                     registry = ServiceLocator.pluginRegistry,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(ROUTE_APP_ACCESS) {
+                // No ViewModel either, on the same reasoning: the approvals are a
+                // StateFlow the screen collects, and the one derived number — how many
+                // macros are currently reachable — is a repository read that has to be
+                // taken again on every entry, because a macro may have gained or lost
+                // its trigger since.
+                val reachable by produceState(initialValue = 0) {
+                    value = listApiTriggers(ServiceLocator.workflowRepository).triggers.size
+                }
+                ApiAccessScreen(
+                    callers = ServiceLocator.apiCallers,
+                    reachableMacros = reachable,
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -501,6 +520,7 @@ class MainActivity : ComponentActivity() {
         private const val ROUTE_VARIABLES = "variables"
         private const val ROUTE_PERMISSIONS = "permissions"
         private const val ROUTE_PLUGINS = "plugins"
+        private const val ROUTE_APP_ACCESS = "appAccess"
         private const val ARG_WORKFLOW_ID = "workflowId"
     }
 }

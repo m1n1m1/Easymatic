@@ -25,6 +25,7 @@ import com.example.ottomatic.data.BootFailureStore
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.PendingWaits
+import com.example.ottomatic.engine.api.ApiRun
 import com.example.ottomatic.engine.WorkflowRunner
 import com.example.ottomatic.engine.runFromTrigger
 import com.example.ottomatic.engine.trigger.ManualTrigger
@@ -191,6 +192,12 @@ class MacroEngineService : Service() {
             // It therefore needs no [armMutex]: it starts nothing and stops
             // nothing, it only walks a graph.
             ACTION_RUN_MANUAL -> intent?.let { scope.launch { runManual(it) } }
+            // A call through the process API. Same reasoning as the branch above for
+            // needing no [armMutex] — it walks a graph and arms nothing — but unlike
+            // a tap it *is* gated on the macro being enabled, which
+            // [ApiRun.runApiTrigger] checks. Somebody pressing a tile can see the
+            // macro is off and means it anyway; an app three processes away cannot.
+            ACTION_RUN_API -> intent?.let { scope.launch { runApi(it) } }
             // The notification's "Stop sound" button. Silencing is immediate;
             // nothing here touches the armed macros.
             ACTION_STOP_SOUNDS -> {
@@ -220,10 +227,36 @@ class MacroEngineService : Service() {
         val workflowId = intent.getStringExtra(EXTRA_WORKFLOW_ID) ?: return
         val nodeId = intent.getStringExtra(EXTRA_NODE_ID) ?: return
         runManualTrigger(repository, executionContext, workflowId, nodeId, ServiceLocator.appScope)
-        // A `Wait Until` this run set is still to come, and the foreground service
-        // is the only thing between it and the process being reaped — so stay up
-        // for it, then stop. The loop ends as soon as the wait does, or as soon as
-        // something else arms and takes over the reason to keep running.
+        holdForPendingWaits()
+    }
+
+    private suspend fun runApi(intent: Intent) {
+        val workflowId = intent.getStringExtra(EXTRA_WORKFLOW_ID) ?: return
+        val nodeId = intent.getStringExtra(EXTRA_NODE_ID) ?: return
+        ApiRun.runApiTrigger(
+            repository = repository,
+            context = executionContext,
+            workflowId = workflowId,
+            nodeId = nodeId,
+            eventJson = intent.getStringExtra(EXTRA_TRIGGER_DATA),
+            caller = intent.getStringExtra(EXTRA_CALLER).orEmpty(),
+            deferredScope = ServiceLocator.appScope,
+        )
+        holdForPendingWaits()
+    }
+
+    /**
+     * Stays up for a `Wait Until` this run set, then stops.
+     *
+     * The foreground service is the only thing between a pending wait and the
+     * process being reaped, and both the manual and the API paths can leave one
+     * behind on a macro that arms nothing at all. The loop ends as soon as the wait
+     * does, or as soon as something else arms and takes over the reason to run.
+     *
+     * Shared rather than written twice: the two callers have identical needs, and a
+     * copy would be the one that stopped getting fixed.
+     */
+    private suspend fun holdForPendingWaits() {
         while (activeJobs.isEmpty() && PendingWaits.count > 0) delay(IDLE_POLL_MS)
         stopIfIdle()
     }
@@ -461,8 +494,28 @@ class MacroEngineService : Service() {
         const val ACTION_RELOAD = "com.example.ottomatic.action.RELOAD"
         const val ACTION_STOP_SOUNDS = "com.example.ottomatic.action.STOP_SOUNDS"
         const val ACTION_RUN_MANUAL = "com.example.ottomatic.action.RUN_MANUAL"
+
+        /**
+         * Run one `trigger.api` node, on behalf of a caller the front door has
+         * already authorised.
+         *
+         * Internal, and unrelated to
+         * [com.example.ottomatic.domain.model.ApiContract.ACTION_RUN], which is the
+         * *exported* broadcast another app sends. The two are deliberately separate
+         * strings: this service is `exported="false"` and every authorisation
+         * decision has already been taken by the time an intent carrying this action
+         * exists, so letting an outside caller name it directly would be handing
+         * them the answer to a question nobody asked them.
+         */
+        const val ACTION_RUN_API = "com.example.ottomatic.action.RUN_API"
         const val EXTRA_WORKFLOW_ID = "workflowId"
         const val EXTRA_NODE_ID = "nodeId"
+
+        /** The caller's values as a `TriggerEventWire` JSON string; see [ApiRun]. */
+        const val EXTRA_TRIGGER_DATA = "triggerData"
+
+        /** Who asked, for the run log. A package name, or blank for the broadcast door. */
+        const val EXTRA_CALLER = "caller"
 
         /**
          * Whether the engine service is alive, for the status widget's dot.

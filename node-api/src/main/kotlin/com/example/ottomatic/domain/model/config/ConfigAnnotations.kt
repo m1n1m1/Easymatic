@@ -346,12 +346,12 @@ annotation class ContactName
  * a name and a type per row — rather than as a text field.
  *
  * The stored value is still a plain string (one `name:TYPE` per line, parsed by
- * [com.example.ottomatic.domain.model.OutputSpec]), so the "every property is a
+ * [com.example.ottomatic.domain.model.PortSpec]), so the "every property is a
  * scalar" rule above holds: this changes only how the list is *entered*. It has
  * to be a string, because a `List` property cannot be rendered in a form at all
  * and fails at registry initialisation.
  *
- * Declared by `action.script` alone, and meaningful only on a node whose
+ * Declared by `action.script` and `trigger.api`, and meaningful only on a node whose
  * [com.example.ottomatic.domain.model.NodeType] resolves the resulting ports
  * through [com.example.ottomatic.domain.registry.effectivePorts] — annotating a
  * property on a static node would render the editor and change nothing. Like
@@ -362,6 +362,31 @@ annotation class ContactName
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Ports
+
+/**
+ * Renders the `String` property as a generated **key**: a read-only field showing
+ * the current value, with Copy and Regenerate beside it.
+ *
+ * [Ports]' model rather than [Picker]'s — the stored value is a plain string and
+ * this changes only how it is *entered* — but it is the one widget where the value
+ * is entered by neither typing nor choosing: there is nothing to choose from,
+ * because the answer does not exist until this field invents it. That is what
+ * separates it from [Picker], whose option set lives outside the node, and from
+ * [WifiNetwork], whose chooser is a suggestion over an answer set the user already
+ * knows.
+ *
+ * Blank is a **real answer**, the way it is for `@Picker(PickerKind.NFC_TAG)`: a
+ * trigger with no key is not callable by key at all, only by an app the user has
+ * approved by name. That is the stricter posture, not a misconfiguration, so
+ * nothing warns about it.
+ *
+ * Declared by `trigger.api` alone. Like [Picker] and [Ports] it needs a renderer in
+ * the config form; adding it without one fails the form's exhaustive `when`.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class ApiToken
 
 /**
  * Also exposes the property as a DATA input port of the same name, so its value

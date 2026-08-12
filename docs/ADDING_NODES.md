@@ -136,6 +136,7 @@ else distinguishes them.
 | `loopNode<I>` | Forces `ExecOutputs.LOOP`; ports stay static |
 | `triggerNode<C, O>` | A trigger emitting an event struct, plus optional `extraOutputs` projections |
 | `pulseTriggerNode<C>` | A trigger carrying no data |
+| `adaptiveTriggerNode<C>` | A trigger whose data outputs are named in its own config. There is exactly one: `trigger.api` |
 | `valueNode<C, O>` | A typed leaf read |
 | `adaptiveValueNode<C>` | A leaf whose type comes from config. There is exactly one: `value.variable` |
 | `transformNode<C, O>` | A pure function over `@Wired` config properties |
@@ -345,8 +346,25 @@ set wholesale**, so execution ports must be re-declared by hand. And the
 walks the graph both backwards and forwards and re-entering a node has to fall back to
 its declared ports.
 
+The guard is only needed by a node that *asks the graph* something. `action.script` and
+`trigger.api` read their ports out of their own config, so their resolvers take neither
+`workflow` nor `visiting` — which is most of what makes those two cheap.
+
+**Triggers can be adaptive too**, via `adaptiveTriggerNode`, and the shape differs from
+the other three in a way worth knowing: an adaptive transform or value declares a
+wildcard placeholder port and has it **retyped**, where an adaptive trigger declares no
+data port at all and has ports **added**. Their output count is known and only its type
+is not; a trigger carrying nothing is as ordinary as one carrying three values. That is
+also why declaring `output = null` keeps `NodeDeclarationContractTest`'s "a trigger's
+data outputs are its event plus its projections" rule *true* rather than weakening it.
+
 `NodeDeclarationContractTest` fails until the branch exists, so a node marked adaptive
-and then forgotten cannot reach the palette.
+and then forgotten cannot reach the palette — one test per kind, including
+`every adaptive trigger grows its declared ports from config`.
+
+An adaptive node whose ports come from config must also be added to
+`GraphEditorViewModel.retypesDataPorts`, or editing the port list leaves stranded edges
+behind. That is not covered by any contract test.
 
 ## Testing
 

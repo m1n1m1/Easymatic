@@ -113,6 +113,12 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
      */
     val extraOutputs: List<DataOut<O>> = emptyList(),
     val permissions: List<PermissionRequirement> = emptyList(),
+    /**
+     * Whether this trigger's DATA outputs come from its own config and must be
+     * resolved by [com.example.ottomatic.domain.registry.effectivePorts]. See
+     * [adaptiveTriggerNode].
+     */
+    val hasDynamicPorts: Boolean = false,
 ) {
     /** Static metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
     val nodeType: NodeTypeDefinition
@@ -125,6 +131,7 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
             ports = listOf(execOut()) + listOfNotNull(output?.port) + extraOutputs.map { it.port },
             icon = icon,
             permissionRequirements = permissions,
+            hasDynamicPorts = hasDynamicPorts,
         )
 
     /** Static config-form view for [com.example.ottomatic.domain.registry.ConfigSchemaRegistry]. */
@@ -609,4 +616,45 @@ inline fun <reified C : Any> pulseTriggerNode(
     icon = icon,
     schema = nodeSchema<C>(),
     output = null,
+)
+
+/**
+ * Declares a trigger whose DATA outputs are named in its own config, and are
+ * therefore resolved at design time by
+ * [com.example.ottomatic.domain.registry.effectivePorts].
+ *
+ * The trigger-side mirror of [adaptiveValueNode] and [adaptiveTransformNode], with
+ * one difference that is worth stating because it looks like an omission: those two
+ * declare a **wildcard placeholder** port and have it retyped, where this declares
+ * *no data port at all* and has ports **added**. The reason is that their output
+ * count is known and only its type is not, whereas here neither is — a trigger
+ * carrying nothing is as ordinary as one carrying three values.
+ *
+ * That is also what keeps `NodeDeclarationContractTest`'s rule that a trigger's data
+ * outputs are exactly its event plus the projections of it *true* rather than
+ * weakened: with `output = null` and no `extraOutputs`, both sides of that assertion
+ * are empty. A statically declared port here would be a socket nothing ever fills,
+ * which is precisely what that rule exists to catch.
+ *
+ * There is exactly one of these — `trigger.api`, whose values are decided by the
+ * app calling it rather than by anything in the graph.
+ */
+@Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
+inline fun <reified C : Any> adaptiveTriggerNode(
+    typeId: String,
+    displayName: String,
+    description: String,
+    category: NodeCategory,
+    icon: NodeIcon,
+    permissions: List<PermissionRequirement> = emptyList(),
+): TriggerNodeDefinition<C, Unit> = TriggerNodeDefinition(
+    typeId = NodeTypeId(typeId),
+    displayName = displayName,
+    description = description,
+    category = category,
+    icon = icon,
+    schema = nodeSchema<C>(),
+    output = null,
+    permissions = permissions,
+    hasDynamicPorts = true,
 )

@@ -7,6 +7,7 @@ import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.config.ApiToken
 import com.example.ottomatic.domain.model.config.ContactName
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
@@ -138,6 +139,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                         wifi = annotations.any { it is WifiNetwork },
                         contactName = annotations.any { it is ContactName },
                         mailFolder = annotations.filterIsInstance<MailFolder>().firstOrNull(),
+                        apiToken = annotations.any { it is ApiToken },
                         key = key,
                     ),
                     defaultValue = defaultValues[key].orEmpty(),
@@ -164,22 +166,27 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         wifi: Boolean,
         contactName: Boolean,
         mailFolder: MailFolder?,
+        apiToken: Boolean,
         key: String,
     ): ConfigFieldType<*> {
         // A DateTime reports `STRING`, so it has to be recognised by name before the
         // kind is consulted or it renders as a plain text field.
         if (element.serialName == DateTime.SERIAL_NAME) {
-            check(picker == null && !ports && !phone && !timeOfDay && !wifi && !contactName && mailFolder == null) {
+            // Counted rather than spelled out as a chain of `&&`: the list is the same
+            // one [checkWidgetAnnotations] ends with, and a chain here grew by one
+            // term per widget until it was the most complex thing in the function.
+            val widgets = widgetFlags(picker, ports, phone, timeOfDay, wifi, contactName, mailFolder, apiToken)
+            check(widgets.none { it }) {
                 "Config property '${descriptor.serialName}.$key' is annotated with a widget but is a date; " +
                     "dates have their own picker, so the annotation is redundant"
             }
             return ConfigFieldType.DATE_TIME
         }
-        checkWidgetAnnotations(element, picker, ports, phone, timeOfDay, wifi, contactName, mailFolder, key)
+        checkWidgetAnnotations(element, picker, ports, phone, timeOfDay, wifi, contactName, mailFolder, apiToken, key)
         return when (element.kind) {
             SerialKind.ENUM -> ConfigFieldType.ENUM(enumOptions(element))
             PrimitiveKind.STRING, PrimitiveKind.CHAR ->
-                stringFormType(multiline, picker, ports, phone, timeOfDay, wifi, contactName, mailFolder)
+                stringFormType(multiline, picker, ports, phone, timeOfDay, wifi, contactName, mailFolder, apiToken)
             PrimitiveKind.INT, PrimitiveKind.LONG, PrimitiveKind.SHORT, PrimitiveKind.BYTE -> ConfigFieldType.INT
             PrimitiveKind.BOOLEAN -> ConfigFieldType.BOOL
             PrimitiveKind.DOUBLE, PrimitiveKind.FLOAT -> ConfigFieldType.DOUBLE
@@ -208,8 +215,10 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         wifi: Boolean,
         contactName: Boolean,
         mailFolder: MailFolder?,
+        apiToken: Boolean,
     ): ConfigFieldType<String> = when {
         ports -> ConfigFieldType.PORT_LIST
+        apiToken -> ConfigFieldType.API_TOKEN
         picker != null -> ConfigFieldType.PICKER(picker)
         phone -> ConfigFieldType.PHONE
         timeOfDay -> ConfigFieldType.TIME_OF_DAY
@@ -236,6 +245,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         wifi: Boolean,
         contactName: Boolean,
         mailFolder: MailFolder?,
+        apiToken: Boolean,
         key: String,
     ) {
         check(picker == null || element.kind == PrimitiveKind.STRING) {
@@ -266,14 +276,39 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             "Config property '${descriptor.serialName}.$key' is annotated @ContactName but is a " +
                 "${element.kind}; a contact-name field stores the name itself, so it must be a String"
         }
-        val widgets = listOf(picker != null, ports, phone, timeOfDay, wifi, contactName, mailFolder != null)
+        check(!apiToken || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @ApiToken but is a " +
+                "${element.kind}; a key is generated text, so it must be a String"
+        }
+        val widgets = widgetFlags(picker, ports, phone, timeOfDay, wifi, contactName, mailFolder, apiToken)
             .count { it }
         check(widgets <= 1) {
             "Config property '${descriptor.serialName}.$key' is annotated with $widgets widgets " +
-                "(@Picker, @Ports, @PhoneNumber, @TimeOfDay, @WifiNetwork, @ContactName, @MailFolder); " +
+                "(@Picker, @Ports, @PhoneNumber, @TimeOfDay, @WifiNetwork, @ContactName, @MailFolder, @ApiToken); " +
                 "a property has one editor"
         }
     }
+
+    /**
+     * Which widget annotations are present, as a flat list of flags.
+     *
+     * One list read by both callers, so "the set of things that claim a field's
+     * editor" is written down once. A new widget is one entry here, one branch in
+     * [stringFormType] and one `check` — miss this one and two widgets on a property
+     * would silently be allowed.
+     */
+    @Suppress("LongParameterList") // Mirrors [formTypeOf]; one parameter per widget annotation.
+    private fun widgetFlags(
+        picker: PickerKind?,
+        ports: Boolean,
+        phone: Boolean,
+        timeOfDay: Boolean,
+        wifi: Boolean,
+        contactName: Boolean,
+        mailFolder: MailFolder?,
+        apiToken: Boolean,
+    ): List<Boolean> =
+        listOf(picker != null, ports, phone, timeOfDay, wifi, contactName, mailFolder != null, apiToken)
 
     private fun enumOptions(element: SerialDescriptor): List<ConfigOption> {
         val options = enumConfigOptions(element)

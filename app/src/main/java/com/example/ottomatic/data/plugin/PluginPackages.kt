@@ -7,7 +7,8 @@ import android.os.Build
 import java.security.MessageDigest
 
 /**
- * Everything the plugin system asks `PackageManager`.
+ * Everything either trust gate asks `PackageManager` — the plugin system's, and the
+ * process API's.
  *
  * Separate from [PluginRegistry] because the two answer different questions — "what is
  * on this device?" against "what may contribute nodes, and what did it say?" — and
@@ -16,6 +17,11 @@ import java.security.MessageDigest
  * is being asked after: [signerOf], which is what makes an enable belong to a
  * developer rather than to a name; and [isGranted], which is asked of the plugin's
  * package and never of Ottomatic's.
+ *
+ * `ApiCallers` reuses [signerOf] rather than reimplementing it, which the name of this
+ * class no longer quite predicts and which is deliberate: two hand-rolled digests over
+ * a signing certificate would not throw when they disagreed, they would simply stop
+ * matching — silently revoking every approval on the device.
  */
 class PluginPackages(private val context: Context) {
 
@@ -69,6 +75,19 @@ class PluginPackages(private val context: Context) {
             MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
         }
     }.getOrNull()
+
+    /**
+     * What [packageName] calls itself, or the package name when it cannot be asked.
+     *
+     * For the consent screen and the App access screen, which are the two places a
+     * package name alone is not enough to make a decision about. Never used for
+     * anything a trust check depends on — a label is chosen by the app itself, so two
+     * of them may legitimately be identical, which is exactly why [signerOf] exists.
+     */
+    fun labelOf(packageName: String): String = runCatching {
+        val manager = context.packageManager
+        manager.getApplicationInfo(packageName, 0).loadLabel(manager).toString()
+    }.getOrDefault(packageName)
 
     /**
      * Whether **the plugin's** package holds [permission].

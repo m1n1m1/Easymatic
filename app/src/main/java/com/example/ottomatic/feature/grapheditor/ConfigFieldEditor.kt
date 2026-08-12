@@ -68,6 +68,7 @@ import com.example.ottomatic.domain.registry.ConfigField
 import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.domain.registry.ConfigOption
 import com.example.ottomatic.domain.registry.enumConfigOptions
+import com.example.ottomatic.feature.api.ApiTokenField
 import com.example.ottomatic.feature.apps.AppPickerField
 import com.example.ottomatic.feature.contacts.ContactNameField
 import com.example.ottomatic.feature.contacts.PhoneNumberField
@@ -281,6 +282,14 @@ internal fun ConfigFieldEditor(
                     value = value,
                     onValueChange = onValueChange,
                     label = label,
+                    colors = colors,
+                )
+            }
+            ConfigFieldType.API_TOKEN -> {
+                ApiTokenField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    labelSlot = labelSlot,
                     colors = colors,
                 )
             }

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Nfc
@@ -77,6 +78,7 @@ fun WorkflowListScreen(
     onOpenSmartHome: () -> Unit,
     onOpenAi: () -> Unit,
     onOpenPlugins: () -> Unit,
+    onOpenAppAccess: () -> Unit,
     onOpenVariables: () -> Unit,
     onOpenPermissions: () -> Unit,
 ) {
@@ -160,6 +162,7 @@ fun WorkflowListScreen(
                         onOpenSmartHome = onOpenSmartHome,
                         onOpenAi = onOpenAi,
                         onOpenPlugins = onOpenPlugins,
+                        onOpenAppAccess = onOpenAppAccess,
                     )
                 }
             }
@@ -328,6 +331,7 @@ private fun LibraryMenu(
     onOpenSmartHome: () -> Unit,
     onOpenAi: () -> Unit,
     onOpenPlugins: () -> Unit,
+    onOpenAppAccess: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     Box {
@@ -394,6 +398,17 @@ private fun LibraryMenu(
                 onClick = {
                     expanded = false
                     onOpenPlugins()
+                },
+            )
+            // Beside Plugins because it is the same subject seen from the other side:
+            // both entries are about other people's apps rather than the user's own
+            // records, and somebody looking for one will look here for the other.
+            DropdownMenuItem(
+                text = { Text("App access") },
+                leadingIcon = { Icon(Icons.Filled.Key, contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    onOpenAppAccess()
                 },
             )
         }

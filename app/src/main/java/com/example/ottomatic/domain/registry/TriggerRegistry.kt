@@ -17,6 +17,10 @@ object TriggerRegistry {
 
     private val triggers: List<ExecutableTrigger> = buildList {
         add(com.example.ottomatic.engine.trigger.ManualTrigger())
+        // Immediately after the manual one because they are the same idea seen from
+        // two sides: this list's order is the palette's, and "somebody asked for
+        // this" is one place in it, whether the somebody is a thumb or another app.
+        add(com.example.ottomatic.engine.trigger.ApiTrigger())
         add(com.example.ottomatic.engine.trigger.ScheduleTrigger())
         add(com.example.ottomatic.engine.trigger.SmsTrigger())
         // Beside the SMS trigger because it answers the same question, and not

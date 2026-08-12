@@ -140,6 +140,24 @@ val TEXT_TYPE_ID = NodeTypeId("transform.text")
 /** typeId of the scripting action — the graph's escape hatch into real code. */
 val SCRIPT_TYPE_ID = NodeTypeId("action.script")
 
+/** typeId of the trigger another app, a script or a shortcut calls. */
+val API_TRIGGER_TYPE_ID = NodeTypeId("trigger.api")
+
+/**
+ * The config key holding an API trigger's data outputs (a list of
+ * [com.example.ottomatic.domain.model.PortSpec]).
+ *
+ * Deliberately the same key name `action.script` uses for its inputs: both mean
+ * "the ports named in this node's own config", and one editor renders both.
+ */
+val API_INPUTS_KEY = ConfigKey("inputs")
+
+/** The config key holding an API trigger's key. */
+val API_TOKEN_KEY = ConfigKey("token")
+
+/** The config key holding what an API trigger calls itself to a calling app. */
+val API_LABEL_KEY = ConfigKey("label")
+
 /** typeId of the dialog that is only acknowledged. */
 val DIALOG_MESSAGE_TYPE_ID = NodeTypeId("action.dialog_message")
 
@@ -270,6 +288,7 @@ private fun effectivePorts(
         JSON_READ_TYPE_ID ->
             typedTransformPorts(definition, workflow, node, JSON_READ_TYPE_KEY, JSON_READ_LIST_KEY, deeper)
         SCRIPT_TYPE_ID -> scriptEffectivePorts(definition, node)
+        API_TRIGGER_TYPE_ID -> apiTriggerEffectivePorts(definition, node)
         in DIALOG_TYPE_IDS -> dialogEffectivePorts(definition, workflow, node, deeper)
         VARIABLE_VALUE_TYPE_ID -> variableValuePorts(definition, workflow, node, deeper)
         SET_VARIABLE_TYPE_ID -> variableWritePorts(definition, workflow, node)
@@ -365,6 +384,32 @@ private fun scriptEffectivePorts(definition: NodeTypeDefinition, node: WorkflowN
     return definition.ports +
         ports(PortSpec.parse(node.config[SCRIPT_INPUTS_KEY]), Direction.IN) +
         ports(PortSpec.parseOutputs(node.config[SCRIPT_OUTPUTS_KEY]), Direction.OUT)
+}
+
+/**
+ * Ports for `trigger.api`: its exec output plus a DATA output per entry of its own
+ * `inputs` config.
+ *
+ * The second dynamic node that walks no edges, and [scriptEffectivePorts]'
+ * one-directional twin — a calling app's values arrive at the top of the graph, so
+ * they are outputs here where a script's inputs are inputs. Both nodes have the same
+ * reason for existing at all: what flows through them is decided *outside* the
+ * graph, by a script or by another app, so no upstream schema can be asked.
+ *
+ * [PortSpec.parse] rather than [PortSpec.parseOutputs], which is the one place this
+ * deliberately differs from the script node. A script with no output port reads as
+ * broken, so it is given a `result`; a trigger that carries no data is completely
+ * ordinary — "when that app says so, turn the lights on" needs no values at all —
+ * so an empty list means empty.
+ *
+ * A name colliding with the declared exec port is dropped rather than shadowing it,
+ * for [scriptEffectivePorts]' reason.
+ */
+private fun apiTriggerEffectivePorts(definition: NodeTypeDefinition, node: WorkflowNode): List<Port> {
+    val taken = definition.ports.mapTo(mutableSetOf()) { it.name.value }
+    return definition.ports + PortSpec.parse(node.config[API_INPUTS_KEY])
+        .filterNot { it.name in taken }
+        .map { spec -> dataPort(PortName(spec.name), Direction.OUT, spec.schema, label = spec.name) }
 }
 
 /**

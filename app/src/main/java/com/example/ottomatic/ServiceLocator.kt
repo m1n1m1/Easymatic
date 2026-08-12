@@ -31,6 +31,8 @@ import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.log.RunLogStore
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
+import com.example.ottomatic.data.api.ApiCallerRepository
+import com.example.ottomatic.data.api.ApiCallers
 import com.example.ottomatic.data.plugin.PluginConnections
 import com.example.ottomatic.data.plugin.PluginPackages
 import com.example.ottomatic.data.plugin.PluginRegistry
@@ -206,6 +208,30 @@ object ServiceLocator {
     lateinit var pluginRegistry: PluginRegistry
         private set
 
+    /**
+     * Everything either trust gate asks `PackageManager`.
+     *
+     * One instance rather than two, because the *signer* reading is what both the
+     * plugin enable and the API approval are pinned on, and two of them would be two
+     * chances for the digest to be computed differently.
+     */
+    lateinit var packages: PluginPackages
+        private set
+
+    /** Which apps the user has allowed to call the process API, and under which signer. */
+    lateinit var apiCallerRepository: ApiCallerRepository
+        private set
+
+    /**
+     * Whether a calling app may use the process API.
+     *
+     * Constructed eagerly, unlike [pluginRegistry]'s asynchronous discovery, because
+     * its first caller is a `ContentProvider` — which the system may spin this process
+     * up expressly to serve, and which cannot wait for a hydration flag.
+     */
+    lateinit var apiCallers: ApiCallers
+        private set
+
     fun init(context: Context) {
         val appContext = context.applicationContext
         // Published before anything else touches a workflow: `effectivePorts` and
@@ -337,10 +363,29 @@ object ServiceLocator {
      * names, and `GraphValidator` reads it rather than condemning every plugin node in
      * every macro on the device for the seconds before discovery finishes.
      */
+    /**
+     * Builds the process API's trust gate, eagerly.
+     *
+     * Unlike [publishPluginNodes]' asynchronous discovery, this cannot be deferred:
+     * `ApiTriggerProvider` is a `ContentProvider`, so the system may create this whole
+     * process purely to serve one call. There is no screen to wait for and no
+     * hydration flag a binder thread could read, so these have to exist by the time
+     * `init` returns — which is affordable because all three constructors are a file
+     * read and a `PackageManager` handle.
+     */
+    private fun publishApiCallers(appContext: Context) {
+        packages = PluginPackages(appContext)
+        apiCallerRepository = ApiCallerRepository(appContext.filesDir)
+        apiCallers = ApiCallers(packages, apiCallerRepository)
+    }
+
     private fun publishPluginNodes(appContext: Context) {
+        // The two trust gates share `PluginPackages`, and this one has to be built
+        // synchronously — see [publishApiCallers]. Only `refresh()` below is deferred.
+        publishApiCallers(appContext)
         pluginRepository = PluginRepository(appContext.filesDir)
         pluginConnections = PluginConnections(appContext)
-        pluginRegistry = PluginRegistry(PluginPackages(appContext), pluginRepository, pluginConnections, appScope)
+        pluginRegistry = PluginRegistry(packages, pluginRepository, pluginConnections, appScope)
         // A reconnected binding is not a restored subscription: a plugin trigger's
         // registration died with its process, and the host-side flow is still open and
         // silent. Re-arming is what turns that silence back into a working trigger, and

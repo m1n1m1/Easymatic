@@ -52,6 +52,10 @@ import com.example.ottomatic.domain.registry.JSON_READ_TYPE_ID
 import com.example.ottomatic.domain.registry.JSON_READ_TYPE_KEY
 import com.example.ottomatic.domain.registry.SCRIPT_INPUTS_KEY
 import com.example.ottomatic.domain.registry.SCRIPT_OUTPUTS_KEY
+import com.example.ottomatic.domain.model.ApiTokens
+import com.example.ottomatic.domain.registry.API_INPUTS_KEY
+import com.example.ottomatic.domain.registry.API_TOKEN_KEY
+import com.example.ottomatic.domain.registry.API_TRIGGER_TYPE_ID
 import com.example.ottomatic.domain.registry.SCRIPT_TYPE_ID
 import com.example.ottomatic.domain.registry.effectiveInputPorts
 import com.example.ottomatic.domain.registry.effectiveOutputPorts
@@ -499,6 +503,7 @@ class GraphEditorViewModel(
             name = definition.displayName,
             x = positionGraph.x,
             y = positionGraph.y,
+            config = initialConfig(typeId),
         )
         _uiState.update { state ->
             state.copy(workflow = state.workflow.copy(nodes = state.workflow.nodes + node))
@@ -728,6 +733,7 @@ class GraphEditorViewModel(
             name = definition.displayName,
             x = topLeft.x,
             y = topLeft.y,
+            config = initialConfig(typeId),
             // `@Wired` data inputs are hidden until opted in; reveal the one we
             // are about to wire, otherwise the edge would have no visible handle.
             visibleDataInputs = if (port != null && port.kind == PortKind.DATA && port.direction == Direction.IN) {
@@ -1143,9 +1149,30 @@ private fun pruneRetypedEdges(workflow: Workflow, nodeId: NodeId, key: ConfigKey
  * a port list is edited one character at a time, so clearing the lot on each
  * keystroke would delete work the user can see is still correct.
  */
+/**
+ * The config a freshly placed node of [typeId] starts with, where "empty" is the
+ * wrong answer.
+ *
+ * There is one case, and it is the only kind there can be: a value that must be
+ * *generated* rather than chosen or typed. `trigger.api`'s key is minted here so the
+ * node is callable the moment it is placed — an empty field would make the commonest
+ * setup a two-step one, and the step nobody would guess at.
+ *
+ * Shared by both placement paths deliberately. The palette and the drag-to-create
+ * flow build a `WorkflowNode` each, and a node created by dragging a wire out of
+ * something is no less real than one tapped out of the list; a key on one and not the
+ * other would be a node that works or does not depending on how it was made.
+ */
+private fun initialConfig(typeId: NodeTypeId): Map<ConfigKey, String> = when (typeId) {
+    API_TRIGGER_TYPE_ID -> mapOf(API_TOKEN_KEY to ApiTokens.generate())
+    else -> emptyMap()
+}
+
 private fun retypesDataPorts(key: ConfigKey, typeId: NodeTypeId?): Boolean = when (typeId) {
     // An edited row can rename a port, delete it or retype it.
     SCRIPT_TYPE_ID -> key in SCRIPT_PORT_KEYS
+    // The same editor on the same config key, one direction instead of two.
+    API_TRIGGER_TYPE_ID -> key == API_INPUTS_KEY
     // The result type and the list switch both retype the one output port, so an
     // edge that fitted a Text no longer fits a list of them.
     JSON_READ_TYPE_ID -> key in JSON_READ_PORT_KEYS

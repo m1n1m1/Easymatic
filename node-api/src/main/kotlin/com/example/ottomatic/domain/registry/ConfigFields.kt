@@ -15,11 +15,11 @@ import com.example.ottomatic.domain.model.config.PickerKind
  * with the Kotlin type the node actually reads.
  *
  * The set is closed, and the renderer's `when` over it is exhaustive, so a new
- * member cannot be added without also being drawn. Six of them are additionally
+ * member cannot be added without also being drawn. Seven of them are additionally
  * *not offered to plugin nodes* — [PICKER], [PORT_LIST], [PHONE], [WIFI_NETWORK],
- * [CONTACT_NAME] and [MAIL_FOLDER] each reach a host library or a host
- * `CompositionLocal` the plugin boundary deliberately does not cross. See
- * `ConfigFieldTypeWire`.
+ * [CONTACT_NAME], [MAIL_FOLDER] and [API_TOKEN] each reach a host library, a host
+ * `CompositionLocal` or a host trust boundary the plugin boundary deliberately does
+ * not cross. See `ConfigFieldTypeWire`.
  */
 sealed interface ConfigFieldType<out T> {
     /** Single-line string. */
@@ -116,15 +116,31 @@ sealed interface ConfigFieldType<out T> {
     data class PICKER(val kind: PickerKind) : ConfigFieldType<String>
 
     /**
-     * A list of output ports — a name and a type per row — declared with
+     * A list of data ports — a name and a type per row — declared with
      * `@Ports` and stored as one `name:TYPE` line per port (see
-     * [com.example.ottomatic.domain.model.OutputSpec]).
+     * [com.example.ottomatic.domain.model.PortSpec]).
      *
-     * Only `action.script` has this: it is the one node whose output ports are
-     * named by the user rather than derived from an upstream schema the way
-     * `action.break`'s are.
+     * `action.script` and `trigger.api` have this: they are the two nodes whose
+     * ports are named by the user rather than derived from an upstream schema the
+     * way `action.break`'s are. Both have the same reason — what flows through them
+     * is decided outside the graph, by a script or by a calling app.
      */
     data object PORT_LIST : ConfigFieldType<String>
+
+    /**
+     * A generated key, rendered read-only with Copy and Regenerate beside it
+     * (declared with `@ApiToken`).
+     *
+     * The one field whose value is neither typed nor chosen: it does not exist
+     * until the field invents it, which is what keeps it out of [PICKER]'s family
+     * (an option set living outside the node) and out of [WIFI_NETWORK]'s (a
+     * suggestion over answers the user already knows).
+     *
+     * Blank is a real answer meaning *approved apps only*, on
+     * `PickerKind.NFC_TAG`'s reasoning — and here it is the **stricter** setting
+     * rather than a laxer one, which is why nothing warns about it.
+     */
+    data object API_TOKEN : ConfigFieldType<String>
 }
 
 /**

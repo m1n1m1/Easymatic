@@ -8,6 +8,7 @@ import com.example.ottomatic.domain.registry.PluginNodes
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.trigger.TriggerOutput
+import com.example.ottomatic.engine.trigger.triggerOutputFrom
 import com.example.ottomatic.nodeapi.wire.NodeCallWire
 import com.example.ottomatic.nodeapi.wire.PluginJson
 import com.example.ottomatic.nodeapi.wire.TriggerEventWire
@@ -96,14 +97,13 @@ object PluginTriggerBridge {
         }
     }
 
-    private fun decode(eventJson: String): TriggerOutput? {
-        val event = runCatching { PluginJson.decodeFromString(TriggerEventWire.serializer(), eventJson) }
-            .getOrNull() ?: return null
-        val data: Map<PortName, Item> = event.data
-            .entries
-            .associate { (name, wire) -> PortName(name) to wire.toItem() }
-        return NodeOutput(data)
-    }
+    /**
+     * Shared with the process API through
+     * [com.example.ottomatic.engine.trigger.triggerOutputFrom] — both start a run
+     * with data that did not come from the graph, and a second reading of this wire
+     * is how the two would eventually disagree about a `DateTime`.
+     */
+    private fun decode(eventJson: String): TriggerOutput? = triggerOutputFrom(eventJson)
 
     private val armCounter = java.util.concurrent.atomic.AtomicLong()
 }

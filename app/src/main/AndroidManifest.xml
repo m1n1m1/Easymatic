@@ -169,9 +169,21 @@
                 android:resource="@xml/shortcuts" />
         </activity>
 
-        <!-- What a launcher shortcut opens. Exported because the launcher is a
-             different app and starts it by name; it reads two ids out of its own
-             intent and does nothing else, so there is no surface to abuse.
+        <!-- What a launcher shortcut opens.
+
+             NOT exported, and the change from exported="true" is the point. The
+             old comment argued there was "no surface to abuse" because it only
+             reads two ids out of its intent — but those two ids are *which macro
+             to run*, so any app on the device could start any `trigger.manual`
+             node, with no opt-in and no record. That was an unintended process
+             API; the deliberate one is ApiTriggerProvider and ApiTriggerReceiver
+             below, and this is how it stops being the back door beside them.
+
+             Shortcuts keep working because the system starts a shortcut's intent
+             *as the publisher* — LauncherApps.startShortcut hands it to
+             ActivityTaskManager under our own uid — so being exported bought
+             nothing that the shortcut path needed. MacroShortcuts is the only
+             producer of this intent.
 
              Invisible by construction: translucent so nothing is drawn, noHistory
              so it leaves no back stack, excludeFromRecents so it never appears in
@@ -181,10 +193,62 @@
         <activity
             android:name=".feature.shortcut.RunTriggerActivity"
             android:excludeFromRecents="true"
-            android:exported="true"
+            android:exported="false"
             android:noHistory="true"
             android:taskAffinity=""
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- The process API's app-facing door.
+
+             A ContentProvider rather than a bound service with an AIDL because
+             call() gives a caller a synchronous result and gives us a
+             system-verified getCallingPackage(), which is everything the AIDL
+             would have bought, for one line at the call site and no dependency on
+             us at all.
+
+             There is deliberately NO android:permission here, and neither
+             readPermission nor writePermission would help if there were:
+             ContentProvider.Transport.call performs no permission enforcement, so
+             a manifest guard on this is decorative. The gate is therefore in
+             code, and it is the user's own approval — the same trust model the
+             Plugins screen is for plugins, with the signing certificate pinned at
+             approval time and re-checked on every call.
+
+             grantUriPermissions="false" because there is no table, no Uri and
+             nothing to grant: the whole API is call(). -->
+        <provider
+            android:name=".engine.service.ApiTriggerProvider"
+            android:authorities="com.example.ottomatic.triggers"
+            android:exported="true"
+            android:grantUriPermissions="false" />
+
+        <!-- The process API's door for everything that is not an Android app: a
+             shell script, Tasker, Automate, an `adb shell am broadcast`. None of
+             those can call a ContentProvider, which is the only reason this
+             exists beside the provider rather than instead of it.
+
+             A key is always required here, because a broadcast carries no sender
+             identity at all — there is nothing to recognise, only something to
+             authenticate. See ApiTriggerReceiver's KDoc. -->
+        <receiver
+            android:name=".engine.service.ApiTriggerReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.example.ottomatic.action.RUN_MACRO" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Where an app asks to be allowed to call. Exported because the whole
+             point is that another app starts it — but it refuses any launch where
+             getCallingPackage() is null, i.e. anything but startActivityForResult,
+             which is the only form the system vouches for the caller's identity
+             in. That check is what stops an app raising this dialog about
+             somebody else. -->
+        <activity
+            android:name=".feature.api.ApiConsentActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:taskAffinity="" />
 
         <!-- Where a tag tap arrives. Exported because the system dispatches the
              tag intent to it by name; it reads an id out of that intent and does

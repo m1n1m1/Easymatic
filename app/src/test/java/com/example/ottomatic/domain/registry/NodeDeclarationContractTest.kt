@@ -416,6 +416,43 @@ class NodeDeclarationContractTest {
             values.mapNotNull { it.definition.configSchema } +
             transforms.mapNotNull { it.definition.configSchema }
 
+    /**
+     * The same check for adaptive *triggers*, which the two tests above cannot cover
+     * because each filters its own registry.
+     *
+     * An adaptive trigger is shaped differently from an adaptive transform or value,
+     * and the difference is why this cannot simply assert "not a wildcard": those two
+     * declare a placeholder port and have it **retyped**, where this declares no data
+     * port at all and has ports **added**. Their output count is known and only its
+     * type is not; here neither is, because a trigger carrying nothing is as ordinary
+     * as one carrying three values.
+     *
+     * That is also exactly why `a trigger's data outputs are its event plus the
+     * projections of it` still passes for these nodes rather than needing to be
+     * relaxed: with `output = null` and no `extraOutputs`, both sides of that
+     * assertion are the empty list, and a statically declared port here really would
+     * be a socket nothing fills. Do not "fix" it.
+     */
+    @Test
+    fun `every adaptive trigger grows its declared ports from config`() {
+        for (trigger in triggers.filter { it.definition.hasDynamicPorts }) {
+            val node = placed(trigger.typeId).copy(config = mapOf(ConfigKey("inputs") to "count:WHOLE_NUMBER"))
+            val workflow = Workflow(id = "w", name = "w", nodes = listOf(node))
+            val resolved = effectivePorts(trigger.definition.nodeType, workflow, node)
+                .filter { it.kind == PortKind.DATA && it.direction == Direction.OUT }
+            assertEquals(
+                "${trigger.typeId}: config-declared ports did not appear; add it to effectivePorts",
+                1,
+                resolved.size,
+            )
+            assertEquals(
+                "${trigger.typeId}: the declared port was not typed from its config",
+                ItemSchema.Primitive(Int::class),
+                resolved.single().schema,
+            )
+        }
+    }
+
     private fun placed(typeId: NodeTypeId) = WorkflowNode(
         id = NodeId("n1"), typeId = typeId, name = typeId.value, x = 0f, y = 0f,
     )
