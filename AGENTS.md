@@ -8,17 +8,20 @@
 - Lint/typecheck/build verification: `.\gradlew.bat build`
 
 ## Project notes
-- Single `:app` module (settings.gradle.kts:26).
+- Four modules: `:app`, `:node-api` (the plugin-visible node declaration surface),
+  `:plugin-sdk` and `:sample-plugin` (settings.gradle.kts).
 - Gradle configuration cache enabled (gradle.properties:17) — clean with `--no-configuration-cache` if stale.
 - Kotlin official style (gradle.properties:19).
 
 ## Architecture Compliance
 - Read `ARCHITECTURE.md` before writing new code.
-- New nodes are declared once in their own file: `actionNode<I, O>(...)` for
-  actions, `triggerNode<O>(...)` for triggers (see `engine/NodeDefinition.kt`),
-  then registered with one line in `domain/registry/ActionRegistry.kt` or
-  `TriggerRegistry.kt`. `NodeTypeRegistry`/`ConfigSchemaRegistry` derive from
-  these definitions — do not edit them to add nodes.
+- Adding a node: read `docs/ADDING_NODES.md`. In short, a node is declared once in
+  its own file under `engine/` with one of the eleven builders in
+  `engine/NodeDefinition.kt` (`actionNode<I, O>`, `triggerNode<C, O>`,
+  `valueNode<C, O>`, `transformNode<C, O>` and their variants), then registered by
+  adding it to `ActionRegistry`, `TriggerRegistry`, `ValueRegistry` or
+  `TransformRegistry` in `domain/registry/`. `NodeTypeRegistry`/`ConfigSchemaRegistry`
+  derive from these definitions — do not edit them to add nodes.
 - Run `./gradlew detekt` regularly (currently configured as warnings).
 - Note: `lintDebug` has pre-existing errors unrelated to the node system;
   use `assembleDebug test detekt` for verification.

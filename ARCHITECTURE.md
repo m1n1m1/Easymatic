@@ -32,18 +32,21 @@ surface, not which package it belongs to.
   classpath. The parts of `core/` and `domain/` still in `:app` remain convention.
 
 ## Extension Points
-- Every node (Trigger or Action) is declared **exactly once**, in its own
-  implementation file under `engine/`, as a single definition:
-  - Actions: `override val definition = actionNode<I, O>(...)` — bundles
-    typeId, palette metadata, ports, config fields and the typed contract
-    (decode/encode). See `engine/NodeDefinition.kt`.
-  - Triggers: `override val definition = triggerNode<O>(...)` — bundles
-    typeId, palette metadata, data output ports, config fields and the
-    output encoder.
-- The **only** registration step is adding one line to `ActionRegistry` or
-  `TriggerRegistry` (in `domain/registry/`). `NodeTypeRegistry` and
-  `ConfigSchemaRegistry` are derived views of those definitions — never add
-  entries to them directly.
+- **See `docs/ADDING_NODES.md`** for the full procedure. In summary:
+- Every node (Trigger, Action, Value or Transform) is declared **exactly once**,
+  in its own implementation file under `engine/`, as a single definition that
+  bundles typeId, palette metadata, ports, config fields and the typed contract:
+  - Actions: `actionNode<I, O>` / `effectNode<I>` / `adaptiveNode<I>` / `loopNode<I>`
+  - Triggers: `triggerNode<C, O>` / `pulseTriggerNode<C>`
+  - Values: `valueNode<C, O>` / `adaptiveValueNode<C>`
+  - Transforms: `transformNode<C, O>` / `rawTransformNode<C>` / `adaptiveTransformNode<C>`
+
+  All eleven builders live in `engine/NodeDefinition.kt`; the contracts they pair
+  with live in `engine/NodeContracts.kt` and `engine/trigger/Trigger.kt`.
+- The **only** registration step is adding the node to `ActionRegistry`,
+  `TriggerRegistry`, `ValueRegistry` or `TransformRegistry` (in `domain/registry/`).
+  `NodeTypeRegistry` and `ConfigSchemaRegistry` are derived views of those
+  definitions — never add entries to them directly.
 - `typeId`, port names, config keys and defaults must each appear exactly
   once (inside the definition).
 

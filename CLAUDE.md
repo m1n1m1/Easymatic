@@ -37,6 +37,8 @@ Those packages now span **two Gradle modules**, and which module a file is in sa
 
 ### Node authoring, end to end
 
+The step-by-step procedure — which file goes where, every builder and contract, the config annotations, the declaration rules, and what a new icon, permission or struct additionally costs — is **`docs/ADDING_NODES.md`**. What follows here is the reasoning behind it rather than the recipe.
+
 Adding a node is still: one file, one line in a registry. What changed in 2026-08 is that the *rules* a declaration must satisfy were extracted from `NodeDeclarationContractTest` into `NodeDeclarationRules` (`:node-api`, main), because a plugin's declaration arrives at runtime where no test can reach it — and the rules it must satisfy are not merely similar to a first-party node's, they are the same rules for the same reasons. One rule set, three callers: the plugin loader, a plugin author's own test, and `NodeDeclarationRulesTest` over the app's own hundred-odd nodes. The test still carries what needs more context than a `NodeTypeDefinition` has — the adaptive-port retyping, which resolves through `effectivePorts` and a real `Workflow`.
 
 ### Node system
@@ -334,3 +336,14 @@ These subsystems each have their own file so they are not resident in every sess
 - **NFC tags** (`trigger.nfc`, `value.nfc`, the tag library, the capture chooser, `emitOrHoldBroadcast`) — `nfc-tags` skill
 - **Plugins** (`:node-api`, `:plugin-sdk`, the wire format, `PluginNodes`, `PluginRegistry`, the Plugins screen) — `plugins` skill; the author-facing guide is `docs/PLUGINS.md`
 - **The editor UI** (the bottom bar, its three surfaces, `EditorOverlay`) — `app/src/main/java/com/example/ottomatic/feature/CLAUDE.md`, loaded when working under `feature/`
+
+<!-- CODEGRAPH_START -->
+## CodeGraph
+
+In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
+
+- **MCP tool** (when available): `codegraph_explore` answers most code questions in one call — the relevant symbols' verbatim source plus the call paths between them, including dynamic-dispatch hops grep can't follow. Name a file or symbol in the query to read its current line-numbered source. If it's listed but deferred, load it by name via tool search.
+- **Shell** (always works): `codegraph explore "<symbol names or question>"` prints the same output.
+
+If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
+<!-- CODEGRAPH_END -->
