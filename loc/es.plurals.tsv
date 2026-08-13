@@ -1,0 +1,23 @@
+# Spanish plurals: one / other, the same two categories English uses.
+selection_nodes_selected:one	%1$d nodo seleccionado
+selection_nodes_selected:other	%1$d nodos seleccionados
+selection_connections_selected:one	%1$d conexión seleccionada
+selection_connections_selected:other	%1$d conexiones seleccionadas
+selection_nodes:one	%1$d nodo
+selection_nodes:other	%1$d nodos
+selection_connections:one	%1$d conexión
+selection_connections:other	%1$d conexiones
+problems_errors:one	%1$d error
+problems_errors:other	%1$d errores
+problems_warnings:one	%1$d advertencia
+problems_warnings:other	%1$d advertencias
+editor_node_count:one	%1$d nodo
+editor_node_count:other	%1$d nodos
+widget_problem_count:one	%1$d problema
+widget_problem_count:other	%1$d problemas
+plugins_provides_nodes:one	Aporta %1$d nodo
+plugins_provides_nodes:other	Aporta %1$d nodos
+api_macros_callable:one	Ahora mismo se puede llamar a %1$d macro desde fuera.
+api_macros_callable:other	Ahora mismo se puede llamar a %1$d macros desde fuera.
+variables_shared_by_every_macro:one	%1$d compartida por todas las macros
+variables_shared_by_every_macro:other	%1$d compartidas por todas las macros

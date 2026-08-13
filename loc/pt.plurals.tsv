@@ -1,0 +1,23 @@
+# European Portuguese plurals: one / other.
+selection_nodes_selected:one	%1$d nó selecionado
+selection_nodes_selected:other	%1$d nós selecionados
+selection_connections_selected:one	%1$d ligação selecionada
+selection_connections_selected:other	%1$d ligações selecionadas
+selection_nodes:one	%1$d nó
+selection_nodes:other	%1$d nós
+selection_connections:one	%1$d ligação
+selection_connections:other	%1$d ligações
+problems_errors:one	%1$d erro
+problems_errors:other	%1$d erros
+problems_warnings:one	%1$d aviso
+problems_warnings:other	%1$d avisos
+editor_node_count:one	%1$d nó
+editor_node_count:other	%1$d nós
+widget_problem_count:one	%1$d problema
+widget_problem_count:other	%1$d problemas
+plugins_provides_nodes:one	Fornece %1$d nó
+plugins_provides_nodes:other	Fornece %1$d nós
+api_macros_callable:one	De momento é possível chamar %1$d macro a partir do exterior.
+api_macros_callable:other	De momento é possível chamar %1$d macros a partir do exterior.
+variables_shared_by_every_macro:one	%1$d partilhada por todas as macros
+variables_shared_by_every_macro:other	%1$d partilhadas por todas as macros

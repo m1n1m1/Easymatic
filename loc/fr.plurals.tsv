@@ -1,0 +1,24 @@
+# French plurals: one / other. Note French treats 0 as singular, which the CLDR
+# "one" category already covers — nothing extra to declare here.
+selection_nodes_selected:one	%1$d nœud sélectionné
+selection_nodes_selected:other	%1$d nœuds sélectionnés
+selection_connections_selected:one	%1$d connexion sélectionnée
+selection_connections_selected:other	%1$d connexions sélectionnées
+selection_nodes:one	%1$d nœud
+selection_nodes:other	%1$d nœuds
+selection_connections:one	%1$d connexion
+selection_connections:other	%1$d connexions
+problems_errors:one	%1$d erreur
+problems_errors:other	%1$d erreurs
+problems_warnings:one	%1$d avertissement
+problems_warnings:other	%1$d avertissements
+editor_node_count:one	%1$d nœud
+editor_node_count:other	%1$d nœuds
+widget_problem_count:one	%1$d problème
+widget_problem_count:other	%1$d problèmes
+plugins_provides_nodes:one	Fournit %1$d nœud
+plugins_provides_nodes:other	Fournit %1$d nœuds
+api_macros_callable:one	%1$d macro peut actuellement être appelée depuis l'extérieur.
+api_macros_callable:other	%1$d macros peuvent actuellement être appelées depuis l'extérieur.
+variables_shared_by_every_macro:one	%1$d partagée par toutes les macros
+variables_shared_by_every_macro:other	%1$d partagées par toutes les macros

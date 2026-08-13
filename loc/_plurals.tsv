@@ -1,0 +1,22 @@
+selection_nodes_selected:one	%1$d node selected
+selection_nodes_selected:other	%1$d nodes selected
+selection_connections_selected:one	%1$d connection selected
+selection_connections_selected:other	%1$d connections selected
+selection_nodes:one	%1$d node
+selection_nodes:other	%1$d nodes
+selection_connections:one	%1$d connection
+selection_connections:other	%1$d connections
+problems_errors:one	%1$d error
+problems_errors:other	%1$d errors
+problems_warnings:one	%1$d warning
+problems_warnings:other	%1$d warnings
+editor_node_count:one	%1$d node
+editor_node_count:other	%1$d nodes
+widget_problem_count:one	%1$d problem
+widget_problem_count:other	%1$d problems
+plugins_provides_nodes:one	Provides %1$d node
+plugins_provides_nodes:other	Provides %1$d nodes
+api_macros_callable:one	%1$d macro can currently be called from outside.
+api_macros_callable:other	%1$d macros can currently be called from outside.
+variables_shared_by_every_macro:one	%1$d shared by every macro
+variables_shared_by_every_macro:other	%1$d shared by every macro

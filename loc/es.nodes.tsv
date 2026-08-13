@@ -1,0 +1,560 @@
+# Spanish node text. First column must match values/strings_nodes.xml exactly
+# (so \' and &amp; stay escaped there); the second is plain text.
+A	A
+A run of items out of a list	Un tramo de elementos de una lista
+A to Z / smallest first	De la A a la Z / menor primero
+Above	Por encima
+Account	Cuenta
+Act on Notification	Actuar sobre una notificación
+Action	Acción
+Activate	Activar
+Activates a lighting scene you set up in the Hue app, or turns its room off — Philips Hue	Activa una escena de luz que configuraste en la app de Hue, o apaga su habitación — Philips Hue
+Active	Activo
+Active from	Activo desde
+Active until (earlier than \'from\' runs past midnight)	Activo hasta (antes que «desde» cruza la medianoche)
+Add to List	Añadir a la lista
+Adjusts an audio stream\'s volume (up, down, set, mute or unmute)	Ajusta el volumen de un canal de audio (subir, bajar, fijar, silenciar o quitar el silencio)
+Airplane Mode Changed	Modo avión cambiado
+Airplane mode	Modo avión
+Alarm	Alarma
+Alarms	Alarmas
+All	Todo
+Also when the device starts moving	También cuando el dispositivo empieza a moverse
+Always (high battery use)	Siempre (mucho consumo de batería)
+Ambient Light	Luz ambiental
+Ambient light	Luz ambiental
+Answer	Respuesta
+Answer type	Tipo de respuesta
+Any	Cualquiera
+App	Aplicación
+App (optional)	Aplicación (opcional)
+App Initialised	Aplicación inicializada
+App Installed / Removed	Aplicación instalada / desinstalada
+Appends an item to a named list, usually from inside a loop	Añade un elemento a una lista con nombre, normalmente desde dentro de un bucle
+Ask AI	Preguntar a la IA
+Ask Yes or No	Preguntar sí o no
+Ask for Input	Pedir un dato
+Ask to Choose	Pedir que elija
+Asks the user a yes/no question in a popup dialog and branches on the answer	Hace al usuario una pregunta de sí/no en un diálogo y bifurca según la respuesta
+Asks the user to type a value in a popup dialog and puts it on a port	Pide al usuario que escriba un valor en un diálogo y lo pone en un puerto
+At	A las
+At a time of day	A una hora del día
+Auto	Automático
+Auto brightness	Brillo automático
+Automatic	Automático
+Away for (minutes)	Fuera durante (minutos)
+B	B
+Balanced	Equilibrado
+Battery Level	Nivel de batería
+Battery level	Nivel de batería
+Bcc	Cco
+Below	Por debajo
+Bluetooth Device Connected	Dispositivo Bluetooth conectado
+Bluetooth State Change	Cambio de estado del Bluetooth
+Bluetooth enabled	Bluetooth activado
+Body	Cuerpo
+Boolean	Sí/no
+Break Struct	Descomponer estructura
+Brightness %	Brillo %
+Build text	Construir texto
+Button	Botón
+Button label	Texto del botón
+C	C
+Called by Another App	Llamada por otra aplicación
+Calls a web API and exposes the typed response	Llama a una API web y expone la respuesta tipada
+Cancel button	Botón de cancelar
+Carries on at once and continues again at a chosen moment	Sigue de inmediato y continúa otra vez en un momento elegido
+Carry on now	Seguir ahora
+Cc	Cc
+Charging	Cargando
+Charging started	Empezó a cargar
+Charging stopped	Dejó de cargar
+Check every (minutes, minimum 15)	Comprobar cada (minutos, mínimo 15)
+Choice	Elección
+Clear	Vaciar
+Clipboard	Portapapeles
+Clock Changed	Reloj cambiado
+Close automatically after (seconds)	Cerrar automáticamente tras (segundos)
+Colour	Color
+Combines words and values into one piece of text	Combina palabras y valores en un solo texto
+Compare against	Comparar con
+Compare as	Comparar como
+Confirm button	Botón de confirmar
+Connected	Conectado
+Connection	Conexión
+Contains	Contiene
+Control Light	Controlar luz
+Control Scene	Controlar escena
+Conversation ID	ID de conversación
+Convert	Convertir
+Convert to	Convertir a
+Count	Cantidad
+Count items	Contar elementos
+Covered	Cubierto
+Current time	Hora actual
+Custom	Personalizado
+Custom sound	Sonido personalizado
+Dark Theme Change	Cambio de tema oscuro
+Dark theme	Tema oscuro
+Date &amp; time	Fecha y hora
+Date rolled over	Cambio de fecha
+Date time	Fecha y hora
+Days	Días
+Days of month (e.g. 1,15, empty = every day)	Días del mes (p. ej. 1,15; vacío = todos los días)
+Delete	Eliminar
+Device Boot	Arranque del dispositivo
+Device Docked	Dispositivo acoplado
+Device Movement	Movimiento del dispositivo
+Device Orientation	Orientación del dispositivo
+Device Shutting Down	Dispositivo apagándose
+Device Unlocked	Dispositivo desbloqueado
+Device orientation	Orientación del dispositivo
+Direction	Dirección
+Disable Macro	Desactivar macro
+Disabled	Desactivado
+Disables another macro by id (persists the flag and disarms its triggers)	Desactiva otra macro por su id (guarda el estado y desarma sus activadores)
+Disconnected	Desconectado
+Dismiss	Descartar
+Do Not Disturb	No molestar
+Docked	Acoplado
+Don\'t start again until it changes back by (lux)	No volver a iniciar hasta que cambie de vuelta en (lux)
+Double	Doble
+Double tap	Doble toque
+Down	Bajar
+Duration	Duración
+Duration (ms, used when pattern is empty)	Duración (ms, se usa cuando no hay patrón)
+Dwell delay (ms)	Espera antes de disparar (ms)
+Ejected	Expulsado
+Email Received	Correo recibido
+Empty List	Vaciar lista
+Empty Trigger	Activador vacío
+Enable Macro	Activar macro
+Enabled	Activado
+Enables another macro by id (persists the flag and arms its triggers)	Activa otra macro por su id (guarda el estado y arma sus activadores)
+Equals	Igual a
+Event	Evento
+Face down	Boca abajo
+Face up	Boca arriba
+Fade time (ms)	Tiempo de transición (ms)
+Falls below	Baja de
+Fast	Rápido
+Fetch Email	Obtener correo
+Field	Campo
+Fire time	Hora de disparo
+Fires immediately when the workflow starts (no external event)	Se dispara en cuanto arranca el flujo (sin evento externo)
+Fires when a macro finishes executing after being triggered	Se dispara cuando una macro termina de ejecutarse tras ser activada
+Fires when a named variable changes value	Se dispara cuando una variable con nombre cambia de valor
+Fires when the app is initialised and running	Se dispara cuando la aplicación está inicializada y en marcha
+Fires when the device\'s UI / night mode changes	Se dispara cuando cambia el modo de interfaz o nocturno del dispositivo
+Fires when this macro is enabled (its triggers are armed)	Se dispara cuando se activa esta macro (sus activadores quedan armados)
+Float	Decimal
+Folder	Carpeta
+For a length of time	Durante un tiempo
+Found	Encontrado
+Fridays	Viernes
+From (optional)	De (opcional)
+From app (optional)	De la aplicación (opcional)
+From contains	El remitente contiene
+From position (0 is the first)	Desde la posición (0 es la primera)
+Geofence	Geovalla
+Gesture	Gesto
+Get	Obtener
+Get Light State	Obtener estado de la luz
+Get as	Obtener como
+Give up after (seconds)	Rendirse tras (segundos)
+Greater than	Mayor que
+Greater than or equal	Mayor o igual que
+HTTP Request	Petición HTTP
+Halts the current execution chain (stops following connected actions)	Detiene la cadena de ejecución actual (deja de seguir las acciones conectadas)
+Headers (JSON, optional)	Cabeceras (JSON, opcional)
+Headset Plugged	Auriculares conectados
+Headset hook	Botón de los auriculares
+Headset plugged in	Auriculares conectados
+Held down	Mantenido pulsado
+High — fires easily	Alta: se dispara con facilidad
+Hint	Sugerencia
+Hold for at least (ms)	Mantener al menos (ms)
+Hours	Horas
+How many	Cuántos
+How many at most	Cuántos como máximo
+How many items are in a list	Cuántos elementos tiene una lista
+How many times	Cuántas veces
+How the device is currently resting — face up or down, portrait or landscape (screen on only)	Cómo está apoyado el dispositivo ahora mismo: boca arriba o abajo, vertical u horizontal (solo con la pantalla encendida)
+How to watch	Cómo vigilar
+Idle	Libre
+If	Si
+If it fails	Si falla
+If missing	Si falta
+Incoming Call State	Estado de llamada entrante
+Index	Índice
+Initiates a phone call to a number	Inicia una llamada a un número
+Inputs	Entradas
+Installed	Instalada
+Int	Entero
+Item	Elemento
+Item at position	Elemento en la posición
+Item to find	Elemento a buscar
+JSON text	Texto JSON
+Join list	Unir lista
+Key	Clave
+Landscape left	Horizontal izquierda
+Landscape right	Horizontal derecha
+Launch App	Abrir aplicación
+Launches another app by package name	Abre otra aplicación por su nombre de paquete
+Less than	Menor que
+Less than or equal	Menor o igual que
+Level (%)	Nivel (%)
+Level (when on)	Nivel (cuando está encendida)
+Light or room	Luz o habitación
+List	Lista
+List contains	La lista contiene
+List variable	Variable de lista
+Locale Changed	Idioma cambiado
+Log Message	Registrar mensaje
+Long	Largo
+Longest reply (tokens)	Respuesta más larga (tokens)
+Loops over a list, running the following steps once for every item in it	Recorre una lista y ejecuta los pasos siguientes una vez por cada elemento
+Loops the following steps a set number of times — repeat 10 times, and so on	Repite los pasos siguientes un número fijo de veces: repetir 10 veces, por ejemplo
+Loops the following steps for as long as a comparison holds	Repite los pasos siguientes mientras se cumpla una comparación
+Low — needs a deliberate gesture	Baja: necesita un gesto deliberado
+Lux	Lux
+Macro	Macro
+Macro Enabled	Macro activada
+Macro Finished	Macro terminada
+Mail	Correo
+Make Call	Llamar
+Manual Trigger	Activador manual
+Mark read	Marcar como leído
+Mark unread	Marcar como no leído
+Marks a conversation read, presses one of its buttons, or dismisses the notification	Marca una conversación como leída, pulsa uno de sus botones o descarta la notificación
+Marks a message read or unread, moves it to another folder, or deletes it	Marca un mensaje como leído o no leído, lo mueve a otra carpeta o lo elimina
+Matches regex	Coincide con la regex
+Media	Multimedia
+Media Button Pressed	Botón multimedia pulsado
+Media Mounted / Unmounted	Medio montado / desmontado
+Medium	Medio
+Message	Mensaje
+Message Received	Mensaje recibido
+Messages	Mensajes
+Method	Método
+Minutes	Minutos
+Mode	Modo
+Model	Modelo
+Mondays	Lunes
+Mounted	Montado
+Move	Mover
+Move to folder	Mover a la carpeta
+Multiple lines	Varias líneas
+Must hold for (ms)	Debe mantenerse (ms)
+Mute	Silenciar
+NFC Tag	Etiqueta NFC
+NFC enabled	NFC activado
+Name other apps see	Nombre que ven otras aplicaciones
+Network	Red
+Next	Siguiente
+Normal	Normal
+Not equals	Distinto de
+Notification	Notificación
+Notification Received	Notificación recibida
+Now	Ahora
+Number	Número
+Number of presses	Número de pulsaciones
+Off	Apagado
+Offhook	En llamada
+On	Encendido
+On dwell	Al permanecer
+On enter	Al entrar
+On exit	Al salir
+On staying away	Al seguir fuera
+One item out of a list, by its position	Un elemento de una lista, por su posición
+Only during a time window	Solo dentro de una franja horaria
+Only lights already on	Solo las luces ya encendidas
+Only unread	Solo los no leídos
+Only when it ends up lying flat	Solo cuando acaba quedando plano
+Only while the screen is on	Solo con la pantalla encendida
+Open URL	Abrir URL
+Opens WhatsApp, Signal or Telegram with a message ready to send	Abre WhatsApp, Signal o Telegram con un mensaje listo para enviar
+Opens a URL in the default handler (browser or app). Typing google.com is enough	Abre una URL en la aplicación predeterminada (navegador o app). Basta con escribir google.com
+Operator	Operador
+Options — one per line	Opciones: una por línea
+Order	Orden
+Orientation	Orientación
+Outputs	Salidas
+Package	Paquete
+Part of list	Parte de la lista
+Path (e.g. main.temp) — blank for the whole document	Ruta (p. ej. main.temp): vacío para todo el documento
+Pattern (comma-separated ms, e.g. 0,200,500,200)	Patrón (ms separados por comas, p. ej. 0,200,500,200)
+Pause	Pausa
+Pauses the workflow for a while	Pausa el flujo un rato
+Picked up	Levantado
+Place	Lugar
+Planned for	Previsto para
+Play	Reproducir
+Play Sound	Reproducir sonido
+Play pause	Reproducir/pausar
+Play through	Reproducir por
+Plays a notification, ringtone, alarm or chosen sound	Reproduce un sonido de notificación, tono, alarma o el que elijas
+Plugged	Conectado
+Plugged in	Conectado
+Poll	Consultar
+Poll interval (minutes, minimum 15)	Intervalo de consulta (minutos, mínimo 15)
+Portrait	Vertical
+Portrait upside down	Vertical invertido
+Position	Posición
+Position (0 is the first)	Posición (0 es la primera)
+Position in list	Posición en la lista
+Post	Enviar
+Posts a notification on this device	Muestra una notificación en este dispositivo
+Power Save Mode Changed	Modo de ahorro de energía cambiado
+Power save mode	Modo de ahorro de energía
+Prefilled	Rellenado previamente
+Pressed	Pulsado
+Pressed several times	Pulsado varias veces
+Previous	Anterior
+Priority	Prioridad
+Prompt	Petición
+Proximity	Proximidad
+Proximity covered	Sensor de proximidad cubierto
+Put	Poner
+Put down	Dejado
+Question	Pregunta
+Read from JSON	Leer de JSON
+Reading	Lectura
+Reads messages from a mailbox onto a list you can loop over	Lee mensajes de un buzón a una lista que puedes recorrer
+Reads one value out of JSON text, such as an HTTP response body	Lee un valor de un texto JSON, como el cuerpo de una respuesta HTTP
+Reads whether a light is on, how bright it is and what colour — Philips Hue	Lee si una luz está encendida, con qué brillo y de qué color — Philips Hue
+Reason (optional, logged before halting)	Motivo (opcional, se registra antes de detener)
+Remembers a value in a variable, readable by later runs	Guarda un valor en una variable, legible por ejecuciones posteriores
+Removed	Eliminada
+Repeat	Repetir
+Repeat every (under 15 only fires while the device is awake)	Repetir cada (por debajo de 15 solo se dispara con el dispositivo despierto)
+Repeat for each item	Repetir por cada elemento
+Repeat on an interval	Repetir en un intervalo
+Repeat this	Repetir esto
+Repeat while	Repetir mientras
+Replaced	Reemplazada
+Replies to a message in WhatsApp, Signal, Telegram or another messenger	Responde a un mensaje en WhatsApp, Signal, Telegram u otra app de mensajería
+Reply to Message	Responder al mensaje
+Resumed at	Reanudado a las
+Ring	Sonar
+Ringer Mode Changed	Modo de sonido cambiado
+Ringer mode	Modo de sonido
+Ringing	Sonando
+Ringtone	Tono de llamada
+Rises above	Sube por encima de
+Routes execution by comparing a value against another	Dirige la ejecución comparando un valor con otro
+Run Script	Ejecutar script
+Run action	Ejecutar acción
+Runs JavaScript over inputs you name and returns values on ports you name	Ejecuta JavaScript sobre entradas que tú nombras y devuelve valores en puertos que tú nombras
+SMS	SMS
+SMS Received	SMS recibido
+Saturdays	Sábados
+Scene	Escena
+Schedule	Programación
+Screen On / Off	Pantalla encendida / apagada
+Screen on	Pantalla encendida
+Script — each input is a variable of its own name	Script: cada entrada es una variable con su propio nombre
+Seconds	Segundos
+Send Email	Enviar correo
+Send Message	Enviar mensaje
+Send SMS	Enviar SMS
+Send as HTML	Enviar como HTML
+Sender (optional — any sender when empty)	Remitente (opcional: vacío significa cualquiera)
+Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text	Envía una petición a un modelo de IA (Gemini, Claude, ChatGPT, OpenRouter o un modelo autoalojado) y devuelve su respuesta como texto
+Sends an SMS to a number with a body	Envía un SMS con un texto a un número
+Sends an email through one of your mail accounts	Envía un correo a través de una de tus cuentas
+Sensitivity	Sensibilidad
+Separator	Separador
+Separator (blank for a new line)	Separador (vacío para un salto de línea)
+Set	Fijar
+Set Brightness	Fijar brillo
+Set Ringer Mode	Fijar modo de sonido
+Set Screen Timeout	Fijar apagado de pantalla
+Set Variable	Fijar variable
+Set Volume	Fijar volumen
+Set brightness	Fijar brillo
+Set colour	Fijar color
+Set temperature	Fijar temperatura de color
+Sets or clears the clipboard	Fija o vacía el portapapeles
+Sets screen brightness (absolute value or auto)	Fija el brillo de la pantalla (valor fijo o automático)
+Sets the ringer mode to normal, silent or vibrate	Pone el modo de sonido en normal, silencio o vibración
+Sets the screen-off timeout in milliseconds	Fija en milisegundos el tiempo hasta que se apaga la pantalla
+Shake	Agitar
+Show Message	Mostrar mensaje
+Show Notification	Mostrar notificación
+Shows a popup dialog and waits until the user has acknowledged it	Muestra un diálogo y espera hasta que el usuario lo confirme
+Shows a popup dialog offering a list of options and reports which one was picked	Muestra un diálogo con una lista de opciones e informa de cuál se eligió
+Signal	Signal
+Silence	Silencio
+Silent	Silencio
+Sort list	Ordenar lista
+Sound	Sonido
+Source	Origen
+Split text into a list	Dividir texto en una lista
+Splits a struct into its individual fields (auto-detects the struct from the input)	Descompone una estructura en sus campos (detecta la estructura desde la entrada)
+Splits text into a list — one item per line, or on a separator you choose	Divide un texto en una lista: un elemento por línea, o por el separador que elijas
+Standing instruction	Instrucción permanente
+Start at (seconds into the sound)	Empezar en (segundos dentro del sonido)
+Started moving — low power, works with the screen off	Empieza a moverse: bajo consumo, funciona con la pantalla apagada
+Starts a named list over, ready to collect into	Reinicia una lista con nombre, lista para ir llenándola
+Starts once after the device finishes booting	Se ejecuta una vez cuando el dispositivo termina de arrancar
+Starts the workflow on an interval or at a time of day	Inicia el flujo en un intervalo o a una hora del día
+Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it	Inicia el flujo cuando otra aplicación, un script o un acceso directo le pide a Ottomatic que lo ejecute
+Starts the workflow when you tap run, or tap its widget or shortcut	Inicia el flujo cuando tocas ejecutar, o tocas su widget o acceso directo
+Starts when Bluetooth is turned on or off	Se inicia cuando se activa o desactiva el Bluetooth
+Starts when Wi-Fi is enabled or disabled	Se inicia cuando se activa o desactiva el Wi-Fi
+Starts when a Bluetooth device connects or disconnects	Se inicia cuando un dispositivo Bluetooth se conecta o se desconecta
+Starts when a USB device is connected or disconnected	Se inicia cuando se conecta o desconecta un dispositivo USB
+Starts when a matching notification arrives	Se inicia cuando llega una notificación que coincide
+Starts when a media button is pressed (play, pause, next, etc.)	Se inicia al pulsar un botón multimedia (reproducir, pausa, siguiente, etc.)
+Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	Se inicia cuando llega un mensaje en WhatsApp, Signal, Telegram u otra app de mensajería
+Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	Se inicia al pulsar, mantener o pulsar varias veces un botón de volumen. Necesita acceso de accesibilidad; los botones siguen funcionando con normalidad
+Starts when a wired headset is plugged or unplugged	Se inicia al conectar o desconectar unos auriculares con cable
+Starts when airplane mode is toggled	Se inicia al activar o desactivar el modo avión
+Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	Se inicia al acercar una etiqueta NFC al teléfono. Solo funciona con la pantalla encendida y desbloqueada
+Starts when an SMS arrives	Se inicia cuando llega un SMS
+Starts when an app is installed, removed or replaced	Se inicia cuando se instala, desinstala o reemplaza una aplicación
+Starts when an email arrives in a mailbox you are watching	Se inicia cuando llega un correo a un buzón que estás vigilando
+Starts when external media is mounted, unmounted or ejected	Se inicia cuando se monta, desmonta o expulsa un medio externo
+Starts when power-save mode is toggled on or off	Se inicia al activar o desactivar el modo de ahorro de energía
+Starts when the battery level crosses a threshold (polls in the background)	Se inicia cuando el nivel de batería cruza un umbral (consulta en segundo plano)
+Starts when the device body is tapped twice or three times. Unreliable in a pocket (screen on only)	Se inicia al dar dos o tres toques sobre el cuerpo del dispositivo. Poco fiable en el bolsillo (solo con la pantalla encendida)
+Starts when the device connects to or disconnects from a Wi-Fi network	Se inicia cuando el dispositivo se conecta o desconecta de una red Wi-Fi
+Starts when the device date rolls over or the timezone changes	Se inicia cuando cambia la fecha del dispositivo o su zona horaria
+Starts when the device enters, exits or dwells inside a circular area, or once it has been away from one for a while	Se inicia cuando el dispositivo entra, sale o permanece dentro de un área circular, o cuando lleva un rato fuera de ella
+Starts when the device is docked or undocked	Se inicia cuando el dispositivo se acopla o se desacopla
+Starts when the device is picked up, set down, or begins moving	Se inicia cuando el dispositivo se levanta, se deja o empieza a moverse
+Starts when the device is shaken back and forth. High sensitivity will also fire while running (screen on only)	Se inicia al agitar el dispositivo de un lado a otro. Con sensibilidad alta también se dispara al correr (solo con la pantalla encendida)
+Starts when the device is shutting down	Se inicia cuando el dispositivo se está apagando
+Starts when the device is turned face down or face up, or rotated into portrait or landscape (screen on only)	Se inicia al poner el dispositivo boca abajo o boca arriba, o al girarlo a vertical u horizontal (solo con la pantalla encendida)
+Starts when the device locale changes	Se inicia cuando cambia el idioma del dispositivo
+Starts when the device starts or stops charging	Se inicia cuando el dispositivo empieza o deja de cargar
+Starts when the light around the device crosses a level and stays there — a dim room is around 30 lux, an office a few hundred. Below about 30 lux the sensor gets unreliable (screen on only)	Se inicia cuando la luz alrededor del dispositivo cruza un nivel y se mantiene: una habitación en penumbra ronda los 30 lux, una oficina unos cientos. Por debajo de unos 30 lux el sensor pierde fiabilidad (solo con la pantalla encendida)
+Starts when the phone call state changes (ringing, offhook, idle)	Se inicia cuando cambia el estado de la llamada (sonando, en llamada, libre)
+Starts when the ringer mode changes (normal, silent, vibrate)	Se inicia cuando cambia el modo de sonido (normal, silencio, vibración)
+Starts when the screen turns on or off	Se inicia cuando la pantalla se enciende o se apaga
+Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)	Se inicia cuando el sensor de encima de la pantalla se cubre o se descubre. Tu mano tiene que estar tocando el cristal o casi (en la mayoría de dispositivos, solo con la pantalla encendida)
+Starts when the user unlocks the device	Se inicia cuando el usuario desbloquea el dispositivo
+State	Estado
+Stop	Detener
+Stop Macro	Detener macro
+Stop Sound	Detener sonido
+Stop after (seconds, 0 = play to the end)	Detener tras (segundos, 0 = reproducir hasta el final)
+Stops every sound started by Play Sound	Detiene todos los sonidos iniciados por Reproducir sonido
+Stream	Canal
+String	Texto
+Struct	Estructura
+Subject	Asunto
+Subject contains	El asunto contiene
+Sundays	Domingos
+System	Sistema
+Tag	Etiqueta
+Tap on Device	Toque en el dispositivo
+Taps	Toques
+Telegram	Telegram
+Template — use {A}, {B}, {C}	Plantilla: usa {A}, {B}, {C}
+Text	Texto
+Text contains (optional)	El texto contiene (opcional)
+Text — one item per line, or wire something in	Texto: un elemento por línea, o conecta algo
+The current battery charge as a percentage in 0..100	La carga actual de la batería en porcentaje, de 0 a 100
+The current date and time	La fecha y la hora actuales
+The current value of a variable	El valor actual de una variable
+The device\'s current ringer mode	El modo de sonido actual del dispositivo
+The light level around the device in lux — a dim room is around 30, an office a few hundred	El nivel de luz alrededor del dispositivo en lux: una habitación en penumbra ronda los 30, una oficina unos cientos
+The name of the Wi-Fi network the device is currently connected to	El nombre de la red Wi-Fi a la que está conectado el dispositivo
+The same list, in order	La misma lista, ordenada
+This is a list	Esto es una lista
+Thorough	Exhaustivo
+Threshold (0-100)	Umbral (0-100)
+Threshold (lux)	Umbral (lux)
+Thursdays	Jueves
+Timeout (ms)	Tiempo límite (ms)
+Timezone changed	Zona horaria cambiada
+Title	Título
+To	Para
+Toggle	Alternar
+Toggle Auto-Rotate	Alternar rotación automática
+Toggle Bluetooth	Alternar Bluetooth
+Toggle Flashlight	Alternar linterna
+Toggle Wi-Fi	Alternar Wi-Fi
+Toggles Do-Not-Disturb on or off with a chosen policy level	Activa o desactiva No molestar con el nivel que elijas
+Triple tap	Triple toque
+Tuesdays	Martes
+Turn off	Apagar
+Turn on	Encender
+Turns Bluetooth on or off and reports the resulting state	Activa o desactiva el Bluetooth e informa del estado resultante
+Turns Wi-Fi on or off and reports the resulting state	Activa o desactiva el Wi-Fi e informa del estado resultante
+Turns a light, room or zone on or off, or sets its brightness, colour or warmth — Philips Hue	Enciende o apaga una luz, habitación o zona, o ajusta su brillo, color o temperatura — Philips Hue
+Turns a list into one piece of text, separated by what you choose	Convierte una lista en un solo texto, separado por lo que elijas
+Turns a value into another type — text, a number, yes/no or a date	Convierte un valor a otro tipo: texto, número, sí/no o fecha
+Turns accelerometer auto-rotation on or off	Activa o desactiva la rotación automática por acelerómetro
+Turns the camera torch (flashlight) on or off	Enciende o apaga la linterna de la cámara
+Type	Tipo
+URL	URL
+USB Device Connected	Dispositivo USB conectado
+Uncovered	Descubierto
+Undocked	Desacoplado
+Unit	Unidad
+Unmounted	Desmontado
+Unmute	Quitar el silencio
+Unplugged	Desconectado
+Until	Hasta
+Until a date and time	Hasta una fecha y hora
+Until a time of day	Hasta una hora del día
+Up	Subir
+Update Email	Actualizar correo
+Value	Valor
+Value (0-100, only when mode is set)	Valor (0-100, solo cuando el modo es Fijar)
+Value (0-255, only when auto is off)	Valor (0-255, solo con el automático desactivado)
+Values this call carries	Valores que lleva esta llamada
+Variable	Variable
+Variable Change	Cambio de variable
+Vibrate	Vibrar
+Vibrates the device for a duration or pattern	Hace vibrar el dispositivo durante un tiempo o según un patrón
+Volume Button	Botón de volumen
+Volume down	Bajar volumen
+Volume up	Subir volumen
+Wait	Esperar
+Wait Until	Esperar hasta
+Wait until finished	Esperar a que termine
+Warmth (K)	Temperatura de color (K)
+Wednesdays	Miércoles
+What to do	Qué hacer
+Whatsapp	WhatsApp
+When cancelled	Si se cancela
+When confirmed	Si se confirma
+When finished	Al terminar
+When the light level	Cuando el nivel de luz
+When the time comes	Cuando llegue el momento
+When time runs out	Si se acaba el tiempo
+Where an item sits in a list, counting from 0, or -1 when it is not there	En qué posición está un elemento de una lista, contando desde 0, o -1 si no está
+Whether Bluetooth is currently enabled	Si el Bluetooth está activado ahora mismo
+Whether Do-Not-Disturb is currently active	Si No molestar está activo ahora mismo
+Whether NFC is currently switched on	Si el NFC está encendido ahora mismo
+Whether Wi-Fi is currently enabled	Si el Wi-Fi está activado ahora mismo
+Whether a list holds a given item	Si una lista contiene un elemento dado
+Whether a wired or USB headset is currently plugged in	Si hay unos auriculares con cable o USB conectados ahora mismo
+Whether airplane mode is currently on	Si el modo avión está activado ahora mismo
+Whether battery saver is currently on	Si el ahorro de batería está activado ahora mismo
+Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	Si algo está cubriendo el sensor de encima de la pantalla: un bolsillo, una mano sobre el cristal, el dispositivo boca abajo
+Whether the device is currently charging	Si el dispositivo está cargando ahora mismo
+Whether the device is currently in dark theme (night mode)	Si el dispositivo está en tema oscuro (modo nocturno) ahora mismo
+Whether the device is currently sitting in a dock	Si el dispositivo está acoplado ahora mismo
+Whether the screen is currently on and interactive	Si la pantalla está encendida y utilizable ahora mismo
+While the screen is off	Con la pantalla apagada
+Whole number	Número entero
+Wi-Fi Network	Red Wi-Fi
+Wi-Fi State Change	Cambio de estado del Wi-Fi
+Wi-Fi enabled	Wi-Fi activado
+Wi-Fi network	Red Wi-Fi
+Within (ms)	Dentro de (ms)
+Writes a message to this workflow\'s console	Escribe un mensaje en la consola de este flujo
+Yes or no	Sí o no
+Z to A / largest first	De la Z a la A / mayor primero
+false	falso
+in	Entrada
+out	Salida
+response	respuesta
+state	estado
+true	verdadero
+Anything	Cualquiera

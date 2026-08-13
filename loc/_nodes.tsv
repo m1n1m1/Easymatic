@@ -1,0 +1,558 @@
+A	A
+A run of items out of a list	A run of items out of a list
+A to Z / smallest first	A to Z / smallest first
+Above	Above
+Account	Account
+Act on Notification	Act on Notification
+Action	Action
+Activate	Activate
+Activates a lighting scene you set up in the Hue app, or turns its room off — Philips Hue	Activates a lighting scene you set up in the Hue app, or turns its room off — Philips Hue
+Active	Active
+Active from	Active from
+Active until (earlier than \'from\' runs past midnight)	Active until (earlier than \'from\' runs past midnight)
+Add to List	Add to List
+Adjusts an audio stream\'s volume (up, down, set, mute or unmute)	Adjusts an audio stream\'s volume (up, down, set, mute or unmute)
+Airplane Mode Changed	Airplane Mode Changed
+Airplane mode	Airplane mode
+Alarm	Alarm
+Alarms	Alarms
+All	All
+Also when the device starts moving	Also when the device starts moving
+Always (high battery use)	Always (high battery use)
+Ambient Light	Ambient Light
+Ambient light	Ambient light
+Answer	Answer
+Answer type	Answer type
+Any	Any
+Anything	Anything
+App	App
+App (optional)	App (optional)
+App Initialised	App Initialised
+App Installed / Removed	App Installed / Removed
+Appends an item to a named list, usually from inside a loop	Appends an item to a named list, usually from inside a loop
+Ask AI	Ask AI
+Ask Yes or No	Ask Yes or No
+Ask for Input	Ask for Input
+Ask to Choose	Ask to Choose
+Asks the user a yes/no question in a popup dialog and branches on the answer	Asks the user a yes/no question in a popup dialog and branches on the answer
+Asks the user to type a value in a popup dialog and puts it on a port	Asks the user to type a value in a popup dialog and puts it on a port
+At	At
+At a time of day	At a time of day
+Auto	Auto
+Auto brightness	Auto brightness
+Automatic	Automatic
+Away for (minutes)	Away for (minutes)
+B	B
+Balanced	Balanced
+Battery Level	Battery Level
+Battery level	Battery level
+Bcc	Bcc
+Below	Below
+Bluetooth Device Connected	Bluetooth Device Connected
+Bluetooth State Change	Bluetooth State Change
+Bluetooth enabled	Bluetooth enabled
+Body	Body
+Boolean	Boolean
+Break Struct	Break Struct
+Brightness %	Brightness %
+Build text	Build text
+Button	Button
+Button label	Button label
+C	C
+Called by Another App	Called by Another App
+Calls a web API and exposes the typed response	Calls a web API and exposes the typed response
+Cancel button	Cancel button
+Carries on at once and continues again at a chosen moment	Carries on at once and continues again at a chosen moment
+Carry on now	Carry on now
+Cc	Cc
+Charging	Charging
+Charging started	Charging started
+Charging stopped	Charging stopped
+Check every (minutes, minimum 15)	Check every (minutes, minimum 15)
+Choice	Choice
+Clear	Clear
+Clipboard	Clipboard
+Clock Changed	Clock Changed
+Close automatically after (seconds)	Close automatically after (seconds)
+Colour	Colour
+Combines words and values into one piece of text	Combines words and values into one piece of text
+Compare against	Compare against
+Compare as	Compare as
+Confirm button	Confirm button
+Connected	Connected
+Connection	Connection
+Contains	Contains
+Control Light	Control Light
+Control Scene	Control Scene
+Conversation ID	Conversation ID
+Convert	Convert
+Convert to	Convert to
+Count	Count
+Count items	Count items
+Covered	Covered
+Current time	Current time
+Custom	Custom
+Custom sound	Custom sound
+Dark Theme Change	Dark Theme Change
+Dark theme	Dark theme
+Date &amp; time	Date &amp; time
+Date rolled over	Date rolled over
+Date time	Date time
+Days	Days
+Days of month (e.g. 1,15, empty = every day)	Days of month (e.g. 1,15, empty = every day)
+Delete	Delete
+Device Boot	Device Boot
+Device Docked	Device Docked
+Device Movement	Device Movement
+Device Orientation	Device Orientation
+Device Shutting Down	Device Shutting Down
+Device Unlocked	Device Unlocked
+Device orientation	Device orientation
+Direction	Direction
+Disable Macro	Disable Macro
+Disabled	Disabled
+Disables another macro by id (persists the flag and disarms its triggers)	Disables another macro by id (persists the flag and disarms its triggers)
+Disconnected	Disconnected
+Dismiss	Dismiss
+Do Not Disturb	Do Not Disturb
+Docked	Docked
+Don\'t start again until it changes back by (lux)	Don\'t start again until it changes back by (lux)
+Double	Double
+Double tap	Double tap
+Down	Down
+Duration	Duration
+Duration (ms, used when pattern is empty)	Duration (ms, used when pattern is empty)
+Dwell delay (ms)	Dwell delay (ms)
+Ejected	Ejected
+Email Received	Email Received
+Empty List	Empty List
+Empty Trigger	Empty Trigger
+Enable Macro	Enable Macro
+Enabled	Enabled
+Enables another macro by id (persists the flag and arms its triggers)	Enables another macro by id (persists the flag and arms its triggers)
+Equals	Equals
+Event	Event
+Face down	Face down
+Face up	Face up
+Fade time (ms)	Fade time (ms)
+Falls below	Falls below
+Fast	Fast
+Fetch Email	Fetch Email
+Field	Field
+Fire time	Fire time
+Fires immediately when the workflow starts (no external event)	Fires immediately when the workflow starts (no external event)
+Fires when a macro finishes executing after being triggered	Fires when a macro finishes executing after being triggered
+Fires when a named variable changes value	Fires when a named variable changes value
+Fires when the app is initialised and running	Fires when the app is initialised and running
+Fires when the device\'s UI / night mode changes	Fires when the device\'s UI / night mode changes
+Fires when this macro is enabled (its triggers are armed)	Fires when this macro is enabled (its triggers are armed)
+Float	Float
+Folder	Folder
+For a length of time	For a length of time
+Found	Found
+Fridays	Fridays
+From (optional)	From (optional)
+From app (optional)	From app (optional)
+From contains	From contains
+From position (0 is the first)	From position (0 is the first)
+Geofence	Geofence
+Gesture	Gesture
+Get	Get
+Get Light State	Get Light State
+Get as	Get as
+Give up after (seconds)	Give up after (seconds)
+Greater than	Greater than
+Greater than or equal	Greater than or equal
+HTTP Request	HTTP Request
+Halts the current execution chain (stops following connected actions)	Halts the current execution chain (stops following connected actions)
+Headers (JSON, optional)	Headers (JSON, optional)
+Headset Plugged	Headset Plugged
+Headset hook	Headset hook
+Headset plugged in	Headset plugged in
+Held down	Held down
+High — fires easily	High — fires easily
+Hint	Hint
+Hold for at least (ms)	Hold for at least (ms)
+Hours	Hours
+How many	How many
+How many at most	How many at most
+How many items are in a list	How many items are in a list
+How many times	How many times
+How the device is currently resting — face up or down, portrait or landscape (screen on only)	How the device is currently resting — face up or down, portrait or landscape (screen on only)
+How to watch	How to watch
+Idle	Idle
+If	If
+If it fails	If it fails
+If missing	If missing
+Incoming Call State	Incoming Call State
+Index	Index
+Initiates a phone call to a number	Initiates a phone call to a number
+Inputs	Inputs
+Installed	Installed
+Int	Int
+Item	Item
+Item at position	Item at position
+Item to find	Item to find
+JSON text	JSON text
+Join list	Join list
+Key	Key
+Landscape left	Landscape left
+Landscape right	Landscape right
+Launch App	Launch App
+Launches another app by package name	Launches another app by package name
+Less than	Less than
+Less than or equal	Less than or equal
+Level (%)	Level (%)
+Level (when on)	Level (when on)
+Light or room	Light or room
+List	List
+List contains	List contains
+List variable	List variable
+Locale Changed	Locale Changed
+Log Message	Log Message
+Long	Long
+Longest reply (tokens)	Longest reply (tokens)
+Loops over a list, running the following steps once for every item in it	Loops over a list, running the following steps once for every item in it
+Loops the following steps a set number of times — repeat 10 times, and so on	Loops the following steps a set number of times — repeat 10 times, and so on
+Loops the following steps for as long as a comparison holds	Loops the following steps for as long as a comparison holds
+Low — needs a deliberate gesture	Low — needs a deliberate gesture
+Lux	Lux
+Macro	Macro
+Macro Enabled	Macro Enabled
+Macro Finished	Macro Finished
+Mail	Mail
+Make Call	Make Call
+Manual Trigger	Manual Trigger
+Mark read	Mark read
+Mark unread	Mark unread
+Marks a conversation read, presses one of its buttons, or dismisses the notification	Marks a conversation read, presses one of its buttons, or dismisses the notification
+Marks a message read or unread, moves it to another folder, or deletes it	Marks a message read or unread, moves it to another folder, or deletes it
+Matches regex	Matches regex
+Media	Media
+Media Button Pressed	Media Button Pressed
+Media Mounted / Unmounted	Media Mounted / Unmounted
+Medium	Medium
+Message	Message
+Message Received	Message Received
+Messages	Messages
+Method	Method
+Minutes	Minutes
+Mode	Mode
+Model	Model
+Mondays	Mondays
+Mounted	Mounted
+Move	Move
+Move to folder	Move to folder
+Multiple lines	Multiple lines
+Must hold for (ms)	Must hold for (ms)
+Mute	Mute
+NFC Tag	NFC Tag
+NFC enabled	NFC enabled
+Name other apps see	Name other apps see
+Network	Network
+Next	Next
+Normal	Normal
+Not equals	Not equals
+Notification	Notification
+Notification Received	Notification Received
+Now	Now
+Number	Number
+Number of presses	Number of presses
+Off	Off
+Offhook	Offhook
+On	On
+On dwell	On dwell
+On enter	On enter
+On exit	On exit
+On staying away	On staying away
+One item out of a list, by its position	One item out of a list, by its position
+Only during a time window	Only during a time window
+Only lights already on	Only lights already on
+Only unread	Only unread
+Only when it ends up lying flat	Only when it ends up lying flat
+Only while the screen is on	Only while the screen is on
+Open URL	Open URL
+Opens WhatsApp, Signal or Telegram with a message ready to send	Opens WhatsApp, Signal or Telegram with a message ready to send
+Opens a URL in the default handler (browser or app). Typing google.com is enough	Opens a URL in the default handler (browser or app). Typing google.com is enough
+Operator	Operator
+Options — one per line	Options — one per line
+Order	Order
+Orientation	Orientation
+Outputs	Outputs
+Package	Package
+Part of list	Part of list
+Path (e.g. main.temp) — blank for the whole document	Path (e.g. main.temp) — blank for the whole document
+Pattern (comma-separated ms, e.g. 0,200,500,200)	Pattern (comma-separated ms, e.g. 0,200,500,200)
+Pause	Pause
+Pauses the workflow for a while	Pauses the workflow for a while
+Picked up	Picked up
+Place	Place
+Planned for	Planned for
+Play	Play
+Play Sound	Play Sound
+Play pause	Play pause
+Play through	Play through
+Plays a notification, ringtone, alarm or chosen sound	Plays a notification, ringtone, alarm or chosen sound
+Plugged	Plugged
+Plugged in	Plugged in
+Poll	Poll
+Poll interval (minutes, minimum 15)	Poll interval (minutes, minimum 15)
+Portrait	Portrait
+Portrait upside down	Portrait upside down
+Position	Position
+Position (0 is the first)	Position (0 is the first)
+Position in list	Position in list
+Post	Post
+Posts a notification on this device	Posts a notification on this device
+Power Save Mode Changed	Power Save Mode Changed
+Power save mode	Power save mode
+Prefilled	Prefilled
+Pressed	Pressed
+Pressed several times	Pressed several times
+Previous	Previous
+Priority	Priority
+Prompt	Prompt
+Proximity	Proximity
+Proximity covered	Proximity covered
+Put	Put
+Put down	Put down
+Question	Question
+Read from JSON	Read from JSON
+Reading	Reading
+Reads messages from a mailbox onto a list you can loop over	Reads messages from a mailbox onto a list you can loop over
+Reads one value out of JSON text, such as an HTTP response body	Reads one value out of JSON text, such as an HTTP response body
+Reads whether a light is on, how bright it is and what colour — Philips Hue	Reads whether a light is on, how bright it is and what colour — Philips Hue
+Reason (optional, logged before halting)	Reason (optional, logged before halting)
+Remembers a value in a variable, readable by later runs	Remembers a value in a variable, readable by later runs
+Removed	Removed
+Repeat	Repeat
+Repeat every (under 15 only fires while the device is awake)	Repeat every (under 15 only fires while the device is awake)
+Repeat for each item	Repeat for each item
+Repeat on an interval	Repeat on an interval
+Repeat this	Repeat this
+Repeat while	Repeat while
+Replaced	Replaced
+Replies to a message in WhatsApp, Signal, Telegram or another messenger	Replies to a message in WhatsApp, Signal, Telegram or another messenger
+Reply to Message	Reply to Message
+Resumed at	Resumed at
+Ring	Ring
+Ringer Mode Changed	Ringer Mode Changed
+Ringer mode	Ringer mode
+Ringing	Ringing
+Ringtone	Ringtone
+Rises above	Rises above
+Routes execution by comparing a value against another	Routes execution by comparing a value against another
+Run Script	Run Script
+Run action	Run action
+Runs JavaScript over inputs you name and returns values on ports you name	Runs JavaScript over inputs you name and returns values on ports you name
+SMS	SMS
+SMS Received	SMS Received
+Saturdays	Saturdays
+Scene	Scene
+Schedule	Schedule
+Screen On / Off	Screen On / Off
+Screen on	Screen on
+Script — each input is a variable of its own name	Script — each input is a variable of its own name
+Seconds	Seconds
+Send Email	Send Email
+Send Message	Send Message
+Send SMS	Send SMS
+Send as HTML	Send as HTML
+Sender (optional — any sender when empty)	Sender (optional — any sender when empty)
+Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text	Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text
+Sends an SMS to a number with a body	Sends an SMS to a number with a body
+Sends an email through one of your mail accounts	Sends an email through one of your mail accounts
+Sensitivity	Sensitivity
+Separator	Separator
+Separator (blank for a new line)	Separator (blank for a new line)
+Set	Set
+Set Brightness	Set Brightness
+Set Ringer Mode	Set Ringer Mode
+Set Screen Timeout	Set Screen Timeout
+Set Variable	Set Variable
+Set Volume	Set Volume
+Set brightness	Set brightness
+Set colour	Set colour
+Set temperature	Set temperature
+Sets or clears the clipboard	Sets or clears the clipboard
+Sets screen brightness (absolute value or auto)	Sets screen brightness (absolute value or auto)
+Sets the ringer mode to normal, silent or vibrate	Sets the ringer mode to normal, silent or vibrate
+Sets the screen-off timeout in milliseconds	Sets the screen-off timeout in milliseconds
+Shake	Shake
+Show Message	Show Message
+Show Notification	Show Notification
+Shows a popup dialog and waits until the user has acknowledged it	Shows a popup dialog and waits until the user has acknowledged it
+Shows a popup dialog offering a list of options and reports which one was picked	Shows a popup dialog offering a list of options and reports which one was picked
+Signal	Signal
+Silence	Silence
+Silent	Silent
+Sort list	Sort list
+Sound	Sound
+Source	Source
+Split text into a list	Split text into a list
+Splits a struct into its individual fields (auto-detects the struct from the input)	Splits a struct into its individual fields (auto-detects the struct from the input)
+Splits text into a list — one item per line, or on a separator you choose	Splits text into a list — one item per line, or on a separator you choose
+Standing instruction	Standing instruction
+Start at (seconds into the sound)	Start at (seconds into the sound)
+Started moving — low power, works with the screen off	Started moving — low power, works with the screen off
+Starts a named list over, ready to collect into	Starts a named list over, ready to collect into
+Starts once after the device finishes booting	Starts once after the device finishes booting
+Starts the workflow on an interval or at a time of day	Starts the workflow on an interval or at a time of day
+Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it	Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it
+Starts the workflow when you tap run, or tap its widget or shortcut	Starts the workflow when you tap run, or tap its widget or shortcut
+Starts when Bluetooth is turned on or off	Starts when Bluetooth is turned on or off
+Starts when Wi-Fi is enabled or disabled	Starts when Wi-Fi is enabled or disabled
+Starts when a Bluetooth device connects or disconnects	Starts when a Bluetooth device connects or disconnects
+Starts when a USB device is connected or disconnected	Starts when a USB device is connected or disconnected
+Starts when a matching notification arrives	Starts when a matching notification arrives
+Starts when a media button is pressed (play, pause, next, etc.)	Starts when a media button is pressed (play, pause, next, etc.)
+Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger
+Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally
+Starts when a wired headset is plugged or unplugged	Starts when a wired headset is plugged or unplugged
+Starts when airplane mode is toggled	Starts when airplane mode is toggled
+Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked
+Starts when an SMS arrives	Starts when an SMS arrives
+Starts when an app is installed, removed or replaced	Starts when an app is installed, removed or replaced
+Starts when an email arrives in a mailbox you are watching	Starts when an email arrives in a mailbox you are watching
+Starts when external media is mounted, unmounted or ejected	Starts when external media is mounted, unmounted or ejected
+Starts when power-save mode is toggled on or off	Starts when power-save mode is toggled on or off
+Starts when the battery level crosses a threshold (polls in the background)	Starts when the battery level crosses a threshold (polls in the background)
+Starts when the device body is tapped twice or three times. Unreliable in a pocket (screen on only)	Starts when the device body is tapped twice or three times. Unreliable in a pocket (screen on only)
+Starts when the device connects to or disconnects from a Wi-Fi network	Starts when the device connects to or disconnects from a Wi-Fi network
+Starts when the device date rolls over or the timezone changes	Starts when the device date rolls over or the timezone changes
+Starts when the device enters, exits or dwells inside a circular area, or once it has been away from one for a while	Starts when the device enters, exits or dwells inside a circular area, or once it has been away from one for a while
+Starts when the device is docked or undocked	Starts when the device is docked or undocked
+Starts when the device is picked up, set down, or begins moving	Starts when the device is picked up, set down, or begins moving
+Starts when the device is shaken back and forth. High sensitivity will also fire while running (screen on only)	Starts when the device is shaken back and forth. High sensitivity will also fire while running (screen on only)
+Starts when the device is shutting down	Starts when the device is shutting down
+Starts when the device is turned face down or face up, or rotated into portrait or landscape (screen on only)	Starts when the device is turned face down or face up, or rotated into portrait or landscape (screen on only)
+Starts when the device locale changes	Starts when the device locale changes
+Starts when the device starts or stops charging	Starts when the device starts or stops charging
+Starts when the light around the device crosses a level and stays there — a dim room is around 30 lux, an office a few hundred. Below about 30 lux the sensor gets unreliable (screen on only)	Starts when the light around the device crosses a level and stays there — a dim room is around 30 lux, an office a few hundred. Below about 30 lux the sensor gets unreliable (screen on only)
+Starts when the phone call state changes (ringing, offhook, idle)	Starts when the phone call state changes (ringing, offhook, idle)
+Starts when the ringer mode changes (normal, silent, vibrate)	Starts when the ringer mode changes (normal, silent, vibrate)
+Starts when the screen turns on or off	Starts when the screen turns on or off
+Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)	Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)
+Starts when the user unlocks the device	Starts when the user unlocks the device
+State	State
+Stop	Stop
+Stop Macro	Stop Macro
+Stop Sound	Stop Sound
+Stop after (seconds, 0 = play to the end)	Stop after (seconds, 0 = play to the end)
+Stops every sound started by Play Sound	Stops every sound started by Play Sound
+Stream	Stream
+String	String
+Struct	Struct
+Subject	Subject
+Subject contains	Subject contains
+Sundays	Sundays
+System	System
+Tag	Tag
+Tap on Device	Tap on Device
+Taps	Taps
+Telegram	Telegram
+Template — use {A}, {B}, {C}	Template — use {A}, {B}, {C}
+Text	Text
+Text contains (optional)	Text contains (optional)
+Text — one item per line, or wire something in	Text — one item per line, or wire something in
+The current battery charge as a percentage in 0..100	The current battery charge as a percentage in 0..100
+The current date and time	The current date and time
+The current value of a variable	The current value of a variable
+The device\'s current ringer mode	The device\'s current ringer mode
+The light level around the device in lux — a dim room is around 30, an office a few hundred	The light level around the device in lux — a dim room is around 30, an office a few hundred
+The name of the Wi-Fi network the device is currently connected to	The name of the Wi-Fi network the device is currently connected to
+The same list, in order	The same list, in order
+This is a list	This is a list
+Thorough	Thorough
+Threshold (0-100)	Threshold (0-100)
+Threshold (lux)	Threshold (lux)
+Thursdays	Thursdays
+Timeout (ms)	Timeout (ms)
+Timezone changed	Timezone changed
+Title	Title
+To	To
+Toggle	Toggle
+Toggle Auto-Rotate	Toggle Auto-Rotate
+Toggle Bluetooth	Toggle Bluetooth
+Toggle Flashlight	Toggle Flashlight
+Toggle Wi-Fi	Toggle Wi-Fi
+Toggles Do-Not-Disturb on or off with a chosen policy level	Toggles Do-Not-Disturb on or off with a chosen policy level
+Triple tap	Triple tap
+Tuesdays	Tuesdays
+Turn off	Turn off
+Turn on	Turn on
+Turns Bluetooth on or off and reports the resulting state	Turns Bluetooth on or off and reports the resulting state
+Turns Wi-Fi on or off and reports the resulting state	Turns Wi-Fi on or off and reports the resulting state
+Turns a light, room or zone on or off, or sets its brightness, colour or warmth — Philips Hue	Turns a light, room or zone on or off, or sets its brightness, colour or warmth — Philips Hue
+Turns a list into one piece of text, separated by what you choose	Turns a list into one piece of text, separated by what you choose
+Turns a value into another type — text, a number, yes/no or a date	Turns a value into another type — text, a number, yes/no or a date
+Turns accelerometer auto-rotation on or off	Turns accelerometer auto-rotation on or off
+Turns the camera torch (flashlight) on or off	Turns the camera torch (flashlight) on or off
+Type	Type
+URL	URL
+USB Device Connected	USB Device Connected
+Uncovered	Uncovered
+Undocked	Undocked
+Unit	Unit
+Unmounted	Unmounted
+Unmute	Unmute
+Unplugged	Unplugged
+Until	Until
+Until a date and time	Until a date and time
+Until a time of day	Until a time of day
+Up	Up
+Update Email	Update Email
+Value	Value
+Value (0-100, only when mode is set)	Value (0-100, only when mode is set)
+Value (0-255, only when auto is off)	Value (0-255, only when auto is off)
+Values this call carries	Values this call carries
+Variable	Variable
+Variable Change	Variable Change
+Vibrate	Vibrate
+Vibrates the device for a duration or pattern	Vibrates the device for a duration or pattern
+Volume Button	Volume Button
+Volume down	Volume down
+Volume up	Volume up
+Wait	Wait
+Wait Until	Wait Until
+Wait until finished	Wait until finished
+Warmth (K)	Warmth (K)
+Wednesdays	Wednesdays
+What to do	What to do
+Whatsapp	Whatsapp
+When cancelled	When cancelled
+When confirmed	When confirmed
+When finished	When finished
+When the light level	When the light level
+When the time comes	When the time comes
+When time runs out	When time runs out
+Where an item sits in a list, counting from 0, or -1 when it is not there	Where an item sits in a list, counting from 0, or -1 when it is not there
+Whether Bluetooth is currently enabled	Whether Bluetooth is currently enabled
+Whether Do-Not-Disturb is currently active	Whether Do-Not-Disturb is currently active
+Whether NFC is currently switched on	Whether NFC is currently switched on
+Whether Wi-Fi is currently enabled	Whether Wi-Fi is currently enabled
+Whether a list holds a given item	Whether a list holds a given item
+Whether a wired or USB headset is currently plugged in	Whether a wired or USB headset is currently plugged in
+Whether airplane mode is currently on	Whether airplane mode is currently on
+Whether battery saver is currently on	Whether battery saver is currently on
+Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down
+Whether the device is currently charging	Whether the device is currently charging
+Whether the device is currently in dark theme (night mode)	Whether the device is currently in dark theme (night mode)
+Whether the device is currently sitting in a dock	Whether the device is currently sitting in a dock
+Whether the screen is currently on and interactive	Whether the screen is currently on and interactive
+While the screen is off	While the screen is off
+Whole number	Whole number
+Wi-Fi Network	Wi-Fi Network
+Wi-Fi State Change	Wi-Fi State Change
+Wi-Fi enabled	Wi-Fi enabled
+Wi-Fi network	Wi-Fi network
+Within (ms)	Within (ms)
+Writes a message to this workflow\'s console	Writes a message to this workflow\'s console
+Yes or no	Yes or no
+Z to A / largest first	Z to A / largest first
+false	false
+in	in
+out	out
+response	response
+state	state
+true	true
