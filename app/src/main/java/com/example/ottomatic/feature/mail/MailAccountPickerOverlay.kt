@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.mail
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -34,7 +36,7 @@ fun MailAccountPickerOverlay(
     var picked by remember { mutableStateOf<String?>(null) }
 
     EditorOverlay(
-        title = "Choose an account",
+        title = stringResource(R.string.mail_choose_an_account),
         onClose = { picked?.let(onPick) ?: onDismiss() },
     ) { dismiss ->
         Column(

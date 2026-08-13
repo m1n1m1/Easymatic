@@ -51,11 +51,22 @@ import com.example.ottomatic.domain.registry.variableRefKeys
  */
 data class ValidationIssue(
     val severity: Severity,
+    /**
+     * The English sentence.
+     *
+     * Still here, and still built in the engine, because it is what `executeFrom`
+     * writes to the run log — which is not translated. The Problems panel ignores it
+     * and renders [reason] instead; the two must therefore say the same thing.
+     */
     val message: String,
     val nodes: Set<NodeId> = emptySet(),
     val connectionId: String? = null,
     val blockedNodes: Set<NodeId> = emptySet(),
     val blockedConnections: Set<String> = emptySet(),
+    /** What this is about, for the panel to word. Null falls back to [message]. */
+    val reason: IssueReason? = null,
+    /** The values that fill [reason]'s blanks, in the order its KDoc names them. */
+    val args: List<String> = emptyList(),
 )
 
 enum class Severity { ERROR, WARNING }
@@ -138,6 +149,8 @@ class GraphValidator(private val workflow: Workflow) {
             out += ValidationIssue(
                 Severity.WARNING,
                 "'${node.name}' needs $needs, which has not been granted — it may do nothing when it runs",
+                reason = IssueReason.PERMISSION_MISSING,
+                args = listOf(node.name, needs),
                 nodes = setOf(node.id),
             )
         }
@@ -166,6 +179,8 @@ class GraphValidator(private val workflow: Workflow) {
                 Severity.WARNING,
                 "'${node.name}' needs $needs, which ${entry.pluginName} has not been granted — " +
                     "it may do nothing when it runs",
+                reason = IssueReason.PLUGIN_PERMISSION_MISSING,
+                args = listOf(node.name, needs, entry.pluginName),
                 nodes = setOf(node.id),
             )
         }
@@ -189,13 +204,20 @@ class GraphValidator(private val workflow: Workflow) {
         for (node in workflow.nodes) {
             for (key in macroRefKeys(node.typeId)) {
                 val spec = node.config[key].orEmpty()
-                val message = when {
-                    spec.isBlank() -> "'${node.name}' has no macro chosen, so it will do nothing"
+                val (reason, message) = when {
+                    spec.isBlank() ->
+                        IssueReason.MACRO_UNSET to "'${node.name}' has no macro chosen, so it will do nothing"
                     MacroDirectory.isHydrated && MacroDirectory.byId(spec) == null ->
-                        "'${node.name}' points at a macro that no longer exists"
+                        IssueReason.MACRO_MISSING to "'${node.name}' points at a macro that no longer exists"
                     else -> continue
                 }
-                out += ValidationIssue(Severity.WARNING, message, nodes = setOf(node.id))
+                out += ValidationIssue(
+                    Severity.WARNING,
+                    message,
+                    nodes = setOf(node.id),
+                    reason = reason,
+                    args = listOf(node.name),
+                )
             }
         }
     }
@@ -223,13 +245,20 @@ class GraphValidator(private val workflow: Workflow) {
             for (key in smartHomeRefKeys(node.typeId)) {
                 val spec = node.config[key].orEmpty()
                 val hubId = SmartHomeRef.parse(spec)?.hubId
-                val message = when {
-                    spec.isBlank() -> "'${node.name}' has nothing chosen, so it will do nothing"
+                val (reason, message) = when {
+                    spec.isBlank() ->
+                        IssueReason.HUB_UNSET to "'${node.name}' has nothing chosen, so it will do nothing"
                     hubId != null && SmartHomeHubs.isHydrated && !SmartHomeHubs.exists(hubId) ->
-                        "'${node.name}' points at a hub that is no longer set up"
+                        IssueReason.HUB_MISSING to "'${node.name}' points at a hub that is no longer set up"
                     else -> continue
                 }
-                out += ValidationIssue(Severity.WARNING, message, nodes = setOf(node.id))
+                out += ValidationIssue(
+                    Severity.WARNING,
+                    message,
+                    nodes = setOf(node.id),
+                    reason = reason,
+                    args = listOf(node.name),
+                )
             }
         }
     }
@@ -251,8 +280,14 @@ class GraphValidator(private val workflow: Workflow) {
     private fun validateAiConnectionRefs(out: MutableList<ValidationIssue>) {
         for (node in workflow.nodes) {
             for (key in aiConnectionRefKeys(node.typeId)) {
-                aiConnectionProblem(node, node.config[key].orEmpty())?.let { message ->
-                    out += ValidationIssue(Severity.WARNING, message, nodes = setOf(node.id))
+                aiConnectionProblem(node, node.config[key].orEmpty())?.let { (reason, message) ->
+                    out += ValidationIssue(
+                        Severity.WARNING,
+                        message,
+                        nodes = setOf(node.id),
+                        reason = reason,
+                        args = listOf(node.name),
+                    )
                 }
             }
         }
@@ -268,12 +303,15 @@ class GraphValidator(private val workflow: Workflow) {
      * renders perfectly in the picker, name and provider and key, and answers
      * nothing.
      */
-    private fun aiConnectionProblem(node: WorkflowNode, id: String): String? = when {
-        id.isBlank() -> "'${node.name}' has no AI connection chosen, so it will do nothing"
+    private fun aiConnectionProblem(node: WorkflowNode, id: String): Pair<IssueReason, String>? = when {
+        id.isBlank() ->
+            IssueReason.AI_UNSET to "'${node.name}' has no AI connection chosen, so it will do nothing"
         !AiConnections.isHydrated -> null
-        !AiConnections.exists(id) -> "'${node.name}' points at an AI connection that no longer exists"
+        !AiConnections.exists(id) ->
+            IssueReason.AI_MISSING to "'${node.name}' points at an AI connection that no longer exists"
         !AiConnections.isConfigured(id) ->
-            "'${node.name}' points at an AI connection that is not finished being set up"
+            IssueReason.AI_UNFINISHED to
+                "'${node.name}' points at an AI connection that is not finished being set up"
         else -> null
     }
 
@@ -295,13 +333,20 @@ class GraphValidator(private val workflow: Workflow) {
         for (node in workflow.nodes) {
             for (key in variableRefKeys(node.typeId)) {
                 val spec = node.config[key].orEmpty()
-                val message = when {
-                    spec.isBlank() -> "'${node.name}' has no variable chosen, so it will do nothing"
+                val (reason, message) = when {
+                    spec.isBlank() ->
+                        IssueReason.VARIABLE_UNSET to "'${node.name}' has no variable chosen, so it will do nothing"
                     declarationFor(workflow, spec) == null ->
-                        "'${node.name}' uses a variable that no longer exists"
+                        IssueReason.VARIABLE_MISSING to "'${node.name}' uses a variable that no longer exists"
                     else -> continue
                 }
-                out += ValidationIssue(Severity.WARNING, message, nodes = setOf(node.id))
+                out += ValidationIssue(
+                    Severity.WARNING,
+                    message,
+                    nodes = setOf(node.id),
+                    reason = reason,
+                    args = listOf(node.name),
+                )
             }
         }
     }
@@ -346,6 +391,8 @@ class GraphValidator(private val workflow: Workflow) {
             out += ValidationIssue(
                 Severity.WARNING,
                 "'${node.name}' has nothing in its loop body, so repeating does nothing",
+                reason = IssueReason.EMPTY_LOOP_BODY,
+                args = listOf(node.name),
                 nodes = setOf(node.id),
             )
         }
@@ -377,6 +424,8 @@ class GraphValidator(private val workflow: Workflow) {
             out += ValidationIssue(
                 Severity.ERROR,
                 "'${node.name}' is an unknown node type (${node.typeId.value}) and cannot run",
+                reason = IssueReason.UNKNOWN_NODE_TYPE,
+                args = listOf(node.name, node.typeId.value),
                 nodes = setOf(node.id),
                 blockedNodes = setOf(node.id),
             )
@@ -396,6 +445,7 @@ class GraphValidator(private val workflow: Workflow) {
             out += ValidationIssue(
                 Severity.WARNING,
                 "This workflow has no trigger, so nothing will ever start it",
+                reason = IssueReason.NO_TRIGGER,
             )
             return
         }
@@ -404,6 +454,8 @@ class GraphValidator(private val workflow: Workflow) {
             out += ValidationIssue(
                 Severity.WARNING,
                 "'${trigger.name}' is not wired to anything, so it will fire and do nothing",
+                reason = IssueReason.TRIGGER_NOT_WIRED,
+                args = listOf(trigger.name),
                 nodes = setOf(trigger.id),
             )
         }
@@ -421,6 +473,7 @@ class GraphValidator(private val workflow: Workflow) {
                 out += ValidationIssue(
                     Severity.ERROR,
                     "An execution wire points at a node that is not here any more",
+                    reason = IssueReason.EXEC_WIRE_DANGLING,
                     nodes = setOf(conn.fromNodeId, conn.toNodeId),
                     connectionId = conn.id,
                     blockedConnections = setOf(conn.id),
@@ -432,6 +485,8 @@ class GraphValidator(private val workflow: Workflow) {
                 out += ValidationIssue(
                     Severity.ERROR,
                     "Unknown exec output port '${conn.fromPort}' on ${conn.fromNodeId}",
+                    reason = IssueReason.EXEC_OUTPUT_UNKNOWN,
+                    args = listOf(conn.fromPort.value, nameOf(conn.fromNodeId)),
                     nodes = setOf(conn.fromNodeId, conn.toNodeId),
                     connectionId = conn.id,
                     blockedConnections = setOf(conn.id),
@@ -441,6 +496,8 @@ class GraphValidator(private val workflow: Workflow) {
                 out += ValidationIssue(
                     Severity.ERROR,
                     "Unknown exec input port '${conn.toPort}' on ${conn.toNodeId}",
+                    reason = IssueReason.EXEC_INPUT_UNKNOWN,
+                    args = listOf(conn.toPort.value, nameOf(conn.toNodeId)),
                     nodes = setOf(conn.fromNodeId, conn.toNodeId),
                     connectionId = conn.id,
                     blockedConnections = setOf(conn.id),
@@ -464,7 +521,8 @@ class GraphValidator(private val workflow: Workflow) {
      * consumer is itself pulled: the far end of a transform chain is what actually
      * runs, so that is what gets held back.
      */
-    @Suppress("CyclomaticComplexMethod", "LoopWithTooManyJumpStatements")
+    // LongMethod: a flat sequence of edge checks, each with one exit.
+    @Suppress("CyclomaticComplexMethod", "LoopWithTooManyJumpStatements", "LongMethod")
     private fun validateDataConnections(out: MutableList<ValidationIssue>) {
         for (conn in workflow.dataConnections) {
             val fromNode = workflow.node(conn.fromNodeId)
@@ -473,6 +531,7 @@ class GraphValidator(private val workflow: Workflow) {
                 out += ValidationIssue(
                     Severity.ERROR,
                     "A data wire points at a node that is not here any more",
+                    reason = IssueReason.DATA_WIRE_DANGLING,
                     nodes = setOf(conn.fromNodeId, conn.toNodeId),
                     connectionId = conn.id,
                     blockedNodes = executedConsumers(conn.toNodeId),
@@ -488,6 +547,7 @@ class GraphValidator(private val workflow: Workflow) {
                 out += ValidationIssue(
                     Severity.ERROR,
                     "A data wire runs through an unknown node type",
+                    reason = IssueReason.DATA_WIRE_UNKNOWN_TYPE,
                     nodes = setOf(conn.fromNodeId, conn.toNodeId),
                     connectionId = conn.id,
                     blockedNodes = executedConsumers(conn.toNodeId),
@@ -506,6 +566,8 @@ class GraphValidator(private val workflow: Workflow) {
                 out += dataEdgeError(
                     conn,
                     "'${conn.fromPort}' is not a data output port on ${conn.fromNodeId}",
+                    IssueReason.NOT_DATA_OUTPUT,
+                    listOf(conn.fromPort.value, nameOf(conn.fromNodeId)),
                 )
                 continue
             }
@@ -514,6 +576,8 @@ class GraphValidator(private val workflow: Workflow) {
                 out += dataEdgeError(
                     conn,
                     "'${conn.toPort}' is not a data input port on ${conn.toNodeId}",
+                    IssueReason.NOT_DATA_INPUT,
+                    listOf(conn.toPort.value, nameOf(conn.toNodeId)),
                 )
                 continue
             }
@@ -523,14 +587,23 @@ class GraphValidator(private val workflow: Workflow) {
                 out += dataEdgeError(
                     conn,
                     "Schema mismatch on data edge: source $sourceSchema not assignable to target $targetSchema",
+                    IssueReason.SCHEMA_MISMATCH,
+                    listOf(sourceSchema.toString(), targetSchema.toString()),
                 )
             }
         }
     }
 
-    private fun dataEdgeError(conn: DataConnection, message: String) = ValidationIssue(
+    private fun dataEdgeError(
+        conn: DataConnection,
+        message: String,
+        reason: IssueReason,
+        args: List<String> = emptyList(),
+    ) = ValidationIssue(
         Severity.ERROR,
         message,
+        reason = reason,
+        args = args,
         nodes = setOf(conn.fromNodeId, conn.toNodeId),
         connectionId = conn.id,
         blockedNodes = executedConsumers(conn.toNodeId),
@@ -567,6 +640,8 @@ class GraphValidator(private val workflow: Workflow) {
                 out += ValidationIssue(
                     Severity.WARNING,
                     "'${node.name}' is not connected to anything and will never be read",
+                    reason = IssueReason.VALUE_NOT_CONNECTED,
+                    args = listOf(node.name),
                     nodes = setOf(node.id),
                 )
             }
@@ -575,6 +650,8 @@ class GraphValidator(private val workflow: Workflow) {
                 out += ValidationIssue(
                     Severity.WARNING,
                     "'${node.name}' has nothing wired into it and will only use its own settings",
+                    reason = IssueReason.NOTHING_WIRED_IN,
+                    args = listOf(node.name),
                     nodes = setOf(node.id),
                 )
             }
@@ -607,6 +684,8 @@ class GraphValidator(private val workflow: Workflow) {
             out += ValidationIssue(
                 Severity.ERROR,
                 "Execution cycle detected: ${cycle.path(::nameOf)}",
+                reason = IssueReason.EXEC_CYCLE,
+                args = listOf(cycle.path(::nameOf)),
                 nodes = cycle.nodes.toSet(),
                 connectionId = cycle.closing.id,
                 blockedConnections = setOf(cycle.closing.id),
@@ -619,6 +698,8 @@ class GraphValidator(private val workflow: Workflow) {
             out += ValidationIssue(
                 Severity.ERROR,
                 "Data cycle detected: ${cycle.path(::nameOf)}",
+                reason = IssueReason.DATA_CYCLE,
+                args = listOf(cycle.path(::nameOf)),
                 nodes = cycle.nodes.toSet(),
                 connectionId = cycle.closing.id,
                 blockedNodes = executedConsumers(cycle.closing.toNodeId),
@@ -654,6 +735,8 @@ class GraphValidator(private val workflow: Workflow) {
                 out += ValidationIssue(
                     Severity.ERROR,
                     "'${nameOf(conn.fromNodeId)}' will not have run when '${nameOf(consumer)}' executes",
+                    reason = IssueReason.NOT_EXEC_UPSTREAM,
+                    args = listOf(nameOf(conn.fromNodeId), nameOf(consumer)),
                     nodes = setOf(conn.fromNodeId, consumer),
                     connectionId = conn.id,
                     // Only the consumer: the source itself is fine, it just runs too late.
@@ -710,6 +793,8 @@ class GraphValidator(private val workflow: Workflow) {
                     Severity.ERROR,
                     "'${nameOf(conn.fromNodeId)}' and '${nameOf(conn.toNodeId)}' are on opposite " +
                         "branches of '${fork.name}', so nothing can be passed between them",
+                    reason = IssueReason.FORK_BRANCH_CROSS,
+                    args = listOf(nameOf(conn.fromNodeId), nameOf(conn.toNodeId), fork.name),
                     nodes = setOf(conn.fromNodeId, conn.toNodeId),
                     connectionId = conn.id,
                     // Only the consumer, as everywhere else: the source is fine.

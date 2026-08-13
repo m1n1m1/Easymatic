@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.contacts
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -74,10 +76,12 @@ fun ContactNameField(
         onValueChange = onValueChange,
         label = labelSlot,
         colors = colors,
-        placeholder = { Text(text = "Anyone", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        placeholder = { Text(text =
+            stringResource(R.string.contacts_anyone), maxLines = 1, overflow = TextOverflow.Ellipsis) },
         trailingIcon = {
             IconButton(onClick = { picker.launch(CONTACT_NAME_PICKER_INTENT) }) {
-                Icon(imageVector = Icons.Filled.Person, contentDescription = "Fill in a contact's name")
+                Icon(imageVector = Icons.Filled.Person, contentDescription =
+                    stringResource(R.string.contacts_fill_in_a_contact_s))
             }
         },
         singleLine = true,

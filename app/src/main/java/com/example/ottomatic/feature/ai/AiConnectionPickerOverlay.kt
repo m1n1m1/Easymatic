@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.ai
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -36,7 +38,7 @@ fun AiConnectionPickerOverlay(
     var picked by remember { mutableStateOf<String?>(null) }
 
     EditorOverlay(
-        title = "Choose a connection",
+        title = stringResource(R.string.ai_choose_a_connection),
         onClose = { picked?.let(onPick) ?: onDismiss() },
     ) { dismiss ->
         Column(

@@ -149,6 +149,25 @@ Enabling records your **signing certificate**, not just your package name. An up
 signed by the same key is trusted silently; a package with your name signed by somebody
 else lands back disabled with the reason shown.
 
+### Your node's text is never translated by Ottomatic
+
+Ottomatic resolves its own node names, descriptions, port labels and `@Label` config
+labels through Android string resources, keyed off each node's typeId. **Yours cannot
+go through that**, and it is worth knowing why rather than filing it as a bug: your
+declaration crosses the binder as text you have *already rendered* — `NodeSchema` turns
+your `@Label` into a plain `String` inside your own process, long before Ottomatic sees
+it — so there is no key for Ottomatic to look up and never will be. Its resource ids
+would be meaningless in your APK in any case.
+
+So a plugin node renders exactly the words it declared, in whatever language they were
+written, whatever the phone's locale. This is the same fallback path a first-party node
+takes when its key is missing, so nothing about it is a special case.
+
+If you want your nodes translated, do it **on your side**: your plugin is an ordinary
+Android app, so put your text in your own `res/values-*/strings.xml` and resolve it in
+your service before building the declaration. Ottomatic re-reads your declarations when
+it binds, so the locale in force at that moment is the one the user sees.
+
 ## Lifetimes
 
 Ottomatic binds your service while a macro using your nodes is armed, while the graph

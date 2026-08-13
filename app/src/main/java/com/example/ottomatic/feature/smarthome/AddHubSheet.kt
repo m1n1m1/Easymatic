@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.smarthome
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -49,7 +51,7 @@ fun AddHubSheet(
     onChoose: (SmartHomeKind) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    EditorOverlay(title = "Add a hub", onClose = onDismiss) { dismiss ->
+    EditorOverlay(title = stringResource(R.string.smarthome_add_a_hub), onClose = onDismiss) { dismiss ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -58,14 +60,14 @@ fun AddHubSheet(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                text = "What are you connecting to?",
+                text = stringResource(R.string.smarthome_what_are_you_connecting_to),
                 style = MaterialTheme.typography.bodyMedium,
                 color = EditorColors.textSecondary,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
             KindRow(
-                title = "Philips Hue",
-                subtitle = "A bridge on your Wi-Fi",
+                title = stringResource(R.string.smarthome_philips_hue),
+                subtitle = stringResource(R.string.smarthome_a_bridge_on_your_wi),
                 onClick = {
                     onChoose(SmartHomeKind.HUE)
                     dismiss()

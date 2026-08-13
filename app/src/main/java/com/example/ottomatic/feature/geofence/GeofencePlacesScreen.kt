@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.geofence
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,12 +61,12 @@ fun GeofencePlacesScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.geofence_back),
                             tint = EditorColors.textPrimary,
                         )
                     }
                     Text(
-                        text = "Geofences",
+                        text = stringResource(R.string.geofence_geofences),
                         color = EditorColors.textPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,

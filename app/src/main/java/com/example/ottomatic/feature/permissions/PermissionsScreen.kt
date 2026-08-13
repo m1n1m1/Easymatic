@@ -1,5 +1,6 @@
 package com.example.ottomatic.feature.permissions
 
+import androidx.annotation.StringRes
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -49,12 +50,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import com.example.ottomatic.core.permissions.Permission
 import com.example.ottomatic.core.permissions.PermissionChecker
 import com.example.ottomatic.core.permissions.Permissions
 import com.example.ottomatic.core.permissions.PrerequisiteType
 import com.example.ottomatic.core.permissions.isSatisfied
+import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.PermissionCatalogue
+import com.example.ottomatic.feature.i18n.rememberNodeText
 import com.example.ottomatic.domain.registry.PermissionEntry
 import com.example.ottomatic.feature.grapheditor.EditorColors
 import com.example.ottomatic.feature.macro.editorTextButtonColors
@@ -102,12 +107,12 @@ fun PermissionsScreen(checker: PermissionChecker, onBack: () -> Unit) {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.permissions_back),
                             tint = EditorColors.textPrimary,
                         )
                     }
                     Text(
-                        text = "Permissions",
+                        text = stringResource(R.string.permissions_permissions),
                         color = EditorColors.textPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -116,19 +121,24 @@ fun PermissionsScreen(checker: PermissionChecker, onBack: () -> Unit) {
                 }
             }
 
+            // Hoisted: LazyColumn's content lambda is LazyListScope, not a composition,
+            // so a stringResource call cannot live inside it.
+            val nodesTitle = stringResource(R.string.permissions_used_by_your_nodes)
+            val appTitle = stringResource(R.string.permissions_ottomatic_itself)
+            val nodesBlurb = stringResource(R.string.permissions_node_section_blurb)
+            val appBlurb = stringResource(R.string.permissions_app_section_blurb)
             LazyColumn(modifier = Modifier.fillMaxSize().navigationBarsPadding()) {
                 section(
                     id = "nodes",
-                    title = "Used by your nodes",
-                    blurb = "These come from the triggers and actions you have placed. " +
-                        "Without one, the node does nothing and says nothing.",
+                    title = nodesTitle,
+                    blurb = nodesBlurb,
                     entries = nodeEntries,
                     state = state,
                 )
                 section(
                     id = "app",
-                    title = "Ottomatic itself",
-                    blurb = "Used by the app rather than by any one node.",
+                    title = appTitle,
+                    blurb = appBlurb,
                     entries = appEntries,
                     state = state,
                 )
@@ -179,7 +189,7 @@ private fun SectionHeader(title: String, blurb: String) {
 private fun PermissionRow(
     entry: PermissionEntry,
     isGranted: Boolean,
-    actionLabel: String,
+    @StringRes actionLabel: Int,
     onAction: () -> Unit,
 ) {
     Row(
@@ -193,7 +203,9 @@ private fun PermissionRow(
         // Amber is already what this app means by "look at this".
         Icon(
             imageVector = if (isGranted) Icons.Filled.CheckCircle else Icons.Filled.WarningAmber,
-            contentDescription = if (isGranted) "Granted" else "Not granted",
+            contentDescription = stringResource(
+                if (isGranted) R.string.permissions_granted else R.string.permissions_not_granted,
+            ),
             tint = if (isGranted) EditorColors.textSecondary else EditorColors.warnAccent,
             modifier = Modifier.size(18.dp),
         )
@@ -204,22 +216,28 @@ private fun PermissionRow(
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Text(
-                text = titleFor(entry.requirement),
+                text = titleRes(entry.requirement)
+                    ?.let { stringResource(it) }
+                    ?: derivedTitle(entry.requirement.manifestPermission),
                 color = EditorColors.textPrimary,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Medium,
             )
             Text(
-                text = descriptionFor(entry.requirement),
+                text = stringResource(descriptionRes(entry.requirement) ?: R.string.perm_desc_unknown),
                 color = EditorColors.textSecondary,
                 fontSize = 12.sp,
             )
             hintFor(entry)?.takeIf { !isGranted }?.let { hint ->
-                Text(text = hint, color = EditorColors.warnAccent, fontSize = 12.sp)
+                Text(text = stringResource(hint), color = EditorColors.warnAccent, fontSize = 12.sp)
             }
             if (entry.neededBy.isNotEmpty()) {
+                val nodeText = rememberNodeText()
+                val names = entry.neededBy
+                    .mapNotNull { NodeTypeRegistry.byId(it) }
+                    .joinToString(", ") { nodeText.name(it) }
                 Text(
-                    text = "Needed by: " + entry.neededBy.joinToString(", "),
+                    text = stringResource(R.string.permissions_needed_by, names),
                     color = EditorColors.textSecondary,
                     fontSize = 12.sp,
                     maxLines = 2,
@@ -238,7 +256,7 @@ private fun PermissionRow(
                 editorTextButtonColors()
             },
         ) {
-            Text(text = actionLabel)
+            Text(text = stringResource(actionLabel))
         }
     }
 }
@@ -270,11 +288,12 @@ private class PermissionsUiState(
      * stopped prompting for, whose `launch()` returns instantly with no UI and
      * leaves the row looking dead.
      */
-    fun actionLabelFor(entry: PermissionEntry): String = when {
-        isGranted(entry) -> "Revoke"
-        entry.requirement.type != PrerequisiteType.RUNTIME -> "Open settings"
-        entry.key in stuck -> "Open settings"
-        else -> "Grant"
+    @StringRes
+    fun actionLabelFor(entry: PermissionEntry): Int = when {
+        isGranted(entry) -> R.string.permissions_revoke
+        entry.requirement.type != PrerequisiteType.RUNTIME -> R.string.permissions_open_settings
+        entry.key in stuck -> R.string.permissions_open_settings
+        else -> R.string.permissions_grant
     }
 
     fun act(entry: PermissionEntry) {
@@ -381,11 +400,12 @@ private fun foregroundLocation(): Array<String> = arrayOf(
  * is one option among several and nothing on screen connects it back to the
  * geofence that wanted it.
  */
-private fun hintFor(entry: PermissionEntry): String? =
+@StringRes
+private fun hintFor(entry: PermissionEntry): Int? =
     if (entry.requirement.manifestPermission == Permissions.ACCESS_BACKGROUND_LOCATION.manifest &&
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
     ) {
-        "Android asks for this on its own screen — choose \"Allow all the time\"."
+        R.string.permissions_background_location_hint
     } else {
         null
     }

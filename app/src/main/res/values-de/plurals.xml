@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Deutsch. Dieselben Schlüssel wie values/plurals.xml. -->
+<resources>
+
+    <plurals name="selection_nodes_selected">
+        <item quantity="one">%1$d Knoten ausgewählt</item>
+        <item quantity="other">%1$d Knoten ausgewählt</item>
+    </plurals>
+    <plurals name="selection_connections_selected">
+        <item quantity="one">%1$d Verbindung ausgewählt</item>
+        <item quantity="other">%1$d Verbindungen ausgewählt</item>
+    </plurals>
+    <plurals name="selection_nodes">
+        <item quantity="one">%1$d Knoten</item>
+        <item quantity="other">%1$d Knoten</item>
+    </plurals>
+    <plurals name="selection_connections">
+        <item quantity="one">%1$d Verbindung</item>
+        <item quantity="other">%1$d Verbindungen</item>
+    </plurals>
+
+    <plurals name="problems_errors">
+        <item quantity="one">%1$d Fehler</item>
+        <item quantity="other">%1$d Fehler</item>
+    </plurals>
+    <plurals name="problems_warnings">
+        <item quantity="one">%1$d Warnung</item>
+        <item quantity="other">%1$d Warnungen</item>
+    </plurals>
+
+    <plurals name="editor_node_count">
+        <item quantity="one">%1$d Knoten</item>
+        <item quantity="other">%1$d Knoten</item>
+    </plurals>
+
+    <plurals name="widget_problem_count">
+        <item quantity="one">%1$d Problem</item>
+        <item quantity="other">%1$d Probleme</item>
+    </plurals>
+
+    <plurals name="plugins_provides_nodes">
+        <item quantity="one">Stellt %1$d Knoten bereit</item>
+        <item quantity="other">Stellt %1$d Knoten bereit</item>
+    </plurals>
+
+    <plurals name="api_macros_callable">
+        <item quantity="one">%1$d Makro kann derzeit von außen aufgerufen werden.</item>
+        <item quantity="other">%1$d Makros können derzeit von außen aufgerufen werden.</item>
+    </plurals>
+
+    <plurals name="variables_shared_by_every_macro">
+        <item quantity="one">%1$d von allen Makros geteilt</item>
+        <item quantity="other">%1$d von allen Makros geteilt</item>
+    </plurals>
+
+</resources>

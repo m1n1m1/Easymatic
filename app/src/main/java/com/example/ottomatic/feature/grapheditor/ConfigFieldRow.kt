@@ -22,8 +22,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.ottomatic.R
+import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.registry.ConfigField
+import com.example.ottomatic.domain.registry.ConfigOption
+import com.example.ottomatic.feature.i18n.rememberNodeText
+import androidx.compose.ui.res.stringResource
 
 /**
  * Width the socket button occupies. Every field in a sheet that has any wirable
@@ -68,6 +73,7 @@ private val FieldFirstRowCenter = 35.dp
  */
 @Composable
 internal fun ConfigFieldRow(
+    typeId: NodeTypeId,
     field: ConfigField<*>,
     port: Port?,
     wired: Boolean,
@@ -78,6 +84,11 @@ internal fun ConfigFieldRow(
     onWiredChange: (Boolean) -> Unit,
     siblingValue: (ConfigKey) -> String = { "" },
 ) {
+    // Resolved here rather than inside the editor, which stays generic over any field:
+    // the key needs the owning node, and this is the closest place that knows it.
+    val nodeText = rememberNodeText()
+    val fieldLabel = nodeText.fieldLabel(typeId, field)
+    val optionLabel: (ConfigOption) -> String = { nodeText.optionLabel(typeId, field.key, it) }
     if (port == null) {
         Box(
             modifier = Modifier
@@ -88,6 +99,8 @@ internal fun ConfigFieldRow(
                 field = field,
                 value = value,
                 onValueChange = onValueChange,
+                label = fieldLabel,
+                optionLabel = optionLabel,
                 siblingValue = siblingValue,
             )
         }
@@ -107,14 +120,19 @@ internal fun ConfigFieldRow(
                 field = field,
                 value = value,
                 onValueChange = onValueChange,
-                label = if (connected) "${field.label} ← $sourceLabel" else field.label,
+                label = if (connected) {
+                    stringResource(R.string.config_field_wired_from, fieldLabel, sourceLabel.orEmpty())
+                } else {
+                    fieldLabel
+                },
+                optionLabel = optionLabel,
                 tint = if (connected) wiredFieldTint(portColor) else null,
                 siblingValue = siblingValue,
             )
         }
         Spacer(modifier = Modifier.width(4.dp))
         DataInputSocket(
-            label = field.label,
+            label = fieldLabel,
             wired = wired,
             portColor = portColor,
             sourceLabel = sourceLabel,
@@ -170,9 +188,13 @@ private fun DataInputSocket(
             Icon(
                 imageVector = if (wired) Icons.Filled.Link else Icons.Filled.LinkOff,
                 contentDescription = when {
-                    connected -> "Use the typed value for $label (connected to $sourceLabel)"
-                    wired -> "Use the typed value for $label (nothing connected)"
-                    else -> "Feed $label from upstream data"
+                    connected -> stringResource(
+                        R.string.config_socket_use_typed_connected,
+                        label,
+                        sourceLabel.orEmpty(),
+                    )
+                    wired -> stringResource(R.string.config_socket_use_typed_free, label)
+                    else -> stringResource(R.string.config_socket_feed, label)
                 },
                 tint = when {
                     connected -> EditorColors.canvasBackground

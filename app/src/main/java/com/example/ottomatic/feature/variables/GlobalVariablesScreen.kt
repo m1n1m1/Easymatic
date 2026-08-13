@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.variables
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -65,12 +67,12 @@ fun GlobalVariablesScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.variables_back),
                             tint = EditorColors.textPrimary,
                         )
                     }
                     Text(
-                        text = "Global variables",
+                        text = stringResource(R.string.variables_global_variables),
                         color = EditorColors.textPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,

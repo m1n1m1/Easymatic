@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.nfc
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import android.nfc.NdefRecord
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -65,7 +67,7 @@ fun NfcWriteOverlay(
         onDispose { activity?.let(NfcReader::disableReaderMode) }
     }
 
-    EditorOverlay(title = "Write to tag", onClose = onClose) { _ ->
+    EditorOverlay(title = stringResource(R.string.nfc_write_to_tag), onClose = onClose) { _ ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -78,14 +80,30 @@ fun NfcWriteOverlay(
                     FilterChip(
                         selected = draft.kind == kind,
                         onClick = { viewModel.writeKindChanged(kind) },
-                        label = { Text(if (kind == NfcWriteKind.TEXT) "Text" else "Link") },
+                        label = {
+                            Text(
+                                stringResource(
+                                    if (kind == NfcWriteKind.TEXT) {
+                                        R.string.nfc_kind_text
+                                    } else {
+                                        R.string.nfc_kind_link
+                                    },
+                                ),
+                            )
+                        },
                     )
                 }
             }
             OutlinedTextField(
                 value = draft.content,
                 onValueChange = viewModel::writeContentChanged,
-                label = { Text(if (draft.kind == NfcWriteKind.TEXT) "Text" else "Link") },
+                label = {
+                    Text(
+                        stringResource(
+                            if (draft.kind == NfcWriteKind.TEXT) R.string.nfc_kind_text else R.string.nfc_kind_link,
+                        ),
+                    )
+                },
                 placeholder = {
                     Text(if (draft.kind == NfcWriteKind.TEXT) "meeting" else "example.com")
                 },
@@ -94,23 +112,21 @@ fun NfcWriteOverlay(
             )
             if (draft.kind == NfcWriteKind.LINK) {
                 Text(
-                    text = "A link makes the tag open in a browser when tapped — and a macro " +
-                        "watching this tag will stop running, because Android hands the tag to " +
-                        "whichever app claims the link before Ottomatic ever sees it. Text does " +
-                        "not do this.",
+                    text = stringResource(R.string.nfc_a_link_makes_the_tag),
                     style = MaterialTheme.typography.bodyMedium,
                     color = EditorColors.errorAccent,
                 )
             }
             if (draft.armed) {
                 Text(
-                    text = "Hold the tag to the back of your phone, and keep it still.",
+                    text = stringResource(R.string.nfc_hold_the_tag_to_the_2),
                     style = MaterialTheme.typography.bodyMedium,
                     color = EditorColors.textSecondary,
                 )
                 CircularProgressIndicator(color = EditorColors.triggerAccent)
             } else {
-                Button(onClick = viewModel::armWrite, enabled = draft.canWrite) { Text("Write") }
+                Button(onClick = viewModel::armWrite, enabled = draft.canWrite) { Text(
+                    stringResource(R.string.nfc_write)) }
             }
             draft.outcome?.let { outcome ->
                 Text(

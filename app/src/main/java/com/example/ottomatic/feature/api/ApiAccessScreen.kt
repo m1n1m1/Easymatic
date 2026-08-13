@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.api
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -77,12 +80,12 @@ fun ApiAccessScreen(
             IconButton(onClick = onBack) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(R.string.api_back),
                     tint = EditorColors.textPrimary,
                 )
             }
             Text(
-                text = "App access",
+                text = stringResource(R.string.api_app_access),
                 style = MaterialTheme.typography.titleLarge,
                 color = EditorColors.textPrimary,
                 fontWeight = FontWeight.SemiBold,
@@ -107,12 +110,9 @@ private fun AccessPreamble(anyApproved: Boolean, reachableMacros: Int) {
     Column {
         Text(
             text = if (anyApproved) {
-                "These apps can see and run the macros you have given a \"Called by Another App\" " +
-                    "trigger. They cannot see or change anything else in Ottomatic, and an app is " +
-                    "only listed here because you allowed it when it asked."
+                stringResource(R.string.api_these_apps_can_see_and)
             } else {
-                "No other app can run your macros. When one asks, you will be shown what it is " +
-                    "and can decide then — approvals appear here so you can withdraw them."
+                stringResource(R.string.api_no_other_app_can_run)
             },
             style = MaterialTheme.typography.bodyMedium,
             color = EditorColors.textSecondary,
@@ -120,10 +120,10 @@ private fun AccessPreamble(anyApproved: Boolean, reachableMacros: Int) {
         // The number that turns this screen from alarming into legible: with no such
         // macro, an approval grants the ability to do nothing at all.
         Text(
-            text = when (reachableMacros) {
-                0 -> "No macro can currently be called from outside."
-                1 -> "1 macro can currently be called from outside."
-                else -> "$reachableMacros macros can currently be called from outside."
+            text = if (reachableMacros == 0) {
+                stringResource(R.string.api_no_macro_can_currently_be)
+            } else {
+                pluralStringResource(R.plurals.api_macros_callable, reachableMacros, reachableMacros)
             },
             style = MaterialTheme.typography.bodySmall,
             color = EditorColors.textSecondary,
@@ -155,11 +155,14 @@ private fun CallerRow(caller: ApprovedCaller, onRevoke: () -> Unit) {
                     color = EditorColors.textSecondary,
                 )
             }
-            TextButton(onClick = onRevoke) { Text("Revoke") }
+            TextButton(onClick = onRevoke) { Text(stringResource(R.string.api_revoke)) }
         }
         if (caller.approvedAtMs > 0) {
             Text(
-                text = "Allowed on ${DateFormat.getDateInstance().format(Date(caller.approvedAtMs))}",
+                text = stringResource(
+                    R.string.api_allowed_on,
+                    DateFormat.getDateInstance().format(Date(caller.approvedAtMs)),
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.textSecondary,
                 modifier = Modifier.padding(top = 8.dp),

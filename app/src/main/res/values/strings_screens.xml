@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hand-written UI text. One section per area, each resolved by an exhaustive `when` -->
+<!-- or a direct stringResource call, so a missing entry fails the build. -->
+<resources>
+
+    <!-- Node palette headings — see CategoryLabels.kt -->
+    <string name="category_manual">Manual</string>
+    <string name="category_time_schedule">Time &amp; Schedule</string>
+    <string name="category_messaging">Messaging</string>
+    <string name="category_power_battery">Power &amp; Battery</string>
+    <string name="category_location">Location</string>
+    <string name="category_automation">Automation</string>
+    <string name="category_variables">Variables</string>
+    <string name="category_connectivity">Connectivity</string>
+    <string name="category_phone_media">Phone &amp; Media</string>
+    <string name="category_device_state">Device State</string>
+    <string name="category_sensors">Sensors &amp; Gestures</string>
+    <string name="category_flow_control">Flow Control</string>
+    <string name="category_interaction">Ask the User</string>
+    <string name="category_network">Network</string>
+    <string name="category_notifications">Notifications</string>
+    <string name="category_timing">Timing</string>
+    <string name="category_device_settings">Device Settings</string>
+    <string name="category_smart_home">Smart Home</string>
+    <string name="category_ai">AI</string>
+    <string name="category_data">Data</string>
+    <string name="category_value_power">Power &amp; Battery</string>
+    <string name="category_value_connectivity">Connectivity</string>
+    <string name="category_value_device">Device State</string>
+    <string name="category_value_sensors">Sensors</string>
+    <string name="category_value_time">Date &amp; Time</string>
+    <string name="category_value_variables">Variables</string>
+    <string name="category_transform_data">Data</string>
+    <string name="category_plugin">Plugin</string>
+
+    <!-- feature/permissions -->
+    <string name="permissions_needed_by">Needed by: %1$s</string>
+    <string name="permissions_open_settings">Open settings</string>
+
+    <!-- feature/grapheditor -->
+    <string name="config_field_wired_from">%1$s ← %2$s</string>
+    <string name="cd_palette_collapse_group">Collapse %1$s</string>
+    <string name="cd_palette_expand_group">Expand %1$s</string>
+
+    <!-- feature/apps -->
+    <string name="apps_any_app">Any app</string>
+    <string name="apps_choose_an_app">Choose an app</string>
+    <string name="apps_no_apps_match_that">No apps match that.</string>
+    <string name="apps_search">Search</string>
+
+    <!-- feature/sound -->
+    <string name="sound_audio_file">Audio file</string>
+    <string name="sound_choose_a_sound">Choose a sound</string>
+    <string name="sound_device_sounds">Device sounds</string>
+    <string name="sound_pick_one_of_the_device">Pick one of the device\'s own sounds, or any audio file on the phone.</string>
+
+    <!-- feature/plugins -->
+    <string name="plugins_back">Back</string>
+    <string name="plugins_plugins">Plugins</string>
+    <string name="plugins_this_app_asks_for">This app asks for: %1$s</string>
+
+    <!-- feature/contacts -->
+    <string name="contacts_anyone">Anyone</string>
+    <string name="contacts_choose_a_contact">Choose a contact</string>
+    <string name="contacts_clear_the_contact_and_type">Clear the contact and type a number instead</string>
+    <string name="contacts_fill_in_a_contact_s">Fill in a contact\'s name</string>
+    <string name="contacts_type_a_number">Type a number</string>
+
+    <!-- feature/macro -->
+    <string name="macro_cancel">Cancel</string>
+    <string name="macro_edit_macro">Edit macro</string>
+    <string name="macro_name">Name</string>
+    <string name="macro_save">Save</string>
+
+    <!-- feature/permissions -->
+    <string name="permissions_allow">Allow</string>
+    <string name="permissions_back">Back</string>
+    <string name="permissions_disable_battery_optimisation">Disable battery optimisation</string>
+    <string name="permissions_not_now">Not now</string>
+    <string name="permissions_ottomatic_itself">Ottomatic itself</string>
+    <string name="permissions_permissions">Permissions</string>
+    <string name="permissions_used_by_your_nodes">Used by your nodes</string>
+
+    <!-- feature/wifi -->
+    <string name="wifi_android_treats_the_name_of">Android treats the name of a network as a clue to where you are, so it will not name one without this. You can close this and type the network\'s name instead — the trigger still needs the permission to match it.</string>
+    <string name="wifi_any_network">Any network</string>
+    <string name="wifi_choose_a_network">Choose a network</string>
+    <string name="wifi_choose_a_network_in_range">Choose a network in range</string>
+    <string name="wifi_clear_the_network_so_this">Clear the network, so this matches any network</string>
+    <string name="wifi_connected">Connected</string>
+    <string name="wifi_grant">Grant</string>
+    <string name="wifi_no_networks_found_wi_fi">No networks found. Wi-Fi and Location both have to be switched on to scan, and Android limits how often it will look. You can type a network\'s name instead.</string>
+    <string name="wifi_ottomatic_needs_location_to_list">Ottomatic needs Location to list Wi-Fi networks</string>
+    <string name="wifi_rescan">Rescan</string>
+
+    <!-- feature/widget -->
+    <string name="widget_choose_a_trigger">Choose a trigger</string>
+    <string name="widget_engine_status">Engine status</string>
+    <string name="widget_last_run">Last run</string>
+    <string name="widget_macro_not_found">Macro not found</string>
+    <string name="widget_make_this_taller_to_see">Make this taller to see the triggers</string>
+    <string name="widget_no_manual_triggers_yet_n">No manual triggers yet.\n\nOpen a macro and drop a Manual Trigger node onto the canvas — it will show up here.</string>
+    <string name="widget_no_manual_triggers_yet_nadd">No manual triggers yet.\nAdd a Manual Trigger node to a macro.</string>
+    <string name="widget_nothing_to_show_nlong_press">Nothing to show.\nLong-press to choose what this panel displays.</string>
+    <string name="widget_ottomatic_panel">Ottomatic panel</string>
+    <string name="widget_problems">Problems</string>
+    <string name="widget_save">Save</string>
+    <string name="widget_show_all_of_them">Show all of them</string>
+    <string name="widget_trigger_buttons">Trigger buttons</string>
+
+    <!-- feature/api -->
+    <string name="api_allow">Allow</string>
+    <string name="api_app_access">App access</string>
+    <string name="api_back">Back</string>
+    <string name="api_copy_the_key">Copy the key</string>
+    <string name="api_it_will_be_able_to">It will be able to see the names of macros you have given a \"Called by Another App\" trigger, and to run them. It cannot see or change anything else in Ottomatic, and macros without that trigger stay out of reach.</string>
+    <string name="api_no_key_approved_apps_only">No key — approved apps only</string>
+    <string name="api_not_now">Not now</string>
+    <string name="api_ottomatic_key">Ottomatic key</string>
+    <string name="api_remove_the_key">Remove the key</string>
+    <string name="api_revoke">Revoke</string>
+    <string name="api_you_can_withdraw_this_at">You can withdraw this at any time under App access in Ottomatic.</string>
+
+    <!-- feature/variables -->
+    <string name="variables_back">Back</string>
+    <string name="variables_belongs_to">Belongs to</string>
+    <string name="variables_choose_a_variable">Choose a variable</string>
+    <string name="variables_chosen_once_a_variable_cannot">Chosen once — a variable cannot move between the two later, because the nodes pointing at it record which set it is in.</string>
+    <string name="variables_constant">Constant</string>
+    <string name="variables_delete_variable">Delete variable</string>
+    <string name="variables_global">Global</string>
+    <string name="variables_global_variables">Global variables</string>
+    <string name="variables_its_value_is_fixed_here">Its value is fixed here. A node that tries to write it says so and carries on.</string>
+    <string name="variables_new_variable">New variable</string>
+    <string name="variables_save">Save</string>
+    <string name="variables_this_workflow">This workflow</string>
+
+    <!-- feature/geofence -->
+    <string name="geofence_back">Back</string>
+    <string name="geofence_centre_on_my_location">Centre on my location</string>
+    <string name="geofence_choose_a_place">Choose a place</string>
+    <string name="geofence_clear_search">Clear search</string>
+    <string name="geofence_delete_place">Delete place</string>
+    <string name="geofence_geofences">Geofences</string>
+    <string name="geofence_home_work_gym">Home, Work, Gym…</string>
+    <string name="geofence_name">Name</string>
+    <string name="geofence_new_place">New place</string>
+    <string name="geofence_no_places_yet_create_one">No places yet. Create one to point a geofence trigger at it — every trigger using it moves when you edit it.</string>
+    <string name="geofence_radius">Radius</string>
+    <string name="geofence_save">Save</string>
+    <string name="geofence_search_an_address_or_place">Search an address or place</string>
+
+    <!-- feature/nfc -->
+    <string name="nfc_a_link_makes_the_tag">A link makes the tag open in a browser when tapped — and a macro watching this tag will stop running, because Android hands the tag to whichever app claims the link before Ottomatic ever sees it. Text does not do this.</string>
+    <string name="nfc_already_in_your_library">Already in your library.</string>
+    <string name="nfc_any_tag">Any tag</string>
+    <string name="nfc_back">Back</string>
+    <string name="nfc_choose_a_tag">Choose a tag</string>
+    <string name="nfc_delete_tag">Delete tag</string>
+    <string name="nfc_desk_car_dock_nightstand">Desk, Car dock, Nightstand…</string>
+    <string name="nfc_hold_the_tag_to_the">Hold the tag to the back of your phone</string>
+    <string name="nfc_hold_the_tag_to_the_2">Hold the tag to the back of your phone, and keep it still.</string>
+    <string name="nfc_name">Name</string>
+    <string name="nfc_nfc_is_switched_off">NFC is switched off</string>
+    <string name="nfc_nfc_tags">NFC tags</string>
+    <string name="nfc_no_tags_yet_scan_one">No tags yet. Scan one to point a trigger at it — a tag keeps the same id for life, so nothing has to be written to it.</string>
+    <string name="nfc_open_settings">Open settings</string>
+    <string name="nfc_save">Save</string>
+    <string name="nfc_scan_a_new_tag">Scan a new tag</string>
+    <string name="nfc_the_nfc_antenna_is_usually">The NFC antenna is usually near the top on the back.</string>
+    <string name="nfc_this_phone_has_no_nfc">This phone has no NFC</string>
+    <string name="nfc_this_tag_reports_a_different">This tag reports a different id every time it is tapped, so a macro could never recognise it. Bank cards, transit cards and phones pretending to be cards all do this. Use a plain NFC sticker instead.</string>
+    <string name="nfc_write">Write</string>
+    <string name="nfc_write_data_to_this_tag">Write data to this tag</string>
+    <string name="nfc_write_to_tag">Write to tag</string>
+
+    <!-- feature/mail -->
+    <string name="mail_add_an_account">Add an account</string>
+    <string name="mail_back">Back</string>
+    <string name="mail_choose_a_folder">Choose a folder</string>
+    <string name="mail_choose_an_account">Choose an account</string>
+    <string name="mail_delete_account">Delete account</string>
+    <string name="mail_email_address">Email address</string>
+    <string name="mail_inbox">INBOX</string>
+    <string name="mail_incoming_imap">Incoming (IMAP)</string>
+    <string name="mail_mail_accounts">Mail accounts</string>
+    <string name="mail_name">Name</string>
+    <string name="mail_no_accounts_yet_add_one">No accounts yet. Add one to send mail from a macro, or to start a macro when mail arrives. Most providers need an app password rather than your normal one — the form says where to make it.</string>
+    <string name="mail_open_the_app_password_page">Open the app-password page</string>
+    <string name="mail_outgoing_smtp">Outgoing (SMTP)</string>
+    <string name="mail_port">Port</string>
+    <string name="mail_provider">Provider</string>
+    <string name="mail_save">Save</string>
+    <string name="mail_security">Security</string>
+    <string name="mail_servers">Servers</string>
+    <string name="mail_test_connection">Test connection</string>
+    <string name="mail_this_account_s_password_could">This account\'s password could not be read — most likely it came from a backup or another phone, which the key that sealed it does not. Type it again to fix it.</string>
+    <string name="mail_this_provider_cannot_be_added">This provider cannot be added</string>
+    <string name="mail_unchanged">Unchanged</string>
+    <string name="mail_username_only_if_it_differs">Username (only if it differs from the address)</string>
+    <string name="mail_work_personal_alarm_system">Work, Personal, Alarm system…</string>
+
+    <!-- feature/workflowlist -->
+    <string name="workflowlist_add_to_home_screen">Add to home screen</string>
+    <string name="workflowlist_add_workflow">Add workflow</string>
+    <string name="workflowlist_app_access">App access</string>
+    <string name="workflowlist_can_t_add_it_from">Can\'t add it from here</string>
+    <string name="workflowlist_cancel">Cancel</string>
+    <string name="workflowlist_choose_a_macro">Choose a macro</string>
+    <string name="workflowlist_delete">Delete</string>
+    <string name="workflowlist_delete_workflow">Delete workflow</string>
+    <string name="workflowlist_edit">Edit</string>
+    <string name="workflowlist_geofences">Geofences</string>
+    <string name="workflowlist_global_variables">Global variables</string>
+    <string name="workflowlist_libraries">Libraries</string>
+    <string name="workflowlist_mail_accounts">Mail accounts</string>
+    <string name="workflowlist_more">More</string>
+    <string name="workflowlist_nfc_tags">NFC tags</string>
+    <string name="workflowlist_no_other_macros_yet">No other macros yet.</string>
+    <string name="workflowlist_no_workflows_yet_ntap_to">No workflows yet.\nTap + to create one.</string>
+    <string name="workflowlist_permissions">Permissions</string>
+    <string name="workflowlist_plugins">Plugins</string>
+    <string name="workflowlist_smart_home">Smart home</string>
+    <string name="workflowlist_which_trigger">Which trigger?</string>
+    <string name="workflowlist_workflows">Workflows</string>
+
+    <!-- feature/ai -->
+    <string name="ai_add_connection">Add connection</string>
+    <string name="ai_ai_connections">AI connections</string>
+    <string name="ai_answer_briefly_and_in_plain">Answer briefly and in plain language.</string>
+    <string name="ai_back">Back</string>
+    <string name="ai_choose_a_connection">Choose a connection</string>
+    <string name="ai_delete">Delete</string>
+    <string name="ai_edit">Edit</string>
+    <string name="ai_list_models">List models</string>
+    <string name="ai_models">Models</string>
+    <string name="ai_name">Name</string>
+    <string name="ai_no_connections_yet_add_one">No connections yet. Add one to use the Ask AI node. It takes a free API key from Google AI Studio — the form walks you through getting one, and opens the page for you.</string>
+    <string name="ai_paste_key">Paste key</string>
+    <string name="ai_provider">Provider</string>
+    <string name="ai_save">Save</string>
+    <string name="ai_save_the_connection_first_then">Save the connection first, then Test to check the key works.</string>
+    <string name="ai_sent_ahead_of_every_prompt">Sent ahead of every prompt through this connection. An Ask AI node\'s own standing instruction is added after it rather than replacing it.</string>
+    <string name="ai_server_address">Server address</string>
+    <string name="ai_standing_instruction_optional">Standing instruction (optional)</string>
+    <string name="ai_test">Test</string>
+    <string name="ai_the_key_is_stored_encrypted">The key is stored encrypted on this phone and is never shown again. %1$s Nothing is sent unless a macro reaches an Ask AI node.</string>
+    <string name="ai_this_address_is_unencrypted_that">This address is unencrypted. That is normal for a server on your own network — do not use it for anything across the internet, because the key would be sent in the clear.</string>
+
+    <!-- feature/smarthome -->
+    <string name="smarthome_a_bridge_on_your_wi">A bridge on your Wi-Fi</string>
+    <string name="smarthome_add_a_hub">Add a hub</string>
+    <string name="smarthome_back">Back</string>
+    <string name="smarthome_connect">Connect</string>
+    <string name="smarthome_done">Done</string>
+    <string name="smarthome_it_is_the_large_button">It is the large button in the middle of the disc, between the three small lights. Connecting to %1$s.</string>
+    <string name="smarthome_looking_for_bridges_on_your">Looking for bridges on your Wi-Fi…</string>
+    <string name="smarthome_name">Name</string>
+    <string name="smarthome_no_hubs_yet_add_one">No hubs yet. Add one to control your lights from a macro. You will need to press the button on the bridge once, to prove you are standing next to it.</string>
+    <string name="smarthome_nothing_matches">Nothing matches \"%1$s\".</string>
+    <string name="smarthome_only_trust_it_if_you">Only trust it if you reset or replaced your bridge. If you did not, something else on your network is answering as it.</string>
+    <string name="smarthome_or_type_the_bridge_s">Or type the bridge\'s address</string>
+    <string name="smarthome_paired_this_is_the_name">Paired. This is the name your macros will show.</string>
+    <string name="smarthome_philips_hue">Philips Hue</string>
+    <string name="smarthome_press_the_round_button_on">Press the round button on top of your bridge.</string>
+    <string name="smarthome_refresh_lights_and_scenes">  Refresh lights and scenes</string>
+    <string name="smarthome_remove_hub">Remove hub</string>
+    <string name="smarthome_save">Save</string>
+    <string name="smarthome_search">Search</string>
+    <string name="smarthome_smart_home">Smart home</string>
+    <string name="smarthome_this_address_is_presenting_a">This address is presenting a different certificate</string>
+    <string name="smarthome_trust_new_certificate">Trust new certificate</string>
+    <string name="smarthome_what_are_you_connecting_to">What are you connecting to?</string>
+
+    <!-- feature/grapheditor -->
+    <string name="grapheditor_add_node">Add node</string>
+    <string name="grapheditor_any_tag">Any tag</string>
+    <string name="grapheditor_back">Back</string>
+    <string name="grapheditor_cancel">Cancel</string>
+    <string name="grapheditor_clear_console">Clear console</string>
+    <string name="grapheditor_clear_search">Clear search</string>
+    <string name="grapheditor_clear_selection">Clear selection</string>
+    <string name="grapheditor_close">Close</string>
+    <string name="grapheditor_configure">Configure</string>
+    <string name="grapheditor_configure_node">Configure node</string>
+    <string name="grapheditor_delete">Delete</string>
+    <string name="grapheditor_delete_selection">Delete selection</string>
+    <string name="grapheditor_delete_workflow">Delete workflow</string>
+    <string name="grapheditor_edit">Edit…</string>
+    <string name="grapheditor_editor_surface">editor surface</string>
+    <string name="grapheditor_enabled">Enabled</string>
+    <string name="grapheditor_fit_to_screen">Fit to screen</string>
+    <string name="grapheditor_grant">Grant</string>
+    <string name="grapheditor_hh_mm">HH:mm</string>
+    <string name="grapheditor_name">Name</string>
+    <string name="grapheditor_next">Next</string>
+    <string name="grapheditor_no_problems">No problems</string>
+    <string name="grapheditor_nothing_selected_u2014_this_trigger">Nothing selected \u2014 this trigger falls back to firing on enter.</string>
+    <string name="grapheditor_permission_needed">Permission needed</string>
+    <string name="grapheditor_pick_a_date_and_time">Pick a date and time</string>
+    <string name="grapheditor_pick_a_time">Pick a time</string>
+    <string name="grapheditor_remove_port">Remove port</string>
+    <string name="grapheditor_run_workflow">Run workflow</string>
+    <string name="grapheditor_search_nodes">Search nodes</string>
+    <string name="grapheditor_show_all">Show all</string>
+    <string name="grapheditor_stop_workflow">Stop workflow</string>
+    <string name="grapheditor_tap_to_add_your_first">Tap + to add your first node</string>
+    <string name="grapheditor_this_node_needs_contacts_access">This node needs contacts access to look up the number you chose. Without it, it will do nothing when it runs.</string>
+    <string name="grapheditor_this_workflow_is_ready_to">This workflow is ready to run.</string>
+    <string name="grapheditor_type">Type</string>
+    <string name="grapheditor_variables_are_unavailable_here">Variables are unavailable here.</string>
+    <string name="grapheditor_workflow_actions">Workflow actions</string>
+    <string name="grapheditor_your_canvas_is_empty">Your canvas is empty</string>
+    <string name="grapheditor_zoom_in">Zoom in</string>
+    <string name="grapheditor_zoom_out">Zoom out</string>
+
+    <!-- second pass -->
+    <string name="ai_add_ai_connection">Add AI connection</string>
+    <string name="ai_api_key">API key</string>
+    <string name="ai_api_key_paste_it_in">API key — paste it in again</string>
+    <string name="ai_edit_connection">Edit connection</string>
+    <string name="ai_key_needs_pasting_in_again">Key needs pasting in again</string>
+    <string name="ai_leave_these_empty_to_use">Leave these empty to use the provider\'s own models. Fill one in when a model is retired, or to pin a particular one.</string>
+    <string name="ai_name_the_model_your_server">Name the model your server or account serves. If you only fill in Fast, the other two use it as well.</string>
+    <string name="ai_new_api_key_leave_empty">New API key (leave empty to keep the current one)</string>
+    <string name="ai_provider_s_default">provider\'s default</string>
+    <string name="api_no_macro_can_currently_be">No macro can currently be called from outside.</string>
+    <string name="api_no_other_app_can_run">No other app can run your macros. When one asks, you will be shown what it is and can decide then — approvals appear here so you can withdraw them.</string>
+    <string name="api_these_apps_can_see_and">These apps can see and run the macros you have given a \"Called by Another App\" trigger. They cannot see or change anything else in Ottomatic, and an app is only listed here because you allowed it when it asked.</string>
+    <string name="apps_other_apps">Other apps</string>
+    <string name="geofence_edit_place">Edit place</string>
+    <string name="geofence_new_place_2">New place</string>
+    <string name="grapheditor_add_node_2">Add node</string>
+    <string name="grapheditor_no_nodes_can_connect_here">No nodes can connect here</string>
+    <string name="grapheditor_no_nodes_match_your_search">No nodes match your search</string>
+    <string name="grapheditor_no_place_selected">No place selected</string>
+    <string name="grapheditor_place_missing">Place missing</string>
+    <string name="grapheditor_variables">Variables</string>
+    <string name="hue_find_your_bridge">Find your bridge</string>
+    <string name="hue_hue_bridge">Hue Bridge</string>
+    <string name="hue_name_your_bridge">Name your bridge</string>
+    <string name="hue_press_the_link_button">Press the link button</string>
+    <string name="hue_text"> · </string>
+    <string name="macro_colour">Colour</string>
+    <string name="macro_icon">Icon</string>
+    <string name="mail_password_needed">Password needed</string>
+    <string name="nfc_ottomatic_cannot_switch_it_on">Ottomatic cannot switch it on for you — Android only allows that from its own settings.</string>
+    <string name="nfc_rename_tag">Rename tag</string>
+    <string name="nfc_scan_a_tag">Scan a tag</string>
+    <string name="nfc_there_is_nothing_to_scan">There is nothing to scan with. A tag trigger will never fire here.</string>
+    <string name="permissions_ottomatic_couldn_t_resume_your">Ottomatic couldn\'t resume your macros in the background after the last reboot. To keep automation running without intervention, allow Ottomatic to run without battery restrictions. You can change this later under Permissions.</string>
+    <string name="plugins_a_plugin_adds_trigger_and">A plugin adds trigger and action nodes to your palette. It is a separate app: it runs its own code, in its own process, using only the permissions it asks you for itself. Ottomatic does not share its permissions with it.</string>
+    <string name="plugins_no_plugins_are_installed_a">No plugins are installed. A plugin is a separate app that adds trigger and action nodes to your palette; install one and it will appear here.</string>
+    <string name="plugins_provides_no_nodes">Provides no nodes</string>
+    <string name="smarthome_address">Address</string>
+    <string name="smarthome_bridge_id">Bridge id</string>
+    <string name="smarthome_hub">Hub</string>
+    <string name="smarthome_lights">Lights</string>
+    <string name="smarthome_pair_again">Pair again</string>
+    <string name="smarthome_presented">Presented</string>
+    <string name="smarthome_refresh">Refresh</string>
+    <string name="smarthome_rooms_and_zones">Rooms and zones</string>
+    <string name="smarthome_scenes">Scenes</string>
+    <string name="smarthome_trusted">Trusted</string>
+    <string name="sound_default_ringtone">default ringtone</string>
+    <string name="variables_holds">Holds</string>
+    <string name="variables_name">Name</string>
+    <string name="variables_note_optional">Note (optional)</string>
+    <string name="variables_starts_at">Starts at</string>
+    <string name="variables_value">Value</string>
+    <string name="widget_a_count_of_macros_that">A count of macros that cannot run — hidden when there are none</string>
+    <string name="widget_a_grid_of_manual_triggers">A grid of manual triggers you can tap to run</string>
+    <string name="widget_new_macros_appear_on_the">New macros appear on the panel automatically</string>
+    <string name="widget_show">Show</string>
+    <string name="widget_whether_the_engine_is_running">Whether the engine is running, and how many macros are armed</string>
+    <string name="widget_which_macro_ran_last_whether">Which macro ran last, whether it worked, and when</string>
+    <string name="widget_which_triggers">Which triggers</string>
+    <string name="workflowlist_text"> · </string>
+    <string name="workflowlist_this_macro">this macro</string>
+
+    <!-- feature/grapheditor selection -->
+    <string name="grapheditor_nothing_selected">Nothing selected</string>
+    <string name="grapheditor_selection_mixed">%1$s, %2$s</string>
+
+    <!-- feature/widget, Glance surfaces -->
+    <string name="widget_engine_running">Engine running</string>
+    <string name="widget_engine_stopped">Engine stopped</string>
+    <string name="widget_armed_of_total">%1$d of %2$d armed</string>
+    <string name="widget_state_running">Running…</string>
+    <string name="widget_state_done">Done</string>
+    <string name="widget_state_failed">Failed</string>
+    <string name="widget_state_ready">Ready</string>
+    <string name="widget_state_off">Off</string>
+    <string name="widget_outcome_running">running</string>
+    <string name="widget_outcome_ok">ok</string>
+    <string name="widget_outcome_failed">failed</string>
+    <string name="widget_last_run_line">%1$s · %2$s · %3$s</string>
+    <string name="widget_ago_just_now">just now</string>
+    <string name="widget_ago_minutes">%1$dm ago</string>
+    <string name="widget_ago_hours">%1$dh ago</string>
+    <string name="widget_ago_days">%1$dd ago</string>
+    <string name="widget_ago_a_while">a while ago</string>
+
+    <!-- view-model status lines -->
+    <string name="nfc_written">Written.</string>
+    <string name="nfc_could_not_write">Could not write to this tag.</string>
+    <string name="smarthome_up_to_date">Up to date</string>
+    <string name="smarthome_trusted_works_again">Trusted. The hub should work again.</string>
+    <string name="smarthome_button_not_pressed">The button wasn\'t pressed in time — try again</string>
+    <string name="workflowlist_new_workflow">New Workflow</string>
+    <string name="mail_account_deleted">That account has been deleted</string>
+    <string name="mail_account_needs_password">This account needs its password typed in again</string>
+    <string name="mail_signed_in">Signed in. Sending and receiving both work.</string>
+
+    <!-- node kinds -->
+    <string name="kind_trigger">Trigger</string>
+    <string name="kind_action">Action</string>
+    <string name="kind_value">Value</string>
+    <string name="kind_transform">Transform</string>
+    <string name="kind_triggers">Triggers</string>
+    <string name="kind_actions">Actions</string>
+    <string name="kind_values">Values</string>
+    <string name="kind_transforms">Transforms</string>
+
+    <!-- editor console and bottom bar -->
+    <string name="console_nothing_at_level">Nothing at this level</string>
+    <string name="console_nothing_logged">Nothing logged yet</string>
+    <string name="console_widen_filter">Widen the filter to see the rest of this workflow\'s history.</string>
+    <string name="console_run_the_workflow">Run the workflow. Errors, action.log messages and a script\'s console.log appear here.</string>
+    <string name="console_filter_all">All</string>
+    <string name="console_filter_info">Info</string>
+    <string name="console_filter_problems">Problems</string>
+    <string name="editor_tab_problems">Problems</string>
+    <string name="editor_tab_console">Console</string>
+    <string name="editor_tab_variables">Variables</string>
+    <string name="editor_back_to_graph">Back to the graph</string>
+    <string name="editor_back_to_variables">Back to this workflow\'s variables</string>
+
+    <string name="permissions_node_section_blurb">These come from the triggers and actions you have placed. Without one, the node does nothing and says nothing.</string>
+    <string name="permissions_app_section_blurb">Used by the app rather than by any one node.</string>
+    <string name="permissions_granted">Granted</string>
+    <string name="permissions_not_granted">Not granted</string>
+    <string name="permissions_revoke">Revoke</string>
+    <string name="permissions_grant">Grant</string>
+    <string name="permissions_background_location_hint">Android asks for this on its own screen — choose "Allow all the time".</string>
+
+    <string name="smarthome_choose_a_scene">Choose a scene</string>
+    <string name="smarthome_choose_a_light">Choose a light</string>
+    <string name="smarthome_no_hub_yet">No hub yet. Add one to control your lights from a macro.</string>
+    <string name="smarthome_nothing_read">Nothing has been read from this hub yet. Check it is switched on and try again.</string>
+    <string name="smarthome_rooms">Rooms</string>
+    <string name="smarthome_zones">Zones</string>
+    <string name="smarthome_white_only">White only</string>
+    <string name="smarthome_everything_in_it">Everything in it</string>
+
+    <string name="mail_add_account">Add account</string>
+    <string name="mail_edit_account">Edit account</string>
+    <string name="mail_app_password">App password</string>
+    <string name="mail_app_password_keep">App password (leave blank to keep)</string>
+    <string name="mail_security_none">None (not recommended)</string>
+    <string name="mail_security_starttls">STARTTLS</string>
+    <string name="mail_security_tls">TLS / SSL</string>
+    <string name="workflowlist_launcher_cannot_place">This launcher doesn\'t let an app place a widget for you. Add the Run tile yourself from your home screen\'s widget list — it will ask which trigger it is for.</string>
+    <string name="workflowlist_delete_confirm">Delete "%1$s"? This cannot be undone.</string>
+    <string name="workflowlist_armed">Armed</string>
+    <string name="workflowlist_off">Off</string>
+    <string name="workflowlist_armed_with_problems">Armed · %1$s</string>
+
+    <string name="grapheditor_consequence_never_fires">will never fire</string>
+    <string name="grapheditor_consequence_reads_nothing">will read as nothing</string>
+    <string name="grapheditor_consequence_fails">will fail every time it runs</string>
+    <string name="grapheditor_permission_joiner"> and </string>
+    <string name="grapheditor_node_needs_permissions">This node %1$s until you grant %2$s.</string>
+    <string name="problems_path_arrow"> → </string>
+    <string name="problems_skipped_nodes">skipped: %1$s</string>
+    <string name="problems_wire_skipped">this wire is skipped</string>
+    <string name="problems_where_separator">  ·  </string>
+
+    <string name="variables_edit_named">Edit %1$s</string>
+    <string name="variables_empty">empty</string>
+    <string name="variables_constant_is">constant · %1$s</string>
+    <string name="variables_equals">= %1$s</string>
+    <string name="variables_starts_at_value">starts at %1$s</string>
+    <string name="variables_unset">unset</string>
+    <string name="variables_subtitle">%1$s · %2$s</string>
+    <string name="geofence_edit_named">Edit %1$s</string>
+    <string name="geofence_coordinates">%1$.4f, %2$.4f</string>
+    <string name="geofence_place_subtitle">%1$s · %2$s</string>
+    <string name="geofence_radius_km">%1$.1f km</string>
+    <string name="geofence_radius_m">%1$d m</string>
+
+    <string name="config_now">Now</string>
+    <string name="config_set">Set</string>
+    <string name="config_add_row">Add %1$s</string>
+    <string name="config_port_carries_list">This port carries a list</string>
+    <string name="config_port_carries_one">This port carries one value</string>
+    <string name="config_hub_removed">%1$s · hub removed</string>
+    <string name="config_deleted_account">Deleted account</string>
+    <string name="config_deleted_connection">Deleted connection</string>
+    <string name="config_global_variable">Global · %1$s</string>
+    <string name="config_none_selected">None selected</string>
+
+    <string name="variables_edit_variable">Edit variable</string>
+    <string name="variables_every_workflow">Every workflow</string>
+    <string name="variables_empty_local">Nothing yet. A variable here belongs to this macro alone.</string>
+    <string name="variables_empty_global">Nothing yet. A variable here is shared by every macro.</string>
+    <string name="nfc_kind_text">Text</string>
+    <string name="nfc_kind_link">Link</string>
+    <string name="nfc_rename_named">Rename %1$s</string>
+    <string name="mail_edit_named">Edit %1$s</string>
+    <string name="grapheditor_has_error">Has an error</string>
+    <string name="grapheditor_has_warning">Has a warning</string>
+    <string name="grapheditor_cannot_connect_kinds">Cannot connect exec port to data port</string>
+    <string name="smarthome_settings_for">Settings for %1$s</string>
+    <string name="smarthome_hub_subtitle">%1$s · %2$d lights · %3$d scenes</string>
+
+    <string name="config_socket_use_typed_connected">Use the typed value for %1$s (connected to %2$s)</string>
+    <string name="config_socket_use_typed_free">Use the typed value for %1$s (nothing connected)</string>
+    <string name="config_socket_feed">Feed %1$s from upstream data</string>
+    <string name="grapheditor_delete_confirm">Delete "%1$s"? Its run log goes with it. This cannot be undone.</string>
+    <string name="grapheditor_zoom_percent">%1$d%%</string>
+    <string name="grapheditor_connect_from">Connect from %1$s</string>
+    <string name="nfc_tag_says">This tag says: %1$s</string>
+    <string name="plugins_node_rejected">%1$s was not added: %2$s</string>
+    <string name="widget_more_hidden">+%1$d more — resize to see</string>
+    <string name="widget_showing_all">Showing all %1$d triggers. Turn the switch off to pick which ones.</string>
+    <string name="api_allow_app_to_run">Allow %1$s to run your macros?</string>
+    <string name="api_generate_key">Generate a key</string>
+    <string name="api_replace_key">Replace the key</string>
+
+    <string name="problems_summary_separator"> · </string>
+    <string name="ai_model_answered">The model answered: %1$s</string>
+    <string name="mail_choose_account_first">Choose an account on this node first — folders live on the server, so Ottomatic has to know which one to ask.</string>
+    <string name="mail_folder_list_unreadable">The folder list could not be read.</string>
+    <string name="mail_no_usable_folders">This account reports no folders that can hold mail.</string>
+    <string name="shortcut_macro_gone">That macro no longer exists</string>
+    <string name="shortcut_running">Running…</string>
+    <string name="shortcut_running_named">Running %1$s</string>
+
+    <string name="ai_getting_a_key">Getting a key</string>
+    <string name="ai_pointing_at_own_server">Pointing at your own server</string>
+    <string name="api_key_copied">Key copied</string>
+    <string name="api_allowed_on">Allowed on %1$s</string>
+    <string name="geofence_small_radius_warning">Below %1$d m the system trades location accuracy for battery, so crossings are often missed or reported late.</string>
+    <string name="shortcut_macro_and_trigger">%1$s · %2$s</string>
+
+    <string name="grapheditor_port_path">%1$s › %2$s</string>
+</resources>

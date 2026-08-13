@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.nfc
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -33,7 +35,7 @@ fun NfcTagPickerOverlay(
     var picked by remember { mutableStateOf<String?>(null) }
 
     EditorOverlay(
-        title = "Choose a tag",
+        title = stringResource(R.string.nfc_choose_a_tag),
         onClose = { picked?.let(onPick) ?: onDismiss() },
     ) { dismiss ->
         Column(

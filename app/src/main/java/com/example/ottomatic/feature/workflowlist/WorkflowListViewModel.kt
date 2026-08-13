@@ -1,5 +1,6 @@
 package com.example.ottomatic.feature.workflowlist
 
+import com.example.ottomatic.R
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -93,7 +94,7 @@ class WorkflowListViewModel(
     /** Creates a new empty workflow and returns its id (for navigation). */
     fun create(onCreated: (String) -> Unit) {
         viewModelScope.launch {
-            val workflow = repository.create("New Workflow")
+            val workflow = repository.create(appContext.getString(R.string.workflowlist_new_workflow))
             refresh()
             onCreated(workflow.id)
         }

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hand-written. Resolved by the exhaustive `when`s in PermissionCopy.kt, so a -->
+<!-- missing entry here is a build failure rather than a blank row. -->
+<resources>
+
+    <!-- Row titles: a short Title Case noun for the switch itself. -->
+    <string name="perm_title_overlay">Draw over other apps</string>
+    <string name="perm_title_notification_listener">Notification access</string>
+    <string name="perm_title_notification_policy">Do Not Disturb access</string>
+    <string name="perm_title_accessibility_service">Accessibility access</string>
+    <string name="perm_title_battery_optimisation">Unrestricted battery use</string>
+    <string name="perm_title_exact_alarm">Alarms &amp; reminders</string>
+    <string name="perm_title_write_settings">Modify system settings</string>
+    <string name="perm_title_nfc">NFC</string>
+    <string name="perm_title_foreground_service">Foreground service</string>
+    <string name="perm_title_device_admin">Device administrator</string>
+    <string name="perm_title_access_fine_location">Location</string>
+    <string name="perm_title_access_coarse_location">Approximate location</string>
+    <string name="perm_title_access_background_location">Location in the background</string>
+    <string name="perm_title_receive_sms">Receive texts</string>
+    <string name="perm_title_send_sms">Send texts</string>
+    <string name="perm_title_call_phone">Make calls</string>
+    <string name="perm_title_read_contacts">Contacts</string>
+    <string name="perm_title_post_notifications">Notifications</string>
+    <string name="perm_title_bluetooth_connect">Bluetooth</string>
+
+    <!-- Row bodies: what Ottomatic does with the grant. -->
+    <string name="perm_desc_overlay">Lets a macro put a dialog on screen, and open other apps, while you are looking at something else. Android blocks both from a background app without it.</string>
+    <string name="perm_desc_notification_listener">Lets Ottomatic see notifications from other apps, so a macro can react to one.</string>
+    <string name="perm_desc_notification_policy">Lets a macro turn Do Not Disturb on and off, and switch the ringer to silent.</string>
+    <string name="perm_desc_accessibility_service">Lets Ottomatic see volume and power button presses. It never reads screen content.</string>
+    <string name="perm_desc_battery_optimisation">Keeps Android from stopping the engine in the background. Without it, macros may not re-arm after a reboot and time-based triggers can be delayed.</string>
+    <string name="perm_desc_exact_alarm">Lets a schedule fire, and a wait end, at the minute you asked for. Without it Android is free to batch it with other work, so it may run late.</string>
+    <string name="perm_desc_write_settings">Lets a macro change screen brightness, screen timeout and auto-rotate.</string>
+    <string name="perm_desc_nfc">Lets a macro run when you hold an NFC tag to the back of your phone. Ottomatic cannot switch NFC on for you, and tags are only read while the screen is on and unlocked.</string>
+    <string name="perm_desc_foreground_service">Lets Ottomatic keep its engine running while your macros are armed.</string>
+    <string name="perm_desc_device_admin">Lets Ottomatic use device administrator features.</string>
+    <string name="perm_desc_access_fine_location">Lets a geofence know when you arrive somewhere or leave it.</string>
+    <string name="perm_desc_access_coarse_location">A rougher fix, used when precise location is not available.</string>
+    <string name="perm_desc_access_background_location">Lets a geofence keep working while Ottomatic is closed — which is the only time it is any use. Granted by choosing \"Allow all the time\".</string>
+    <string name="perm_desc_receive_sms">Lets a macro run when a text arrives, and read who it is from and what it says.</string>
+    <string name="perm_desc_send_sms">Lets a macro send a text on your behalf.</string>
+    <string name="perm_desc_call_phone">Lets a macro place a call without you confirming it.</string>
+    <string name="perm_desc_read_contacts">Lets a macro look up the number of a contact you chose. Choosing one needs nothing; dialling it later does.</string>
+    <string name="perm_desc_post_notifications">Lets Ottomatic show a notification — both the ones a macro posts and the one that tells you the engine failed to start after a reboot.</string>
+    <string name="perm_desc_bluetooth_connect">Lets a macro turn Bluetooth on and off.</string>
+    <string name="perm_desc_unknown">Used by a node on one of your macros.</string>
+
+    <!-- Node-card rationales: why *this node* is asking. -->
+    <string name="perm_rationale_accessibility_keys">Ottomatic needs accessibility access to see button presses. It never reads screen content. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.</string>
+    <string name="perm_rationale_notification_listener">Ottomatic needs notification access to see notifications from other apps.</string>
+    <string name="perm_rationale_dnd_policy">Ottomatic needs Do Not Disturb access to change your ringer mode.</string>
+    <string name="perm_rationale_overlay_dialog">Ottomatic needs permission to draw over other apps so this dialog can reach you while you are somewhere else on your phone. Without it the node cancels instead of asking.</string>
+    <string name="perm_rationale_nfc_radio">This trigger needs NFC switched on, which is a system-wide setting rather than something Ottomatic can grant itself. Tags are also only read while the screen is on and unlocked — a tap will not reach a phone asleep in your pocket.</string>
+    <string name="perm_rationale_alarm_exact">Ottomatic needs permission to set exact alarms so this wait ends at the minute you asked for. Without it the wait still happens, but Android batches the wake-up with other work and it can be minutes late.</string>
+    <string name="perm_rationale_overlay_launch">Ottomatic needs permission to draw over other apps so it can open one while you are somewhere else on your phone. Android blocks a background app from opening another, and without this the node does nothing and says so in the console.</string>
+
+</resources>

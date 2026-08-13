@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.grapheditor
 
+import androidx.annotation.StringRes
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -116,7 +119,7 @@ fun EditorBottomBar(
                     selected = selected == tab,
                     onClick = { onSelect(tab.takeIf { it != selected }) },
                     icon = { TabIcon(tab = tab, validation = validation, consoleProblems = consoleProblems) },
-                    label = { Text(tab.label, fontSize = 11.sp) },
+                    label = { Text(stringResource(tab.labelRes), fontSize = 11.sp) },
                     colors = ShortNavigationBarItemDefaults.colors(
                         selectedIconColor = EditorColors.textPrimary,
                         selectedTextColor = EditorColors.textPrimary,
@@ -203,16 +206,22 @@ fun EditorTabPanel(
     Surface(modifier = modifier, color = EditorColors.canvasBackground) {
         Column {
             PanelTopBar(
-                title = if (showingGlobals) "Global variables" else tab.label,
+                title = if (showingGlobals) {
+                    stringResource(R.string.variables_global_variables)
+                } else {
+                    stringResource(tab.labelRes)
+                },
                 onUp = { if (showingGlobals) showingGlobals = false else onClose() },
                 upIcon = if (showingGlobals) Icons.AutoMirrored.Filled.ArrowBack else Icons.Filled.Close,
-                upLabel = if (showingGlobals) "Back to this workflow's variables" else "Back to the graph",
+                upLabel = stringResource(
+                    if (showingGlobals) R.string.editor_back_to_variables else R.string.editor_back_to_graph,
+                ),
                 action = if (tab == EditorTab.CONSOLE) {
                     {
                         IconButton(onClick = onClearConsole) {
                             Icon(
                                 imageVector = Icons.Filled.DeleteSweep,
-                                contentDescription = "Clear console",
+                                contentDescription = stringResource(R.string.grapheditor_clear_console),
                                 tint = EditorColors.textSecondary,
                             )
                         }
@@ -268,7 +277,7 @@ fun PanelTopBar(
     title: String,
     onUp: () -> Unit,
     upIcon: ImageVector = Icons.Filled.Close,
-    upLabel: String = "Back to the graph",
+    upLabel: String? = null,
     action: @Composable (RowScope.() -> Unit)? = null,
 ) {
     Surface(color = EditorColors.chrome) {
@@ -284,7 +293,7 @@ fun PanelTopBar(
                 IconButton(onClick = onUp) {
                     Icon(
                         imageVector = upIcon,
-                        contentDescription = upLabel,
+                        contentDescription = upLabel ?: stringResource(R.string.editor_back_to_graph),
                         tint = EditorColors.textPrimary,
                     )
                 }
@@ -305,10 +314,10 @@ fun PanelTopBar(
 }
 
 /** The bar's three surfaces. Order is the order they are read in when something is wrong. */
-enum class EditorTab(val label: String, val icon: ImageVector) {
-    PROBLEMS("Problems", Icons.Filled.ReportProblem),
-    CONSOLE("Console", Icons.Filled.Terminal),
-    VARIABLES("Variables", Icons.Filled.Tag),
+enum class EditorTab(@StringRes val labelRes: Int, val icon: ImageVector) {
+    PROBLEMS(R.string.editor_tab_problems, Icons.Filled.ReportProblem),
+    CONSOLE(R.string.editor_tab_console, Icons.Filled.Terminal),
+    VARIABLES(R.string.editor_tab_variables, Icons.Filled.Tag),
 }
 
 /**

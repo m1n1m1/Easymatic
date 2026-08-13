@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.widget
 
+import androidx.glance.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -84,7 +87,7 @@ fun TriggerDeck(
 @Composable
 private fun DeckOverflow(hidden: Int) {
     Text(
-        text = "+$hidden more — resize to see " + if (hidden == 1) "it" else "them",
+        text = LocalContext.current.getString(R.string.widget_more_hidden, hidden) + if (hidden == 1) "it" else "them",
         style = TextStyle(
             color = GlanceTheme.colors.onSurfaceVariant,
             fontSize = 11.sp,
@@ -102,7 +105,7 @@ fun DeckEmpty(modifier: GlanceModifier = GlanceModifier) {
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = "No manual triggers yet.\nAdd a Manual Trigger node to a macro.",
+            text = stringResource(R.string.widget_no_manual_triggers_yet_nadd),
             style = TextStyle(
                 color = GlanceTheme.colors.onSurfaceVariant,
                 fontSize = 13.sp,

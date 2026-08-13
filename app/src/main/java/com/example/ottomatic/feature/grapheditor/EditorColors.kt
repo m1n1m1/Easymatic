@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.grapheditor
 
+import com.example.ottomatic.R
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
@@ -143,12 +145,27 @@ fun accentColor(kind: NodeKind): Color = when (kind) {
     NodeKind.TRANSFORM -> EditorColors.transformAccent
 }
 
-/** The word shown under a node's name on its card, and in the palette headers. */
-fun kindLabel(kind: NodeKind): String = when (kind) {
-    NodeKind.TRIGGER -> "Trigger"
-    NodeKind.ACTION -> "Action"
-    NodeKind.VALUE -> "Value"
-    NodeKind.TRANSFORM -> "Transform"
+/** The word shown under a node's name on its card. */
+@StringRes
+fun kindLabelRes(kind: NodeKind): Int = when (kind) {
+    NodeKind.TRIGGER -> R.string.kind_trigger
+    NodeKind.ACTION -> R.string.kind_action
+    NodeKind.VALUE -> R.string.kind_value
+    NodeKind.TRANSFORM -> R.string.kind_transform
+}
+
+/**
+ * The same word in the plural, for the palette's kind headings.
+ *
+ * A second key rather than appending "s" to the first: English gets away with that
+ * and German does not — "Auslöser" is both forms, "Aktionen" is neither.
+ */
+@StringRes
+fun kindLabelPluralRes(kind: NodeKind): Int = when (kind) {
+    NodeKind.TRIGGER -> R.string.kind_triggers
+    NodeKind.ACTION -> R.string.kind_actions
+    NodeKind.VALUE -> R.string.kind_values
+    NodeKind.TRANSFORM -> R.string.kind_transforms
 }
 
 /** The glyph that stands for a whole node kind, used on the palette's kind cards. */

@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.grapheditor
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.sp
@@ -27,7 +29,7 @@ internal fun ConfigFormHint(node: WorkflowNode) {
     // nothing.
     if (GEOFENCE_SCHEMA.decode(node).hasChosenEvent) return
     Text(
-        text = "Nothing selected \u2014 this trigger falls back to firing on enter.",
+        text = stringResource(R.string.grapheditor_nothing_selected_u2014_this_trigger),
         color = EditorColors.triggerAccent,
         fontSize = 12.sp,
     )

@@ -33,10 +33,10 @@ class PermissionCatalogueTest {
 
     @Test
     fun `a node-declared entry names the nodes that declare it`() {
-        val names = NodeTypeRegistry.all.map { it.displayName }.toSet()
+        val ids = NodeTypeRegistry.all.map { it.typeId }.toSet()
         for (entry in entries.filterNot { it.isAppLevel }) {
             assertTrue("${entry.key} names nothing", entry.neededBy.isNotEmpty())
-            assertTrue("${entry.key} names an unknown node", names.containsAll(entry.neededBy))
+            assertTrue("${entry.key} names an unknown node", ids.containsAll(entry.neededBy))
         }
     }
 

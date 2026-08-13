@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.api
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -92,20 +94,20 @@ private fun ConsentBody(
     onDeny: () -> Unit,
 ) {
     Column(modifier = Modifier.padding(24.dp)) {
-        Text(text = "Allow $label to run your macros?", style = MaterialTheme.typography.headlineSmall)
+        Text(
+            text = stringResource(R.string.api_allow_app_to_run, label),
+            style = MaterialTheme.typography.headlineSmall,
+        )
         Spacer(Modifier.height(8.dp))
         Text(text = packageName, style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(20.dp))
         Text(
-            text = "It will be able to see the names of macros you have given a " +
-                "\"Called by Another App\" trigger, and to run them. It cannot see or " +
-                "change anything else in Ottomatic, and macros without that trigger stay " +
-                "out of reach.",
+            text = stringResource(R.string.api_it_will_be_able_to),
             style = MaterialTheme.typography.bodyMedium,
         )
         Spacer(Modifier.height(12.dp))
         Text(
-            text = "You can withdraw this at any time under App access in Ottomatic.",
+            text = stringResource(R.string.api_you_can_withdraw_this_at),
             style = MaterialTheme.typography.bodySmall,
         )
         Spacer(Modifier.height(24.dp))
@@ -114,9 +116,9 @@ private fun ConsentBody(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton(onClick = onDeny) { Text("Not now") }
+            TextButton(onClick = onDeny) { Text(stringResource(R.string.api_not_now)) }
             Spacer(Modifier.padding(horizontal = 4.dp))
-            Button(onClick = onAllow) { Text("Allow") }
+            Button(onClick = onAllow) { Text(stringResource(R.string.api_allow)) }
         }
     }
 }

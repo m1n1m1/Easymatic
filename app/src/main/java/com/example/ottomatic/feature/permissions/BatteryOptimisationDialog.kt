@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.permissions
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -26,18 +28,15 @@ import com.example.ottomatic.feature.grapheditor.EditorColors
 fun BatteryOptimisationDialog(onDismiss: () -> Unit, onConfirm: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Disable battery optimisation") },
+        title = { Text(stringResource(R.string.permissions_disable_battery_optimisation)) },
         text = {
             Text(
-                "Ottomatic couldn't resume your macros in the background after the last " +
-                    "reboot. To keep automation running without intervention, allow Ottomatic " +
-                    "to run without battery restrictions. You can change this later under " +
-                    "Permissions.",
+                stringResource(R.string.permissions_ottomatic_couldn_t_resume_your),
                 color = EditorColors.textPrimary,
                 fontSize = 14.sp,
             )
         },
-        confirmButton = { TextButton(onClick = onConfirm) { Text("Allow") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Not now") } },
+        confirmButton = { TextButton(onClick = onConfirm) { Text(stringResource(R.string.permissions_allow)) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.permissions_not_now)) } },
     )
 }

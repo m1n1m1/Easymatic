@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.workflowlist
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -116,7 +119,7 @@ fun WorkflowListScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "Workflows",
+                        text = stringResource(R.string.workflowlist_workflows),
                         color = EditorColors.textPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -144,14 +147,14 @@ fun WorkflowListScreen(
                     IconButton(onClick = onOpenVariables) {
                         Icon(
                             imageVector = Icons.Filled.Tag,
-                            contentDescription = "Global variables",
+                            contentDescription = stringResource(R.string.workflowlist_global_variables),
                             tint = EditorColors.textPrimary,
                         )
                     }
                     IconButton(onClick = onOpenPermissions) {
                         Icon(
                             imageVector = Icons.Filled.Shield,
-                            contentDescription = "Permissions",
+                            contentDescription = stringResource(R.string.workflowlist_permissions),
                             tint = EditorColors.textPrimary,
                         )
                     }
@@ -170,7 +173,7 @@ fun WorkflowListScreen(
             if (state.workflows.isEmpty() && !state.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = "No workflows yet.\nTap + to create one.",
+                        text = stringResource(R.string.workflowlist_no_workflows_yet_ntap_to),
                         color = EditorColors.textSecondary,
                         fontSize = 14.sp,
                     )
@@ -214,7 +217,7 @@ fun WorkflowListScreen(
                 .navigationBarsPadding()
                 .padding(end = 18.dp, bottom = 18.dp),
         ) {
-            Icon(Icons.Filled.Add, contentDescription = "Add workflow")
+            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.workflowlist_add_workflow))
         }
     }
 
@@ -237,7 +240,7 @@ fun WorkflowListScreen(
         AlertDialog(
             onDismissRequest = { pinning = null },
             containerColor = EditorColors.chrome,
-            title = { Text("Which trigger?", color = EditorColors.textPrimary) },
+            title = { Text(stringResource(R.string.workflowlist_which_trigger), color = EditorColors.textPrimary) },
             text = {
                 Column {
                     triggers.forEach { trigger ->
@@ -261,7 +264,7 @@ fun WorkflowListScreen(
             confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { pinning = null }, colors = editorTextButtonColors()) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.workflowlist_cancel))
                 }
             },
         )
@@ -271,12 +274,10 @@ fun WorkflowListScreen(
         AlertDialog(
             onDismissRequest = { pinRefused = false },
             containerColor = EditorColors.chrome,
-            title = { Text("Can't add it from here", color = EditorColors.textPrimary) },
+            title = { Text(stringResource(R.string.workflowlist_can_t_add_it_from), color = EditorColors.textPrimary) },
             text = {
                 Text(
-                    "This launcher doesn't let an app place a widget for you. " +
-                        "Add the Run tile yourself from your home screen's widget list — " +
-                        "it will ask which trigger it is for.",
+                    stringResource(R.string.workflowlist_launcher_cannot_place),
                     color = EditorColors.textPrimary,
                     fontSize = 14.sp,
                 )
@@ -292,10 +293,10 @@ fun WorkflowListScreen(
     deleting?.let { target ->
         AlertDialog(
             onDismissRequest = { deleting = null },
-            title = { Text("Delete workflow", color = EditorColors.textPrimary) },
+            title = { Text(stringResource(R.string.workflowlist_delete_workflow), color = EditorColors.textPrimary) },
             text = {
                 Text(
-                    "Delete \"${target.name}\"? This cannot be undone.",
+                    stringResource(R.string.workflowlist_delete_confirm, target.name),
                     color = EditorColors.textPrimary,
                     fontSize = 14.sp,
                 )
@@ -307,10 +308,11 @@ fun WorkflowListScreen(
                         deleting = null
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = EditorColors.errorAccent),
-                ) { Text("Delete") }
+                ) { Text(stringResource(R.string.workflowlist_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { deleting = null }, colors = editorTextButtonColors()) { Text("Cancel") }
+                TextButton(onClick = { deleting = null }, colors = editorTextButtonColors()) { Text(
+                    stringResource(R.string.workflowlist_cancel)) }
             },
         )
     }
@@ -338,13 +340,13 @@ private fun LibraryMenu(
         IconButton(onClick = { expanded = true }) {
             Icon(
                 imageVector = Icons.Filled.MoreVert,
-                contentDescription = "Libraries",
+                contentDescription = stringResource(R.string.workflowlist_libraries),
                 tint = EditorColors.textPrimary,
             )
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             DropdownMenuItem(
-                text = { Text("Geofences") },
+                text = { Text(stringResource(R.string.workflowlist_geofences)) },
                 leadingIcon = { Icon(Icons.Filled.Place, contentDescription = null) },
                 onClick = {
                     expanded = false
@@ -352,7 +354,7 @@ private fun LibraryMenu(
                 },
             )
             DropdownMenuItem(
-                text = { Text("NFC tags") },
+                text = { Text(stringResource(R.string.workflowlist_nfc_tags)) },
                 leadingIcon = { Icon(Icons.Filled.Nfc, contentDescription = null) },
                 onClick = {
                     expanded = false
@@ -360,7 +362,7 @@ private fun LibraryMenu(
                 },
             )
             DropdownMenuItem(
-                text = { Text("Mail accounts") },
+                text = { Text(stringResource(R.string.workflowlist_mail_accounts)) },
                 leadingIcon = { Icon(Icons.Filled.Mail, contentDescription = null) },
                 onClick = {
                     expanded = false
@@ -368,7 +370,7 @@ private fun LibraryMenu(
                 },
             )
             DropdownMenuItem(
-                text = { Text("Smart home") },
+                text = { Text(stringResource(R.string.workflowlist_smart_home)) },
                 leadingIcon = { Icon(Icons.Filled.Lightbulb, contentDescription = null) },
                 onClick = {
                     expanded = false
@@ -393,7 +395,7 @@ private fun LibraryMenu(
             // last because it is the only entry whose contents are other people's
             // apps rather than the user's own records.
             DropdownMenuItem(
-                text = { Text("Plugins") },
+                text = { Text(stringResource(R.string.workflowlist_plugins)) },
                 leadingIcon = { Icon(Icons.Filled.Extension, contentDescription = null) },
                 onClick = {
                     expanded = false
@@ -404,7 +406,7 @@ private fun LibraryMenu(
             // both entries are about other people's apps rather than the user's own
             // records, and somebody looking for one will look here for the other.
             DropdownMenuItem(
-                text = { Text("App access") },
+                text = { Text(stringResource(R.string.workflowlist_app_access)) },
                 leadingIcon = { Icon(Icons.Filled.Key, contentDescription = null) },
                 onClick = {
                     expanded = false
@@ -422,11 +424,19 @@ private fun LibraryMenu(
  * "Armed" beside a macro that stops at its first bad wire is the reading this
  * screen used to give, and the one the user is least likely to question.
  */
-private fun statusText(enabled: Boolean, errors: Int): String = when {
-    errors > 0 && enabled -> "Armed · $errors ${if (errors == 1) "problem" else "problems"}"
-    errors > 0 -> "$errors ${if (errors == 1) "problem" else "problems"}"
-    enabled -> "Armed"
-    else -> "Off"
+@Composable
+private fun statusText(enabled: Boolean, errors: Int): String {
+    if (errors == 0) {
+        return stringResource(
+            if (enabled) R.string.workflowlist_armed else R.string.workflowlist_off,
+        )
+    }
+    val problems = pluralStringResource(R.plurals.widget_problem_count, errors, errors)
+    return if (enabled) {
+        stringResource(R.string.workflowlist_armed_with_problems, problems)
+    } else {
+        problems
+    }
 }
 
 @Composable
@@ -495,13 +505,13 @@ private fun WorkflowRow(
             IconButton(onClick = { menuOpen = true }) {
                 Icon(
                     Icons.Filled.MoreVert,
-                    contentDescription = "More",
+                    contentDescription = stringResource(R.string.workflowlist_more),
                     tint = EditorColors.textSecondary,
                 )
             }
             DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                 DropdownMenuItem(
-                    text = { Text("Edit") },
+                    text = { Text(stringResource(R.string.workflowlist_edit)) },
                     onClick = {
                         menuOpen = false
                         onEdit()
@@ -514,7 +524,7 @@ private fun WorkflowRow(
                 // item that is not there.
                 if (manualTriggers.isNotEmpty()) {
                     DropdownMenuItem(
-                        text = { Text("Add to home screen") },
+                        text = { Text(stringResource(R.string.workflowlist_add_to_home_screen)) },
                         onClick = {
                             menuOpen = false
                             onPin()
@@ -523,7 +533,7 @@ private fun WorkflowRow(
                     )
                 }
                 DropdownMenuItem(
-                    text = { Text("Delete") },
+                    text = { Text(stringResource(R.string.workflowlist_delete)) },
                     onClick = {
                         menuOpen = false
                         onDelete()

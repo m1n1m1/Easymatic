@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.macro
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -76,7 +78,7 @@ fun EditMacroDialog(
                 // and it is the same composable the list row draws.
                 MacroIconChip(icon = icon, accent = accent)
                 Spacer(Modifier.size(12.dp))
-                Text("Edit macro", color = EditorColors.textPrimary, fontSize = 18.sp)
+                Text(stringResource(R.string.macro_edit_macro), color = EditorColors.textPrimary, fontSize = 18.sp)
             }
         },
         text = {
@@ -85,7 +87,7 @@ fun EditMacroDialog(
                     value = name,
                     onValueChange = { name = it },
                     singleLine = true,
-                    label = { Text("Name") },
+                    label = { Text(stringResource(R.string.macro_name)) },
                     // The geofence editor's field colours, not this dialog's own:
                     // the app is forced dark, so Material's defaults resolve
                     // against a light scheme and hand back the baseline purple for
@@ -93,9 +95,9 @@ fun EditMacroDialog(
                     colors = darkFieldColors(),
                     modifier = Modifier.fillMaxWidth(),
                 )
-                SectionLabel("Icon")
+                SectionLabel(stringResource(R.string.macro_icon))
                 IconGrid(selected = icon, accent = accent, onSelect = { icon = it })
-                SectionLabel("Colour")
+                SectionLabel(stringResource(R.string.macro_colour))
                 AccentRow(selected = accent, onSelect = { accent = it })
             }
         },
@@ -103,10 +105,11 @@ fun EditMacroDialog(
             TextButton(
                 onClick = { if (name.isNotBlank()) onConfirm(name.trim(), icon, accent) },
                 colors = editorTextButtonColors(),
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.macro_save)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss, colors = editorTextButtonColors()) { Text("Cancel") }
+            TextButton(onClick = onDismiss, colors = editorTextButtonColors()) { Text(
+                stringResource(R.string.macro_cancel)) }
         },
     )
 }

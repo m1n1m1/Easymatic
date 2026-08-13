@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Counted text. Real <plurals> rather than `if (n == 1)` in Kotlin: English needs
+     two forms and German needs the same two, but the categories are the locale's to
+     decide, not the code's — and a hand-rolled check silently gets that wrong the
+     moment a language with a "few" or "many" form is added. -->
+<resources>
+
+    <plurals name="selection_nodes_selected">
+        <item quantity="one">%1$d node selected</item>
+        <item quantity="other">%1$d nodes selected</item>
+    </plurals>
+    <plurals name="selection_connections_selected">
+        <item quantity="one">%1$d connection selected</item>
+        <item quantity="other">%1$d connections selected</item>
+    </plurals>
+    <plurals name="selection_nodes">
+        <item quantity="one">%1$d node</item>
+        <item quantity="other">%1$d nodes</item>
+    </plurals>
+    <plurals name="selection_connections">
+        <item quantity="one">%1$d connection</item>
+        <item quantity="other">%1$d connections</item>
+    </plurals>
+
+    <plurals name="problems_errors">
+        <item quantity="one">%1$d error</item>
+        <item quantity="other">%1$d errors</item>
+    </plurals>
+    <plurals name="problems_warnings">
+        <item quantity="one">%1$d warning</item>
+        <item quantity="other">%1$d warnings</item>
+    </plurals>
+
+    <plurals name="editor_node_count">
+        <item quantity="one">%1$d node</item>
+        <item quantity="other">%1$d nodes</item>
+    </plurals>
+
+    <plurals name="widget_problem_count">
+        <item quantity="one">%1$d problem</item>
+        <item quantity="other">%1$d problems</item>
+    </plurals>
+
+    <plurals name="plugins_provides_nodes">
+        <item quantity="one">Provides %1$d node</item>
+        <item quantity="other">Provides %1$d nodes</item>
+    </plurals>
+
+    <plurals name="api_macros_callable">
+        <item quantity="one">%1$d macro can currently be called from outside.</item>
+        <item quantity="other">%1$d macros can currently be called from outside.</item>
+    </plurals>
+
+    <plurals name="variables_shared_by_every_macro">
+        <item quantity="one">%1$d shared by every macro</item>
+        <item quantity="other">%1$d shared by every macro</item>
+    </plurals>
+
+</resources>

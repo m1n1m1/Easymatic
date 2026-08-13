@@ -29,7 +29,9 @@ import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.registry.usesContacts
-import com.example.ottomatic.feature.permissions.rationaleFor
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
+import com.example.ottomatic.feature.permissions.rationaleRes
 import com.example.ottomatic.feature.permissions.rememberPermissionState
 import com.example.ottomatic.feature.permissions.rememberPrerequisiteState
 
@@ -81,9 +83,8 @@ private fun ContactsPermissionNotice(node: WorkflowNode) {
     if (permissionState.allGranted) return
 
     NoticeCard(
-        message = "This node needs contacts access to look up the number you chose. " +
-            "Without it, it will do nothing when it runs.",
-        actionLabel = "Grant",
+        message = stringResource(R.string.grapheditor_this_node_needs_contacts_access),
+        actionLabel = stringResource(R.string.grapheditor_grant),
         onAction = permissionState::request,
     )
 }
@@ -92,9 +93,13 @@ private fun ContactsPermissionNotice(node: WorkflowNode) {
 private fun SettingsPrerequisiteNotice(requirement: PermissionRequirement) {
     val state = rememberPrerequisiteState(requirement.type)
     if (state.isSatisfied) return
-    val explanation = rationaleFor(requirement) ?: return
+    val explanation = rationaleRes(requirement) ?: return
 
-    NoticeCard(message = explanation, actionLabel = "Open settings", onAction = state::openSettings)
+    NoticeCard(
+        message = stringResource(explanation),
+        actionLabel = stringResource(R.string.permissions_open_settings),
+        onAction = state::openSettings,
+    )
 }
 
 @Composable
@@ -115,15 +120,21 @@ private fun RuntimePermissionNotice(definition: NodeTypeDefinition?) {
     // whatever asked fall back to its own form value. Telling somebody their value
     // node "will fail every time it runs" would send them looking for an error that
     // is never going to appear in the console.
-    val consequence = when (definition?.kind) {
-        NodeKind.TRIGGER -> "will never fire"
-        NodeKind.VALUE -> "will read as nothing"
-        else -> "will fail every time it runs"
-    }
+    val consequence = stringResource(
+        when (definition?.kind) {
+            NodeKind.TRIGGER -> R.string.grapheditor_consequence_never_fires
+            NodeKind.VALUE -> R.string.grapheditor_consequence_reads_nothing
+            else -> R.string.grapheditor_consequence_fails
+        },
+    )
+    val joiner = stringResource(R.string.grapheditor_permission_joiner)
     NoticeCard(
-        message = "This node $consequence until you grant " +
-            permissionState.missing.joinToString(" and ") { it.readableName() } + ".",
-        actionLabel = "Grant",
+        message = stringResource(
+            R.string.grapheditor_node_needs_permissions,
+            consequence,
+            permissionState.missing.joinToString(joiner) { it.readableName() },
+        ),
+        actionLabel = stringResource(R.string.grapheditor_grant),
         onAction = permissionState::request,
     )
 }
@@ -150,7 +161,7 @@ private fun NoticeCard(message: String, actionLabel: String, onAction: () -> Uni
                 modifier = Modifier.size(18.dp),
             )
             Text(
-                text = "Permission needed",
+                text = stringResource(R.string.grapheditor_permission_needed),
                 color = EditorColors.triggerAccent,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,

@@ -1,5 +1,6 @@
 package com.example.ottomatic.domain.registry
 
+import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.permissions.PermissionRequirement
 import com.example.ottomatic.core.permissions.Permissions
 import com.example.ottomatic.core.permissions.PrerequisiteType
@@ -7,14 +8,18 @@ import com.example.ottomatic.core.permissions.PrerequisiteType
 /**
  * One grant the app can need, and which node types ask for it.
  *
- * [neededBy] holds the display names of the node types declaring it, in registry
- * order and deduplicated — the seven nodes that need overlay access produce one
- * entry listing seven names, not seven entries. Empty means no node declares it:
- * see [PermissionCatalogue.appLevel].
+ * [neededBy] holds the *ids* of the node types declaring it, in registry order and
+ * deduplicated — the seven nodes that need overlay access produce one entry listing
+ * seven ids, not seven entries. Empty means no node declares it: see
+ * [PermissionCatalogue.appLevel].
+ *
+ * Ids rather than display names because a name is user-facing text and this is
+ * `domain`, which may not reach the resources translating it. The screen resolves
+ * each id when it draws the row.
  */
 data class PermissionEntry(
     val requirement: PermissionRequirement,
-    val neededBy: List<String>,
+    val neededBy: List<NodeTypeId>,
 ) {
     val key: String get() = requirement.key
 
@@ -54,13 +59,17 @@ object PermissionCatalogue {
      * finger, and the row they just fixed is the one they are still looking at.
      */
     fun entries(): List<PermissionEntry> {
-        val declared = LinkedHashMap<String, MutableList<String>>()
+        // Node *ids*, not display names. A name is user-facing text, and this registry
+        // is in `domain`, which cannot reach the resources that now translate it — so
+        // the screen resolves each id through `NodeText` instead of being handed a
+        // sentence assembled here in whatever language the declaration happens to use.
+        val declared = LinkedHashMap<String, MutableList<NodeTypeId>>()
         val requirements = LinkedHashMap<String, PermissionRequirement>()
         for (definition in NodeTypeRegistry.all) {
             for (requirement in definition.permissionRequirements) {
                 requirements.getOrPut(requirement.key) { requirement }
-                val names = declared.getOrPut(requirement.key) { mutableListOf() }
-                if (definition.displayName !in names) names += definition.displayName
+                val ids = declared.getOrPut(requirement.key) { mutableListOf() }
+                if (definition.typeId !in ids) ids += definition.typeId
             }
         }
 

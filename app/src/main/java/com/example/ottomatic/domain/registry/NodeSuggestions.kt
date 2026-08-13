@@ -91,11 +91,20 @@ fun suggestionsFor(
  *
  * A blank term matches everything, so the caller can pass the box's contents
  * straight in.
+ *
+ * [extra] is where the caller adds the *translated* name, description and category.
+ * The declaration's English stays in the haystack unconditionally rather than being
+ * replaced, and that is deliberate: "Philips Hue" is findable only because it is in
+ * the description, and a translator rendering that description into German must not
+ * take the vendor's name out of the search index with it. Searching for what is
+ * printed on the box has to keep working in every locale, and it costs nothing.
+ * `domain` cannot reach `feature`, which is why the translated half arrives as an
+ * argument instead of being read here.
  */
-fun NodeTypeDefinition.matchesSearch(term: String): Boolean {
+fun NodeTypeDefinition.matchesSearch(term: String, extra: List<String> = emptyList()): Boolean {
     val needle = term.trim()
     if (needle.isEmpty()) return true
-    return listOf(displayName, description, typeId.value, category.displayName)
+    return (listOf(displayName, description, typeId.value, category.displayName) + extra)
         .any { it.contains(needle, ignoreCase = true) }
 }
 

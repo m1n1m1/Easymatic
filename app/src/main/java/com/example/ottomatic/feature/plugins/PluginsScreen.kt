@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.plugins
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -83,12 +86,12 @@ fun PluginsScreen(
             IconButton(onClick = onBack) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(R.string.plugins_back),
                     tint = EditorColors.textPrimary,
                 )
             }
             Text(
-                text = "Plugins",
+                text = stringResource(R.string.plugins_plugins),
                 style = MaterialTheme.typography.titleLarge,
                 color = EditorColors.textPrimary,
                 fontWeight = FontWeight.SemiBold,
@@ -119,12 +122,9 @@ fun PluginsScreen(
 private fun PluginsPreamble(anyInstalled: Boolean) {
     Text(
         text = if (anyInstalled) {
-            "A plugin adds trigger and action nodes to your palette. It is a separate app: it " +
-                "runs its own code, in its own process, using only the permissions it asks you " +
-                "for itself. Ottomatic does not share its permissions with it."
+            stringResource(R.string.plugins_a_plugin_adds_trigger_and)
         } else {
-            "No plugins are installed. A plugin is a separate app that adds trigger and action " +
-                "nodes to your palette; install one and it will appear here."
+            stringResource(R.string.plugins_no_plugins_are_installed_a)
         },
         style = MaterialTheme.typography.bodyMedium,
         color = EditorColors.textSecondary,
@@ -159,10 +159,14 @@ private fun PluginRow(plugin: InstalledPlugin, onToggle: (Boolean) -> Unit) {
 
         if (plugin.enabled) {
             Text(
-                text = when (plugin.nodeCount) {
-                    0 -> "Provides no nodes"
-                    1 -> "Provides 1 node"
-                    else -> "Provides ${plugin.nodeCount} nodes"
+                text = if (plugin.nodeCount == 0) {
+                    stringResource(R.string.plugins_provides_no_nodes)
+                } else {
+                    pluralStringResource(
+                        R.plurals.plugins_provides_nodes,
+                        plugin.nodeCount,
+                        plugin.nodeCount,
+                    )
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.textSecondary,
@@ -179,8 +183,10 @@ private fun PluginRow(plugin: InstalledPlugin, onToggle: (Boolean) -> Unit) {
                 color = EditorColors.textSecondary.copy(alpha = 0.15f),
             )
             Text(
-                text = "This app asks for: " +
+                text = stringResource(
+                    R.string.plugins_this_app_asks_for,
                     plugin.permissions.joinToString { it.substringAfterLast('.') },
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.textSecondary,
             )
@@ -200,7 +206,11 @@ private fun PluginRow(plugin: InstalledPlugin, onToggle: (Boolean) -> Unit) {
         // failure is a node that is simply missing from the palette.
         plugin.rejected.forEach { rejection ->
             Text(
-                text = "${rejection.typeId.substringAfterLast('/')} was not added: ${rejection.reason}",
+                text = stringResource(
+                    R.string.plugins_node_rejected,
+                    rejection.typeId.substringAfterLast('/'),
+                    rejection.reason,
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.errorAccent,
                 modifier = Modifier.padding(top = 6.dp),

@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.nfc
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,12 +62,12 @@ fun NfcTagsScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.nfc_back),
                             tint = EditorColors.textPrimary,
                         )
                     }
                     Text(
-                        text = "NFC tags",
+                        text = stringResource(R.string.nfc_nfc_tags),
                         color = EditorColors.textPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,

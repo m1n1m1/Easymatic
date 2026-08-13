@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Deutsch. Muss dieselben Schlüssel wie values/strings_problems.xml verwenden; -->
+<!-- eine Teilübersetzung ist erlaubt, ein zusätzlicher Schlüssel ist ein Fehler. -->
+<resources>
+
+    <string name="problem_permission_missing">„%1$s“ benötigt %2$s — nicht erteilt, daher passiert beim Ausführen möglicherweise nichts</string>
+    <string name="problem_plugin_permission_missing">„%1$s“ benötigt %2$s — %3$s hat das nicht erhalten, daher passiert beim Ausführen möglicherweise nichts</string>
+
+    <string name="problem_macro_unset">Für „%1$s“ ist kein Makro ausgewählt, daher passiert nichts</string>
+    <string name="problem_macro_missing">„%1$s“ verweist auf ein Makro, das es nicht mehr gibt</string>
+    <string name="problem_hub_unset">Für „%1$s“ ist nichts ausgewählt, daher passiert nichts</string>
+    <string name="problem_hub_missing">„%1$s“ verweist auf einen Hub, der nicht mehr eingerichtet ist</string>
+    <string name="problem_ai_unset">Für „%1$s“ ist keine KI-Verbindung ausgewählt, daher passiert nichts</string>
+    <string name="problem_ai_missing">„%1$s“ verweist auf eine KI-Verbindung, die es nicht mehr gibt</string>
+    <string name="problem_ai_unfinished">„%1$s“ verweist auf eine KI-Verbindung, die noch nicht fertig eingerichtet ist</string>
+    <string name="problem_variable_unset">Für „%1$s“ ist keine Variable ausgewählt, daher passiert nichts</string>
+    <string name="problem_variable_missing">„%1$s“ verwendet eine Variable, die es nicht mehr gibt</string>
+
+    <string name="problem_empty_loop_body">„%1$s“ hat nichts im Schleifeninhalt, das Wiederholen bewirkt also nichts</string>
+    <string name="problem_unknown_node_type">„%1$s“ ist ein unbekannter Knotentyp (%2$s) und kann nicht ausgeführt werden</string>
+    <string name="problem_no_trigger">Dieser Workflow hat keinen Auslöser, es wird ihn also nie etwas starten</string>
+    <string name="problem_trigger_not_wired">„%1$s“ ist mit nichts verbunden, löst also aus und bewirkt nichts</string>
+
+    <string name="problem_exec_wire_dangling">Eine Ausführungsverbindung zeigt auf einen Knoten, den es nicht mehr gibt</string>
+    <string name="problem_exec_output_unknown">Unbekannter Ausführungs-Ausgang „%1$s“ an „%2$s“</string>
+    <string name="problem_exec_input_unknown">Unbekannter Ausführungs-Eingang „%1$s“ an „%2$s“</string>
+    <string name="problem_data_wire_dangling">Eine Datenverbindung zeigt auf einen Knoten, den es nicht mehr gibt</string>
+    <string name="problem_data_wire_unknown_type">Eine Datenverbindung läuft durch einen unbekannten Knotentyp</string>
+    <string name="problem_not_data_output">„%1$s“ ist kein Datenausgang an „%2$s“</string>
+    <string name="problem_not_data_input">„%1$s“ ist kein Dateneingang an „%2$s“</string>
+    <string name="problem_schema_mismatch">Schema-Konflikt an einer Datenverbindung: Quelle %1$s passt nicht zum Ziel %2$s</string>
+
+    <string name="problem_value_not_connected">„%1$s“ ist mit nichts verbunden und wird nie gelesen</string>
+    <string name="problem_nothing_wired_in">In „%1$s“ ist nichts eingespeist, es werden nur die eigenen Einstellungen verwendet</string>
+    <string name="problem_exec_cycle">Ausführungszyklus erkannt: %1$s</string>
+    <string name="problem_data_cycle">Datenzyklus erkannt: %1$s</string>
+    <string name="problem_not_exec_upstream">„%1$s“ wird noch nicht gelaufen sein, wenn „%2$s“ ausgeführt wird</string>
+    <string name="problem_fork_branch_cross">„%1$s“ und „%2$s“ liegen auf gegenüberliegenden Zweigen von „%3$s“, es kann also nichts zwischen ihnen übergeben werden</string>
+
+</resources>

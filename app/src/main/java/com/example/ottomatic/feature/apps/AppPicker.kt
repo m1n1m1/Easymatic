@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.apps
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -136,14 +138,14 @@ fun AppPickerOverlay(
     }
 
     EditorOverlay(
-        title = "Choose an app",
+        title = stringResource(R.string.apps_choose_an_app),
         onClose = { picked?.let(onPick) ?: onDismiss() },
     ) { dismiss ->
         Column(modifier = Modifier.fillMaxSize().navigationBarsPadding()) {
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
-                label = { Text("Search") },
+                label = { Text(stringResource(R.string.apps_search)) },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,7 +215,7 @@ private fun AppList(
             AppRow(app = app, selected = app.packageName == selected, onClick = { onPick(app.packageName) })
         }
         if (other.isNotEmpty()) {
-            item(key = "other-header") { SectionHeader("Other apps") }
+            item(key = "other-header") { SectionHeader(stringResource(R.string.apps_other_apps)) }
             items(other, key = { it.packageName }) { app ->
                 AppRow(app = app, selected = app.packageName == selected, onClick = { onPick(app.packageName) })
             }
@@ -221,7 +223,7 @@ private fun AppList(
         if (apps.isEmpty()) {
             item(key = "empty") {
                 Text(
-                    text = "No apps match that.",
+                    text = stringResource(R.string.apps_no_apps_match_that),
                     style = MaterialTheme.typography.bodyMedium,
                     color = EditorColors.textSecondary,
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 16.dp),
@@ -257,7 +259,7 @@ private fun AnyAppRow(selected: Boolean, onClick: () -> Unit) {
     ) {
         Icon(Icons.Filled.Close, contentDescription = null, tint = accent)
         Text(
-            text = "Any app",
+            text = stringResource(R.string.apps_any_app),
             style = MaterialTheme.typography.bodyLarge,
             color = accent,
             fontWeight = FontWeight.Medium,

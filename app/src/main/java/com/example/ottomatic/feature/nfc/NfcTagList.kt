@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.nfc
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -68,8 +70,7 @@ fun NfcTagList(
         if (tags.isEmpty()) {
             item(key = "empty") {
                 Text(
-                    text = "No tags yet. Scan one to point a trigger at it — a tag keeps the " +
-                        "same id for life, so nothing has to be written to it.",
+                    text = stringResource(R.string.nfc_no_tags_yet_scan_one),
                     style = MaterialTheme.typography.bodyMedium,
                     color = EditorColors.textSecondary,
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 16.dp),
@@ -103,7 +104,7 @@ private fun ScanTagRow(onClick: () -> Unit) {
     ) {
         Icon(Icons.Filled.Nfc, contentDescription = null, tint = accent)
         Text(
-            text = "Scan a new tag",
+            text = stringResource(R.string.nfc_scan_a_new_tag),
             style = MaterialTheme.typography.bodyLarge,
             color = accent,
             fontWeight = FontWeight.Medium,
@@ -127,7 +128,7 @@ private fun AnyTagRow(selected: Boolean, onClick: () -> Unit) {
     ) {
         Icon(Icons.Filled.Close, contentDescription = null, tint = accent)
         Text(
-            text = "Any tag",
+            text = stringResource(R.string.nfc_any_tag),
             style = MaterialTheme.typography.bodyLarge,
             color = accent,
             fontWeight = FontWeight.Medium,
@@ -191,7 +192,7 @@ private fun TagRow(
         IconButton(onClick = onEdit) {
             Icon(
                 imageVector = Icons.Filled.Edit,
-                contentDescription = "Rename ${tag.name}",
+                contentDescription = stringResource(R.string.nfc_rename_named, tag.name),
                 tint = EditorColors.textSecondary,
             )
         }

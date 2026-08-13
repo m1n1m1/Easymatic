@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.nfc
 
+import com.example.ottomatic.R
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -89,6 +91,8 @@ data class NfcTagsUiState(
 @Suppress("TooManyFunctions") // One entry point per control across three overlays.
 class NfcTagsViewModel(
     private val repository: NfcTagRepository,
+    /** For the two write outcomes it reports; a ViewModel has no composition to read them from. */
+    private val appContext: Context,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NfcTagsUiState(tags = repository.list()))
@@ -212,8 +216,8 @@ class NfcTagsViewModel(
                     armed = false,
                     failed = result.isFailure,
                     outcome = result.fold(
-                        onSuccess = { "Written." },
-                        onFailure = { it.message ?: "Could not write to this tag." },
+                        onSuccess = { appContext.getString(R.string.nfc_written) },
+                        onFailure = { it.message ?: appContext.getString(R.string.nfc_could_not_write) },
                     ),
                 ),
             )
@@ -228,8 +232,11 @@ class NfcTagsViewModel(
     }
 
     companion object {
-        fun factory(repository: NfcTagRepository): ViewModelProvider.Factory = viewModelFactory {
-            initializer { NfcTagsViewModel(repository) }
+        fun factory(
+            repository: NfcTagRepository,
+            appContext: Context,
+        ): ViewModelProvider.Factory = viewModelFactory {
+            initializer { NfcTagsViewModel(repository, appContext) }
         }
     }
 }

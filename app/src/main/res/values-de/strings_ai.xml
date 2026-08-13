@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Deutsch. Muss dieselben Schlüssel wie values/strings_ai.xml verwenden. -->
+<resources>
+
+    <string name="ai_provider_gemini">Google Gemini</string>
+    <string name="ai_provider_anthropic">Anthropic Claude</string>
+    <string name="ai_provider_openai">OpenAI (ChatGPT)</string>
+    <string name="ai_provider_openrouter">OpenRouter</string>
+    <string name="ai_provider_self_hosted">Selbst gehostet / OpenAI-kompatibel</string>
+
+    <string name="ai_default_name_gemini">Gemini</string>
+    <string name="ai_default_name_anthropic">Claude</string>
+    <string name="ai_default_name_openai">ChatGPT</string>
+    <string name="ai_default_name_openrouter">OpenRouter</string>
+    <string name="ai_default_name_self_hosted">Selbst gehostet</string>
+
+    <string name="ai_console_gemini">Google AI Studio</string>
+    <string name="ai_console_anthropic">die Anthropic Console</string>
+    <string name="ai_console_openai">die OpenAI-Plattform</string>
+    <string name="ai_console_openrouter">OpenRouter</string>
+    <string name="ai_open_console">%1$s öffnen</string>
+
+    <string-array name="ai_steps_gemini">
+        <item>Tippe auf die Schaltfläche unten. Google AI Studio öffnet sich in deinem Browser.</item>
+        <item>Melde dich mit deinem Google-Konto an, falls du danach gefragt wirst.</item>
+        <item>Tippe auf „Create API key“. Falls nach einem Projekt gefragt wird, nimm ein beliebiges — oder lass ein neues anlegen.</item>
+        <item>Tippe auf den Schlüssel, um ihn zu kopieren.</item>
+        <item>Komm hierher zurück und tippe auf die Einfügen-Schaltfläche neben dem Schlüsselfeld.</item>
+    </string-array>
+    <string-array name="ai_steps_anthropic">
+        <item>Tippe auf die Schaltfläche unten. Die Anthropic Console öffnet sich in deinem Browser.</item>
+        <item>Melde dich an oder erstelle ein Konto, falls du noch keines hast.</item>
+        <item>Tippe auf „Create Key“, gib ihm einen Namen und bestätige.</item>
+        <item>Kopiere den Schlüssel — er wird nur einmal angezeigt und nie wieder.</item>
+        <item>Komm hierher zurück und tippe auf die Einfügen-Schaltfläche neben dem Schlüsselfeld.</item>
+    </string-array>
+    <string-array name="ai_steps_openai">
+        <item>Tippe auf die Schaltfläche unten. Die OpenAI-Plattform öffnet sich in deinem Browser.</item>
+        <item>Melde dich an oder erstelle ein Konto, falls du noch keines hast.</item>
+        <item>Tippe auf „Create new secret key“ und bestätige.</item>
+        <item>Kopiere den Schlüssel — er wird nur einmal angezeigt und nie wieder.</item>
+        <item>Komm hierher zurück und tippe auf die Einfügen-Schaltfläche neben dem Schlüsselfeld.</item>
+    </string-array>
+    <string-array name="ai_steps_openrouter">
+        <item>Tippe auf die Schaltfläche unten. OpenRouter öffnet sich in deinem Browser.</item>
+        <item>Melde dich an oder erstelle ein Konto, falls du noch keines hast.</item>
+        <item>Tippe auf „Create Key“ und bestätige.</item>
+        <item>Kopiere den Schlüssel, komm dann hierher zurück und tippe auf die Einfügen-Schaltfläche.</item>
+        <item>Lade unten die Modellliste und wähle, welches Modell jede Geschwindigkeitsstufe verwendet.</item>
+    </string-array>
+    <string-array name="ai_steps_self_hosted">
+        <item>Starte deinen Modellserver — vLLM, Ollama, LM Studio und llama.cpp funktionieren alle.</item>
+        <item>Trage unten seine Adresse ein, inklusive http:// oder https:// und Port.</item>
+        <item>Füge seinen API-Schlüssel ein, falls er einen möchte. Viele lokale Server akzeptieren jeden.</item>
+        <item>Lade die Modellliste oder tippe den Modellnamen ein, mit dem dein Server gestartet wurde.</item>
+    </string-array>
+
+    <string name="ai_cost_gemini">Das kostenlose Kontingent ist großzügig, aber es ist deines — ein Makro, das die KI jede Minute fragt, verbraucht es. Du kannst den Schlüssel jederzeit auf derselben Seite widerrufen.</string>
+    <string name="ai_cost_anthropic">Anfragen werden deinem eigenen Anthropic-Guthaben belastet, ein Makro, das die KI jede Minute fragt, kostet also Geld. Du kannst den Schlüssel jederzeit auf derselben Seite widerrufen.</string>
+    <string name="ai_cost_openai">Anfragen werden deinem eigenen OpenAI-Konto belastet, ein Makro, das die KI jede Minute fragt, kostet also Geld. Du kannst den Schlüssel jederzeit auf derselben Seite widerrufen.</string>
+    <string name="ai_cost_openrouter">Anfragen werden deinem eigenen OpenRouter-Guthaben belastet, und der Preis hängt vom gewählten Modell ab. Du kannst den Schlüssel jederzeit auf derselben Seite widerrufen.</string>
+    <string name="ai_cost_self_hosted">Anfragen gehen an deinen eigenen Server und sonst nirgendwohin, kosten also nichts und verlassen kein Netzwerk, das du kontrollierst. Der Server muss erreichbar sein, wann immer das Makro läuft.</string>
+
+    <string name="ai_privacy_gemini">Anfragen werden von Googles Servern beantwortet, ein Knoten „KI fragen“ braucht also einen Moment.</string>
+    <string name="ai_privacy_anthropic">Anfragen werden von Anthropics Servern beantwortet, ein Knoten „KI fragen“ braucht also einen Moment.</string>
+    <string name="ai_privacy_openai">Anfragen werden von OpenAIs Servern beantwortet, ein Knoten „KI fragen“ braucht also einen Moment.</string>
+    <string name="ai_privacy_openrouter">Anfragen gehen über OpenRouter an den Anbieter, der das gewählte Modell bereitstellt, ein Knoten „KI fragen“ braucht also einen Moment.</string>
+    <string name="ai_privacy_self_hosted">Anfragen gehen nur an den oben angegebenen Server.</string>
+
+    <string name="ai_model_fast">Schnell</string>
+    <string name="ai_model_balanced">Ausgewogen</string>
+    <string name="ai_model_thorough">Gründlich</string>
+
+    <string name="ai_loading_models">Modelle werden geladen…</string>
+    <string name="ai_asking_the_model">Modell wird gefragt…</string>
+    <string name="ai_key_not_stored_securely">Dieses Telefon würde den Schlüssel nicht sicher speichern.</string>
+
+</resources>

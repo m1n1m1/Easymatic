@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.grapheditor
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -51,7 +53,14 @@ fun VariablesBody(
     val library = LocalVariables.current
     if (library == null) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(text = "Variables are unavailable here.", color = EditorColors.textSecondary, fontSize = 13.sp)
+            Text(text =
+                
+                    
+                        
+                            stringResource(R.string.grapheditor_variables_are_unavailable_here),
+                            color = EditorColors.textSecondary,
+                            fontSize = 13.sp,
+                        )
         }
         return
     }

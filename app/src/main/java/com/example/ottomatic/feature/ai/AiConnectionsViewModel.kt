@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.ai
 
+import android.content.Context
+import com.example.ottomatic.R
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -113,6 +115,12 @@ class AiConnectionsViewModel(
     private val repository: AiConnectionRepository,
     private val ai: Ai,
     private val catalog: AiModelCatalog,
+    /**
+     * For the status lines this holds — appContext.getString(R.string.ai_loading_models), the test result. They are
+     * user-facing, so they come from resources; a ViewModel has no composition to read
+     * them from, so it is handed the application context instead.
+     */
+    private val appContext: Context,
 ) : ViewModel() {
 
     private val state = MutableStateFlow(AiConnectionsUiState(connections = repository.list()))
@@ -220,7 +228,7 @@ class AiConnectionsViewModel(
     fun loadModels(model: AiModel) {
         val draft = state.value.draft ?: return
         if (draft.id.isBlank()) return
-        editDraft { it.copy(busy = true, message = "Loading models…", failed = false) }
+        editDraft { it.copy(busy = true, message = appContext.getString(R.string.ai_loading_models), failed = false) }
         viewModelScope.launch {
             val models = catalog.list(draft.id)
             editDraft {
@@ -267,7 +275,7 @@ class AiConnectionsViewModel(
                         id = connection.id,
                         isNew = false,
                         busy = false,
-                        message = "This phone would not store the key securely — the key was not saved.",
+                        message = appContext.getString(R.string.ai_key_not_stored_securely),
                         failed = true,
                     )
                 }
@@ -294,7 +302,7 @@ class AiConnectionsViewModel(
     fun test() {
         val draft = state.value.draft ?: return
         if (draft.id.isBlank()) return
-        editDraft { it.copy(busy = true, message = "Asking the model…", failed = false) }
+        editDraft { it.copy(busy = true, message = appContext.getString(R.string.ai_asking_the_model), failed = false) }
         viewModelScope.launch {
             val reply = ai.complete(
                 AiRequest(connectionId = draft.id, prompt = TEST_PROMPT, maxOutputTokens = TEST_MAX_TOKENS),
@@ -303,7 +311,7 @@ class AiConnectionsViewModel(
                 it.copy(
                     busy = false,
                     message = if (reply.error.isBlank()) {
-                        "The model answered: ${reply.text.trim()}"
+                        appContext.getString(R.string.ai_model_answered, reply.text.trim())
                     } else {
                         reply.error
                     },
@@ -319,7 +327,7 @@ class AiConnectionsViewModel(
 
     /** "Claude", then "Claude 2" and so on — a name the user can accept without typing. */
     private fun suggestedName(provider: AiProvider): String {
-        val base = provider.defaultName()
+        val base = appContext.getString(provider.defaultNameRes())
         val taken = repository.list().map { it.name }.toSet()
         if (base !in taken) return base
         return generateSequence(2) { it + 1 }.first { "$base $it" !in taken }.let { "$base $it" }
@@ -335,8 +343,9 @@ class AiConnectionsViewModel(
             repository: AiConnectionRepository,
             ai: Ai,
             catalog: AiModelCatalog,
+            appContext: Context,
         ): ViewModelProvider.Factory = viewModelFactory {
-            initializer { AiConnectionsViewModel(repository, ai, catalog) }
+            initializer { AiConnectionsViewModel(repository, ai, catalog, appContext) }
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.widget
 
+import androidx.glance.LocalContext
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -103,7 +105,7 @@ fun MacroTileWide(
             )
             if (showState) {
                 Text(
-                    text = stateLine(trigger, state),
+                    text = stateLine(LocalContext.current, trigger, state),
                     maxLines = 1,
                     style = TextStyle(color = stateColor(state), fontSize = 12.sp),
                 )
@@ -251,12 +253,18 @@ private fun Chip(
  * button is not one of those. Saying so on the tile is what keeps a switched-off
  * macro running from being a surprise.
  */
-private fun stateLine(trigger: ManualTriggerRef, state: RunFeedback.State?): String = when (state) {
-    RunFeedback.State.RUNNING -> "Running…"
-    RunFeedback.State.DONE -> "Done"
-    RunFeedback.State.FAILED -> "Failed"
-    null -> if (trigger.enabled) "Ready" else "Off"
-}
+private fun stateLine(
+    context: Context,
+    trigger: ManualTriggerRef,
+    state: RunFeedback.State?,
+): String = context.getString(
+    when (state) {
+        RunFeedback.State.RUNNING -> R.string.widget_state_running
+        RunFeedback.State.DONE -> R.string.widget_state_done
+        RunFeedback.State.FAILED -> R.string.widget_state_failed
+        null -> if (trigger.enabled) R.string.widget_state_ready else R.string.widget_state_off
+    },
+)
 
 @Composable
 private fun stateColor(state: RunFeedback.State?): ColorProvider = when (state) {

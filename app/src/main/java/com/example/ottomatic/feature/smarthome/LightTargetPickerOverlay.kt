@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.smarthome
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -71,7 +73,13 @@ fun LightTargetPickerOverlay(
     LaunchedEffect(Unit) { viewModel.refreshAll() }
 
     EditorOverlay(
-        title = if (kind == SmartHomeTargetKind.SCENE) "Choose a scene" else "Choose a light",
+        title = stringResource(
+            if (kind == SmartHomeTargetKind.SCENE) {
+                R.string.smarthome_choose_a_scene
+            } else {
+                R.string.smarthome_choose_a_light
+            },
+        ),
         onClose = { picked?.let(onPick) ?: onDismiss() },
     ) { dismiss ->
         Column(
@@ -86,7 +94,7 @@ fun LightTargetPickerOverlay(
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
-                    placeholder = { Text("Search") },
+                    placeholder = { Text(stringResource(R.string.smarthome_search)) },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -100,14 +108,24 @@ fun LightTargetPickerOverlay(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 if (state.hubs.isEmpty()) {
-                    item(key = "no-hub") { EmptyState(NO_HUB, "Add a hub", viewModel::openKindChooser) }
+                    item(key = "no-hub") {
+                        EmptyState(
+                            stringResource(R.string.smarthome_no_hub_yet),
+                            stringResource(R.string.smarthome_add_a_hub),
+                            viewModel::openKindChooser,
+                        )
+                    }
                 } else if (total == 0) {
                     item(key = "empty") {
                         if (query.isBlank()) {
-                            EmptyState(NOTHING_READ, "Refresh", viewModel::refreshAll)
+                            EmptyState(
+                                stringResource(R.string.smarthome_nothing_read),
+                                stringResource(R.string.smarthome_refresh),
+                                viewModel::refreshAll,
+                            )
                         } else {
                             Text(
-                                text = "Nothing matches \"$query\".",
+                                text = stringResource(R.string.smarthome_nothing_matches, query),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = EditorColors.textSecondary,
                                 modifier = Modifier.padding(vertical = 16.dp),
@@ -146,6 +164,7 @@ private data class Section(val title: String, val rows: List<Pair<SmartHomeHub, 
  * one hub, because "Rooms — Living room bridge" on the single-bridge household every
  * user has is a word doing no work.
  */
+@Composable
 private fun SmartHomeHub.sectionsFor(kind: SmartHomeTargetKind, query: String): List<Section> {
     fun matching(of: SmartHomeTargetKind, predicate: (SmartHomeResource) -> Boolean = { true }) =
         resourcesOf(of)
@@ -153,18 +172,27 @@ private fun SmartHomeHub.sectionsFor(kind: SmartHomeTargetKind, query: String): 
             .filter { query.isBlank() || it.name.contains(query, ignoreCase = true) }
             .map { this to it }
 
+    // Resolved before the grouping, which is a plain lambda rather than a composition.
+    val scenesHeading = stringResource(R.string.smarthome_scenes)
+
     val groups = if (kind == SmartHomeTargetKind.SCENE) {
         emptyList()
     } else {
         listOf(
-            Section("Rooms", matching(SmartHomeTargetKind.GROUP) { it.room != HueResources.ZONE }),
-            Section("Zones", matching(SmartHomeTargetKind.GROUP) { it.room == HueResources.ZONE }),
-            Section("Lights", matching(SmartHomeTargetKind.LIGHT)),
+            Section(
+                stringResource(R.string.smarthome_rooms),
+                matching(SmartHomeTargetKind.GROUP) { it.room != HueResources.ZONE },
+            ),
+            Section(
+                stringResource(R.string.smarthome_zones),
+                matching(SmartHomeTargetKind.GROUP) { it.room == HueResources.ZONE },
+            ),
+            Section(stringResource(R.string.smarthome_lights), matching(SmartHomeTargetKind.LIGHT)),
         )
     }
     val scenes = if (kind == SmartHomeTargetKind.SCENE) {
         matching(SmartHomeTargetKind.SCENE)
-            .groupBy { (_, resource) -> resource.room.ifBlank { "Scenes" } }
+            .groupBy { (_, resource) -> resource.room.ifBlank { scenesHeading } }
             .map { (room, rows) -> Section(room, rows) }
     } else {
         emptyList()
@@ -210,8 +238,9 @@ private fun ResourceRow(
             // Said before the fact rather than discovered afterwards: Set colour on a
             // white-only bulb is accepted by the bridge and changes nothing.
             val note = when {
-                resource.kind == SmartHomeTargetKind.LIGHT && !resource.supportsColour -> "White only"
-                resource.kind == SmartHomeTargetKind.GROUP -> "Everything in it"
+                resource.kind == SmartHomeTargetKind.LIGHT && !resource.supportsColour ->
+                    stringResource(R.string.smarthome_white_only)
+                resource.kind == SmartHomeTargetKind.GROUP -> stringResource(R.string.smarthome_everything_in_it)
                 else -> resource.room
             }
             if (note.isNotBlank()) {
@@ -239,6 +268,4 @@ private fun EmptyState(message: String, actionLabel: String, onAction: () -> Uni
     }
 }
 
-private const val NO_HUB = "No hub yet. Add one to control your lights from a macro."
-private const val NOTHING_READ =
-    "Nothing has been read from this hub yet. Check it is switched on and try again."
+

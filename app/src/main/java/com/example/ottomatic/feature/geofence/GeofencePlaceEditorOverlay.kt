@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.geofence
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -69,19 +71,21 @@ fun GeofencePlaceEditorOverlay(
     val locationPermission = rememberPermissionState(listOf(Permissions.ACCESS_FINE_LOCATION))
 
     EditorOverlay(
-        title = if (draft.isNew) "New place" else "Edit place",
+        title = if (draft.isNew)
+            stringResource(R.string.geofence_new_place_2) else stringResource(R.string.geofence_edit_place),
         onClose = onClose,
         action = {
             if (!draft.isNew) {
                 IconButton(onClick = { viewModel.delete(requireNotNull(draft.id)) }) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Delete place", tint = EditorColors.textSecondary)
+                    Icon(Icons.Filled.Delete, contentDescription =
+                        stringResource(R.string.geofence_delete_place), tint = EditorColors.textSecondary)
                 }
             }
             TextButton(
                 onClick = { viewModel.save(onSaved) },
                 enabled = draft.canSave,
             ) {
-                Text("Save")
+                Text(stringResource(R.string.geofence_save))
             }
         },
     ) { _ ->
@@ -149,8 +153,8 @@ private fun EditorFields(
             OutlinedTextField(
                 value = draft.name,
                 onValueChange = onNameChange,
-                label = { Text("Name") },
-                placeholder = { Text("Home, Work, Gym…") },
+                label = { Text(stringResource(R.string.geofence_name)) },
+                placeholder = { Text(stringResource(R.string.geofence_home_work_gym)) },
                 singleLine = true,
                 colors = darkFieldColors(),
                 modifier = Modifier.fillMaxWidth(),
@@ -161,7 +165,7 @@ private fun EditorFields(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Radius",
+                    text = stringResource(R.string.geofence_radius),
                     style = MaterialTheme.typography.bodyMedium,
                     color = EditorColors.textSecondary,
                     modifier = Modifier.weight(1f),
@@ -185,8 +189,10 @@ private fun EditorFields(
             )
             if (draft.radiusMeters < GeofencePlace.RELIABLE_MIN_RADIUS_METERS) {
                 Text(
-                    text = "Below ${GeofencePlace.RELIABLE_MIN_RADIUS_METERS.toInt()} m the system trades " +
-                        "location accuracy for battery, so crossings are often missed or reported late.",
+                    text = stringResource(
+                        R.string.geofence_small_radius_warning,
+                        GeofencePlace.RELIABLE_MIN_RADIUS_METERS.toInt(),
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = EditorColors.triggerAccent,
                 )
@@ -240,7 +246,7 @@ private fun MyLocationButton(
             } else {
                 Icon(
                     imageVector = Icons.Filled.MyLocation,
-                    contentDescription = "Centre on my location",
+                    contentDescription = stringResource(R.string.geofence_centre_on_my_location),
                     tint = EditorColors.textPrimary,
                 )
             }
@@ -262,12 +268,13 @@ private fun SearchOverlay(
             OutlinedTextField(
                 value = query,
                 onValueChange = onQueryChange,
-                placeholder = { Text("Search an address or place") },
+                placeholder = { Text(stringResource(R.string.geofence_search_an_address_or_place)) },
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                 trailingIcon = {
                     if (query.isNotEmpty()) {
                         IconButton(onClick = { onQueryChange("") }) {
-                            Icon(Icons.Filled.Close, contentDescription = "Clear search")
+                            Icon(Icons.Filled.Close, contentDescription =
+                                stringResource(R.string.geofence_clear_search))
                         }
                     }
                 },

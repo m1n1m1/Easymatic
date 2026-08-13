@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hand-written. Resolved by the exhaustive `when`s in AiProviderCopy.kt, so a -->
+<!-- missing entry is a build failure rather than a blank line on the screen. -->
+<resources>
+
+    <!-- Provider names. Product names, but the qualifier around them is translated. -->
+    <string name="ai_provider_gemini">Google Gemini</string>
+    <string name="ai_provider_anthropic">Anthropic Claude</string>
+    <string name="ai_provider_openai">OpenAI (ChatGPT)</string>
+    <string name="ai_provider_openrouter">OpenRouter</string>
+    <string name="ai_provider_self_hosted">Self-hosted / OpenAI-compatible</string>
+
+    <!-- What a new connection is called before it is renamed. -->
+    <string name="ai_default_name_gemini">Gemini</string>
+    <string name="ai_default_name_anthropic">Claude</string>
+    <string name="ai_default_name_openai">ChatGPT</string>
+    <string name="ai_default_name_openrouter">OpenRouter</string>
+    <string name="ai_default_name_self_hosted">Self-hosted</string>
+
+    <!-- The page the "Open …" button goes to. -->
+    <string name="ai_console_gemini">Google AI Studio</string>
+    <string name="ai_console_anthropic">the Anthropic Console</string>
+    <string name="ai_console_openai">the OpenAI platform</string>
+    <string name="ai_console_openrouter">OpenRouter</string>
+    <string name="ai_open_console">Open %1$s</string>
+
+    <!-- How to get a key. A translator may add or drop a step where a flow differs. -->
+    <string-array name="ai_steps_gemini">
+        <item>Tap the button below. Google AI Studio opens in your browser.</item>
+        <item>Sign in with your Google account if you are asked to.</item>
+        <item>Tap \"Create API key\". If it asks which project to use, pick any — or let it make a new one for you.</item>
+        <item>Tap the key to copy it.</item>
+        <item>Come back here and tap the paste button beside the key field.</item>
+    </string-array>
+    <string-array name="ai_steps_anthropic">
+        <item>Tap the button below. The Anthropic Console opens in your browser.</item>
+        <item>Sign in, or create an account if you do not have one.</item>
+        <item>Tap \"Create Key\", give it a name, and confirm.</item>
+        <item>Copy the key — it is shown once and never again.</item>
+        <item>Come back here and tap the paste button beside the key field.</item>
+    </string-array>
+    <string-array name="ai_steps_openai">
+        <item>Tap the button below. The OpenAI platform opens in your browser.</item>
+        <item>Sign in, or create an account if you do not have one.</item>
+        <item>Tap \"Create new secret key\" and confirm.</item>
+        <item>Copy the key — it is shown once and never again.</item>
+        <item>Come back here and tap the paste button beside the key field.</item>
+    </string-array>
+    <string-array name="ai_steps_openrouter">
+        <item>Tap the button below. OpenRouter opens in your browser.</item>
+        <item>Sign in, or create an account if you do not have one.</item>
+        <item>Tap \"Create Key\" and confirm.</item>
+        <item>Copy the key, then come back here and tap the paste button.</item>
+        <item>Load the model list below and choose which model each speed setting uses.</item>
+    </string-array>
+    <string-array name="ai_steps_self_hosted">
+        <item>Start your model server — vLLM, Ollama, LM Studio and llama.cpp all work.</item>
+        <item>Put its address below, including http:// or https:// and the port.</item>
+        <item>Paste its API key if it wants one. Many local servers accept anything.</item>
+        <item>Load the model list, or type the model name your server was started with.</item>
+    </string-array>
+
+    <!-- What a prompt costs. -->
+    <string name="ai_cost_gemini">The free tier is generous, but it is your quota — a macro that asks the AI every minute will use it up. You can revoke the key from the same page at any time.</string>
+    <string name="ai_cost_anthropic">Prompts are billed to your own Anthropic credit, so a macro that asks the AI every minute costs money. You can revoke the key from the same page at any time.</string>
+    <string name="ai_cost_openai">Prompts are billed to your own OpenAI account, so a macro that asks the AI every minute costs money. You can revoke the key from the same page at any time.</string>
+    <string name="ai_cost_openrouter">Prompts are billed to your own OpenRouter credit, and the price depends on which model you choose. You can revoke the key from the same page at any time.</string>
+    <string name="ai_cost_self_hosted">Prompts go to your own server and nowhere else, so they cost nothing and leave no network you control. The server has to be reachable whenever the macro runs.</string>
+
+    <!-- Where a prompt goes. -->
+    <string name="ai_privacy_gemini">Prompts are answered by Google\'s servers, so an Ask AI node takes a moment.</string>
+    <string name="ai_privacy_anthropic">Prompts are answered by Anthropic\'s servers, so an Ask AI node takes a moment.</string>
+    <string name="ai_privacy_openai">Prompts are answered by OpenAI\'s servers, so an Ask AI node takes a moment.</string>
+    <string name="ai_privacy_openrouter">Prompts go through OpenRouter to whichever provider serves the model you chose, so an Ask AI node takes a moment.</string>
+    <string name="ai_privacy_self_hosted">Prompts go only to the server you named above.</string>
+
+    <!-- The three speed tiers. -->
+    <string name="ai_model_fast">Fast</string>
+    <string name="ai_model_balanced">Balanced</string>
+    <string name="ai_model_thorough">Thorough</string>
+
+    <!-- Status lines the AI connections view model reports. -->
+    <string name="ai_loading_models">Loading models…</string>
+    <string name="ai_asking_the_model">Asking the model…</string>
+    <string name="ai_key_not_stored_securely">This phone would not store the key securely.</string>
+
+</resources>

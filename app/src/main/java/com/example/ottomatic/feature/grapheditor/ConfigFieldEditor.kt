@@ -4,6 +4,8 @@
 
 package com.example.ottomatic.feature.grapheditor
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import com.example.ottomatic.core.model.ConfigKey
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -62,11 +64,12 @@ import com.example.ottomatic.domain.model.SmartHomeRef
 import com.example.ottomatic.domain.model.TimeOfDay
 import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.domain.model.config.PickerKind
+import com.example.ottomatic.domain.registry.ConfigOption
+import com.example.ottomatic.feature.i18n.rememberNodeText
 import com.example.ottomatic.domain.model.config.ValueType
 import com.example.ottomatic.domain.model.schema.DateTime
 import com.example.ottomatic.domain.registry.ConfigField
 import com.example.ottomatic.domain.registry.ConfigFieldType
-import com.example.ottomatic.domain.registry.ConfigOption
 import com.example.ottomatic.domain.registry.enumConfigOptions
 import com.example.ottomatic.feature.api.ApiTokenField
 import com.example.ottomatic.feature.apps.AppPickerField
@@ -116,6 +119,11 @@ internal fun ConfigFieldEditor(
     value: String,
     onValueChange: (String) -> Unit,
     label: String = field.label,
+    /**
+     * How a dropdown choice is named. Supplied by [ConfigFieldRow], which knows the
+     * owning node and can therefore build the key; this stays generic over any field.
+     */
+    optionLabel: (ConfigOption) -> String = { it.label },
     tint: ConfigFieldTint? = null,
     siblingValue: (ConfigKey) -> String = { "" },
 ) {
@@ -136,7 +144,7 @@ internal fun ConfigFieldEditor(
                     onExpandedChange = { expanded = it },
                 ) {
                     OutlinedTextField(
-                        value = selected?.label ?: value,
+                        value = selected?.let(optionLabel) ?: value,
                         onValueChange = {},
                         readOnly = true,
                         label = labelSlot,
@@ -153,7 +161,7 @@ internal fun ConfigFieldEditor(
                     ) {
                         type.options.forEach { option ->
                             DropdownMenuItem(
-                                text = { Text(option.label) },
+                                text = { Text(optionLabel(option)) },
                                 onClick = {
                                     onValueChange(option.value)
                                     expanded = false
@@ -343,10 +351,17 @@ private fun DateTimeField(
         onValueChange = onValueChange,
         label = labelSlot,
         colors = colors,
-        placeholder = { Text(text = "Now", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        placeholder = {
+            Text(
+                text = stringResource(R.string.config_now),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
         trailingIcon = {
             IconButton(onClick = { stage = DateTimeStage.DATE }) {
-                Icon(imageVector = Icons.Filled.DateRange, contentDescription = "Pick a date and time")
+                Icon(imageVector = Icons.Filled.DateRange, contentDescription =
+                    stringResource(R.string.grapheditor_pick_a_date_and_time))
             }
         },
         singleLine = true,
@@ -372,10 +387,11 @@ private fun DateTimeField(
                             }
                             stage = DateTimeStage.TIME
                         },
-                    ) { Text("Next") }
+                    ) { Text(stringResource(R.string.grapheditor_next)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { stage = DateTimeStage.CLOSED }) { Text("Cancel") }
+                    TextButton(onClick = { stage = DateTimeStage.CLOSED }) { Text(
+                        stringResource(R.string.grapheditor_cancel)) }
                 },
             ) {
                 DatePicker(state = dateState)
@@ -398,10 +414,11 @@ private fun DateTimeField(
                             onValueChange(DateTime(at.toInstant().toEpochMilli()).toString())
                             stage = DateTimeStage.CLOSED
                         },
-                    ) { Text("Set") }
+                    ) { Text(stringResource(R.string.config_set)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { stage = DateTimeStage.CLOSED }) { Text("Cancel") }
+                    TextButton(onClick = { stage = DateTimeStage.CLOSED }) { Text(
+                        stringResource(R.string.grapheditor_cancel)) }
                 },
             )
         }
@@ -438,10 +455,14 @@ private fun TimeOfDayField(
         onValueChange = onValueChange,
         label = labelSlot,
         colors = colors,
-        placeholder = { Text(text = "HH:mm", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        placeholder = { Text(text =
+            stringResource(R.string.grapheditor_hh_mm), maxLines = 1, overflow = TextOverflow.Ellipsis) },
         trailingIcon = {
             IconButton(onClick = { picking = true }) {
-                Icon(imageVector = Icons.Filled.Schedule, contentDescription = "Pick a time")
+                Icon(
+                    imageVector = Icons.Filled.Schedule,
+                    contentDescription = stringResource(R.string.grapheditor_pick_a_time),
+                )
             }
         },
         singleLine = true,
@@ -470,10 +491,10 @@ private fun TimeOfDayField(
                         onValueChange(TimeOfDay.of(state.hour, state.minute).toString())
                         picking = false
                     },
-                ) { Text("Set") }
+                ) { Text(stringResource(R.string.config_set)) }
             },
             dismissButton = {
-                TextButton(onClick = { picking = false }) { Text("Cancel") }
+                TextButton(onClick = { picking = false }) { Text(stringResource(R.string.grapheditor_cancel)) }
             },
         )
     }
@@ -521,7 +542,7 @@ private fun PortListField(
             TextButton(
                 onClick = { onValueChange(PortSpec.encode(rows + PortSpec("", null))) },
             ) {
-                Text("Add ${label.lowercase().removeSuffix("s")}")
+                Text(stringResource(R.string.config_add_row, label.lowercase().removeSuffix("s")))
             }
         }
     }
@@ -535,8 +556,16 @@ private fun PortListField(
  * is written once. "Anything" leads because it is what an unconfigured input is
  * and the only choice that accepts a struct.
  */
+/**
+ * The wildcard row in a `@Ports` type dropdown.
+ *
+ * A plain constant because `PORT_TYPE_OPTIONS` is a top-level val with no composition
+ * to read from; `NodeText.valueTypeLabel` translates it at the point it is drawn.
+ */
+private const val ANYTHING_LABEL = "Anything"
+
 private val PORT_TYPE_OPTIONS: List<ConfigOption> =
-    listOf(ConfigOption(value = PortSpec.ANY, label = "Anything")) +
+    listOf(ConfigOption(value = PortSpec.ANY, label = ANYTHING_LABEL)) +
         enumConfigOptions(ValueType.serializer().descriptor)
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -559,7 +588,13 @@ private fun PortListRow(
         OutlinedTextField(
             value = row.name,
             onValueChange = onNameChange,
-            label = { Text(text = "Name", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            label = {
+                Text(
+                    text = stringResource(R.string.grapheditor_name),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
             colors = colors,
             singleLine = true,
             modifier = Modifier.weight(1f),
@@ -571,10 +606,18 @@ private fun PortListRow(
         ) {
             val selected = row.type?.name ?: PortSpec.ANY
             OutlinedTextField(
-                value = options.firstOrNull { it.value == selected }?.label.orEmpty(),
+                value = options.firstOrNull { it.value == selected }
+                    ?.let { rememberNodeText().valueTypeLabel(it) }
+                    .orEmpty(),
                 onValueChange = {},
                 readOnly = true,
-                label = { Text(text = "Type", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                label = {
+                    Text(
+                        text = stringResource(R.string.grapheditor_type),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
                 colors = colors,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                 singleLine = true,
@@ -588,7 +631,7 @@ private fun PortListRow(
             ) {
                 options.forEach { option ->
                     DropdownMenuItem(
-                        text = { Text(option.label) },
+                        text = { Text(rememberNodeText().valueTypeLabel(option)) },
                         onClick = {
                             // "Anything" is not a ValueType, so a failed lookup
                             // is the wildcard rather than an error.
@@ -601,7 +644,7 @@ private fun PortListRow(
         }
         ListToggle(on = row.list, onChange = onListChange)
         IconButton(onClick = onRemove) {
-            Icon(Icons.Filled.Close, contentDescription = "Remove port")
+            Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.grapheditor_remove_port))
         }
     }
 }
@@ -620,7 +663,9 @@ private fun ListToggle(on: Boolean, onChange: (Boolean) -> Unit) {
     IconToggleButton(checked = on, onCheckedChange = onChange) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
-            contentDescription = if (on) "This port carries a list" else "This port carries one value",
+            contentDescription = stringResource(
+                if (on) R.string.config_port_carries_list else R.string.config_port_carries_one,
+            ),
             tint = if (on) EditorColors.textPrimary else EditorColors.textSecondary,
         )
     }
@@ -705,7 +750,8 @@ private fun SmartHomePickerField(
         display = when {
             value.isBlank() -> ""
             parsed == null -> value
-            hubs != null && hubs.hubById(parsed.hubId) == null -> "${parsed.name} · hub removed"
+            hubs != null && hubs.hubById(parsed.hubId) == null ->
+                stringResource(R.string.config_hub_removed, parsed.name)
             else -> parsed.name
         },
         icon = if (kind == SmartHomeTargetKind.SCENE) Icons.Filled.AutoAwesome else Icons.Filled.Lightbulb,
@@ -752,7 +798,7 @@ private fun MailAccountPickerField(
     PickerFieldChrome(
         display = when {
             value.isBlank() -> ""
-            else -> accounts?.accountById(value)?.name ?: "Deleted account"
+            else -> accounts?.accountById(value)?.name ?: stringResource(R.string.config_deleted_account)
         },
         icon = Icons.Filled.Mail,
         enabled = accounts != null,
@@ -800,7 +846,7 @@ private fun AiConnectionPickerField(
     PickerFieldChrome(
         display = when {
             value.isBlank() -> ""
-            else -> connections?.connectionById(value)?.name ?: "Deleted connection"
+            else -> connections?.connectionById(value)?.name ?: stringResource(R.string.config_deleted_connection)
         },
         icon = Icons.Filled.Psychology,
         enabled = connections != null,
@@ -852,7 +898,7 @@ private fun NfcTagPickerField(
         onTap = { picking = true },
         labelSlot = labelSlot,
         colors = colors,
-        placeholder = "Any tag",
+        placeholder = stringResource(R.string.grapheditor_any_tag),
     )
 
     if (picking && tags != null) {
@@ -938,7 +984,8 @@ private fun VariablePickerField(
             resolved == null -> value
             // The scope is shown because two variables may legitimately share a
             // name, and "which one did I pick?" is otherwise unanswerable here.
-            resolved.first == VariableScope.GLOBAL -> "Global · ${resolved.second.name}"
+            resolved.first == VariableScope.GLOBAL ->
+                stringResource(R.string.config_global_variable, resolved.second.name)
             else -> resolved.second.name
         },
         icon = Icons.Filled.Tag,
@@ -1014,7 +1061,7 @@ internal fun PickerFieldChrome(
     onTap: () -> Unit,
     labelSlot: @Composable () -> Unit,
     colors: TextFieldColors,
-    placeholder: String = "None selected",
+    placeholder: String? = null,
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
@@ -1023,7 +1070,13 @@ internal fun PickerFieldChrome(
             readOnly = true,
             label = labelSlot,
             colors = colors,
-            placeholder = { Text(text = placeholder, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            placeholder = {
+                Text(
+                    text = placeholder ?: stringResource(R.string.config_none_selected),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
             trailingIcon = { Icon(imageVector = icon, contentDescription = null) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),

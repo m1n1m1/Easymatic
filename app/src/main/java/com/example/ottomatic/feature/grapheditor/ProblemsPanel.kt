@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.grapheditor
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -128,11 +131,11 @@ private fun Summary(problems: GraphValidation) {
     val errors = problems.errors.size
     val warnings = problems.warnings.size
     val parts = buildList {
-        if (errors > 0) add("$errors ${plural(errors, "error")}")
-        if (warnings > 0) add("$warnings ${plural(warnings, "warning")}")
+        if (errors > 0) add(pluralStringResource(R.plurals.problems_errors, errors, errors))
+        if (warnings > 0) add(pluralStringResource(R.plurals.problems_warnings, warnings, warnings))
     }
     Text(
-        text = parts.joinToString(" · "),
+        text = parts.joinToString(stringResource(R.string.problems_summary_separator)),
         color = EditorColors.textSecondary,
         fontSize = 12.sp,
         modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = 10.dp, bottom = 4.dp),
@@ -162,7 +165,7 @@ private fun ProblemRow(issue: ValidationIssue, workflow: Workflow, onSelect: () 
         Spacer(Modifier.width(10.dp))
         Column {
             Text(
-                text = issue.message,
+                text = issue.text(),
                 color = EditorColors.textPrimary,
                 fontSize = 13.sp,
             )
@@ -181,15 +184,19 @@ private fun ProblemRow(issue: ValidationIssue, workflow: Workflow, onSelect: () 
  * "Skipped" is the part a user cannot deduce from the message. A schema mismatch
  * sounds like a warning until you know a step will not run.
  */
+@Composable
 private fun whereText(issue: ValidationIssue, workflow: Workflow): String? {
     val names = issue.nodes.mapNotNull { workflow.node(it)?.name }
     val blocked = issue.blockedNodes.mapNotNull { workflow.node(it)?.name }
     val parts = buildList {
-        if (names.isNotEmpty()) add(names.joinToString(" → "))
-        if (blocked.isNotEmpty()) add("skipped: ${blocked.joinToString(", ")}")
-        else if (issue.blockedConnections.isNotEmpty()) add("this wire is skipped")
+        if (names.isNotEmpty()) add(names.joinToString(stringResource(R.string.problems_path_arrow)))
+        if (blocked.isNotEmpty()) {
+            add(stringResource(R.string.problems_skipped_nodes, blocked.joinToString(", ")))
+        } else if (issue.blockedConnections.isNotEmpty()) {
+            add(stringResource(R.string.problems_wire_skipped))
+        }
     }
-    return parts.joinToString("  ·  ").takeIf { it.isNotEmpty() }
+    return parts.joinToString(stringResource(R.string.problems_where_separator)).takeIf { it.isNotEmpty() }
 }
 
 @Composable
@@ -200,14 +207,14 @@ private fun NoProblems() {
             modifier = Modifier.padding(horizontal = 36.dp),
         ) {
             Text(
-                text = "No problems",
+                text = stringResource(R.string.grapheditor_no_problems),
                 color = EditorColors.textPrimary,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Medium,
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                text = "This workflow is ready to run.",
+                text = stringResource(R.string.grapheditor_this_workflow_is_ready_to),
                 color = EditorColors.textSecondary,
                 fontSize = 12.sp,
             )
@@ -220,4 +227,3 @@ private fun severityColor(severity: Severity): Color = when (severity) {
     Severity.WARNING -> EditorColors.warnAccent
 }
 
-private fun plural(count: Int, noun: String): String = if (count == 1) noun else "${noun}s"

@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.widget
 
+import androidx.glance.LocalContext
+import androidx.compose.ui.res.stringResource
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
@@ -133,7 +135,7 @@ class PanelWidget : GlanceAppWidget() {
             if (showLastRun && lastRun != null) {
                 Spacer(GlanceModifier.height(SECTION_GAP))
                 Text(
-                    text = lastRunLine(lastRun, now),
+                    text = lastRunLine(LocalContext.current, lastRun, now),
                     maxLines = 1,
                     style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant, fontSize = 12.sp),
                 )
@@ -190,7 +192,9 @@ class PanelWidget : GlanceAppWidget() {
             )
             Spacer(GlanceModifier.width(8.dp))
             Text(
-                text = if (running) "Engine running" else "Engine stopped",
+                text = LocalContext.current.getString(
+                    if (running) R.string.widget_engine_running else R.string.widget_engine_stopped,
+                ),
                 maxLines = 1,
                 style = TextStyle(
                     color = GlanceTheme.colors.onSurface,
@@ -204,7 +208,7 @@ class PanelWidget : GlanceAppWidget() {
             // make the reader work out which is which, and the first one read as
             // part of the title beside it.
             Pill(
-                text = "$armed of $total armed",
+                text = LocalContext.current.getString(R.string.widget_armed_of_total, armed, total),
                 container = GlanceTheme.colors.secondaryContainer,
                 onContainer = GlanceTheme.colors.onSecondaryContainer,
             )
@@ -238,7 +242,8 @@ class PanelWidget : GlanceAppWidget() {
             )
             Spacer(GlanceModifier.width(6.dp))
             Text(
-                text = if (problems == 1) "1 problem" else "$problems problems",
+                text = LocalContext.current.resources
+                    .getQuantityString(R.plurals.widget_problem_count, problems, problems),
                 maxLines = 1,
                 style = TextStyle(
                     color = GlanceTheme.colors.onErrorContainer,
@@ -268,7 +273,7 @@ class PanelWidget : GlanceAppWidget() {
     private fun EmptyPanel(modifier: GlanceModifier) {
         Box(modifier = modifier.clickableToOpenApp(), contentAlignment = Alignment.Center) {
             Text(
-                text = "Nothing to show.\nLong-press to choose what this panel displays.",
+                text = stringResource(R.string.widget_nothing_to_show_nlong_press),
                 style = TextStyle(
                     color = GlanceTheme.colors.onSurfaceVariant,
                     fontSize = 12.sp,
@@ -281,7 +286,7 @@ class PanelWidget : GlanceAppWidget() {
     @Composable
     private fun TooShort() {
         Text(
-            text = "Make this taller to see the triggers",
+            text = stringResource(R.string.widget_make_this_taller_to_see),
             maxLines = 2,
             style = TextStyle(
                 color = GlanceTheme.colors.onSurfaceVariant,
@@ -340,25 +345,32 @@ internal fun PanelConfig.selectTriggers(all: List<ManualTriggerRef>): List<Manua
  * redrawn since yesterday would otherwise show a plausible-looking time for a run
  * that is a day old. Anything past a week says so instead of counting.
  */
-internal fun lastRunLine(entry: RunFeedback.Entry, nowMs: Long): String {
-    val outcome = when (entry.state) {
-        RunFeedback.State.RUNNING -> "running"
-        RunFeedback.State.DONE -> "ok"
-        RunFeedback.State.FAILED -> "failed"
-    }
-    return "${entry.macroName} · $outcome · ${relativeTime(nowMs - entry.atMs)}"
+internal fun lastRunLine(context: Context, entry: RunFeedback.Entry, nowMs: Long): String {
+    val outcome = context.getString(
+        when (entry.state) {
+            RunFeedback.State.RUNNING -> R.string.widget_outcome_running
+            RunFeedback.State.DONE -> R.string.widget_outcome_ok
+            RunFeedback.State.FAILED -> R.string.widget_outcome_failed
+        },
+    )
+    return context.getString(
+        R.string.widget_last_run_line,
+        entry.macroName,
+        outcome,
+        relativeTime(context, nowMs - entry.atMs),
+    )
 }
 
-internal fun relativeTime(agoMs: Long): String {
+internal fun relativeTime(context: Context, agoMs: Long): String {
     val minutes = agoMs / MS_PER_MINUTE
     val hours = minutes / MINUTES_PER_HOUR
     val days = hours / HOURS_PER_DAY
     return when {
-        minutes < 1 -> "just now"
-        minutes < MINUTES_PER_HOUR -> "${minutes}m ago"
-        hours < HOURS_PER_DAY -> "${hours}h ago"
-        days < DAYS_SHOWN -> "${days}d ago"
-        else -> "a while ago"
+        minutes < 1 -> context.getString(R.string.widget_ago_just_now)
+        minutes < MINUTES_PER_HOUR -> context.getString(R.string.widget_ago_minutes, minutes)
+        hours < HOURS_PER_DAY -> context.getString(R.string.widget_ago_hours, hours)
+        days < DAYS_SHOWN -> context.getString(R.string.widget_ago_days, days)
+        else -> context.getString(R.string.widget_ago_a_while)
     }
 }
 

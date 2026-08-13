@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.variables
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -74,6 +77,12 @@ fun VariableList(
     onOpenGlobals: (() -> Unit)? = null,
     values: Map<String, String> = emptyMap(),
 ) {
+    // Hoisted: LazyColumn's content lambda is LazyListScope, not a composition, so a
+    // stringResource call cannot live inside it.
+    val localTitle = stringResource(R.string.variables_this_workflow)
+    val localEmpty = stringResource(R.string.variables_empty_local)
+    val globalEmpty = stringResource(R.string.variables_empty_global)
+    val globalTitle = stringResource(R.string.variables_global)
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
@@ -86,8 +95,8 @@ fun VariableList(
         if (showLocals) {
             section(
                 key = "local",
-                title = "This workflow",
-                empty = "Nothing yet. A variable here belongs to this macro alone.",
+                title = localTitle,
+                empty = localEmpty,
                 declarations = locals,
                 scope = VariableScope.LOCAL,
                 selectedSpec = selectedSpec,
@@ -99,8 +108,8 @@ fun VariableList(
         if (showGlobals) {
             section(
                 key = "global",
-                title = "Global",
-                empty = "Nothing yet. A variable here is shared by every macro.",
+                title = globalTitle,
+                empty = globalEmpty,
                 declarations = globals,
                 scope = VariableScope.GLOBAL,
                 selectedSpec = selectedSpec,
@@ -175,7 +184,7 @@ private fun NewVariableRow(onClick: () -> Unit) {
     ) {
         Icon(Icons.Filled.Add, contentDescription = null, tint = accent)
         Text(
-            text = "New variable",
+            text = stringResource(R.string.variables_new_variable),
             style = MaterialTheme.typography.bodyLarge,
             color = accent,
             fontWeight = FontWeight.Medium,
@@ -221,13 +230,13 @@ private fun GlobalVariablesRow(count: Int, onClick: () -> Unit) {
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Global variables",
+                text = stringResource(R.string.variables_global_variables),
                 style = MaterialTheme.typography.bodyLarge,
                 color = EditorColors.textPrimary,
                 fontWeight = FontWeight.Medium,
             )
             Text(
-                text = if (count == 1) "1 shared by every macro" else "$count shared by every macro",
+                text = pluralStringResource(R.plurals.variables_shared_by_every_macro, count, count),
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.textSecondary,
             )
@@ -295,7 +304,7 @@ private fun VariableRow(
         IconButton(onClick = onEdit) {
             Icon(
                 imageVector = Icons.Filled.Edit,
-                contentDescription = "Edit ${declaration.name}",
+                contentDescription = stringResource(R.string.variables_edit_named, declaration.name),
                 tint = EditorColors.textSecondary,
             )
         }
@@ -310,12 +319,14 @@ private fun VariableRow(
  * a variable holds *right now* that is the only one of the two anybody is reading
  * the panel for. A constant says so instead of pretending its value might change.
  */
+@Composable
 internal fun VariableDeclaration.subtitle(value: String?): String {
+    val empty = stringResource(R.string.variables_empty)
     val what = when {
-        constant -> "constant · ${initialValue.ifBlank { "empty" }}"
-        value != null -> "= ${value.ifBlank { "empty" }}"
-        initialValue.isNotBlank() -> "starts at $initialValue"
-        else -> "unset"
+        constant -> stringResource(R.string.variables_constant_is, initialValue.ifBlank { empty })
+        value != null -> stringResource(R.string.variables_equals, value.ifBlank { empty })
+        initialValue.isNotBlank() -> stringResource(R.string.variables_starts_at_value, initialValue)
+        else -> stringResource(R.string.variables_unset)
     }
-    return "${type.label()} · $what"
+    return stringResource(R.string.variables_subtitle, type.label(), what)
 }

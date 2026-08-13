@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.mail
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -75,12 +77,12 @@ internal fun MailFolderField(
         label = labelSlot,
         colors = colors,
         singleLine = true,
-        placeholder = { Text("INBOX") },
+        placeholder = { Text(stringResource(R.string.mail_inbox)) },
         trailingIcon = {
             IconButton(onClick = { browsing = true }, enabled = accounts != null) {
                 Icon(
                     imageVector = Icons.Filled.Folder,
-                    contentDescription = "Choose a folder",
+                    contentDescription = stringResource(R.string.mail_choose_a_folder),
                     tint = EditorColors.textSecondary,
                 )
             }
@@ -123,21 +125,24 @@ private fun MailFolderOverlay(
     var folders by remember { mutableStateOf<List<String>?>(null) }
     var problem by remember { mutableStateOf<String?>(null) }
 
+    // Resolved before the effect, which is a coroutine rather than a composition.
+    val noAccountMessage = stringResource(R.string.mail_choose_account_first)
+    val unreadableMessage = stringResource(R.string.mail_folder_list_unreadable)
+
     // Keyed on the account, so choosing a different one re-asks rather than
     // showing the previous account's mailboxes.
     LaunchedEffect(accountId) {
         if (accountId.isBlank()) {
-            problem = "Choose an account on this node first — folders live on the server, " +
-                "so Ottomatic has to know which one to ask."
+            problem = noAccountMessage
             return@LaunchedEffect
         }
         viewModel.folders(accountId)
             .onSuccess { folders = it }
-            .onFailure { problem = it.message ?: "The folder list could not be read." }
+            .onFailure { problem = it.message ?: unreadableMessage }
     }
 
     EditorOverlay(
-        title = "Choose a folder",
+        title = stringResource(R.string.mail_choose_a_folder),
         onClose = { picked?.let(onPick) ?: onDismiss() },
     ) { dismiss ->
         Column(
@@ -148,7 +153,7 @@ private fun MailFolderOverlay(
             when {
                 problem != null -> Notice(problem.orEmpty())
                 folders == null -> Loading()
-                folders.orEmpty().isEmpty() -> Notice("This account reports no folders that can hold mail.")
+                folders.orEmpty().isEmpty() -> Notice(stringResource(R.string.mail_no_usable_folders))
                 else -> FolderList(
                     folders = folders.orEmpty(),
                     selected = selected,

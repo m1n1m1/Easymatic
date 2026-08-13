@@ -1,5 +1,6 @@
 package com.example.ottomatic.feature.shortcut
 
+import com.example.ottomatic.R
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -74,7 +75,11 @@ object MacroShortcuts {
             // The long label gets the macro's name when it differs, because a
             // launcher with room for it should say which macro "Start" belongs to.
             .setLongLabel(
-                if (trigger.macroName == trigger.label) trigger.label else "${trigger.macroName} · ${trigger.label}",
+                if (trigger.macroName == trigger.label) {
+                    trigger.label
+                } else {
+                    context.getString(R.string.shortcut_macro_and_trigger, trigger.macroName, trigger.label)
+                },
             )
             .setIcon(adaptiveIcon(context, trigger.icon, trigger.accent))
             .setIntent(

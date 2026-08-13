@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.permissions
 
+import androidx.annotation.StringRes
+import com.example.ottomatic.R
 import com.example.ottomatic.core.permissions.PermissionRequirement
 import com.example.ottomatic.core.permissions.Permissions
 import com.example.ottomatic.core.permissions.PrerequisiteType
@@ -8,114 +10,97 @@ import com.example.ottomatic.core.permissions.PrerequisiteType
  * The user-facing words for a permission — three of them, because the two places
  * that talk about permissions are asking different questions.
  *
- * [rationaleFor] is keyed by [PermissionRequirement.rationaleKey]: *why is this
- * node asking?* `overlay.dialog` and `overlay.launch` are the same system switch
- * with two different reasons, and they are two constants precisely so a node's
- * card can say which one applies to it.
+ * [rationaleRes] is keyed by [PermissionRequirement.rationaleKey]: *why is this node
+ * asking?* `overlay.dialog` and `overlay.launch` are the same system switch with two
+ * different reasons, and they are two constants precisely so a node's card can say
+ * which one applies to it.
  *
- * [titleFor] and [descriptionFor] are keyed by [PermissionRequirement.key]:
- * *what is this switch, and what does the app do with it?* On the permissions
- * screen those two overlay reasons collapse into a single row, so its text has
- * to cover the grant rather than any one node's use of it.
+ * [titleRes] and [descriptionRes] are keyed by [PermissionRequirement.key]: *what is
+ * this switch, and what does the app do with it?* On the permissions screen those two
+ * overlay reasons collapse into a single row, so its text has to cover the grant
+ * rather than any one node's use of it.
  *
  * None of the three is [PermissionRequirement.label], which has its own written
  * contract — a noun phrase that fits inside "'Launch App' needs ___" — and is
  * consumed by `GraphValidator` to build exactly that sentence.
+ *
+ * These return **resource ids rather than strings**, which is the direct route: the
+ * answer set is a closed enum, so an exhaustive `when` is checked by the compiler in
+ * both directions and a missing string fails the build. It also keeps the whole file
+ * pure, so `PermissionCopyTest` can go on asserting over it with no device — and
+ * asserting that two ids differ is a stronger statement than that two strings do.
+ *
+ * Null means *no words for this one yet*. Only the unknown-permission fallbacks can
+ * produce it for a title or description; a rationale is nullable by design.
  */
 
-/** A short Title Case noun for the row. Total. */
-internal fun titleFor(requirement: PermissionRequirement): String =
+/** A short Title Case noun for the row. */
+@StringRes
+internal fun titleRes(requirement: PermissionRequirement): Int? =
     when (requirement.type) {
-        PrerequisiteType.OVERLAY -> "Draw over other apps"
-        PrerequisiteType.NOTIFICATION_LISTENER -> "Notification access"
-        PrerequisiteType.NOTIFICATION_POLICY -> "Do Not Disturb access"
-        PrerequisiteType.ACCESSIBILITY_SERVICE -> "Accessibility access"
-        PrerequisiteType.BATTERY_OPTIMISATION -> "Unrestricted battery use"
-        PrerequisiteType.EXACT_ALARM -> "Alarms & reminders"
-        PrerequisiteType.WRITE_SETTINGS -> "Modify system settings"
-        PrerequisiteType.NFC -> "NFC"
-        PrerequisiteType.FOREGROUND_SERVICE -> "Foreground service"
-        PrerequisiteType.DEVICE_ADMIN -> "Device administrator"
-        PrerequisiteType.RUNTIME -> runtimeTitle(requirement.manifestPermission)
+        PrerequisiteType.OVERLAY -> R.string.perm_title_overlay
+        PrerequisiteType.NOTIFICATION_LISTENER -> R.string.perm_title_notification_listener
+        PrerequisiteType.NOTIFICATION_POLICY -> R.string.perm_title_notification_policy
+        PrerequisiteType.ACCESSIBILITY_SERVICE -> R.string.perm_title_accessibility_service
+        PrerequisiteType.BATTERY_OPTIMISATION -> R.string.perm_title_battery_optimisation
+        PrerequisiteType.EXACT_ALARM -> R.string.perm_title_exact_alarm
+        PrerequisiteType.WRITE_SETTINGS -> R.string.perm_title_write_settings
+        PrerequisiteType.NFC -> R.string.perm_title_nfc
+        PrerequisiteType.FOREGROUND_SERVICE -> R.string.perm_title_foreground_service
+        PrerequisiteType.DEVICE_ADMIN -> R.string.perm_title_device_admin
+        PrerequisiteType.RUNTIME -> runtimeTitleRes(requirement.manifestPermission)
     }
 
-private fun runtimeTitle(manifest: String?): String = when (manifest) {
-    Permissions.ACCESS_FINE_LOCATION.manifest -> "Location"
-    Permissions.ACCESS_COARSE_LOCATION.manifest -> "Approximate location"
-    Permissions.ACCESS_BACKGROUND_LOCATION.manifest -> "Location in the background"
-    Permissions.RECEIVE_SMS.manifest -> "Receive texts"
-    Permissions.SEND_SMS.manifest -> "Send texts"
-    Permissions.CALL_PHONE.manifest -> "Make calls"
-    Permissions.READ_CONTACTS.manifest -> "Contacts"
-    Permissions.POST_NOTIFICATIONS.manifest -> "Notifications"
-    Permissions.BLUETOOTH_CONNECT.manifest -> "Bluetooth"
-    // Ugly, but it only shows for a permission nothing has words for yet, and a
-    // wrong friendly name is worse than a blunt accurate one.
-    else -> manifest.orEmpty().substringAfterLast('.').lowercase()
-        .replace('_', ' ')
-        .replaceFirstChar { it.uppercase() }
+@StringRes
+private fun runtimeTitleRes(manifest: String?): Int? = when (manifest) {
+    Permissions.ACCESS_FINE_LOCATION.manifest -> R.string.perm_title_access_fine_location
+    Permissions.ACCESS_COARSE_LOCATION.manifest -> R.string.perm_title_access_coarse_location
+    Permissions.ACCESS_BACKGROUND_LOCATION.manifest -> R.string.perm_title_access_background_location
+    Permissions.RECEIVE_SMS.manifest -> R.string.perm_title_receive_sms
+    Permissions.SEND_SMS.manifest -> R.string.perm_title_send_sms
+    Permissions.CALL_PHONE.manifest -> R.string.perm_title_call_phone
+    Permissions.READ_CONTACTS.manifest -> R.string.perm_title_read_contacts
+    Permissions.POST_NOTIFICATIONS.manifest -> R.string.perm_title_post_notifications
+    Permissions.BLUETOOTH_CONNECT.manifest -> R.string.perm_title_bluetooth_connect
+    else -> null
 }
 
 /**
  * One sentence saying what Ottomatic does with the grant.
  *
- * Total, unlike [rationaleFor]: a row with no body text is a bug rather than a
- * design choice, because unlike the node card there is no option to render
- * nothing — the row is on screen either way.
+ * Total for everything in the catalogue, unlike [rationaleRes]: a row with no body
+ * text is a bug rather than a design choice, because unlike the node card there is no
+ * option to render nothing — the row is on screen either way.
  */
+@StringRes
 @Suppress("CyclomaticComplexMethod") // A flat copy table, not branching logic.
-internal fun descriptionFor(requirement: PermissionRequirement): String =
+internal fun descriptionRes(requirement: PermissionRequirement): Int? =
     when (requirement.type) {
-        PrerequisiteType.OVERLAY ->
-            "Lets a macro put a dialog on screen, and open other apps, while you are looking " +
-                "at something else. Android blocks both from a background app without it."
-        PrerequisiteType.NOTIFICATION_LISTENER ->
-            "Lets Ottomatic see notifications from other apps, so a macro can react to one."
-        PrerequisiteType.NOTIFICATION_POLICY ->
-            "Lets a macro turn Do Not Disturb on and off, and switch the ringer to silent."
-        PrerequisiteType.ACCESSIBILITY_SERVICE ->
-            "Lets Ottomatic see volume and power button presses. It never reads screen content."
-        PrerequisiteType.BATTERY_OPTIMISATION ->
-            "Keeps Android from stopping the engine in the background. Without it, macros may " +
-                "not re-arm after a reboot and time-based triggers can be delayed."
-        PrerequisiteType.EXACT_ALARM ->
-            "Lets a schedule fire, and a wait end, at the minute you asked for. Without it " +
-                "Android is free to batch it with other work, so it may run late."
-        PrerequisiteType.WRITE_SETTINGS ->
-            "Lets a macro change screen brightness, screen timeout and auto-rotate."
-        PrerequisiteType.NFC ->
-            "Lets a macro run when you hold an NFC tag to the back of your phone. Ottomatic " +
-                "cannot switch NFC on for you, and tags are only read while the screen is on " +
-                "and unlocked."
-        PrerequisiteType.FOREGROUND_SERVICE ->
-            "Lets Ottomatic keep its engine running while your macros are armed."
-        PrerequisiteType.DEVICE_ADMIN ->
-            "Lets Ottomatic use device administrator features."
-        PrerequisiteType.RUNTIME -> runtimeDescription(requirement.manifestPermission)
+        PrerequisiteType.OVERLAY -> R.string.perm_desc_overlay
+        PrerequisiteType.NOTIFICATION_LISTENER -> R.string.perm_desc_notification_listener
+        PrerequisiteType.NOTIFICATION_POLICY -> R.string.perm_desc_notification_policy
+        PrerequisiteType.ACCESSIBILITY_SERVICE -> R.string.perm_desc_accessibility_service
+        PrerequisiteType.BATTERY_OPTIMISATION -> R.string.perm_desc_battery_optimisation
+        PrerequisiteType.EXACT_ALARM -> R.string.perm_desc_exact_alarm
+        PrerequisiteType.WRITE_SETTINGS -> R.string.perm_desc_write_settings
+        PrerequisiteType.NFC -> R.string.perm_desc_nfc
+        PrerequisiteType.FOREGROUND_SERVICE -> R.string.perm_desc_foreground_service
+        PrerequisiteType.DEVICE_ADMIN -> R.string.perm_desc_device_admin
+        PrerequisiteType.RUNTIME -> runtimeDescriptionRes(requirement.manifestPermission)
     }
 
-@Suppress("CyclomaticComplexMethod") // A flat copy table, not branching logic.
-private fun runtimeDescription(manifest: String?): String = when (manifest) {
-    Permissions.ACCESS_FINE_LOCATION.manifest ->
-        "Lets a geofence know when you arrive somewhere or leave it."
-    Permissions.ACCESS_COARSE_LOCATION.manifest ->
-        "A rougher fix, used when precise location is not available."
-    Permissions.ACCESS_BACKGROUND_LOCATION.manifest ->
-        "Lets a geofence keep working while Ottomatic is closed — which is the only time it " +
-            "is any use. Granted by choosing \"Allow all the time\"."
-    Permissions.RECEIVE_SMS.manifest ->
-        "Lets a macro run when a text arrives, and read who it is from and what it says."
-    Permissions.SEND_SMS.manifest -> "Lets a macro send a text on your behalf."
-    Permissions.CALL_PHONE.manifest -> "Lets a macro place a call without you confirming it."
-    Permissions.READ_CONTACTS.manifest ->
-        "Lets a macro look up the number of a contact you chose. Choosing one needs nothing; " +
-            "dialling it later does."
-    Permissions.POST_NOTIFICATIONS.manifest ->
-        "Lets Ottomatic show a notification — both the ones a macro posts and the one that " +
-            "tells you the engine failed to start after a reboot."
-    Permissions.BLUETOOTH_CONNECT.manifest ->
-        "Lets a macro turn Bluetooth on and off."
-    else -> "Used by a node on one of your macros."
+@StringRes
+private fun runtimeDescriptionRes(manifest: String?): Int = when (manifest) {
+    Permissions.ACCESS_FINE_LOCATION.manifest -> R.string.perm_desc_access_fine_location
+    Permissions.ACCESS_COARSE_LOCATION.manifest -> R.string.perm_desc_access_coarse_location
+    Permissions.ACCESS_BACKGROUND_LOCATION.manifest -> R.string.perm_desc_access_background_location
+    Permissions.RECEIVE_SMS.manifest -> R.string.perm_desc_receive_sms
+    Permissions.SEND_SMS.manifest -> R.string.perm_desc_send_sms
+    Permissions.CALL_PHONE.manifest -> R.string.perm_desc_call_phone
+    Permissions.READ_CONTACTS.manifest -> R.string.perm_desc_read_contacts
+    Permissions.POST_NOTIFICATIONS.manifest -> R.string.perm_desc_post_notifications
+    Permissions.BLUETOOTH_CONNECT.manifest -> R.string.perm_desc_bluetooth_connect
+    else -> R.string.perm_desc_unknown
 }
 
 /**
@@ -126,34 +111,30 @@ private fun runtimeDescription(manifest: String?): String = when (manifest) {
  * Settings-granted prerequisite without a rationale gets no card at all, because
  * sending somebody to a system page with no explanation of what to switch on, or
  * why, is worse than saying nothing. The permissions screen never consults this
- * — it has [descriptionFor], which is total.
+ * — it has [descriptionRes], which is total.
  */
-internal fun rationaleFor(requirement: PermissionRequirement): String? =
+@StringRes
+internal fun rationaleRes(requirement: PermissionRequirement): Int? =
     when (requirement.rationaleKey) {
-        "accessibility.keys" ->
-            "Ottomatic needs accessibility access to see button presses. It never reads screen " +
-                "content. If the switch is greyed out, open App info → ⋮ → Allow restricted " +
-                "settings first."
-        "notification.listener" ->
-            "Ottomatic needs notification access to see notifications from other apps."
-        "dnd.policy" ->
-            "Ottomatic needs Do Not Disturb access to change your ringer mode."
-        "overlay.dialog" ->
-            "Ottomatic needs permission to draw over other apps so this dialog can reach you " +
-                "while you are somewhere else on your phone. Without it the node cancels " +
-                "instead of asking."
-        "nfc.radio" ->
-            "This trigger needs NFC switched on, which is a system-wide setting rather than " +
-                "something Ottomatic can grant itself. Tags are also only read while the screen " +
-                "is on and unlocked — a tap will not reach a phone asleep in your pocket."
-        "alarm.exact" ->
-            "Ottomatic needs permission to set exact alarms so this wait ends at the minute you " +
-                "asked for. Without it the wait still happens, but Android batches the wake-up " +
-                "with other work and it can be minutes late."
-        "overlay.launch" ->
-            "Ottomatic needs permission to draw over other apps so it can open one while you " +
-                "are somewhere else on your phone. Android blocks a background app from " +
-                "opening another, and without this the node does nothing and says so in the " +
-                "console."
+        "accessibility.keys" -> R.string.perm_rationale_accessibility_keys
+        "notification.listener" -> R.string.perm_rationale_notification_listener
+        "dnd.policy" -> R.string.perm_rationale_dnd_policy
+        "overlay.dialog" -> R.string.perm_rationale_overlay_dialog
+        "nfc.radio" -> R.string.perm_rationale_nfc_radio
+        "alarm.exact" -> R.string.perm_rationale_alarm_exact
+        "overlay.launch" -> R.string.perm_rationale_overlay_launch
         else -> null
     }
+
+/**
+ * The last-resort name for a permission nobody has written words for.
+ *
+ * Structurally English-only, and deliberately kept anyway: it shows only for a
+ * permission that has reached the catalogue without copy, where a blunt accurate
+ * rendering of the manifest name beats a generic "Other permission" that says
+ * nothing at all. `PermissionCopyTest` asserts nothing in the catalogue needs it.
+ */
+internal fun derivedTitle(manifest: String?): String =
+    manifest.orEmpty().substringAfterLast('.').lowercase()
+        .replace('_', ' ')
+        .replaceFirstChar { it.uppercase() }

@@ -1,5 +1,6 @@
 package com.example.ottomatic.feature.shortcut
 
+import com.example.ottomatic.R
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -40,9 +41,14 @@ class RunTriggerActivity : Activity() {
             // A shortcut pinned to a macro that has since been deleted. Say so:
             // the alternative is an icon that silently does nothing, which reads
             // as the app being broken rather than the macro being gone.
-            Toast.makeText(this, "That macro no longer exists", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.shortcut_macro_gone), Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(this, if (label.isBlank()) "Running…" else "Running $label", Toast.LENGTH_SHORT).show()
+            val running = if (label.isBlank()) {
+                getString(R.string.shortcut_running)
+            } else {
+                getString(R.string.shortcut_running_named, label)
+            }
+            Toast.makeText(this, running, Toast.LENGTH_SHORT).show()
             MacroEngineService.runManual(this, workflowId, nodeId)
         }
         finish()

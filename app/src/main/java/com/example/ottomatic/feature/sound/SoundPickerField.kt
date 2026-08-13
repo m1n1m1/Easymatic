@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.sound
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -58,6 +60,9 @@ fun SoundPickerField(
         this.value = withContext(Dispatchers.IO) { soundName(context, value) }
     }
 
+    // Resolved here: the intent is built outside the composition.
+    val pickerTitle = stringResource(R.string.sound_choose_a_sound)
+
     // Previews provide no ActivityResultRegistryOwner; this field is only ever
     // shown inside the editor, which lives in a ComponentActivity.
     val ringtones = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -86,15 +91,15 @@ fun SoundPickerField(
     if (choosing) {
         AlertDialog(
             onDismissRequest = { choosing = false },
-            title = { Text("Choose a sound") },
-            text = { Text("Pick one of the device's own sounds, or any audio file on the phone.") },
+            title = { Text(stringResource(R.string.sound_choose_a_sound)) },
+            text = { Text(stringResource(R.string.sound_pick_one_of_the_device)) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         choosing = false
-                        ringtones.launch(ringtonePickerIntent(value))
+                        ringtones.launch(ringtonePickerIntent(value, pickerTitle))
                     },
-                ) { Text("Device sounds") }
+                ) { Text(stringResource(R.string.sound_device_sounds)) }
             },
             dismissButton = {
                 TextButton(
@@ -102,7 +107,7 @@ fun SoundPickerField(
                         choosing = false
                         files.launch(AUDIO_MIME_TYPES)
                     },
-                ) { Text("Audio file") }
+                ) { Text(stringResource(R.string.sound_audio_file)) }
             },
         )
     }
@@ -126,10 +131,10 @@ private fun persistAccess(context: Context, uri: Uri) {
     }
 }
 
-private fun ringtonePickerIntent(current: String): Intent =
+private fun ringtonePickerIntent(current: String, title: String): Intent =
     Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
         putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALL)
-        putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Choose a sound")
+        putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, title)
         // "Silent" is not a sound; leaving the node unconfigured says that already.
         putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
         putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
@@ -174,5 +179,5 @@ private fun documentName(context: Context, uri: Uri): String? = runCatching {
  */
 private val AUDIO_MIME_TYPES = arrayOf("audio/*")
 
-/** Where a "default ringtone" style uri lives; not a `MediaStore` constant. */
+/** Where a stringResource(R.string.sound_default_ringtone) style uri lives; not a `MediaStore` constant. */
 private const val SETTINGS_AUTHORITY = "settings"

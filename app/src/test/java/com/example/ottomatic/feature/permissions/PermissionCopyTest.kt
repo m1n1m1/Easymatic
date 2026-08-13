@@ -20,28 +20,24 @@ class PermissionCopyTest {
     @Test
     fun `every entry has a title and a description`() {
         for (entry in entries) {
-            assertTrue("${entry.key} has no title", titleFor(entry.requirement).isNotBlank())
-            assertTrue(
-                "${entry.key} has no description",
-                descriptionFor(entry.requirement).isNotBlank(),
-            )
+            assertNotNull("${entry.key} has no title", titleRes(entry.requirement))
+            assertNotNull("${entry.key} has no description", descriptionRes(entry.requirement))
         }
     }
 
     /** Two rows both reading "Location" would be indistinguishable. */
     @Test
     fun `titles are unique`() {
-        val titles = entries.map { titleFor(it.requirement) }
+        val titles = entries.map { titleRes(it.requirement) }
         assertEquals(titles.distinct(), titles)
     }
 
     @Test
     fun `a description says more than its title`() {
         for (entry in entries) {
-            val title = titleFor(entry.requirement)
             assertTrue(
                 "${entry.key} describes itself as its own title",
-                descriptionFor(entry.requirement) != title,
+                descriptionRes(entry.requirement) != titleRes(entry.requirement),
             )
         }
     }
@@ -61,7 +57,7 @@ class PermissionCopyTest {
         for (requirement in settingsGranted) {
             assertNotNull(
                 "${requirement.rationaleKey} has no rationale",
-                rationaleFor(requirement),
+                rationaleRes(requirement),
             )
         }
     }

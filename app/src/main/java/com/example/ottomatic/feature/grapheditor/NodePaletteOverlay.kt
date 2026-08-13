@@ -48,9 +48,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ottomatic.R
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.NodeTypeDefinition
@@ -58,6 +61,9 @@ import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.PaletteGroup
 import com.example.ottomatic.domain.registry.PluginNodes
 import com.example.ottomatic.domain.registry.matchesSearch
+import com.example.ottomatic.feature.i18n.label
+import com.example.ottomatic.feature.i18n.labelRes
+import com.example.ottomatic.feature.i18n.rememberNodeText
 
 /**
  * Below this many matching nodes the whole palette opens expanded: a list this
@@ -97,9 +103,22 @@ fun NodePaletteOverlay(
     // because nothing else can change it.
     val plugins by PluginNodes.entries.collectAsState()
     val availableTypes = remember(plugins) { NodeTypeRegistry.all }
+    val nodeText = rememberNodeText()
+    val resources = LocalContext.current.resources
     val matchingDefinitions = availableTypes
         .filter { restriction == null || it.typeId in restriction }
-        .filter { it.matchesSearch(searchTerm) }
+        // The translated name, description and category join the declaration's English
+        // in the haystack rather than replacing it — see `matchesSearch`.
+        .filter {
+            it.matchesSearch(
+                searchTerm,
+                listOf(
+                    nodeText.name(it),
+                    nodeText.description(it),
+                    resources.getString(it.category.labelRes()),
+                ),
+            )
+        }
     // Searching and short result sets expand everything without touching
     // [expandedGroups], so clearing the search restores what the user opened.
     val expandAll = searching || matchingDefinitions.size <= AUTO_EXPAND_THRESHOLD
@@ -110,10 +129,10 @@ fun NodePaletteOverlay(
     var picked by remember { mutableStateOf<NodeTypeDefinition?>(null) }
 
     EditorOverlay(
-        title = title ?: "Add node",
+        title = title ?: stringResource(R.string.grapheditor_add_node_2),
         onClose = { picked?.let(onPick) ?: onDismiss() },
         action = if (restriction != null) {
-            { TextButton(onClick = { showAll = true }) { Text("Show all") } }
+            { TextButton(onClick = { showAll = true }) { Text(stringResource(R.string.grapheditor_show_all)) } }
         } else {
             null
         },
@@ -144,9 +163,9 @@ fun NodePaletteOverlay(
                     item {
                         Text(
                             text = if (restriction != null) {
-                                "No nodes can connect here"
+                                stringResource(R.string.grapheditor_no_nodes_can_connect_here)
                             } else {
-                                "No nodes match your search"
+                                stringResource(R.string.grapheditor_no_nodes_match_your_search)
                             },
                             style = MaterialTheme.typography.bodyMedium,
                             color = EditorColors.textSecondary,
@@ -198,12 +217,12 @@ private fun PaletteSearchField(
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        label = { Text("Search nodes") },
+        label = { Text(stringResource(R.string.grapheditor_search_nodes)) },
         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = onClear) {
-                    Icon(Icons.Filled.Close, contentDescription = "Clear search")
+                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.grapheditor_clear_search))
                 }
             }
         },
@@ -297,7 +316,7 @@ private fun PaletteKindHeader(kind: NodeKind, accent: Color, count: Int) {
             )
         }
         Text(
-            text = (kindLabel(kind) + "s").uppercase(),
+            text = stringResource(kindLabelPluralRes(kind)).uppercase(),
             style = MaterialTheme.typography.labelLarge,
             color = accent,
             fontWeight = FontWeight.Bold,
@@ -334,6 +353,8 @@ private fun PaletteGroupRows(
     )
     // The only moving color cue: an open category tints towards its kind.
     val trailingColor = if (isExpanded) accent else EditorColors.textSecondary
+    // Resolved once: the heading and both content descriptions name the same thing.
+    val groupName = group.label()
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -342,7 +363,7 @@ private fun PaletteGroupRows(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = group.displayName,
+            text = groupName,
             style = MaterialTheme.typography.titleSmall,
             color = EditorColors.textPrimary,
             fontWeight = FontWeight.SemiBold,
@@ -357,9 +378,9 @@ private fun PaletteGroupRows(
         Icon(
             imageVector = Icons.Filled.ExpandMore,
             contentDescription = if (isExpanded) {
-                "Collapse ${group.displayName}"
+                stringResource(R.string.cd_palette_collapse_group, groupName)
             } else {
-                "Expand ${group.displayName}"
+                stringResource(R.string.cd_palette_expand_group, groupName)
             },
             tint = trailingColor,
             modifier = Modifier.rotate(chevronRotation),
@@ -406,15 +427,16 @@ private fun PaletteRow(
                 modifier = Modifier.size(22.dp),
             )
         }
+        val nodeText = rememberNodeText()
         Column {
             Text(
-                text = definition.displayName,
+                text = nodeText.name(definition),
                 style = MaterialTheme.typography.bodyLarge,
                 color = EditorColors.textPrimary,
                 fontWeight = FontWeight.Medium,
             )
             Text(
-                text = definition.description,
+                text = nodeText.description(definition),
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.textSecondary,
             )

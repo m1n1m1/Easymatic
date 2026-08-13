@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.widget
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.Intent
@@ -148,7 +150,7 @@ class RunTileConfigActivity : WidgetConfigActivity() {
             triggers = MacroSnapshots.triggers()
         }
 
-        ConfigScaffold(title = "Choose a trigger") {
+        ConfigScaffold(title = stringResource(R.string.widget_choose_a_trigger)) {
             val loaded = triggers
             when {
                 loaded == null -> Unit
@@ -213,7 +215,7 @@ class PanelConfigActivity : WidgetConfigActivity() {
         }
 
         ConfigScaffold(
-            title = "Ottomatic panel",
+            title = stringResource(R.string.widget_ottomatic_panel),
             action = {
                 Button(
                     onClick = {
@@ -241,44 +243,44 @@ class PanelConfigActivity : WidgetConfigActivity() {
                     // anything: picked mode with nothing picked would render an
                     // empty grid and look broken.
                     enabled = loaded && !(showTriggers && !triggersAuto && picked.isEmpty()),
-                ) { Text("Save") }
+                ) { Text(stringResource(R.string.widget_save)) }
             },
         ) {
             if (!loaded) return@ConfigScaffold
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 item {
-                    SectionLabel("Show")
+                    SectionLabel(stringResource(R.string.widget_show))
                     ToggleRow(
-                        label = "Engine status",
-                        hint = "Whether the engine is running, and how many macros are armed",
+                        label = stringResource(R.string.widget_engine_status),
+                        hint = stringResource(R.string.widget_whether_the_engine_is_running),
                         checked = showStatus,
                         onChange = { showStatus = it },
                     )
                     ToggleRow(
-                        label = "Problems",
-                        hint = "A count of macros that cannot run — hidden when there are none",
+                        label = stringResource(R.string.widget_problems),
+                        hint = stringResource(R.string.widget_a_count_of_macros_that),
                         checked = showProblems,
                         onChange = { showProblems = it },
                     )
                     ToggleRow(
-                        label = "Last run",
-                        hint = "Which macro ran last, whether it worked, and when",
+                        label = stringResource(R.string.widget_last_run),
+                        hint = stringResource(R.string.widget_which_macro_ran_last_whether),
                         checked = showLastRun,
                         onChange = { showLastRun = it },
                     )
                     ToggleRow(
-                        label = "Trigger buttons",
-                        hint = "A grid of manual triggers you can tap to run",
+                        label = stringResource(R.string.widget_trigger_buttons),
+                        hint = stringResource(R.string.widget_a_grid_of_manual_triggers),
                         checked = showTriggers,
                         onChange = { showTriggers = it },
                     )
                 }
                 if (showTriggers) {
                     item {
-                        SectionLabel("Which triggers")
+                        SectionLabel(stringResource(R.string.widget_which_triggers))
                         ToggleRow(
-                            label = "Show all of them",
-                            hint = "New macros appear on the panel automatically",
+                            label = stringResource(R.string.widget_show_all_of_them),
+                            hint = stringResource(R.string.widget_new_macros_appear_on_the),
                             checked = triggersAuto,
                             onChange = { triggersAuto = it },
                         )
@@ -288,7 +290,7 @@ class PanelConfigActivity : WidgetConfigActivity() {
                     when {
                         list.isEmpty() -> item { EmptyTriggers() }
                         triggersAuto -> item {
-                            Hint("Showing all ${list.size} triggers. Turn the switch off to pick which ones.")
+                            Hint(stringResource(R.string.widget_showing_all, list.size))
                         }
 
                         else -> items(list, key = { it.key }) { trigger ->
@@ -402,7 +404,7 @@ private fun TriggerRow(
                     .padding(horizontal = 8.dp, vertical = 2.dp),
             ) {
                 Text(
-                    text = "${selectionIndex + 1}",
+                    text = (selectionIndex + 1).toString(),
                     color = EditorColors.textPrimary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -434,9 +436,7 @@ private fun ToggleRow(label: String, hint: String, checked: Boolean, onChange: (
 private fun EmptyTriggers() {
     Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
         Text(
-            text = "No manual triggers yet.\n\n" +
-                "Open a macro and drop a Manual Trigger node onto the canvas — " +
-                "it will show up here.",
+            text = stringResource(R.string.widget_no_manual_triggers_yet_n),
             color = EditorColors.textSecondary,
             fontSize = 13.sp,
         )

@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.contacts
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -91,7 +93,8 @@ fun PhoneNumberField(
         readOnly = contact != null,
         label = labelSlot,
         colors = colors,
-        placeholder = { Text(text = "Type a number", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        placeholder = { Text(text =
+            stringResource(R.string.contacts_type_a_number), maxLines = 1, overflow = TextOverflow.Ellipsis) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
         trailingIcon = {
             Row {
@@ -99,12 +102,13 @@ fun PhoneNumberField(
                     IconButton(onClick = { onValueChange("") }) {
                         Icon(
                             imageVector = Icons.Filled.Close,
-                            contentDescription = "Clear the contact and type a number instead",
+                            contentDescription = stringResource(R.string.contacts_clear_the_contact_and_type),
                         )
                     }
                 }
                 IconButton(onClick = { picker.launch(CONTACT_PICKER_INTENT) }) {
-                    Icon(imageVector = Icons.Filled.Person, contentDescription = "Choose a contact")
+                    Icon(imageVector = Icons.Filled.Person, contentDescription =
+                        stringResource(R.string.contacts_choose_a_contact))
                 }
             }
         },

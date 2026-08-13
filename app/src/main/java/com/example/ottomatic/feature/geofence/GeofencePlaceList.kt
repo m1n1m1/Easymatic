@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.geofence
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -61,8 +63,7 @@ fun GeofencePlaceList(
         if (places.isEmpty()) {
             item(key = "empty") {
                 Text(
-                    text = "No places yet. Create one to point a geofence trigger at it — " +
-                        "every trigger using it moves when you edit it.",
+                    text = stringResource(R.string.geofence_no_places_yet_create_one),
                     style = MaterialTheme.typography.bodyMedium,
                     color = EditorColors.textSecondary,
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 16.dp),
@@ -96,7 +97,7 @@ private fun NewPlaceRow(onClick: () -> Unit) {
     ) {
         Icon(Icons.Filled.Add, contentDescription = null, tint = accent)
         Text(
-            text = "New place",
+            text = stringResource(R.string.geofence_new_place),
             style = MaterialTheme.typography.bodyLarge,
             color = accent,
             fontWeight = FontWeight.Medium,
@@ -158,7 +159,7 @@ private fun PlaceRow(
         IconButton(onClick = onEdit) {
             Icon(
                 imageVector = Icons.Filled.Edit,
-                contentDescription = "Edit ${place.name}",
+                contentDescription = stringResource(R.string.geofence_edit_named, place.name),
                 tint = EditorColors.textSecondary,
             )
         }
@@ -171,13 +172,18 @@ private fun PlaceRow(
  * appended, because two places at the same address with different radii are
  * otherwise indistinguishable.
  */
+@Composable
 internal fun GeofencePlace.subtitle(): String {
-    val where = address.ifBlank { "%.4f, %.4f".format(latitude, longitude) }
-    return "$where · ${formatRadius(radiusMeters)}"
+    val where = address.ifBlank { stringResource(R.string.geofence_coordinates, latitude, longitude) }
+    return stringResource(R.string.geofence_place_subtitle, where, formatRadius(radiusMeters))
 }
 
 /** Radius in the largest unit that stays readable: `250 m`, `1.4 km`. */
-internal fun formatRadius(meters: Float): String =
-    if (meters >= METERS_PER_KM) "%.1f km".format(meters / METERS_PER_KM) else "${meters.toInt()} m"
+@Composable
+internal fun formatRadius(meters: Float): String = if (meters >= METERS_PER_KM) {
+    stringResource(R.string.geofence_radius_km, meters / METERS_PER_KM)
+} else {
+    stringResource(R.string.geofence_radius_m, meters.toInt())
+}
 
 private const val METERS_PER_KM = 1000f

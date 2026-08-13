@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.mail
 
+import androidx.annotation.StringRes
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -79,20 +82,22 @@ fun MailAccountEditorOverlay(
     onSaved: (String) -> Unit = {},
 ) {
     EditorOverlay(
-        title = if (draft.isNew) "Add account" else "Edit account",
+        title = stringResource(
+            if (draft.isNew) R.string.mail_add_account else R.string.mail_edit_account,
+        ),
         onClose = onClose,
         action = {
             if (!draft.isNew) {
                 IconButton(onClick = { viewModel.delete(draft.id) }) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
-                        contentDescription = "Delete account",
+                        contentDescription = stringResource(R.string.mail_delete_account),
                         tint = EditorColors.textSecondary,
                     )
                 }
             }
             TextButton(onClick = { viewModel.save(onSaved) }, enabled = draft.canSave) {
-                Text("Save")
+                Text(stringResource(R.string.mail_save))
             }
         },
     ) { _ ->
@@ -118,15 +123,15 @@ fun MailAccountEditorOverlay(
             OutlinedTextField(
                 value = draft.name,
                 onValueChange = viewModel::nameChanged,
-                label = { Text("Name") },
-                placeholder = { Text("Work, Personal, Alarm system…") },
+                label = { Text(stringResource(R.string.mail_name)) },
+                placeholder = { Text(stringResource(R.string.mail_work_personal_alarm_system)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
             OutlinedTextField(
                 value = draft.address,
                 onValueChange = viewModel::addressChanged,
-                label = { Text("Email address") },
+                label = { Text(stringResource(R.string.mail_email_address)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
@@ -135,7 +140,7 @@ fun MailAccountEditorOverlay(
             OutlinedTextField(
                 value = draft.username,
                 onValueChange = viewModel::usernameChanged,
-                label = { Text("Username (only if it differs from the address)") },
+                label = { Text(stringResource(R.string.mail_username_only_if_it_differs)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -155,7 +160,7 @@ private fun ProviderField(selected: MailProvider, onChoose: (MailProvider) -> Un
             value = selected.label,
             onValueChange = {},
             readOnly = true,
-            label = { Text("Provider") },
+            label = { Text(stringResource(R.string.mail_provider)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             singleLine = true,
             modifier = Modifier
@@ -197,7 +202,7 @@ private fun ProviderNote(provider: MailProvider) {
                 },
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp),
             ) {
-                Text("Open the app-password page")
+                Text(stringResource(R.string.mail_open_the_app_password_page))
             }
         }
     }
@@ -217,7 +222,7 @@ private fun RefusalCard(message: String) {
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Text(
-            text = "This provider cannot be added",
+            text = stringResource(R.string.mail_this_provider_cannot_be_added),
             style = MaterialTheme.typography.titleSmall,
             color = accent,
         )
@@ -242,8 +247,14 @@ private fun PasswordField(draft: MailAccountDraft, viewModel: MailAccountsViewMo
         OutlinedTextField(
             value = draft.password,
             onValueChange = viewModel::passwordChanged,
-            label = { Text(if (draft.isNew) "App password" else "App password (leave blank to keep)") },
-            placeholder = { if (!draft.isNew && !draft.needsPassword) Text("Unchanged") },
+            label = {
+                Text(
+                    stringResource(
+                        if (draft.isNew) R.string.mail_app_password else R.string.mail_app_password_keep,
+                    ),
+                )
+            },
+            placeholder = { if (!draft.isNew && !draft.needsPassword) Text(stringResource(R.string.mail_unchanged)) },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -255,9 +266,7 @@ private fun PasswordField(draft: MailAccountDraft, viewModel: MailAccountsViewMo
         // leaves the device it was made on.
         if (draft.needsPassword) {
             Text(
-                text = "This account's password could not be read — most likely it came from a " +
-                    "backup or another phone, which the key that sealed it does not. " +
-                    "Type it again to fix it.",
+                text = stringResource(R.string.mail_this_account_s_password_could),
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.errorAccent,
             )
@@ -268,12 +277,12 @@ private fun PasswordField(draft: MailAccountDraft, viewModel: MailAccountsViewMo
 @Composable
 private fun ServerFields(draft: MailAccountDraft, viewModel: MailAccountsViewModel) {
     Text(
-        text = "Servers",
+        text = stringResource(R.string.mail_servers),
         style = MaterialTheme.typography.titleSmall,
         color = EditorColors.textPrimary,
     )
     HostRow(
-        label = "Outgoing (SMTP)",
+        label = stringResource(R.string.mail_outgoing_smtp),
         host = draft.smtpHost,
         port = draft.smtpPort,
         security = draft.smtpSecurity,
@@ -282,7 +291,7 @@ private fun ServerFields(draft: MailAccountDraft, viewModel: MailAccountsViewMod
         onSecurityChange = viewModel::smtpSecurityChanged,
     )
     HostRow(
-        label = "Incoming (IMAP)",
+        label = stringResource(R.string.mail_incoming_imap),
         host = draft.imapHost,
         port = draft.imapPort,
         security = draft.imapSecurity,
@@ -315,7 +324,7 @@ private fun HostRow(
             OutlinedTextField(
                 value = port,
                 onValueChange = onPortChange,
-                label = { Text("Port") },
+                label = { Text(stringResource(R.string.mail_port)) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
@@ -331,10 +340,10 @@ private fun SecurityField(selected: MailSecurity, onChoose: (MailSecurity) -> Un
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         OutlinedTextField(
-            value = securityLabel(selected),
+            value = stringResource(securityLabelRes(selected)),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Security") },
+            label = { Text(stringResource(R.string.mail_security)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             singleLine = true,
             modifier = Modifier
@@ -344,7 +353,7 @@ private fun SecurityField(selected: MailSecurity, onChoose: (MailSecurity) -> Un
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             MailSecurity.entries.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(securityLabel(option)) },
+                    text = { Text(stringResource(securityLabelRes(option))) },
                     onClick = {
                         onChoose(option)
                         expanded = false
@@ -358,10 +367,11 @@ private fun SecurityField(selected: MailSecurity, onChoose: (MailSecurity) -> Un
 // Spelled here rather than read off the `@Label` annotations, which exist for the
 // node config form and are derived through a serialization descriptor this screen
 // has no reason to hold.
-private fun securityLabel(security: MailSecurity): String = when (security) {
-    MailSecurity.NONE -> "None (not recommended)"
-    MailSecurity.STARTTLS -> "STARTTLS"
-    MailSecurity.TLS -> "TLS / SSL"
+@StringRes
+private fun securityLabelRes(security: MailSecurity): Int = when (security) {
+    MailSecurity.NONE -> R.string.mail_security_none
+    MailSecurity.STARTTLS -> R.string.mail_security_starttls
+    MailSecurity.TLS -> R.string.mail_security_tls
 }
 
 @Composable
@@ -372,7 +382,7 @@ private fun TestConnection(draft: MailAccountDraft, viewModel: MailAccountsViewM
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             TextButton(onClick = viewModel::testConnection, enabled = draft.canTest && !draft.testing) {
-                Text("Test connection")
+                Text(stringResource(R.string.mail_test_connection))
             }
             if (draft.testing) {
                 CircularProgressIndicator(

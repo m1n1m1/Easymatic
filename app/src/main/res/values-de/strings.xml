@@ -1,0 +1,22 @@
+<resources>
+    <!-- app_name ist bewusst nicht hier: der Produktname wird nicht übersetzt.
+         Die fünf widget_preview_* sind translatable="false" und fehlen deshalb auch. -->
+
+    <string name="accessibility_service_label">Ottomatic Tasten-Auslöser</string>
+    <string name="accessibility_service_summary">Lässt Makros starten, wenn du die Lautstärketasten drückst.</string>
+    <string name="accessibility_service_description">Ottomatic verwendet dies ausschließlich, um Druck auf die Lautstärketasten zu erkennen, damit deine Makros dadurch starten können. Bildschirminhalte werden nie gelesen, und die Funktion der Tasten wird nie verändert — die Lautstärketasten funktionieren weiterhin normal.</string>
+
+    <string name="shortcut_new_macro_short">Neues Makro</string>
+    <string name="shortcut_new_macro_long">Neues Makro erstellen</string>
+
+    <string name="widget_run_tile_label">Ausführen-Kachel</string>
+    <string name="widget_panel_label">Ottomatic-Panel</string>
+
+    <string name="widget_run_tile_description">Ein Makro, ein Tippen. Wähle einen manuellen Auslöser und starte ihn vom Startbildschirm aus.</string>
+    <string name="widget_panel_description">Engine-Status, Probleme, letzter Lauf und ein Raster manueller Auslöser — du wählst, was davon angezeigt wird.</string>
+
+    <string name="permission_bind_plugin_label">Ottomatic-Knoten bereitstellen</string>
+    <string name="permission_bind_plugin_description">Erlaubt Ottomatic, die zusätzlichen Auslöser- und
+        Aktionsknoten dieser App zu verwenden. Die App führt ihren eigenen Code mit ihren eigenen
+        Berechtigungen aus; Ottomatic teilt seine Berechtigungen nicht mit ihr.</string>
+</resources>

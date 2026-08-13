@@ -1,0 +1,17 @@
+# String literals under feature/ that are not resolved through resources.
+# The list only ever shrinks: delete an entry as it is converted, never add one.
+#
+# What is left is deliberate, and each line is here for its own reason:
+#   $base $it                       "Claude", then "Claude 2" - a name plus a number.
+#   Reply with the single word: ..  sent TO the model, not shown to anyone. Translating it
+#                                   would change what the connection test asks the model for.
+#   Anything                        the wildcard row's English source. It is translated at
+#                                   draw time through NodeText.valueTypeLabel, which reads
+#                                   the generated valuetype_any key.
+#   access                          not display text: readableName() strips this prefix off
+#                                   a manifest constant while deriving a readable name.
+
+AiConnectionsViewModel.kt: $base $it
+AiConnectionsViewModel.kt: Reply with the single word: working
+ConfigFieldEditor.kt: Anything
+NodePermissionNotice.kt: access 

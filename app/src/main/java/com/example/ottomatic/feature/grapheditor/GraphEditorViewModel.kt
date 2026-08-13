@@ -1,5 +1,6 @@
 package com.example.ottomatic.feature.grapheditor
 
+import com.example.ottomatic.R
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
@@ -68,6 +69,7 @@ import com.example.ottomatic.engine.trigger.ManualTrigger
 import com.example.ottomatic.engine.trigger.TriggerHost
 import com.example.ottomatic.engine.validation.GraphValidation
 import com.example.ottomatic.engine.validation.GraphValidator
+import com.example.ottomatic.feature.i18n.NodeText
 import com.example.ottomatic.feature.variables.VariableScope
 import com.example.ottomatic.feature.variables.specFor
 import java.util.UUID
@@ -163,6 +165,17 @@ class GraphEditorViewModel(
 
     private val _uiState = MutableStateFlow(GraphEditorUiState())
     val uiState: StateFlow<GraphEditorUiState> = _uiState.asStateFlow()
+
+    /**
+     * Names a node as it is placed.
+     *
+     * `WorkflowNode.name` is *persisted* and is what the card draws, so a node placed
+     * while the app is German keeps its German name — which is right, because the field
+     * is user-editable and is the user's own label for that card. The cost is that
+     * changing locale does not retitle nodes on existing macros, and that is the same
+     * thing that already happens when a node type is renamed between releases.
+     */
+    private val nodeText = NodeText.of(appContext.resources)
 
     /**
      * This workflow's console, and the state around it.
@@ -500,7 +513,7 @@ class GraphEditorViewModel(
         val node = WorkflowNode(
             id = NodeId(UUID.randomUUID().toString()),
             typeId = typeId,
-            name = definition.displayName,
+            name = nodeText.name(definition),
             x = positionGraph.x,
             y = positionGraph.y,
             config = initialConfig(typeId),
@@ -571,7 +584,7 @@ class GraphEditorViewModel(
 
     private fun commitConnection(from: PortRef, target: PortRef) {
         val (output, input) = if (from.isOutput) from to target else target to from
-        require(output.kind == input.kind) { "Cannot connect exec port to data port" }
+        require(output.kind == input.kind) { appContext.getString(R.string.grapheditor_cannot_connect_kinds) }
         val workflow = _uiState.value.workflow
         if (output.kind == PortKind.DATA && !isTypeCompatible(workflow, output, input)) {
             insertConversion(workflow, output, input)
@@ -598,7 +611,7 @@ class GraphEditorViewModel(
         val convert = WorkflowNode(
             id = NodeId(UUID.randomUUID().toString()),
             typeId = CONVERT_TYPE_ID,
-            name = definition.displayName,
+            name = nodeText.name(definition),
             x = midpoint.x - GraphGeometry.nodeWidth(definition) / 2f,
             y = midpoint.y - GraphGeometry.NODE_HEIGHT / 2f,
             config = mapOf(CONVERT_TO_KEY to to.name),
@@ -730,7 +743,7 @@ class GraphEditorViewModel(
         val node = WorkflowNode(
             id = NodeId(UUID.randomUUID().toString()),
             typeId = typeId,
-            name = definition.displayName,
+            name = nodeText.name(definition),
             x = topLeft.x,
             y = topLeft.y,
             config = initialConfig(typeId),

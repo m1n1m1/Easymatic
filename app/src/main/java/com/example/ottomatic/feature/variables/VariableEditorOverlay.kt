@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.variables
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -75,18 +77,21 @@ fun VariableEditorOverlay(
     var saved by remember { mutableStateOf(false) }
 
     EditorOverlay(
-        title = if (initial == null) "New variable" else "Edit variable",
+        title = stringResource(
+            if (initial == null) R.string.variables_new_variable else R.string.variables_edit_variable,
+        ),
         onClose = { if (saved) onSave(chosenScope, draft.trimmed()) else onDismiss() },
         action = {
             if (onDelete != null) {
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Delete variable", tint = EditorColors.textSecondary)
+                    Icon(Icons.Filled.Delete, contentDescription =
+                        stringResource(R.string.variables_delete_variable), tint = EditorColors.textSecondary)
                 }
             }
             TextButton(
                 onClick = { saved = true },
                 enabled = draft.name.isNotBlank(),
-            ) { Text("Save") }
+            ) { Text(stringResource(R.string.variables_save)) }
         },
     ) { dismiss ->
         // The Save button sets a flag and dismisses; the write happens in onClose,
@@ -106,12 +111,13 @@ fun VariableEditorOverlay(
                 ScopeChooser(selected = chosenScope, onSelect = { chosenScope = it })
             }
             ConfigFieldEditor(
-                field = ConfigField(NAME_KEY, "Name", ConfigFieldType.STR, ""),
+                field = ConfigField(NAME_KEY, stringResource(R.string.variables_name), ConfigFieldType.STR, ""),
                 value = draft.name,
                 onValueChange = { draft = draft.copy(name = it) },
             )
             ConfigFieldEditor(
-                field = ConfigField(TYPE_KEY, "Holds", ConfigFieldType.ENUM(TYPE_OPTIONS), ValueType.TEXT.name),
+                field = ConfigField(TYPE_KEY,
+                    stringResource(R.string.variables_holds), ConfigFieldType.ENUM(typeOptions()), ValueType.TEXT.name),
                 value = draft.type.name,
                 onValueChange = { draft = draft.copy(type = ValueType.valueOf(it)) },
             )
@@ -121,7 +127,8 @@ fun VariableEditorOverlay(
             ConfigFieldEditor(
                 field = ConfigField(
                     VALUE_KEY,
-                    if (draft.constant) "Value" else "Starts at",
+                    if (draft.constant)
+                        stringResource(R.string.variables_value) else stringResource(R.string.variables_starts_at),
                     literalTypeFor(draft.type),
                     "",
                 ),
@@ -133,7 +140,8 @@ fun VariableEditorOverlay(
                 onChange = { draft = draft.copy(constant = it) },
             )
             ConfigFieldEditor(
-                field = ConfigField(NOTE_KEY, "Note (optional)", ConfigFieldType.MULTILINE, ""),
+                field = ConfigField(NOTE_KEY,
+                    stringResource(R.string.variables_note_optional), ConfigFieldType.MULTILINE, ""),
                 value = draft.description,
                 onValueChange = { draft = draft.copy(description = it) },
             )
@@ -145,17 +153,22 @@ fun VariableEditorOverlay(
 private fun ScopeChooser(selected: VariableScope, onSelect: (VariableScope) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
-            text = "Belongs to",
+            text = stringResource(R.string.variables_belongs_to),
             style = MaterialTheme.typography.labelMedium,
             color = EditorColors.textSecondary,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ScopeChip("This workflow", selected == VariableScope.LOCAL) { onSelect(VariableScope.LOCAL) }
-            ScopeChip("Every workflow", selected == VariableScope.GLOBAL) { onSelect(VariableScope.GLOBAL) }
+            ScopeChip(
+                stringResource(R.string.variables_this_workflow),
+                selected == VariableScope.LOCAL,
+            ) { onSelect(VariableScope.LOCAL) }
+            ScopeChip(
+                stringResource(R.string.variables_every_workflow),
+                selected == VariableScope.GLOBAL,
+            ) { onSelect(VariableScope.GLOBAL) }
         }
         Text(
-            text = "Chosen once — a variable cannot move between the two later, because the nodes " +
-                "pointing at it record which set it is in.",
+            text = stringResource(R.string.variables_chosen_once_a_variable_cannot),
             style = MaterialTheme.typography.bodySmall,
             color = EditorColors.textSecondary,
         )
@@ -187,12 +200,12 @@ private fun ConstantSwitch(constant: Boolean, onChange: (Boolean) -> Unit) {
         Switch(checked = constant, onCheckedChange = onChange, colors = editorSwitchColors())
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Constant",
+                text = stringResource(R.string.variables_constant),
                 style = MaterialTheme.typography.bodyLarge,
                 color = EditorColors.textPrimary,
             )
             Text(
-                text = "Its value is fixed here. A node that tries to write it says so and carries on.",
+                text = stringResource(R.string.variables_its_value_is_fixed_here),
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.textSecondary,
             )
@@ -219,7 +232,8 @@ private fun blankDeclaration() = VariableDeclaration(id = UUID.randomUUID().toSt
 
 private fun VariableDeclaration.trimmed() = copy(name = name.trim(), initialValue = initialValue.trim())
 
-private val TYPE_OPTIONS: List<ConfigOption> =
+@Composable
+private fun typeOptions(): List<ConfigOption> =
     ValueType.entries.map { ConfigOption(value = it.name, label = it.label()) }
 
 private val NAME_KEY = com.example.ottomatic.core.model.ConfigKey("name")

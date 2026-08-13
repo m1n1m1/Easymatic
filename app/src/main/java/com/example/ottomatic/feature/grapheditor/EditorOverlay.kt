@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.grapheditor
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animate
@@ -208,7 +210,7 @@ private fun OverlayTopBar(
             IconButton(onClick = onClose) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Close",
+                    contentDescription = stringResource(R.string.grapheditor_close),
                     tint = EditorColors.textPrimary,
                 )
             }

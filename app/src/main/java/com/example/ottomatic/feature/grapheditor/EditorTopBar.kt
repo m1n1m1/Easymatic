@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.grapheditor
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
@@ -197,7 +200,7 @@ private fun WorkflowBar(
         IconButton(onClick = onBack) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.grapheditor_back),
                 tint = EditorColors.textPrimary,
             )
         }
@@ -211,18 +214,20 @@ private fun WorkflowBar(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = if (nodeCount == 1) "1 node" else "$nodeCount nodes",
+                text = pluralStringResource(R.plurals.editor_node_count, nodeCount, nodeCount),
                 color = EditorColors.textSecondary,
                 fontSize = 11.sp,
             )
         }
         // No "Enabled" label beside it any more — it cost more width than the
         // control it described. The switch keeps the name for TalkBack.
+        // Hoisted: Modifier.semantics takes a plain lambda, not a composition.
+        val enabledLabel = stringResource(R.string.grapheditor_enabled)
         Switch(
             checked = isMacroEnabled,
             onCheckedChange = onToggleEnabled,
             colors = editorSwitchColors(),
-            modifier = Modifier.semantics { contentDescription = "Enabled" },
+            modifier = Modifier.semantics { contentDescription = enabledLabel },
         )
         WorkflowMenu(onEdit = onEdit, onDelete = onDelete)
     }
@@ -248,7 +253,7 @@ private fun SelectionBar(
         IconButton(onClick = onClearSelection) {
             Icon(
                 imageVector = Icons.Filled.Close,
-                contentDescription = "Clear selection",
+                contentDescription = stringResource(R.string.grapheditor_clear_selection),
                 tint = EditorColors.textPrimary,
             )
         }
@@ -270,7 +275,7 @@ private fun SelectionBar(
             IconButton(onClick = onConfigure) {
                 Icon(
                     imageVector = Icons.Filled.Settings,
-                    contentDescription = "Configure node",
+                    contentDescription = stringResource(R.string.grapheditor_configure_node),
                     tint = EditorColors.textPrimary,
                 )
             }
@@ -279,7 +284,7 @@ private fun SelectionBar(
         IconButton(onClick = onDeleteSelection) {
             Icon(
                 imageVector = Icons.Filled.Delete,
-                contentDescription = "Delete selection",
+                contentDescription = stringResource(R.string.grapheditor_delete_selection),
                 tint = EditorColors.nodeSelectedBorder,
             )
         }
@@ -300,13 +305,13 @@ private fun WorkflowMenu(onEdit: () -> Unit, onDelete: () -> Unit) {
         IconButton(onClick = { menuOpen = true }) {
             Icon(
                 imageVector = Icons.Filled.MoreVert,
-                contentDescription = "Workflow actions",
+                contentDescription = stringResource(R.string.grapheditor_workflow_actions),
                 tint = EditorColors.textPrimary,
             )
         }
         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
             DropdownMenuItem(
-                text = { Text("Edit…") },
+                text = { Text(stringResource(R.string.grapheditor_edit)) },
                 onClick = {
                     menuOpen = false
                     onEdit()
@@ -315,7 +320,8 @@ private fun WorkflowMenu(onEdit: () -> Unit, onDelete: () -> Unit) {
             )
             HorizontalDivider()
             DropdownMenuItem(
-                text = { Text("Delete workflow", color = EditorColors.triggerAccent) },
+                text = { Text(
+                    stringResource(R.string.grapheditor_delete_workflow), color = EditorColors.triggerAccent) },
                 onClick = {
                     menuOpen = false
                     onDelete()
@@ -340,19 +346,19 @@ private fun DeleteWorkflowDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delete workflow", color = EditorColors.textPrimary) },
+        title = { Text(stringResource(R.string.grapheditor_delete_workflow), color = EditorColors.textPrimary) },
         text = {
             Text(
-                "Delete \"$name\"? Its run log goes with it. This cannot be undone.",
+                stringResource(R.string.grapheditor_delete_confirm, name),
                 color = EditorColors.textPrimary,
                 fontSize = 14.sp,
             )
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) { Text("Delete") }
+            TextButton(onClick = onConfirm) { Text(stringResource(R.string.grapheditor_delete)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.grapheditor_cancel)) }
         },
     )
 }

@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.smarthome
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,12 +74,12 @@ fun SmartHomeScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.smarthome_back),
                             tint = EditorColors.textPrimary,
                         )
                     }
                     Text(
-                        text = "Smart home",
+                        text = stringResource(R.string.smarthome_smart_home),
                         color = EditorColors.textPrimary,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,

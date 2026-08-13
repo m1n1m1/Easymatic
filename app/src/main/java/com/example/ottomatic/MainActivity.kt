@@ -85,7 +85,10 @@ class MainActivity : ComponentActivity() {
     // a synchronous repository, so this exists purely so the Tags screen and every
     // config picker share one list and one open capture.
     private val nfcTagsViewModel: NfcTagsViewModel by viewModels {
-        NfcTagsViewModel.factory(repository = ServiceLocator.nfcTagRepository)
+        NfcTagsViewModel.factory(
+            repository = ServiceLocator.nfcTagRepository,
+            appContext = applicationContext,
+        )
     }
 
     // Activity-scoped for the same reason the others are, and with one extra edge
@@ -107,6 +110,7 @@ class MainActivity : ComponentActivity() {
         SmartHomeViewModel.factory(
             repository = ServiceLocator.smartHomeHubRepository,
             setup = ServiceLocator.smartHomeSetup,
+            appContext = applicationContext,
         )
     }
 
@@ -119,6 +123,7 @@ class MainActivity : ComponentActivity() {
             repository = ServiceLocator.aiConnectionRepository,
             ai = ServiceLocator.executionContext.ai,
             catalog = ServiceLocator.aiModelCatalog,
+            appContext = applicationContext,
         )
     }
 

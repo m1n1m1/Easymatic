@@ -8,6 +8,7 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.engine.trigger.ManualTrigger
 import com.example.ottomatic.engine.validation.GraphValidator
+import com.example.ottomatic.feature.i18n.NodeText
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -119,7 +120,7 @@ object MacroSnapshots {
 internal fun Workflow.manualTriggers(): List<ManualTriggerRef> =
     nodes.filter { it.typeId == ManualTrigger.TYPE_ID }.map { node ->
         val label = node.config[ConfigKey(ManualTrigger.LABEL_KEY)]?.takeIf { it.isNotBlank() }
-            ?: node.name.takeIf { it.isNotBlank() && it != untouchedNodeName }
+            ?: node.name.takeIf { it.isNotBlank() && it !in untouchedNodeNames }
             ?: name
         ManualTriggerRef(
             workflowId = id,
@@ -133,7 +134,7 @@ internal fun Workflow.manualTriggers(): List<ManualTriggerRef> =
     }
 
 /**
- * The node name the palette gives a freshly-dropped `trigger.manual` —
+ * The names the palette gives a freshly-dropped `trigger.manual` —
  * `GraphEditorViewModel.addNode` copies the definition's display name into it.
  *
  * Treated as "unnamed" rather than as a label, because it is: every manual trigger
@@ -141,6 +142,18 @@ internal fun Workflow.manualTriggers(): List<ManualTriggerRef> =
  * reading "Manual Trigger" is exactly the failure the fallback chain exists to
  * avoid. Read from the registry rather than written out here, so renaming the node
  * type cannot leave this comparing against a string nothing uses any more.
+ *
+ * **Two names, not one**, and that is what makes this survive a locale change. The
+ * name is translated at placement and then persisted, so a macro built before the
+ * phone's language changed carries the *old* language's default while a macro built
+ * after carries the new one. Matching only the current translation would promote
+ * every older default to a user-chosen label, putting "Manual Trigger" back on the
+ * home screen — the exact failure this guards against.
  */
-private val untouchedNodeName: String?
-    get() = NodeTypeRegistry.byId(ManualTrigger.TYPE_ID)?.displayName
+private val untouchedNodeNames: Set<String>
+    get() {
+        val definition = NodeTypeRegistry.byId(ManualTrigger.TYPE_ID) ?: return emptySet()
+        val translated = ServiceLocator.appContextOrNull
+            ?.let { NodeText.of(it.resources).name(definition) }
+        return setOfNotNull(definition.displayName, translated)
+    }

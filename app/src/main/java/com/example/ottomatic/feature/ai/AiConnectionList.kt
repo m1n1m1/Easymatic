@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.ai
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -64,9 +66,7 @@ fun AiConnectionList(
         if (connections.isEmpty()) {
             item(key = "empty") {
                 Text(
-                    text = "No connections yet. Add one to use the Ask AI node. It takes a free " +
-                        "API key from Google AI Studio — the form walks you through getting one, " +
-                        "and opens the page for you.",
+                    text = stringResource(R.string.ai_no_connections_yet_add_one),
                     style = MaterialTheme.typography.bodyMedium,
                     color = EditorColors.textSecondary,
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 16.dp),
@@ -100,7 +100,7 @@ private fun AddConnectionRow(onClick: () -> Unit) {
     ) {
         Icon(Icons.Filled.Add, contentDescription = null, tint = accent, modifier = Modifier.size(20.dp))
         Text(
-            text = "Add connection",
+            text = stringResource(R.string.ai_add_connection),
             style = MaterialTheme.typography.bodyLarge,
             color = accent,
             fontWeight = FontWeight.Medium,
@@ -158,7 +158,11 @@ private fun ConnectionRow(
                     )
                 }
                 Text(
-                    text = if (needsKey) "Key needs pasting in again" else connection.provider.label(),
+                    text = if (needsKey) {
+                        stringResource(R.string.ai_key_needs_pasting_in_again)
+                    } else {
+                        stringResource(connection.provider.labelRes())
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = if (needsKey) EditorColors.warnAccent else EditorColors.textSecondary,
                     maxLines = 1,
@@ -167,7 +171,8 @@ private fun ConnectionRow(
             }
         }
         IconButton(onClick = onEdit) {
-            Icon(Icons.Filled.Edit, contentDescription = "Edit", tint = EditorColors.textSecondary)
+            Icon(Icons.Filled.Edit, contentDescription =
+                stringResource(R.string.ai_edit), tint = EditorColors.textSecondary)
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.smarthome.hue
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -58,7 +60,7 @@ fun HueBridgeList(
             ) {
                 CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 Text(
-                    text = "Looking for bridges on your Wi-Fi…",
+                    text = stringResource(R.string.smarthome_looking_for_bridges_on_your),
                     style = MaterialTheme.typography.bodyMedium,
                     color = EditorColors.textSecondary,
                 )
@@ -70,7 +72,7 @@ fun HueBridgeList(
         }
 
         Text(
-            text = "Or type the bridge's address",
+            text = stringResource(R.string.smarthome_or_type_the_bridge_s),
             style = MaterialTheme.typography.bodySmall,
             color = EditorColors.textSecondary,
             modifier = Modifier.padding(top = 8.dp),
@@ -90,7 +92,7 @@ fun HueBridgeList(
                 onClick = { onChoose(typedHost.trim(), "") },
                 enabled = typedHost.isNotBlank(),
             ) {
-                Text("Connect")
+                Text(stringResource(R.string.smarthome_connect))
             }
         }
 
@@ -125,8 +127,8 @@ private fun BridgeRow(bridge: DiscoveredBridge, onClick: () -> Unit) {
             )
             Text(
                 text = listOf(bridge.modelId, bridge.bridgeId).filter { it.isNotBlank() }
-                    .joinToString(" · ")
-                    .ifBlank { "Hue Bridge" },
+                    .joinToString(stringResource(R.string.hue_text))
+                    .ifBlank { stringResource(R.string.hue_hue_bridge) },
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.textSecondary,
             )

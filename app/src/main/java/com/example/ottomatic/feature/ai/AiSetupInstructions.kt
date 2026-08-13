@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.ai
 
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,14 +48,21 @@ internal fun SetupInstructions(provider: AiProvider, onOpen: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = if (provider == AiProvider.OPENAI_COMPATIBLE) "Pointing at your own server" else "Getting a key",
+                text = stringResource(
+                    if (provider == AiProvider.OPENAI_COMPATIBLE) {
+                        R.string.ai_pointing_at_own_server
+                    } else {
+                        R.string.ai_getting_a_key
+                    },
+                ),
                 color = EditorColors.textPrimary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
             )
-            provider.setupSteps().forEachIndexed { index, step -> Step(index + 1, step) }
+            stringArrayResource(provider.setupStepsRes())
+                .forEachIndexed { index, step -> Step(index + 1, step) }
 
-            if (provider.consoleUrl().isNotBlank()) {
+            provider.consoleNameRes()?.let { consoleName ->
                 Button(
                     onClick = onOpen,
                     colors = ButtonDefaults.buttonColors(
@@ -66,11 +76,18 @@ internal fun SetupInstructions(provider: AiProvider, onOpen: () -> Unit) {
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
                     )
-                    Text(text = "Open ${provider.consoleName()}", modifier = Modifier.padding(start = 8.dp))
+                    Text(
+                        text = stringResource(R.string.ai_open_console, stringResource(consoleName)),
+                        modifier = Modifier.padding(start = 8.dp),
+                    )
                 }
             }
 
-            Text(text = provider.costNote(), color = EditorColors.textSecondary, fontSize = 12.sp)
+            Text(
+                text = stringResource(provider.costNoteRes()),
+                color = EditorColors.textSecondary,
+                fontSize = 12.sp,
+            )
         }
     }
 }

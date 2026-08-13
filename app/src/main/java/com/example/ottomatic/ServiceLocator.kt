@@ -232,8 +232,27 @@ object ServiceLocator {
     lateinit var apiCallers: ApiCallers
         private set
 
+    /**
+     * The application context, for the few callers that need `Resources` and are
+     * reached from neither a composition nor an injected constructor — `MacroSnapshots`
+     * builds widget labels from a background coroutine and is the reason this exists.
+     * Always the *application* context, so nothing here can hold an Activity.
+     */
+    lateinit var appContext: Context
+        private set
+
+    /**
+     * The same context, or null before [init] has run.
+     *
+     * Exists for code that is exercised by the JVM unit tests, which never call [init]
+     * and have no Android at all. Reading the `lateinit` there would throw; answering
+     * null lets the caller fall back to the declaration's English, which is exactly
+     * what those tests are asserting about anyway.
+     */
+    val appContextOrNull: Context? get() = if (::appContext.isInitialized) appContext else null
+
     fun init(context: Context) {
-        val appContext = context.applicationContext
+        appContext = context.applicationContext
         // Published before anything else touches a workflow: `effectivePorts` and
         // `GraphValidator` resolve a global reference through this, and both run
         // from paths that can neither suspend nor be injected into.

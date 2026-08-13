@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.api
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
@@ -62,24 +64,29 @@ fun ApiTokenField(
         label = labelSlot,
         colors = colors,
         placeholder = {
-            Text(text = "No key — approved apps only", maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text =
+                stringResource(R.string.api_no_key_approved_apps_only), maxLines = 1, overflow = TextOverflow.Ellipsis)
         },
         trailingIcon = {
             Row {
                 if (value.isNotBlank()) {
                     IconButton(onClick = { copyToClipboard(context, value) }) {
-                        Icon(imageVector = Icons.Filled.ContentCopy, contentDescription = "Copy the key")
+                        Icon(imageVector = Icons.Filled.ContentCopy, contentDescription =
+                            stringResource(R.string.api_copy_the_key))
                     }
                 }
                 IconButton(onClick = { onValueChange(ApiTokens.generate()) }) {
                     Icon(
                         imageVector = Icons.Filled.Autorenew,
-                        contentDescription = if (value.isBlank()) "Generate a key" else "Replace the key",
+                        contentDescription = stringResource(
+                            if (value.isBlank()) R.string.api_generate_key else R.string.api_replace_key,
+                        ),
                     )
                 }
                 if (value.isNotBlank()) {
                     IconButton(onClick = { onValueChange("") }) {
-                        Icon(imageVector = Icons.Filled.Clear, contentDescription = "Remove the key")
+                        Icon(imageVector = Icons.Filled.Clear, contentDescription =
+                            stringResource(R.string.api_remove_the_key))
                     }
                 }
             }
@@ -98,7 +105,7 @@ fun ApiTokenField(
  */
 private fun copyToClipboard(context: Context, token: String) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
-    val clip = ClipData.newPlainText("Ottomatic key", token).apply {
+    val clip = ClipData.newPlainText(context.getString(R.string.api_ottomatic_key), token).apply {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             description.extras = PersistableBundle().apply {
                 putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true)
@@ -107,6 +114,6 @@ private fun copyToClipboard(context: Context, token: String) {
     }
     clipboard.setPrimaryClip(clip)
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-        Toast.makeText(context, "Key copied", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.api_key_copied), Toast.LENGTH_SHORT).show()
     }
 }

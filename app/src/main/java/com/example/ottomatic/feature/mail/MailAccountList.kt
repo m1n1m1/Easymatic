@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.mail
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -63,9 +65,7 @@ fun MailAccountList(
         if (accounts.isEmpty()) {
             item(key = "empty") {
                 Text(
-                    text = "No accounts yet. Add one to send mail from a macro, or to start a " +
-                        "macro when mail arrives. Most providers need an app password rather " +
-                        "than your normal one — the form says where to make it.",
+                    text = stringResource(R.string.mail_no_accounts_yet_add_one),
                     style = MaterialTheme.typography.bodyMedium,
                     color = EditorColors.textSecondary,
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 16.dp),
@@ -100,7 +100,7 @@ private fun AddAccountRow(onClick: () -> Unit) {
     ) {
         Icon(Icons.Filled.Add, contentDescription = null, tint = accent)
         Text(
-            text = "Add an account",
+            text = stringResource(R.string.mail_add_an_account),
             style = MaterialTheme.typography.bodyLarge,
             color = accent,
             fontWeight = FontWeight.Medium,
@@ -160,7 +160,7 @@ private fun AccountRow(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = if (needsPassword) "Password needed" else account.address,
+                text = if (needsPassword) stringResource(R.string.mail_password_needed) else account.address,
                 style = MaterialTheme.typography.bodySmall,
                 color = if (needsPassword) EditorColors.errorAccent else EditorColors.textSecondary,
                 maxLines = 1,
@@ -170,7 +170,7 @@ private fun AccountRow(
         IconButton(onClick = onEdit) {
             Icon(
                 imageVector = Icons.Filled.Edit,
-                contentDescription = "Edit ${account.name}",
+                contentDescription = stringResource(R.string.mail_edit_named, account.name),
                 tint = EditorColors.textSecondary,
             )
         }

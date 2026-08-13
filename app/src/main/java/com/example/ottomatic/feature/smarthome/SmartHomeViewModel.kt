@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.smarthome
 
+import android.content.Context
+import com.example.ottomatic.R
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -80,6 +82,8 @@ data class SmartHomeUiState(
 class SmartHomeViewModel(
     private val repository: SmartHomeHubRepository,
     private val setup: SmartHomeSetup,
+    /** For the status lines it reports; a ViewModel has no composition to read them from. */
+    private val appContext: Context,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SmartHomeUiState(hubs = repository.list()))
@@ -116,7 +120,8 @@ class SmartHomeViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(busy = true, message = "") }
             val problem = setup.refresh(hubId)
-            _uiState.update { it.copy(busy = false, message = problem ?: "Up to date") }
+            _uiState.update { it.copy(busy = false, message = problem ?:
+                appContext.getString(R.string.smarthome_up_to_date)) }
         }
     }
 
@@ -162,7 +167,7 @@ class SmartHomeViewModel(
                 it.copy(
                     busy = false,
                     presentedCertificate = if (problem == null) "" else it.presentedCertificate,
-                    message = problem ?: "Trusted. The hub should work again.",
+                    message = problem ?: appContext.getString(R.string.smarthome_trusted_works_again),
                 )
             }
         }
@@ -265,7 +270,8 @@ class SmartHomeViewModel(
                 it.copy(stage = PairingStage.CHOOSING, error = outcome.error)
             }
             // Null or still waiting: the window elapsed with nobody pressing anything.
-            else -> editPairing { it.copy(stage = PairingStage.CHOOSING, error = NOT_PRESSED) }
+            else -> editPairing { it.copy(stage = PairingStage.CHOOSING, error =
+                appContext.getString(R.string.smarthome_button_not_pressed)) }
         }
     }
 
@@ -279,13 +285,14 @@ class SmartHomeViewModel(
         const val PAIRING_WINDOW_SECONDS = 60
 
         private const val POLL_INTERVAL_MS = 1_000L
-        private const val NOT_PRESSED = "The button wasn't pressed in time — try again"
+        
 
         fun factory(
             repository: SmartHomeHubRepository,
             setup: SmartHomeSetup,
+            appContext: Context,
         ): ViewModelProvider.Factory = viewModelFactory {
-            initializer { SmartHomeViewModel(repository, setup) }
+            initializer { SmartHomeViewModel(repository, setup, appContext) }
         }
     }
 }

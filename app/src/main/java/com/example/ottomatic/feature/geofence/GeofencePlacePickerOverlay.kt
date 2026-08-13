@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.geofence
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -35,7 +37,7 @@ fun GeofencePlacePickerOverlay(
     var picked by remember { mutableStateOf<String?>(null) }
 
     EditorOverlay(
-        title = "Choose a place",
+        title = stringResource(R.string.geofence_choose_a_place),
         onClose = { picked?.let(onPick) ?: onDismiss() },
     ) { dismiss ->
         Column(

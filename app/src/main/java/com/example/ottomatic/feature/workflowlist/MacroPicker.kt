@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.workflowlist
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -59,7 +61,7 @@ fun MacroPickerOverlay(
     var picked by remember { mutableStateOf<String?>(null) }
 
     EditorOverlay(
-        title = "Choose a macro",
+        title = stringResource(R.string.workflowlist_choose_a_macro),
         onClose = { picked?.let(onPick) ?: onDismiss() },
     ) { dismiss ->
         Column(modifier = Modifier.fillMaxSize().navigationBarsPadding()) {
@@ -71,7 +73,7 @@ fun MacroPickerOverlay(
                 if (macros.isEmpty()) {
                     item(key = "empty") {
                         Text(
-                            text = "No other macros yet.",
+                            text = stringResource(R.string.workflowlist_no_other_macros_yet),
                             style = MaterialTheme.typography.bodyMedium,
                             color = EditorColors.textSecondary,
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 16.dp),
@@ -144,9 +146,9 @@ private fun MacroRow(
                 // its own workflow is deliberate when it is deliberate, and a
                 // surprise otherwise.
                 text = listOfNotNull(
-                    "this macro".takeIf { isSelf },
+                    stringResource(R.string.workflowlist_this_macro).takeIf { isSelf },
                     if (macro.enabled) "enabled" else "disabled",
-                ).joinToString(" · "),
+                ).joinToString(stringResource(R.string.workflowlist_text)),
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.textSecondary,
                 maxLines = 1,

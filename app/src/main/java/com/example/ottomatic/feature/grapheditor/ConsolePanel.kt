@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.grapheditor
 
+import com.example.ottomatic.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -127,11 +129,11 @@ private fun LevelFilter(selected: LogLevel, onSelect: (LogLevel) -> Unit) {
             .padding(horizontal = 18.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        FILTERS.forEach { (label, level) ->
+        FILTERS.forEach { (labelRes, level) ->
             FilterChip(
                 selected = selected == level,
                 onClick = { onSelect(level) },
-                label = { Text(label, fontSize = 13.sp) },
+                label = { Text(stringResource(labelRes), fontSize = 13.sp) },
                 colors = FilterChipDefaults.filterChipColors(
                     labelColor = EditorColors.textSecondary,
                     selectedContainerColor = EditorColors.actionAccent.copy(alpha = 0.22f),
@@ -227,18 +229,18 @@ private fun EmptyConsole(filtered: Boolean) {
             modifier = Modifier.padding(horizontal = 36.dp),
         ) {
             Text(
-                text = if (filtered) "Nothing at this level" else "Nothing logged yet",
+                text = stringResource(
+                    if (filtered) R.string.console_nothing_at_level else R.string.console_nothing_logged,
+                ),
                 color = EditorColors.textPrimary,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Medium,
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                text = if (filtered) {
-                    "Widen the filter to see the rest of this workflow's history."
-                } else {
-                    "Run the workflow. Errors, action.log messages and a script's console.log appear here."
-                },
+                text = stringResource(
+                    if (filtered) R.string.console_widen_filter else R.string.console_run_the_workflow,
+                ),
                 color = EditorColors.textSecondary,
                 fontSize = 12.sp,
             )
@@ -254,9 +256,9 @@ private fun levelColor(level: LogLevel): Color = when (level) {
 }
 
 private val FILTERS = listOf(
-    "All" to LogLevel.DEBUG,
-    "Info" to LogLevel.INFO,
-    "Problems" to LogLevel.WARN,
+    R.string.console_filter_all to LogLevel.DEBUG,
+    R.string.console_filter_info to LogLevel.INFO,
+    R.string.console_filter_problems to LogLevel.WARN,
 )
 
 /** Immutable and thread-safe, so one instance is fine. */

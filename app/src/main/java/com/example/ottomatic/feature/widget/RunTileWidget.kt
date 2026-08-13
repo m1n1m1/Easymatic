@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.widget
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.DpSize
@@ -119,7 +121,7 @@ class RunTileWidget : GlanceAppWidget() {
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = "Macro not found",
+                text = stringResource(R.string.widget_macro_not_found),
                 style = TextStyle(
                     color = GlanceTheme.colors.onSurfaceVariant,
                     fontSize = 12.sp,

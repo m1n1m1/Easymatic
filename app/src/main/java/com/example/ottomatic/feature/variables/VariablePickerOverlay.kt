@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.variables
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -38,7 +40,7 @@ fun VariablePickerOverlay(
     var editing by remember { mutableStateOf<VariableEdit?>(null) }
 
     EditorOverlay(
-        title = "Choose a variable",
+        title = stringResource(R.string.variables_choose_a_variable),
         onClose = { picked?.let(onPick) ?: onDismiss() },
     ) { dismiss ->
         Column(

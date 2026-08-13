@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.smarthome
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -61,9 +63,7 @@ fun SmartHomeHubList(
         if (hubs.isEmpty()) {
             item(key = "empty") {
                 Text(
-                    text = "No hubs yet. Add one to control your lights from a macro. " +
-                        "You will need to press the button on the bridge once, to prove you " +
-                        "are standing next to it.",
+                    text = stringResource(R.string.smarthome_no_hubs_yet_add_one),
                     style = MaterialTheme.typography.bodyMedium,
                     color = EditorColors.textSecondary,
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 16.dp),
@@ -96,7 +96,7 @@ private fun AddHubRow(onClick: () -> Unit) {
     ) {
         Icon(Icons.Filled.Add, contentDescription = null, tint = accent)
         Text(
-            text = "Add a hub",
+            text = stringResource(R.string.smarthome_add_a_hub),
             style = MaterialTheme.typography.bodyLarge,
             color = accent,
             fontWeight = FontWeight.Medium,
@@ -150,7 +150,7 @@ private fun HubRow(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = if (needsPairing) "Pair again" else hub.summary(),
+                text = if (needsPairing) stringResource(R.string.smarthome_pair_again) else hub.summary(),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (needsPairing) EditorColors.errorAccent else EditorColors.textSecondary,
                 maxLines = 1,
@@ -160,7 +160,7 @@ private fun HubRow(
         IconButton(onClick = onClick) {
             Icon(
                 imageVector = Icons.Filled.Settings,
-                contentDescription = "Settings for ${hub.name}",
+                contentDescription = stringResource(R.string.smarthome_settings_for, hub.name),
                 tint = EditorColors.textSecondary,
             )
         }
@@ -174,8 +174,13 @@ private fun HubRow(
  * identical from the list, and the difference is the whole of "why is my picker
  * empty?".
  */
+@Composable
 private fun SmartHomeHub.summary(): String {
     val lights = resourcesOf(SmartHomeTargetKind.LIGHT).size
     val scenes = resourcesOf(SmartHomeTargetKind.SCENE).size
-    return if (resources.isEmpty()) host else "$host · $lights lights · $scenes scenes"
+    return if (resources.isEmpty()) {
+        host
+    } else {
+        stringResource(R.string.smarthome_hub_subtitle, host, lights, scenes)
+    }
 }

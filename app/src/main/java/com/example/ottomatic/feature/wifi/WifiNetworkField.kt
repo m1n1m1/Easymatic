@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.wifi
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
@@ -50,19 +52,21 @@ fun WifiNetworkField(
         colors = colors,
         // Blank is a real answer here rather than an unconfigured field, so the
         // placeholder states it instead of saying "none selected".
-        placeholder = { Text(text = "Any network", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        placeholder = { Text(text =
+            stringResource(R.string.wifi_any_network), maxLines = 1, overflow = TextOverflow.Ellipsis) },
         trailingIcon = {
             Row {
                 if (value.isNotBlank()) {
                     IconButton(onClick = { onValueChange("") }) {
                         Icon(
                             imageVector = Icons.Filled.Close,
-                            contentDescription = "Clear the network, so this matches any network",
+                            contentDescription = stringResource(R.string.wifi_clear_the_network_so_this),
                         )
                     }
                 }
                 IconButton(onClick = { picking = true }) {
-                    Icon(imageVector = Icons.Filled.Wifi, contentDescription = "Choose a network in range")
+                    Icon(imageVector = Icons.Filled.Wifi, contentDescription =
+                        stringResource(R.string.wifi_choose_a_network_in_range))
                 }
             }
         },

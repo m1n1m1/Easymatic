@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.grapheditor
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.ConfigKey
@@ -53,7 +55,9 @@ import com.example.ottomatic.engine.trigger.GeofenceTrigger
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
 import com.example.ottomatic.domain.registry.effectiveInputPorts
 import com.example.ottomatic.domain.registry.effectiveOutputPorts
+import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.engine.validation.Severity
+import com.example.ottomatic.feature.i18n.rememberNodeText
 import kotlin.math.roundToInt
 
 private val NodeShape = RoundedCornerShape(14.dp)
@@ -134,7 +138,7 @@ fun NodeCard(
             problem = problem,
             gestures = gestures,
         )
-        PortLabel(node.id, layoutInputPorts, outputPorts, width, density, labelToShow)
+        PortLabel(node.id, node.typeId, layoutInputPorts, outputPorts, width, density, labelToShow)
         Ports(
             node = node,
             layoutInputPorts = layoutInputPorts,
@@ -199,7 +203,7 @@ private fun NodeBody(
             ) {
                 Icon(
                     imageVector = nodeIcon(definition.icon),
-                    contentDescription = definition.displayName,
+                    contentDescription = rememberNodeText().name(definition),
                     tint = accent,
                     modifier = Modifier.size(20.dp),
                 )
@@ -242,7 +246,9 @@ private fun BoxScope.ProblemBadge(problem: Severity?, modifier: Modifier = Modif
     val color = problemColor(problem) ?: return
     Icon(
         imageVector = if (problem == Severity.ERROR) Icons.Filled.ErrorOutline else Icons.Filled.WarningAmber,
-        contentDescription = if (problem == Severity.ERROR) "Has an error" else "Has a warning",
+        contentDescription = stringResource(
+            if (problem == Severity.ERROR) R.string.grapheditor_has_error else R.string.grapheditor_has_warning,
+        ),
         tint = color,
         modifier = modifier
             .padding(top = 6.dp, end = 6.dp)
@@ -267,12 +273,12 @@ private fun problemColor(problem: Severity?): Color? = when (problem) {
  */
 @Composable
 private fun nodeSubtitle(node: WorkflowNode, definition: NodeTypeDefinition): String {
-    if (node.typeId != GeofenceTrigger.TYPE_ID) return kindLabel(definition.kind)
+    if (node.typeId != GeofenceTrigger.TYPE_ID) return stringResource(kindLabelRes(definition.kind))
     val placeId = node.config[ConfigKey("placeId")].orEmpty()
     val library = LocalGeofencePlaces.current
     return when {
-        placeId.isBlank() -> "No place selected"
-        else -> library?.placeById(placeId)?.name ?: "Place missing"
+        placeId.isBlank() -> stringResource(R.string.grapheditor_no_place_selected)
+        else -> library?.placeById(placeId)?.name ?: stringResource(R.string.grapheditor_place_missing)
     }
 }
 
@@ -291,6 +297,7 @@ private fun nodeSubtitle(node: WorkflowNode, definition: NodeTypeDefinition): St
 @Composable
 private fun PortLabel(
     nodeId: NodeId,
+    typeId: NodeTypeId,
     inputPorts: List<Port>,
     outputPorts: List<Port>,
     width: Float,
@@ -329,7 +336,7 @@ private fun PortLabel(
             .padding(horizontal = LABEL_PADDING_H, vertical = LABEL_PADDING_V),
     ) {
         Text(
-            text = port.label,
+            text = rememberNodeText().portLabel(typeId, port),
             color = accent,
             style = LabelTextStyle,
             maxLines = 1,

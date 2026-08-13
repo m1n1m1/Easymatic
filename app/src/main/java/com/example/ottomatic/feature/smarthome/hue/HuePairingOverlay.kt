@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.smarthome.hue
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,14 +53,14 @@ fun HuePairingOverlay(
 ) {
     EditorOverlay(
         title = when (pairing.stage) {
-            PairingStage.CHOOSING -> "Find your bridge"
-            PairingStage.LINKING -> "Press the link button"
-            PairingStage.NAMING -> "Name your bridge"
+            PairingStage.CHOOSING -> stringResource(R.string.hue_find_your_bridge)
+            PairingStage.LINKING -> stringResource(R.string.hue_press_the_link_button)
+            PairingStage.NAMING -> stringResource(R.string.hue_name_your_bridge)
         },
         onClose = viewModel::cancelPairing,
         action = {
             if (pairing.stage == PairingStage.NAMING) {
-                TextButton(onClick = viewModel::finishPairing) { Text("Done") }
+                TextButton(onClick = viewModel::finishPairing) { Text(stringResource(R.string.smarthome_done)) }
             }
         },
     ) { _ ->
@@ -121,13 +123,12 @@ private fun LinkingStage(pairing: PairingState) {
             )
         }
         Text(
-            text = "Press the round button on top of your bridge.",
+            text = stringResource(R.string.smarthome_press_the_round_button_on),
             style = MaterialTheme.typography.bodyLarge,
             color = EditorColors.textPrimary,
         )
         Text(
-            text = "It is the large button in the middle of the disc, between the three " +
-                "small lights. Connecting to ${pairing.host}.",
+            text = stringResource(R.string.smarthome_it_is_the_large_button, pairing.host),
             style = MaterialTheme.typography.bodySmall,
             color = EditorColors.textSecondary,
         )
@@ -137,14 +138,14 @@ private fun LinkingStage(pairing: PairingState) {
 @Composable
 private fun NamingStage(pairing: PairingState, viewModel: SmartHomeViewModel) {
     Text(
-        text = "Paired. This is the name your macros will show.",
+        text = stringResource(R.string.smarthome_paired_this_is_the_name),
         style = MaterialTheme.typography.bodyMedium,
         color = EditorColors.textSecondary,
     )
     OutlinedTextField(
         value = pairing.name,
         onValueChange = viewModel::pairedNameChanged,
-        label = { Text("Name") },
+        label = { Text(stringResource(R.string.smarthome_name)) },
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
     )

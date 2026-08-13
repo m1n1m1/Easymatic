@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.ai
 
+import androidx.annotation.ArrayRes
+import androidx.annotation.StringRes
+import com.example.ottomatic.R
 import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.domain.model.AiProvider
 
@@ -14,26 +17,35 @@ import com.example.ottomatic.domain.model.AiProvider
  * that is the point, because a new provider then fails to compile here until somebody
  * has decided what the screens call it and where its key comes from.
  *
+ * These return **resource ids rather than strings**, the direct route: the answer set
+ * is a closed enum, so the compiler checks the `when` in both directions and a missing
+ * string fails the build. It also keeps the file free of Android context, so it stays
+ * callable from anywhere that can reach a `Resources`.
+ *
  * The console URL matters more than it looks. An API key is minted in a page most
  * people have never opened, and printing a URL to be transcribed into a browser is
  * the same failure a `@Picker` exists to prevent, one layer out — so every provider
- * that has a console gets a button that opens it.
+ * that has a console gets a button that opens it. [consoleUrl] and
+ * [SELF_HOSTED_PRESETS] stay plain strings: an address and a product name are not
+ * translatable.
  */
-internal fun AiProvider.label(): String = when (this) {
-    AiProvider.GEMINI -> "Google Gemini"
-    AiProvider.ANTHROPIC -> "Anthropic Claude"
-    AiProvider.OPENAI -> "OpenAI (ChatGPT)"
-    AiProvider.OPENROUTER -> "OpenRouter"
-    AiProvider.OPENAI_COMPATIBLE -> "Self-hosted / OpenAI-compatible"
+@StringRes
+internal fun AiProvider.labelRes(): Int = when (this) {
+    AiProvider.GEMINI -> R.string.ai_provider_gemini
+    AiProvider.ANTHROPIC -> R.string.ai_provider_anthropic
+    AiProvider.OPENAI -> R.string.ai_provider_openai
+    AiProvider.OPENROUTER -> R.string.ai_provider_openrouter
+    AiProvider.OPENAI_COMPATIBLE -> R.string.ai_provider_self_hosted
 }
 
 /** What a new connection is called before the user renames it. */
-internal fun AiProvider.defaultName(): String = when (this) {
-    AiProvider.GEMINI -> "Gemini"
-    AiProvider.ANTHROPIC -> "Claude"
-    AiProvider.OPENAI -> "ChatGPT"
-    AiProvider.OPENROUTER -> "OpenRouter"
-    AiProvider.OPENAI_COMPATIBLE -> "Self-hosted"
+@StringRes
+internal fun AiProvider.defaultNameRes(): Int = when (this) {
+    AiProvider.GEMINI -> R.string.ai_default_name_gemini
+    AiProvider.ANTHROPIC -> R.string.ai_default_name_anthropic
+    AiProvider.OPENAI -> R.string.ai_default_name_openai
+    AiProvider.OPENROUTER -> R.string.ai_default_name_openrouter
+    AiProvider.OPENAI_COMPATIBLE -> R.string.ai_default_name_self_hosted
 }
 
 /** Where this provider's keys are minted, or blank when there is no page to open. */
@@ -46,13 +58,19 @@ internal fun AiProvider.consoleUrl(): String = when (this) {
     AiProvider.OPENAI_COMPATIBLE -> ""
 }
 
-/** What that page is called, so the button can name where it goes. */
-internal fun AiProvider.consoleName(): String = when (this) {
-    AiProvider.GEMINI -> "Google AI Studio"
-    AiProvider.ANTHROPIC -> "the Anthropic Console"
-    AiProvider.OPENAI -> "the OpenAI platform"
-    AiProvider.OPENROUTER -> "OpenRouter"
-    AiProvider.OPENAI_COMPATIBLE -> ""
+/**
+ * What that page is called, so the button can name where it goes.
+ *
+ * Null for the self-hosted provider, which has no console — the caller draws no
+ * button at all there, so an empty string would be a value nothing renders.
+ */
+@StringRes
+internal fun AiProvider.consoleNameRes(): Int? = when (this) {
+    AiProvider.GEMINI -> R.string.ai_console_gemini
+    AiProvider.ANTHROPIC -> R.string.ai_console_anthropic
+    AiProvider.OPENAI -> R.string.ai_console_openai
+    AiProvider.OPENROUTER -> R.string.ai_console_openrouter
+    AiProvider.OPENAI_COMPATIBLE -> null
 }
 
 /**
@@ -60,44 +78,16 @@ internal fun AiProvider.consoleName(): String = when (this) {
  *
  * Steps rather than a paragraph because it is a procedure in *another app*: somebody
  * following it is switching back and forth and needs to find their place again,
- * which prose does not let them do.
+ * which prose does not let them do. A `string-array` rather than one key per step,
+ * so a translator can add or drop a step where a provider's flow differs.
  */
-@Suppress("MaxLineLength")
-internal fun AiProvider.setupSteps(): List<String> = when (this) {
-    AiProvider.GEMINI -> listOf(
-        "Tap the button below. Google AI Studio opens in your browser.",
-        "Sign in with your Google account if you are asked to.",
-        "Tap \"Create API key\". If it asks which project to use, pick any — or let it make a new one for you.",
-        "Tap the key to copy it.",
-        "Come back here and tap the paste button beside the key field.",
-    )
-    AiProvider.ANTHROPIC -> listOf(
-        "Tap the button below. The Anthropic Console opens in your browser.",
-        "Sign in, or create an account if you do not have one.",
-        "Tap \"Create Key\", give it a name, and confirm.",
-        "Copy the key — it is shown once and never again.",
-        "Come back here and tap the paste button beside the key field.",
-    )
-    AiProvider.OPENAI -> listOf(
-        "Tap the button below. The OpenAI platform opens in your browser.",
-        "Sign in, or create an account if you do not have one.",
-        "Tap \"Create new secret key\" and confirm.",
-        "Copy the key — it is shown once and never again.",
-        "Come back here and tap the paste button beside the key field.",
-    )
-    AiProvider.OPENROUTER -> listOf(
-        "Tap the button below. OpenRouter opens in your browser.",
-        "Sign in, or create an account if you do not have one.",
-        "Tap \"Create Key\" and confirm.",
-        "Copy the key, then come back here and tap the paste button.",
-        "Load the model list below and choose which model each speed setting uses.",
-    )
-    AiProvider.OPENAI_COMPATIBLE -> listOf(
-        "Start your model server — vLLM, Ollama, LM Studio and llama.cpp all work.",
-        "Put its address below, including http:// or https:// and the port.",
-        "Paste its API key if it wants one. Many local servers accept anything.",
-        "Load the model list, or type the model name your server was started with.",
-    )
+@ArrayRes
+internal fun AiProvider.setupStepsRes(): Int = when (this) {
+    AiProvider.GEMINI -> R.array.ai_steps_gemini
+    AiProvider.ANTHROPIC -> R.array.ai_steps_anthropic
+    AiProvider.OPENAI -> R.array.ai_steps_openai
+    AiProvider.OPENROUTER -> R.array.ai_steps_openrouter
+    AiProvider.OPENAI_COMPATIBLE -> R.array.ai_steps_self_hosted
 }
 
 /**
@@ -106,44 +96,26 @@ internal fun AiProvider.setupSteps(): List<String> = when (this) {
  * Per provider because the honest sentence differs: two of these have a free tier
  * worth naming, one is a credit balance, and one sends nothing anywhere at all.
  */
-internal fun AiProvider.costNote(): String = when (this) {
-    AiProvider.GEMINI ->
-        "The free tier is generous, but it is your quota — a macro that asks the AI every " +
-            "minute will use it up. You can revoke the key from the same page at any time."
-    AiProvider.ANTHROPIC ->
-        "Prompts are billed to your own Anthropic credit, so a macro that asks the AI every " +
-            "minute costs money. You can revoke the key from the same page at any time."
-    AiProvider.OPENAI ->
-        "Prompts are billed to your own OpenAI account, so a macro that asks the AI every " +
-            "minute costs money. You can revoke the key from the same page at any time."
-    AiProvider.OPENROUTER ->
-        "Prompts are billed to your own OpenRouter credit, and the price depends on which " +
-            "model you choose. You can revoke the key from the same page at any time."
-    AiProvider.OPENAI_COMPATIBLE ->
-        "Prompts go to your own server and nowhere else, so they cost nothing and leave no " +
-            "network you control. The server has to be reachable whenever the macro runs."
+@StringRes
+internal fun AiProvider.costNoteRes(): Int = when (this) {
+    AiProvider.GEMINI -> R.string.ai_cost_gemini
+    AiProvider.ANTHROPIC -> R.string.ai_cost_anthropic
+    AiProvider.OPENAI -> R.string.ai_cost_openai
+    AiProvider.OPENROUTER -> R.string.ai_cost_openrouter
+    AiProvider.OPENAI_COMPATIBLE -> R.string.ai_cost_self_hosted
 }
 
-/**
- * Ready-made addresses for the servers people actually run.
- *
- * `MailProvider`'s preset table, for its reason: these are not a `@Picker`'s
- * open-ended option set, they are the four ports somebody would otherwise look up.
- * The host is left as a placeholder because only the user knows it — which is the
- * whole reason this field cannot be a chooser.
- */
 /**
  * Where prompts actually go, which differs enough between providers to be worth
  * saying — and for the last one is the whole selling point rather than a footnote.
  */
-internal fun AiProvider.privacyNote(): String = when (this) {
-    AiProvider.GEMINI -> "Prompts are answered by Google's servers, so an Ask AI node takes a moment."
-    AiProvider.ANTHROPIC -> "Prompts are answered by Anthropic's servers, so an Ask AI node takes a moment."
-    AiProvider.OPENAI -> "Prompts are answered by OpenAI's servers, so an Ask AI node takes a moment."
-    AiProvider.OPENROUTER ->
-        "Prompts go through OpenRouter to whichever provider serves the model you chose, " +
-            "so an Ask AI node takes a moment."
-    AiProvider.OPENAI_COMPATIBLE -> "Prompts go only to the server you named above."
+@StringRes
+internal fun AiProvider.privacyNoteRes(): Int = when (this) {
+    AiProvider.GEMINI -> R.string.ai_privacy_gemini
+    AiProvider.ANTHROPIC -> R.string.ai_privacy_anthropic
+    AiProvider.OPENAI -> R.string.ai_privacy_openai
+    AiProvider.OPENROUTER -> R.string.ai_privacy_openrouter
+    AiProvider.OPENAI_COMPATIBLE -> R.string.ai_privacy_self_hosted
 }
 
 /**
@@ -153,12 +125,22 @@ internal fun AiProvider.privacyNote(): String = when (this) {
  * because `AiModel` lives in `core`, which may not import the `@Label` annotation at
  * all, so there is nothing on it to read.
  */
-internal fun AiModel.label(): String = when (this) {
-    AiModel.FAST -> "Fast"
-    AiModel.BALANCED -> "Balanced"
-    AiModel.THOROUGH -> "Thorough"
+@StringRes
+internal fun AiModel.labelRes(): Int = when (this) {
+    AiModel.FAST -> R.string.ai_model_fast
+    AiModel.BALANCED -> R.string.ai_model_balanced
+    AiModel.THOROUGH -> R.string.ai_model_thorough
 }
 
+/**
+ * Ready-made addresses for the servers people actually run.
+ *
+ * `MailProvider`'s preset table, for its reason: these are not a `@Picker`'s
+ * open-ended option set, they are the four ports somebody would otherwise look up.
+ * The host is left as a placeholder because only the user knows it — which is the
+ * whole reason this field cannot be a chooser. Product names and addresses, so
+ * nothing here is translated.
+ */
 internal val SELF_HOSTED_PRESETS: List<Pair<String, String>> = listOf(
     "Ollama" to "http://192.168.1.10:11434/v1",
     "LM Studio" to "http://192.168.1.10:1234/v1",

@@ -368,10 +368,18 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         }
     }
 
-    private companion object {
+    companion object {
+        /**
+         * The choice a nullable enum field offers for "leave this unset".
+         *
+         * Public because it is user-facing text: the string generator materialises it
+         * into a single translation key shared by every such field, rather than one
+         * per field, since it is spelled once here.
+         */
         const val UNSET_LABEL = "Any"
-        val DECODER = Json { ignoreUnknownKeys = true; isLenient = true }
-        val ENCODER = Json { encodeDefaults = true }
+
+        private val DECODER = Json { ignoreUnknownKeys = true; isLenient = true }
+        private val ENCODER = Json { encodeDefaults = true }
     }
 }
 

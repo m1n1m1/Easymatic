@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.wifi
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -93,7 +95,7 @@ fun WifiNetworkPickerOverlay(
     }
 
     EditorOverlay(
-        title = "Choose a network",
+        title = stringResource(R.string.wifi_choose_a_network),
         onClose = { picked?.let(onPick) ?: onDismiss() },
     ) { dismiss ->
         Column(modifier = Modifier.fillMaxSize().navigationBarsPadding()) {
@@ -143,18 +145,16 @@ private fun LocationNotice(onGrant: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = "Ottomatic needs Location to list Wi-Fi networks",
+            text = stringResource(R.string.wifi_ottomatic_needs_location_to_list),
             style = MaterialTheme.typography.titleMedium,
             color = EditorColors.textPrimary,
         )
         Text(
-            text = "Android treats the name of a network as a clue to where you are, so it will not " +
-                "name one without this. You can close this and type the network's name instead — " +
-                "the trigger still needs the permission to match it.",
+            text = stringResource(R.string.wifi_android_treats_the_name_of),
             style = MaterialTheme.typography.bodyMedium,
             color = EditorColors.textSecondary,
         )
-        Button(onClick = onGrant) { Text("Grant") }
+        Button(onClick = onGrant) { Text(stringResource(R.string.wifi_grant)) }
     }
 }
 
@@ -173,7 +173,7 @@ private fun RescanRow(onRescan: () -> Unit) {
                 contentDescription = null,
                 tint = EditorColors.triggerAccent,
             )
-            Text(text = "Rescan", color = EditorColors.triggerAccent)
+            Text(text = stringResource(R.string.wifi_rescan), color = EditorColors.triggerAccent)
         }
     }
 }
@@ -203,9 +203,7 @@ private fun NetworkList(
                     // Three separate causes, all of which look identical from here —
                     // the platform answers a scan it will not serve with no results
                     // rather than with a reason — so the message names all three.
-                    text = "No networks found. Wi-Fi and Location both have to be switched on to " +
-                        "scan, and Android limits how often it will look. You can type a network's " +
-                        "name instead.",
+                    text = stringResource(R.string.wifi_no_networks_found_wi_fi),
                     style = MaterialTheme.typography.bodyMedium,
                     color = EditorColors.textSecondary,
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 16.dp),
@@ -231,7 +229,7 @@ private fun AnyNetworkRow(selected: Boolean, onClick: () -> Unit) {
     ) {
         Icon(Icons.Filled.Close, contentDescription = null, tint = accent)
         Text(
-            text = "Any network",
+            text = stringResource(R.string.wifi_any_network),
             style = MaterialTheme.typography.bodyLarge,
             color = accent,
             fontWeight = FontWeight.Medium,
@@ -271,7 +269,7 @@ private fun NetworkRow(network: WifiNetworkInRange, selected: Boolean, onClick: 
             )
             if (network.connected) {
                 Text(
-                    text = "Connected",
+                    text = stringResource(R.string.wifi_connected),
                     style = MaterialTheme.typography.bodySmall,
                     color = EditorColors.textSecondary,
                 )

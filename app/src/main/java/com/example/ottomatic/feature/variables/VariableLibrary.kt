@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.variables
 
+import com.example.ottomatic.domain.registry.ConfigOption
+import com.example.ottomatic.feature.i18n.rememberNodeText
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.example.ottomatic.domain.model.VariableDeclaration
 import com.example.ottomatic.domain.model.VariableRef
@@ -89,5 +92,14 @@ private val TYPE_LABELS: Map<ValueType, String> =
         ValueType.valueOf(option.value) to option.label
     }
 
-/** The user-facing name of this type. */
-fun ValueType.label(): String = TYPE_LABELS[this] ?: name
+/**
+ * The user-facing name of this type.
+ *
+ * Routed through [NodeText] so it uses the same `valuetype_*` key the config form's
+ * type dropdown does — the alternative is the same word translated twice and
+ * eventually differently.
+ */
+@Composable
+fun ValueType.label(): String = rememberNodeText().valueTypeLabel(
+    ConfigOption(value = name, label = TYPE_LABELS[this] ?: name),
+)

@@ -422,8 +422,14 @@ carefully as a database column name. This is why the smart-home nodes say `light
 than `hue` and the messenger nodes say `message` rather than `whatsapp`: the vendor
 lives in the description, not the id.
 
-Labels and descriptions are **hardcoded Kotlin strings**, not string resources — the app
-is single-language and `stringResource` appears nowhere in the node system. The
+Labels and descriptions are still written as **plain Kotlin strings right here**, and that
+does not change: `@Label` is an annotation, so its argument can only be a compile-time
+constant, and half of this text lives in `:node-api`, which is compiled without
+`android.jar` and cannot reach `getString`. What the string you write here now *also* does
+is act as the English source a translation key is generated from, and as the fallback when
+none resolves — so write it exactly as before and run the regeneration command in the
+**Node text and translation** section of `CLAUDE.md` afterwards. `NodeStringsSyncTest`
+fails and names the key if you forget. The
 **description is searched** by the palette, so it is where a node's alternate names
 belong ("Philips Hue" is findable only because it is in the description). Write
 descriptions as sentence fragments with no trailing period, leading with a verb for an

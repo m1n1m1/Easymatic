@@ -1,5 +1,6 @@
 package com.example.ottomatic.feature.mail
 
+import com.example.ottomatic.R
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -209,7 +210,8 @@ class MailAccountsViewModel(
             val problem = withContext(Dispatchers.IO) {
                 MailTransport.probe(draft.toAccount(), password)
             }
-            editDraft { it.copy(testing = false, testOk = problem == null, testResult = problem ?: SIGNED_IN) }
+            editDraft { it.copy(testing = false, testOk = problem == null, testResult = problem ?:
+                appContext.getString(R.string.mail_signed_in)) }
         }
     }
 
@@ -225,9 +227,10 @@ class MailAccountsViewModel(
         val account = repository.get(accountId)
         val password = account?.let { repository.password(accountId) }
         return when {
-            account == null -> Result.failure(IllegalStateException("That account has been deleted"))
+            account == null -> Result.failure(IllegalStateException(
+                appContext.getString(R.string.mail_account_deleted)))
             password == null -> Result.failure(
-                IllegalStateException("This account needs its password typed in again"),
+                IllegalStateException(appContext.getString(R.string.mail_account_needs_password)),
             )
             else -> withContext(Dispatchers.IO) { runCatching { MailTransport.folders(account, password) } }
         }
@@ -298,7 +301,7 @@ class MailAccountsViewModel(
 
     companion object {
 
-        private const val SIGNED_IN = "Signed in. Sending and receiving both work."
+        
 
         fun factory(
             repository: MailAccountRepository,

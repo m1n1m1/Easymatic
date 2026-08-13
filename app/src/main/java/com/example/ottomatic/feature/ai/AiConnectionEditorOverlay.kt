@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.ai
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -94,7 +96,8 @@ fun AiConnectionEditorOverlay(
     val clipboard = LocalClipboardManager.current
 
     EditorOverlay(
-        title = if (draft.isNew) "Add AI connection" else "Edit connection",
+        title = if (draft.isNew)
+            stringResource(R.string.ai_add_ai_connection) else stringResource(R.string.ai_edit_connection),
         onClose = onClose,
         action = {
             TextButton(
@@ -102,7 +105,7 @@ fun AiConnectionEditorOverlay(
                 enabled = draft.canSave && !draft.busy,
             ) {
                 Text(
-                    text = "Save",
+                    text = stringResource(R.string.ai_save),
                     color = if (draft.canSave && !draft.busy) {
                         EditorColors.actionAccent
                     } else {
@@ -130,8 +133,8 @@ fun AiConnectionEditorOverlay(
             OutlinedTextField(
                 value = draft.name,
                 onValueChange = viewModel::onNameChange,
-                label = { Text("Name") },
-                placeholder = { Text(draft.provider.defaultName()) },
+                label = { Text(stringResource(R.string.ai_name)) },
+                placeholder = { Text(stringResource(draft.provider.defaultNameRes())) },
                 singleLine = true,
                 enabled = !draft.busy,
                 colors = fieldColors(),
@@ -176,7 +179,7 @@ fun AiConnectionEditorOverlay(
 
             if (draft.isNew) {
                 Text(
-                    text = "Save the connection first, then Test to check the key works.",
+                    text = stringResource(R.string.ai_save_the_connection_first_then),
                     color = EditorColors.textSecondary,
                     fontSize = 12.sp,
                 )
@@ -198,9 +201,10 @@ fun AiConnectionEditorOverlay(
             }
 
             Text(
-                text = "The key is stored encrypted on this phone and is never shown again. " +
-                    draft.provider.privacyNote() +
-                    " Nothing is sent unless a macro reaches an Ask AI node.",
+                text = stringResource(
+                    R.string.ai_the_key_is_stored_encrypted,
+                    stringResource(draft.provider.privacyNoteRes()),
+                ),
                 color = EditorColors.textSecondary,
                 fontSize = 12.sp,
             )
@@ -235,10 +239,10 @@ private fun ProviderField(draft: AiConnectionDraft, onChange: (AiProvider) -> Un
         onExpandedChange = { if (!draft.busy) open = it },
     ) {
         OutlinedTextField(
-            value = draft.provider.label(),
+            value = stringResource(draft.provider.labelRes()),
             onValueChange = {},
             readOnly = true,
-            label = { Text("Provider") },
+            label = { Text(stringResource(R.string.ai_provider)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(open) },
             singleLine = true,
             enabled = !draft.busy,
@@ -250,7 +254,7 @@ private fun ProviderField(draft: AiConnectionDraft, onChange: (AiProvider) -> Un
         ExposedDropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             AiProvider.entries.forEach { provider ->
                 DropdownMenuItem(
-                    text = { Text(provider.label()) },
+                    text = { Text(stringResource(provider.labelRes())) },
                     onClick = {
                         open = false
                         onChange(provider)
@@ -286,7 +290,7 @@ private fun BaseUrlField(
         OutlinedTextField(
             value = draft.baseUrl,
             onValueChange = onValueChange,
-            label = { Text("Server address") },
+            label = { Text(stringResource(R.string.ai_server_address)) },
             placeholder = { Text("http://192.168.1.10:8000/v1") },
             singleLine = true,
             isError = draft.badBaseUrl,
@@ -315,9 +319,7 @@ private fun BaseUrlField(
                 fontSize = 12.sp,
             )
             draft.cleartext -> Text(
-                text = "This address is unencrypted. That is normal for a server on your own " +
-                    "network — do not use it for anything across the internet, because the " +
-                    "key would be sent in the clear.",
+                text = stringResource(R.string.ai_this_address_is_unencrypted_that),
                 color = EditorColors.warnAccent,
                 fontSize = 12.sp,
             )
@@ -349,9 +351,9 @@ private fun KeyField(
             label = {
                 Text(
                     when {
-                        draft.isNew -> "API key"
-                        draft.needsKey -> "API key — paste it in again"
-                        else -> "New API key (leave empty to keep the current one)"
+                        draft.isNew -> stringResource(R.string.ai_api_key)
+                        draft.needsKey -> stringResource(R.string.ai_api_key_paste_it_in)
+                        else -> stringResource(R.string.ai_new_api_key_leave_empty)
                     },
                 )
             },
@@ -373,7 +375,7 @@ private fun KeyField(
         OutlinedButton(onClick = onPaste, enabled = !draft.busy) {
             Icon(
                 imageVector = Icons.Filled.ContentPaste,
-                contentDescription = "Paste key",
+                contentDescription = stringResource(R.string.ai_paste_key),
                 tint = EditorColors.textPrimary,
                 modifier = Modifier.size(18.dp),
             )
@@ -403,7 +405,7 @@ private fun ModelFields(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = "Models",
+            text = stringResource(R.string.ai_models),
             color = EditorColors.textPrimary,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
@@ -423,11 +425,9 @@ private fun ModelFields(
         }
         Text(
             text = if (draft.provider.needsModelIds) {
-                "Name the model your server or account serves. If you only fill in Fast, " +
-                    "the other two use it as well."
+                stringResource(R.string.ai_name_the_model_your_server)
             } else {
-                "Leave these empty to use the provider's own models. Fill one in when a " +
-                    "model is retired, or to pin a particular one."
+                stringResource(R.string.ai_leave_these_empty_to_use)
             },
             color = EditorColors.textSecondary,
             fontSize = 12.sp,
@@ -452,8 +452,8 @@ private fun ModelRow(
         OutlinedTextField(
             value = draft.modelFor(model),
             onValueChange = onValueChange,
-            label = { Text(model.label()) },
-            placeholder = { Text(if (required) "required" else "provider's default") },
+            label = { Text(stringResource(model.labelRes())) },
+            placeholder = { Text(if (required) "required" else stringResource(R.string.ai_provider_s_default)) },
             singleLine = true,
             isError = required && draft.modelFor(model).isBlank(),
             enabled = !draft.busy,
@@ -464,7 +464,7 @@ private fun ModelRow(
             OutlinedButton(onClick = onLoad, enabled = !draft.busy && !draft.isNew) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
-                    contentDescription = "List models",
+                    contentDescription = stringResource(R.string.ai_list_models),
                     tint = if (draft.isNew) EditorColors.textSecondary else EditorColors.textPrimary,
                     modifier = Modifier.size(18.dp),
                 )
@@ -495,16 +495,15 @@ private fun SystemPromptField(draft: AiConnectionDraft, onValueChange: (String) 
         OutlinedTextField(
             value = draft.systemPrompt,
             onValueChange = onValueChange,
-            label = { Text("Standing instruction (optional)") },
-            placeholder = { Text("Answer briefly and in plain language.") },
+            label = { Text(stringResource(R.string.ai_standing_instruction_optional)) },
+            placeholder = { Text(stringResource(R.string.ai_answer_briefly_and_in_plain)) },
             minLines = 2,
             enabled = !draft.busy,
             colors = fieldColors(),
             modifier = Modifier.fillMaxWidth(),
         )
         Text(
-            text = "Sent ahead of every prompt through this connection. An Ask AI node's own " +
-                "standing instruction is added after it rather than replacing it.",
+            text = stringResource(R.string.ai_sent_ahead_of_every_prompt),
             color = EditorColors.textSecondary,
             fontSize = 12.sp,
         )
@@ -524,13 +523,13 @@ private fun ActionButtons(
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         TextButton(onClick = onTest, enabled = canTest) {
             Text(
-                text = "Test",
+                text = stringResource(R.string.ai_test),
                 color = if (canTest) EditorColors.textPrimary else EditorColors.textSecondary,
             )
         }
         if (!draft.isNew) {
             TextButton(onClick = onDelete, enabled = !draft.busy) {
-                Text("Delete", color = EditorColors.errorAccent)
+                Text(stringResource(R.string.ai_delete), color = EditorColors.errorAccent)
             }
         }
     }

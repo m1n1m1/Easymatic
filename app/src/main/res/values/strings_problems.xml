@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hand-written. Resolved by the exhaustive `when` in IssueText.kt, so a missing -->
+<!-- entry is a build failure. The wording must match GraphValidator's English -->
+<!-- `message`, which is what the run log records. -->
+<resources>
+
+    <string name="problem_permission_missing">\'%1$s\' needs %2$s, which has not been granted — it may do nothing when it runs</string>
+    <string name="problem_plugin_permission_missing">\'%1$s\' needs %2$s, which %3$s has not been granted — it may do nothing when it runs</string>
+
+    <string name="problem_macro_unset">\'%1$s\' has no macro chosen, so it will do nothing</string>
+    <string name="problem_macro_missing">\'%1$s\' points at a macro that no longer exists</string>
+    <string name="problem_hub_unset">\'%1$s\' has nothing chosen, so it will do nothing</string>
+    <string name="problem_hub_missing">\'%1$s\' points at a hub that is no longer set up</string>
+    <string name="problem_ai_unset">\'%1$s\' has no AI connection chosen, so it will do nothing</string>
+    <string name="problem_ai_missing">\'%1$s\' points at an AI connection that no longer exists</string>
+    <string name="problem_ai_unfinished">\'%1$s\' points at an AI connection that is not finished being set up</string>
+    <string name="problem_variable_unset">\'%1$s\' has no variable chosen, so it will do nothing</string>
+    <string name="problem_variable_missing">\'%1$s\' uses a variable that no longer exists</string>
+
+    <string name="problem_empty_loop_body">\'%1$s\' has nothing in its loop body, so repeating does nothing</string>
+    <string name="problem_unknown_node_type">\'%1$s\' is an unknown node type (%2$s) and cannot run</string>
+    <string name="problem_no_trigger">This workflow has no trigger, so nothing will ever start it</string>
+    <string name="problem_trigger_not_wired">\'%1$s\' is not wired to anything, so it will fire and do nothing</string>
+
+    <string name="problem_exec_wire_dangling">An execution wire points at a node that is not here any more</string>
+    <string name="problem_exec_output_unknown">Unknown exec output port \'%1$s\' on \'%2$s\'</string>
+    <string name="problem_exec_input_unknown">Unknown exec input port \'%1$s\' on \'%2$s\'</string>
+    <string name="problem_data_wire_dangling">A data wire points at a node that is not here any more</string>
+    <string name="problem_data_wire_unknown_type">A data wire runs through an unknown node type</string>
+    <string name="problem_not_data_output">\'%1$s\' is not a data output port on \'%2$s\'</string>
+    <string name="problem_not_data_input">\'%1$s\' is not a data input port on \'%2$s\'</string>
+    <string name="problem_schema_mismatch">Schema mismatch on data edge: source %1$s not assignable to target %2$s</string>
+
+    <string name="problem_value_not_connected">\'%1$s\' is not connected to anything and will never be read</string>
+    <string name="problem_nothing_wired_in">\'%1$s\' has nothing wired into it and will only use its own settings</string>
+    <string name="problem_exec_cycle">Execution cycle detected: %1$s</string>
+    <string name="problem_data_cycle">Data cycle detected: %1$s</string>
+    <string name="problem_not_exec_upstream">\'%1$s\' will not have run when \'%2$s\' executes</string>
+    <string name="problem_fork_branch_cross">\'%1$s\' and \'%2$s\' are on opposite branches of \'%3$s\', so nothing can be passed between them</string>
+
+</resources>

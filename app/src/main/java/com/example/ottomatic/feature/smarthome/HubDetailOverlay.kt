@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.smarthome
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -56,17 +58,17 @@ fun HubDetailOverlay(
     viewModel: SmartHomeViewModel,
 ) {
     EditorOverlay(
-        title = "Hub",
+        title = stringResource(R.string.smarthome_hub),
         onClose = viewModel::closeDetail,
         action = {
             IconButton(onClick = { viewModel.delete(hub.id) }) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
-                    contentDescription = "Remove hub",
+                    contentDescription = stringResource(R.string.smarthome_remove_hub),
                     tint = EditorColors.textSecondary,
                 )
             }
-            TextButton(onClick = viewModel::saveDetail) { Text("Save") }
+            TextButton(onClick = viewModel::saveDetail) { Text(stringResource(R.string.smarthome_save)) }
         },
     ) { _ ->
         Column(
@@ -80,7 +82,7 @@ fun HubDetailOverlay(
             OutlinedTextField(
                 value = state.detailName,
                 onValueChange = viewModel::detailNameChanged,
-                label = { Text("Name") },
+                label = { Text(stringResource(R.string.smarthome_name)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -97,7 +99,7 @@ fun HubDetailOverlay(
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
                     )
-                    Text("  Refresh lights and scenes")
+                    Text(stringResource(R.string.smarthome_refresh_lights_and_scenes))
                 }
                 if (state.busy) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
@@ -134,11 +136,17 @@ private fun InfoCard(hub: SmartHomeHub) {
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        InfoLine("Address", hub.host)
-        if (hub.hardwareId.isNotBlank()) InfoLine("Bridge id", hub.hardwareId)
-        InfoLine("Lights", hub.resourcesOf(SmartHomeTargetKind.LIGHT).size.toString())
-        InfoLine("Rooms and zones", hub.resourcesOf(SmartHomeTargetKind.GROUP).size.toString())
-        InfoLine("Scenes", hub.resourcesOf(SmartHomeTargetKind.SCENE).size.toString())
+        InfoLine(stringResource(R.string.smarthome_address), hub.host)
+        if (hub.hardwareId.isNotBlank()) InfoLine(stringResource(R.string.smarthome_bridge_id), hub.hardwareId)
+        InfoLine(stringResource(R.string.smarthome_lights), hub.resourcesOf(SmartHomeTargetKind.LIGHT).size.toString())
+        InfoLine(
+            stringResource(R.string.smarthome_rooms_and_zones),
+            hub.resourcesOf(SmartHomeTargetKind.GROUP).size.toString(),
+        )
+        InfoLine(
+            stringResource(R.string.smarthome_scenes),
+            hub.resourcesOf(SmartHomeTargetKind.SCENE).size.toString(),
+        )
     }
 }
 
@@ -162,19 +170,18 @@ private fun CertificateMismatch(pinned: String, presented: String, onTrust: () -
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            text = "This address is presenting a different certificate",
+            text = stringResource(R.string.smarthome_this_address_is_presenting_a),
             style = MaterialTheme.typography.bodyMedium,
             color = EditorColors.textPrimary,
         )
         Text(
-            text = "Only trust it if you reset or replaced your bridge. If you did not, " +
-                "something else on your network is answering as it.",
+            text = stringResource(R.string.smarthome_only_trust_it_if_you),
             style = MaterialTheme.typography.bodySmall,
             color = EditorColors.textSecondary,
         )
-        InfoLine("Trusted", pinned.grouped())
-        InfoLine("Presented", presented.grouped())
-        TextButton(onClick = onTrust) { Text("Trust new certificate") }
+        InfoLine(stringResource(R.string.smarthome_trusted), pinned.grouped())
+        InfoLine(stringResource(R.string.smarthome_presented), presented.grouped())
+        TextButton(onClick = onTrust) { Text(stringResource(R.string.smarthome_trust_new_certificate)) }
     }
 }
 

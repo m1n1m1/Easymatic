@@ -1,5 +1,8 @@
 package com.example.ottomatic.feature.grapheditor
 
+import androidx.compose.ui.platform.LocalContext
+import com.example.ottomatic.R
+import androidx.compose.ui.res.stringResource
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.ConfigKey
@@ -73,6 +76,8 @@ import com.example.ottomatic.feature.smarthome.SmartHomeViewModel
 import com.example.ottomatic.feature.variables.GlobalVariablesViewModel
 import com.example.ottomatic.feature.variables.LocalVariables
 import com.example.ottomatic.feature.workflowlist.LocalMacros
+import com.example.ottomatic.feature.i18n.NodeText
+import com.example.ottomatic.feature.i18n.rememberNodeText
 import com.example.ottomatic.feature.workflowlist.MacroLibrary
 import kotlin.math.roundToInt
 
@@ -162,7 +167,7 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
         AnimatedContent(
             targetState = openTab,
             modifier = Modifier.weight(1f),
-            label = "editor surface",
+            label = stringResource(R.string.grapheditor_editor_surface),
             transitionSpec = { surfaceTransition() },
         ) { tab ->
             if (tab != null) {
@@ -188,7 +193,9 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
                 EditorTopBar(
                     title = state.workflow.name,
                     nodeCount = state.workflow.nodes.size,
-                    selectionLabel = state.selection.takeIf { it.isNotEmpty }?.let(::selectionLabel),
+                    selectionLabel = state.selection
+                        .takeIf { it.isNotEmpty }
+                        ?.let { selectionText(selectionSummary(it)) },
                     canConfigure = state.selection.singleNodeId != null,
                     isMacroEnabled = state.isMacroEnabled,
                     icon = state.workflow.icon,
@@ -250,7 +257,10 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
         NodePaletteOverlay(
             onDismiss = { viewModel.dismissNodePick() },
             onPick = { definition -> viewModel.addNodeConnectedTo(definition.typeId) },
-            title = "Connect from ${originLabel(state.workflow, pick.from)}",
+            title = stringResource(
+                        R.string.grapheditor_connect_from,
+                        originLabel(state.workflow, pick.from, rememberNodeText(), LocalContext.current),
+                    ),
             restrictedTo = pick.suggestions.map { it.definition.typeId }.toSet(),
         )
     }
@@ -327,7 +337,7 @@ private fun CanvasRegion(
                 .align(Alignment.BottomEnd)
                 .padding(end = 18.dp, bottom = 18.dp),
         ) {
-            Icon(Icons.Filled.Add, contentDescription = "Add node")
+            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.grapheditor_add_node))
         }
         FloatingActionButton(
             onClick = { if (state.isRunning) viewModel.stopWorkflow() else viewModel.runWorkflow() },
@@ -338,9 +348,9 @@ private fun CanvasRegion(
                 .padding(end = 88.dp, bottom = 18.dp),
         ) {
             if (state.isRunning) {
-                Icon(Icons.Filled.Stop, contentDescription = "Stop workflow")
+                Icon(Icons.Filled.Stop, contentDescription = stringResource(R.string.grapheditor_stop_workflow))
             } else {
-                Icon(Icons.Filled.PlayArrow, contentDescription = "Run workflow")
+                Icon(Icons.Filled.PlayArrow, contentDescription = stringResource(R.string.grapheditor_run_workflow))
             }
         }
     }
@@ -352,13 +362,13 @@ private fun IntSize.centerPx(): Offset = Offset(width / 2f, height / 2f)
 private fun EmptyHint(modifier: Modifier = Modifier) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = "Your canvas is empty",
+            text = stringResource(R.string.grapheditor_your_canvas_is_empty),
             color = EditorColors.textPrimary,
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
         )
         Text(
-            text = "Tap + to add your first node",
+            text = stringResource(R.string.grapheditor_tap_to_add_your_first),
             color = EditorColors.textSecondary,
             fontSize = 13.sp,
             modifier = Modifier.padding(top = 4.dp),
@@ -384,10 +394,11 @@ private fun ZoomControls(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             IconButton(onClick = onZoomIn, modifier = Modifier.size(40.dp)) {
-                Icon(Icons.Filled.Add, contentDescription = "Zoom in", tint = EditorColors.textPrimary)
+                Icon(Icons.Filled.Add, contentDescription =
+                    stringResource(R.string.grapheditor_zoom_in), tint = EditorColors.textPrimary)
             }
             Text(
-                text = "${(scale * 100).roundToInt()}%",
+                text = stringResource(R.string.grapheditor_zoom_percent, (scale * 100).roundToInt()),
                 color = EditorColors.textSecondary,
                 fontSize = 11.sp,
                 modifier = Modifier
@@ -395,24 +406,38 @@ private fun ZoomControls(
                     .padding(vertical = 4.dp, horizontal = 6.dp),
             )
             IconButton(onClick = onZoomOut, modifier = Modifier.size(40.dp)) {
-                Icon(Icons.Filled.Remove, contentDescription = "Zoom out", tint = EditorColors.textPrimary)
+                Icon(Icons.Filled.Remove, contentDescription =
+                    stringResource(R.string.grapheditor_zoom_out), tint = EditorColors.textPrimary)
             }
             HorizontalDivider(
                 modifier = Modifier.width(28.dp),
                 color = EditorColors.chromeBorder,
             )
             IconButton(onClick = onFit, modifier = Modifier.size(40.dp)) {
-                Icon(Icons.Filled.FitScreen, contentDescription = "Fit to screen", tint = EditorColors.textPrimary)
+                Icon(Icons.Filled.FitScreen, contentDescription =
+                    stringResource(R.string.grapheditor_fit_to_screen), tint = EditorColors.textPrimary)
             }
         }
     }
 }
 
-/** "Node name › Port label" for the port a connection drag started from. */
-private fun originLabel(workflow: com.example.ottomatic.domain.model.Workflow, ref: PortRef): String {
-    val nodeName = workflow.node(ref.nodeId)?.name ?: return ref.portName.value
-    val portLabel = resolvePort(workflow, ref)?.label ?: ref.portName.value
-    return "$nodeName › $portLabel"
+/**
+ * "Node name › Port label" for the port a connection drag started from.
+ *
+ * Takes the [nodeText] rather than reading it, because this is a plain function
+ * called from two places and one of them is not a composable.
+ */
+private fun originLabel(
+    workflow: com.example.ottomatic.domain.model.Workflow,
+    ref: PortRef,
+    nodeText: NodeText,
+    context: android.content.Context,
+): String {
+    val node = workflow.node(ref.nodeId) ?: return ref.portName.value
+    val portLabel = resolvePort(workflow, ref)
+        ?.let { nodeText.portLabel(node.typeId, it) }
+        ?: ref.portName.value
+    return context.getString(R.string.grapheditor_port_path, node.name, portLabel)
 }
 
 /** The config keys a (possibly absent) schema renders a field for. */
@@ -428,6 +453,8 @@ private fun dataSourceLabel(
     workflow: com.example.ottomatic.domain.model.Workflow,
     nodeId: NodeId,
     port: PortName,
+    nodeText: NodeText,
+    context: android.content.Context,
 ): String? = workflow.incomingData(nodeId, port).firstOrNull()?.let { connection ->
     originLabel(
         workflow,
@@ -437,6 +464,8 @@ private fun dataSourceLabel(
             isOutput = true,
             kind = PortKind.DATA,
         ),
+        nodeText,
+        context,
     )
 }
 
@@ -469,7 +498,7 @@ private fun NodeConfigOverlay(
     val gutter = schemaKeys(schema).any { it in portByKey }
     // The form grows without bound — a script alone can declare sixteen ports —
     // so it gets a full screen to scroll in.
-    EditorOverlay(title = "Configure", onClose = onDismiss) { _ ->
+    EditorOverlay(title = stringResource(R.string.grapheditor_configure), onClose = onDismiss) { _ ->
         Column(
             // imePadding/navigationBarsPadding sit outside the scroll so the
             // keyboard shrinks the viewport rather than the scrolling content.
@@ -481,7 +510,7 @@ private fun NodeConfigOverlay(
                 .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 24.dp),
         ) {
             Text(
-                text = definition?.displayName ?: node.typeId.value,
+                text = definition?.let { rememberNodeText().name(it) } ?: node.typeId.value,
                 color = EditorColors.textSecondary,
                 fontSize = 12.sp,
             )
@@ -491,7 +520,7 @@ private fun NodeConfigOverlay(
             OutlinedTextField(
                 value = node.name,
                 onValueChange = onNameChange,
-                label = { Text("Name") },
+                label = { Text(stringResource(R.string.grapheditor_name)) },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -499,13 +528,16 @@ private fun NodeConfigOverlay(
             )
             if (schema != null) {
                 Spacer(modifier = Modifier.height(12.dp))
+                val nodeText = rememberNodeText()
+                val context = LocalContext.current
                 schema.fields.forEach { field ->
                     val port = portByKey[field.key]
                     ConfigFieldRow(
+                        typeId = node.typeId,
                         field = field,
                         port = port,
                         wired = port != null && port.name in node.visibleDataInputs,
-                        sourceLabel = port?.let { dataSourceLabel(workflow, node.id, it.name) },
+                        sourceLabel = port?.let { dataSourceLabel(workflow, node.id, it.name, nodeText, context) },
                         value = node.config[field.key] ?: field.defaultValue,
                         reserveToggleGutter = gutter,
                         onValueChange = { onConfigChange(field.key, it) },

@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.nfc
 
+import androidx.compose.ui.res.stringResource
+import com.example.ottomatic.R
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -89,14 +91,14 @@ fun NfcTagEditorOverlay(
     }
 
     EditorOverlay(
-        title = if (draft.capture) "Scan a tag" else "Rename tag",
+        title = if (draft.capture) stringResource(R.string.nfc_scan_a_tag) else stringResource(R.string.nfc_rename_tag),
         onClose = onClose,
         action = {
             if (!draft.isNew) {
                 IconButton(onClick = { viewModel.delete(draft.uid) }) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
-                        contentDescription = "Delete tag",
+                        contentDescription = stringResource(R.string.nfc_delete_tag),
                         tint = EditorColors.textSecondary,
                     )
                 }
@@ -105,7 +107,7 @@ fun NfcTagEditorOverlay(
                 onClick = { viewModel.save(onSaved) },
                 enabled = draft.canSave,
             ) {
-                Text("Save")
+                Text(stringResource(R.string.nfc_save))
             }
         },
     ) { _ ->
@@ -119,13 +121,12 @@ fun NfcTagEditorOverlay(
             if (!draft.scanned) {
                 when {
                     !available -> NfcNotice(
-                        title = "This phone has no NFC",
-                        body = "There is nothing to scan with. A tag trigger will never fire here.",
+                        title = stringResource(R.string.nfc_this_phone_has_no_nfc),
+                        body = stringResource(R.string.nfc_there_is_nothing_to_scan),
                     )
                     !enabled -> NfcNotice(
-                        title = "NFC is switched off",
-                        body = "Ottomatic cannot switch it on for you — Android only allows that " +
-                            "from its own settings.",
+                        title = stringResource(R.string.nfc_nfc_is_switched_off),
+                        body = stringResource(R.string.nfc_ottomatic_cannot_switch_it_on),
                         onOpenSettings = { context.openSettingsFor(PrerequisiteType.NFC) },
                     )
                     else -> WaitingForTag()
@@ -136,8 +137,8 @@ fun NfcTagEditorOverlay(
             OutlinedTextField(
                 value = draft.name,
                 onValueChange = viewModel::draftNameChanged,
-                label = { Text("Name") },
-                placeholder = { Text("Desk, Car dock, Nightstand…") },
+                label = { Text(stringResource(R.string.nfc_name)) },
+                placeholder = { Text(stringResource(R.string.nfc_desk_car_dock_nightstand)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -146,7 +147,8 @@ fun NfcTagEditorOverlay(
             // two registrations would fight, and writing has nothing to do with
             // choosing a tag for a trigger — it changes nothing the trigger reads.
             if (!draft.capture) {
-                TextButton(onClick = viewModel::startWrite) { Text("Write data to this tag") }
+                TextButton(onClick = viewModel::startWrite) { Text(
+                    stringResource(R.string.nfc_write_data_to_this_tag)) }
             }
         }
     }
@@ -186,7 +188,7 @@ private fun NfcNotice(title: String, body: String, onOpenSettings: (() -> Unit)?
             style = MaterialTheme.typography.bodyMedium,
             color = EditorColors.textSecondary,
         )
-        onOpenSettings?.let { Button(onClick = it) { Text("Open settings") } }
+        onOpenSettings?.let { Button(onClick = it) { Text(stringResource(R.string.nfc_open_settings)) } }
     }
 }
 
@@ -204,12 +206,12 @@ private fun WaitingForTag() {
                 modifier = Modifier.size(56.dp),
             )
             Text(
-                text = "Hold the tag to the back of your phone",
+                text = stringResource(R.string.nfc_hold_the_tag_to_the),
                 style = MaterialTheme.typography.titleMedium,
                 color = EditorColors.textPrimary,
             )
             Text(
-                text = "The NFC antenna is usually near the top on the back.",
+                text = stringResource(R.string.nfc_the_nfc_antenna_is_usually),
                 style = MaterialTheme.typography.bodyMedium,
                 color = EditorColors.textSecondary,
             )
@@ -229,14 +231,14 @@ private fun ScannedTag(draft: NfcTagDraft) {
         )
         if (draft.text.isNotBlank()) {
             Text(
-                text = "This tag says: ${draft.text}",
+                text = stringResource(R.string.nfc_tag_says, draft.text),
                 style = MaterialTheme.typography.bodyMedium,
                 color = EditorColors.textSecondary,
             )
         }
         if (!draft.isNew) {
             Text(
-                text = "Already in your library.",
+                text = stringResource(R.string.nfc_already_in_your_library),
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.textSecondary,
             )
@@ -246,9 +248,7 @@ private fun ScannedTag(draft: NfcTagDraft) {
         // an id that changes on every tap can never be matched against.
         if (draft.unstable) {
             Text(
-                text = "This tag reports a different id every time it is tapped, so a macro " +
-                    "could never recognise it. Bank cards, transit cards and phones " +
-                    "pretending to be cards all do this. Use a plain NFC sticker instead.",
+                text = stringResource(R.string.nfc_this_tag_reports_a_different),
                 style = MaterialTheme.typography.bodyMedium,
                 color = EditorColors.errorAccent,
             )

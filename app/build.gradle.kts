@@ -33,6 +33,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Generates the en-XA (accented, ~30 % longer) and ar-XB (mirrored)
+            // pseudolocales. With no real locale in the app yet this is the *only*
+            // way to see whether a string went through resources: anything still
+            // rendering plain ASCII under en-XA is still a hardcoded literal.
+            isPseudoLocalesEnabled = true
+        }
         release {
             // Shrinking is off, so `proguard-rules.pro` is deliberately NOT wired
             // here — a `proguardFiles` line that reads as active and is not would
@@ -69,6 +76,14 @@ android {
             // and is a day lost. AGP's own default exclude set matches none of
             // them, so the only way this breaks is by hand.
         }
+    }
+    androidResources {
+        // Generates res/xml/locales_config.xml from the values-* folders, which is what
+        // puts Ottomatic in Android 13+'s Settings → Apps → Ottomatic → Language. Left
+        // off while the app shipped one locale, because it would have published a
+        // language picker offering exactly one choice; with German present it earns
+        // its place. Needs res/resources.properties to name what values/ holds.
+        generateLocaleConfig = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -153,6 +168,17 @@ dependencies {
 detekt {
     config.setFrom(files("$rootDir/detekt.yml"))
     buildUponDefaultConfig = true
+}
+
+// Turns `NodeStringsSyncTest` from a guard into the generator that writes
+// `strings_nodes.xml` and `NodeStringIds.kt`. See the node-text section of CLAUDE.md.
+// Read through `providers` so the flag is a configuration-cache input rather than a
+// project read at execution time, which would invalidate the cache on every build.
+tasks.withType<Test>().configureEach {
+    systemProperty(
+        "ottomatic.i18n.regenerate",
+        providers.gradleProperty("regenerateNodeStrings").getOrElse("false"),
+    )
 }
 
 /**
