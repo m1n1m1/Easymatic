@@ -546,6 +546,28 @@
 
     <string name="grapheditor_port_path">%1$s › %2$s</string>
 
+    <!-- MQTT. Ottomatic is a client here and never a broker: every one of these is
+         about a broker somebody else is running, which the copy says out loud because
+         "MQTT support" is ambiguous everywhere else it is written. -->
+    <string name="smarthome_mqtt_broker">MQTT broker</string>
+    <string name="smarthome_mqtt_broker_subtitle">A broker you already run — Mosquitto, Zigbee2MQTT, EMQX</string>
+    <string name="mqtt_connect_a_broker">Connect an MQTT broker</string>
+    <string name="mqtt_name_your_broker">Name your broker</string>
+    <string name="mqtt_setup_intro">Ottomatic connects to a broker you already run. It never acts as one itself.</string>
+    <string name="mqtt_address">Broker address</string>
+    <string name="mqtt_login_optional">Leave these empty if your broker allows anyone on the network to connect, which most home brokers do.</string>
+    <string name="mqtt_username">Username</string>
+    <string name="mqtt_password">Password</string>
+    <string name="mqtt_anonymous">Anonymous</string>
+    <string name="mqtt_broker_reached">Reached it. The broker accepted this login.</string>
+    <string name="mqtt_cleartext_warning">This connection is not encrypted. That is normal for a broker on your own network; over the internet it would send your password in the clear.</string>
+    <string name="mqtt_connected_this_is_the_name">Connected. This is the name your macros will show.</string>
+    <string name="mqtt_choose_a_broker">Choose a broker</string>
+    <string name="mqtt_no_broker_yet">No MQTT broker yet. Add one from Smart home.</string>
+    <string name="mqtt_listen_for_topics">Listen for topics</string>
+    <string name="mqtt_topics_heard">Topics heard</string>
+    <string name="mqtt_broker_subtitle">%1$s · %2$s</string>
+
     <!-- Home Assistant -->
     <string name="smarthome_home_assistant">Home Assistant</string>
     <string name="smarthome_a_server_you_already_run">A server you already run</string>

@@ -67,4 +67,10 @@
         <item quantity="many">%1$d общих для всех макросов</item>
         <item quantity="other">%1$d общих для всех макросов</item>
     </plurals>
+    <plurals name="mqtt_topics_seen">
+        <item quantity="one">%1$d тема</item>
+        <item quantity="few">%1$d темы</item>
+        <item quantity="many">%1$d тем</item>
+        <item quantity="other">%1$d темы</item>
+    </plurals>
 </resources>

@@ -577,3 +577,18 @@ out	Выход
 response	ответ
 state	состояние
 true	да
+MQTT Message	Сообщение MQTT
+Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	Запускается, когда в тему MQTT приходит сообщение — кнопка Zigbee, датчик, любое устройство, которое публикует
+Broker	Брокер
+Topic	Тема
+Message contains	Сообщение содержит
+Also fire on messages the broker had stored	Срабатывать и на сообщения, которые брокер хранил
+Publish to MQTT	Опубликовать в MQTT
+Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome	Отправляет сообщение в тему на MQTT-брокере — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome
+Delivery	Доставка
+Confirmed by the broker	Подтверждена брокером
+Send and forget	Отправить и забыть
+Confirmed exactly once	Подтверждена ровно один раз
+Ask the broker to keep this message	Попросить брокер сохранить это сообщение
+MQTT Topic	Тема MQTT
+The last message published to a topic on an MQTT broker	Последнее сообщение, опубликованное в теме на MQTT-брокере

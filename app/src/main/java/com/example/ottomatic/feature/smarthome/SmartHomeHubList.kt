@@ -1,5 +1,6 @@
 package com.example.ottomatic.feature.smarthome
 
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.example.ottomatic.R
 import androidx.compose.foundation.background
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -138,10 +140,10 @@ private fun HubRow(
             Icon(
                 // The same icon `AddHubSheet` offered it under, so the row somebody
                 // just created is recognisably the thing they chose.
-                imageVector = if (hub.kind == SmartHomeKind.HOME_ASSISTANT) {
-                    Icons.Filled.Home
-                } else {
-                    Icons.Filled.Lightbulb
+                imageVector = when (hub.kind) {
+                    SmartHomeKind.HOME_ASSISTANT -> Icons.Filled.Home
+                    SmartHomeKind.MQTT -> Icons.Filled.Sensors
+                    SmartHomeKind.HUE -> Icons.Filled.Lightbulb
                 },
                 contentDescription = null,
                 tint = accent,
@@ -163,6 +165,10 @@ private fun HubRow(
                 // looking for a button that does not exist. The credential is lost the
                 // same way in both cases — a restore leaves the keystore key behind —
                 // but what fixes it is not the same act.
+                // A broker is deliberately absent from the first two branches: it has
+                // no credential to have lost — see SmartHomeHub.requiresSecret — so
+                // `needsPairing` is only ever true for one whose stored password cannot
+                // be opened, which "Pair again" describes as well as anything would.
                 text = when {
                     needsPairing && hub.kind == SmartHomeKind.HOME_ASSISTANT ->
                         stringResource(R.string.smarthome_sign_in_again)
@@ -194,6 +200,19 @@ private fun HubRow(
  */
 @Composable
 private fun SmartHomeHub.summary(): String {
+    // A broker has no lights or scenes at all, so counting them would print two zeroes
+    // that read as a hub which failed to read rather than as one that has none.
+    if (kind == SmartHomeKind.MQTT) {
+        return if (topics.isEmpty()) {
+            host
+        } else {
+            stringResource(
+                R.string.mqtt_broker_subtitle,
+                host,
+                pluralStringResource(R.plurals.mqtt_topics_seen, topics.size, topics.size),
+            )
+        }
+    }
     val lights = resourcesOf(SmartHomeTargetKind.LIGHT).size
     val scenes = resourcesOf(SmartHomeTargetKind.SCENE).size
     return if (resources.isEmpty()) {

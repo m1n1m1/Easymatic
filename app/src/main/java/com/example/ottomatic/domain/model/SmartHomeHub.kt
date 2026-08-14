@@ -19,6 +19,21 @@ import kotlinx.serialization.Serializable
  * is no trigger to pair with. Home Assistant pushes, so it brought a socket, two
  * `TriggerSource`s and a value node with it. The lesson for a third vendor is that the
  * *control* half is free and the *event* half is not.
+ *
+ * [MQTT] is the third and it breaks the pattern in a way worth stating, because reading
+ * this enum as "one member per vendor" is what would make it look wrong. **It has no
+ * `SmartHomeVendor` at all.** MQTT is a *transport*, not a vendor: a broker knows
+ * nothing about lights, and what a light looks like on one is a convention belonging to
+ * whatever publishes it — Zigbee2MQTT's `exposes`, Home Assistant's discovery topics,
+ * Tasmota's. So the three light nodes cannot speak to a broker and are not offered it;
+ * what it brings instead is the **event half alone**, generalised: a connection, a warm
+ * cache, a `TriggerSource` and three nodes that publish, watch and read topics.
+ *
+ * It is a member here regardless of that, rather than a library of its own, because
+ * everything the enum's *other* half buys applies unchanged — the sealed credential, the
+ * repository, the hub list, the detail screen, the connection-status row,
+ * `SmartHomeHubs` hydration and the validator's "this points at a hub that is gone".
+ * Splitting it out would have meant a second copy of all of that to gain a heading.
  */
 @Serializable
 enum class SmartHomeKind {
@@ -27,6 +42,9 @@ enum class SmartHomeKind {
 
     @Label("Home Assistant")
     HOME_ASSISTANT,
+
+    @Label("MQTT broker")
+    MQTT,
 }
 
 /**
@@ -141,6 +159,30 @@ data class SmartHomeHub(
     val entities: List<HaEntity> = emptyList(),
     /** Every service the hub offers, as the service picker lists them. Home Assistant only. */
     val services: List<HaService> = emptyList(),
+    /**
+     * The user a broker logs in as. MQTT only, and **not sealed**, deliberately.
+     *
+     * [secret] holds the password beside it, which is what sealing is for. A username is
+     * not a credential on its own — it is the half the user has to be able to *read back*
+     * when a connection is refused, which is exactly the moment a sealed field would be
+     * unreadable. That is [certSha256]'s argument in a second setting.
+     *
+     * Blank means anonymous, which is what a broker on a home network usually is and is
+     * why it is not part of [isComplete].
+     */
+    val username: String = "",
+    /**
+     * The topics seen on a broker at the last Refresh, for the topic fields' dropdown.
+     *
+     * The MQTT counterpart of [entities] and [services], and the one whose incompleteness
+     * is *structural* rather than a matter of staleness: a broker publishes no directory
+     * of its topics, so this is whatever was being published during the few seconds a
+     * Refresh listened. It therefore feeds a `@Suggested` field and never a `@Picker` —
+     * an answer set that is known but not closed, which is the middle case that mechanism
+     * exists for. A topic nothing has published yet is still typeable, which is the whole
+     * point: setting up a macro against a device that is currently unplugged has to work.
+     */
+    val topics: List<String> = emptyList(),
 ) {
 
     /**
@@ -161,6 +203,27 @@ data class SmartHomeHub(
             // before anything is sent, so a hub whose token expired while the phone was
             // off is complete rather than broken.
             SmartHomeKind.HOME_ASSISTANT -> host.isNotBlank() && (secret.isNotBlank() || refreshSecret.isNotBlank())
+            // No credential in the test at all, because a broker on a home network is
+            // very often anonymous — see [username]. What has to hold instead is that
+            // the address *reads* as one, which the other two kinds get for free from
+            // being paired against a machine that answered.
+            SmartHomeKind.MQTT -> MqttAddress.parse(host) != null
+        }
+
+    /**
+     * Whether a hub of this kind is expected to hold a sealed credential at all.
+     *
+     * Read by `SmartHomeHubRepository.needsPairing`, and it exists because the answer
+     * stopped being "yes" the day a broker could be a hub. A blank [secret] means a lost
+     * key on a bridge and a lost token on a Home Assistant instance — both of which want
+     * the red "pair again" row — and means *anonymous* on a broker, which wants nothing
+     * at all. A credential that is present but **unreadable** is still a lost key on all
+     * three, and that half of the test is not affected by this.
+     */
+    val requiresSecret: Boolean
+        get() = when (kind) {
+            SmartHomeKind.HUE, SmartHomeKind.HOME_ASSISTANT -> true
+            SmartHomeKind.MQTT -> false
         }
 
     /** The lights, groups or scenes on this hub, for a picker's section. */

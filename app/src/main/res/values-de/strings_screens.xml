@@ -576,4 +576,22 @@
     <string name="ha_any_state_change_hint">Jede Zustandsänderung, ohne weitere Bedingungen</string>
     <string name="ha_sign_in">Oder bei Home Assistant anmelden</string>
     <string name="ha_no_hub_yet">Noch kein Home Assistant. Füge unter Smart Home einen hinzu.</string>
+    <string name="smarthome_mqtt_broker">MQTT-Broker</string>
+    <string name="smarthome_mqtt_broker_subtitle">Ein Broker, den du schon betreibst – Mosquitto, Zigbee2MQTT, EMQX</string>
+    <string name="mqtt_connect_a_broker">MQTT-Broker verbinden</string>
+    <string name="mqtt_name_your_broker">Benenne deinen Broker</string>
+    <string name="mqtt_setup_intro">Ottomatic verbindet sich mit einem Broker, den du schon betreibst. Die App ist selbst nie einer.</string>
+    <string name="mqtt_address">Broker-Adresse</string>
+    <string name="mqtt_login_optional">Lass diese Felder leer, wenn dein Broker jeden im Netz zulässt – so sind die meisten Broker zu Hause eingestellt.</string>
+    <string name="mqtt_username">Benutzername</string>
+    <string name="mqtt_password">Passwort</string>
+    <string name="mqtt_anonymous">Anonym</string>
+    <string name="mqtt_broker_reached">Erreicht. Der Broker hat diese Anmeldung akzeptiert.</string>
+    <string name="mqtt_cleartext_warning">Diese Verbindung ist nicht verschlüsselt. Für einen Broker im eigenen Netz ist das normal; über das Internet würde dein Passwort im Klartext übertragen.</string>
+    <string name="mqtt_connected_this_is_the_name">Verbunden. Diesen Namen zeigen deine Makros an.</string>
+    <string name="mqtt_choose_a_broker">Broker wählen</string>
+    <string name="mqtt_no_broker_yet">Noch kein MQTT-Broker. Füge unter Smart Home einen hinzu.</string>
+    <string name="mqtt_listen_for_topics">Nach Topics lauschen</string>
+    <string name="mqtt_topics_heard">Gehörte Topics</string>
+    <string name="mqtt_broker_subtitle">%1$s · %2$s</string>
 </resources>

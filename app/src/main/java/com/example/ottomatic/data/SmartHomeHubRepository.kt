@@ -85,9 +85,19 @@ class SmartHomeHubRepository(
      * across and leaves the key behind. For mail that costs one typed field; here
      * it costs a walk to the bridge and a press of the link button, which is a
      * thing worth saying on the row rather than discovering when a macro runs.
+     *
+     * **Two halves, and only the first is about the kind of hub.** A *missing* credential
+     * means a lost key on a bridge or an instance and means *anonymous* on a broker, so
+     * that half asks [SmartHomeHub.requiresSecret]. A credential that is stored but can
+     * no longer be opened is a lost keystore key on any of the three, which is the case
+     * this function exists for and which no kind is exempt from.
      */
-    fun needsPairing(id: String): Boolean =
-        get(id)?.let { it.secret.isBlank() || secrets.open(it.secret) == null } ?: false
+    fun needsPairing(id: String): Boolean = get(id)?.let { hub ->
+        when {
+            hub.secret.isBlank() -> hub.requiresSecret
+            else -> secrets.open(hub.secret) == null
+        }
+    } ?: false
 
     /** Inserts [hub] or replaces the entry with the same id, then persists. */
     suspend fun upsert(hub: SmartHomeHub): SmartHomeHub {
@@ -223,6 +233,47 @@ class SmartHomeHubRepository(
                 ),
             )
         }
+    }
+
+    /**
+     * The password a broker logs in with, or null when it has none stored — which on an
+     * MQTT hub is [applicationKey]'s three failures **plus a fourth that is not a
+     * failure at all**: an anonymous broker, where blank is the answer.
+     *
+     * A second name for [applicationKey] on [accessToken]'s reasoning, and the name
+     * matters more here than there, because this is the one credential in the app whose
+     * absence is ordinary.
+     */
+    fun brokerPassword(id: String): String? = applicationKey(id)
+
+    /**
+     * Seals a broker's login onto [id]. Returns false only when this device would not
+     * seal the password — nothing is written in that case, on [setKeys]' rule.
+     *
+     * **A blank password is stored as a blank secret rather than as sealed emptiness**,
+     * which is what keeps `needsPairing` honest: an anonymous broker has no credential to
+     * have lost, and sealing the empty string would make it indistinguishable from one
+     * whose keystore key survived. The username is written either way, since it is not a
+     * secret and the connection needs it even when the password is empty.
+     */
+    @Suppress("ReturnCount") // No such hub and a keystore that refuses must both write nothing.
+    suspend fun setBrokerCredentials(id: String, username: String, password: String): Boolean {
+        val hub = get(id) ?: return false
+        val sealed = if (password.isBlank()) "" else secrets.seal(password) ?: return false
+        upsert(hub.copy(username = username.trim(), secret = sealed))
+        return true
+    }
+
+    /**
+     * Replaces the topics seen on a broker at the last Refresh.
+     *
+     * Its own member rather than a use of [setResources], because the two write different
+     * fields and share the refresh timestamp: a broker has no light-shaped resources to
+     * put in the other one, and passing an empty list through it would clear a list that
+     * was never filled.
+     */
+    suspend fun setTopics(id: String, topics: List<String>, refreshedAtEpochMs: Long) {
+        get(id)?.let { upsert(it.copy(topics = topics, resourcesRefreshedAtEpochMs = refreshedAtEpochMs)) }
     }
 
     private suspend fun mutate(transform: (List<SmartHomeHub>) -> List<SmartHomeHub>) {

@@ -577,3 +577,18 @@ out	Saída
 response	resposta
 state	estado
 true	verdadeiro
+MQTT Message	Mensagem MQTT
+Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	Inicia quando chega uma mensagem a um tópico MQTT – um botão Zigbee, um sensor, qualquer dispositivo que publique
+Broker	Broker
+Topic	Tópico
+Message contains	A mensagem contém
+Also fire on messages the broker had stored	Disparar também com mensagens que o broker tinha guardadas
+Publish to MQTT	Publicar em MQTT
+Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome	Envia uma mensagem para um tópico de um broker MQTT – Mosquitto, Zigbee2MQTT, Tasmota, ESPHome
+Delivery	Entrega
+Confirmed by the broker	Confirmada pelo broker
+Send and forget	Enviar e esquecer
+Confirmed exactly once	Confirmada exatamente uma vez
+Ask the broker to keep this message	Pedir ao broker que guarde esta mensagem
+MQTT Topic	Tópico MQTT
+The last message published to a topic on an MQTT broker	A última mensagem publicada num tópico de um broker MQTT

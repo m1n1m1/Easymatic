@@ -577,3 +577,18 @@ out	出力
 response	レスポンス
 state	状態
 true	真
+MQTT Message	MQTT メッセージ
+Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	MQTT トピックにメッセージが届いたときに開始します — Zigbee ボタン、センサー、publish するあらゆる機器
+Broker	ブローカー
+Topic	トピック
+Message contains	メッセージに含まれる文字
+Also fire on messages the broker had stored	ブローカーが保持していたメッセージでも実行する
+Publish to MQTT	MQTT に送信
+Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome	MQTT ブローカーのトピックにメッセージを送ります — Mosquitto、Zigbee2MQTT、Tasmota、ESPHome
+Delivery	配信
+Confirmed by the broker	ブローカーが確認
+Send and forget	送信して確認しない
+Confirmed exactly once	ちょうど一度だけ確認
+Ask the broker to keep this message	このメッセージを保持するようブローカーに依頼する
+MQTT Topic	MQTT トピック
+The last message published to a topic on an MQTT broker	MQTT ブローカーのトピックに最後に publish されたメッセージ

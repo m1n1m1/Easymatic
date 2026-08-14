@@ -651,3 +651,21 @@ workflowlist_text	 ·
 workflowlist_this_macro	esta macro
 workflowlist_which_trigger	¿Qué activador?
 workflowlist_workflows	Flujos
+smarthome_mqtt_broker	Broker MQTT
+smarthome_mqtt_broker_subtitle	Un broker que ya tienes en marcha: Mosquitto, Zigbee2MQTT, EMQX
+mqtt_connect_a_broker	Conectar un broker MQTT
+mqtt_name_your_broker	Ponle nombre a tu broker
+mqtt_setup_intro	Ottomatic se conecta a un broker que ya tienes en marcha. Nunca actúa como uno.
+mqtt_address	Dirección del broker
+mqtt_login_optional	Déjalos vacíos si tu broker permite conectarse a cualquiera de la red, que es lo habitual en casa.
+mqtt_username	Usuario
+mqtt_password	Contraseña
+mqtt_anonymous	Anónimo
+mqtt_broker_reached	Contactado. El broker aceptó estas credenciales.
+mqtt_cleartext_warning	Esta conexión no está cifrada. Es lo normal para un broker en tu propia red; por internet enviaría tu contraseña sin cifrar.
+mqtt_connected_this_is_the_name	Conectado. Este es el nombre que mostrarán tus macros.
+mqtt_choose_a_broker	Elige un broker
+mqtt_no_broker_yet	Aún no hay ningún broker MQTT. Añade uno en Hogar inteligente.
+mqtt_listen_for_topics	Escuchar los topics
+mqtt_topics_heard	Topics oídos
+mqtt_broker_subtitle	%1$s · %2$s

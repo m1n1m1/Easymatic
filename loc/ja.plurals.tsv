@@ -11,3 +11,4 @@ widget_problem_count:other	問題 %1$d 件
 plugins_provides_nodes:other	ノードを %1$d 件提供
 api_macros_callable:other	現在 %1$d 件のマクロを外部から呼び出せます。
 variables_shared_by_every_macro:other	%1$d 件がすべてのマクロで共有
+mqtt_topics_seen:other	%1$d 件のトピック

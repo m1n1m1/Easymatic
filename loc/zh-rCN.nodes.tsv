@@ -577,3 +577,18 @@ out	输出
 response	响应
 state	状态
 true	真
+MQTT Message	MQTT 消息
+Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	当 MQTT 主题收到消息时启动 — Zigbee 按钮、传感器，以及任何会发布消息的设备
+Broker	代理
+Topic	主题
+Message contains	消息包含
+Also fire on messages the broker had stored	也对代理已保存的消息触发
+Publish to MQTT	发布到 MQTT
+Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome	向 MQTT 代理的某个主题发送消息 — Mosquitto、Zigbee2MQTT、Tasmota、ESPHome
+Delivery	送达方式
+Confirmed by the broker	由代理确认
+Send and forget	发送后不确认
+Confirmed exactly once	确认且仅一次
+Ask the broker to keep this message	请求代理保留此消息
+MQTT Topic	MQTT 主题
+The last message published to a topic on an MQTT broker	MQTT 代理某个主题上最后发布的消息

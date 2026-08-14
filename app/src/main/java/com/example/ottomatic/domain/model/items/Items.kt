@@ -655,6 +655,50 @@ data class HaServiceCalled(
 )
 
 /**
+ * What `trigger.mqtt_message` emits when a message arrives on a watched topic.
+ *
+ * [topic] is the **exact** topic the message was published to and never the filter that
+ * matched it, which is the field the node exists for: a macro watching
+ * `zigbee2mqtt/+/action` needs to know which device pressed a button, and the filter it
+ * configured cannot say.
+ *
+ * [payload] is the bytes as text, unparsed, on [HaEvent.data]'s reasoning — what a payload
+ * means belongs entirely to whatever published it, and `transform.json_read` or
+ * `transform.convert` is the visible place a reading belongs.
+ *
+ * [retained] is the field worth having and the one nobody expects. A retained message is
+ * one the **broker** had stored and handed over on subscribe, so it may describe something
+ * that happened months ago. That distinction is invisible in the payload and decides
+ * whether a macro should act on it, which is why it is a port rather than a detail.
+ */
+@Serializable
+data class MqttMessage(
+    val topic: String,
+    val payload: String = "",
+    val retained: Boolean = false,
+    /** 0, 1 or 2 — the delivery guarantee this message actually arrived under. */
+    val qos: Int = 0,
+    val receivedAt: DateTime,
+)
+
+/**
+ * Receipt from `action.mqtt_publish` on its `state` data port.
+ *
+ * [published] rather than `delivered`, and the distinction is the protocol's rather than
+ * this app's caution: MQTT has **no subscriber acknowledgement of any kind**. At QoS 0 this
+ * means the bytes reached the socket and at QoS 1 or 2 that the broker acknowledged them,
+ * and at every level a message published to a topic nobody is listening on succeeds
+ * completely and by design. That is [HaServiceCalled.called]'s sentence one layer further
+ * down: claiming more than the wire says is the one thing this must not do.
+ */
+@Serializable
+data class MqttPublished(
+    val topic: String,
+    val published: Boolean,
+    val error: String = "",
+)
+
+/**
  * Result of the call action on its `state` data port.
  *
  * - [number]: the destination phone number.

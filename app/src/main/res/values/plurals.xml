@@ -56,4 +56,10 @@
         <item quantity="other">%1$d shared by every macro</item>
     </plurals>
 
+    <!-- A broker publishes no directory of its topics, so this counts what a Refresh
+         happened to hear rather than what exists. Zero is a real and common answer. -->
+    <plurals name="mqtt_topics_seen">
+        <item quantity="one">%1$d topic</item>
+        <item quantity="other">%1$d topics</item>
+    </plurals>
 </resources>

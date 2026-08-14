@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.AlertDialog
@@ -85,9 +86,11 @@ import com.example.ottomatic.feature.mail.MailAccountPickerOverlay
 import com.example.ottomatic.feature.nfc.LocalNfcTags
 import com.example.ottomatic.feature.nfc.NfcTagPickerOverlay
 import com.example.ottomatic.domain.model.HaScope
+import com.example.ottomatic.domain.model.HubRef
 import com.example.ottomatic.domain.model.HomeAssistantRef
 import com.example.ottomatic.domain.model.haScopeOf
 import com.example.ottomatic.feature.smarthome.HaPickerMode
+import com.example.ottomatic.feature.smarthome.mqtt.MqttBrokerPickerOverlay
 import com.example.ottomatic.feature.smarthome.HaPickerOverlay
 import com.example.ottomatic.feature.smarthome.LightTargetPickerOverlay
 import com.example.ottomatic.feature.smarthome.LocalSmartHome
@@ -739,6 +742,59 @@ private fun PickerField(
         PickerKind.HA_SERVICE -> HaPickerField(value, onValueChange, HaPickerMode.SERVICE, scope, labelSlot, colors)
         PickerKind.HA_TRIGGER -> HaPickerField(value, onValueChange, HaPickerMode.TRIGGER, scope, labelSlot, colors)
         PickerKind.HA_HUB -> HaPickerField(value, onValueChange, HaPickerMode.HUB, scope, labelSlot, colors)
+        PickerKind.MQTT_BROKER -> MqttBrokerPickerField(value, onValueChange, labelSlot, colors)
+    }
+}
+
+/**
+ * A `@Picker(MQTT_BROKER)` field: which broker this node publishes to, watches or reads.
+ *
+ * Readable **with no library in scope**, for [SmartHomePickerField]'s reason and by the
+ * same means: what is stored is a whole [HubRef] carrying the name it had when it was
+ * chosen, so this renders "Loft broker" with the machine switched off and nothing cached.
+ *
+ * Its own field rather than a fifth [HaPickerMode], on the same line the overlay draws:
+ * those four walk one hub's snapshot and this walks the hub library, and they store
+ * different specs. A reference whose broker is gone says so rather than falling back to a
+ * raw id — the name is still the most useful thing on screen, and what is broken is the
+ * broker.
+ */
+@Composable
+private fun MqttBrokerPickerField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
+    var picking by remember { mutableStateOf(false) }
+    val hubs = LocalSmartHome.current
+    val parsed = HubRef.parse(value)
+
+    PickerFieldChrome(
+        display = when {
+            value.isBlank() -> ""
+            parsed == null -> value
+            hubs != null && hubs.hubById(parsed.hubId) == null ->
+                stringResource(R.string.config_hub_removed, parsed.name)
+            else -> parsed.name
+        },
+        icon = Icons.Filled.Sensors,
+        enabled = hubs != null,
+        onTap = { picking = true },
+        labelSlot = labelSlot,
+        colors = colors,
+    )
+
+    if (picking && hubs != null) {
+        MqttBrokerPickerOverlay(
+            viewModel = hubs,
+            selected = value,
+            onPick = { spec ->
+                onValueChange(spec)
+                picking = false
+            },
+            onDismiss = { picking = false },
+        )
     }
 }
 

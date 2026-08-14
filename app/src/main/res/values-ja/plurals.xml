@@ -34,4 +34,7 @@
     <plurals name="variables_shared_by_every_macro">
         <item quantity="other">%1$d 件がすべてのマクロで共有</item>
     </plurals>
+    <plurals name="mqtt_topics_seen">
+        <item quantity="other">%1$d 件のトピック</item>
+    </plurals>
 </resources>

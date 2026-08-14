@@ -33,6 +33,7 @@ object TriggerRegistry {
         // what nearly everybody wants; the event one is the escape hatch behind it.
         add(com.example.ottomatic.engine.trigger.HaStateTrigger())
         add(com.example.ottomatic.engine.trigger.HaEventTrigger())
+        add(com.example.ottomatic.engine.trigger.MqttTrigger())
         add(com.example.ottomatic.engine.trigger.NotificationTrigger())
         // Directly after the generic notification trigger it is refined from, so the
         // palette shows the pair together: one fires on every notification, the other

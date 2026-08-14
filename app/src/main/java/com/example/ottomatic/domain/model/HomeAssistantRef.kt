@@ -88,17 +88,22 @@ object HomeAssistantRef {
 }
 
 /**
- * The hub id inside a reference, whichever of the two spellings it uses.
+ * The hub id inside a reference, whichever of the three spellings it uses.
  *
  * The validator and `PickerRefFields` ask one question of every hub-scoped config field
  * — *is the hub inside this still set up?* — and that question does not care whether the
- * field holds a light, a scene, an entity, a service or a bare hub. Without this they
- * would each need a `when` over `PickerKind` to pick a parser, which is a second place
- * for a new picker kind to be forgotten and no compiler to notice.
+ * field holds a light, a scene, an entity, a service, a broker or a bare hub. Without
+ * this they would each need a `when` over `PickerKind` to pick a parser, which is a
+ * second place for a new picker kind to be forgotten and no compiler to notice.
  *
- * Answers null for anything that parses as neither, which the validator reads as
+ * The prefixes are disjoint by construction (`sh:`, `ha:`, `hub:`), so the order these
+ * are tried in is arbitrary and no spec can be read as two things.
+ *
+ * Answers null for anything that parses as none of them, which the validator reads as
  * "nothing to say about it" rather than as a problem — a wired field can hold anything
  * at design time, and the node names what it read when it runs.
  */
 fun hubIdOf(spec: String): String? =
-    SmartHomeRef.parse(spec)?.hubId ?: HomeAssistantRef.parse(spec)?.hubId
+    SmartHomeRef.parse(spec)?.hubId
+        ?: HomeAssistantRef.parse(spec)?.hubId
+        ?: HubRef.parse(spec)?.hubId

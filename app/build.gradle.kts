@@ -155,6 +155,9 @@ dependencies {
     // `SystemServices.httpRequest` — is hand-rolled on HttpURLConnection and stays
     // that way. See the catalog entry for why a WebSocket is not.
     implementation(libs.okhttp)
+    // The MQTT broker nodes. See the catalog entry for why the protocol is not
+    // hand-rolled the way every plain HTTP path in this app is.
+    implementation(libs.paho.mqtt)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.play.services.location)

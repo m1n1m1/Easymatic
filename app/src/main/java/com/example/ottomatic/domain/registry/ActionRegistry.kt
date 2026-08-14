@@ -31,6 +31,7 @@ import com.example.ottomatic.engine.action.LogAction
 import com.example.ottomatic.engine.action.FetchMailAction
 import com.example.ottomatic.engine.action.MailUpdateAction
 import com.example.ottomatic.engine.action.NotificationActionAction
+import com.example.ottomatic.engine.action.MqttPublishAction
 import com.example.ottomatic.engine.action.NotifyAction
 import com.example.ottomatic.engine.action.ReplyMessageAction
 import com.example.ottomatic.engine.action.SendMailAction
@@ -111,6 +112,7 @@ object ActionRegistry {
         LightSceneAction(),
         LightStateAction(),
         HaServiceAction(),
+        MqttPublishAction(),
         ListAddAction(),
         ListClearAction(),
         LogAction(),

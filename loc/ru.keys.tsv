@@ -651,3 +651,21 @@ workflowlist_text	 ·
 workflowlist_this_macro	этот макрос
 workflowlist_which_trigger	Какой триггер?
 workflowlist_workflows	Сценарии
+smarthome_mqtt_broker	MQTT-брокер
+smarthome_mqtt_broker_subtitle	Брокер, который у вас уже работает — Mosquitto, Zigbee2MQTT, EMQX
+mqtt_connect_a_broker	Подключить MQTT-брокер
+mqtt_name_your_broker	Назовите брокер
+mqtt_setup_intro	Ottomatic подключается к брокеру, который у вас уже работает. Сам он брокером никогда не становится.
+mqtt_address	Адрес брокера
+mqtt_login_optional	Оставьте эти поля пустыми, если ваш брокер пускает всех в сети — так настроено большинство домашних брокеров.
+mqtt_username	Имя пользователя
+mqtt_password	Пароль
+mqtt_anonymous	Анонимно
+mqtt_broker_reached	Есть связь. Брокер принял этот вход.
+mqtt_cleartext_warning	Это соединение не шифруется. Для брокера в вашей собственной сети это нормально; через интернет пароль ушёл бы открытым текстом.
+mqtt_connected_this_is_the_name	Подключено. Это имя будут показывать ваши макросы.
+mqtt_choose_a_broker	Выберите брокер
+mqtt_no_broker_yet	MQTT-брокера пока нет. Добавьте его в разделе «Умный дом».
+mqtt_listen_for_topics	Прослушать темы
+mqtt_topics_heard	Услышано тем
+mqtt_broker_subtitle	%1$s · %2$s

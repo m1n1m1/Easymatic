@@ -53,4 +53,8 @@
         <item quantity="other">%1$d von allen Makros geteilt</item>
     </plurals>
 
+    <plurals name="mqtt_topics_seen">
+        <item quantity="one">%1$d Topic</item>
+        <item quantity="other">%1$d Topics</item>
+    </plurals>
 </resources>

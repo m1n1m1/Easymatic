@@ -103,6 +103,14 @@ internal class RoutingSmartHome(
         return when {
             hubId.isBlank() -> Resolved.Missing("No hub chosen")
             hub == null -> Resolved.Missing("That hub has been removed — open Smart home and add it again")
+            // A broker has no lights of its own — see SmartHomeKind.MQTT — so the light
+            // pickers never offer one and this is only reachable through hand-edited JSON.
+            // Named anyway, because the generic sentence below would send somebody looking
+            // for an app update over something no update will ever add.
+            hub.kind == SmartHomeKind.MQTT -> Resolved.Missing(
+                "\"${hub.name}\" is an MQTT broker, which has no lights of its own — " +
+                    "use Publish to MQTT with the topic your device documents",
+            )
             // A hub whose vendor this build does not have. Only reachable by moving a
             // workflow to an older app, and worth a sentence rather than a crash.
             vendor == null -> Resolved.Missing("\"${hub.name}\" needs a newer version of Ottomatic")

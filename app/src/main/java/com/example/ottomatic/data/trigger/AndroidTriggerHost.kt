@@ -22,6 +22,7 @@ import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.MailAccountRepository
 import com.example.ottomatic.data.SmartHomeHubRepository
 import com.example.ottomatic.data.homeassistant.HaConnections
+import com.example.ottomatic.data.mqtt.MqttConnections
 import com.example.ottomatic.data.NfcTagRepository
 import com.example.ottomatic.data.mail.MailWatchers
 import com.example.ottomatic.data.nfc.NfcReader
@@ -36,6 +37,7 @@ import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.HaWatchSpec
 import com.example.ottomatic.engine.trigger.MailWatchSpec
+import com.example.ottomatic.engine.trigger.MqttWatchSpec
 import com.example.ottomatic.engine.trigger.NfcStatus
 import com.example.ottomatic.engine.trigger.ScheduleHandle
 import com.example.ottomatic.engine.trigger.ScreenOffMode
@@ -87,15 +89,20 @@ class AndroidTriggerHost(
      */
     private val mailAccounts: MailAccountRepository? = null,
     /**
-     * The hub library the two Home Assistant triggers resolve their chosen hub
-     * against, and the connections they register with.
+     * The hub library the two Home Assistant triggers and `trigger.mqtt_message` resolve
+     * their chosen hub against, and the connections they register with.
      *
-     * Both null for callers that only need the other triggers, which then leaves every
-     * Home Assistant trigger unarmed rather than watching nothing — [mailAccounts]'
-     * rule, for its reason.
+     * All null for callers that only need the other triggers, which then leaves every one
+     * of those triggers unarmed rather than watching nothing — [mailAccounts]' rule, for
+     * its reason.
+     *
+     * One repository and **two** connection managers, which is the shape rather than an
+     * oversight: a hub is a hub whatever it speaks, and what differs is the protocol
+     * spoken to it.
      */
     private val smartHomeHubs: SmartHomeHubRepository? = null,
     private val haConnections: HaConnections? = null,
+    private val mqttConnections: MqttConnections? = null,
 ) : TriggerHost {
 
     private val appContext = context.applicationContext
@@ -138,6 +145,15 @@ class AndroidTriggerHost(
         // are held for the engine's lifetime, so this host is handed the manager rather
         // than constructing one. See HubLink.
         haConnections?.arm(nodeId, spec.hubId, spec, onReport) ?: ScheduleHandle { }
+
+    override fun armMqttWatch(
+        nodeId: NodeId,
+        spec: MqttWatchSpec,
+        onReport: (String, LogLevel) -> Unit,
+    ): ScheduleHandle =
+        // Not owned here for [armHomeAssistantWatch]'s reason: the connection outlives any
+        // arm, because it also keeps the cache `value.mqtt_topic` reads. See HubLink.
+        mqttConnections?.arm(nodeId, spec, onReport) ?: ScheduleHandle { }
 
     override fun sensorSamples(kind: SensorKind, rate: SensorRate): Flow<SensorSample> =
         sensorBridge.samples(kind, rate)

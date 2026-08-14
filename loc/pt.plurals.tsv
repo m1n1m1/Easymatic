@@ -21,3 +21,5 @@ api_macros_callable:one	De momento é possível chamar %1$d macro a partir do ex
 api_macros_callable:other	De momento é possível chamar %1$d macros a partir do exterior.
 variables_shared_by_every_macro:one	%1$d partilhada por todas as macros
 variables_shared_by_every_macro:other	%1$d partilhadas por todas as macros
+mqtt_topics_seen:one	%1$d tópico
+mqtt_topics_seen:other	%1$d tópicos

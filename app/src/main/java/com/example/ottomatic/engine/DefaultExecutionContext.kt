@@ -15,7 +15,9 @@ import com.example.ottomatic.core.service.NoMail
 import com.example.ottomatic.core.service.NoMessaging
 import com.example.ottomatic.core.service.NoPrompts
 import com.example.ottomatic.core.service.HomeAssistant
+import com.example.ottomatic.core.service.Mqtt
 import com.example.ottomatic.core.service.NoHomeAssistant
+import com.example.ottomatic.core.service.NoMqtt
 import com.example.ottomatic.core.service.NoSmartHome
 import com.example.ottomatic.core.service.SmartHome
 import com.example.ottomatic.core.service.NoScripts
@@ -56,6 +58,7 @@ class DefaultExecutionContext(
     override val messaging: Messaging = NoMessaging,
     override val smartHome: SmartHome = NoSmartHome,
     override val homeAssistant: HomeAssistant = NoHomeAssistant,
+    override val mqtt: Mqtt = NoMqtt,
     override val ai: Ai = NoAi,
     private val logger: (LogEntry) -> Unit = {},
 ) : ExecutionContext {

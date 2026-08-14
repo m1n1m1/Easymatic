@@ -399,6 +399,35 @@ interface TriggerHost {
     ): ScheduleHandle = ScheduleHandle { }
 
     /**
+     * Registers [nodeId]'s interest in an MQTT topic filter, and answers the handle that
+     * drops it.
+     *
+     * [armHomeAssistantWatch]'s twin in every respect, including the reason it exists at
+     * all: `TriggerEvent` carries one node id, one connection is shared by every armed
+     * node, and a busy broker publishes constantly — so the routing has to happen in
+     * `data/` rather than every trigger filtering a broadcast.
+     *
+     * Where the two differ is what the handle costs. A Home Assistant watch is a
+     * subscription the server evaluates; this one is an MQTT subscription, refcounted per
+     * *filter*, so the last node to let go of `zigbee2mqtt/+/action` is what actually
+     * unsubscribes it.
+     *
+     * [onReport] carries a line back to the macro's own console, on [armMailWatch]'s
+     * reason: a password the broker stopped accepting, an address that has moved, a
+     * connection that keeps dropping — all of it happens *after* this returns and has
+     * nowhere else to be said. It may be called from a background thread at any time until
+     * the handle is cancelled.
+     *
+     * The default is a no-op, so a host with no broker behind it leaves the trigger silent
+     * rather than failing to arm.
+     */
+    fun armMqttWatch(
+        nodeId: NodeId,
+        spec: MqttWatchSpec,
+        onReport: (String, LogLevel) -> Unit = { _, _ -> },
+    ): ScheduleHandle = ScheduleHandle { }
+
+    /**
      * The smart-home hub [id] names, or null when it was never chosen or has been
      * deleted.
      *

@@ -48,3 +48,7 @@ variables_shared_by_every_macro:one	%1$d общая для всех макрос
 variables_shared_by_every_macro:few	%1$d общие для всех макросов
 variables_shared_by_every_macro:many	%1$d общих для всех макросов
 variables_shared_by_every_macro:other	%1$d общих для всех макросов
+mqtt_topics_seen:one	%1$d тема
+mqtt_topics_seen:few	%1$d темы
+mqtt_topics_seen:many	%1$d тем
+mqtt_topics_seen:other	%1$d темы

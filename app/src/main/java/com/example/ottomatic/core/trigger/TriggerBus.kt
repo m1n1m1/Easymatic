@@ -58,6 +58,23 @@ enum class TriggerSource {
      * That is deliberate and is what having two nodes means.
      */
     HOME_ASSISTANT,
+
+    /**
+     * A message on a topic somebody's MQTT broker published.
+     *
+     * [HOME_ASSISTANT]'s argument, arrived at the same way and with one extra reason to
+     * be its own source rather than folded into it. The `data/` side holds the
+     * registration table and addresses each message to **one node id**, because a broker
+     * publishes constantly and broadcasting would wake every armed trigger in the process
+     * to run its own filter chain.
+     *
+     * It is not a member of [HOME_ASSISTANT] even though a great many of these messages
+     * originate in a Home Assistant install: what distinguishes the two is not where the
+     * message came from but **what carries it**, and the payload shapes have nothing in
+     * common — an entity id and a state on one side, a topic and opaque bytes on the
+     * other.
+     */
+    MQTT,
 }
 
 /**

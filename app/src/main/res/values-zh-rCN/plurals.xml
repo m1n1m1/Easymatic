@@ -34,4 +34,7 @@
     <plurals name="variables_shared_by_every_macro">
         <item quantity="other">%1$d 个由所有宏共享</item>
     </plurals>
+    <plurals name="mqtt_topics_seen">
+        <item quantity="other">%1$d 个主题</item>
+    </plurals>
 </resources>

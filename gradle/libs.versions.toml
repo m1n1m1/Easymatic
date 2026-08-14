@@ -22,6 +22,7 @@ material = "1.13.0"
 glance = "1.1.1"
 javamail = "1.6.7"
 okhttp = "4.12.0"
+paho = "1.2.5"
 # Pinned to what `:app` already resolves to transitively (via lifecycle-runtime-ktx).
 # `:plugin-sdk` needs it declared rather than inherited: a plugin app depends on the
 # SDK alone and would otherwise have no coroutines at all.
@@ -78,6 +79,19 @@ javamail-android = { group = "com.sun.mail", name = "android-mail", version.ref 
 # 4.12.0 rather than 5.x: it is the last line still targeting Java 8, so it needs no
 # desugaring at minSdk 26.
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+# MQTT, for the broker nodes. The second dependency taken on the websocket's argument
+# rather than on `HueTransport`'s: MQTT is not a request shape over a socket, it is a
+# framing — a variable-length remaining-length integer, packet identifiers, the QoS 1
+# and 2 acknowledgement flows, `PINGREQ` keepalive, session state and reconnect
+# backoff. Hand-rolled, its bugs surface as a connection that stays open and silently
+# stops delivering, which is precisely the failure a trigger cannot report.
+#
+# The *Java* client, not `org.eclipse.paho.android.service`. That wrapper is deprecated
+# and exists to own a background Service, which this app already has one of — so what
+# is taken here is the plain, dependency-free protocol implementation: roughly 250 KB
+# of dex, no transitive dependencies at all, and Java 8, so it needs no desugaring at
+# minSdk 26.
+paho-mqtt = { group = "org.eclipse.paho", name = "org.eclipse.paho.client.mqttv3", version.ref = "paho" }
 javamail-android-activation = { group = "com.sun.mail", name = "android-activation", version.ref = "javamail" }
 
 [plugins]

@@ -14,7 +14,9 @@ import com.example.ottomatic.core.service.NoMail
 import com.example.ottomatic.core.service.NoMessaging
 import com.example.ottomatic.core.service.NoPrompts
 import com.example.ottomatic.core.service.HomeAssistant
+import com.example.ottomatic.core.service.Mqtt
 import com.example.ottomatic.core.service.NoHomeAssistant
+import com.example.ottomatic.core.service.NoMqtt
 import com.example.ottomatic.core.service.NoSmartHome
 import com.example.ottomatic.core.service.SmartHome
 import com.example.ottomatic.core.service.NoScripts
@@ -168,6 +170,21 @@ interface ExecutionContext {
      * `call` is still an action's alone.
      */
     val homeAssistant: HomeAssistant get() = NoHomeAssistant
+
+    /**
+     * An MQTT broker — `action.mqtt_publish` and `value.mqtt_topic`. Defaults to [NoMqtt]
+     * so engine-only tests need no broker.
+     *
+     * [homeAssistant]'s split, reached by the same argument and settling it: `lastMessage`
+     * is a lookup into a cache a subscription keeps warm, `publish` is a side effect. What
+     * makes this the clean case is that MQTT has **no read operation at all** — a
+     * subscriber is told values and remembers them — so there is no faster or slower way
+     * to answer the question, and nothing for the cache to be an optimisation *of*.
+     *
+     * The app is a client here and never a broker: everything on this facade is something
+     * said to, or heard from, a broker somebody else is running.
+     */
+    val mqtt: Mqtt get() = NoMqtt
 
     /**
      * Asks a language model something — `action.ai_prompt`. Defaults to [NoAi] so

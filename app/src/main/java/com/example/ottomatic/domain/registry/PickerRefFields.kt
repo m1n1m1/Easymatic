@@ -64,6 +64,11 @@ val ConfigField<*>.isOptionalPicker: Boolean
  * matters: these are validated by parsing the value as a `HomeAssistantRef`, and a trigger is
  * stored as Home Assistant's own bare id instead. Including it would report every configured
  * trigger as a reference to a hub that has been removed.
+ *
+ * [PickerKind.MQTT_BROKER] **is** one, on the same test read the other way: its value is a
+ * `HubRef`, which `hubIdOf` parses, so the one question this list is for — *is the hub inside
+ * this still set up?* — has an answer. An MQTT topic field beside it is not here for
+ * `HA_TRIGGER`'s exact reason: a topic is a bare string that names no broker.
  */
 private val HUB_SCOPED_PICKERS = setOf(
     PickerKind.LIGHT_TARGET,
@@ -71,6 +76,7 @@ private val HUB_SCOPED_PICKERS = setOf(
     PickerKind.HA_ENTITY,
     PickerKind.HA_SERVICE,
     PickerKind.HA_HUB,
+    PickerKind.MQTT_BROKER,
 )
 
 /** The config keys of [typeId] that hold an [com.example.ottomatic.domain.model.AiConnection] id. */

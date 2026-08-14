@@ -130,6 +130,18 @@ enum class SuggestionSource {
 
     /** The mailboxes on one account. Fetched over IMAP rather than from a registry. */
     MAIL_FOLDER,
+
+    /**
+     * The topics seen on one MQTT broker when it was last refreshed.
+     *
+     * **The clearest case this mechanism exists for.** A broker publishes no directory of
+     * its topics — the only way to learn one is to be subscribed when something publishes
+     * to it — so the list is whatever spoke during the few seconds a Refresh listened. It
+     * is genuinely useful (a house's topics are long, opaque and copied wrong) and
+     * genuinely incomplete (a device that was unplugged at Refresh publishes nothing), and
+     * that is exactly the middle ground between a [Picker] and a plain text field.
+     */
+    MQTT_TOPIC,
 }
 
 /**
@@ -355,6 +367,23 @@ enum class PickerKind {
      * an instance with nothing to offer falls back to.
      */
     HA_TRIGGER,
+
+    /**
+     * A [com.example.ottomatic.domain.model.HubRef] naming one MQTT broker and nothing on
+     * it.
+     *
+     * [HA_HUB]'s twin, and it earns the shape by the same rule stated there: **a hub gets a
+     * field of its own exactly where nothing else determines it.** A topic is a bare string
+     * that names no broker — two brokers in one house can carry the identical topic tree,
+     * which is a normal thing to do deliberately — so unlike a light or an entity, there is
+     * no second field here for this one to disagree with.
+     *
+     * It is a read-only chooser for [MAIL_ACCOUNT]'s reasons rather than [HA_ENTITY]'s: the
+     * stored value is a UUID, and what it identifies is an address, a login and a sealed
+     * password — a thing to be *set up* once rather than named. **Blank is not an answer**:
+     * "any broker" is not a thing to publish to.
+     */
+    MQTT_BROKER,
 }
 
 

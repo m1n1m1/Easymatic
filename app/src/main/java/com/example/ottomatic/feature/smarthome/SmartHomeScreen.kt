@@ -31,6 +31,7 @@ import com.example.ottomatic.feature.grapheditor.EditorColors
 import com.example.ottomatic.domain.model.SmartHomeKind
 import com.example.ottomatic.feature.smarthome.homeassistant.HaSetupOverlay
 import com.example.ottomatic.feature.smarthome.hue.HuePairingOverlay
+import com.example.ottomatic.feature.smarthome.mqtt.MqttSetupOverlay
 
 /**
  * The standalone smart-home hub library, reached from the workflow list's overflow.
@@ -130,6 +131,7 @@ fun SmartHomeOverlays(
         when (pairing.kind) {
             SmartHomeKind.HUE -> HuePairingOverlay(pairing = pairing, viewModel = viewModel)
             SmartHomeKind.HOME_ASSISTANT -> HaSetupOverlay(pairing = pairing, viewModel = viewModel)
+            SmartHomeKind.MQTT -> MqttSetupOverlay(pairing = pairing, viewModel = viewModel)
         }
     }
 }

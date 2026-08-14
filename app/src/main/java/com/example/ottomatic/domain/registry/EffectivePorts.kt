@@ -205,6 +205,9 @@ val VARIABLE_VALUE_TYPE_ID = NodeTypeId("value.variable")
 /** typeId of the Home Assistant entity reader, whose answer depends on its config. */
 val HA_STATE_VALUE_TYPE_ID = NodeTypeId("value.ha_state")
 
+/** typeId of the MQTT topic reader, whose answer depends on its config. */
+val MQTT_TOPIC_VALUE_TYPE_ID = NodeTypeId("value.mqtt_topic")
+
 /** typeId of the Home Assistant service call, whose form grows with the service chosen. */
 val HA_SERVICE_TYPE_ID = NodeTypeId("action.ha_service")
 
@@ -714,14 +717,19 @@ private fun NodeConfigSchema.withServiceFields(node: WorkflowNode): NodeConfigSc
  *
  * A `val:` read is performed with **no config** — `resolveValueSource` passes an empty
  * map — so it only makes sense for a value whose answer is the same wherever it is read.
- * A battery level is a battery level; these two are entirely a matter of *which*
- * variable or *which* entity was chosen, which the spec has nowhere to carry. Offering
- * them would offer a comparison that silently never matched.
+ * A battery level is a battery level; these three are entirely a matter of *which*
+ * variable, *which* entity or *which* topic was chosen, which the spec has nowhere to
+ * carry. Offering them would offer a comparison that silently never matched.
+ *
+ * The set has grown twice now and never by special case, which is the thing to notice: the
+ * shared property is **config decides the answer**, so a fourth such value node joins this
+ * line rather than needing anything written for it.
  *
  * Comparing one means wiring the node into the `source` port, which is one drag.
  * `ValueRegistryTest` pins the exclusion.
  */
-private val CONFIGURED_VALUE_TYPE_IDS = setOf(VARIABLE_VALUE_TYPE_ID, HA_STATE_VALUE_TYPE_ID)
+private val CONFIGURED_VALUE_TYPE_IDS =
+    setOf(VARIABLE_VALUE_TYPE_ID, HA_STATE_VALUE_TYPE_ID, MQTT_TOPIC_VALUE_TYPE_ID)
 
 private fun sourceOptions(): List<ConfigOption> =
     listOf(ConfigOption(ValueSource.WIRED_SPEC, "Wired input")) +

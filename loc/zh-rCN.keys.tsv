@@ -651,3 +651,21 @@ workflowlist_text	 ·
 workflowlist_this_macro	此宏
 workflowlist_which_trigger	哪个触发器？
 workflowlist_workflows	工作流
+smarthome_mqtt_broker	MQTT 代理
+smarthome_mqtt_broker_subtitle	你已经在运行的代理 — Mosquitto、Zigbee2MQTT、EMQX
+mqtt_connect_a_broker	连接 MQTT 代理
+mqtt_name_your_broker	为代理命名
+mqtt_setup_intro	Ottomatic 会连接到你已经在运行的代理，它自己永远不会充当代理。
+mqtt_address	代理地址
+mqtt_login_optional	如果你的代理允许网络上的任何人连接，就把这两项留空——家用代理大多如此。
+mqtt_username	用户名
+mqtt_password	密码
+mqtt_anonymous	匿名
+mqtt_broker_reached	已联系上。代理接受了此登录信息。
+mqtt_cleartext_warning	此连接未加密。对于自己网络中的代理这很正常；但通过互联网会以明文发送你的密码。
+mqtt_connected_this_is_the_name	已连接。你的宏将显示这个名称。
+mqtt_choose_a_broker	选择代理
+mqtt_no_broker_yet	还没有 MQTT 代理。请在智能家居中添加一个。
+mqtt_listen_for_topics	监听主题
+mqtt_topics_heard	已听到的主题
+mqtt_broker_subtitle	%1$s · %2$s

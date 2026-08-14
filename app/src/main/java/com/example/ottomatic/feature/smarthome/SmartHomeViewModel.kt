@@ -61,14 +61,26 @@ data class PairingState(
     val name: String = "",
     val error: String = "",
     /**
-     * The long-lived access token being pasted in. Home Assistant only.
+     * The secret being typed — a Home Assistant access token, or a broker's password.
      *
-     * Held here **only while it is being typed**, and never read back out of the
-     * repository afterwards: once [connectHomeAssistant] has sealed it, the editor
-     * shows an empty box, on `AiConnectionsViewModel`'s rule — a token on screen is a
-     * token in a screenshot, a recents thumbnail and an accessibility tree.
+     * **One field for two vendors' credentials**, on `SmartHomeHub.secret`'s reasoning:
+     * what they have in common is everything this field is for. Both are typed once, both
+     * are sealed the moment they are, and neither is ever read back out.
+     *
+     * Held here **only while it is being typed**: once [connectHomeAssistant] or
+     * [connectMqtt] has sealed it, the editor shows an empty box, on
+     * `AiConnectionsViewModel`'s rule — a secret on screen is a secret in a screenshot, a
+     * recents thumbnail and an accessibility tree.
      */
     val token: String = "",
+    /**
+     * The broker user to log in as. MQTT only, and blank for the anonymous brokers that
+     * most home networks run.
+     *
+     * Beside [token] rather than folded into it because it is not a secret: it is the half
+     * the user has to be able to read back when a connection is refused.
+     */
+    val username: String = "",
     /** A round trip is in flight — the buttons are disabled and one spins. */
     val working: Boolean = false,
     /** What Test said when it worked. Blank otherwise. */
@@ -387,6 +399,41 @@ class SmartHomeViewModel(
         viewModelScope.launch {
             val step = setup.completeHomeAssistantSignIn(pairing.typedHost, code)
             editPairing { it.copy(working = false) }
+            settle(step)
+        }
+    }
+
+    fun usernameChanged(username: String) {
+        editPairing { it.copy(username = username, error = "", tested = "") }
+    }
+
+    /** [testHomeAssistant]'s counterpart, and it matters more here — see `MqttProbe`. */
+    fun testMqtt() {
+        val pairing = _uiState.value.pairing ?: return
+        if (pairing.working) return
+        editPairing { it.copy(working = true, error = "", tested = "") }
+        viewModelScope.launch {
+            val problem = setup.testMqtt(pairing.typedHost, pairing.username, pairing.token)
+            editPairing {
+                it.copy(
+                    working = false,
+                    error = problem.orEmpty(),
+                    tested = if (problem == null) appContext.getString(R.string.mqtt_broker_reached) else "",
+                )
+            }
+        }
+    }
+
+    /** Stores the broker, seals its password and listens briefly for its topics. */
+    fun connectMqtt() {
+        val pairing = _uiState.value.pairing ?: return
+        if (pairing.working) return
+        editPairing { it.copy(working = true, error = "", tested = "") }
+        viewModelScope.launch {
+            val step = setup.connectMqtt(pairing.typedHost, pairing.username, pairing.token)
+            // Dropped from the state the moment it is sealed, so nothing holds the
+            // plaintext once the repository has it.
+            editPairing { it.copy(working = false, token = "") }
             settle(step)
         }
     }

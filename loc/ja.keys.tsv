@@ -651,3 +651,21 @@ workflowlist_text	 ·
 workflowlist_this_macro	このマクロ
 workflowlist_which_trigger	どのトリガーですか？
 workflowlist_workflows	ワークフロー
+smarthome_mqtt_broker	MQTT ブローカー
+smarthome_mqtt_broker_subtitle	すでに運用しているブローカー — Mosquitto、Zigbee2MQTT、EMQX
+mqtt_connect_a_broker	MQTT ブローカーを接続
+mqtt_name_your_broker	ブローカーに名前を付ける
+mqtt_setup_intro	Ottomatic はすでに運用しているブローカーに接続します。アプリ自体がブローカーになることはありません。
+mqtt_address	ブローカーのアドレス
+mqtt_login_optional	ネットワーク上の誰でも接続できるブローカーなら空のままにしてください。家庭のブローカーはたいていそうです。
+mqtt_username	ユーザー名
+mqtt_password	パスワード
+mqtt_anonymous	匿名
+mqtt_broker_reached	接続できました。ブローカーがこのログインを受け入れました。
+mqtt_cleartext_warning	この接続は暗号化されていません。自宅のネットワーク上のブローカーなら普通のことですが、インターネット経由ではパスワードが平文で送られます。
+mqtt_connected_this_is_the_name	接続しました。マクロにはこの名前が表示されます。
+mqtt_choose_a_broker	ブローカーを選択
+mqtt_no_broker_yet	MQTT ブローカーがまだありません。スマートホームで追加してください。
+mqtt_listen_for_topics	トピックを聞き取る
+mqtt_topics_heard	聞き取ったトピック
+mqtt_broker_subtitle	%1$s · %2$s

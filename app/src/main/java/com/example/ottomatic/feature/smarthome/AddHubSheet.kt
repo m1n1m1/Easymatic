@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,19 +38,23 @@ private val ROW_SHAPE = RoundedCornerShape(16.dp)
 /**
  * "What kind of hub?"
  *
- * Two rows, and the second one is the receipt for the first having sat here alone. This
- * is **the seam**, and Home Assistant cost exactly what it promised on the way in: a
- * [SmartHomeKind] constant, a row here, and its own setup flow. The list, the storage,
- * the sealed credential, the detail sheet, the two light pickers and the three light
- * nodes were already written and already generic.
+ * Three rows, and the two after the first are the receipt for it having sat here alone.
+ * This is **the seam**, and both later vendors cost what it promised on the way in: a
+ * [SmartHomeKind] constant, a row here, and their own setup flow. The list, the storage,
+ * the sealed credential and the detail sheet were already written and already generic.
  *
  * A one-question overlay rather than a menu on the "+" row, because the answer decides
- * which setup flow opens, and those flows have nothing in common — which the two here
+ * which setup flow opens, and those flows have nothing in common — which the three here
  * now demonstrate rather than merely predict. Hue's is a **countdown**: walk to the
  * bridge, press the button inside a minute, and it mints a key it will never mint
- * again. Home Assistant's is an **address, a token and a Test button**, with no window,
- * nothing minted and a credential that can be recreated in a browser at any time.
- * Neither is three fields on the other's screen.
+ * again. Home Assistant's **teaches**, because a long-lived token is minted five clicks
+ * deep in a page most people have never opened. The broker's is **four boxes**, because
+ * an address and a login are things whoever set the broker up already chose. No two of
+ * those are the same screen with different labels.
+ *
+ * The third row is also where the enum stops being one-member-per-vendor, and it is worth
+ * knowing before reading it that way: a broker has no `SmartHomeVendor` at all, because
+ * MQTT is a transport rather than a vendor. See [SmartHomeKind.MQTT].
  */
 @Composable
 fun AddHubSheet(
@@ -85,6 +90,15 @@ fun AddHubSheet(
                 icon = Icons.Filled.Home,
                 onClick = {
                     onChoose(SmartHomeKind.HOME_ASSISTANT)
+                    dismiss()
+                },
+            )
+            KindRow(
+                title = stringResource(R.string.smarthome_mqtt_broker),
+                subtitle = stringResource(R.string.smarthome_mqtt_broker_subtitle),
+                icon = Icons.Filled.Sensors,
+                onClick = {
+                    onChoose(SmartHomeKind.MQTT)
                     dismiss()
                 },
             )

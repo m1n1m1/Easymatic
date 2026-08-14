@@ -1,6 +1,7 @@
 package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.domain.model.HomeAssistantRef
+import com.example.ottomatic.domain.model.HubRef
 import com.example.ottomatic.domain.model.config.SuggestionSource
 
 /**
@@ -38,6 +39,7 @@ object Suggestions {
     fun of(source: SuggestionSource, scope: List<String>): List<String> = when (source) {
         SuggestionSource.HA_ENTITY_ATTRIBUTE -> entityAttributes(scope)
         SuggestionSource.MAIL_FOLDER -> emptyList()
+        SuggestionSource.MQTT_TOPIC -> brokerTopics(scope)
     }
 
     /**
@@ -52,7 +54,24 @@ object Suggestions {
     fun isLocal(source: SuggestionSource): Boolean = when (source) {
         SuggestionSource.HA_ENTITY_ATTRIBUTE -> true
         SuggestionSource.MAIL_FOLDER -> false
+        // A broker publishes no directory, so this cannot be fetched on demand either:
+        // what there is to offer is what a Refresh already recorded on the hub.
+        SuggestionSource.MQTT_TOPIC -> true
     }
+
+    /**
+     * The topics the scoped broker was last heard publishing.
+     *
+     * Empty for a broker that has never been refreshed, which leaves the field exactly as
+     * it was before it was scoped — a plain text box. That is the degradation rule doing
+     * its job rather than a failure, and it matters more here than anywhere else it is
+     * stated: this list is *structurally* incomplete, so a field that could only hold what
+     * is in it would be unusable.
+     */
+    private fun brokerTopics(scope: List<String>): List<String> =
+        scope.firstNotNullOfOrNull { HubRef.parse(it) }
+            ?.let { MqttCatalog.topics(it.hubId) }
+            .orEmpty()
 
     /** The attribute names the scoped entity published. */
     private fun entityAttributes(scope: List<String>): List<String> =

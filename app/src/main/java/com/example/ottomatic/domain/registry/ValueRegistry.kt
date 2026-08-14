@@ -13,6 +13,7 @@ import com.example.ottomatic.engine.value.DockValue
 import com.example.ottomatic.engine.value.HaStateValue
 import com.example.ottomatic.engine.value.HeadsetValue
 import com.example.ottomatic.engine.value.LightLevelValue
+import com.example.ottomatic.engine.value.MqttTopicValue
 import com.example.ottomatic.engine.value.NfcValue
 import com.example.ottomatic.engine.value.NowValue
 import com.example.ottomatic.engine.value.PowerSaveValue
@@ -55,6 +56,7 @@ object ValueRegistry {
         HaStateValue(),
         HeadsetValue(),
         LightLevelValue(),
+        MqttTopicValue(),
         NfcValue(),
         NowValue(),
         PowerSaveValue(),

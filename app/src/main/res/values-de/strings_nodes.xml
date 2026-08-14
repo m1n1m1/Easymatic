@@ -1052,4 +1052,24 @@
     <string name="node_value_ha_state_name">Home-Assistant-Entität</string>
     <string name="port_action_ha_service_data">Zusätzliche Daten (JSON)</string>
     <string name="port_trigger_ha_state_change">Änderung</string>
+    <string name="node_trigger_mqtt_message_name">MQTT-Nachricht</string>
+    <string name="node_trigger_mqtt_message_desc">Startet, wenn eine Nachricht auf einem MQTT-Topic eintrifft – ein Zigbee-Taster, ein Sensor, jedes Gerät, das veröffentlicht</string>
+    <string name="cfg_trigger_mqtt_message_broker">Broker</string>
+    <string name="cfg_action_mqtt_publish_broker">Broker</string>
+    <string name="cfg_value_mqtt_topic_broker">Broker</string>
+    <string name="cfg_trigger_mqtt_message_topic_filter">Topic</string>
+    <string name="port_action_mqtt_publish_topic">Topic</string>
+    <string name="cfg_action_mqtt_publish_topic">Topic</string>
+    <string name="cfg_value_mqtt_topic_topic">Topic</string>
+    <string name="cfg_trigger_mqtt_message_payload_contains">Nachricht enthält</string>
+    <string name="cfg_trigger_mqtt_message_include_retained">Auch bei Nachrichten auslösen, die der Broker gespeichert hatte</string>
+    <string name="node_action_mqtt_publish_name">An MQTT senden</string>
+    <string name="node_action_mqtt_publish_desc">Sendet eine Nachricht an ein Topic auf einem MQTT-Broker – Mosquitto, Zigbee2MQTT, Tasmota, ESPHome</string>
+    <string name="cfg_action_mqtt_publish_quality">Zustellung</string>
+    <string name="opt_action_mqtt_publish_quality_at_least_once">Vom Broker bestätigt</string>
+    <string name="opt_action_mqtt_publish_quality_at_most_once">Senden und vergessen</string>
+    <string name="opt_action_mqtt_publish_quality_exactly_once">Genau einmal bestätigt</string>
+    <string name="cfg_action_mqtt_publish_retain">Den Broker bitten, diese Nachricht zu behalten</string>
+    <string name="node_value_mqtt_topic_name">MQTT-Topic</string>
+    <string name="node_value_mqtt_topic_desc">Die letzte Nachricht, die auf einem Topic eines MQTT-Brokers veröffentlicht wurde</string>
 </resources>

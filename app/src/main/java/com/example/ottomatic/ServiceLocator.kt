@@ -20,6 +20,8 @@ import com.example.ottomatic.core.service.SmartHome
 import com.example.ottomatic.core.service.HubLink
 import com.example.ottomatic.data.homeassistant.AndroidHomeAssistant
 import com.example.ottomatic.data.homeassistant.HaConnections
+import com.example.ottomatic.data.mqtt.AndroidMqtt
+import com.example.ottomatic.data.mqtt.MqttConnections
 import com.example.ottomatic.data.homeassistant.HaVendor
 import com.example.ottomatic.data.hue.HueVendor
 import com.example.ottomatic.data.smarthome.RoutingSmartHome
@@ -34,6 +36,7 @@ import com.example.ottomatic.data.mail.MailSeenStore
 import com.example.ottomatic.data.GlobalVariableRepository
 import com.example.ottomatic.domain.registry.GlobalVariables
 import com.example.ottomatic.domain.registry.HaCatalog
+import com.example.ottomatic.domain.registry.MqttCatalog
 import com.example.ottomatic.domain.registry.SmartHomeHubs
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.data.WorkflowRepository
@@ -157,8 +160,35 @@ object ServiceLocator {
      */
     private val haConnections: HaConnections by lazy { HaConnections(smartHomeHubRepository, appScope) }
 
-    /** The push connections, as the engine's service sees them. */
-    val hubLink: HubLink get() = haConnections
+    /**
+     * The MQTT broker connections, and the cache they keep warm.
+     *
+     * [haConnections]' twin in every respect including the scope, and it is held for the
+     * engine's lifetime for the identical reason: the connection also keeps the cache
+     * `value.mqtt_topic` reads, so refcounting it against armed triggers would leave that
+     * node answering null in every macro that has no MQTT *trigger* in it.
+     */
+    private val mqttConnections: MqttConnections by lazy { MqttConnections(smartHomeHubRepository, appScope) }
+
+    /**
+     * The push connections, as the engine's service sees them.
+     *
+     * **Two managers behind one interface**, which is what [HubLink] being about a
+     * *lifetime* rather than about a protocol buys: [MacroEngineService] starts and stops
+     * "whatever this phone holds open" without learning that there are two of them, and a
+     * third vendor with a push channel joins this list and edits nothing in `engine/`.
+     */
+    val hubLink: HubLink = object : HubLink {
+        override fun start() {
+            haConnections.start()
+            mqttConnections.start()
+        }
+
+        override fun stop() {
+            haConnections.stop()
+            mqttConnections.stop()
+        }
+    }
 
     private val smartHomeFacade: SmartHome by lazy {
         RoutingSmartHome(
@@ -324,7 +354,7 @@ object ServiceLocator {
             appContext.filesDir,
             KeystoreSecrets(SMART_HOME_KEY_ALIAS),
         )
-        smartHomeSetup = SmartHomeSetup(smartHomeHubRepository, haConnections)
+        smartHomeSetup = SmartHomeSetup(smartHomeHubRepository, haConnections, mqttConnections)
         // Its own keystore alias too, so revoking the AI key never touches mail or
         // a paired bridge — and so an AI key, which the user can regenerate in a
         // browser in ten seconds, is never the reason a light stops working.
@@ -389,6 +419,11 @@ object ServiceLocator {
             // calls over REST — so an action works in the seconds after a reconnect and
             // from the editor's preview run, where no socket is up at all.
             homeAssistant = AndroidHomeAssistant(smartHomeHubRepository, haConnections),
+            // Publishes and reads over the one connection per broker. Unlike Home
+            // Assistant there is no second road for the action to take — publishing *is*
+            // the protocol — so the connection is opened on demand when it is not already
+            // up, which is the same guarantee reached differently.
+            mqtt = AndroidMqtt(smartHomeHubRepository, mqttConnections),
             // Resolves the connection on every call for the same reason: a key
             // pasted in mid-run must be the one the next prompt uses, and a revoked
             // one must stop working without waiting for the process to die. Which
@@ -504,6 +539,7 @@ object ServiceLocator {
             mailAccountRepository,
             smartHomeHubRepository,
             haConnections,
+            mqttConnections,
         )
 
     private fun publishSmartHomeHubs() {
@@ -515,6 +551,7 @@ object ServiceLocator {
                 // address and a certificate pin, and a registry anything in `domain` may read
                 // is no place for any of them.
                 HaCatalog.hydrate(hubs.associate { it.id to (it.entities to it.services) })
+                MqttCatalog.hydrate(hubs.associate { it.id to it.topics })
             }
         }
     }

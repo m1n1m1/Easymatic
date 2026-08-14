@@ -9,6 +9,9 @@ import com.example.ottomatic.data.hue.PairingOutcome
 import com.example.ottomatic.data.homeassistant.HaConnectResult
 import com.example.ottomatic.data.homeassistant.HaConnections
 import com.example.ottomatic.data.homeassistant.HaSetup
+import com.example.ottomatic.data.mqtt.MqttConnections
+import com.example.ottomatic.data.mqtt.MqttProbe
+import com.example.ottomatic.domain.model.MqttAddress
 import com.example.ottomatic.domain.model.SmartHomeHub
 import com.example.ottomatic.domain.model.SmartHomeKind
 import kotlinx.coroutines.Dispatchers
@@ -66,6 +69,15 @@ class SmartHomeSetup(
      * same answer a socket that is simply down gives.
      */
     private val connections: HaConnections? = null,
+    /**
+     * The broker connections, for the one thing only they can do: listen for a few seconds
+     * and record which topics spoke.
+     *
+     * Nullable on [connections]' reasoning and with the same degradation — a Refresh with
+     * no connection manager leaves yesterday's topic list in place, which is better than an
+     * empty one.
+     */
+    private val mqtt: MqttConnections? = null,
 ) {
 
     private val homeAssistant = HaSetup(hubs)
@@ -110,6 +122,54 @@ class SmartHomeSetup(
      */
     suspend fun connectHomeAssistant(baseUrl: String, token: String): PairingStep =
         homeAssistant.connect(baseUrl, token).asStep()
+
+    /**
+     * Checks a broker address and login without storing anything.
+     *
+     * [testHomeAssistant]'s counterpart and its reasoning, with more weight behind it: a
+     * broker offers nothing else to check against. There is no web interface the user has
+     * already logged into and no credential visibly minted, so an address typed one digit
+     * wrong looks exactly like a working setup right up until a macro silently fails to
+     * publish.
+     */
+    suspend fun testMqtt(host: String, username: String, password: String): String? =
+        MqttProbe.test(host, username, password)
+
+    /**
+     * Stores a broker, seals its password and listens briefly for its topics.
+     *
+     * The counterpart to [connectHomeAssistant] and shaped like it, with one difference
+     * that follows from MQTT having no request-response: **the hub is created before
+     * anything is checked.** There is nothing to read back from a broker that would prove
+     * the address good — the Test button is what does that, deliberately and separately —
+     * so this stores what the user typed, and a wrong address shows up as a connection
+     * that does not come up rather than as a failed setup.
+     *
+     * A **sealing failure is fatal and a topic scan's failure is not**, which is the
+     * asymmetry worth noting: an unreadable password would leave a broker that can never
+     * connect, where an empty topic list only leaves a field without a dropdown.
+     */
+    @Suppress("ReturnCount") // A bad address and a keystore that refuses are different failures.
+    suspend fun connectMqtt(host: String, username: String, password: String): PairingStep {
+        val address = MqttAddress.parse(host) ?: return PairingStep.Failed(MqttAddress.REQUIREMENT)
+        val hub = hubs.create(
+            SmartHomeHub(
+                id = "",
+                kind = SmartHomeKind.MQTT,
+                name = address.host,
+                host = host.trim(),
+                addedAtEpochMs = System.currentTimeMillis(),
+            ),
+        )
+        if (!hubs.setBrokerCredentials(hub.id, username, password)) {
+            hubs.delete(hub.id)
+            return PairingStep.Failed("This device would not store the password")
+        }
+        // Fired and its failure swallowed: a broker that is switched off right now is
+        // still a broker worth having in the library.
+        mqtt?.refreshTopics(hub.id)
+        return PairingStep.Paired(hub.id)
+    }
 
     /**
      * Whether signing in to Home Assistant can work on this build.
@@ -173,6 +233,11 @@ class SmartHomeSetup(
             null -> "That hub has been removed"
             SmartHomeKind.HOME_ASSISTANT -> homeAssistant.refresh(hubId, connections?.allServices(hubId))
             SmartHomeKind.HUE -> refreshHue(hubId)
+            // Not a read of anything: a broker publishes no directory, so the only way to
+            // learn its topics is to subscribe to everything briefly and write down what
+            // spoke. See MqttConnections.refreshTopics for why that is bounded in both
+            // directions and never happens on an execution path.
+            SmartHomeKind.MQTT -> mqtt?.refreshTopics(hubId)
         }
 
     private suspend fun refreshHue(hubId: String): String? = when (val target = target(hubId)) {

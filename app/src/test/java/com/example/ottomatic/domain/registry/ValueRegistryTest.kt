@@ -38,7 +38,7 @@ class ValueRegistryTest {
     @Test
     fun `every value without config of its own is offered as a comparison source`() {
         val options = sourceFieldOptions(ifNode())
-        val configured = setOf(VARIABLE_VALUE_TYPE_ID, HA_STATE_VALUE_TYPE_ID)
+        val configured = setOf(VARIABLE_VALUE_TYPE_ID, HA_STATE_VALUE_TYPE_ID, MQTT_TOPIC_VALUE_TYPE_ID)
 
         for (value in ValueRegistry.all().filterNot { it.typeId in configured }) {
             assertTrue(
@@ -49,19 +49,19 @@ class ValueRegistryTest {
     }
 
     /**
-     * The two value nodes a `val:` source cannot carry.
+     * The three value nodes a `val:` source cannot carry.
      *
      * A `val:` read is performed with no config at all, and nearly every value gives
      * the same answer wherever it is read — a battery level is a battery level.
-     * These two answer entirely according to *which* variable or *which* entity was
-     * chosen, which the spec has nowhere to put. Offering them would offer a
-     * comparison that silently never matched, which is worse than not offering them:
-     * comparing one means wiring the node into `source`, which is one drag.
+     * These three answer entirely according to *which* variable, *which* entity or
+     * *which* topic was chosen, which the spec has nowhere to put. Offering them would
+     * offer a comparison that silently never matched, which is worse than not offering
+     * them: comparing one means wiring the node into `source`, which is one drag.
      *
-     * `value.ha_state` joined `value.variable` here rather than being special-cased
-     * anywhere, which is the test that the rule generalised rather than the exception
-     * being widened: the shared property is *config decides the answer*, not
-     * *variables*.
+     * `value.ha_state` and then `value.mqtt_topic` **joined** `value.variable` here
+     * rather than being special-cased anywhere, which is the test that the rule
+     * generalised rather than the exception being widened twice: the shared property is
+     * *config decides the answer*, not *variables*.
      */
     @Test
     fun `a value with config of its own is not offered, because a val source carries none`() {
@@ -69,6 +69,7 @@ class ValueRegistryTest {
 
         assertFalse(options.contains(ValueSource.valueSpec(VARIABLE_VALUE_TYPE_ID)))
         assertFalse(options.contains(ValueSource.valueSpec(HA_STATE_VALUE_TYPE_ID)))
+        assertFalse(options.contains(ValueSource.valueSpec(MQTT_TOPIC_VALUE_TYPE_ID)))
     }
 
     /**

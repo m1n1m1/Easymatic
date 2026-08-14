@@ -45,4 +45,8 @@
         <item quantity="one">%1$d partagée par toutes les macros</item>
         <item quantity="other">%1$d partagées par toutes les macros</item>
     </plurals>
+    <plurals name="mqtt_topics_seen">
+        <item quantity="one">%1$d topic</item>
+        <item quantity="other">%1$d topics</item>
+    </plurals>
 </resources>

@@ -101,7 +101,19 @@ fun HubDetailOverlay(
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
                     )
-                    Text(stringResource(R.string.smarthome_refresh_lights_and_scenes))
+                    // Two different acts behind one button. Refreshing a bridge or an
+                    // instance *reads* what is there; refreshing a broker **listens**,
+                    // because there is nothing to read — so the label says so, or the
+                    // empty result would read as a failure rather than as a quiet house.
+                    Text(
+                        stringResource(
+                            if (hub.kind == SmartHomeKind.MQTT) {
+                                R.string.mqtt_listen_for_topics
+                            } else {
+                                R.string.smarthome_refresh_lights_and_scenes
+                            },
+                        ),
+                    )
                 }
                 if (state.busy) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
@@ -145,6 +157,17 @@ private fun InfoCard(hub: SmartHomeHub) {
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         InfoLine(stringResource(R.string.smarthome_address), hub.host)
+        // A broker's card stops here plus two lines of its own. The light counts below
+        // would all be zero on one, which reads as a hub that failed to read rather than
+        // as one that has no lights to have — see SmartHomeKind.MQTT.
+        if (hub.kind == SmartHomeKind.MQTT) {
+            InfoLine(
+                stringResource(R.string.mqtt_username),
+                hub.username.ifBlank { stringResource(R.string.mqtt_anonymous) },
+            )
+            InfoLine(stringResource(R.string.mqtt_topics_heard), hub.topics.size.toString())
+            return@Column
+        }
         if (hub.hardwareId.isNotBlank()) InfoLine(stringResource(R.string.smarthome_bridge_id), hub.hardwareId)
         // How the credential was obtained, and therefore what has to happen when it
         // stops working: a pasted token is replaced by hand, a signed-in one renews
