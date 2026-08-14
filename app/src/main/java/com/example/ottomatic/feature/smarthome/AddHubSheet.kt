@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.ottomatic.domain.model.SmartHomeKind
@@ -35,16 +37,19 @@ private val ROW_SHAPE = RoundedCornerShape(16.dp)
 /**
  * "What kind of hub?"
  *
- * One row today, and that is not a wasted screen — it is **the seam**. This is the
- * only file a second integration touches on the way in: a new
- * [SmartHomeKind] constant, a row here, and its own pairing flow. Everything else —
- * the list, the storage, the sealed credential, the detail sheet, the two pickers,
- * the three nodes — is already written and already generic.
+ * Two rows, and the second one is the receipt for the first having sat here alone. This
+ * is **the seam**, and Home Assistant cost exactly what it promised on the way in: a
+ * [SmartHomeKind] constant, a row here, and its own setup flow. The list, the storage,
+ * the sealed credential, the detail sheet, the two light pickers and the three light
+ * nodes were already written and already generic.
  *
- * A one-question overlay rather than a menu on the "+" row, because the answer
- * decides which pairing flow opens, and those flows have nothing in common: pressing
- * a button on a bridge, scanning a QR code and signing in to an account are three
- * different screens, not three fields.
+ * A one-question overlay rather than a menu on the "+" row, because the answer decides
+ * which setup flow opens, and those flows have nothing in common — which the two here
+ * now demonstrate rather than merely predict. Hue's is a **countdown**: walk to the
+ * bridge, press the button inside a minute, and it mints a key it will never mint
+ * again. Home Assistant's is an **address, a token and a Test button**, with no window,
+ * nothing minted and a credential that can be recreated in a browser at any time.
+ * Neither is three fields on the other's screen.
  */
 @Composable
 fun AddHubSheet(
@@ -68,8 +73,18 @@ fun AddHubSheet(
             KindRow(
                 title = stringResource(R.string.smarthome_philips_hue),
                 subtitle = stringResource(R.string.smarthome_a_bridge_on_your_wi),
+                icon = Icons.Filled.Lightbulb,
                 onClick = {
                     onChoose(SmartHomeKind.HUE)
+                    dismiss()
+                },
+            )
+            KindRow(
+                title = stringResource(R.string.smarthome_home_assistant),
+                subtitle = stringResource(R.string.smarthome_a_server_you_already_run),
+                icon = Icons.Filled.Home,
+                onClick = {
+                    onChoose(SmartHomeKind.HOME_ASSISTANT)
                     dismiss()
                 },
             )
@@ -78,7 +93,7 @@ fun AddHubSheet(
 }
 
 @Composable
-private fun KindRow(title: String, subtitle: String, onClick: () -> Unit) {
+private fun KindRow(title: String, subtitle: String, icon: ImageVector, onClick: () -> Unit) {
     val accent = EditorColors.actionAccent
     Row(
         modifier = Modifier
@@ -99,7 +114,7 @@ private fun KindRow(title: String, subtitle: String, onClick: () -> Unit) {
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = Icons.Filled.Lightbulb,
+                imageVector = icon,
                 contentDescription = null,
                 tint = accent,
                 modifier = Modifier.size(20.dp),

@@ -31,7 +31,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.example.ottomatic.core.service.SmartHomeTargetKind
+import com.example.ottomatic.domain.model.HubAuthMode
 import com.example.ottomatic.domain.model.SmartHomeHub
+import com.example.ottomatic.domain.model.SmartHomeKind
 import com.example.ottomatic.feature.grapheditor.EditorColors
 import com.example.ottomatic.feature.grapheditor.EditorOverlay
 
@@ -114,7 +116,13 @@ fun HubDetailOverlay(
                 )
             }
 
-            if (state.presentedCertificate.isNotBlank()) {
+            // Hue only, and not because Home Assistant's certificate matters less: it
+            // is that there is no pin to mismatch. A Hue bridge presents a certificate
+            // signed by a root no device trusts, so the app pins one by fingerprint;
+            // Home Assistant is reached over plain HTTP on the LAN or over a
+            // certificate the platform verifies for itself, and neither has anything
+            // for this card to compare.
+            if (hub.kind == SmartHomeKind.HUE && state.presentedCertificate.isNotBlank()) {
                 CertificateMismatch(
                     pinned = hub.certSha256,
                     presented = state.presentedCertificate,
@@ -138,6 +146,17 @@ private fun InfoCard(hub: SmartHomeHub) {
     ) {
         InfoLine(stringResource(R.string.smarthome_address), hub.host)
         if (hub.hardwareId.isNotBlank()) InfoLine(stringResource(R.string.smarthome_bridge_id), hub.hardwareId)
+        // How the credential was obtained, and therefore what has to happen when it
+        // stops working: a pasted token is replaced by hand, a signed-in one renews
+        // itself. A Hue key has neither and the row would say nothing.
+        if (hub.authMode != HubAuthMode.NONE) {
+            InfoLine(
+                stringResource(R.string.ha_authentication),
+                stringResource(
+                    if (hub.authMode == HubAuthMode.OAUTH) R.string.ha_auth_oauth else R.string.ha_auth_token,
+                ),
+            )
+        }
         InfoLine(stringResource(R.string.smarthome_lights), hub.resourcesOf(SmartHomeTargetKind.LIGHT).size.toString())
         InfoLine(
             stringResource(R.string.smarthome_rooms_and_zones),
@@ -147,6 +166,11 @@ private fun InfoCard(hub: SmartHomeHub) {
             stringResource(R.string.smarthome_scenes),
             hub.resourcesOf(SmartHomeTargetKind.SCENE).size.toString(),
         )
+        // Every entity, not just the light-shaped ones — which on a real install is a
+        // far bigger number, and the one that says whether the snapshot worked.
+        if (hub.entities.isNotEmpty()) {
+            InfoLine(stringResource(R.string.ha_all_entities), hub.entities.size.toString())
+        }
     }
 }
 

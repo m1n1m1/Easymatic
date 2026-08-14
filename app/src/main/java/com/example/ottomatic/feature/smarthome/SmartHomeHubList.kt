@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.ottomatic.core.service.SmartHomeTargetKind
 import com.example.ottomatic.domain.model.SmartHomeHub
+import com.example.ottomatic.domain.model.SmartHomeKind
 import com.example.ottomatic.feature.grapheditor.EditorColors
 
 private val ROW_SHAPE = RoundedCornerShape(16.dp)
@@ -134,7 +136,13 @@ private fun HubRow(
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = Icons.Filled.Lightbulb,
+                // The same icon `AddHubSheet` offered it under, so the row somebody
+                // just created is recognisably the thing they chose.
+                imageVector = if (hub.kind == SmartHomeKind.HOME_ASSISTANT) {
+                    Icons.Filled.Home
+                } else {
+                    Icons.Filled.Lightbulb
+                },
                 contentDescription = null,
                 tint = accent,
                 modifier = Modifier.size(20.dp),
@@ -150,7 +158,17 @@ private fun HubRow(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = if (needsPairing) stringResource(R.string.smarthome_pair_again) else hub.summary(),
+                // "Pair again" and "Sign in again" are different instructions, and
+                // telling a Home Assistant user to pair something would send them
+                // looking for a button that does not exist. The credential is lost the
+                // same way in both cases — a restore leaves the keystore key behind —
+                // but what fixes it is not the same act.
+                text = when {
+                    needsPairing && hub.kind == SmartHomeKind.HOME_ASSISTANT ->
+                        stringResource(R.string.smarthome_sign_in_again)
+                    needsPairing -> stringResource(R.string.smarthome_pair_again)
+                    else -> hub.summary()
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = if (needsPairing) EditorColors.errorAccent else EditorColors.textSecondary,
                 maxLines = 1,

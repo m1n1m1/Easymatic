@@ -256,7 +256,7 @@
     <string name="smarthome_it_is_the_large_button">It is the large button in the middle of the disc, between the three small lights. Connecting to %1$s.</string>
     <string name="smarthome_looking_for_bridges_on_your">Looking for bridges on your Wi-Fi…</string>
     <string name="smarthome_name">Name</string>
-    <string name="smarthome_no_hubs_yet_add_one">No hubs yet. Add one to control your lights from a macro. You will need to press the button on the bridge once, to prove you are standing next to it.</string>
+    <string name="smarthome_no_hubs_yet_add_one">No hubs yet. Add one to control your lights from a macro, and to start macros when something in your home changes.</string>
     <string name="smarthome_nothing_matches">Nothing matches \"%1$s\".</string>
     <string name="smarthome_only_trust_it_if_you">Only trust it if you reset or replaced your bridge. If you did not, something else on your network is answering as it.</string>
     <string name="smarthome_or_type_the_bridge_s">Or type the bridge\'s address</string>
@@ -545,4 +545,26 @@
     <string name="shortcut_macro_and_trigger">%1$s · %2$s</string>
 
     <string name="grapheditor_port_path">%1$s › %2$s</string>
+
+    <!-- Home Assistant -->
+    <string name="smarthome_home_assistant">Home Assistant</string>
+    <string name="smarthome_a_server_you_already_run">A server you already run</string>
+    <string name="smarthome_ha_reached">Reached it. The token works.</string>
+    <string name="ha_connect_home_assistant">Connect Home Assistant</string>
+    <string name="ha_name_your_hub">Name your hub</string>
+    <string name="ha_looking_for_instances">Looking for Home Assistant on your Wi-Fi…</string>
+    <string name="ha_address">Address</string>
+    <string name="ha_access_token">Long-lived access token</string>
+    <string name="ha_test">Test</string>
+    <string name="ha_paste">Paste</string>
+    <string name="ha_open_profile">Open the profile page</string>
+    <string name="ha_token_steps">In Home Assistant, open your profile, choose Security, scroll to Long-lived access tokens and create one. It is shown once — copy it, then paste it here.</string>
+    <string name="ha_cleartext_warning">This address is not encrypted. That is normal for a server on your own network; over the internet it would send your token in the clear.</string>
+    <string name="ha_connected_this_is_the_name">Connected. This is the name your macros will show.</string>
+    <string name="ha_all_entities">Entities</string>
+    <string name="ha_replace_token">Replace token</string>
+    <string name="ha_auth_token">Long-lived token</string>
+    <string name="ha_auth_oauth">Signed in</string>
+    <string name="ha_authentication">Authentication</string>
+    <string name="smarthome_sign_in_again">Sign in again</string>
 </resources>

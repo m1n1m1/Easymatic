@@ -28,6 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ottomatic.feature.grapheditor.EditorColors
+import com.example.ottomatic.domain.model.SmartHomeKind
+import com.example.ottomatic.feature.smarthome.homeassistant.HaSetupOverlay
 import com.example.ottomatic.feature.smarthome.hue.HuePairingOverlay
 
 /**
@@ -40,10 +42,10 @@ import com.example.ottomatic.feature.smarthome.hue.HuePairingOverlay
  * changes whenever a bulb is added — and both are things that make every macro using
  * the hub stop at once, with nothing anywhere else saying why.
  *
- * **Generic from the first version**, deliberately. One vendor is listed today; the
- * screen, the storage and the sealed credential are written once so that the second
- * is a row in [AddHubSheet] and a pairing flow, rather than a parallel copy of all
- * of this.
+ * **Generic from the first version**, deliberately — and the bet paid: the screen, the
+ * storage and the sealed credential were written once, so Home Assistant cost a row in
+ * [AddHubSheet] and a setup flow rather than a parallel copy of all of this. Nothing in
+ * this file needed editing for it.
  */
 @Composable
 fun SmartHomeScreen(
@@ -121,7 +123,13 @@ fun SmartHomeOverlays(
         )
     }
 
+    // The one place a vendor's setup flow is chosen. The two have nothing in common
+    // beyond a name field — see AddHubSheet's KDoc — so this is a branch rather than
+    // one overlay with conditional sections.
     state.pairing?.let { pairing ->
-        HuePairingOverlay(pairing = pairing, viewModel = viewModel)
+        when (pairing.kind) {
+            SmartHomeKind.HUE -> HuePairingOverlay(pairing = pairing, viewModel = viewModel)
+            SmartHomeKind.HOME_ASSISTANT -> HaSetupOverlay(pairing = pairing, viewModel = viewModel)
+        }
     }
 }

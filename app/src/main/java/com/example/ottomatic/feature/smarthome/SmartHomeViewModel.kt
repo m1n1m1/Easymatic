@@ -19,15 +19,23 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Which stage of adding a hub is on screen. */
+/**
+ * Which stage of adding a hub is on screen.
+ *
+ * The two vendors use different subsets, which is why this is one enum rather than two:
+ * both start at [CHOOSING] and end at [NAMING], and only Hue passes through [LINKING] —
+ * a Home Assistant instance has no window to count down and mints nothing, so it goes
+ * straight from the address and token to being connected. Splitting the enum would
+ * duplicate the two stages they share to isolate the one they do not.
+ */
 enum class PairingStage {
-    /** Choosing which bridge, from the browse or by typing an address. */
+    /** Choosing which hub: a browse and a typed address, plus a token for Home Assistant. */
     CHOOSING,
 
-    /** Counting down while the user walks to the bridge and presses the button. */
+    /** Hue only. Counting down while the user walks to the bridge and presses the button. */
     LINKING,
 
-    /** Paired. Naming it. */
+    /** Connected. Naming it. */
     NAMING,
 }
 
@@ -50,6 +58,19 @@ data class PairingState(
     val hubId: String = "",
     val name: String = "",
     val error: String = "",
+    /**
+     * The long-lived access token being pasted in. Home Assistant only.
+     *
+     * Held here **only while it is being typed**, and never read back out of the
+     * repository afterwards: once [connectHomeAssistant] has sealed it, the editor
+     * shows an empty box, on `AiConnectionsViewModel`'s rule — a token on screen is a
+     * token in a screenshot, a recents thumbnail and an accessibility tree.
+     */
+    val token: String = "",
+    /** A round trip is in flight — the buttons are disabled and one spins. */
+    val working: Boolean = false,
+    /** What Test said when it worked. Blank otherwise. */
+    val tested: String = "",
 )
 
 data class SmartHomeUiState(
@@ -73,10 +94,15 @@ data class SmartHomeUiState(
  * gets hold of it.
  *
  * **It does not re-arm the engine**, which `MailAccountsViewModel` does, and the
- * asymmetry is the point: an armed `trigger.mail` holds an open IMAP connection
- * built from the account's settings, so editing them has to tear it down. Nothing
- * here is armed at all — there are no smart-home triggers, and a node resolves its
- * hub on every run.
+ * reasoning has changed even though the conclusion has not. It used to be that nothing
+ * here was armed at all; since `trigger.ha_state` and `trigger.ha_event` arrived, that
+ * is no longer true. What keeps re-arming unnecessary is where the connection lives:
+ * an armed `trigger.mail` **holds** an IMAP connection built from the account's
+ * settings, so editing them has to tear it down, whereas an armed Home Assistant
+ * trigger registers a node id with `HaConnections` and holds nothing. The socket is
+ * owned by the connection manager, which watches this same repository and reconnects on
+ * its own when a hub's address or token changes — so an edit reaches the socket without
+ * anything here knowing that it did. An action node still resolves its hub on every run.
  */
 @Suppress("TooManyFunctions") // One entry point per control on the hub screen; the screen sets the count.
 class SmartHomeViewModel(
@@ -189,9 +215,56 @@ class SmartHomeViewModel(
         _uiState.update { it.copy(choosingKind = false) }
     }
 
-    /** Starts the pairing flow for [kind]. One kind today; the sheet is the seam. */
+    /** Starts the setup flow for [kind]. `AddHubSheet` is the seam that chooses. */
     fun startPairing(kind: SmartHomeKind) {
         _uiState.update { it.copy(choosingKind = false, pairing = PairingState(kind = kind)) }
+    }
+
+    fun tokenChanged(token: String) {
+        editPairing { it.copy(token = token, error = "", tested = "") }
+    }
+
+    /**
+     * Checks the address and token without storing anything.
+     *
+     * **Test earns its place**, on `AiConnectionsScreen`'s reasoning: without it the
+     * first proof a credential works is a macro failing quietly at three in the
+     * morning, which is exactly the failure this integration exists not to have.
+     */
+    fun testHomeAssistant() {
+        val pairing = _uiState.value.pairing ?: return
+        if (pairing.working) return
+        editPairing { it.copy(working = true, error = "", tested = "") }
+        viewModelScope.launch {
+            val problem = setup.testHomeAssistant(pairing.typedHost, pairing.token)
+            editPairing {
+                it.copy(
+                    working = false,
+                    error = problem.orEmpty(),
+                    tested = if (problem == null) appContext.getString(R.string.smarthome_ha_reached) else "",
+                )
+            }
+        }
+    }
+
+    /**
+     * Connects the instance, seals its token and reads its first snapshot.
+     *
+     * Hue's counterpart is [linkTo], and the difference in shape is the whole reason
+     * `PairingStage.LINKING` is skipped here: there is no window to count down and
+     * nothing is minted, so this either lands on [PairingStage.NAMING] or says why.
+     */
+    fun connectHomeAssistant() {
+        val pairing = _uiState.value.pairing ?: return
+        if (pairing.working) return
+        editPairing { it.copy(working = true, error = "", tested = "") }
+        viewModelScope.launch {
+            val step = setup.connectHomeAssistant(pairing.typedHost, pairing.token)
+            // The token is dropped from the state the moment it is sealed, so nothing
+            // holds the plaintext once the repository has it.
+            editPairing { it.copy(working = false, token = "") }
+            settle(step)
+        }
     }
 
     fun cancelPairing() {
