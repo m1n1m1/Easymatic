@@ -201,6 +201,59 @@ enum class PickerKind {
      * that is a real consequence rather than a cosmetic one.
      */
     AI_CONNECTION,
+
+    /**
+     * A [com.example.ottomatic.domain.model.HomeAssistantRef] spec naming one entity on
+     * one hub.
+     *
+     * **The interesting one on the opacity line**, because it sits on the *legible* side
+     * and is a read-only picker anyway — which looks at first like a contradiction of
+     * the rule [LIGHT_TARGET] states. It is not. `sensor.living_room_temperature` is
+     * plainly readable, so a wrong one can be seen to be wrong; what makes a chooser
+     * right here is the other half of the argument, and it is the half `@WifiNetwork`
+     * fails: **the answer set is knowable and complete.** A hub's snapshot lists every
+     * entity that exists on it, so there is nothing a typed one could reach that the
+     * chooser cannot — where a Wi-Fi scan can only offer what is in range *now*, which
+     * is why that one has to stay typeable.
+     *
+     * The volume settles it in the same direction: a real install has several hundred
+     * entities, and a field somebody is expected to remember the exact spelling of
+     * across that many is a field that is mistyped.
+     *
+     * Blank is not an answer, on [MAIL_ACCOUNT]'s reasoning: "any entity" is not a thing
+     * to read or to wait for.
+     */
+    HA_ENTITY,
+
+    /**
+     * A [com.example.ottomatic.domain.model.HomeAssistantRef] spec naming one service —
+     * `light.turn_on`, `climate.set_temperature`.
+     *
+     * Read-only for [HA_ENTITY]'s reason and with the same caveat answered the same way:
+     * the set is open-ended *in principle*, since every installed integration
+     * contributes its own, but it is **complete and knowable for one server at one
+     * moment**, which is what the snapshot holds. A service added by an integration
+     * installed since the last Refresh is one Refresh away, and Refresh is a button on
+     * the hub.
+     */
+    HA_SERVICE,
+
+    /**
+     * A [com.example.ottomatic.domain.model.HomeAssistantRef] naming a hub and nothing
+     * on it.
+     *
+     * **The one place a hub is its own field**, and it is worth saying why that does not
+     * contradict [LIGHT_TARGET]'s argument against exactly that. There, a hub field
+     * beside a target field would make an incoherent state representable — hub A with a
+     * light belonging to hub B — *because there was something else to choose that
+     * already determined the hub*. `trigger.ha_event` has nothing of the sort: an event
+     * type is a bare string on the bus and names no hub, so there is no second field for
+     * this one to disagree with.
+     *
+     * The generalised rule, which is the useful form: **a hub gets a field of its own
+     * exactly where nothing else determines it.**
+     */
+    HA_HUB,
 }
 
 /**

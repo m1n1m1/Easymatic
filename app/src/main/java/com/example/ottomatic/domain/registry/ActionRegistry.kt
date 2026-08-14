@@ -18,6 +18,7 @@ import com.example.ottomatic.engine.action.DndAction
 import com.example.ottomatic.engine.action.EnableMacroAction
 import com.example.ottomatic.engine.action.FlashlightAction
 import com.example.ottomatic.engine.action.ForEachAction
+import com.example.ottomatic.engine.action.HaServiceAction
 import com.example.ottomatic.engine.action.HttpAction
 import com.example.ottomatic.engine.action.IfAction
 import com.example.ottomatic.engine.action.LaunchAppAction
@@ -109,6 +110,7 @@ object ActionRegistry {
         LightControlAction(),
         LightSceneAction(),
         LightStateAction(),
+        HaServiceAction(),
         ListAddAction(),
         ListClearAction(),
         LogAction(),

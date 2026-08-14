@@ -23,20 +23,34 @@ fun macroRefKeys(typeId: NodeTypeId): List<ConfigKey> =
         .map { it.key }
 
 /**
- * The config keys of [typeId] that hold a
- * [com.example.ottomatic.domain.model.SmartHomeRef] spec.
+ * The config keys of [typeId] that hold a reference to something on a smart-home hub —
+ * a [com.example.ottomatic.domain.model.SmartHomeRef] or a
+ * [com.example.ottomatic.domain.model.HomeAssistantRef].
  *
- * Both light kinds, because the question the validator asks of them is the same one:
- * is the hub inside this reference still set up? Which section of the hub the
- * reference names is the picker's business and not this one's.
+ * **All five kinds**, because the question the validator asks of them is one question:
+ * is the hub inside this reference still set up? Which section of which hub the
+ * reference names is the picker's business and not this one's — and that was already
+ * the stated reason the two light kinds shared a list, so Home Assistant's three join
+ * it rather than getting a second function that would ask the same thing.
+ *
+ * The two spec formats are read through
+ * [com.example.ottomatic.domain.model.hubIdOf], which accepts either. Keeping the
+ * parser choice out of here is what stops a sixth kind needing a `when` in two places
+ * with no compiler to notice the second.
  */
 fun smartHomeRefKeys(typeId: NodeTypeId): List<ConfigKey> =
     ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
-        .filter {
-            val kind = (it.type as? ConfigFieldType.PICKER)?.kind
-            kind == PickerKind.LIGHT_TARGET || kind == PickerKind.LIGHT_SCENE
-        }
+        .filter { (it.type as? ConfigFieldType.PICKER)?.kind in HUB_SCOPED_PICKERS }
         .map { it.key }
+
+/** Every picker whose value names something on a hub. */
+private val HUB_SCOPED_PICKERS = setOf(
+    PickerKind.LIGHT_TARGET,
+    PickerKind.LIGHT_SCENE,
+    PickerKind.HA_ENTITY,
+    PickerKind.HA_SERVICE,
+    PickerKind.HA_HUB,
+)
 
 /** The config keys of [typeId] that hold an [com.example.ottomatic.domain.model.AiConnection] id. */
 fun aiConnectionRefKeys(typeId: NodeTypeId): List<ConfigKey> =

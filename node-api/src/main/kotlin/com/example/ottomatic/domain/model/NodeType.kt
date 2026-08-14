@@ -49,6 +49,7 @@ enum class NodeCategory(
     PHONE_MEDIA(NodeKind.TRIGGER, "Phone & Media"),
     DEVICE_STATE(NodeKind.TRIGGER, "Device State"),
     SENSORS(NodeKind.TRIGGER, "Sensors & Gestures"),
+    SMART_HOME_EVENTS(NodeKind.TRIGGER, "Smart Home"),
     FLOW_CONTROL(NodeKind.ACTION, "Flow Control"),
     INTERACTION(NodeKind.ACTION, "Ask the User"),
     NETWORK(NodeKind.ACTION, "Network"),
@@ -63,6 +64,7 @@ enum class NodeCategory(
     VALUE_DEVICE(NodeKind.VALUE, "Device State"),
     VALUE_SENSORS(NodeKind.VALUE, "Sensors"),
     VALUE_TIME(NodeKind.VALUE, "Date & Time"),
+    VALUE_SMART_HOME(NodeKind.VALUE, "Smart Home"),
     VALUE_VARIABLES(NodeKind.VALUE, "Variables"),
     TRANSFORM_DATA(NodeKind.TRANSFORM, "Data"),
 

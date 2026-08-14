@@ -20,7 +20,7 @@ import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.PluginNodes
 import com.example.ottomatic.domain.registry.declarationFor
 import com.example.ottomatic.nodeapi.plugin.PluginLimits
-import com.example.ottomatic.domain.model.SmartHomeRef
+import com.example.ottomatic.domain.model.hubIdOf
 import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.domain.registry.SmartHomeHubs
 import com.example.ottomatic.domain.registry.aiConnectionRefKeys
@@ -244,7 +244,8 @@ class GraphValidator(private val workflow: Workflow) {
         for (node in workflow.nodes) {
             for (key in smartHomeRefKeys(node.typeId)) {
                 val spec = node.config[key].orEmpty()
-                val hubId = SmartHomeRef.parse(spec)?.hubId
+                // Either spelling: a light reference or a Home Assistant one. See hubIdOf.
+                val hubId = hubIdOf(spec)
                 val (reason, message) = when {
                     spec.isBlank() ->
                         IssueReason.HUB_UNSET to "'${node.name}' has nothing chosen, so it will do nothing"

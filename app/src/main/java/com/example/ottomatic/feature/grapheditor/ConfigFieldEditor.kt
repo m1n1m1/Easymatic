@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Mail
@@ -84,6 +85,9 @@ import com.example.ottomatic.feature.mail.MailFolderField
 import com.example.ottomatic.feature.mail.MailAccountPickerOverlay
 import com.example.ottomatic.feature.nfc.LocalNfcTags
 import com.example.ottomatic.feature.nfc.NfcTagPickerOverlay
+import com.example.ottomatic.domain.model.HomeAssistantRef
+import com.example.ottomatic.feature.smarthome.HaPickerMode
+import com.example.ottomatic.feature.smarthome.HaPickerOverlay
 import com.example.ottomatic.feature.smarthome.LightTargetPickerOverlay
 import com.example.ottomatic.feature.smarthome.LocalSmartHome
 import com.example.ottomatic.feature.sound.SoundPickerField
@@ -688,6 +692,8 @@ private fun List<PortSpec>.dropping(index: Int): List<PortSpec> =
  * for the label, the icon and the overlay. It is exhaustive over [PickerKind]:
  * a new kind is a compile error until it is given a chooser here.
  */
+// Inherent: one branch per PickerKind, which is what this function is.
+@Suppress("CyclomaticComplexMethod")
 @Composable
 private fun PickerField(
     kind: PickerKind,
@@ -716,6 +722,66 @@ private fun PickerField(
             SmartHomePickerField(value, onValueChange, SmartHomeTargetKind.LIGHT, labelSlot, colors)
         PickerKind.LIGHT_SCENE ->
             SmartHomePickerField(value, onValueChange, SmartHomeTargetKind.SCENE, labelSlot, colors)
+        // The three Home Assistant kinds share one field and one overlay, on the app
+        // and light kinds' precedent: same hub, same snapshot, three lists in it.
+        PickerKind.HA_ENTITY -> HaPickerField(value, onValueChange, HaPickerMode.ENTITY, labelSlot, colors)
+        PickerKind.HA_SERVICE -> HaPickerField(value, onValueChange, HaPickerMode.SERVICE, labelSlot, colors)
+        PickerKind.HA_HUB -> HaPickerField(value, onValueChange, HaPickerMode.HUB, labelSlot, colors)
+    }
+}
+
+/**
+ * A `@Picker(HA_ENTITY)`, `@Picker(HA_SERVICE)` or `@Picker(HA_HUB)` field.
+ *
+ * Readable **with no library in scope**, for [SmartHomePickerField]'s reason and by the
+ * same means: what is stored is a whole [HomeAssistantRef] carrying the name it had when
+ * it was chosen, so this renders "Living room temperature" with the server switched off
+ * and nothing cached. A reference whose hub is gone says so rather than falling back to
+ * a raw id — the name is still the most useful thing on screen, and what is broken is
+ * the hub.
+ */
+@Composable
+private fun HaPickerField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    mode: HaPickerMode,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
+    var picking by remember { mutableStateOf(false) }
+    val hubs = LocalSmartHome.current
+    val parsed = HomeAssistantRef.parse(value)
+
+    PickerFieldChrome(
+        display = when {
+            value.isBlank() -> ""
+            parsed == null -> value
+            hubs != null && hubs.hubById(parsed.hubId) == null ->
+                stringResource(R.string.config_hub_removed, parsed.name)
+            // A service is shown by its id rather than its friendly name: "light.turn_on"
+            // is what the docs, the developer tools and every example call it, and
+            // "Turn on" beside a chosen entity would not say which domain it belongs to.
+            mode == HaPickerMode.SERVICE -> parsed.id.ifBlank { parsed.name }
+            else -> parsed.name.ifBlank { parsed.id }
+        },
+        icon = Icons.Filled.Home,
+        enabled = hubs != null,
+        onTap = { picking = true },
+        labelSlot = labelSlot,
+        colors = colors,
+    )
+
+    if (picking && hubs != null) {
+        HaPickerOverlay(
+            viewModel = hubs,
+            mode = mode,
+            selected = value,
+            onPick = { spec ->
+                onValueChange(spec)
+                picking = false
+            },
+            onDismiss = { picking = false },
+        )
     }
 }
 

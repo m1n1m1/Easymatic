@@ -10,6 +10,7 @@ import com.example.ottomatic.engine.value.DarkModeValue
 import com.example.ottomatic.engine.value.DeviceOrientationValue
 import com.example.ottomatic.engine.value.DndValue
 import com.example.ottomatic.engine.value.DockValue
+import com.example.ottomatic.engine.value.HaStateValue
 import com.example.ottomatic.engine.value.HeadsetValue
 import com.example.ottomatic.engine.value.LightLevelValue
 import com.example.ottomatic.engine.value.NfcValue
@@ -51,6 +52,7 @@ object ValueRegistry {
         DeviceOrientationValue(),
         DndValue(),
         DockValue(),
+        HaStateValue(),
         HeadsetValue(),
         LightLevelValue(),
         NfcValue(),

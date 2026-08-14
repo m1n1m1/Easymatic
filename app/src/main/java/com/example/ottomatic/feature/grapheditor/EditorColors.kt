@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MusicNote
@@ -259,6 +260,7 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // Distinct from LIGHT, which is the ambient-light sensor: one is a bulb you
     // switch, the other is how bright the room is.
     NodeIcon.LIGHTBULB -> Icons.Filled.Lightbulb
+    NodeIcon.HOME -> Icons.Filled.Home
     NodeIcon.SCENE -> Icons.Filled.AutoAwesome
     // Distinct from DIALOG's speech bubble, which is Ottomatic talking to the user.
     NodeIcon.CHAT -> Icons.AutoMirrored.Filled.Message

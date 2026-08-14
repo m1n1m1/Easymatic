@@ -581,6 +581,80 @@ data class LightState(
 )
 
 /**
+ * What `trigger.ha_state` emits when a Home Assistant entity changes.
+ *
+ * [state] is Home Assistant's own string — `on`, `off`, `21.4`, `home`, `playing` — and
+ * is deliberately left as text rather than converted here. What it means depends
+ * entirely on the entity, and `transform.convert` is the visible place a conversion
+ * belongs; autocast drops one into the wire when a numeric port needs it.
+ *
+ * [previousState] is what makes "when the door *opens*" expressible rather than "while
+ * the door is open": without it, an attribute-only change and a real transition are
+ * indistinguishable downstream. It is blank for an entity that has just appeared, which
+ * happens to every entity on the first restart after adding an integration.
+ *
+ * [attributes] is compact JSON, forced by the payload being stringly and right anyway:
+ * a light's `brightness`, a media player's `media_title` and a climate entity's
+ * `current_temperature` all live there, and `transform.json_read` walks them. That is
+ * `action.http`'s road.
+ */
+@Serializable
+data class HaStateChange(
+    val entityId: String,
+    val name: String = "",
+    val state: String = "",
+    val previousState: String = "",
+    /** `°C`, `%`, `kWh`. Blank for anything that is not a measurement. */
+    val unit: String = "",
+    /** Every attribute, as compact JSON, for `transform.json_read`. */
+    val attributes: String = "",
+    val changedAt: DateTime,
+)
+
+/**
+ * What `trigger.ha_event` emits when a named event fires on the hub's bus.
+ *
+ * [data] is the event's own payload as compact JSON, and is the whole point of the node:
+ * a `zha_event` carries the button and the command, a `tag_scanned` carries the tag id,
+ * and a custom event carries whatever the automation that fired it put there. There is
+ * no schema to model — it is different for every event type in existence — so it arrives
+ * as text and is read with `transform.json_read`.
+ *
+ * [origin] is `LOCAL` or `REMOTE`, which distinguishes something that happened on the
+ * hub from something that arrived through its cloud connection.
+ */
+@Serializable
+data class HaEvent(
+    val eventType: String,
+    /** The event's `data` object, as compact JSON. */
+    val data: String = "",
+    val origin: String = "",
+    val firedAt: DateTime,
+)
+
+/**
+ * Receipt from `action.ha_service` on its `state` data port.
+ *
+ * [called] rather than `changed`, and the difference is honest rather than pedantic:
+ * Home Assistant accepts a service call and reports success **without saying whether
+ * anything moved**. `LightChanged.changed` can promise more because the light nodes read
+ * a state back; here there is nothing to read, so claiming a change would be the one
+ * thing this integration must not do.
+ *
+ * [response] is a `return_response` payload as JSON, or blank — most services return
+ * nothing at all, and the few that do (a weather forecast, a calendar query) are the
+ * reason the field exists.
+ */
+@Serializable
+data class HaServiceCalled(
+    val service: String,
+    val target: String = "",
+    val called: Boolean,
+    val response: String = "",
+    val error: String = "",
+)
+
+/**
  * Result of the call action on its `state` data port.
  *
  * - [number]: the destination phone number.

@@ -65,4 +65,16 @@ enum class NodeIcon {
      * which are a saved lighting arrangement.
      */
     AI,
+
+    /**
+     * A smart home as a whole, rather than one thing in it.
+     *
+     * Distinct from [LIGHTBULB] and [SCENE], which are the two things a *light* node
+     * acts on: this marks the nodes that speak to the hub itself and reach everything
+     * else in the house — a thermostat, a door sensor, a media player, an arbitrary
+     * service. On the palette that difference is the useful one, because it is what
+     * tells somebody looking for "when the front door opens" not to go on reading the
+     * lighting nodes.
+     */
+    HOME,
 }

@@ -27,6 +27,12 @@ object TriggerRegistry {
         // among the broadcast tiers below because nothing broadcasts it: mail is
         // reached over the network, by a poll and by a held-open connection.
         add(com.example.ottomatic.engine.trigger.MailTrigger())
+        // Beside the mail trigger for its reason: nothing broadcasts these either — a
+        // hub is reached over the network, by a connection held open for as long as the
+        // engine runs. The state trigger leads because "when this entity changes" is
+        // what nearly everybody wants; the event one is the escape hatch behind it.
+        add(com.example.ottomatic.engine.trigger.HaStateTrigger())
+        add(com.example.ottomatic.engine.trigger.HaEventTrigger())
         add(com.example.ottomatic.engine.trigger.NotificationTrigger())
         // Directly after the generic notification trigger it is refined from, so the
         // palette shows the pair together: one fires on every notification, the other

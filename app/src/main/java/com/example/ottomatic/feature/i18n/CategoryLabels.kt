@@ -35,6 +35,7 @@ internal fun NodeCategory.labelRes(): Int = when (this) {
     NodeCategory.PHONE_MEDIA -> R.string.category_phone_media
     NodeCategory.DEVICE_STATE -> R.string.category_device_state
     NodeCategory.SENSORS -> R.string.category_sensors
+    NodeCategory.SMART_HOME_EVENTS -> R.string.category_smart_home
     NodeCategory.FLOW_CONTROL -> R.string.category_flow_control
     NodeCategory.INTERACTION -> R.string.category_interaction
     NodeCategory.NETWORK -> R.string.category_network
@@ -49,6 +50,7 @@ internal fun NodeCategory.labelRes(): Int = when (this) {
     NodeCategory.VALUE_DEVICE -> R.string.category_value_device
     NodeCategory.VALUE_SENSORS -> R.string.category_value_sensors
     NodeCategory.VALUE_TIME -> R.string.category_value_time
+    NodeCategory.VALUE_SMART_HOME -> R.string.category_smart_home
     NodeCategory.VALUE_VARIABLES -> R.string.category_value_variables
     NodeCategory.TRANSFORM_DATA -> R.string.category_transform_data
     // Never drawn — a plugin node needs a non-null category, but the palette heads its
