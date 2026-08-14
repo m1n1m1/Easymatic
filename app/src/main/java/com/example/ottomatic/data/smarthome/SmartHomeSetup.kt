@@ -6,7 +6,10 @@ import com.example.ottomatic.data.hue.HueEndpoint
 import com.example.ottomatic.data.hue.HueResources
 import com.example.ottomatic.data.hue.HueTransport
 import com.example.ottomatic.data.hue.PairingOutcome
+import com.example.ottomatic.data.homeassistant.HaConnectResult
+import com.example.ottomatic.data.homeassistant.HaSetup
 import com.example.ottomatic.domain.model.SmartHomeHub
+import com.example.ottomatic.domain.model.SmartHomeKind
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -40,7 +43,36 @@ sealed interface PairingStep {
  * `data/`**. A pairing that succeeds is stored here, sealed here, and answered with
  * an id.
  */
+// Two vendors' setup flows plus the shared refresh; the vendors set the count.
+@Suppress("TooManyFunctions")
 class SmartHomeSetup(private val hubs: SmartHomeHubRepository) {
+
+    private val homeAssistant = HaSetup(hubs)
+
+    /**
+     * Checks a Home Assistant address and token together, answering what is wrong or
+     * null when they work.
+     *
+     * The **Test** button behind the setup screen, and it earns its place for
+     * `AiConnectionsScreen`'s reason: without it the first proof a credential works is
+     * a macro failing quietly at three in the morning, which is exactly the failure
+     * this integration exists not to have.
+     */
+    suspend fun testHomeAssistant(baseUrl: String, token: String): String? =
+        homeAssistant.validate(baseUrl, token)
+
+    /**
+     * Connects a Home Assistant instance, seals its token and reads its first snapshot.
+     *
+     * The counterpart to [pair], and shaped differently on purpose: there is no window
+     * to count down and nothing is minted, so this either works or says why. See
+     * [HaSetup].
+     */
+    suspend fun connectHomeAssistant(baseUrl: String, token: String): PairingStep =
+        when (val outcome = homeAssistant.connect(baseUrl, token)) {
+            is HaConnectResult.Connected -> PairingStep.Paired(outcome.hubId)
+            is HaConnectResult.Failed -> PairingStep.Failed(outcome.error)
+        }
 
     /**
      * One poll of the link button on [host].
@@ -76,7 +108,14 @@ class SmartHomeSetup(private val hubs: SmartHomeHubRepository) {
      * that sentence away and keep the stale list, which is better than an empty one;
      * callers that ran it because the user asked show it.
      */
-    suspend fun refresh(hubId: String): String? = when (val target = target(hubId)) {
+    suspend fun refresh(hubId: String): String? =
+        when (hubs.get(hubId)?.kind) {
+            null -> "That hub has been removed"
+            SmartHomeKind.HOME_ASSISTANT -> homeAssistant.refresh(hubId)
+            SmartHomeKind.HUE -> refreshHue(hubId)
+        }
+
+    private suspend fun refreshHue(hubId: String): String? = when (val target = target(hubId)) {
         is Target.Missing -> target.reason
         is Target.Ready -> withContext(Dispatchers.IO) {
             runCatching { HueTransport.get(target.endpoint, RESOURCE_PATH) }

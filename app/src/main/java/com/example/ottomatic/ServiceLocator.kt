@@ -17,6 +17,7 @@ import com.example.ottomatic.data.MailAccountRepository
 import com.example.ottomatic.data.NfcTagRepository
 import com.example.ottomatic.data.SmartHomeHubRepository
 import com.example.ottomatic.core.service.SmartHome
+import com.example.ottomatic.data.homeassistant.HaVendor
 import com.example.ottomatic.data.hue.HueVendor
 import com.example.ottomatic.data.smarthome.RoutingSmartHome
 import com.example.ottomatic.domain.model.SmartHomeKind
@@ -140,7 +141,10 @@ object ServiceLocator {
     private val smartHomeFacade: SmartHome by lazy {
         RoutingSmartHome(
             smartHomeHubRepository,
-            mapOf(SmartHomeKind.HUE to HueVendor(smartHomeHubRepository)),
+            mapOf(
+                SmartHomeKind.HUE to HueVendor(smartHomeHubRepository),
+                SmartHomeKind.HOME_ASSISTANT to HaVendor(smartHomeHubRepository),
+            ),
         )
     }
 

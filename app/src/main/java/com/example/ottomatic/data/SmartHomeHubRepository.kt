@@ -1,6 +1,9 @@
 package com.example.ottomatic.data
 
 import com.example.ottomatic.data.security.Secrets
+import com.example.ottomatic.domain.model.HaEntity
+import com.example.ottomatic.domain.model.HaService
+import com.example.ottomatic.domain.model.HubAuthMode
 import com.example.ottomatic.domain.model.SmartHomeHub
 import com.example.ottomatic.domain.model.SmartHomeResource
 import java.io.File
@@ -137,6 +140,88 @@ class SmartHomeHubRepository(
     suspend fun setResources(id: String, resources: List<SmartHomeResource>, refreshedAtEpochMs: Long) {
         get(id)?.let {
             upsert(it.copy(resources = resources, resourcesRefreshedAtEpochMs = refreshedAtEpochMs))
+        }
+    }
+
+    /**
+     * The access token for [id] right now, or null on any of [applicationKey]'s three
+     * failures.
+     *
+     * A **second name for the same field**, and deliberately not a second field: what
+     * a Hue bridge calls an application key and what Home Assistant calls an access
+     * token are the same thing in every way that matters here — the one credential
+     * sent with every request, sealed under one alias, lost together on a restore. Two
+     * fields would mean [needsPairing] and [isComplete] each growing a branch to ask
+     * which one to look at, over a distinction with no consequence. Two *names* cost
+     * nothing and let each caller say what it means.
+     */
+    fun accessToken(id: String): String? = applicationKey(id)
+
+    /** The sealed OAuth refresh token for [id], or null when it has none. */
+    fun refreshToken(id: String): String? =
+        get(id)?.refreshSecret?.takeIf { it.isNotBlank() }?.let(secrets::open)
+
+    /**
+     * Seals a Home Assistant credential onto [id]. Returns false when there is no such
+     * hub or this device would not seal it — in which case **nothing is written**, on
+     * [setKeys]' rule and for its reason: a keystore that refuses must leave a working
+     * hub working rather than replacing its token with something unreadable.
+     *
+     * [refreshToken] is blank on the pasted-token path, where there is nothing to
+     * renew from and nothing ever expires. It is **only overwritten when non-blank**,
+     * because a refresh exchange returns a new access token and, on most servers, no
+     * new refresh token — writing the blank through would sign the user out at the
+     * next expiry, hours later, with nothing connecting the two events.
+     */
+    @Suppress("ReturnCount") // Two sealing failures that must write nothing, then success.
+    suspend fun setToken(
+        id: String,
+        accessToken: String,
+        refreshToken: String = "",
+        expiresAtEpochMs: Long = 0,
+        mode: HubAuthMode = HubAuthMode.TOKEN,
+    ): Boolean {
+        val hub = get(id)
+        val sealedToken = hub?.let { secrets.seal(accessToken) }
+        if (hub == null || sealedToken == null) return false
+        val sealedRefresh = refreshToken.takeIf { it.isNotBlank() }?.let(secrets::seal)
+        if (refreshToken.isNotBlank() && sealedRefresh == null) return false
+        upsert(
+            hub.copy(
+                secret = sealedToken,
+                refreshSecret = sealedRefresh ?: hub.refreshSecret,
+                tokenExpiresAtEpochMs = expiresAtEpochMs,
+                authMode = mode,
+            ),
+        )
+        return true
+    }
+
+    /**
+     * Replaces everything a Home Assistant refresh reads: the light-shaped resources
+     * the two light pickers draw from, and the entity and service lists the two Home
+     * Assistant pickers draw from.
+     *
+     * One call rather than three because they are one snapshot taken at one moment,
+     * and writing them separately would let a picker open between two of them and
+     * render an entity list that disagrees with the light list beside it.
+     */
+    suspend fun setHomeAssistantSnapshot(
+        id: String,
+        resources: List<SmartHomeResource>,
+        entities: List<HaEntity>,
+        services: List<HaService>,
+        refreshedAtEpochMs: Long,
+    ) {
+        get(id)?.let {
+            upsert(
+                it.copy(
+                    resources = resources,
+                    entities = entities,
+                    services = services,
+                    resourcesRefreshedAtEpochMs = refreshedAtEpochMs,
+                ),
+            )
         }
     }
 
