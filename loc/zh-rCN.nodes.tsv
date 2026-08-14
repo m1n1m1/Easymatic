@@ -1,4 +1,3 @@
-# Simplified Chinese node text. First column must match values/strings_nodes.xml exactly.
 A	A
 A run of items out of a list	列表中的一段元素
 A to Z / smallest first	A 到 Z / 从小到大
@@ -13,11 +12,12 @@ Active from	生效起始
 Active until (earlier than \'from\' runs past midnight)	生效结束（早于“起始”则跨过午夜）
 Add to List	添加到列表
 Adjusts an audio stream\'s volume (up, down, set, mute or unmute)	调整某个音频通道的音量（调高、调低、设定、静音或取消静音）
-Airplane Mode Changed	飞行模式已改变
 Airplane mode	飞行模式
+Airplane Mode Changed	飞行模式已改变
 Alarm	闹钟
 Alarms	闹钟
 All	全部
+Also when only its details change	仅细节变化时也触发
 Also when the device starts moving	设备开始移动时也触发
 Always (high battery use)	始终（耗电较高）
 Ambient Light	环境光
@@ -25,19 +25,21 @@ Ambient light	环境光
 Answer	回答
 Answer type	回答类型
 Any	任意
+Anything	任意
 App	应用
 App (optional)	应用（可选）
 App Initialised	应用已初始化
 App Installed / Removed	应用已安装 / 已卸载
 Appends an item to a named list, usually from inside a loop	向指定列表追加一个元素，通常在循环内使用
 Ask AI	询问 AI
-Ask Yes or No	询问是或否
 Ask for Input	请求输入
 Ask to Choose	请求选择
+Ask Yes or No	询问是或否
 Asks the user a yes/no question in a popup dialog and branches on the answer	用弹出对话框向用户提一个是/否问题，并按回答分支
 Asks the user to type a value in a popup dialog and puts it on a port	用弹出对话框请用户输入一个值，并把它放到端口上
 At	于
 At a time of day	在一天中的某个时刻
+Attribute (optional)	属性（可选）
 Auto	自动
 Auto brightness	自动亮度
 Automatic	自动
@@ -49,8 +51,8 @@ Battery level	电量
 Bcc	密送
 Below	低于
 Bluetooth Device Connected	蓝牙设备已连接
-Bluetooth State Change	蓝牙状态改变
 Bluetooth enabled	蓝牙已开启
+Bluetooth State Change	蓝牙状态改变
 Body	正文
 Boolean	是/否
 Break Struct	拆分结构体
@@ -59,12 +61,16 @@ Build text	构建文本
 Button	按钮
 Button label	按钮文字
 C	C
+Call Home Assistant Service	调用 Home Assistant 服务
 Called by Another App	由其他应用调用
 Calls a web API and exposes the typed response	调用一个网络 API，并给出带类型的响应
 Cancel button	取消按钮
 Carries on at once and continues again at a chosen moment	立即继续，并在选定的时刻再次继续
 Carry on now	立即继续
 Cc	抄送
+Change	变化
+Changes from	变化前为
+Changes to	变化后为
 Charging	充电中
 Charging started	开始充电
 Charging stopped	停止充电
@@ -93,8 +99,9 @@ Covered	被遮挡
 Current time	当前时间
 Custom	自定义
 Custom sound	自定义声音
-Dark Theme Change	深色主题改变
 Dark theme	深色主题
+Dark Theme Change	深色主题改变
+Data contains	数据包含
 Date &amp; time	日期与时间
 Date rolled over	日期已翻篇
 Date time	日期时间
@@ -105,9 +112,9 @@ Device Boot	设备启动
 Device Docked	设备已放入底座
 Device Movement	设备移动
 Device Orientation	设备朝向
+Device orientation	设备朝向
 Device Shutting Down	设备正在关机
 Device Unlocked	设备已解锁
-Device orientation	设备朝向
 Direction	方向
 Disable Macro	停用宏
 Disabled	已停用
@@ -130,12 +137,16 @@ Empty Trigger	空触发器
 Enable Macro	启用宏
 Enabled	已启用
 Enables another macro by id (persists the flag and arms its triggers)	按 id 启用另一个宏（保存状态并激活它的触发器）
+Entity	实体
 Equals	等于
 Event	事件
+Event type	事件类型
+Extra data (JSON)	附加数据（JSON）
 Face down	屏幕朝下
 Face up	屏幕朝上
 Fade time (ms)	渐变时长（毫秒）
 Falls below	降到低于
+false	假
 Fast	快速
 Fetch Email	收取邮件
 Field	字段
@@ -158,21 +169,24 @@ From position (0 is the first)	起始位置（0 为第一个）
 Geofence	地理围栏
 Gesture	手势
 Get	获取
-Get Light State	获取灯的状态
 Get as	获取为
+Get Light State	获取灯的状态
 Give up after (seconds)	放弃等待时长（秒）
 Greater than	大于
 Greater than or equal	大于或等于
-HTTP Request	HTTP 请求
 Halts the current execution chain (stops following connected actions)	中止当前的执行链（不再继续后面连接的动作）
 Headers (JSON, optional)	请求头（JSON，可选）
-Headset Plugged	耳机已插入
 Headset hook	耳机线控键
+Headset Plugged	耳机已插入
 Headset plugged in	耳机已插入
 Held down	长按
 High — fires easily	高——很容易触发
 Hint	提示
 Hold for at least (ms)	至少按住（毫秒）
+Home Assistant	Home Assistant
+Home Assistant Entity	Home Assistant 实体
+Home Assistant Entity Changed	Home Assistant 实体变化
+Home Assistant Event	Home Assistant 事件
 Hours	小时
 How many	多少个
 How many at most	最多多少个
@@ -180,10 +194,12 @@ How many items are in a list	列表中有多少个元素
 How many times	重复多少次
 How the device is currently resting — face up or down, portrait or landscape (screen on only)	设备当前是怎么放着的——屏幕朝上还是朝下，竖屏还是横屏（仅在屏幕点亮时）
 How to watch	监视方式
+HTTP Request	HTTP 请求
 Idle	空闲
 If	如果
 If it fails	如果失败
 If missing	如果缺失
+in	输入
 Incoming Call State	来电状态
 Index	索引
 Initiates a phone call to a number	向某个号码发起通话
@@ -193,8 +209,8 @@ Int	整数
 Item	元素
 Item at position	指定位置的元素
 Item to find	要查找的元素
-JSON text	JSON 文本
 Join list	连接列表
+JSON text	JSON 文本
 Key	键
 Landscape left	向左横屏
 Landscape right	向右横屏
@@ -246,11 +262,11 @@ Move to folder	移动到文件夹
 Multiple lines	多行
 Must hold for (ms)	必须按住（毫秒）
 Mute	静音
-NFC Tag	NFC 标签
-NFC enabled	NFC 已开启
 Name other apps see	其他应用看到的名称
 Network	网络
 Next	下一首
+NFC enabled	NFC 已开启
+NFC Tag	NFC 标签
 Normal	正常
 Not equals	不等于
 Notification	通知
@@ -272,12 +288,13 @@ Only unread	仅未读
 Only when it ends up lying flat	仅当最终平放时
 Only while the screen is on	仅在屏幕点亮时
 Open URL	打开网址
-Opens WhatsApp, Signal or Telegram with a message ready to send	打开 WhatsApp、Signal 或 Telegram，并预先填好待发送的消息
 Opens a URL in the default handler (browser or app). Typing google.com is enough	用默认程序（浏览器或应用）打开一个网址。输入 google.com 就够了
+Opens WhatsApp, Signal or Telegram with a message ready to send	打开 WhatsApp、Signal 或 Telegram，并预先填好待发送的消息
 Operator	运算符
 Options — one per line	选项——每行一个
 Order	顺序
 Orientation	朝向
+out	输出
 Outputs	输出
 Package	包名
 Part of list	列表的一部分
@@ -289,8 +306,8 @@ Picked up	被拿起
 Place	地点
 Planned for	计划于
 Play	播放
-Play Sound	播放声音
 Play pause	播放/暂停
+Play Sound	播放声音
 Play through	播放通道
 Plays a notification, ringtone, alarm or chosen sound	播放通知音、铃声、闹钟音或你选择的声音
 Plugged	已插入
@@ -304,8 +321,8 @@ Position (0 is the first)	位置（0 为第一个）
 Position in list	在列表中的位置
 Post	发送
 Posts a notification on this device	在此设备上显示一条通知
-Power Save Mode Changed	省电模式已改变
 Power save mode	省电模式
+Power Save Mode Changed	省电模式已改变
 Prefilled	预填内容
 Pressed	按下
 Pressed several times	连按多次
@@ -334,46 +351,47 @@ Repeat while	当满足条件时重复
 Replaced	已替换
 Replies to a message in WhatsApp, Signal, Telegram or another messenger	回复 WhatsApp、Signal、Telegram 或其他即时通讯应用中的消息
 Reply to Message	回复消息
+response	响应
 Resumed at	恢复于
 Ring	响铃
-Ringer Mode Changed	响铃模式已改变
 Ringer mode	响铃模式
+Ringer Mode Changed	响铃模式已改变
 Ringing	振铃中
 Ringtone	铃声
 Rises above	升到高于
 Routes execution by comparing a value against another	通过比较两个值来决定执行走向
-Run Script	运行脚本
 Run action	执行动作
+Run Script	运行脚本
+Runs any Home Assistant service — a thermostat, a media player, a lock, a vacuum, a script	调用任意 Home Assistant 服务——恒温器、媒体播放器、门锁、扫地机、脚本
 Runs JavaScript over inputs you name and returns values on ports you name	对你命名的输入运行 JavaScript，并在你命名的端口上返回值
-SMS	短信
-SMS Received	收到短信
 Saturdays	每周六
 Scene	场景
 Schedule	定时计划
-Screen On / Off	屏幕点亮 / 熄灭
 Screen on	屏幕点亮
+Screen On / Off	屏幕点亮 / 熄灭
 Script — each input is a variable of its own name	脚本——每个输入都是一个同名的变量
 Seconds	秒
+Send as HTML	以 HTML 发送
 Send Email	发送邮件
 Send Message	发送消息
 Send SMS	发送短信
-Send as HTML	以 HTML 发送
 Sender (optional — any sender when empty)	发送者（可选——留空表示任何人）
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text	把提示词发送给 AI 模型（Gemini、Claude、ChatGPT、OpenRouter 或自建模型），并把回复作为文本返回
-Sends an SMS to a number with a body	向某个号码发送一条带正文的短信
 Sends an email through one of your mail accounts	通过你的某个邮件账户发送一封邮件
+Sends an SMS to a number with a body	向某个号码发送一条带正文的短信
 Sensitivity	灵敏度
 Separator	分隔符
 Separator (blank for a new line)	分隔符（留空表示换行）
+Service	服务
 Set	设置
 Set Brightness	设置亮度
-Set Ringer Mode	设置响铃模式
-Set Screen Timeout	设置屏幕超时
-Set Variable	设置变量
-Set Volume	设置音量
 Set brightness	设置亮度
 Set colour	设置颜色
+Set Ringer Mode	设置响铃模式
+Set Screen Timeout	设置屏幕超时
 Set temperature	设置色温
+Set Variable	设置变量
+Set Volume	设置音量
 Sets or clears the clipboard	设置或清空剪贴板
 Sets screen brightness (absolute value or auto)	设置屏幕亮度（固定值或自动）
 Sets the ringer mode to normal, silent or vibrate	把响铃模式设为正常、静音或振动
@@ -386,6 +404,8 @@ Shows a popup dialog offering a list of options and reports which one was picked
 Signal	Signal
 Silence	静音
 Silent	静音
+SMS	短信
+SMS Received	收到短信
 Sort list	排序列表
 Sound	声音
 Source	来源
@@ -400,20 +420,21 @@ Starts once after the device finishes booting	设备启动完成后运行一次
 Starts the workflow on an interval or at a time of day	按间隔或在一天中的某个时刻启动工作流
 Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it	当其他应用、脚本或快捷方式请求 Ottomatic 运行时，启动此工作流
 Starts the workflow when you tap run, or tap its widget or shortcut	当你点按运行，或点按它的小部件或快捷方式时，启动此工作流
-Starts when Bluetooth is turned on or off	当蓝牙被打开或关闭时启动
-Starts when Wi-Fi is enabled or disabled	当 Wi-Fi 被开启或关闭时启动
 Starts when a Bluetooth device connects or disconnects	当某个蓝牙设备连接或断开时启动
-Starts when a USB device is connected or disconnected	当 USB 设备被连接或断开时启动
+Starts when a Home Assistant entity changes — a sensor, a switch, a door, a thermostat	当某个 Home Assistant 实体发生变化时启动——传感器、开关、门、恒温器
 Starts when a matching notification arrives	当收到符合条件的通知时启动
 Starts when a media button is pressed (play, pause, next, etc.)	当媒体键被按下时启动（播放、暂停、下一首等）
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	当 WhatsApp、Signal、Telegram 或其他即时通讯应用收到消息时启动
+Starts when a USB device is connected or disconnected	当 USB 设备被连接或断开时启动
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	当音量键被按下、长按或连按多次时启动。需要无障碍使用权；按键本身仍照常工作
 Starts when a wired headset is plugged or unplugged	当有线耳机被插入或拔出时启动
 Starts when airplane mode is toggled	当飞行模式被切换时启动
-Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	当 NFC 标签贴近手机时启动。仅在屏幕点亮并解锁时有效
-Starts when an SMS arrives	当收到短信时启动
 Starts when an app is installed, removed or replaced	当应用被安装、卸载或替换时启动
 Starts when an email arrives in a mailbox you are watching	当你监视的邮箱收到邮件时启动
+Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	当 Home Assistant 事件总线上触发事件时启动——Zigbee 按键、标签、自定义事件
+Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	当 NFC 标签贴近手机时启动。仅在屏幕点亮并解锁时有效
+Starts when an SMS arrives	当收到短信时启动
+Starts when Bluetooth is turned on or off	当蓝牙被打开或关闭时启动
 Starts when external media is mounted, unmounted or ejected	当外部存储介质被挂载、卸载或弹出时启动
 Starts when power-save mode is toggled on or off	当省电模式被开启或关闭时启动
 Starts when the battery level crosses a threshold (polls in the background)	当电量越过某个阈值时启动（在后台轮询）
@@ -434,11 +455,13 @@ Starts when the ringer mode changes (normal, silent, vibrate)	当响铃模式改
 Starts when the screen turns on or off	当屏幕点亮或熄灭时启动
 Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)	当屏幕上方的传感器被遮挡或重新露出时启动。你的手必须贴着或几乎贴着玻璃（在多数设备上仅屏幕点亮时有效）
 Starts when the user unlocks the device	当用户解锁设备时启动
+Starts when Wi-Fi is enabled or disabled	当 Wi-Fi 被开启或关闭时启动
 State	状态
+state	状态
 Stop	停止
+Stop after (seconds, 0 = play to the end)	停止时间（秒，0 = 播放到结束）
 Stop Macro	停止宏
 Stop Sound	停止声音
-Stop after (seconds, 0 = play to the end)	停止时间（秒，0 = 播放到结束）
 Stops every sound started by Play Sound	停止所有由“播放声音”启动的声音
 Stream	音频通道
 String	文本
@@ -457,6 +480,7 @@ Text contains (optional)	文本包含（可选）
 Text — one item per line, or wire something in	文本——每行一个元素，或接入其他内容
 The current battery charge as a percentage in 0..100	当前电量的百分比，范围 0 到 100
 The current date and time	当前的日期和时间
+The current state of a Home Assistant entity — a sensor, a switch, a thermostat	Home Assistant 实体的当前状态——传感器、开关、恒温器
 The current value of a variable	某个变量的当前值
 The device\'s current ringer mode	设备当前的响铃模式
 The light level around the device in lux — a dim room is around 30, an office a few hundred	设备周围的光照强度，单位勒克斯——昏暗的房间约 30，办公室数百
@@ -478,19 +502,18 @@ Toggle Flashlight	切换手电筒
 Toggle Wi-Fi	切换 Wi-Fi
 Toggles Do-Not-Disturb on or off with a chosen policy level	按所选的级别开启或关闭勿扰模式
 Triple tap	三击
+true	真
 Tuesdays	每周二
 Turn off	关闭
 Turn on	开启
-Turns Bluetooth on or off and reports the resulting state	开启或关闭蓝牙，并报告最终状态
-Turns Wi-Fi on or off and reports the resulting state	开启或关闭 Wi-Fi，并报告最终状态
 Turns a light, room or zone on or off, or sets its brightness, colour or warmth — Philips Hue	开启或关闭某个灯、房间或区域，或设置它的亮度、颜色或色温 — Philips Hue
 Turns a list into one piece of text, separated by what you choose	把列表拼成一段文本，用你选择的分隔符隔开
 Turns a value into another type — text, a number, yes/no or a date	把一个值转换成另一种类型——文本、数字、是/否或日期
 Turns accelerometer auto-rotation on or off	开启或关闭基于加速度计的自动旋转
+Turns Bluetooth on or off and reports the resulting state	开启或关闭蓝牙，并报告最终状态
 Turns the camera torch (flashlight) on or off	开启或关闭相机闪光灯（手电筒）
+Turns Wi-Fi on or off and reports the resulting state	开启或关闭 Wi-Fi，并报告最终状态
 Type	类型
-URL	网址
-USB Device Connected	USB 设备已连接
 Uncovered	未遮挡
 Undocked	已取出底座
 Unit	单位
@@ -502,6 +525,8 @@ Until a date and time	直到某个日期和时间
 Until a time of day	直到一天中的某个时刻
 Up	调高
 Update Email	更新邮件
+URL	网址
+USB Device Connected	USB 设备已连接
 Value	值
 Value (0-100, only when mode is set)	数值（0-100，仅当模式为“设置”时）
 Value (0-255, only when auto is off)	数值（0-255，仅当自动关闭时）
@@ -527,33 +552,26 @@ When the light level	当光照强度
 When the time comes	时候到了
 When time runs out	超时时
 Where an item sits in a list, counting from 0, or -1 when it is not there	某个元素在列表中的位置，从 0 开始计；不存在时为 -1
-Whether Bluetooth is currently enabled	蓝牙当前是否已开启
-Whether Do-Not-Disturb is currently active	勿扰模式当前是否生效
-Whether NFC is currently switched on	NFC 当前是否已开启
-Whether Wi-Fi is currently enabled	Wi-Fi 当前是否已开启
 Whether a list holds a given item	列表中是否包含指定元素
 Whether a wired or USB headset is currently plugged in	当前是否插着有线或 USB 耳机
 Whether airplane mode is currently on	飞行模式当前是否开启
 Whether battery saver is currently on	省电模式当前是否开启
+Whether Bluetooth is currently enabled	蓝牙当前是否已开启
+Whether Do-Not-Disturb is currently active	勿扰模式当前是否生效
+Whether NFC is currently switched on	NFC 当前是否已开启
 Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	屏幕上方的传感器是否被挡住——口袋、贴在玻璃上的手，或设备屏幕朝下
 Whether the device is currently charging	设备当前是否正在充电
 Whether the device is currently in dark theme (night mode)	设备当前是否处于深色主题（夜间模式）
 Whether the device is currently sitting in a dock	设备当前是否放在底座上
 Whether the screen is currently on and interactive	屏幕当前是否点亮且可操作
+Whether Wi-Fi is currently enabled	Wi-Fi 当前是否已开启
 While the screen is off	屏幕熄灭时
 Whole number	整数
-Wi-Fi Network	Wi-Fi 网络
-Wi-Fi State Change	Wi-Fi 状态改变
 Wi-Fi enabled	Wi-Fi 已开启
+Wi-Fi Network	Wi-Fi 网络
 Wi-Fi network	Wi-Fi 网络
+Wi-Fi State Change	Wi-Fi 状态改变
 Within (ms)	在此时间内（毫秒）
 Writes a message to this workflow\'s console	往此工作流的控制台写一条消息
 Yes or no	是或否
 Z to A / largest first	Z 到 A / 从大到小
-false	假
-in	输入
-out	输出
-response	响应
-state	状态
-true	真
-Anything	任意

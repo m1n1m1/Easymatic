@@ -17,6 +17,7 @@ Airplane mode	Airplane mode
 Alarm	Alarm
 Alarms	Alarms
 All	All
+Also when only its details change	Also when only its details change
 Also when the device starts moving	Also when the device starts moving
 Always (high battery use)	Always (high battery use)
 Ambient Light	Ambient Light
@@ -38,6 +39,7 @@ Asks the user a yes/no question in a popup dialog and branches on the answer	Ask
 Asks the user to type a value in a popup dialog and puts it on a port	Asks the user to type a value in a popup dialog and puts it on a port
 At	At
 At a time of day	At a time of day
+Attribute (optional)	Attribute (optional)
 Auto	Auto
 Auto brightness	Auto brightness
 Automatic	Automatic
@@ -59,12 +61,16 @@ Build text	Build text
 Button	Button
 Button label	Button label
 C	C
+Call Home Assistant Service	Call Home Assistant Service
 Called by Another App	Called by Another App
 Calls a web API and exposes the typed response	Calls a web API and exposes the typed response
 Cancel button	Cancel button
 Carries on at once and continues again at a chosen moment	Carries on at once and continues again at a chosen moment
 Carry on now	Carry on now
 Cc	Cc
+Change	Change
+Changes from	Changes from
+Changes to	Changes to
 Charging	Charging
 Charging started	Charging started
 Charging stopped	Charging stopped
@@ -95,6 +101,7 @@ Custom	Custom
 Custom sound	Custom sound
 Dark Theme Change	Dark Theme Change
 Dark theme	Dark theme
+Data contains	Data contains
 Date &amp; time	Date &amp; time
 Date rolled over	Date rolled over
 Date time	Date time
@@ -130,8 +137,11 @@ Empty Trigger	Empty Trigger
 Enable Macro	Enable Macro
 Enabled	Enabled
 Enables another macro by id (persists the flag and arms its triggers)	Enables another macro by id (persists the flag and arms its triggers)
+Entity	Entity
 Equals	Equals
 Event	Event
+Event type	Event type
+Extra data (JSON)	Extra data (JSON)
 Face down	Face down
 Face up	Face up
 Fade time (ms)	Fade time (ms)
@@ -173,6 +183,10 @@ Held down	Held down
 High — fires easily	High — fires easily
 Hint	Hint
 Hold for at least (ms)	Hold for at least (ms)
+Home Assistant	Home Assistant
+Home Assistant Entity	Home Assistant Entity
+Home Assistant Entity Changed	Home Assistant Entity Changed
+Home Assistant Event	Home Assistant Event
 Hours	Hours
 How many	How many
 How many at most	How many at most
@@ -345,6 +359,7 @@ Routes execution by comparing a value against another	Routes execution by compar
 Run Script	Run Script
 Run action	Run action
 Runs JavaScript over inputs you name and returns values on ports you name	Runs JavaScript over inputs you name and returns values on ports you name
+Runs any Home Assistant service — a thermostat, a media player, a lock, a vacuum, a script	Runs any Home Assistant service — a thermostat, a media player, a lock, a vacuum, a script
 SMS	SMS
 SMS Received	SMS Received
 Saturdays	Saturdays
@@ -365,6 +380,7 @@ Sends an email through one of your mail accounts	Sends an email through one of y
 Sensitivity	Sensitivity
 Separator	Separator
 Separator (blank for a new line)	Separator (blank for a new line)
+Service	Service
 Set	Set
 Set Brightness	Set Brightness
 Set Ringer Mode	Set Ringer Mode
@@ -403,6 +419,7 @@ Starts the workflow when you tap run, or tap its widget or shortcut	Starts the w
 Starts when Bluetooth is turned on or off	Starts when Bluetooth is turned on or off
 Starts when Wi-Fi is enabled or disabled	Starts when Wi-Fi is enabled or disabled
 Starts when a Bluetooth device connects or disconnects	Starts when a Bluetooth device connects or disconnects
+Starts when a Home Assistant entity changes — a sensor, a switch, a door, a thermostat	Starts when a Home Assistant entity changes — a sensor, a switch, a door, a thermostat
 Starts when a USB device is connected or disconnected	Starts when a USB device is connected or disconnected
 Starts when a matching notification arrives	Starts when a matching notification arrives
 Starts when a media button is pressed (play, pause, next, etc.)	Starts when a media button is pressed (play, pause, next, etc.)
@@ -414,6 +431,7 @@ Starts when an NFC tag is held to the phone. Only works while the screen is on a
 Starts when an SMS arrives	Starts when an SMS arrives
 Starts when an app is installed, removed or replaced	Starts when an app is installed, removed or replaced
 Starts when an email arrives in a mailbox you are watching	Starts when an email arrives in a mailbox you are watching
+Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event
 Starts when external media is mounted, unmounted or ejected	Starts when external media is mounted, unmounted or ejected
 Starts when power-save mode is toggled on or off	Starts when power-save mode is toggled on or off
 Starts when the battery level crosses a threshold (polls in the background)	Starts when the battery level crosses a threshold (polls in the background)
@@ -457,6 +475,7 @@ Text contains (optional)	Text contains (optional)
 Text — one item per line, or wire something in	Text — one item per line, or wire something in
 The current battery charge as a percentage in 0..100	The current battery charge as a percentage in 0..100
 The current date and time	The current date and time
+The current state of a Home Assistant entity — a sensor, a switch, a thermostat	The current state of a Home Assistant entity — a sensor, a switch, a thermostat
 The current value of a variable	The current value of a variable
 The device\'s current ringer mode	The device\'s current ringer mode
 The light level around the device in lux — a dim room is around 30, an office a few hundred	The light level around the device in lux — a dim room is around 30, an office a few hundred

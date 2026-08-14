@@ -358,7 +358,7 @@ smarthome_done	Done
 smarthome_it_is_the_large_button	It is the large button in the middle of the disc, between the three small lights. Connecting to %1$s.
 smarthome_looking_for_bridges_on_your	Looking for bridges on your Wi-Fi…
 smarthome_name	Name
-smarthome_no_hubs_yet_add_one	No hubs yet. Add one to control your lights from a macro. You will need to press the button on the bridge once, to prove you are standing next to it.
+smarthome_no_hubs_yet_add_one	No hubs yet. Add one to control your lights from a macro, and to start macros when something in your home changes.
 smarthome_nothing_matches	Nothing matches \"%1$s\".
 smarthome_only_trust_it_if_you	Only trust it if you reset or replaced your bridge. If you did not, something else on your network is answering as it.
 smarthome_or_type_the_bridge_s	Or type the bridge\'s address
@@ -622,3 +622,28 @@ api_allowed_on	Allowed on %1$s
 geofence_small_radius_warning	Below %1$d m the system trades location accuracy for battery, so crossings are often missed or reported late.
 shortcut_macro_and_trigger	%1$s · %2$s
 grapheditor_port_path	%1$s › %2$s
+smarthome_home_assistant	Home Assistant
+smarthome_a_server_you_already_run	A server you already run
+smarthome_ha_reached	Reached it. The token works.
+ha_connect_home_assistant	Connect Home Assistant
+ha_name_your_hub	Name your hub
+ha_looking_for_instances	Looking for Home Assistant on your Wi-Fi…
+ha_address	Address
+ha_access_token	Long-lived access token
+ha_test	Test
+ha_paste	Paste
+ha_open_profile	Open the profile page
+ha_token_steps	In Home Assistant, open your profile, choose Security, scroll to Long-lived access tokens and create one. It is shown once — copy it, then paste it here.
+ha_cleartext_warning	This address is not encrypted. That is normal for a server on your own network; over the internet it would send your token in the clear.
+ha_connected_this_is_the_name	Connected. This is the name your macros will show.
+ha_all_entities	Entities
+ha_replace_token	Replace token
+ha_auth_token	Long-lived token
+ha_auth_oauth	Signed in
+ha_authentication	Authentication
+smarthome_sign_in_again	Sign in again
+ha_choose_an_entity	Choose an entity
+ha_choose_a_service	Choose a service
+ha_choose_a_hub	Choose a Home Assistant
+ha_sign_in	Or sign in to Home Assistant
+ha_no_hub_yet	No Home Assistant yet. Add one in Smart home.

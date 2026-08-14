@@ -52,6 +52,13 @@ resting value — a shake, a tap, an SMS, a boot — or when reading it is expen
 failable, which is an action's job. The rule does not run backwards: a value with no
 trigger behind it is fine, and `value.nfc` is one.
 
+"Expensive or failable" is about the **transport, not the subject**. `value.ha_state`
+reads a Home Assistant entity — unambiguously a thing on the network — and is a legal
+value node, because a websocket pushes every change into a local cache and the read is a
+map lookup. `value.light_state` does not exist because a Hue bridge offers no such
+channel and every read is a round trip. So ask *is this read cheap, and can it fail*,
+not *does this concern the network*.
+
 There is deliberately **no condition kind**. A condition is a comparison over a value,
 so the two halves are declared separately and combined at `action.if`.
 

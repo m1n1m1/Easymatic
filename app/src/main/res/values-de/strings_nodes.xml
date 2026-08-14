@@ -1031,4 +1031,26 @@
     <string name="valuetype_date_time">Datum &amp; Uhrzeit</string>
     <string name="config_option_unset">Beliebig</string>
     <string name="valuetype_any">Beliebig</string>
+    <string name="cfg_action_ha_service_data">Zusätzliche Daten (JSON)</string>
+    <string name="cfg_action_ha_service_service">Dienst</string>
+    <string name="cfg_action_ha_service_target">Entität</string>
+    <string name="cfg_trigger_ha_event_data_contains">Daten enthalten</string>
+    <string name="cfg_trigger_ha_event_event_type">Ereignistyp</string>
+    <string name="cfg_trigger_ha_event_hub">Home Assistant</string>
+    <string name="cfg_trigger_ha_state_entity">Entität</string>
+    <string name="cfg_trigger_ha_state_from_state">Wechselt von</string>
+    <string name="cfg_trigger_ha_state_include_attribute_changes">Auch wenn sich nur Details ändern</string>
+    <string name="cfg_trigger_ha_state_to_state">Wechselt zu</string>
+    <string name="cfg_value_ha_state_attribute">Attribut (optional)</string>
+    <string name="cfg_value_ha_state_entity">Entität</string>
+    <string name="node_action_ha_service_desc">Führt einen beliebigen Home-Assistant-Dienst aus — ein Thermostat, einen Mediaplayer, ein Schloss, einen Staubsauger, ein Skript</string>
+    <string name="node_action_ha_service_name">Home-Assistant-Dienst aufrufen</string>
+    <string name="node_trigger_ha_event_desc">Startet, wenn auf dem Home-Assistant-Ereignisbus ein Ereignis ausgelöst wird — ein Zigbee-Taster, ein Tag, ein eigenes Ereignis</string>
+    <string name="node_trigger_ha_event_name">Home-Assistant-Ereignis</string>
+    <string name="node_trigger_ha_state_desc">Startet, wenn sich eine Home-Assistant-Entität ändert — ein Sensor, ein Schalter, eine Tür, ein Thermostat</string>
+    <string name="node_trigger_ha_state_name">Home-Assistant-Entität geändert</string>
+    <string name="node_value_ha_state_desc">Der aktuelle Zustand einer Home-Assistant-Entität — ein Sensor, ein Schalter, ein Thermostat</string>
+    <string name="node_value_ha_state_name">Home-Assistant-Entität</string>
+    <string name="port_action_ha_service_data">Zusätzliche Daten (JSON)</string>
+    <string name="port_trigger_ha_state_change">Änderung</string>
 </resources>

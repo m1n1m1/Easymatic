@@ -1,4 +1,3 @@
-# Japanese node text. First column must match values/strings_nodes.xml exactly.
 A	A
 A run of items out of a list	リスト内の連続した一部の要素
 A to Z / smallest first	A→Z / 小さい順
@@ -13,11 +12,12 @@ Active from	有効開始
 Active until (earlier than \'from\' runs past midnight)	有効終了（「開始」より前だと日をまたぎます）
 Add to List	リストに追加
 Adjusts an audio stream\'s volume (up, down, set, mute or unmute)	オーディオストリームの音量を調整します（上げる、下げる、設定、ミュート、ミュート解除）
-Airplane Mode Changed	機内モードの変更
 Airplane mode	機内モード
+Airplane Mode Changed	機内モードの変更
 Alarm	アラーム
 Alarms	アラーム
 All	すべて
+Also when only its details change	詳細だけが変わったときも
 Also when the device starts moving	端末が動き始めたときも
 Always (high battery use)	常時（電池消費が大きい）
 Ambient Light	環境光
@@ -25,19 +25,21 @@ Ambient light	環境光
 Answer	回答
 Answer type	回答の種類
 Any	任意
+Anything	任意
 App	アプリ
 App (optional)	アプリ（任意）
 App Initialised	アプリの初期化完了
 App Installed / Removed	アプリのインストール / 削除
 Appends an item to a named list, usually from inside a loop	指定したリストに要素を追加します。通常はループの中で使います
 Ask AI	AI に質問
-Ask Yes or No	はい／いいえで質問
 Ask for Input	入力を求める
 Ask to Choose	選択を求める
+Ask Yes or No	はい／いいえで質問
 Asks the user a yes/no question in a popup dialog and branches on the answer	ダイアログではい／いいえの質問をし、回答によって分岐します
 Asks the user to type a value in a popup dialog and puts it on a port	ダイアログで値を入力してもらい、それをポートに出力します
 At	時刻
 At a time of day	1 日のうちの時刻に
+Attribute (optional)	属性（任意）
 Auto	自動
 Auto brightness	明るさの自動調整
 Automatic	自動
@@ -49,8 +51,8 @@ Battery level	電池残量
 Bcc	Bcc
 Below	下回る
 Bluetooth Device Connected	Bluetooth デバイスの接続
-Bluetooth State Change	Bluetooth の状態変化
 Bluetooth enabled	Bluetooth が有効
+Bluetooth State Change	Bluetooth の状態変化
 Body	本文
 Boolean	はい／いいえ
 Break Struct	構造体を分解
@@ -59,12 +61,16 @@ Build text	テキストを組み立てる
 Button	ボタン
 Button label	ボタンのラベル
 C	C
+Call Home Assistant Service	Home Assistant のサービスを呼び出す
 Called by Another App	他のアプリから呼び出し
 Calls a web API and exposes the typed response	Web API を呼び出し、型付きのレスポンスを出力します
 Cancel button	キャンセルボタン
 Carries on at once and continues again at a chosen moment	すぐに先へ進み、指定した時刻に再び続きを実行します
 Carry on now	今すぐ続行
 Cc	Cc
+Change	変化
+Changes from	変化前
+Changes to	変化後
 Charging	充電中
 Charging started	充電開始
 Charging stopped	充電停止
@@ -93,8 +99,9 @@ Covered	遮られている
 Current time	現在時刻
 Custom	カスタム
 Custom sound	カスタムサウンド
-Dark Theme Change	ダークテーマの変更
 Dark theme	ダークテーマ
+Dark Theme Change	ダークテーマの変更
+Data contains	データに含まれる
 Date &amp; time	日付と時刻
 Date rolled over	日付が変わった
 Date time	日時
@@ -105,9 +112,9 @@ Device Boot	端末の起動
 Device Docked	端末をドックに装着
 Device Movement	端末の動き
 Device Orientation	端末の向き
+Device orientation	端末の向き
 Device Shutting Down	端末のシャットダウン
 Device Unlocked	端末のロック解除
-Device orientation	端末の向き
 Direction	方向
 Disable Macro	マクロを無効化
 Disabled	無効
@@ -130,12 +137,16 @@ Empty Trigger	空のトリガー
 Enable Macro	マクロを有効化
 Enabled	有効
 Enables another macro by id (persists the flag and arms its triggers)	別のマクロを id で有効化します（状態を保存し、そのトリガーを起動します）
+Entity	エンティティ
 Equals	等しい
 Event	イベント
+Event type	イベントタイプ
+Extra data (JSON)	追加データ（JSON）
 Face down	画面を下に
 Face up	画面を上に
 Fade time (ms)	フェード時間（ミリ秒）
 Falls below	下回る
+false	偽
 Fast	高速
 Fetch Email	メールを取得
 Field	フィールド
@@ -158,21 +169,24 @@ From position (0 is the first)	開始位置（0 が先頭）
 Geofence	ジオフェンス
 Gesture	ジェスチャー
 Get	取得
-Get Light State	照明の状態を取得
 Get as	取得する型
+Get Light State	照明の状態を取得
 Give up after (seconds)	あきらめるまでの時間（秒）
 Greater than	より大きい
 Greater than or equal	以上
-HTTP Request	HTTP リクエスト
 Halts the current execution chain (stops following connected actions)	現在の実行チェーンを中止します（この先につながるアクションをたどりません）
 Headers (JSON, optional)	ヘッダー（JSON、任意）
-Headset Plugged	ヘッドセットの接続
 Headset hook	ヘッドセットのボタン
+Headset Plugged	ヘッドセットの接続
 Headset plugged in	ヘッドセット接続中
 Held down	長押し
 High — fires easily	高 — 発火しやすい
 Hint	ヒント
 Hold for at least (ms)	最低限の長押し時間（ミリ秒）
+Home Assistant	Home Assistant
+Home Assistant Entity	Home Assistant のエンティティ
+Home Assistant Entity Changed	Home Assistant のエンティティが変化
+Home Assistant Event	Home Assistant のイベント
 Hours	時間
 How many	いくつ
 How many at most	最大でいくつ
@@ -180,10 +194,12 @@ How many items are in a list	リストに要素がいくつあるか
 How many times	何回
 How the device is currently resting — face up or down, portrait or landscape (screen on only)	端末が今どう置かれているか（画面が上か下か、縦か横か。画面がオンのときのみ）
 How to watch	監視方法
+HTTP Request	HTTP リクエスト
 Idle	待機中
 If	もし
 If it fails	失敗した場合
 If missing	見つからない場合
+in	入力
 Incoming Call State	着信の状態
 Index	インデックス
 Initiates a phone call to a number	指定した番号に発信します
@@ -193,8 +209,8 @@ Int	整数
 Item	要素
 Item at position	指定位置の要素
 Item to find	探す要素
-JSON text	JSON テキスト
 Join list	リストを連結
+JSON text	JSON テキスト
 Key	キー
 Landscape left	左向き横画面
 Landscape right	右向き横画面
@@ -246,11 +262,11 @@ Move to folder	フォルダーへ移動
 Multiple lines	複数行
 Must hold for (ms)	必要な長押し時間（ミリ秒）
 Mute	ミュート
-NFC Tag	NFC タグ
-NFC enabled	NFC が有効
 Name other apps see	他のアプリに見える名前
 Network	ネットワーク
 Next	次へ
+NFC enabled	NFC が有効
+NFC Tag	NFC タグ
 Normal	通常
 Not equals	等しくない
 Notification	通知
@@ -272,12 +288,13 @@ Only unread	未読のみ
 Only when it ends up lying flat	平らに落ち着いたときのみ
 Only while the screen is on	画面がオンのときのみ
 Open URL	URL を開く
-Opens WhatsApp, Signal or Telegram with a message ready to send	WhatsApp、Signal、Telegram を開き、送信内容をあらかじめ入力しておきます
 Opens a URL in the default handler (browser or app). Typing google.com is enough	既定のアプリ（ブラウザーまたはアプリ）で URL を開きます。google.com と入力するだけで十分です
+Opens WhatsApp, Signal or Telegram with a message ready to send	WhatsApp、Signal、Telegram を開き、送信内容をあらかじめ入力しておきます
 Operator	演算子
 Options — one per line	選択肢 — 1 行に 1 つ
 Order	並び順
 Orientation	向き
+out	出力
 Outputs	出力
 Package	パッケージ
 Part of list	リストの一部
@@ -289,8 +306,8 @@ Picked up	持ち上げられた
 Place	場所
 Planned for	予定時刻
 Play	再生
-Play Sound	サウンドを再生
 Play pause	再生／一時停止
+Play Sound	サウンドを再生
 Play through	再生先
 Plays a notification, ringtone, alarm or chosen sound	通知音、着信音、アラーム音、または選んだサウンドを再生します
 Plugged	接続済み
@@ -304,8 +321,8 @@ Position (0 is the first)	位置（0 が先頭）
 Position in list	リスト内の位置
 Post	送信
 Posts a notification on this device	この端末に通知を表示します
-Power Save Mode Changed	省電力モードの変更
 Power save mode	省電力モード
+Power Save Mode Changed	省電力モードの変更
 Prefilled	初期入力
 Pressed	押された
 Pressed several times	複数回押された
@@ -334,46 +351,47 @@ Repeat while	条件が続く間繰り返す
 Replaced	置き換え
 Replies to a message in WhatsApp, Signal, Telegram or another messenger	WhatsApp、Signal、Telegram などのメッセージに返信します
 Reply to Message	メッセージに返信
+response	レスポンス
 Resumed at	再開時刻
 Ring	着信音
-Ringer Mode Changed	着信音モードの変更
 Ringer mode	着信音モード
+Ringer Mode Changed	着信音モードの変更
 Ringing	着信中
 Ringtone	着信音
 Rises above	上回る
 Routes execution by comparing a value against another	値どうしを比較して実行の流れを振り分けます
-Run Script	スクリプトを実行
 Run action	実行する操作
+Run Script	スクリプトを実行
+Runs any Home Assistant service — a thermostat, a media player, a lock, a vacuum, a script	Home Assistant の任意のサービスを実行します — サーモスタット、メディアプレーヤー、鍵、掃除機、スクリプト
 Runs JavaScript over inputs you name and returns values on ports you name	自分で名前を付けた入力に対して JavaScript を実行し、自分で名前を付けたポートに値を返します
-SMS	SMS
-SMS Received	SMS 受信
 Saturdays	毎週土曜
 Scene	シーン
 Schedule	スケジュール
-Screen On / Off	画面のオン / オフ
 Screen on	画面がオン
+Screen On / Off	画面のオン / オフ
 Script — each input is a variable of its own name	スクリプト — 各入力は同じ名前の変数になります
 Seconds	秒
+Send as HTML	HTML として送信
 Send Email	メールを送信
 Send Message	メッセージを送信
 Send SMS	SMS を送信
-Send as HTML	HTML として送信
 Sender (optional — any sender when empty)	送信者（任意 — 空欄ならすべての送信者）
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text	AI モデル（Gemini、Claude、ChatGPT、OpenRouter、セルフホストのモデル）にプロンプトを送り、その回答をテキストで返します
-Sends an SMS to a number with a body	指定した番号に本文付きの SMS を送信します
 Sends an email through one of your mail accounts	あなたのメールアカウントのいずれかからメールを送信します
+Sends an SMS to a number with a body	指定した番号に本文付きの SMS を送信します
 Sensitivity	感度
 Separator	区切り文字
 Separator (blank for a new line)	区切り文字（空欄で改行）
+Service	サービス
 Set	設定
 Set Brightness	明るさを設定
-Set Ringer Mode	着信音モードを設定
-Set Screen Timeout	画面消灯時間を設定
-Set Variable	変数を設定
-Set Volume	音量を設定
 Set brightness	明るさを設定
 Set colour	色を設定
+Set Ringer Mode	着信音モードを設定
+Set Screen Timeout	画面消灯時間を設定
 Set temperature	色温度を設定
+Set Variable	変数を設定
+Set Volume	音量を設定
 Sets or clears the clipboard	クリップボードを設定または消去します
 Sets screen brightness (absolute value or auto)	画面の明るさを設定します（固定値または自動）
 Sets the ringer mode to normal, silent or vibrate	着信音モードを通常、サイレント、バイブに設定します
@@ -386,6 +404,8 @@ Shows a popup dialog offering a list of options and reports which one was picked
 Signal	Signal
 Silence	無音
 Silent	サイレント
+SMS	SMS
+SMS Received	SMS 受信
 Sort list	リストを並べ替え
 Sound	サウンド
 Source	取得元
@@ -400,20 +420,21 @@ Starts once after the device finishes booting	端末の起動完了後に 1 回�
 Starts the workflow on an interval or at a time of day	一定間隔、または 1 日のうちの時刻にワークフローを開始します
 Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it	他のアプリ、スクリプト、ショートカットが Ottomatic に実行を求めたときにワークフローを開始します
 Starts the workflow when you tap run, or tap its widget or shortcut	実行をタップしたとき、またはウィジェットやショートカットをタップしたときにワークフローを開始します
-Starts when Bluetooth is turned on or off	Bluetooth がオンまたはオフになったときに開始します
-Starts when Wi-Fi is enabled or disabled	Wi-Fi が有効または無効になったときに開始します
 Starts when a Bluetooth device connects or disconnects	Bluetooth デバイスが接続または切断されたときに開始します
-Starts when a USB device is connected or disconnected	USB デバイスが接続または取り外されたときに開始します
+Starts when a Home Assistant entity changes — a sensor, a switch, a door, a thermostat	Home Assistant のエンティティが変化したときに開始します — センサー、スイッチ、ドア、サーモスタット
 Starts when a matching notification arrives	条件に合う通知が届いたときに開始します
 Starts when a media button is pressed (play, pause, next, etc.)	メディアボタンが押されたときに開始します（再生、一時停止、次へ など）
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	WhatsApp、Signal、Telegram などでメッセージが届いたときに開始します
+Starts when a USB device is connected or disconnected	USB デバイスが接続または取り外されたときに開始します
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	音量ボタンが押された、長押しされた、複数回押されたときに開始します。ユーザー補助へのアクセスが必要ですが、ボタン自体はこれまでどおり機能します
 Starts when a wired headset is plugged or unplugged	有線ヘッドセットが接続または取り外されたときに開始します
 Starts when airplane mode is toggled	機内モードが切り替わったときに開始します
-Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	NFC タグを端末にかざしたときに開始します。画面がオンでロック解除されている間のみ動作します
-Starts when an SMS arrives	SMS が届いたときに開始します
 Starts when an app is installed, removed or replaced	アプリがインストール、削除、置き換えされたときに開始します
 Starts when an email arrives in a mailbox you are watching	監視中のメールボックスにメールが届いたときに開始します
+Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	Home Assistant のイベントバスでイベントが発生したときに開始します — Zigbee ボタン、タグ、独自のイベント
+Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	NFC タグを端末にかざしたときに開始します。画面がオンでロック解除されている間のみ動作します
+Starts when an SMS arrives	SMS が届いたときに開始します
+Starts when Bluetooth is turned on or off	Bluetooth がオンまたはオフになったときに開始します
 Starts when external media is mounted, unmounted or ejected	外部メディアがマウント、アンマウント、取り出しされたときに開始します
 Starts when power-save mode is toggled on or off	省電力モードがオンまたはオフになったときに開始します
 Starts when the battery level crosses a threshold (polls in the background)	電池残量がしきい値を越えたときに開始します（バックグラウンドで監視します）
@@ -434,11 +455,13 @@ Starts when the ringer mode changes (normal, silent, vibrate)	着信音モード
 Starts when the screen turns on or off	画面がオンまたはオフになったときに開始します
 Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)	画面上部のセンサーが遮られた、または遮りが取れたときに開始します。手がガラスに触れているか、ほぼ触れている必要があります（多くの端末では画面がオンのときのみ）
 Starts when the user unlocks the device	ユーザーが端末のロックを解除したときに開始します
+Starts when Wi-Fi is enabled or disabled	Wi-Fi が有効または無効になったときに開始します
 State	状態
+state	状態
 Stop	停止
+Stop after (seconds, 0 = play to the end)	停止までの時間（秒、0 = 最後まで再生）
 Stop Macro	マクロを停止
 Stop Sound	サウンドを停止
-Stop after (seconds, 0 = play to the end)	停止までの時間（秒、0 = 最後まで再生）
 Stops every sound started by Play Sound	「サウンドを再生」で開始したすべての音を停止します
 Stream	ストリーム
 String	テキスト
@@ -457,6 +480,7 @@ Text contains (optional)	本文が次を含む（任意）
 Text — one item per line, or wire something in	テキスト — 1 行 1 要素、または他から接続します
 The current battery charge as a percentage in 0..100	現在の電池残量（0〜100 のパーセント）
 The current date and time	現在の日付と時刻
+The current state of a Home Assistant entity — a sensor, a switch, a thermostat	Home Assistant のエンティティの現在の状態 — センサー、スイッチ、サーモスタット
 The current value of a variable	変数の現在の値
 The device\'s current ringer mode	端末の現在の着信音モード
 The light level around the device in lux — a dim room is around 30, an office a few hundred	端末まわりの明るさ（ルクス）。薄暗い部屋で 30 前後、オフィスで数百です
@@ -478,19 +502,18 @@ Toggle Flashlight	ライトを切り替え
 Toggle Wi-Fi	Wi-Fi を切り替え
 Toggles Do-Not-Disturb on or off with a chosen policy level	選んだレベルでサイレントモードをオン／オフします
 Triple tap	トリプルタップ
+true	真
 Tuesdays	毎週火曜
 Turn off	オフにする
 Turn on	オンにする
-Turns Bluetooth on or off and reports the resulting state	Bluetooth をオン／オフし、その結果の状態を返します
-Turns Wi-Fi on or off and reports the resulting state	Wi-Fi をオン／オフし、その結果の状態を返します
 Turns a light, room or zone on or off, or sets its brightness, colour or warmth — Philips Hue	照明、部屋、ゾーンをオン／オフしたり、明るさ・色・色温度を設定したりします — Philips Hue
 Turns a list into one piece of text, separated by what you choose	リストを 1 つのテキストにまとめます。区切り文字は自由に選べます
 Turns a value into another type — text, a number, yes/no or a date	値を別の型に変換します（テキスト、数値、はい／いいえ、日付）
 Turns accelerometer auto-rotation on or off	加速度センサーによる自動回転をオン／オフします
+Turns Bluetooth on or off and reports the resulting state	Bluetooth をオン／オフし、その結果の状態を返します
 Turns the camera torch (flashlight) on or off	カメラのライト（懐中電灯）をオン／オフします
+Turns Wi-Fi on or off and reports the resulting state	Wi-Fi をオン／オフし、その結果の状態を返します
 Type	型
-URL	URL
-USB Device Connected	USB デバイスの接続
 Uncovered	遮られていない
 Undocked	ドックから取り外し
 Unit	単位
@@ -502,6 +525,8 @@ Until a date and time	指定した日時まで
 Until a time of day	1 日のうちの時刻まで
 Up	上げる
 Update Email	メールを更新
+URL	URL
+USB Device Connected	USB デバイスの接続
 Value	値
 Value (0-100, only when mode is set)	値（0〜100。モードが「設定」のときのみ）
 Value (0-255, only when auto is off)	値（0〜255。自動がオフのときのみ）
@@ -527,33 +552,26 @@ When the light level	明るさが
 When the time comes	その時刻になったら
 When time runs out	時間切れのとき
 Where an item sits in a list, counting from 0, or -1 when it is not there	要素がリストのどの位置にあるか（0 から数えます）。ないときは -1
-Whether Bluetooth is currently enabled	Bluetooth が現在有効かどうか
-Whether Do-Not-Disturb is currently active	サイレントモードが現在有効かどうか
-Whether NFC is currently switched on	NFC が現在オンかどうか
-Whether Wi-Fi is currently enabled	Wi-Fi が現在有効かどうか
 Whether a list holds a given item	リストが指定の要素を含むかどうか
 Whether a wired or USB headset is currently plugged in	有線または USB のヘッドセットが現在接続されているかどうか
 Whether airplane mode is currently on	機内モードが現在オンかどうか
 Whether battery saver is currently on	省電力モードが現在オンかどうか
+Whether Bluetooth is currently enabled	Bluetooth が現在有効かどうか
+Whether Do-Not-Disturb is currently active	サイレントモードが現在有効かどうか
+Whether NFC is currently switched on	NFC が現在オンかどうか
 Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	画面上部のセンサーが何かで遮られているかどうか（ポケット、ガラスに当てた手、画面を下にした端末など）
 Whether the device is currently charging	端末が現在充電中かどうか
 Whether the device is currently in dark theme (night mode)	端末が現在ダークテーマ（ナイトモード）かどうか
 Whether the device is currently sitting in a dock	端末が現在ドックに置かれているかどうか
 Whether the screen is currently on and interactive	画面が現在オンで操作できる状態かどうか
+Whether Wi-Fi is currently enabled	Wi-Fi が現在有効かどうか
 While the screen is off	画面がオフの間
 Whole number	整数
-Wi-Fi Network	Wi-Fi ネットワーク
-Wi-Fi State Change	Wi-Fi の状態変化
 Wi-Fi enabled	Wi-Fi が有効
+Wi-Fi Network	Wi-Fi ネットワーク
 Wi-Fi network	Wi-Fi ネットワーク
+Wi-Fi State Change	Wi-Fi の状態変化
 Within (ms)	この時間内（ミリ秒）
 Writes a message to this workflow\'s console	このワークフローのコンソールにメッセージを書き込みます
 Yes or no	はい／いいえ
 Z to A / largest first	Z→A / 大きい順
-false	偽
-in	入力
-out	出力
-response	レスポンス
-state	状態
-true	真
-Anything	任意

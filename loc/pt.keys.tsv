@@ -1,60 +1,77 @@
-# European Portuguese (pt-PT). Plain text — loc/mkloc.py escapes apostrophes and ampersands.
-# Terminology: Workflow=Fluxo, macro=macro, node=nó, trigger=Acionador, action=Ação,
-# value=Valor, transform=Transformação, port=porta, armed=ativo, geofence=Geocerca.
-# pt-PT vocabulary: ecrã, telemóvel, aplicação, ficheiro, definições, guardar,
-# palavra-passe, utilizador, eliminar, predefinido. Informal "tu", as in de/es/fr.
+accessibility_service_description	O Ottomatic usa isto apenas para detetar pressões nos botões de volume, para que as tuas macros possam arrancar assim. Nunca lê o conteúdo do ecrã e nunca altera o que os botões fazem: as teclas de volume continuam a funcionar normalmente.
 accessibility_service_label	Acionadores por botão do Ottomatic
 accessibility_service_summary	Permite que as macros arranquem quando premes os botões de volume.
-accessibility_service_description	O Ottomatic usa isto apenas para detetar pressões nos botões de volume, para que as tuas macros possam arrancar assim. Nunca lê o conteúdo do ecrã e nunca altera o que os botões fazem: as teclas de volume continuam a funcionar normalmente.
-shortcut_new_macro_short	Nova macro
-shortcut_new_macro_long	Criar uma macro nova
-widget_run_tile_label	Mosaico de execução
-widget_panel_label	Painel do Ottomatic
-widget_run_tile_description	Uma macro, um toque. Escolhe um acionador manual e executa-o a partir do ecrã principal.
-widget_panel_description	Estado do motor, problemas, a última execução e uma grelha de acionadores manuais: escolhes tu o que aparece.
-permission_bind_plugin_label	Fornecer nós do Ottomatic
-permission_bind_plugin_description	Permite que o Ottomatic use os nós de acionador e de ação adicionais fornecidos por esta aplicação. A aplicação executa o seu próprio código com as suas próprias permissões; o Ottomatic não partilha as dele com ela.
-ai_provider_gemini	Google Gemini
-ai_provider_anthropic	Anthropic Claude
-ai_provider_openai	OpenAI (ChatGPT)
-ai_provider_openrouter	OpenRouter
-ai_provider_self_hosted	Autoalojado / compatível com OpenAI
-ai_default_name_gemini	Gemini
-ai_default_name_anthropic	Claude
-ai_default_name_openai	ChatGPT
-ai_default_name_openrouter	OpenRouter
-ai_default_name_self_hosted	Autoalojado
-ai_console_gemini	Google AI Studio
+ai_add_ai_connection	Adicionar ligação de IA
+ai_add_connection	Adicionar ligação
+ai_ai_connections	Ligações de IA
+ai_answer_briefly_and_in_plain	Responde de forma breve e em linguagem simples.
+ai_api_key	Chave de API
+ai_api_key_paste_it_in	Chave de API: cola-a outra vez
+ai_asking_the_model	A perguntar ao modelo…
+ai_back	Voltar
+ai_choose_a_connection	Escolher uma ligação
 ai_console_anthropic	a consola da Anthropic
+ai_console_gemini	Google AI Studio
 ai_console_openai	a plataforma da OpenAI
 ai_console_openrouter	OpenRouter
-ai_open_console	Abrir %1$s
-ai_cost_gemini	O plano gratuito é generoso, mas a quota é tua: uma macro que pergunte à IA a cada minuto esgota-a. Podes revogar a chave na mesma página a qualquer momento.
 ai_cost_anthropic	Os pedidos são debitados do teu próprio saldo da Anthropic, por isso uma macro que pergunte à IA a cada minuto custa dinheiro. Podes revogar a chave na mesma página a qualquer momento.
+ai_cost_gemini	O plano gratuito é generoso, mas a quota é tua: uma macro que pergunte à IA a cada minuto esgota-a. Podes revogar a chave na mesma página a qualquer momento.
 ai_cost_openai	Os pedidos são debitados da tua própria conta OpenAI, por isso uma macro que pergunte à IA a cada minuto custa dinheiro. Podes revogar a chave na mesma página a qualquer momento.
 ai_cost_openrouter	Os pedidos são debitados do teu próprio saldo da OpenRouter, e o preço depende do modelo que escolheres. Podes revogar a chave na mesma página a qualquer momento.
 ai_cost_self_hosted	Os pedidos vão para o teu próprio servidor e para mais lado nenhum, por isso não custam nada nem saem de uma rede que controlas. O servidor tem de estar acessível sempre que a macro correr.
-ai_privacy_gemini	Os pedidos são respondidos pelos servidores da Google, por isso um nó Perguntar à IA demora um momento.
+ai_default_name_anthropic	Claude
+ai_default_name_gemini	Gemini
+ai_default_name_openai	ChatGPT
+ai_default_name_openrouter	OpenRouter
+ai_default_name_self_hosted	Autoalojado
+ai_delete	Eliminar
+ai_edit	Editar
+ai_edit_connection	Editar ligação
+ai_getting_a_key	Obter uma chave
+ai_key_needs_pasting_in_again	É preciso colar a chave outra vez
+ai_key_not_stored_securely	Este telemóvel não guardaria a chave de forma segura.
+ai_leave_these_empty_to_use	Deixa estes campos vazios para usares os modelos do próprio fornecedor. Preenche um quando um modelo for descontinuado, ou para fixares um em concreto.
+ai_list_models	Listar modelos
+ai_loading_models	A carregar modelos…
+ai_model_answered	O modelo respondeu: %1$s
+ai_model_balanced	Equilibrado
+ai_model_fast	Rápido
+ai_model_thorough	Minucioso
+ai_models	Modelos
+ai_name	Nome
+ai_name_the_model_your_server	Indica o modelo que o teu servidor ou conta disponibiliza. Se só preencheres Rápido, os outros dois também o usam.
+ai_new_api_key_leave_empty	Nova chave de API (deixa vazio para manteres a atual)
+ai_no_connections_yet_add_one	Ainda não há ligações. Adiciona uma para usares o nó Perguntar à IA. Basta uma chave de API gratuita do Google AI Studio: o formulário guia-te até a obteres e abre-te a página.
+ai_open_console	Abrir %1$s
+ai_paste_key	Colar chave
+ai_pointing_at_own_server	Apontar para o teu próprio servidor
 ai_privacy_anthropic	Os pedidos são respondidos pelos servidores da Anthropic, por isso um nó Perguntar à IA demora um momento.
+ai_privacy_gemini	Os pedidos são respondidos pelos servidores da Google, por isso um nó Perguntar à IA demora um momento.
 ai_privacy_openai	Os pedidos são respondidos pelos servidores da OpenAI, por isso um nó Perguntar à IA demora um momento.
 ai_privacy_openrouter	Os pedidos passam pela OpenRouter até ao fornecedor que serve o modelo escolhido, por isso um nó Perguntar à IA demora um momento.
 ai_privacy_self_hosted	Os pedidos vão apenas para o servidor indicado acima.
-ai_model_fast	Rápido
-ai_model_balanced	Equilibrado
-ai_model_thorough	Minucioso
-ai_loading_models	A carregar modelos…
-ai_asking_the_model	A perguntar ao modelo…
-ai_key_not_stored_securely	Este telemóvel não guardaria a chave de forma segura.
-ai_steps_gemini:0	Toca no botão abaixo. O Google AI Studio abre no teu navegador.
-ai_steps_gemini:1	Inicia sessão com a tua conta Google, se te for pedido.
-ai_steps_gemini:2	Toca em «Create API key». Se perguntar que projeto usar, escolhe qualquer um, ou deixa-o criar um novo.
-ai_steps_gemini:3	Toca na chave para a copiar.
-ai_steps_gemini:4	Volta aqui e toca no botão de colar ao lado do campo da chave.
+ai_provider	Fornecedor
+ai_provider_anthropic	Anthropic Claude
+ai_provider_gemini	Google Gemini
+ai_provider_openai	OpenAI (ChatGPT)
+ai_provider_openrouter	OpenRouter
+ai_provider_s_default	o do fornecedor
+ai_provider_self_hosted	Autoalojado / compatível com OpenAI
+ai_save	Guardar
+ai_save_the_connection_first_then	Guarda primeiro a ligação e depois toca em Testar para confirmares que a chave funciona.
+ai_sent_ahead_of_every_prompt	Enviada antes de cada pedido feito por esta ligação. A instrução própria de um nó Perguntar à IA é acrescentada a seguir, não a substitui.
+ai_server_address	Endereço do servidor
+ai_standing_instruction_optional	Instrução permanente (opcional)
 ai_steps_anthropic:0	Toca no botão abaixo. A consola da Anthropic abre no teu navegador.
 ai_steps_anthropic:1	Inicia sessão, ou cria uma conta se não tiveres.
 ai_steps_anthropic:2	Toca em «Create Key», dá-lhe um nome e confirma.
 ai_steps_anthropic:3	Copia a chave: é mostrada uma única vez e nunca mais.
 ai_steps_anthropic:4	Volta aqui e toca no botão de colar ao lado do campo da chave.
+ai_steps_gemini:0	Toca no botão abaixo. O Google AI Studio abre no teu navegador.
+ai_steps_gemini:1	Inicia sessão com a tua conta Google, se te for pedido.
+ai_steps_gemini:2	Toca em «Create API key». Se perguntar que projeto usar, escolhe qualquer um, ou deixa-o criar um novo.
+ai_steps_gemini:3	Toca na chave para a copiar.
+ai_steps_gemini:4	Volta aqui e toca no botão de colar ao lado do campo da chave.
 ai_steps_openai:0	Toca no botão abaixo. A plataforma da OpenAI abre no teu navegador.
 ai_steps_openai:1	Inicia sessão, ou cria uma conta se não tiveres.
 ai_steps_openai:2	Toca em «Create new secret key» e confirma.
@@ -69,141 +86,524 @@ ai_steps_self_hosted:0	Arranca o teu servidor de modelos: vLLM, Ollama, LM Studi
 ai_steps_self_hosted:1	Indica o endereço abaixo, incluindo http:// ou https:// e a porta.
 ai_steps_self_hosted:2	Cola a chave de API se ele pedir uma. Muitos servidores locais aceitam qualquer uma.
 ai_steps_self_hosted:3	Carrega a lista de modelos, ou escreve o nome do modelo com que arrancaste o servidor.
-perm_title_overlay	Sobrepor a outras aplicações
-perm_title_notification_listener	Acesso às notificações
-perm_title_notification_policy	Acesso ao Não incomodar
-perm_title_accessibility_service	Acesso de acessibilidade
-perm_title_battery_optimisation	Utilização da bateria sem restrições
-perm_title_exact_alarm	Alarmes e lembretes
-perm_title_write_settings	Alterar as definições do sistema
-perm_title_nfc	NFC
-perm_title_foreground_service	Serviço em primeiro plano
-perm_title_device_admin	Administrador do dispositivo
-perm_title_access_fine_location	Localização
-perm_title_access_coarse_location	Localização aproximada
-perm_title_access_background_location	Localização em segundo plano
-perm_title_receive_sms	Receber mensagens
-perm_title_send_sms	Enviar mensagens
-perm_title_call_phone	Fazer chamadas
-perm_title_read_contacts	Contactos
-perm_title_post_notifications	Notificações
-perm_title_bluetooth_connect	Bluetooth
-perm_desc_overlay	Permite que uma macro mostre uma caixa de diálogo no ecrã e abra outras aplicações enquanto estás a fazer outra coisa. Sem esta permissão, o Android bloqueia ambas as coisas a partir de uma aplicação em segundo plano.
-perm_desc_notification_listener	Permite que o Ottomatic veja as notificações de outras aplicações, para que uma macro possa reagir a elas.
-perm_desc_notification_policy	Permite que uma macro ligue e desligue o Não incomodar, e ponha a campainha em silêncio.
-perm_desc_accessibility_service	Permite que o Ottomatic detete pressões nos botões de volume e de energia. Nunca lê o conteúdo do ecrã.
-perm_desc_battery_optimisation	Impede o Android de parar o motor em segundo plano. Sem esta permissão, as macros podem não voltar a ficar ativas depois de um reinício e os acionadores por tempo podem atrasar-se.
-perm_desc_exact_alarm	Faz com que um agendamento dispare, e uma espera termine, ao minuto que pediste. Sem esta permissão o Android pode agrupá-lo com outras tarefas, por isso pode correr mais tarde.
-perm_desc_write_settings	Permite que uma macro altere o brilho do ecrã, o tempo até desligar e a rotação automática.
-perm_desc_nfc	Permite que uma macro corra quando aproximas uma etiqueta NFC da parte de trás do telemóvel. O Ottomatic não pode ligar o NFC por ti, e as etiquetas só são lidas com o ecrã ligado e desbloqueado.
-perm_desc_foreground_service	Permite que o Ottomatic mantenha o motor a correr enquanto as tuas macros estiverem ativas.
-perm_desc_device_admin	Permite que o Ottomatic use funcionalidades de administrador do dispositivo.
-perm_desc_access_fine_location	Faz com que uma geocerca saiba quando chegas a um sítio ou sais dele.
-perm_desc_access_coarse_location	Uma localização mais aproximada, usada quando a posição precisa não está disponível.
-perm_desc_access_background_location	Faz com que uma geocerca continue a funcionar com o Ottomatic fechado, que é a única altura em que serve de alguma coisa. Concedida ao escolher «Permitir sempre».
-perm_desc_receive_sms	Permite que uma macro corra quando chega uma mensagem, e que leia de quem é e o que diz.
-perm_desc_send_sms	Permite que uma macro envie uma mensagem em teu nome.
-perm_desc_call_phone	Permite que uma macro faça uma chamada sem que a confirmes.
-perm_desc_read_contacts	Permite que uma macro procure o número de um contacto que escolheste. Escolhê-lo não exige nada; marcá-lo mais tarde exige.
-perm_desc_post_notifications	Permite que o Ottomatic mostre uma notificação: tanto as que uma macro envia como a que te avisa de que o motor não conseguiu arrancar depois de um reinício.
-perm_desc_bluetooth_connect	Permite que uma macro ligue e desligue o Bluetooth.
-perm_desc_unknown	Usada por um nó de uma das tuas macros.
-perm_rationale_accessibility_keys	O Ottomatic precisa de acesso de acessibilidade para detetar pressões nos botões. Nunca lê o conteúdo do ecrã. Se o interruptor estiver esbatido, abre primeiro Informações da app → ⋮ → Permitir definições restritas.
-perm_rationale_notification_listener	O Ottomatic precisa de acesso às notificações para ver as de outras aplicações.
-perm_rationale_dnd_policy	O Ottomatic precisa de acesso ao Não incomodar para alterar o teu modo de som.
-perm_rationale_overlay_dialog	O Ottomatic precisa de permissão para se sobrepor a outras aplicações, para que esta caixa de diálogo te alcance quando estiveres noutro sítio do telemóvel. Sem ela, o nó cancela em vez de perguntar.
-perm_rationale_nfc_radio	Este acionador precisa do NFC ligado, que é uma definição de todo o sistema e não algo que o Ottomatic possa conceder a si próprio. Além disso, as etiquetas só são lidas com o ecrã ligado e desbloqueado: um toque não chega a um telemóvel adormecido no bolso.
-perm_rationale_alarm_exact	O Ottomatic precisa de permissão para definir alarmes exatos, para que esta espera termine ao minuto que pediste. Sem ela a espera acontece na mesma, mas o Android agrupa o despertar com outras tarefas e pode atrasar-se minutos.
-perm_rationale_overlay_launch	O Ottomatic precisa de permissão para se sobrepor a outras aplicações e assim poder abrir uma enquanto estás noutro sítio do telemóvel. O Android impede que uma aplicação em segundo plano abra outra e, sem esta permissão, o nó não faz nada e di-lo na consola.
-problem_permission_missing	«%1$s» precisa de %2$s, que não foi concedida: pode não fazer nada ao correr
-problem_plugin_permission_missing	«%1$s» precisa de %2$s, que %3$s não recebeu: pode não fazer nada ao correr
-problem_macro_unset	«%1$s» não tem nenhuma macro escolhida, por isso não fará nada
-problem_macro_missing	«%1$s» aponta para uma macro que já não existe
-problem_hub_unset	«%1$s» não tem nada escolhido, por isso não fará nada
-problem_hub_missing	«%1$s» aponta para um hub que já não está configurado
-problem_ai_unset	«%1$s» não tem nenhuma ligação de IA escolhida, por isso não fará nada
-problem_ai_missing	«%1$s» aponta para uma ligação de IA que já não existe
-problem_ai_unfinished	«%1$s» aponta para uma ligação de IA que ainda não está totalmente configurada
-problem_variable_unset	«%1$s» não tem nenhuma variável escolhida, por isso não fará nada
-problem_variable_missing	«%1$s» usa uma variável que já não existe
-problem_empty_loop_body	«%1$s» não tem nada no corpo do ciclo, por isso repetir não faz nada
-problem_unknown_node_type	«%1$s» é um tipo de nó desconhecido (%2$s) e não pode correr
-problem_no_trigger	Este fluxo não tem nenhum acionador, por isso nunca nada o iniciará
-problem_trigger_not_wired	«%1$s» não está ligado a nada, por isso dispara e não faz nada
-problem_exec_wire_dangling	Uma ligação de execução aponta para um nó que já não está aqui
-problem_exec_output_unknown	Saída de execução desconhecida «%1$s» em «%2$s»
-problem_exec_input_unknown	Entrada de execução desconhecida «%1$s» em «%2$s»
-problem_data_wire_dangling	Uma ligação de dados aponta para um nó que já não está aqui
-problem_data_wire_unknown_type	Uma ligação de dados passa por um tipo de nó desconhecido
-problem_not_data_output	«%1$s» não é uma saída de dados em «%2$s»
-problem_not_data_input	«%1$s» não é uma entrada de dados em «%2$s»
-problem_schema_mismatch	Esquemas incompatíveis numa ligação de dados: a origem %1$s não encaixa no destino %2$s
-problem_value_not_connected	«%1$s» não está ligado a nada e nunca será lido
-problem_nothing_wired_in	«%1$s» não tem nada ligado à entrada e usará apenas as suas próprias definições
-problem_exec_cycle	Ciclo de execução detetado: %1$s
-problem_data_cycle	Ciclo de dados detetado: %1$s
-problem_not_exec_upstream	«%1$s» ainda não terá corrido quando «%2$s» for executado
-problem_fork_branch_cross	«%1$s» e «%2$s» estão em ramos opostos de «%3$s», por isso não pode passar nada entre eles
-category_manual	Manual
-category_time_schedule	Hora e agendamento
-category_messaging	Mensagens
-category_power_battery	Energia e bateria
-category_location	Localização
-category_automation	Automatização
-category_variables	Variáveis
-category_connectivity	Conectividade
-category_phone_media	Telefone e multimédia
-category_device_state	Estado do dispositivo
-category_sensors	Sensores e gestos
-category_flow_control	Controlo de fluxo
-category_interaction	Perguntar ao utilizador
-category_network	Rede
-category_notifications	Notificações
-category_timing	Temporização
-category_device_settings	Definições do dispositivo
-category_smart_home	Casa inteligente
-category_ai	IA
-category_data	Dados
-category_value_power	Energia e bateria
-category_value_connectivity	Conectividade
-category_value_device	Estado do dispositivo
-category_value_sensors	Sensores
-category_value_time	Data e hora
-category_value_variables	Variáveis
-category_transform_data	Dados
-category_plugin	Extensão
-permissions_needed_by	Necessária para: %1$s
-permissions_open_settings	Abrir definições
-config_field_wired_from	%1$s ← %2$s
-cd_palette_collapse_group	Recolher %1$s
-cd_palette_expand_group	Expandir %1$s
+ai_test	Testar
+ai_the_key_is_stored_encrypted	A chave é guardada cifrada neste telemóvel e nunca mais é mostrada. %1$s Não é enviado nada a menos que uma macro chegue a um nó Perguntar à IA.
+ai_this_address_is_unencrypted_that	Este endereço não é cifrado. Isso é normal para um servidor da tua própria rede, mas não o uses para nada que atravesse a internet, porque a chave seguiria em claro.
+api_allow	Permitir
+api_allow_app_to_run	Permitir que %1$s execute as tuas macros?
+api_allowed_on	Autorizada em %1$s
+api_app_access	Acesso de aplicações
+api_back	Voltar
+api_copy_the_key	Copiar a chave
+api_generate_key	Gerar uma chave
+api_it_will_be_able_to	Poderá ver os nomes das macros a que deste um acionador «Chamada por outra aplicação», e executá-las. Não pode ver nem alterar mais nada no Ottomatic, e as macros sem esse acionador ficam fora do alcance.
+api_key_copied	Chave copiada
+api_no_key_approved_apps_only	Sem chave: apenas aplicações aprovadas
+api_no_macro_can_currently_be	De momento não é possível chamar nenhuma macro a partir do exterior.
+api_no_other_app_can_run	Nenhuma outra aplicação pode executar as tuas macros. Quando uma pedir, ser-te-á mostrado de qual se trata e decides nessa altura; as autorizações aparecem aqui para que as possas retirar.
+api_not_now	Agora não
+api_ottomatic_key	Chave do Ottomatic
+api_remove_the_key	Remover a chave
+api_replace_key	Substituir a chave
+api_revoke	Revogar
+api_these_apps_can_see_and	Estas aplicações podem ver e executar as macros a que deste um acionador «Chamada por outra aplicação». Não podem ver nem alterar mais nada no Ottomatic, e uma aplicação só está aqui porque tu a autorizaste quando ela pediu.
+api_you_can_withdraw_this_at	Podes retirar isto a qualquer momento em Acesso de aplicações no Ottomatic.
 apps_any_app	Qualquer aplicação
 apps_choose_an_app	Escolher uma aplicação
 apps_no_apps_match_that	Nenhuma aplicação corresponde.
+apps_other_apps	Outras aplicações
 apps_search	Procurar
-sound_audio_file	Ficheiro de áudio
-sound_choose_a_sound	Escolher um som
-sound_device_sounds	Sons do dispositivo
-sound_pick_one_of_the_device	Escolhe um dos sons do próprio dispositivo, ou qualquer ficheiro de áudio do telemóvel.
-plugins_back	Voltar
-plugins_plugins	Extensões
-plugins_this_app_asks_for	Esta aplicação pede: %1$s
+category_ai	IA
+category_automation	Automatização
+category_connectivity	Conectividade
+category_data	Dados
+category_device_settings	Definições do dispositivo
+category_device_state	Estado do dispositivo
+category_flow_control	Controlo de fluxo
+category_interaction	Perguntar ao utilizador
+category_location	Localização
+category_manual	Manual
+category_messaging	Mensagens
+category_network	Rede
+category_notifications	Notificações
+category_phone_media	Telefone e multimédia
+category_plugin	Extensão
+category_power_battery	Energia e bateria
+category_sensors	Sensores e gestos
+category_smart_home	Casa inteligente
+category_time_schedule	Hora e agendamento
+category_timing	Temporização
+category_transform_data	Dados
+category_value_connectivity	Conectividade
+category_value_device	Estado do dispositivo
+category_value_power	Energia e bateria
+category_value_sensors	Sensores
+category_value_time	Data e hora
+category_value_variables	Variáveis
+category_variables	Variáveis
+cd_palette_collapse_group	Recolher %1$s
+cd_palette_expand_group	Expandir %1$s
+config_add_row	Adicionar %1$s
+config_deleted_account	Conta eliminada
+config_deleted_connection	Ligação eliminada
+config_field_wired_from	%1$s ← %2$s
+config_global_variable	Global · %1$s
+config_hub_removed	%1$s · hub removido
+config_none_selected	Nada selecionado
+config_now	Agora
+config_port_carries_list	Esta porta transporta uma lista
+config_port_carries_one	Esta porta transporta um único valor
+config_set	Definir
+config_socket_feed	Alimentar %1$s a partir dos dados anteriores
+config_socket_use_typed_connected	Usar o valor escrito para %1$s (ligado a %2$s)
+config_socket_use_typed_free	Usar o valor escrito para %1$s (nada ligado)
+console_filter_all	Tudo
+console_filter_info	Info
+console_filter_problems	Problemas
+console_nothing_at_level	Nada neste nível
+console_nothing_logged	Ainda não há registos
+console_run_the_workflow	Executa o fluxo. Os erros, as mensagens de action.log e o console.log de um script aparecem aqui.
+console_widen_filter	Alarga o filtro para veres o resto do histórico deste fluxo.
 contacts_anyone	Qualquer pessoa
 contacts_choose_a_contact	Escolher um contacto
 contacts_clear_the_contact_and_type	Remover o contacto e escrever um número em vez disso
 contacts_fill_in_a_contact_s	Preencher com o nome de um contacto
 contacts_type_a_number	Escrever um número
+editor_back_to_graph	Voltar ao grafo
+editor_back_to_variables	Voltar às variáveis deste fluxo
+editor_tab_console	Consola
+editor_tab_problems	Problemas
+editor_tab_variables	Variáveis
+geofence_back	Voltar
+geofence_centre_on_my_location	Centrar na minha localização
+geofence_choose_a_place	Escolher um local
+geofence_clear_search	Limpar a pesquisa
+geofence_coordinates	%1$.4f, %2$.4f
+geofence_delete_place	Eliminar local
+geofence_edit_named	Editar %1$s
+geofence_edit_place	Editar local
+geofence_geofences	Geocercas
+geofence_home_work_gym	Casa, Trabalho, Ginásio…
+geofence_name	Nome
+geofence_new_place	Novo local
+geofence_new_place_2	Novo local
+geofence_no_places_yet_create_one	Ainda não há locais. Cria um para lhe apontar um acionador de geocerca: todos os acionadores que o usem acompanham-no quando o editares.
+geofence_place_subtitle	%1$s · %2$s
+geofence_radius	Raio
+geofence_radius_km	%1$.1f km
+geofence_radius_m	%1$d m
+geofence_save	Guardar
+geofence_search_an_address_or_place	Procurar uma morada ou um local
+geofence_small_radius_warning	Abaixo de %1$d m o sistema troca precisão de localização por bateria, por isso as passagens são muitas vezes falhadas ou comunicadas tarde.
+grapheditor_add_node	Adicionar nó
+grapheditor_add_node_2	Adicionar nó
+grapheditor_any_tag	Qualquer etiqueta
+grapheditor_back	Voltar
+grapheditor_cancel	Cancelar
+grapheditor_cannot_connect_kinds	Não é possível ligar uma porta de execução a uma de dados
+grapheditor_clear_console	Limpar a consola
+grapheditor_clear_search	Limpar a pesquisa
+grapheditor_clear_selection	Anular a seleção
+grapheditor_close	Fechar
+grapheditor_configure	Configurar
+grapheditor_configure_node	Configurar nó
+grapheditor_connect_from	Ligar a partir de %1$s
+grapheditor_consequence_fails	falhará sempre que correr
+grapheditor_consequence_never_fires	nunca disparará
+grapheditor_consequence_reads_nothing	não lerá nada
+grapheditor_delete	Eliminar
+grapheditor_delete_confirm	Eliminar «%1$s»? O registo de execução vai com ele. Isto não pode ser anulado.
+grapheditor_delete_selection	Eliminar a seleção
+grapheditor_delete_workflow	Eliminar fluxo
+grapheditor_edit	Editar…
+grapheditor_editor_surface	superfície do editor
+grapheditor_enabled	Ativado
+grapheditor_fit_to_screen	Ajustar ao ecrã
+grapheditor_grant	Conceder
+grapheditor_has_error	Tem um erro
+grapheditor_has_warning	Tem um aviso
+grapheditor_hh_mm	HH:mm
+grapheditor_name	Nome
+grapheditor_next	Seguinte
+grapheditor_no_nodes_can_connect_here	Nenhum nó se pode ligar aqui
+grapheditor_no_nodes_match_your_search	Nenhum nó corresponde à tua pesquisa
+grapheditor_no_place_selected	Nenhum local selecionado
+grapheditor_no_problems	Sem problemas
+grapheditor_node_needs_permissions	Este nó %1$s até concederes %2$s.
+grapheditor_nothing_selected	Nada selecionado
+grapheditor_nothing_selected_u2014_this_trigger	Nada selecionado: este acionador recorre a disparar à entrada.
+grapheditor_permission_joiner	 e
+grapheditor_permission_needed	Permissão necessária
+grapheditor_pick_a_date_and_time	Escolher data e hora
+grapheditor_pick_a_time	Escolher uma hora
+grapheditor_place_missing	Falta o local
+grapheditor_port_path	%1$s › %2$s
+grapheditor_remove_port	Remover porta
+grapheditor_run_workflow	Executar fluxo
+grapheditor_search_nodes	Procurar nós
+grapheditor_selection_mixed	%1$s, %2$s
+grapheditor_show_all	Mostrar tudo
+grapheditor_stop_workflow	Parar fluxo
+grapheditor_tap_to_add_your_first	Toca em + para adicionares o teu primeiro nó
+grapheditor_this_node_needs_contacts_access	Este nó precisa de acesso aos contactos para procurar o número que escolheste. Sem ele, não fará nada ao correr.
+grapheditor_this_workflow_is_ready_to	Este fluxo está pronto a correr.
+grapheditor_type	Tipo
+grapheditor_variables	Variáveis
+grapheditor_variables_are_unavailable_here	As variáveis não estão disponíveis aqui.
+grapheditor_workflow_actions	Ações do fluxo
+grapheditor_your_canvas_is_empty	A tua tela está vazia
+grapheditor_zoom_in	Ampliar
+grapheditor_zoom_out	Reduzir
+grapheditor_zoom_percent	%1$d%%
+ha_access_token	Token de acesso de longa duração
+ha_address	Endereço
+ha_all_entities	Entidades
+ha_auth_oauth	Sessão iniciada
+ha_auth_token	Token de longa duração
+ha_authentication	Autenticação
+ha_choose_a_hub	Escolher um Home Assistant
+ha_choose_a_service	Escolher um serviço
+ha_choose_an_entity	Escolher uma entidade
+ha_cleartext_warning	Este endereço não está cifrado. É normal para um servidor da tua própria rede; pela internet, enviaria o teu token às claras.
+ha_connect_home_assistant	Ligar o Home Assistant
+ha_connected_this_is_the_name	Ligado. Este é o nome que as tuas macros vão mostrar.
+ha_looking_for_instances	A procurar o Home Assistant na tua Wi-Fi…
+ha_name_your_hub	Dá um nome ao hub
+ha_no_hub_yet	Ainda não há nenhum Home Assistant. Adiciona um em Casa inteligente.
+ha_open_profile	Abrir a página de perfil
+ha_paste	Colar
+ha_replace_token	Substituir o token
+ha_sign_in	Ou inicia sessão no Home Assistant
+ha_test	Testar
+ha_token_steps	No Home Assistant, abre o teu perfil, escolhe Segurança, desce até Tokens de acesso de longa duração e cria um. Só é mostrado uma vez: copia-o e cola-o aqui.
+hue_find_your_bridge	Encontra a tua ponte
+hue_hue_bridge	Ponte Hue
+hue_name_your_bridge	Dá um nome à tua ponte
+hue_press_the_link_button	Prime o botão de ligação
+hue_text	 ·
+kind_action	Ação
+kind_actions	Ações
+kind_transform	Transformação
+kind_transforms	Transformações
+kind_trigger	Acionador
+kind_triggers	Acionadores
+kind_value	Valor
+kind_values	Valores
 macro_cancel	Cancelar
+macro_colour	Cor
 macro_edit_macro	Editar macro
+macro_icon	Ícone
 macro_name	Nome
 macro_save	Guardar
+mail_account_deleted	Essa conta foi eliminada
+mail_account_needs_password	É preciso escrever outra vez a palavra-passe desta conta
+mail_add_account	Adicionar conta
+mail_add_an_account	Adicionar uma conta
+mail_app_password	Palavra-passe de aplicação
+mail_app_password_keep	Palavra-passe de aplicação (deixa vazio para a manteres)
+mail_back	Voltar
+mail_choose_a_folder	Escolher uma pasta
+mail_choose_account_first	Escolhe primeiro uma conta neste nó: as pastas estão no servidor, por isso o Ottomatic tem de saber a qual perguntar.
+mail_choose_an_account	Escolher uma conta
+mail_delete_account	Eliminar conta
+mail_edit_account	Editar conta
+mail_edit_named	Editar %1$s
+mail_email_address	Endereço de e-mail
+mail_folder_list_unreadable	Não foi possível ler a lista de pastas.
+mail_inbox	INBOX
+mail_incoming_imap	Receção (IMAP)
+mail_mail_accounts	Contas de e-mail
+mail_name	Nome
+mail_no_accounts_yet_add_one	Ainda não há contas. Adiciona uma para enviar e-mail a partir de uma macro, ou para iniciar uma macro quando chegar e-mail. A maioria dos fornecedores exige uma palavra-passe de aplicação em vez da normal: o formulário indica onde a criar.
+mail_no_usable_folders	Esta conta não indica nenhuma pasta que possa conter e-mail.
+mail_open_the_app_password_page	Abrir a página das palavras-passe de aplicação
+mail_outgoing_smtp	Envio (SMTP)
+mail_password_needed	Falta a palavra-passe
+mail_port	Porta
+mail_provider	Fornecedor
+mail_save	Guardar
+mail_security	Segurança
+mail_security_none	Nenhuma (não recomendado)
+mail_security_starttls	STARTTLS
+mail_security_tls	TLS / SSL
+mail_servers	Servidores
+mail_signed_in	Sessão iniciada. Enviar e receber funcionam ambos.
+mail_test_connection	Testar ligação
+mail_this_account_s_password_could	Não foi possível ler a palavra-passe desta conta: muito provavelmente veio de uma cópia de segurança ou de outro telemóvel, ao contrário da chave que a selou. Escreve-a outra vez para corrigir.
+mail_this_provider_cannot_be_added	Este fornecedor não pode ser adicionado
+mail_unchanged	Sem alterações
+mail_username_only_if_it_differs	Utilizador (apenas se for diferente do endereço)
+mail_work_personal_alarm_system	Trabalho, Pessoal, Alarme…
+nfc_a_link_makes_the_tag	Um link faz com que a etiqueta abra num navegador ao ser tocada, e então uma macro que vigie esta etiqueta deixa de correr, porque o Android entrega a etiqueta à aplicação que reclama o link antes sequer de o Ottomatic a ver. Com texto isso não acontece.
+nfc_already_in_your_library	Já está na tua biblioteca.
+nfc_any_tag	Qualquer etiqueta
+nfc_back	Voltar
+nfc_choose_a_tag	Escolher uma etiqueta
+nfc_could_not_write	Não foi possível escrever nesta etiqueta.
+nfc_delete_tag	Eliminar etiqueta
+nfc_desk_car_dock_nightstand	Secretária, Suporte do carro, Mesa de cabeceira…
+nfc_hold_the_tag_to_the	Aproxima a etiqueta da parte de trás do telemóvel
+nfc_hold_the_tag_to_the_2	Aproxima a etiqueta da parte de trás do telemóvel e mantém-na parada.
+nfc_kind_link	Link
+nfc_kind_text	Texto
+nfc_name	Nome
+nfc_nfc_is_switched_off	O NFC está desligado
+nfc_nfc_tags	Etiquetas NFC
+nfc_no_tags_yet_scan_one	Ainda não há etiquetas. Digitaliza uma para lhe apontar um acionador: uma etiqueta mantém o mesmo identificador para sempre, por isso não é preciso escrever nada nela.
+nfc_open_settings	Abrir definições
+nfc_ottomatic_cannot_switch_it_on	O Ottomatic não o pode ligar por ti: o Android só o permite a partir das suas próprias definições.
+nfc_rename_named	Mudar o nome de %1$s
+nfc_rename_tag	Mudar o nome da etiqueta
+nfc_save	Guardar
+nfc_scan_a_new_tag	Digitalizar uma etiqueta nova
+nfc_scan_a_tag	Digitalizar uma etiqueta
+nfc_tag_says	Esta etiqueta diz: %1$s
+nfc_the_nfc_antenna_is_usually	A antena NFC costuma ficar perto do topo, na parte de trás.
+nfc_there_is_nothing_to_scan	Não há com que digitalizar. Um acionador de etiqueta nunca disparará aqui.
+nfc_this_phone_has_no_nfc	Este telemóvel não tem NFC
+nfc_this_tag_reports_a_different	Esta etiqueta indica um identificador diferente sempre que é tocada, por isso uma macro nunca a conseguiria reconhecer. Os cartões bancários, os passes de transporte e os telemóveis que se fazem passar por cartões fazem todos isto. Usa antes um autocolante NFC simples.
+nfc_write	Escrever
+nfc_write_data_to_this_tag	Escrever dados nesta etiqueta
+nfc_write_to_tag	Escrever na etiqueta
+nfc_written	Escrito.
+perm_desc_access_background_location	Faz com que uma geocerca continue a funcionar com o Ottomatic fechado, que é a única altura em que serve de alguma coisa. Concedida ao escolher «Permitir sempre».
+perm_desc_access_coarse_location	Uma localização mais aproximada, usada quando a posição precisa não está disponível.
+perm_desc_access_fine_location	Faz com que uma geocerca saiba quando chegas a um sítio ou sais dele.
+perm_desc_accessibility_service	Permite que o Ottomatic detete pressões nos botões de volume e de energia. Nunca lê o conteúdo do ecrã.
+perm_desc_battery_optimisation	Impede o Android de parar o motor em segundo plano. Sem esta permissão, as macros podem não voltar a ficar ativas depois de um reinício e os acionadores por tempo podem atrasar-se.
+perm_desc_bluetooth_connect	Permite que uma macro ligue e desligue o Bluetooth.
+perm_desc_call_phone	Permite que uma macro faça uma chamada sem que a confirmes.
+perm_desc_device_admin	Permite que o Ottomatic use funcionalidades de administrador do dispositivo.
+perm_desc_exact_alarm	Faz com que um agendamento dispare, e uma espera termine, ao minuto que pediste. Sem esta permissão o Android pode agrupá-lo com outras tarefas, por isso pode correr mais tarde.
+perm_desc_foreground_service	Permite que o Ottomatic mantenha o motor a correr enquanto as tuas macros estiverem ativas.
+perm_desc_nfc	Permite que uma macro corra quando aproximas uma etiqueta NFC da parte de trás do telemóvel. O Ottomatic não pode ligar o NFC por ti, e as etiquetas só são lidas com o ecrã ligado e desbloqueado.
+perm_desc_notification_listener	Permite que o Ottomatic veja as notificações de outras aplicações, para que uma macro possa reagir a elas.
+perm_desc_notification_policy	Permite que uma macro ligue e desligue o Não incomodar, e ponha a campainha em silêncio.
+perm_desc_overlay	Permite que uma macro mostre uma caixa de diálogo no ecrã e abra outras aplicações enquanto estás a fazer outra coisa. Sem esta permissão, o Android bloqueia ambas as coisas a partir de uma aplicação em segundo plano.
+perm_desc_post_notifications	Permite que o Ottomatic mostre uma notificação: tanto as que uma macro envia como a que te avisa de que o motor não conseguiu arrancar depois de um reinício.
+perm_desc_read_contacts	Permite que uma macro procure o número de um contacto que escolheste. Escolhê-lo não exige nada; marcá-lo mais tarde exige.
+perm_desc_receive_sms	Permite que uma macro corra quando chega uma mensagem, e que leia de quem é e o que diz.
+perm_desc_send_sms	Permite que uma macro envie uma mensagem em teu nome.
+perm_desc_unknown	Usada por um nó de uma das tuas macros.
+perm_desc_write_settings	Permite que uma macro altere o brilho do ecrã, o tempo até desligar e a rotação automática.
+perm_rationale_accessibility_keys	O Ottomatic precisa de acesso de acessibilidade para detetar pressões nos botões. Nunca lê o conteúdo do ecrã. Se o interruptor estiver esbatido, abre primeiro Informações da app → ⋮ → Permitir definições restritas.
+perm_rationale_alarm_exact	O Ottomatic precisa de permissão para definir alarmes exatos, para que esta espera termine ao minuto que pediste. Sem ela a espera acontece na mesma, mas o Android agrupa o despertar com outras tarefas e pode atrasar-se minutos.
+perm_rationale_dnd_policy	O Ottomatic precisa de acesso ao Não incomodar para alterar o teu modo de som.
+perm_rationale_nfc_radio	Este acionador precisa do NFC ligado, que é uma definição de todo o sistema e não algo que o Ottomatic possa conceder a si próprio. Além disso, as etiquetas só são lidas com o ecrã ligado e desbloqueado: um toque não chega a um telemóvel adormecido no bolso.
+perm_rationale_notification_listener	O Ottomatic precisa de acesso às notificações para ver as de outras aplicações.
+perm_rationale_overlay_dialog	O Ottomatic precisa de permissão para se sobrepor a outras aplicações, para que esta caixa de diálogo te alcance quando estiveres noutro sítio do telemóvel. Sem ela, o nó cancela em vez de perguntar.
+perm_rationale_overlay_launch	O Ottomatic precisa de permissão para se sobrepor a outras aplicações e assim poder abrir uma enquanto estás noutro sítio do telemóvel. O Android impede que uma aplicação em segundo plano abra outra e, sem esta permissão, o nó não faz nada e di-lo na consola.
+perm_title_access_background_location	Localização em segundo plano
+perm_title_access_coarse_location	Localização aproximada
+perm_title_access_fine_location	Localização
+perm_title_accessibility_service	Acesso de acessibilidade
+perm_title_battery_optimisation	Utilização da bateria sem restrições
+perm_title_bluetooth_connect	Bluetooth
+perm_title_call_phone	Fazer chamadas
+perm_title_device_admin	Administrador do dispositivo
+perm_title_exact_alarm	Alarmes e lembretes
+perm_title_foreground_service	Serviço em primeiro plano
+perm_title_nfc	NFC
+perm_title_notification_listener	Acesso às notificações
+perm_title_notification_policy	Acesso ao Não incomodar
+perm_title_overlay	Sobrepor a outras aplicações
+perm_title_post_notifications	Notificações
+perm_title_read_contacts	Contactos
+perm_title_receive_sms	Receber mensagens
+perm_title_send_sms	Enviar mensagens
+perm_title_write_settings	Alterar as definições do sistema
+permission_bind_plugin_description	Permite que o Ottomatic use os nós de acionador e de ação adicionais fornecidos por esta aplicação. A aplicação executa o seu próprio código com as suas próprias permissões; o Ottomatic não partilha as dele com ela.
+permission_bind_plugin_label	Fornecer nós do Ottomatic
 permissions_allow	Permitir
+permissions_app_section_blurb	Usadas pela própria aplicação, não por um nó em concreto.
 permissions_back	Voltar
+permissions_background_location_hint	O Android pede isto no ecrã dele: escolhe «Permitir sempre».
 permissions_disable_battery_optimisation	Desativar a otimização da bateria
+permissions_grant	Conceder
+permissions_granted	Concedida
+permissions_needed_by	Necessária para: %1$s
+permissions_node_section_blurb	Vêm dos acionadores e ações que colocaste. Sem a permissão, o nó não faz nada e não diz nada.
+permissions_not_granted	Não concedida
 permissions_not_now	Agora não
+permissions_open_settings	Abrir definições
+permissions_ottomatic_couldn_t_resume_your	O Ottomatic não conseguiu retomar as tuas macros em segundo plano depois do último reinício. Para que a automatização continue sem intervenção, permite que o Ottomatic corra sem restrições de bateria. Podes alterar isto mais tarde em Permissões.
 permissions_ottomatic_itself	O próprio Ottomatic
 permissions_permissions	Permissões
+permissions_revoke	Revogar
 permissions_used_by_your_nodes	Usadas pelos teus nós
+plugins_a_plugin_adds_trigger_and	Uma extensão acrescenta nós de acionador e de ação à tua paleta. É uma aplicação à parte: corre o seu próprio código, no seu próprio processo, usando apenas as permissões que te pede para si mesma. O Ottomatic não partilha as dele com ela.
+plugins_back	Voltar
+plugins_no_plugins_are_installed_a	Não há extensões instaladas. Uma extensão é uma aplicação à parte que acrescenta nós de acionador e de ação à tua paleta; instala uma e aparecerá aqui.
+plugins_node_rejected	%1$s não foi adicionado: %2$s
+plugins_plugins	Extensões
+plugins_provides_no_nodes	Não fornece nenhum nó
+plugins_this_app_asks_for	Esta aplicação pede: %1$s
+problem_ai_missing	«%1$s» aponta para uma ligação de IA que já não existe
+problem_ai_unfinished	«%1$s» aponta para uma ligação de IA que ainda não está totalmente configurada
+problem_ai_unset	«%1$s» não tem nenhuma ligação de IA escolhida, por isso não fará nada
+problem_data_cycle	Ciclo de dados detetado: %1$s
+problem_data_wire_dangling	Uma ligação de dados aponta para um nó que já não está aqui
+problem_data_wire_unknown_type	Uma ligação de dados passa por um tipo de nó desconhecido
+problem_empty_loop_body	«%1$s» não tem nada no corpo do ciclo, por isso repetir não faz nada
+problem_exec_cycle	Ciclo de execução detetado: %1$s
+problem_exec_input_unknown	Entrada de execução desconhecida «%1$s» em «%2$s»
+problem_exec_output_unknown	Saída de execução desconhecida «%1$s» em «%2$s»
+problem_exec_wire_dangling	Uma ligação de execução aponta para um nó que já não está aqui
+problem_fork_branch_cross	«%1$s» e «%2$s» estão em ramos opostos de «%3$s», por isso não pode passar nada entre eles
+problem_hub_missing	«%1$s» aponta para um hub que já não está configurado
+problem_hub_unset	«%1$s» não tem nada escolhido, por isso não fará nada
+problem_macro_missing	«%1$s» aponta para uma macro que já não existe
+problem_macro_unset	«%1$s» não tem nenhuma macro escolhida, por isso não fará nada
+problem_no_trigger	Este fluxo não tem nenhum acionador, por isso nunca nada o iniciará
+problem_not_data_input	«%1$s» não é uma entrada de dados em «%2$s»
+problem_not_data_output	«%1$s» não é uma saída de dados em «%2$s»
+problem_not_exec_upstream	«%1$s» ainda não terá corrido quando «%2$s» for executado
+problem_nothing_wired_in	«%1$s» não tem nada ligado à entrada e usará apenas as suas próprias definições
+problem_permission_missing	«%1$s» precisa de %2$s, que não foi concedida: pode não fazer nada ao correr
+problem_plugin_permission_missing	«%1$s» precisa de %2$s, que %3$s não recebeu: pode não fazer nada ao correr
+problem_schema_mismatch	Esquemas incompatíveis numa ligação de dados: a origem %1$s não encaixa no destino %2$s
+problem_trigger_not_wired	«%1$s» não está ligado a nada, por isso dispara e não faz nada
+problem_unknown_node_type	«%1$s» é um tipo de nó desconhecido (%2$s) e não pode correr
+problem_value_not_connected	«%1$s» não está ligado a nada e nunca será lido
+problem_variable_missing	«%1$s» usa uma variável que já não existe
+problem_variable_unset	«%1$s» não tem nenhuma variável escolhida, por isso não fará nada
+problems_path_arrow	 →
+problems_skipped_nodes	ignorado: %1$s
+problems_summary_separator	 ·
+problems_where_separator	  ·
+problems_wire_skipped	esta ligação é ignorada
+shortcut_macro_and_trigger	%1$s · %2$s
+shortcut_macro_gone	Essa macro já não existe
+shortcut_new_macro_long	Criar uma macro nova
+shortcut_new_macro_short	Nova macro
+shortcut_running	A correr…
+shortcut_running_named	A correr %1$s
+smarthome_a_bridge_on_your_wi	Uma ponte na tua rede Wi-Fi
+smarthome_a_server_you_already_run	Um servidor que já tens
+smarthome_add_a_hub	Adicionar um hub
+smarthome_address	Endereço
+smarthome_back	Voltar
+smarthome_bridge_id	ID da ponte
+smarthome_button_not_pressed	O botão não foi premido a tempo: tenta de novo
+smarthome_choose_a_light	Escolher uma luz
+smarthome_choose_a_scene	Escolher uma cena
+smarthome_connect	Ligar
+smarthome_done	Concluído
+smarthome_everything_in_it	Tudo o que contém
+smarthome_ha_reached	Ligado. O token funciona.
+smarthome_home_assistant	Home Assistant
+smarthome_hub	Hub
+smarthome_hub_subtitle	%1$s · %2$d luzes · %3$d cenas
+smarthome_it_is_the_large_button	É o botão grande no centro do disco, entre as três luzes pequenas. A ligar a %1$s.
+smarthome_lights	Luzes
+smarthome_looking_for_bridges_on_your	À procura de pontes na tua rede Wi-Fi…
+smarthome_name	Nome
+smarthome_no_hub_yet	Ainda não há nenhum hub. Adiciona um para controlares as tuas luzes a partir de uma macro.
+smarthome_no_hubs_yet_add_one	Ainda não há hubs. Adiciona um para controlares as tuas luzes a partir de uma macro, e para iniciares macros quando algo mudar em tua casa.
+smarthome_nothing_matches	Nada corresponde a «%1$s».
+smarthome_nothing_read	Ainda não foi lido nada deste hub. Verifica se está ligado e tenta de novo.
+smarthome_only_trust_it_if_you	Só deves confiar nele se reiniciaste ou substituíste a tua ponte. Se não o fizeste, é outra coisa na tua rede que está a responder em vez dela.
+smarthome_or_type_the_bridge_s	Ou escreve o endereço da ponte
+smarthome_pair_again	Emparelhar de novo
+smarthome_paired_this_is_the_name	Emparelhado. É este o nome que as tuas macros vão mostrar.
+smarthome_philips_hue	Philips Hue
+smarthome_presented	Apresentado
+smarthome_press_the_round_button_on	Prime o botão redondo em cima da tua ponte.
+smarthome_refresh	Atualizar
+smarthome_refresh_lights_and_scenes	  Atualizar luzes e cenas
+smarthome_remove_hub	Remover hub
+smarthome_rooms	Divisões
+smarthome_rooms_and_zones	Divisões e zonas
+smarthome_save	Guardar
+smarthome_scenes	Cenas
+smarthome_search	Procurar
+smarthome_settings_for	Definições de %1$s
+smarthome_sign_in_again	Iniciar sessão de novo
+smarthome_smart_home	Casa inteligente
+smarthome_this_address_is_presenting_a	Este endereço apresenta um certificado diferente
+smarthome_trust_new_certificate	Confiar no novo certificado
+smarthome_trusted	Fidedigno
+smarthome_trusted_works_again	Fidedigno. O hub deve voltar a funcionar.
+smarthome_up_to_date	Atualizado
+smarthome_what_are_you_connecting_to	A que te estás a ligar?
+smarthome_white_only	Apenas branco
+smarthome_zones	Zonas
+sound_audio_file	Ficheiro de áudio
+sound_choose_a_sound	Escolher um som
+sound_default_ringtone	toque predefinido
+sound_device_sounds	Sons do dispositivo
+sound_pick_one_of_the_device	Escolhe um dos sons do próprio dispositivo, ou qualquer ficheiro de áudio do telemóvel.
+variables_back	Voltar
+variables_belongs_to	Pertence a
+variables_choose_a_variable	Escolher uma variável
+variables_chosen_once_a_variable_cannot	Escolhido uma só vez: uma variável não pode mudar de conjunto depois, porque os nós que apontam para ela registam em qual está.
+variables_constant	Constante
+variables_constant_is	constante · %1$s
+variables_delete_variable	Eliminar variável
+variables_edit_named	Editar %1$s
+variables_edit_variable	Editar variável
+variables_empty	vazio
+variables_empty_global	Ainda não há nada. Uma variável aqui é partilhada por todas as macros.
+variables_empty_local	Ainda não há nada. Uma variável aqui pertence só a esta macro.
+variables_equals	= %1$s
+variables_every_workflow	Todos os fluxos
+variables_global	Global
+variables_global_variables	Variáveis globais
+variables_holds	Contém
+variables_its_value_is_fixed_here	O valor está fixo aqui. Um nó que tente escrevê-la di-lo e segue em frente.
+variables_name	Nome
+variables_new_variable	Nova variável
+variables_note_optional	Nota (opcional)
+variables_save	Guardar
+variables_starts_at	Começa em
+variables_starts_at_value	começa em %1$s
+variables_subtitle	%1$s · %2$s
+variables_this_workflow	Este fluxo
+variables_unset	por definir
+variables_value	Valor
+widget_a_count_of_macros_that	O número de macros que não podem correr; fica oculto quando não há nenhuma
+widget_a_grid_of_manual_triggers	Uma grelha de acionadores manuais em que podes tocar para executar
+widget_ago_a_while	há algum tempo
+widget_ago_days	há %1$d d
+widget_ago_hours	há %1$d h
+widget_ago_just_now	agora mesmo
+widget_ago_minutes	há %1$d min
+widget_armed_of_total	%1$d de %2$d ativas
+widget_choose_a_trigger	Escolher um acionador
+widget_engine_running	Motor a correr
+widget_engine_status	Estado do motor
+widget_engine_stopped	Motor parado
+widget_last_run	Última execução
+widget_last_run_line	%1$s · %2$s · %3$s
+widget_macro_not_found	Macro não encontrada
+widget_make_this_taller_to_see	Aumenta a altura para veres os acionadores
+widget_more_hidden	+%1$d mais: redimensiona para os veres
+widget_new_macros_appear_on_the	As macros novas aparecem no painel automaticamente
+widget_no_manual_triggers_yet_n	Ainda não há acionadores manuais.\n\nAbre uma macro e larga um nó Acionador manual na tela: aparecerá aqui.
+widget_no_manual_triggers_yet_nadd	Ainda não há acionadores manuais.\nAdiciona um nó Acionador manual a uma macro.
+widget_nothing_to_show_nlong_press	Nada para mostrar.\nMantém premido para escolheres o que este painel mostra.
+widget_ottomatic_panel	Painel do Ottomatic
+widget_outcome_failed	falhou
+widget_outcome_ok	ok
+widget_outcome_running	a correr
+widget_panel_description	Estado do motor, problemas, a última execução e uma grelha de acionadores manuais: escolhes tu o que aparece.
+widget_panel_label	Painel do Ottomatic
+widget_problems	Problemas
+widget_run_tile_description	Uma macro, um toque. Escolhe um acionador manual e executa-o a partir do ecrã principal.
+widget_run_tile_label	Mosaico de execução
+widget_save	Guardar
+widget_show	Mostrar
+widget_show_all_of_them	Mostrar todos
+widget_showing_all	A mostrar os %1$d acionadores. Desliga o interruptor para escolheres quais.
+widget_state_done	Concluído
+widget_state_failed	Falhou
+widget_state_off	Desligado
+widget_state_ready	Pronto
+widget_state_running	A correr…
+widget_trigger_buttons	Botões de acionador
+widget_whether_the_engine_is_running	Se o motor está a correr, e quantas macros estão ativas
+widget_which_macro_ran_last_whether	Que macro correu por último, se resultou, e quando
+widget_which_triggers	Que acionadores
 wifi_android_treats_the_name_of	O Android trata o nome de uma rede como uma pista de onde estás, por isso não o dirá sem esta permissão. Podes fechar isto e escrever o nome da rede à mão, mas o acionador continuará a precisar da permissão para o comparar.
 wifi_any_network	Qualquer rede
 wifi_choose_a_network	Escolher uma rede
@@ -214,413 +614,33 @@ wifi_grant	Conceder
 wifi_no_networks_found_wi_fi	Não foram encontradas redes. O Wi-Fi e a Localização têm ambos de estar ligados para procurar, e o Android limita a frequência com que o faz. Podes escrever o nome de uma rede à mão.
 wifi_ottomatic_needs_location_to_list	O Ottomatic precisa da Localização para listar redes Wi-Fi
 wifi_rescan	Procurar de novo
-widget_choose_a_trigger	Escolher um acionador
-widget_engine_status	Estado do motor
-widget_last_run	Última execução
-widget_macro_not_found	Macro não encontrada
-widget_make_this_taller_to_see	Aumenta a altura para veres os acionadores
-widget_no_manual_triggers_yet_n	Ainda não há acionadores manuais.\n\nAbre uma macro e larga um nó Acionador manual na tela: aparecerá aqui.
-widget_no_manual_triggers_yet_nadd	Ainda não há acionadores manuais.\nAdiciona um nó Acionador manual a uma macro.
-widget_nothing_to_show_nlong_press	Nada para mostrar.\nMantém premido para escolheres o que este painel mostra.
-widget_ottomatic_panel	Painel do Ottomatic
-widget_problems	Problemas
-widget_save	Guardar
-widget_show_all_of_them	Mostrar todos
-widget_trigger_buttons	Botões de acionador
-api_allow	Permitir
-api_app_access	Acesso de aplicações
-api_back	Voltar
-api_copy_the_key	Copiar a chave
-api_it_will_be_able_to	Poderá ver os nomes das macros a que deste um acionador «Chamada por outra aplicação», e executá-las. Não pode ver nem alterar mais nada no Ottomatic, e as macros sem esse acionador ficam fora do alcance.
-api_no_key_approved_apps_only	Sem chave: apenas aplicações aprovadas
-api_not_now	Agora não
-api_ottomatic_key	Chave do Ottomatic
-api_remove_the_key	Remover a chave
-api_revoke	Revogar
-api_you_can_withdraw_this_at	Podes retirar isto a qualquer momento em Acesso de aplicações no Ottomatic.
-variables_back	Voltar
-variables_belongs_to	Pertence a
-variables_choose_a_variable	Escolher uma variável
-variables_chosen_once_a_variable_cannot	Escolhido uma só vez: uma variável não pode mudar de conjunto depois, porque os nós que apontam para ela registam em qual está.
-variables_constant	Constante
-variables_delete_variable	Eliminar variável
-variables_global	Global
-variables_global_variables	Variáveis globais
-variables_its_value_is_fixed_here	O valor está fixo aqui. Um nó que tente escrevê-la di-lo e segue em frente.
-variables_new_variable	Nova variável
-variables_save	Guardar
-variables_this_workflow	Este fluxo
-geofence_back	Voltar
-geofence_centre_on_my_location	Centrar na minha localização
-geofence_choose_a_place	Escolher um local
-geofence_clear_search	Limpar a pesquisa
-geofence_delete_place	Eliminar local
-geofence_geofences	Geocercas
-geofence_home_work_gym	Casa, Trabalho, Ginásio…
-geofence_name	Nome
-geofence_new_place	Novo local
-geofence_no_places_yet_create_one	Ainda não há locais. Cria um para lhe apontar um acionador de geocerca: todos os acionadores que o usem acompanham-no quando o editares.
-geofence_radius	Raio
-geofence_save	Guardar
-geofence_search_an_address_or_place	Procurar uma morada ou um local
-nfc_a_link_makes_the_tag	Um link faz com que a etiqueta abra num navegador ao ser tocada, e então uma macro que vigie esta etiqueta deixa de correr, porque o Android entrega a etiqueta à aplicação que reclama o link antes sequer de o Ottomatic a ver. Com texto isso não acontece.
-nfc_already_in_your_library	Já está na tua biblioteca.
-nfc_any_tag	Qualquer etiqueta
-nfc_back	Voltar
-nfc_choose_a_tag	Escolher uma etiqueta
-nfc_delete_tag	Eliminar etiqueta
-nfc_desk_car_dock_nightstand	Secretária, Suporte do carro, Mesa de cabeceira…
-nfc_hold_the_tag_to_the	Aproxima a etiqueta da parte de trás do telemóvel
-nfc_hold_the_tag_to_the_2	Aproxima a etiqueta da parte de trás do telemóvel e mantém-na parada.
-nfc_name	Nome
-nfc_nfc_is_switched_off	O NFC está desligado
-nfc_nfc_tags	Etiquetas NFC
-nfc_no_tags_yet_scan_one	Ainda não há etiquetas. Digitaliza uma para lhe apontar um acionador: uma etiqueta mantém o mesmo identificador para sempre, por isso não é preciso escrever nada nela.
-nfc_open_settings	Abrir definições
-nfc_save	Guardar
-nfc_scan_a_new_tag	Digitalizar uma etiqueta nova
-nfc_the_nfc_antenna_is_usually	A antena NFC costuma ficar perto do topo, na parte de trás.
-nfc_this_phone_has_no_nfc	Este telemóvel não tem NFC
-nfc_this_tag_reports_a_different	Esta etiqueta indica um identificador diferente sempre que é tocada, por isso uma macro nunca a conseguiria reconhecer. Os cartões bancários, os passes de transporte e os telemóveis que se fazem passar por cartões fazem todos isto. Usa antes um autocolante NFC simples.
-nfc_write	Escrever
-nfc_write_data_to_this_tag	Escrever dados nesta etiqueta
-nfc_write_to_tag	Escrever na etiqueta
-mail_add_an_account	Adicionar uma conta
-mail_back	Voltar
-mail_choose_a_folder	Escolher uma pasta
-mail_choose_an_account	Escolher uma conta
-mail_delete_account	Eliminar conta
-mail_email_address	Endereço de e-mail
-mail_inbox	INBOX
-mail_incoming_imap	Receção (IMAP)
-mail_mail_accounts	Contas de e-mail
-mail_name	Nome
-mail_no_accounts_yet_add_one	Ainda não há contas. Adiciona uma para enviar e-mail a partir de uma macro, ou para iniciar uma macro quando chegar e-mail. A maioria dos fornecedores exige uma palavra-passe de aplicação em vez da normal: o formulário indica onde a criar.
-mail_open_the_app_password_page	Abrir a página das palavras-passe de aplicação
-mail_outgoing_smtp	Envio (SMTP)
-mail_port	Porta
-mail_provider	Fornecedor
-mail_save	Guardar
-mail_security	Segurança
-mail_servers	Servidores
-mail_test_connection	Testar ligação
-mail_this_account_s_password_could	Não foi possível ler a palavra-passe desta conta: muito provavelmente veio de uma cópia de segurança ou de outro telemóvel, ao contrário da chave que a selou. Escreve-a outra vez para corrigir.
-mail_this_provider_cannot_be_added	Este fornecedor não pode ser adicionado
-mail_unchanged	Sem alterações
-mail_username_only_if_it_differs	Utilizador (apenas se for diferente do endereço)
-mail_work_personal_alarm_system	Trabalho, Pessoal, Alarme…
 workflowlist_add_to_home_screen	Adicionar ao ecrã principal
 workflowlist_add_workflow	Adicionar fluxo
 workflowlist_app_access	Acesso de aplicações
+workflowlist_armed	Ativo
+workflowlist_armed_with_problems	Ativo · %1$s
 workflowlist_can_t_add_it_from	Não é possível adicionar a partir daqui
 workflowlist_cancel	Cancelar
 workflowlist_choose_a_macro	Escolher uma macro
 workflowlist_delete	Eliminar
+workflowlist_delete_confirm	Eliminar «%1$s»? Isto não pode ser anulado.
 workflowlist_delete_workflow	Eliminar fluxo
 workflowlist_edit	Editar
 workflowlist_geofences	Geocercas
 workflowlist_global_variables	Variáveis globais
+workflowlist_launcher_cannot_place	Este launcher não deixa uma aplicação colocar um widget por ti. Adiciona tu mesmo o mosaico de execução a partir da lista de widgets do teu ecrã principal: ele perguntará a que acionador corresponde.
 workflowlist_libraries	Bibliotecas
 workflowlist_mail_accounts	Contas de e-mail
 workflowlist_more	Mais
+workflowlist_new_workflow	Fluxo novo
 workflowlist_nfc_tags	Etiquetas NFC
 workflowlist_no_other_macros_yet	Ainda não há outras macros.
 workflowlist_no_workflows_yet_ntap_to	Ainda não há fluxos.\nToca em + para criares um.
+workflowlist_off	Desligado
 workflowlist_permissions	Permissões
 workflowlist_plugins	Extensões
 workflowlist_smart_home	Casa inteligente
-workflowlist_which_trigger	Que acionador?
-workflowlist_workflows	Fluxos
-ai_add_connection	Adicionar ligação
-ai_ai_connections	Ligações de IA
-ai_answer_briefly_and_in_plain	Responde de forma breve e em linguagem simples.
-ai_back	Voltar
-ai_choose_a_connection	Escolher uma ligação
-ai_delete	Eliminar
-ai_edit	Editar
-ai_list_models	Listar modelos
-ai_models	Modelos
-ai_name	Nome
-ai_no_connections_yet_add_one	Ainda não há ligações. Adiciona uma para usares o nó Perguntar à IA. Basta uma chave de API gratuita do Google AI Studio: o formulário guia-te até a obteres e abre-te a página.
-ai_paste_key	Colar chave
-ai_provider	Fornecedor
-ai_save	Guardar
-ai_save_the_connection_first_then	Guarda primeiro a ligação e depois toca em Testar para confirmares que a chave funciona.
-ai_sent_ahead_of_every_prompt	Enviada antes de cada pedido feito por esta ligação. A instrução própria de um nó Perguntar à IA é acrescentada a seguir, não a substitui.
-ai_server_address	Endereço do servidor
-ai_standing_instruction_optional	Instrução permanente (opcional)
-ai_test	Testar
-ai_the_key_is_stored_encrypted	A chave é guardada cifrada neste telemóvel e nunca mais é mostrada. %1$s Não é enviado nada a menos que uma macro chegue a um nó Perguntar à IA.
-ai_this_address_is_unencrypted_that	Este endereço não é cifrado. Isso é normal para um servidor da tua própria rede, mas não o uses para nada que atravesse a internet, porque a chave seguiria em claro.
-smarthome_a_bridge_on_your_wi	Uma ponte na tua rede Wi-Fi
-smarthome_add_a_hub	Adicionar um hub
-smarthome_back	Voltar
-smarthome_connect	Ligar
-smarthome_done	Concluído
-smarthome_it_is_the_large_button	É o botão grande no centro do disco, entre as três luzes pequenas. A ligar a %1$s.
-smarthome_looking_for_bridges_on_your	À procura de pontes na tua rede Wi-Fi…
-smarthome_name	Nome
-smarthome_no_hubs_yet_add_one	Ainda não há hubs. Adiciona um para controlares as tuas luzes a partir de uma macro. Terás de premir uma vez o botão da ponte, para provares que estás ao lado dela.
-smarthome_nothing_matches	Nada corresponde a «%1$s».
-smarthome_only_trust_it_if_you	Só deves confiar nele se reiniciaste ou substituíste a tua ponte. Se não o fizeste, é outra coisa na tua rede que está a responder em vez dela.
-smarthome_or_type_the_bridge_s	Ou escreve o endereço da ponte
-smarthome_paired_this_is_the_name	Emparelhado. É este o nome que as tuas macros vão mostrar.
-smarthome_philips_hue	Philips Hue
-smarthome_press_the_round_button_on	Prime o botão redondo em cima da tua ponte.
-smarthome_refresh_lights_and_scenes	  Atualizar luzes e cenas
-smarthome_remove_hub	Remover hub
-smarthome_save	Guardar
-smarthome_search	Procurar
-smarthome_smart_home	Casa inteligente
-smarthome_this_address_is_presenting_a	Este endereço apresenta um certificado diferente
-smarthome_trust_new_certificate	Confiar no novo certificado
-smarthome_what_are_you_connecting_to	A que te estás a ligar?
-grapheditor_add_node	Adicionar nó
-grapheditor_any_tag	Qualquer etiqueta
-grapheditor_back	Voltar
-grapheditor_cancel	Cancelar
-grapheditor_clear_console	Limpar a consola
-grapheditor_clear_search	Limpar a pesquisa
-grapheditor_clear_selection	Anular a seleção
-grapheditor_close	Fechar
-grapheditor_configure	Configurar
-grapheditor_configure_node	Configurar nó
-grapheditor_delete	Eliminar
-grapheditor_delete_selection	Eliminar a seleção
-grapheditor_delete_workflow	Eliminar fluxo
-grapheditor_edit	Editar…
-grapheditor_editor_surface	superfície do editor
-grapheditor_enabled	Ativado
-grapheditor_fit_to_screen	Ajustar ao ecrã
-grapheditor_grant	Conceder
-grapheditor_hh_mm	HH:mm
-grapheditor_name	Nome
-grapheditor_next	Seguinte
-grapheditor_no_problems	Sem problemas
-grapheditor_nothing_selected_u2014_this_trigger	Nada selecionado: este acionador recorre a disparar à entrada.
-grapheditor_permission_needed	Permissão necessária
-grapheditor_pick_a_date_and_time	Escolher data e hora
-grapheditor_pick_a_time	Escolher uma hora
-grapheditor_remove_port	Remover porta
-grapheditor_run_workflow	Executar fluxo
-grapheditor_search_nodes	Procurar nós
-grapheditor_show_all	Mostrar tudo
-grapheditor_stop_workflow	Parar fluxo
-grapheditor_tap_to_add_your_first	Toca em + para adicionares o teu primeiro nó
-grapheditor_this_node_needs_contacts_access	Este nó precisa de acesso aos contactos para procurar o número que escolheste. Sem ele, não fará nada ao correr.
-grapheditor_this_workflow_is_ready_to	Este fluxo está pronto a correr.
-grapheditor_type	Tipo
-grapheditor_variables_are_unavailable_here	As variáveis não estão disponíveis aqui.
-grapheditor_workflow_actions	Ações do fluxo
-grapheditor_your_canvas_is_empty	A tua tela está vazia
-grapheditor_zoom_in	Ampliar
-grapheditor_zoom_out	Reduzir
-ai_add_ai_connection	Adicionar ligação de IA
-ai_api_key	Chave de API
-ai_api_key_paste_it_in	Chave de API: cola-a outra vez
-ai_edit_connection	Editar ligação
-ai_key_needs_pasting_in_again	É preciso colar a chave outra vez
-ai_leave_these_empty_to_use	Deixa estes campos vazios para usares os modelos do próprio fornecedor. Preenche um quando um modelo for descontinuado, ou para fixares um em concreto.
-ai_name_the_model_your_server	Indica o modelo que o teu servidor ou conta disponibiliza. Se só preencheres Rápido, os outros dois também o usam.
-ai_new_api_key_leave_empty	Nova chave de API (deixa vazio para manteres a atual)
-ai_provider_s_default	o do fornecedor
-api_no_macro_can_currently_be	De momento não é possível chamar nenhuma macro a partir do exterior.
-api_no_other_app_can_run	Nenhuma outra aplicação pode executar as tuas macros. Quando uma pedir, ser-te-á mostrado de qual se trata e decides nessa altura; as autorizações aparecem aqui para que as possas retirar.
-api_these_apps_can_see_and	Estas aplicações podem ver e executar as macros a que deste um acionador «Chamada por outra aplicação». Não podem ver nem alterar mais nada no Ottomatic, e uma aplicação só está aqui porque tu a autorizaste quando ela pediu.
-apps_other_apps	Outras aplicações
-geofence_edit_place	Editar local
-geofence_new_place_2	Novo local
-grapheditor_add_node_2	Adicionar nó
-grapheditor_no_nodes_can_connect_here	Nenhum nó se pode ligar aqui
-grapheditor_no_nodes_match_your_search	Nenhum nó corresponde à tua pesquisa
-grapheditor_no_place_selected	Nenhum local selecionado
-grapheditor_place_missing	Falta o local
-grapheditor_variables	Variáveis
-hue_find_your_bridge	Encontra a tua ponte
-hue_hue_bridge	Ponte Hue
-hue_name_your_bridge	Dá um nome à tua ponte
-hue_press_the_link_button	Prime o botão de ligação
-hue_text	 ·
-macro_colour	Cor
-macro_icon	Ícone
-mail_password_needed	Falta a palavra-passe
-nfc_ottomatic_cannot_switch_it_on	O Ottomatic não o pode ligar por ti: o Android só o permite a partir das suas próprias definições.
-nfc_rename_tag	Mudar o nome da etiqueta
-nfc_scan_a_tag	Digitalizar uma etiqueta
-nfc_there_is_nothing_to_scan	Não há com que digitalizar. Um acionador de etiqueta nunca disparará aqui.
-permissions_ottomatic_couldn_t_resume_your	O Ottomatic não conseguiu retomar as tuas macros em segundo plano depois do último reinício. Para que a automatização continue sem intervenção, permite que o Ottomatic corra sem restrições de bateria. Podes alterar isto mais tarde em Permissões.
-plugins_a_plugin_adds_trigger_and	Uma extensão acrescenta nós de acionador e de ação à tua paleta. É uma aplicação à parte: corre o seu próprio código, no seu próprio processo, usando apenas as permissões que te pede para si mesma. O Ottomatic não partilha as dele com ela.
-plugins_no_plugins_are_installed_a	Não há extensões instaladas. Uma extensão é uma aplicação à parte que acrescenta nós de acionador e de ação à tua paleta; instala uma e aparecerá aqui.
-plugins_provides_no_nodes	Não fornece nenhum nó
-smarthome_address	Endereço
-smarthome_bridge_id	ID da ponte
-smarthome_hub	Hub
-smarthome_lights	Luzes
-smarthome_pair_again	Emparelhar de novo
-smarthome_presented	Apresentado
-smarthome_refresh	Atualizar
-smarthome_rooms_and_zones	Divisões e zonas
-smarthome_scenes	Cenas
-smarthome_trusted	Fidedigno
-sound_default_ringtone	toque predefinido
-variables_holds	Contém
-variables_name	Nome
-variables_note_optional	Nota (opcional)
-variables_starts_at	Começa em
-variables_value	Valor
-widget_a_count_of_macros_that	O número de macros que não podem correr; fica oculto quando não há nenhuma
-widget_a_grid_of_manual_triggers	Uma grelha de acionadores manuais em que podes tocar para executar
-widget_new_macros_appear_on_the	As macros novas aparecem no painel automaticamente
-widget_show	Mostrar
-widget_whether_the_engine_is_running	Se o motor está a correr, e quantas macros estão ativas
-widget_which_macro_ran_last_whether	Que macro correu por último, se resultou, e quando
-widget_which_triggers	Que acionadores
 workflowlist_text	 ·
 workflowlist_this_macro	esta macro
-grapheditor_nothing_selected	Nada selecionado
-grapheditor_selection_mixed	%1$s, %2$s
-widget_engine_running	Motor a correr
-widget_engine_stopped	Motor parado
-widget_armed_of_total	%1$d de %2$d ativas
-widget_state_running	A correr…
-widget_state_done	Concluído
-widget_state_failed	Falhou
-widget_state_ready	Pronto
-widget_state_off	Desligado
-widget_outcome_running	a correr
-widget_outcome_ok	ok
-widget_outcome_failed	falhou
-widget_last_run_line	%1$s · %2$s · %3$s
-widget_ago_just_now	agora mesmo
-widget_ago_minutes	há %1$d min
-widget_ago_hours	há %1$d h
-widget_ago_days	há %1$d d
-widget_ago_a_while	há algum tempo
-nfc_written	Escrito.
-nfc_could_not_write	Não foi possível escrever nesta etiqueta.
-smarthome_up_to_date	Atualizado
-smarthome_trusted_works_again	Fidedigno. O hub deve voltar a funcionar.
-smarthome_button_not_pressed	O botão não foi premido a tempo: tenta de novo
-workflowlist_new_workflow	Fluxo novo
-mail_account_deleted	Essa conta foi eliminada
-mail_account_needs_password	É preciso escrever outra vez a palavra-passe desta conta
-mail_signed_in	Sessão iniciada. Enviar e receber funcionam ambos.
-kind_trigger	Acionador
-kind_action	Ação
-kind_value	Valor
-kind_transform	Transformação
-kind_triggers	Acionadores
-kind_actions	Ações
-kind_values	Valores
-kind_transforms	Transformações
-console_nothing_at_level	Nada neste nível
-console_nothing_logged	Ainda não há registos
-console_widen_filter	Alarga o filtro para veres o resto do histórico deste fluxo.
-console_run_the_workflow	Executa o fluxo. Os erros, as mensagens de action.log e o console.log de um script aparecem aqui.
-console_filter_all	Tudo
-console_filter_info	Info
-console_filter_problems	Problemas
-editor_tab_problems	Problemas
-editor_tab_console	Consola
-editor_tab_variables	Variáveis
-editor_back_to_graph	Voltar ao grafo
-editor_back_to_variables	Voltar às variáveis deste fluxo
-permissions_node_section_blurb	Vêm dos acionadores e ações que colocaste. Sem a permissão, o nó não faz nada e não diz nada.
-permissions_app_section_blurb	Usadas pela própria aplicação, não por um nó em concreto.
-permissions_granted	Concedida
-permissions_not_granted	Não concedida
-permissions_revoke	Revogar
-permissions_grant	Conceder
-permissions_background_location_hint	O Android pede isto no ecrã dele: escolhe «Permitir sempre».
-smarthome_choose_a_scene	Escolher uma cena
-smarthome_choose_a_light	Escolher uma luz
-smarthome_no_hub_yet	Ainda não há nenhum hub. Adiciona um para controlares as tuas luzes a partir de uma macro.
-smarthome_nothing_read	Ainda não foi lido nada deste hub. Verifica se está ligado e tenta de novo.
-smarthome_rooms	Divisões
-smarthome_zones	Zonas
-smarthome_white_only	Apenas branco
-smarthome_everything_in_it	Tudo o que contém
-mail_add_account	Adicionar conta
-mail_edit_account	Editar conta
-mail_app_password	Palavra-passe de aplicação
-mail_app_password_keep	Palavra-passe de aplicação (deixa vazio para a manteres)
-mail_security_none	Nenhuma (não recomendado)
-mail_security_starttls	STARTTLS
-mail_security_tls	TLS / SSL
-workflowlist_launcher_cannot_place	Este launcher não deixa uma aplicação colocar um widget por ti. Adiciona tu mesmo o mosaico de execução a partir da lista de widgets do teu ecrã principal: ele perguntará a que acionador corresponde.
-workflowlist_delete_confirm	Eliminar «%1$s»? Isto não pode ser anulado.
-workflowlist_armed	Ativo
-workflowlist_off	Desligado
-workflowlist_armed_with_problems	Ativo · %1$s
-grapheditor_consequence_never_fires	nunca disparará
-grapheditor_consequence_reads_nothing	não lerá nada
-grapheditor_consequence_fails	falhará sempre que correr
-grapheditor_permission_joiner	 e
-grapheditor_node_needs_permissions	Este nó %1$s até concederes %2$s.
-problems_path_arrow	 →
-problems_skipped_nodes	ignorado: %1$s
-problems_wire_skipped	esta ligação é ignorada
-problems_where_separator	  ·
-variables_edit_named	Editar %1$s
-variables_empty	vazio
-variables_constant_is	constante · %1$s
-variables_equals	= %1$s
-variables_starts_at_value	começa em %1$s
-variables_unset	por definir
-variables_subtitle	%1$s · %2$s
-geofence_edit_named	Editar %1$s
-geofence_coordinates	%1$.4f, %2$.4f
-geofence_place_subtitle	%1$s · %2$s
-geofence_radius_km	%1$.1f km
-geofence_radius_m	%1$d m
-config_now	Agora
-config_set	Definir
-config_add_row	Adicionar %1$s
-config_port_carries_list	Esta porta transporta uma lista
-config_port_carries_one	Esta porta transporta um único valor
-config_hub_removed	%1$s · hub removido
-config_deleted_account	Conta eliminada
-config_deleted_connection	Ligação eliminada
-config_global_variable	Global · %1$s
-config_none_selected	Nada selecionado
-variables_edit_variable	Editar variável
-variables_every_workflow	Todos os fluxos
-variables_empty_local	Ainda não há nada. Uma variável aqui pertence só a esta macro.
-variables_empty_global	Ainda não há nada. Uma variável aqui é partilhada por todas as macros.
-nfc_kind_text	Texto
-nfc_kind_link	Link
-nfc_rename_named	Mudar o nome de %1$s
-mail_edit_named	Editar %1$s
-grapheditor_has_error	Tem um erro
-grapheditor_has_warning	Tem um aviso
-grapheditor_cannot_connect_kinds	Não é possível ligar uma porta de execução a uma de dados
-smarthome_settings_for	Definições de %1$s
-smarthome_hub_subtitle	%1$s · %2$d luzes · %3$d cenas
-config_socket_use_typed_connected	Usar o valor escrito para %1$s (ligado a %2$s)
-config_socket_use_typed_free	Usar o valor escrito para %1$s (nada ligado)
-config_socket_feed	Alimentar %1$s a partir dos dados anteriores
-grapheditor_delete_confirm	Eliminar «%1$s»? O registo de execução vai com ele. Isto não pode ser anulado.
-grapheditor_zoom_percent	%1$d%%
-grapheditor_connect_from	Ligar a partir de %1$s
-nfc_tag_says	Esta etiqueta diz: %1$s
-plugins_node_rejected	%1$s não foi adicionado: %2$s
-widget_more_hidden	+%1$d mais: redimensiona para os veres
-widget_showing_all	A mostrar os %1$d acionadores. Desliga o interruptor para escolheres quais.
-api_allow_app_to_run	Permitir que %1$s execute as tuas macros?
-api_generate_key	Gerar uma chave
-api_replace_key	Substituir a chave
-problems_summary_separator	 ·
-ai_model_answered	O modelo respondeu: %1$s
-mail_choose_account_first	Escolhe primeiro uma conta neste nó: as pastas estão no servidor, por isso o Ottomatic tem de saber a qual perguntar.
-mail_folder_list_unreadable	Não foi possível ler a lista de pastas.
-mail_no_usable_folders	Esta conta não indica nenhuma pasta que possa conter e-mail.
-shortcut_macro_gone	Essa macro já não existe
-shortcut_running	A correr…
-shortcut_running_named	A correr %1$s
-ai_getting_a_key	Obter uma chave
-ai_pointing_at_own_server	Apontar para o teu próprio servidor
-api_key_copied	Chave copiada
-api_allowed_on	Autorizada em %1$s
-geofence_small_radius_warning	Abaixo de %1$d m o sistema troca precisão de localização por bateria, por isso as passagens são muitas vezes falhadas ou comunicadas tarde.
-grapheditor_port_path	%1$s › %2$s
-shortcut_macro_and_trigger	%1$s · %2$s
+workflowlist_which_trigger	Que acionador?
+workflowlist_workflows	Fluxos

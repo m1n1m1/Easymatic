@@ -1,5 +1,3 @@
-# Spanish node text. First column must match values/strings_nodes.xml exactly
-# (so \' and &amp; stay escaped there); the second is plain text.
 A	A
 A run of items out of a list	Un tramo de elementos de una lista
 A to Z / smallest first	De la A a la Z / menor primero
@@ -14,11 +12,12 @@ Active from	Activo desde
 Active until (earlier than \'from\' runs past midnight)	Activo hasta (antes que «desde» cruza la medianoche)
 Add to List	Añadir a la lista
 Adjusts an audio stream\'s volume (up, down, set, mute or unmute)	Ajusta el volumen de un canal de audio (subir, bajar, fijar, silenciar o quitar el silencio)
-Airplane Mode Changed	Modo avión cambiado
 Airplane mode	Modo avión
+Airplane Mode Changed	Modo avión cambiado
 Alarm	Alarma
 Alarms	Alarmas
 All	Todo
+Also when only its details change	También cuando solo cambien sus detalles
 Also when the device starts moving	También cuando el dispositivo empieza a moverse
 Always (high battery use)	Siempre (mucho consumo de batería)
 Ambient Light	Luz ambiental
@@ -26,19 +25,21 @@ Ambient light	Luz ambiental
 Answer	Respuesta
 Answer type	Tipo de respuesta
 Any	Cualquiera
+Anything	Cualquiera
 App	Aplicación
 App (optional)	Aplicación (opcional)
 App Initialised	Aplicación inicializada
 App Installed / Removed	Aplicación instalada / desinstalada
 Appends an item to a named list, usually from inside a loop	Añade un elemento a una lista con nombre, normalmente desde dentro de un bucle
 Ask AI	Preguntar a la IA
-Ask Yes or No	Preguntar sí o no
 Ask for Input	Pedir un dato
 Ask to Choose	Pedir que elija
+Ask Yes or No	Preguntar sí o no
 Asks the user a yes/no question in a popup dialog and branches on the answer	Hace al usuario una pregunta de sí/no en un diálogo y bifurca según la respuesta
 Asks the user to type a value in a popup dialog and puts it on a port	Pide al usuario que escriba un valor en un diálogo y lo pone en un puerto
 At	A las
 At a time of day	A una hora del día
+Attribute (optional)	Atributo (opcional)
 Auto	Automático
 Auto brightness	Brillo automático
 Automatic	Automático
@@ -50,8 +51,8 @@ Battery level	Nivel de batería
 Bcc	Cco
 Below	Por debajo
 Bluetooth Device Connected	Dispositivo Bluetooth conectado
-Bluetooth State Change	Cambio de estado del Bluetooth
 Bluetooth enabled	Bluetooth activado
+Bluetooth State Change	Cambio de estado del Bluetooth
 Body	Cuerpo
 Boolean	Sí/no
 Break Struct	Descomponer estructura
@@ -60,12 +61,16 @@ Build text	Construir texto
 Button	Botón
 Button label	Texto del botón
 C	C
+Call Home Assistant Service	Llamar a un servicio de Home Assistant
 Called by Another App	Llamada por otra aplicación
 Calls a web API and exposes the typed response	Llama a una API web y expone la respuesta tipada
 Cancel button	Botón de cancelar
 Carries on at once and continues again at a chosen moment	Sigue de inmediato y continúa otra vez en un momento elegido
 Carry on now	Seguir ahora
 Cc	Cc
+Change	Cambio
+Changes from	Cambia desde
+Changes to	Cambia a
 Charging	Cargando
 Charging started	Empezó a cargar
 Charging stopped	Dejó de cargar
@@ -94,8 +99,9 @@ Covered	Cubierto
 Current time	Hora actual
 Custom	Personalizado
 Custom sound	Sonido personalizado
-Dark Theme Change	Cambio de tema oscuro
 Dark theme	Tema oscuro
+Dark Theme Change	Cambio de tema oscuro
+Data contains	Los datos contienen
 Date &amp; time	Fecha y hora
 Date rolled over	Cambio de fecha
 Date time	Fecha y hora
@@ -106,9 +112,9 @@ Device Boot	Arranque del dispositivo
 Device Docked	Dispositivo acoplado
 Device Movement	Movimiento del dispositivo
 Device Orientation	Orientación del dispositivo
+Device orientation	Orientación del dispositivo
 Device Shutting Down	Dispositivo apagándose
 Device Unlocked	Dispositivo desbloqueado
-Device orientation	Orientación del dispositivo
 Direction	Dirección
 Disable Macro	Desactivar macro
 Disabled	Desactivado
@@ -131,12 +137,16 @@ Empty Trigger	Activador vacío
 Enable Macro	Activar macro
 Enabled	Activado
 Enables another macro by id (persists the flag and arms its triggers)	Activa otra macro por su id (guarda el estado y arma sus activadores)
+Entity	Entidad
 Equals	Igual a
 Event	Evento
+Event type	Tipo de evento
+Extra data (JSON)	Datos adicionales (JSON)
 Face down	Boca abajo
 Face up	Boca arriba
 Fade time (ms)	Tiempo de transición (ms)
 Falls below	Baja de
+false	falso
 Fast	Rápido
 Fetch Email	Obtener correo
 Field	Campo
@@ -159,21 +169,24 @@ From position (0 is the first)	Desde la posición (0 es la primera)
 Geofence	Geovalla
 Gesture	Gesto
 Get	Obtener
-Get Light State	Obtener estado de la luz
 Get as	Obtener como
+Get Light State	Obtener estado de la luz
 Give up after (seconds)	Rendirse tras (segundos)
 Greater than	Mayor que
 Greater than or equal	Mayor o igual que
-HTTP Request	Petición HTTP
 Halts the current execution chain (stops following connected actions)	Detiene la cadena de ejecución actual (deja de seguir las acciones conectadas)
 Headers (JSON, optional)	Cabeceras (JSON, opcional)
-Headset Plugged	Auriculares conectados
 Headset hook	Botón de los auriculares
+Headset Plugged	Auriculares conectados
 Headset plugged in	Auriculares conectados
 Held down	Mantenido pulsado
 High — fires easily	Alta: se dispara con facilidad
 Hint	Sugerencia
 Hold for at least (ms)	Mantener al menos (ms)
+Home Assistant	Home Assistant
+Home Assistant Entity	Entidad de Home Assistant
+Home Assistant Entity Changed	Entidad de Home Assistant modificada
+Home Assistant Event	Evento de Home Assistant
 Hours	Horas
 How many	Cuántos
 How many at most	Cuántos como máximo
@@ -181,10 +194,12 @@ How many items are in a list	Cuántos elementos tiene una lista
 How many times	Cuántas veces
 How the device is currently resting — face up or down, portrait or landscape (screen on only)	Cómo está apoyado el dispositivo ahora mismo: boca arriba o abajo, vertical u horizontal (solo con la pantalla encendida)
 How to watch	Cómo vigilar
+HTTP Request	Petición HTTP
 Idle	Libre
 If	Si
 If it fails	Si falla
 If missing	Si falta
+in	Entrada
 Incoming Call State	Estado de llamada entrante
 Index	Índice
 Initiates a phone call to a number	Inicia una llamada a un número
@@ -194,8 +209,8 @@ Int	Entero
 Item	Elemento
 Item at position	Elemento en la posición
 Item to find	Elemento a buscar
-JSON text	Texto JSON
 Join list	Unir lista
+JSON text	Texto JSON
 Key	Clave
 Landscape left	Horizontal izquierda
 Landscape right	Horizontal derecha
@@ -247,11 +262,11 @@ Move to folder	Mover a la carpeta
 Multiple lines	Varias líneas
 Must hold for (ms)	Debe mantenerse (ms)
 Mute	Silenciar
-NFC Tag	Etiqueta NFC
-NFC enabled	NFC activado
 Name other apps see	Nombre que ven otras aplicaciones
 Network	Red
 Next	Siguiente
+NFC enabled	NFC activado
+NFC Tag	Etiqueta NFC
 Normal	Normal
 Not equals	Distinto de
 Notification	Notificación
@@ -273,12 +288,13 @@ Only unread	Solo los no leídos
 Only when it ends up lying flat	Solo cuando acaba quedando plano
 Only while the screen is on	Solo con la pantalla encendida
 Open URL	Abrir URL
-Opens WhatsApp, Signal or Telegram with a message ready to send	Abre WhatsApp, Signal o Telegram con un mensaje listo para enviar
 Opens a URL in the default handler (browser or app). Typing google.com is enough	Abre una URL en la aplicación predeterminada (navegador o app). Basta con escribir google.com
+Opens WhatsApp, Signal or Telegram with a message ready to send	Abre WhatsApp, Signal o Telegram con un mensaje listo para enviar
 Operator	Operador
 Options — one per line	Opciones: una por línea
 Order	Orden
 Orientation	Orientación
+out	Salida
 Outputs	Salidas
 Package	Paquete
 Part of list	Parte de la lista
@@ -290,8 +306,8 @@ Picked up	Levantado
 Place	Lugar
 Planned for	Previsto para
 Play	Reproducir
-Play Sound	Reproducir sonido
 Play pause	Reproducir/pausar
+Play Sound	Reproducir sonido
 Play through	Reproducir por
 Plays a notification, ringtone, alarm or chosen sound	Reproduce un sonido de notificación, tono, alarma o el que elijas
 Plugged	Conectado
@@ -305,8 +321,8 @@ Position (0 is the first)	Posición (0 es la primera)
 Position in list	Posición en la lista
 Post	Enviar
 Posts a notification on this device	Muestra una notificación en este dispositivo
-Power Save Mode Changed	Modo de ahorro de energía cambiado
 Power save mode	Modo de ahorro de energía
+Power Save Mode Changed	Modo de ahorro de energía cambiado
 Prefilled	Rellenado previamente
 Pressed	Pulsado
 Pressed several times	Pulsado varias veces
@@ -335,46 +351,47 @@ Repeat while	Repetir mientras
 Replaced	Reemplazada
 Replies to a message in WhatsApp, Signal, Telegram or another messenger	Responde a un mensaje en WhatsApp, Signal, Telegram u otra app de mensajería
 Reply to Message	Responder al mensaje
+response	respuesta
 Resumed at	Reanudado a las
 Ring	Sonar
-Ringer Mode Changed	Modo de sonido cambiado
 Ringer mode	Modo de sonido
+Ringer Mode Changed	Modo de sonido cambiado
 Ringing	Sonando
 Ringtone	Tono de llamada
 Rises above	Sube por encima de
 Routes execution by comparing a value against another	Dirige la ejecución comparando un valor con otro
-Run Script	Ejecutar script
 Run action	Ejecutar acción
+Run Script	Ejecutar script
+Runs any Home Assistant service — a thermostat, a media player, a lock, a vacuum, a script	Ejecuta cualquier servicio de Home Assistant: un termostato, un reproductor, una cerradura, un aspirador, un script
 Runs JavaScript over inputs you name and returns values on ports you name	Ejecuta JavaScript sobre entradas que tú nombras y devuelve valores en puertos que tú nombras
-SMS	SMS
-SMS Received	SMS recibido
 Saturdays	Sábados
 Scene	Escena
 Schedule	Programación
-Screen On / Off	Pantalla encendida / apagada
 Screen on	Pantalla encendida
+Screen On / Off	Pantalla encendida / apagada
 Script — each input is a variable of its own name	Script: cada entrada es una variable con su propio nombre
 Seconds	Segundos
+Send as HTML	Enviar como HTML
 Send Email	Enviar correo
 Send Message	Enviar mensaje
 Send SMS	Enviar SMS
-Send as HTML	Enviar como HTML
 Sender (optional — any sender when empty)	Remitente (opcional: vacío significa cualquiera)
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text	Envía una petición a un modelo de IA (Gemini, Claude, ChatGPT, OpenRouter o un modelo autoalojado) y devuelve su respuesta como texto
-Sends an SMS to a number with a body	Envía un SMS con un texto a un número
 Sends an email through one of your mail accounts	Envía un correo a través de una de tus cuentas
+Sends an SMS to a number with a body	Envía un SMS con un texto a un número
 Sensitivity	Sensibilidad
 Separator	Separador
 Separator (blank for a new line)	Separador (vacío para un salto de línea)
+Service	Servicio
 Set	Fijar
 Set Brightness	Fijar brillo
-Set Ringer Mode	Fijar modo de sonido
-Set Screen Timeout	Fijar apagado de pantalla
-Set Variable	Fijar variable
-Set Volume	Fijar volumen
 Set brightness	Fijar brillo
 Set colour	Fijar color
+Set Ringer Mode	Fijar modo de sonido
+Set Screen Timeout	Fijar apagado de pantalla
 Set temperature	Fijar temperatura de color
+Set Variable	Fijar variable
+Set Volume	Fijar volumen
 Sets or clears the clipboard	Fija o vacía el portapapeles
 Sets screen brightness (absolute value or auto)	Fija el brillo de la pantalla (valor fijo o automático)
 Sets the ringer mode to normal, silent or vibrate	Pone el modo de sonido en normal, silencio o vibración
@@ -387,6 +404,8 @@ Shows a popup dialog offering a list of options and reports which one was picked
 Signal	Signal
 Silence	Silencio
 Silent	Silencio
+SMS	SMS
+SMS Received	SMS recibido
 Sort list	Ordenar lista
 Sound	Sonido
 Source	Origen
@@ -401,20 +420,21 @@ Starts once after the device finishes booting	Se ejecuta una vez cuando el dispo
 Starts the workflow on an interval or at a time of day	Inicia el flujo en un intervalo o a una hora del día
 Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it	Inicia el flujo cuando otra aplicación, un script o un acceso directo le pide a Ottomatic que lo ejecute
 Starts the workflow when you tap run, or tap its widget or shortcut	Inicia el flujo cuando tocas ejecutar, o tocas su widget o acceso directo
-Starts when Bluetooth is turned on or off	Se inicia cuando se activa o desactiva el Bluetooth
-Starts when Wi-Fi is enabled or disabled	Se inicia cuando se activa o desactiva el Wi-Fi
 Starts when a Bluetooth device connects or disconnects	Se inicia cuando un dispositivo Bluetooth se conecta o se desconecta
-Starts when a USB device is connected or disconnected	Se inicia cuando se conecta o desconecta un dispositivo USB
+Starts when a Home Assistant entity changes — a sensor, a switch, a door, a thermostat	Se inicia cuando cambia una entidad de Home Assistant: un sensor, un interruptor, una puerta, un termostato
 Starts when a matching notification arrives	Se inicia cuando llega una notificación que coincide
 Starts when a media button is pressed (play, pause, next, etc.)	Se inicia al pulsar un botón multimedia (reproducir, pausa, siguiente, etc.)
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	Se inicia cuando llega un mensaje en WhatsApp, Signal, Telegram u otra app de mensajería
+Starts when a USB device is connected or disconnected	Se inicia cuando se conecta o desconecta un dispositivo USB
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	Se inicia al pulsar, mantener o pulsar varias veces un botón de volumen. Necesita acceso de accesibilidad; los botones siguen funcionando con normalidad
 Starts when a wired headset is plugged or unplugged	Se inicia al conectar o desconectar unos auriculares con cable
 Starts when airplane mode is toggled	Se inicia al activar o desactivar el modo avión
-Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	Se inicia al acercar una etiqueta NFC al teléfono. Solo funciona con la pantalla encendida y desbloqueada
-Starts when an SMS arrives	Se inicia cuando llega un SMS
 Starts when an app is installed, removed or replaced	Se inicia cuando se instala, desinstala o reemplaza una aplicación
 Starts when an email arrives in a mailbox you are watching	Se inicia cuando llega un correo a un buzón que estás vigilando
+Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	Se inicia cuando se dispara un evento en el bus de eventos de Home Assistant: un botón Zigbee, una etiqueta, un evento personalizado
+Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	Se inicia al acercar una etiqueta NFC al teléfono. Solo funciona con la pantalla encendida y desbloqueada
+Starts when an SMS arrives	Se inicia cuando llega un SMS
+Starts when Bluetooth is turned on or off	Se inicia cuando se activa o desactiva el Bluetooth
 Starts when external media is mounted, unmounted or ejected	Se inicia cuando se monta, desmonta o expulsa un medio externo
 Starts when power-save mode is toggled on or off	Se inicia al activar o desactivar el modo de ahorro de energía
 Starts when the battery level crosses a threshold (polls in the background)	Se inicia cuando el nivel de batería cruza un umbral (consulta en segundo plano)
@@ -435,11 +455,13 @@ Starts when the ringer mode changes (normal, silent, vibrate)	Se inicia cuando c
 Starts when the screen turns on or off	Se inicia cuando la pantalla se enciende o se apaga
 Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)	Se inicia cuando el sensor de encima de la pantalla se cubre o se descubre. Tu mano tiene que estar tocando el cristal o casi (en la mayoría de dispositivos, solo con la pantalla encendida)
 Starts when the user unlocks the device	Se inicia cuando el usuario desbloquea el dispositivo
+Starts when Wi-Fi is enabled or disabled	Se inicia cuando se activa o desactiva el Wi-Fi
 State	Estado
+state	estado
 Stop	Detener
+Stop after (seconds, 0 = play to the end)	Detener tras (segundos, 0 = reproducir hasta el final)
 Stop Macro	Detener macro
 Stop Sound	Detener sonido
-Stop after (seconds, 0 = play to the end)	Detener tras (segundos, 0 = reproducir hasta el final)
 Stops every sound started by Play Sound	Detiene todos los sonidos iniciados por Reproducir sonido
 Stream	Canal
 String	Texto
@@ -458,6 +480,7 @@ Text contains (optional)	El texto contiene (opcional)
 Text — one item per line, or wire something in	Texto: un elemento por línea, o conecta algo
 The current battery charge as a percentage in 0..100	La carga actual de la batería en porcentaje, de 0 a 100
 The current date and time	La fecha y la hora actuales
+The current state of a Home Assistant entity — a sensor, a switch, a thermostat	El estado actual de una entidad de Home Assistant: un sensor, un interruptor, un termostato
 The current value of a variable	El valor actual de una variable
 The device\'s current ringer mode	El modo de sonido actual del dispositivo
 The light level around the device in lux — a dim room is around 30, an office a few hundred	El nivel de luz alrededor del dispositivo en lux: una habitación en penumbra ronda los 30, una oficina unos cientos
@@ -479,19 +502,18 @@ Toggle Flashlight	Alternar linterna
 Toggle Wi-Fi	Alternar Wi-Fi
 Toggles Do-Not-Disturb on or off with a chosen policy level	Activa o desactiva No molestar con el nivel que elijas
 Triple tap	Triple toque
+true	verdadero
 Tuesdays	Martes
 Turn off	Apagar
 Turn on	Encender
-Turns Bluetooth on or off and reports the resulting state	Activa o desactiva el Bluetooth e informa del estado resultante
-Turns Wi-Fi on or off and reports the resulting state	Activa o desactiva el Wi-Fi e informa del estado resultante
 Turns a light, room or zone on or off, or sets its brightness, colour or warmth — Philips Hue	Enciende o apaga una luz, habitación o zona, o ajusta su brillo, color o temperatura — Philips Hue
 Turns a list into one piece of text, separated by what you choose	Convierte una lista en un solo texto, separado por lo que elijas
 Turns a value into another type — text, a number, yes/no or a date	Convierte un valor a otro tipo: texto, número, sí/no o fecha
 Turns accelerometer auto-rotation on or off	Activa o desactiva la rotación automática por acelerómetro
+Turns Bluetooth on or off and reports the resulting state	Activa o desactiva el Bluetooth e informa del estado resultante
 Turns the camera torch (flashlight) on or off	Enciende o apaga la linterna de la cámara
+Turns Wi-Fi on or off and reports the resulting state	Activa o desactiva el Wi-Fi e informa del estado resultante
 Type	Tipo
-URL	URL
-USB Device Connected	Dispositivo USB conectado
 Uncovered	Descubierto
 Undocked	Desacoplado
 Unit	Unidad
@@ -503,6 +525,8 @@ Until a date and time	Hasta una fecha y hora
 Until a time of day	Hasta una hora del día
 Up	Subir
 Update Email	Actualizar correo
+URL	URL
+USB Device Connected	Dispositivo USB conectado
 Value	Valor
 Value (0-100, only when mode is set)	Valor (0-100, solo cuando el modo es Fijar)
 Value (0-255, only when auto is off)	Valor (0-255, solo con el automático desactivado)
@@ -528,33 +552,26 @@ When the light level	Cuando el nivel de luz
 When the time comes	Cuando llegue el momento
 When time runs out	Si se acaba el tiempo
 Where an item sits in a list, counting from 0, or -1 when it is not there	En qué posición está un elemento de una lista, contando desde 0, o -1 si no está
-Whether Bluetooth is currently enabled	Si el Bluetooth está activado ahora mismo
-Whether Do-Not-Disturb is currently active	Si No molestar está activo ahora mismo
-Whether NFC is currently switched on	Si el NFC está encendido ahora mismo
-Whether Wi-Fi is currently enabled	Si el Wi-Fi está activado ahora mismo
 Whether a list holds a given item	Si una lista contiene un elemento dado
 Whether a wired or USB headset is currently plugged in	Si hay unos auriculares con cable o USB conectados ahora mismo
 Whether airplane mode is currently on	Si el modo avión está activado ahora mismo
 Whether battery saver is currently on	Si el ahorro de batería está activado ahora mismo
+Whether Bluetooth is currently enabled	Si el Bluetooth está activado ahora mismo
+Whether Do-Not-Disturb is currently active	Si No molestar está activo ahora mismo
+Whether NFC is currently switched on	Si el NFC está encendido ahora mismo
 Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	Si algo está cubriendo el sensor de encima de la pantalla: un bolsillo, una mano sobre el cristal, el dispositivo boca abajo
 Whether the device is currently charging	Si el dispositivo está cargando ahora mismo
 Whether the device is currently in dark theme (night mode)	Si el dispositivo está en tema oscuro (modo nocturno) ahora mismo
 Whether the device is currently sitting in a dock	Si el dispositivo está acoplado ahora mismo
 Whether the screen is currently on and interactive	Si la pantalla está encendida y utilizable ahora mismo
+Whether Wi-Fi is currently enabled	Si el Wi-Fi está activado ahora mismo
 While the screen is off	Con la pantalla apagada
 Whole number	Número entero
-Wi-Fi Network	Red Wi-Fi
-Wi-Fi State Change	Cambio de estado del Wi-Fi
 Wi-Fi enabled	Wi-Fi activado
+Wi-Fi Network	Red Wi-Fi
 Wi-Fi network	Red Wi-Fi
+Wi-Fi State Change	Cambio de estado del Wi-Fi
 Within (ms)	Dentro de (ms)
 Writes a message to this workflow\'s console	Escribe un mensaje en la consola de este flujo
 Yes or no	Sí o no
 Z to A / largest first	De la Z a la A / mayor primero
-false	falso
-in	Entrada
-out	Salida
-response	respuesta
-state	estado
-true	verdadero
-Anything	Cualquiera

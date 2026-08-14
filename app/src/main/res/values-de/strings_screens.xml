@@ -255,7 +255,7 @@
     <string name="smarthome_it_is_the_large_button">Es ist die große Taste in der Mitte der Scheibe, zwischen den drei kleinen Lichtern. Verbindung zu %1$s.</string>
     <string name="smarthome_looking_for_bridges_on_your">Suche nach Bridges in deinem WLAN…</string>
     <string name="smarthome_name">Name</string>
-    <string name="smarthome_no_hubs_yet_add_one">Noch keine Hubs. Füge einen hinzu, um deine Lampen aus einem Makro zu steuern. Du musst einmal die Taste auf der Bridge drücken, um zu bestätigen, dass du daneben stehst.</string>
+    <string name="smarthome_no_hubs_yet_add_one">Noch keine Hubs. Füge einen hinzu, um deine Lampen aus einem Makro zu steuern und Makros zu starten, wenn sich bei dir zu Hause etwas ändert.</string>
     <string name="smarthome_nothing_matches">Nichts passt zu „%1$s“.</string>
     <string name="smarthome_only_trust_it_if_you">Vertraue ihm nur, wenn du deine Bridge zurückgesetzt oder ersetzt hast. Falls nicht, antwortet etwas anderes in deinem Netzwerk an ihrer Stelle.</string>
     <string name="smarthome_or_type_the_bridge_s">Oder gib die Adresse der Bridge ein</string>
@@ -544,4 +544,29 @@
     <string name="shortcut_macro_and_trigger">%1$s · %2$s</string>
 
     <string name="grapheditor_port_path">%1$s › %2$s</string>
+    <string name="smarthome_home_assistant">Home Assistant</string>
+    <string name="smarthome_a_server_you_already_run">Ein Server, den du schon betreibst</string>
+    <string name="smarthome_ha_reached">Erreicht. Das Token funktioniert.</string>
+    <string name="ha_connect_home_assistant">Home Assistant verbinden</string>
+    <string name="ha_name_your_hub">Benenne deinen Hub</string>
+    <string name="ha_looking_for_instances">Suche nach Home Assistant in deinem WLAN…</string>
+    <string name="ha_address">Adresse</string>
+    <string name="ha_access_token">Langlebiges Zugriffstoken</string>
+    <string name="ha_test">Testen</string>
+    <string name="ha_paste">Einfügen</string>
+    <string name="ha_open_profile">Profilseite öffnen</string>
+    <string name="ha_token_steps">Öffne in Home Assistant dein Profil, wähle Sicherheit, scrolle zu Langlebige Zugriffstoken und erstelle eines. Es wird nur einmal angezeigt — kopiere es und füge es hier ein.</string>
+    <string name="ha_cleartext_warning">Diese Adresse ist nicht verschlüsselt. Für einen Server im eigenen Netz ist das normal; über das Internet würde dein Token im Klartext übertragen.</string>
+    <string name="ha_connected_this_is_the_name">Verbunden. Diesen Namen zeigen deine Makros an.</string>
+    <string name="ha_all_entities">Entitäten</string>
+    <string name="ha_replace_token">Token ersetzen</string>
+    <string name="ha_auth_token">Langlebiges Token</string>
+    <string name="ha_auth_oauth">Angemeldet</string>
+    <string name="ha_authentication">Authentifizierung</string>
+    <string name="smarthome_sign_in_again">Erneut anmelden</string>
+    <string name="ha_choose_an_entity">Entität wählen</string>
+    <string name="ha_choose_a_service">Dienst wählen</string>
+    <string name="ha_choose_a_hub">Home Assistant wählen</string>
+    <string name="ha_sign_in">Oder bei Home Assistant anmelden</string>
+    <string name="ha_no_hub_yet">Noch kein Home Assistant. Füge unter Smart Home einen hinzu.</string>
 </resources>

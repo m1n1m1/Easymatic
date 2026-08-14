@@ -1,59 +1,77 @@
-# Simplified Chinese (zh-CN). Plain text — loc/mkloc.py escapes ampersands.
-# Terminology: Workflow=工作流, macro=宏, node=节点, trigger=触发器, action=动作,
-# value=值, transform=转换, port=端口, armed=已启用, geofence=地理围栏,
-# smart home=智能家居, clipboard=剪贴板, canvas=画布, console=控制台.
+accessibility_service_description	Ottomatic 仅用它来检测音量键的按下，好让你的宏可以借此启动。它从不读取屏幕内容，也从不改变按键原本的功能：音量键仍照常工作。
 accessibility_service_label	Ottomatic 按键触发器
 accessibility_service_summary	让宏在你按下音量键时启动。
-accessibility_service_description	Ottomatic 仅用它来检测音量键的按下，好让你的宏可以借此启动。它从不读取屏幕内容，也从不改变按键原本的功能：音量键仍照常工作。
-shortcut_new_macro_short	新建宏
-shortcut_new_macro_long	新建一个宏
-widget_run_tile_label	运行磁贴
-widget_panel_label	Ottomatic 面板
-widget_run_tile_description	一个宏，一次点按。选一个手动触发器，直接从主屏幕运行它。
-widget_panel_description	引擎状态、问题、最近一次运行，以及一组手动触发器——显示哪些由你决定。
-permission_bind_plugin_label	提供 Ottomatic 节点
-permission_bind_plugin_description	允许 Ottomatic 使用此应用提供的额外触发器和动作节点。该应用以自己的权限运行自己的代码；Ottomatic 不会把自己的权限分享给它。
-ai_provider_gemini	Google Gemini
-ai_provider_anthropic	Anthropic Claude
-ai_provider_openai	OpenAI (ChatGPT)
-ai_provider_openrouter	OpenRouter
-ai_provider_self_hosted	自建 / 兼容 OpenAI
-ai_default_name_gemini	Gemini
-ai_default_name_anthropic	Claude
-ai_default_name_openai	ChatGPT
-ai_default_name_openrouter	OpenRouter
-ai_default_name_self_hosted	自建
-ai_console_gemini	Google AI Studio
+ai_add_ai_connection	添加 AI 连接
+ai_add_connection	添加连接
+ai_ai_connections	AI 连接
+ai_answer_briefly_and_in_plain	请简短作答，用平实的语言。
+ai_api_key	API 密钥
+ai_api_key_paste_it_in	API 密钥——请重新粘贴
+ai_asking_the_model	正在询问模型…
+ai_back	返回
+ai_choose_a_connection	选择连接
 ai_console_anthropic	Anthropic 控制台
+ai_console_gemini	Google AI Studio
 ai_console_openai	OpenAI 平台
 ai_console_openrouter	OpenRouter
-ai_open_console	打开 %1$s
-ai_cost_gemini	免费额度很充裕，但那是你的额度：一个每分钟都询问 AI 的宏会把它用完。你随时可以在同一页面吊销密钥。
 ai_cost_anthropic	请求会从你自己的 Anthropic 余额扣费，所以一个每分钟都询问 AI 的宏是要花钱的。你随时可以在同一页面吊销密钥。
+ai_cost_gemini	免费额度很充裕，但那是你的额度：一个每分钟都询问 AI 的宏会把它用完。你随时可以在同一页面吊销密钥。
 ai_cost_openai	请求会从你自己的 OpenAI 账户扣费，所以一个每分钟都询问 AI 的宏是要花钱的。你随时可以在同一页面吊销密钥。
 ai_cost_openrouter	请求会从你自己的 OpenRouter 余额扣费，价格取决于你选择的模型。你随时可以在同一页面吊销密钥。
 ai_cost_self_hosted	请求只发往你自己的服务器，不会去别处，因此不花钱，也不会离开你掌控的网络。宏运行时服务器必须可访问。
-ai_privacy_gemini	请求由 Google 的服务器应答，因此“询问 AI”节点会花上一点时间。
+ai_default_name_anthropic	Claude
+ai_default_name_gemini	Gemini
+ai_default_name_openai	ChatGPT
+ai_default_name_openrouter	OpenRouter
+ai_default_name_self_hosted	自建
+ai_delete	删除
+ai_edit	编辑
+ai_edit_connection	编辑连接
+ai_getting_a_key	获取密钥
+ai_key_needs_pasting_in_again	密钥需要重新粘贴
+ai_key_not_stored_securely	此手机无法安全地保存该密钥。
+ai_leave_these_empty_to_use	留空则使用服务商自己的模型。当某个模型下线，或你想固定使用某一个时，再填写其中一项。
+ai_list_models	列出模型
+ai_loading_models	正在加载模型…
+ai_model_answered	模型回答：%1$s
+ai_model_balanced	均衡
+ai_model_fast	快速
+ai_model_thorough	深入
+ai_models	模型
+ai_name	名称
+ai_name_the_model_your_server	填写你的服务器或账户所提供的模型。如果只填“快速”，另外两档也会使用它。
+ai_new_api_key_leave_empty	新的 API 密钥（留空则保留当前密钥）
+ai_no_connections_yet_add_one	还没有连接。添加一个即可使用“询问 AI”节点。只需一个来自 Google AI Studio 的免费 API 密钥——表单会一步步带你获取，并替你打开页面。
+ai_open_console	打开 %1$s
+ai_paste_key	粘贴密钥
+ai_pointing_at_own_server	指向你自己的服务器
 ai_privacy_anthropic	请求由 Anthropic 的服务器应答，因此“询问 AI”节点会花上一点时间。
+ai_privacy_gemini	请求由 Google 的服务器应答，因此“询问 AI”节点会花上一点时间。
 ai_privacy_openai	请求由 OpenAI 的服务器应答，因此“询问 AI”节点会花上一点时间。
 ai_privacy_openrouter	请求经由 OpenRouter 转发到提供所选模型的服务商，因此“询问 AI”节点会花上一点时间。
 ai_privacy_self_hosted	请求只发往你在上面填写的服务器。
-ai_model_fast	快速
-ai_model_balanced	均衡
-ai_model_thorough	深入
-ai_loading_models	正在加载模型…
-ai_asking_the_model	正在询问模型…
-ai_key_not_stored_securely	此手机无法安全地保存该密钥。
-ai_steps_gemini:0	点按下面的按钮。Google AI Studio 会在浏览器中打开。
-ai_steps_gemini:1	如果系统提示，请用你的 Google 账号登录。
-ai_steps_gemini:2	点按“Create API key”。如果它询问使用哪个项目，随便选一个，或者让它新建一个。
-ai_steps_gemini:3	点按密钥即可复制。
-ai_steps_gemini:4	回到这里，点按密钥输入框旁边的粘贴按钮。
+ai_provider	服务商
+ai_provider_anthropic	Anthropic Claude
+ai_provider_gemini	Google Gemini
+ai_provider_openai	OpenAI (ChatGPT)
+ai_provider_openrouter	OpenRouter
+ai_provider_s_default	服务商默认
+ai_provider_self_hosted	自建 / 兼容 OpenAI
+ai_save	保存
+ai_save_the_connection_first_then	请先保存连接，再点按“测试”确认密钥可用。
+ai_sent_ahead_of_every_prompt	通过此连接发出的每个请求前都会先发送它。“询问 AI”节点自身的常驻指令会追加在它之后，而不是取代它。
+ai_server_address	服务器地址
+ai_standing_instruction_optional	常驻指令（可选）
 ai_steps_anthropic:0	点按下面的按钮。Anthropic 控制台会在浏览器中打开。
 ai_steps_anthropic:1	登录，如果还没有账号就先注册一个。
 ai_steps_anthropic:2	点按“Create Key”，给它起个名字并确认。
 ai_steps_anthropic:3	复制密钥：它只显示一次，之后不会再出现。
 ai_steps_anthropic:4	回到这里，点按密钥输入框旁边的粘贴按钮。
+ai_steps_gemini:0	点按下面的按钮。Google AI Studio 会在浏览器中打开。
+ai_steps_gemini:1	如果系统提示，请用你的 Google 账号登录。
+ai_steps_gemini:2	点按“Create API key”。如果它询问使用哪个项目，随便选一个，或者让它新建一个。
+ai_steps_gemini:3	点按密钥即可复制。
+ai_steps_gemini:4	回到这里，点按密钥输入框旁边的粘贴按钮。
 ai_steps_openai:0	点按下面的按钮。OpenAI 平台会在浏览器中打开。
 ai_steps_openai:1	登录，如果还没有账号就先注册一个。
 ai_steps_openai:2	点按“Create new secret key”并确认。
@@ -68,141 +86,524 @@ ai_steps_self_hosted:0	启动你的模型服务器：vLLM、Ollama、LM Studio �
 ai_steps_self_hosted:1	在下面填写它的地址，包括 http:// 或 https:// 以及端口。
 ai_steps_self_hosted:2	如果它需要 API 密钥，就粘贴进去。许多本地服务器接受任意密钥。
 ai_steps_self_hosted:3	加载模型列表，或直接输入启动服务器时所用的模型名称。
-perm_title_overlay	显示在其他应用上层
-perm_title_notification_listener	通知使用权
-perm_title_notification_policy	勿扰模式使用权
-perm_title_accessibility_service	无障碍使用权
-perm_title_battery_optimisation	不受限制的电池用量
-perm_title_exact_alarm	闹钟与提醒
-perm_title_write_settings	修改系统设置
-perm_title_nfc	NFC
-perm_title_foreground_service	前台服务
-perm_title_device_admin	设备管理员
-perm_title_access_fine_location	位置信息
-perm_title_access_coarse_location	大致位置
-perm_title_access_background_location	后台位置信息
-perm_title_receive_sms	接收短信
-perm_title_send_sms	发送短信
-perm_title_call_phone	拨打电话
-perm_title_read_contacts	通讯录
-perm_title_post_notifications	通知
-perm_title_bluetooth_connect	蓝牙
-perm_desc_overlay	允许宏在你正看着别处时把对话框显示到屏幕上，以及打开其他应用。没有它，Android 会阻止后台应用做这两件事。
-perm_desc_notification_listener	允许 Ottomatic 看到其他应用的通知，好让宏能对通知作出反应。
-perm_desc_notification_policy	允许宏开启和关闭勿扰模式，并把铃声切到静音。
-perm_desc_accessibility_service	允许 Ottomatic 检测音量键和电源键的按下。它从不读取屏幕内容。
-perm_desc_battery_optimisation	防止 Android 在后台停止引擎。没有它，宏在重启后可能不会重新启用，基于时间的触发器也可能被延迟。
-perm_desc_exact_alarm	让定时计划在你指定的那一分钟触发，让等待在那一刻结束。没有它，Android 可以把它和其他工作合并处理，因此可能会晚一些运行。
-perm_desc_write_settings	允许宏更改屏幕亮度、屏幕超时和自动旋转。
-perm_desc_nfc	允许宏在你把 NFC 标签贴近手机背面时运行。Ottomatic 无法替你打开 NFC，而且只有在屏幕点亮并解锁时才会读取标签。
-perm_desc_foreground_service	允许 Ottomatic 在你的宏处于启用状态时保持引擎运行。
-perm_desc_device_admin	允许 Ottomatic 使用设备管理员功能。
-perm_desc_access_fine_location	让地理围栏知道你何时到达或离开某个地点。
-perm_desc_access_coarse_location	较粗略的定位，在无法获得精确位置时使用。
-perm_desc_access_background_location	让地理围栏在 Ottomatic 关闭时仍然工作——而那正是它唯一有用的时候。选择“始终允许”即可授予。
-perm_desc_receive_sms	允许宏在短信到达时运行，并读取发件人和内容。
-perm_desc_send_sms	允许宏以你的名义发送短信。
-perm_desc_call_phone	允许宏在无需你确认的情况下拨打电话。
-perm_desc_read_contacts	允许宏查找你所选联系人的号码。选择联系人不需要任何权限；之后拨号才需要。
-perm_desc_post_notifications	允许 Ottomatic 显示通知：既包括宏发出的通知，也包括告诉你引擎在重启后未能启动的那一条。
-perm_desc_bluetooth_connect	允许宏开启和关闭蓝牙。
-perm_desc_unknown	被你某个宏中的节点使用。
-perm_rationale_accessibility_keys	Ottomatic 需要无障碍使用权来检测按键。它从不读取屏幕内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。
-perm_rationale_notification_listener	Ottomatic 需要通知使用权才能看到其他应用的通知。
-perm_rationale_dnd_policy	Ottomatic 需要勿扰模式使用权才能更改你的响铃模式。
-perm_rationale_overlay_dialog	Ottomatic 需要显示在其他应用上层的权限，这样在你正忙于手机上别的事情时，这个对话框才能出现在你面前。没有它，该节点会直接取消而不是发问。
-perm_rationale_nfc_radio	此触发器需要开启 NFC，那是一项系统级设置，Ottomatic 无法自行授予。此外，只有在屏幕点亮并解锁时才会读取标签：贴一下无法唤醒口袋里休眠的手机。
-perm_rationale_alarm_exact	Ottomatic 需要设置精确闹钟的权限，才能让这次等待在你指定的那一分钟结束。没有它，等待照样会发生，但 Android 会把唤醒和其他工作合并，可能会晚上几分钟。
-perm_rationale_overlay_launch	Ottomatic 需要显示在其他应用上层的权限，才能在你正忙于手机上别的事情时打开另一个应用。Android 会阻止后台应用打开其他应用；没有这项权限，该节点什么也不做，并会在控制台里说明。
-problem_permission_missing	“%1$s”需要%2$s，而它尚未被授予——运行时可能什么也不做
-problem_plugin_permission_missing	“%1$s”需要%2$s，而 %3$s 尚未获得该权限——运行时可能什么也不做
-problem_macro_unset	“%1$s”没有选择宏，因此什么也不会做
-problem_macro_missing	“%1$s”指向一个已不存在的宏
-problem_hub_unset	“%1$s”什么也没选，因此什么也不会做
-problem_hub_missing	“%1$s”指向一个已不再设置的中枢
-problem_ai_unset	“%1$s”没有选择 AI 连接，因此什么也不会做
-problem_ai_missing	“%1$s”指向一个已不存在的 AI 连接
-problem_ai_unfinished	“%1$s”指向一个尚未设置完成的 AI 连接
-problem_variable_unset	“%1$s”没有选择变量，因此什么也不会做
-problem_variable_missing	“%1$s”使用了一个已不存在的变量
-problem_empty_loop_body	“%1$s”的循环体里什么也没有，重复也就毫无作用
-problem_unknown_node_type	“%1$s”是未知的节点类型（%2$s），无法运行
-problem_no_trigger	此工作流没有任何触发器，因此永远不会有东西启动它
-problem_trigger_not_wired	“%1$s”没有连接到任何地方，因此会触发但什么也不做
-problem_exec_wire_dangling	一条执行连线指向了一个已不在此处的节点
-problem_exec_output_unknown	“%2$s”上存在未知的执行输出端口“%1$s”
-problem_exec_input_unknown	“%2$s”上存在未知的执行输入端口“%1$s”
-problem_data_wire_dangling	一条数据连线指向了一个已不在此处的节点
-problem_data_wire_unknown_type	一条数据连线经过了未知的节点类型
-problem_not_data_output	“%1$s”不是“%2$s”上的数据输出端口
-problem_not_data_input	“%1$s”不是“%2$s”上的数据输入端口
-problem_schema_mismatch	数据连线上的架构不匹配：源 %1$s 无法赋给目标 %2$s
-problem_value_not_connected	“%1$s”没有连接到任何地方，永远不会被读取
-problem_nothing_wired_in	没有任何东西接入“%1$s”，它将只使用自身的设置
-problem_exec_cycle	检测到执行循环：%1$s
-problem_data_cycle	检测到数据循环：%1$s
-problem_not_exec_upstream	“%2$s”执行时，“%1$s”还没有运行过
-problem_fork_branch_cross	“%1$s”和“%2$s”位于“%3$s”的两个相对分支上，因此两者之间无法传递任何东西
-category_manual	手动
-category_time_schedule	时间与计划
-category_messaging	消息
-category_power_battery	电源与电池
-category_location	位置
-category_automation	自动化
-category_variables	变量
-category_connectivity	连接
-category_phone_media	电话与媒体
-category_device_state	设备状态
-category_sensors	传感器与手势
-category_flow_control	流程控制
-category_interaction	询问用户
-category_network	网络
-category_notifications	通知
-category_timing	定时
-category_device_settings	设备设置
-category_smart_home	智能家居
-category_ai	AI
-category_data	数据
-category_value_power	电源与电池
-category_value_connectivity	连接
-category_value_device	设备状态
-category_value_sensors	传感器
-category_value_time	日期与时间
-category_value_variables	变量
-category_transform_data	数据
-category_plugin	插件
-permissions_needed_by	需要它的有：%1$s
-permissions_open_settings	打开设置
-config_field_wired_from	%1$s ← %2$s
-cd_palette_collapse_group	收起%1$s
-cd_palette_expand_group	展开%1$s
+ai_test	测试
+ai_the_key_is_stored_encrypted	密钥以加密方式保存在此手机上，之后不会再显示。%1$s 除非宏运行到“询问 AI”节点，否则不会发送任何内容。
+ai_this_address_is_unencrypted_that	此地址未加密。对于你自己网络里的服务器这很正常，但不要用它做任何跨越互联网的事，因为密钥会以明文传输。
+api_allow	允许
+api_allow_app_to_run	允许 %1$s 运行你的宏吗？
+api_allowed_on	授权于 %1$s
+api_app_access	应用访问
+api_back	返回
+api_copy_the_key	复制密钥
+api_generate_key	生成密钥
+api_it_will_be_able_to	它将能够看到你添加了“由其他应用调用”触发器的宏的名称，并运行它们。它无法查看或更改 Ottomatic 中的其他任何内容，没有该触发器的宏也不在它的可及范围内。
+api_key_copied	密钥已复制
+api_no_key_approved_apps_only	无密钥——仅限已批准的应用
+api_no_macro_can_currently_be	目前没有任何宏可以从外部调用。
+api_no_other_app_can_run	没有其他应用可以运行你的宏。当有应用提出请求时，会先告诉你它是什么，由你当场决定；已批准的授权会显示在这里，方便你随时撤回。
+api_not_now	以后再说
+api_ottomatic_key	Ottomatic 密钥
+api_remove_the_key	移除密钥
+api_replace_key	更换密钥
+api_revoke	吊销
+api_these_apps_can_see_and	这些应用可以看到并运行你添加了“由其他应用调用”触发器的宏。它们无法查看或更改 Ottomatic 中的其他任何内容，而一个应用会出现在这里，只是因为它提出请求时你同意了。
+api_you_can_withdraw_this_at	你随时可以在 Ottomatic 的“应用访问”中撤回此授权。
 apps_any_app	任意应用
 apps_choose_an_app	选择应用
 apps_no_apps_match_that	没有匹配的应用。
+apps_other_apps	其他应用
 apps_search	搜索
-sound_audio_file	音频文件
-sound_choose_a_sound	选择声音
-sound_device_sounds	设备自带声音
-sound_pick_one_of_the_device	选择设备自带的声音，或手机上的任意音频文件。
-plugins_back	返回
-plugins_plugins	插件
-plugins_this_app_asks_for	此应用申请：%1$s
+category_ai	AI
+category_automation	自动化
+category_connectivity	连接
+category_data	数据
+category_device_settings	设备设置
+category_device_state	设备状态
+category_flow_control	流程控制
+category_interaction	询问用户
+category_location	位置
+category_manual	手动
+category_messaging	消息
+category_network	网络
+category_notifications	通知
+category_phone_media	电话与媒体
+category_plugin	插件
+category_power_battery	电源与电池
+category_sensors	传感器与手势
+category_smart_home	智能家居
+category_time_schedule	时间与计划
+category_timing	定时
+category_transform_data	数据
+category_value_connectivity	连接
+category_value_device	设备状态
+category_value_power	电源与电池
+category_value_sensors	传感器
+category_value_time	日期与时间
+category_value_variables	变量
+category_variables	变量
+cd_palette_collapse_group	收起%1$s
+cd_palette_expand_group	展开%1$s
+config_add_row	添加%1$s
+config_deleted_account	已删除的账户
+config_deleted_connection	已删除的连接
+config_field_wired_from	%1$s ← %2$s
+config_global_variable	全局 · %1$s
+config_hub_removed	%1$s · 中枢已移除
+config_none_selected	未选择
+config_now	现在
+config_port_carries_list	此端口传递一个列表
+config_port_carries_one	此端口传递单个值
+config_set	设置
+config_socket_feed	从上游数据为 %1$s 供值
+config_socket_use_typed_connected	对 %1$s 使用输入的值（已连接到 %2$s）
+config_socket_use_typed_free	对 %1$s 使用输入的值（未连接任何内容）
+console_filter_all	全部
+console_filter_info	信息
+console_filter_problems	问题
+console_nothing_at_level	此级别下没有内容
+console_nothing_logged	还没有日志
+console_run_the_workflow	运行此工作流。错误、action.log 消息以及脚本的 console.log 都会显示在这里。
+console_widen_filter	放宽筛选条件，即可看到此工作流其余的历史记录。
 contacts_anyone	任何人
 contacts_choose_a_contact	选择联系人
 contacts_clear_the_contact_and_type	清除联系人，改为输入号码
 contacts_fill_in_a_contact_s	填入联系人姓名
 contacts_type_a_number	输入号码
+editor_back_to_graph	返回图表
+editor_back_to_variables	返回此工作流的变量
+editor_tab_console	控制台
+editor_tab_problems	问题
+editor_tab_variables	变量
+geofence_back	返回
+geofence_centre_on_my_location	以我的位置为中心
+geofence_choose_a_place	选择地点
+geofence_clear_search	清除搜索
+geofence_coordinates	%1$.4f, %2$.4f
+geofence_delete_place	删除地点
+geofence_edit_named	编辑%1$s
+geofence_edit_place	编辑地点
+geofence_geofences	地理围栏
+geofence_home_work_gym	家、公司、健身房…
+geofence_name	名称
+geofence_new_place	新建地点
+geofence_new_place_2	新建地点
+geofence_no_places_yet_create_one	还没有地点。创建一个，好让地理围栏触发器指向它——你编辑它时，所有使用它的触发器都会随之移动。
+geofence_place_subtitle	%1$s · %2$s
+geofence_radius	半径
+geofence_radius_km	%1$.1f 公里
+geofence_radius_m	%1$d 米
+geofence_save	保存
+geofence_search_an_address_or_place	搜索地址或地点
+geofence_small_radius_warning	低于 %1$d 米时，系统会牺牲定位精度以省电，因此进出往往会被漏报或延迟报告。
+grapheditor_add_node	添加节点
+grapheditor_add_node_2	添加节点
+grapheditor_any_tag	任意标签
+grapheditor_back	返回
+grapheditor_cancel	取消
+grapheditor_cannot_connect_kinds	无法把执行端口连接到数据端口
+grapheditor_clear_console	清空控制台
+grapheditor_clear_search	清除搜索
+grapheditor_clear_selection	取消选择
+grapheditor_close	关闭
+grapheditor_configure	配置
+grapheditor_configure_node	配置节点
+grapheditor_connect_from	从 %1$s 连接
+grapheditor_consequence_fails	每次运行都会失败
+grapheditor_consequence_never_fires	永远不会触发
+grapheditor_consequence_reads_nothing	读不到任何内容
+grapheditor_delete	删除
+grapheditor_delete_confirm	删除“%1$s”？它的运行日志也会一并删除。此操作无法撤销。
+grapheditor_delete_selection	删除所选
+grapheditor_delete_workflow	删除工作流
+grapheditor_edit	编辑…
+grapheditor_editor_surface	编辑器画面
+grapheditor_enabled	已启用
+grapheditor_fit_to_screen	适应屏幕
+grapheditor_grant	授予
+grapheditor_has_error	有一个错误
+grapheditor_has_warning	有一个警告
+grapheditor_hh_mm	HH:mm
+grapheditor_name	名称
+grapheditor_next	下一步
+grapheditor_no_nodes_can_connect_here	没有节点可以连接到这里
+grapheditor_no_nodes_match_your_search	没有与你的搜索匹配的节点
+grapheditor_no_place_selected	未选择地点
+grapheditor_no_problems	没有问题
+grapheditor_node_needs_permissions	在你授予%2$s之前，此节点%1$s。
+grapheditor_nothing_selected	未选择任何内容
+grapheditor_nothing_selected_u2014_this_trigger	未选择任何内容——此触发器将退回为进入时触发。
+grapheditor_permission_joiner	 和
+grapheditor_permission_needed	需要权限
+grapheditor_pick_a_date_and_time	选择日期和时间
+grapheditor_pick_a_time	选择时间
+grapheditor_place_missing	地点缺失
+grapheditor_port_path	%1$s › %2$s
+grapheditor_remove_port	移除端口
+grapheditor_run_workflow	运行工作流
+grapheditor_search_nodes	搜索节点
+grapheditor_selection_mixed	%1$s，%2$s
+grapheditor_show_all	显示全部
+grapheditor_stop_workflow	停止工作流
+grapheditor_tap_to_add_your_first	点按 + 添加第一个节点
+grapheditor_this_node_needs_contacts_access	此节点需要通讯录使用权，才能查找你所选的号码。没有它，运行时什么也不会做。
+grapheditor_this_workflow_is_ready_to	此工作流已可运行。
+grapheditor_type	类型
+grapheditor_variables	变量
+grapheditor_variables_are_unavailable_here	此处无法使用变量。
+grapheditor_workflow_actions	工作流操作
+grapheditor_your_canvas_is_empty	你的画布是空的
+grapheditor_zoom_in	放大
+grapheditor_zoom_out	缩小
+grapheditor_zoom_percent	%1$d%%
+ha_access_token	长期访问令牌
+ha_address	地址
+ha_all_entities	实体
+ha_auth_oauth	已登录
+ha_auth_token	长期令牌
+ha_authentication	身份验证
+ha_choose_a_hub	选择 Home Assistant
+ha_choose_a_service	选择服务
+ha_choose_an_entity	选择实体
+ha_cleartext_warning	该地址未加密。对自家网络里的服务器来说这很正常；但经由互联网，令牌会以明文发送。
+ha_connect_home_assistant	连接 Home Assistant
+ha_connected_this_is_the_name	已连接。宏中将显示这个名称。
+ha_looking_for_instances	正在 Wi-Fi 上查找 Home Assistant…
+ha_name_your_hub	为中枢命名
+ha_no_hub_yet	还没有 Home Assistant。请在智能家居中添加一个。
+ha_open_profile	打开个人资料页
+ha_paste	粘贴
+ha_replace_token	更换令牌
+ha_sign_in	或登录 Home Assistant
+ha_test	测试
+ha_token_steps	在 Home Assistant 中打开个人资料，选择“安全”，滚动到“长期访问令牌”并创建一个。它只显示一次——复制后粘贴到这里。
+hue_find_your_bridge	找到你的网桥
+hue_hue_bridge	Hue 网桥
+hue_name_your_bridge	为网桥命名
+hue_press_the_link_button	按下配对按钮
+hue_text	 ·
+kind_action	动作
+kind_actions	动作
+kind_transform	转换
+kind_transforms	转换
+kind_trigger	触发器
+kind_triggers	触发器
+kind_value	值
+kind_values	值
 macro_cancel	取消
+macro_colour	颜色
 macro_edit_macro	编辑宏
+macro_icon	图标
 macro_name	名称
 macro_save	保存
+mail_account_deleted	该账户已被删除
+mail_account_needs_password	此账户需要重新输入密码
+mail_add_account	添加账户
+mail_add_an_account	添加账户
+mail_app_password	应用专用密码
+mail_app_password_keep	应用专用密码（留空则保留）
+mail_back	返回
+mail_choose_a_folder	选择文件夹
+mail_choose_account_first	请先在此节点上选择一个账户——文件夹在服务器上，Ottomatic 必须知道该向哪一个查询。
+mail_choose_an_account	选择账户
+mail_delete_account	删除账户
+mail_edit_account	编辑账户
+mail_edit_named	编辑%1$s
+mail_email_address	电子邮件地址
+mail_folder_list_unreadable	无法读取文件夹列表。
+mail_inbox	INBOX
+mail_incoming_imap	接收（IMAP）
+mail_mail_accounts	邮件账户
+mail_name	名称
+mail_no_accounts_yet_add_one	还没有账户。添加一个，即可从宏发送邮件，或在邮件到达时启动宏。多数服务商需要应用专用密码而非你的常规密码——表单中会说明在哪里创建。
+mail_no_usable_folders	此账户没有报告任何可以存放邮件的文件夹。
+mail_open_the_app_password_page	打开应用专用密码页面
+mail_outgoing_smtp	发送（SMTP）
+mail_password_needed	需要密码
+mail_port	端口
+mail_provider	服务商
+mail_save	保存
+mail_security	安全性
+mail_security_none	无（不推荐）
+mail_security_starttls	STARTTLS
+mail_security_tls	TLS / SSL
+mail_servers	服务器
+mail_signed_in	已登录。收发均正常。
+mail_test_connection	测试连接
+mail_this_account_s_password_could	无法读取此账户的密码——多半是它来自备份或另一台手机，而封存它的密钥并没有跟着过来。请重新输入以修复。
+mail_this_provider_cannot_be_added	无法添加此服务商
+mail_unchanged	未更改
+mail_username_only_if_it_differs	用户名（仅当与地址不同时填写）
+mail_work_personal_alarm_system	工作、私人、报警系统…
+nfc_a_link_makes_the_tag	链接会让标签在被贴近时用浏览器打开——而监视此标签的宏将不再运行，因为 Android 会在 Ottomatic 看到标签之前，就把它交给声明了该链接的应用。文本则不会这样。
+nfc_already_in_your_library	已在你的库中。
+nfc_any_tag	任意标签
+nfc_back	返回
+nfc_choose_a_tag	选择标签
+nfc_could_not_write	无法写入此标签。
+nfc_delete_tag	删除标签
+nfc_desk_car_dock_nightstand	书桌、车载支架、床头柜…
+nfc_hold_the_tag_to_the	把标签贴近手机背面
+nfc_hold_the_tag_to_the_2	把标签贴近手机背面，并保持不动。
+nfc_kind_link	链接
+nfc_kind_text	文本
+nfc_name	名称
+nfc_nfc_is_switched_off	NFC 已关闭
+nfc_nfc_tags	NFC 标签
+nfc_no_tags_yet_scan_one	还没有标签。扫描一个，好让触发器指向它——标签的 ID 终身不变，因此无需往里写入任何内容。
+nfc_open_settings	打开设置
+nfc_ottomatic_cannot_switch_it_on	Ottomatic 无法替你打开它——Android 只允许在它自己的设置里操作。
+nfc_rename_named	重命名%1$s
+nfc_rename_tag	重命名标签
+nfc_save	保存
+nfc_scan_a_new_tag	扫描新标签
+nfc_scan_a_tag	扫描标签
+nfc_tag_says	此标签的内容是：%1$s
+nfc_the_nfc_antenna_is_usually	NFC 天线通常位于背面靠上的位置。
+nfc_there_is_nothing_to_scan	没有可用于扫描的硬件。标签触发器在这里永远不会触发。
+nfc_this_phone_has_no_nfc	此手机没有 NFC
+nfc_this_tag_reports_a_different	此标签每次被贴近时报告的 ID 都不同，宏永远无法认出它。银行卡、交通卡以及模拟成卡片的手机都是这样。请改用普通的 NFC 贴纸。
+nfc_write	写入
+nfc_write_data_to_this_tag	向此标签写入数据
+nfc_write_to_tag	写入标签
+nfc_written	已写入。
+perm_desc_access_background_location	让地理围栏在 Ottomatic 关闭时仍然工作——而那正是它唯一有用的时候。选择“始终允许”即可授予。
+perm_desc_access_coarse_location	较粗略的定位，在无法获得精确位置时使用。
+perm_desc_access_fine_location	让地理围栏知道你何时到达或离开某个地点。
+perm_desc_accessibility_service	允许 Ottomatic 检测音量键和电源键的按下。它从不读取屏幕内容。
+perm_desc_battery_optimisation	防止 Android 在后台停止引擎。没有它，宏在重启后可能不会重新启用，基于时间的触发器也可能被延迟。
+perm_desc_bluetooth_connect	允许宏开启和关闭蓝牙。
+perm_desc_call_phone	允许宏在无需你确认的情况下拨打电话。
+perm_desc_device_admin	允许 Ottomatic 使用设备管理员功能。
+perm_desc_exact_alarm	让定时计划在你指定的那一分钟触发，让等待在那一刻结束。没有它，Android 可以把它和其他工作合并处理，因此可能会晚一些运行。
+perm_desc_foreground_service	允许 Ottomatic 在你的宏处于启用状态时保持引擎运行。
+perm_desc_nfc	允许宏在你把 NFC 标签贴近手机背面时运行。Ottomatic 无法替你打开 NFC，而且只有在屏幕点亮并解锁时才会读取标签。
+perm_desc_notification_listener	允许 Ottomatic 看到其他应用的通知，好让宏能对通知作出反应。
+perm_desc_notification_policy	允许宏开启和关闭勿扰模式，并把铃声切到静音。
+perm_desc_overlay	允许宏在你正看着别处时把对话框显示到屏幕上，以及打开其他应用。没有它，Android 会阻止后台应用做这两件事。
+perm_desc_post_notifications	允许 Ottomatic 显示通知：既包括宏发出的通知，也包括告诉你引擎在重启后未能启动的那一条。
+perm_desc_read_contacts	允许宏查找你所选联系人的号码。选择联系人不需要任何权限；之后拨号才需要。
+perm_desc_receive_sms	允许宏在短信到达时运行，并读取发件人和内容。
+perm_desc_send_sms	允许宏以你的名义发送短信。
+perm_desc_unknown	被你某个宏中的节点使用。
+perm_desc_write_settings	允许宏更改屏幕亮度、屏幕超时和自动旋转。
+perm_rationale_accessibility_keys	Ottomatic 需要无障碍使用权来检测按键。它从不读取屏幕内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。
+perm_rationale_alarm_exact	Ottomatic 需要设置精确闹钟的权限，才能让这次等待在你指定的那一分钟结束。没有它，等待照样会发生，但 Android 会把唤醒和其他工作合并，可能会晚上几分钟。
+perm_rationale_dnd_policy	Ottomatic 需要勿扰模式使用权才能更改你的响铃模式。
+perm_rationale_nfc_radio	此触发器需要开启 NFC，那是一项系统级设置，Ottomatic 无法自行授予。此外，只有在屏幕点亮并解锁时才会读取标签：贴一下无法唤醒口袋里休眠的手机。
+perm_rationale_notification_listener	Ottomatic 需要通知使用权才能看到其他应用的通知。
+perm_rationale_overlay_dialog	Ottomatic 需要显示在其他应用上层的权限，这样在你正忙于手机上别的事情时，这个对话框才能出现在你面前。没有它，该节点会直接取消而不是发问。
+perm_rationale_overlay_launch	Ottomatic 需要显示在其他应用上层的权限，才能在你正忙于手机上别的事情时打开另一个应用。Android 会阻止后台应用打开其他应用；没有这项权限，该节点什么也不做，并会在控制台里说明。
+perm_title_access_background_location	后台位置信息
+perm_title_access_coarse_location	大致位置
+perm_title_access_fine_location	位置信息
+perm_title_accessibility_service	无障碍使用权
+perm_title_battery_optimisation	不受限制的电池用量
+perm_title_bluetooth_connect	蓝牙
+perm_title_call_phone	拨打电话
+perm_title_device_admin	设备管理员
+perm_title_exact_alarm	闹钟与提醒
+perm_title_foreground_service	前台服务
+perm_title_nfc	NFC
+perm_title_notification_listener	通知使用权
+perm_title_notification_policy	勿扰模式使用权
+perm_title_overlay	显示在其他应用上层
+perm_title_post_notifications	通知
+perm_title_read_contacts	通讯录
+perm_title_receive_sms	接收短信
+perm_title_send_sms	发送短信
+perm_title_write_settings	修改系统设置
+permission_bind_plugin_description	允许 Ottomatic 使用此应用提供的额外触发器和动作节点。该应用以自己的权限运行自己的代码；Ottomatic 不会把自己的权限分享给它。
+permission_bind_plugin_label	提供 Ottomatic 节点
 permissions_allow	允许
+permissions_app_section_blurb	由应用本身使用，而非某个具体节点。
 permissions_back	返回
+permissions_background_location_hint	Android 会在它自己的界面上询问——请选择“始终允许”。
 permissions_disable_battery_optimisation	关闭电池优化
+permissions_grant	授予
+permissions_granted	已授予
+permissions_needed_by	需要它的有：%1$s
+permissions_node_section_blurb	这些来自你已放置的触发器和动作。缺少相应权限时，节点什么也不做，也什么都不说。
+permissions_not_granted	未授予
 permissions_not_now	以后再说
+permissions_open_settings	打开设置
+permissions_ottomatic_couldn_t_resume_your	上次重启后，Ottomatic 未能在后台恢复你的宏。为了让自动化无需人工干预地持续运行，请允许 Ottomatic 不受电池限制地运行。你之后可以在“权限”中更改。
 permissions_ottomatic_itself	Ottomatic 本身
 permissions_permissions	权限
+permissions_revoke	吊销
 permissions_used_by_your_nodes	你的节点所用
+plugins_a_plugin_adds_trigger_and	插件会往你的面板里添加触发器和动作节点。它是一个独立的应用：以自己的进程运行自己的代码，只使用它自己向你申请的权限。Ottomatic 不会把自己的权限分享给它。
+plugins_back	返回
+plugins_no_plugins_are_installed_a	尚未安装任何插件。插件是一个独立的应用，会往你的面板里添加触发器和动作节点；安装一个后它就会出现在这里。
+plugins_node_rejected	%1$s 未被添加：%2$s
+plugins_plugins	插件
+plugins_provides_no_nodes	未提供任何节点
+plugins_this_app_asks_for	此应用申请：%1$s
+problem_ai_missing	“%1$s”指向一个已不存在的 AI 连接
+problem_ai_unfinished	“%1$s”指向一个尚未设置完成的 AI 连接
+problem_ai_unset	“%1$s”没有选择 AI 连接，因此什么也不会做
+problem_data_cycle	检测到数据循环：%1$s
+problem_data_wire_dangling	一条数据连线指向了一个已不在此处的节点
+problem_data_wire_unknown_type	一条数据连线经过了未知的节点类型
+problem_empty_loop_body	“%1$s”的循环体里什么也没有，重复也就毫无作用
+problem_exec_cycle	检测到执行循环：%1$s
+problem_exec_input_unknown	“%2$s”上存在未知的执行输入端口“%1$s”
+problem_exec_output_unknown	“%2$s”上存在未知的执行输出端口“%1$s”
+problem_exec_wire_dangling	一条执行连线指向了一个已不在此处的节点
+problem_fork_branch_cross	“%1$s”和“%2$s”位于“%3$s”的两个相对分支上，因此两者之间无法传递任何东西
+problem_hub_missing	“%1$s”指向一个已不再设置的中枢
+problem_hub_unset	“%1$s”什么也没选，因此什么也不会做
+problem_macro_missing	“%1$s”指向一个已不存在的宏
+problem_macro_unset	“%1$s”没有选择宏，因此什么也不会做
+problem_no_trigger	此工作流没有任何触发器，因此永远不会有东西启动它
+problem_not_data_input	“%1$s”不是“%2$s”上的数据输入端口
+problem_not_data_output	“%1$s”不是“%2$s”上的数据输出端口
+problem_not_exec_upstream	“%2$s”执行时，“%1$s”还没有运行过
+problem_nothing_wired_in	没有任何东西接入“%1$s”，它将只使用自身的设置
+problem_permission_missing	“%1$s”需要%2$s，而它尚未被授予——运行时可能什么也不做
+problem_plugin_permission_missing	“%1$s”需要%2$s，而 %3$s 尚未获得该权限——运行时可能什么也不做
+problem_schema_mismatch	数据连线上的架构不匹配：源 %1$s 无法赋给目标 %2$s
+problem_trigger_not_wired	“%1$s”没有连接到任何地方，因此会触发但什么也不做
+problem_unknown_node_type	“%1$s”是未知的节点类型（%2$s），无法运行
+problem_value_not_connected	“%1$s”没有连接到任何地方，永远不会被读取
+problem_variable_missing	“%1$s”使用了一个已不存在的变量
+problem_variable_unset	“%1$s”没有选择变量，因此什么也不会做
+problems_path_arrow	 →
+problems_skipped_nodes	已跳过：%1$s
+problems_summary_separator	 ·
+problems_where_separator	  ·
+problems_wire_skipped	此连线被跳过
+shortcut_macro_and_trigger	%1$s · %2$s
+shortcut_macro_gone	该宏已不存在
+shortcut_new_macro_long	新建一个宏
+shortcut_new_macro_short	新建宏
+shortcut_running	运行中…
+shortcut_running_named	正在运行 %1$s
+smarthome_a_bridge_on_your_wi	你 Wi-Fi 上的一个网桥
+smarthome_a_server_you_already_run	你已经在运行的服务器
+smarthome_add_a_hub	添加中枢
+smarthome_address	地址
+smarthome_back	返回
+smarthome_bridge_id	网桥 ID
+smarthome_button_not_pressed	未能及时按下按钮——请重试
+smarthome_choose_a_light	选择灯
+smarthome_choose_a_scene	选择场景
+smarthome_connect	连接
+smarthome_done	完成
+smarthome_everything_in_it	其中的全部
+smarthome_ha_reached	已连上。令牌可用。
+smarthome_home_assistant	Home Assistant
+smarthome_hub	中枢
+smarthome_hub_subtitle	%1$s · %2$d 个灯 · %3$d 个场景
+smarthome_it_is_the_large_button	就是圆盘中央、三个小灯之间的那个大按钮。正在连接 %1$s。
+smarthome_lights	灯
+smarthome_looking_for_bridges_on_your	正在你的 Wi-Fi 上查找网桥…
+smarthome_name	名称
+smarthome_no_hub_yet	还没有中枢。添加一个，即可从宏控制你的灯。
+smarthome_no_hubs_yet_add_one	还没有中枢。添加一个，就能从宏里控制灯光，也能在家里有变化时启动宏。
+smarthome_nothing_matches	没有与“%1$s”匹配的内容。
+smarthome_nothing_read	尚未从此中枢读取到任何内容。请确认它已通电后重试。
+smarthome_only_trust_it_if_you	只有在你重置或更换过网桥时才应信任它。如果没有，那就是你网络上的其他东西冒充了它。
+smarthome_or_type_the_bridge_s	或者输入网桥的地址
+smarthome_pair_again	重新配对
+smarthome_paired_this_is_the_name	已配对。你的宏将显示这个名称。
+smarthome_philips_hue	Philips Hue
+smarthome_presented	出示的
+smarthome_press_the_round_button_on	按下网桥顶部的圆形按钮。
+smarthome_refresh	刷新
+smarthome_refresh_lights_and_scenes	  刷新灯与场景
+smarthome_remove_hub	移除中枢
+smarthome_rooms	房间
+smarthome_rooms_and_zones	房间与区域
+smarthome_save	保存
+smarthome_scenes	场景
+smarthome_search	搜索
+smarthome_settings_for	%1$s 的设置
+smarthome_sign_in_again	重新登录
+smarthome_smart_home	智能家居
+smarthome_this_address_is_presenting_a	此地址出示了不同的证书
+smarthome_trust_new_certificate	信任新证书
+smarthome_trusted	受信任的
+smarthome_trusted_works_again	已信任。中枢应该可以重新工作了。
+smarthome_up_to_date	已是最新
+smarthome_what_are_you_connecting_to	你要连接的是什么？
+smarthome_white_only	仅白光
+smarthome_zones	区域
+sound_audio_file	音频文件
+sound_choose_a_sound	选择声音
+sound_default_ringtone	默认铃声
+sound_device_sounds	设备自带声音
+sound_pick_one_of_the_device	选择设备自带的声音，或手机上的任意音频文件。
+variables_back	返回
+variables_belongs_to	归属于
+variables_choose_a_variable	选择变量
+variables_chosen_once_a_variable_cannot	一经选定：变量之后无法在两者之间转移，因为指向它的节点记录了它属于哪一组。
+variables_constant	常量
+variables_constant_is	常量 · %1$s
+variables_delete_variable	删除变量
+variables_edit_named	编辑%1$s
+variables_edit_variable	编辑变量
+variables_empty	空
+variables_empty_global	还什么都没有。这里的变量由所有宏共享。
+variables_empty_local	还什么都没有。这里的变量只属于此宏。
+variables_equals	= %1$s
+variables_every_workflow	所有工作流
+variables_global	全局
+variables_global_variables	全局变量
+variables_holds	保存类型
+variables_its_value_is_fixed_here	它的值在此固定。尝试写入它的节点会作出说明并继续运行。
+variables_name	名称
+variables_new_variable	新建变量
+variables_note_optional	备注（可选）
+variables_save	保存
+variables_starts_at	初始值
+variables_starts_at_value	初始值为 %1$s
+variables_subtitle	%1$s · %2$s
+variables_this_workflow	此工作流
+variables_unset	未设置
+variables_value	值
+widget_a_count_of_macros_that	无法运行的宏的数量——没有时会隐藏
+widget_a_grid_of_manual_triggers	一组手动触发器，点按即可运行
+widget_ago_a_while	有一段时间了
+widget_ago_days	%1$d 天前
+widget_ago_hours	%1$d 小时前
+widget_ago_just_now	刚刚
+widget_ago_minutes	%1$d 分钟前
+widget_armed_of_total	%2$d 个中已启用 %1$d 个
+widget_choose_a_trigger	选择触发器
+widget_engine_running	引擎运行中
+widget_engine_status	引擎状态
+widget_engine_stopped	引擎已停止
+widget_last_run	最近一次运行
+widget_last_run_line	%1$s · %2$s · %3$s
+widget_macro_not_found	找不到该宏
+widget_make_this_taller_to_see	把它调高一些即可看到触发器
+widget_more_hidden	还有 %1$d 个——调整大小即可查看
+widget_new_macros_appear_on_the	新建的宏会自动出现在面板上
+widget_no_manual_triggers_yet_n	还没有手动触发器。\n\n打开一个宏，把“手动触发器”节点拖到画布上，它就会出现在这里。
+widget_no_manual_triggers_yet_nadd	还没有手动触发器。\n给某个宏添加一个“手动触发器”节点。
+widget_nothing_to_show_nlong_press	没有可显示的内容。\n长按可选择此面板显示什么。
+widget_ottomatic_panel	Ottomatic 面板
+widget_outcome_failed	失败
+widget_outcome_ok	成功
+widget_outcome_running	运行中
+widget_panel_description	引擎状态、问题、最近一次运行，以及一组手动触发器——显示哪些由你决定。
+widget_panel_label	Ottomatic 面板
+widget_problems	问题
+widget_run_tile_description	一个宏，一次点按。选一个手动触发器，直接从主屏幕运行它。
+widget_run_tile_label	运行磁贴
+widget_save	保存
+widget_show	显示
+widget_show_all_of_them	全部显示
+widget_showing_all	正在显示全部 %1$d 个触发器。关闭开关即可自行挑选。
+widget_state_done	完成
+widget_state_failed	失败
+widget_state_off	已关闭
+widget_state_ready	就绪
+widget_state_running	运行中…
+widget_trigger_buttons	触发器按钮
+widget_whether_the_engine_is_running	引擎是否在运行，以及有多少宏处于启用状态
+widget_which_macro_ran_last_whether	最近运行的是哪个宏、是否成功、以及在什么时候
+widget_which_triggers	哪些触发器
 wifi_android_treats_the_name_of	Android 把网络名称视为你所在位置的线索，因此没有这项权限就不会告诉你。你可以关掉这里，改为手动输入网络名称，但触发器要做匹配仍然需要该权限。
 wifi_any_network	任意网络
 wifi_choose_a_network	选择网络
@@ -213,413 +614,33 @@ wifi_grant	授予
 wifi_no_networks_found_wi_fi	未找到网络。扫描需要同时开启 Wi-Fi 和位置信息，而且 Android 限制了扫描的频率。你可以手动输入网络名称。
 wifi_ottomatic_needs_location_to_list	Ottomatic 需要位置信息才能列出 Wi-Fi 网络
 wifi_rescan	重新扫描
-widget_choose_a_trigger	选择触发器
-widget_engine_status	引擎状态
-widget_last_run	最近一次运行
-widget_macro_not_found	找不到该宏
-widget_make_this_taller_to_see	把它调高一些即可看到触发器
-widget_no_manual_triggers_yet_n	还没有手动触发器。\n\n打开一个宏，把“手动触发器”节点拖到画布上，它就会出现在这里。
-widget_no_manual_triggers_yet_nadd	还没有手动触发器。\n给某个宏添加一个“手动触发器”节点。
-widget_nothing_to_show_nlong_press	没有可显示的内容。\n长按可选择此面板显示什么。
-widget_ottomatic_panel	Ottomatic 面板
-widget_problems	问题
-widget_save	保存
-widget_show_all_of_them	全部显示
-widget_trigger_buttons	触发器按钮
-api_allow	允许
-api_app_access	应用访问
-api_back	返回
-api_copy_the_key	复制密钥
-api_it_will_be_able_to	它将能够看到你添加了“由其他应用调用”触发器的宏的名称，并运行它们。它无法查看或更改 Ottomatic 中的其他任何内容，没有该触发器的宏也不在它的可及范围内。
-api_no_key_approved_apps_only	无密钥——仅限已批准的应用
-api_not_now	以后再说
-api_ottomatic_key	Ottomatic 密钥
-api_remove_the_key	移除密钥
-api_revoke	吊销
-api_you_can_withdraw_this_at	你随时可以在 Ottomatic 的“应用访问”中撤回此授权。
-variables_back	返回
-variables_belongs_to	归属于
-variables_choose_a_variable	选择变量
-variables_chosen_once_a_variable_cannot	一经选定：变量之后无法在两者之间转移，因为指向它的节点记录了它属于哪一组。
-variables_constant	常量
-variables_delete_variable	删除变量
-variables_global	全局
-variables_global_variables	全局变量
-variables_its_value_is_fixed_here	它的值在此固定。尝试写入它的节点会作出说明并继续运行。
-variables_new_variable	新建变量
-variables_save	保存
-variables_this_workflow	此工作流
-geofence_back	返回
-geofence_centre_on_my_location	以我的位置为中心
-geofence_choose_a_place	选择地点
-geofence_clear_search	清除搜索
-geofence_delete_place	删除地点
-geofence_geofences	地理围栏
-geofence_home_work_gym	家、公司、健身房…
-geofence_name	名称
-geofence_new_place	新建地点
-geofence_no_places_yet_create_one	还没有地点。创建一个，好让地理围栏触发器指向它——你编辑它时，所有使用它的触发器都会随之移动。
-geofence_radius	半径
-geofence_save	保存
-geofence_search_an_address_or_place	搜索地址或地点
-nfc_a_link_makes_the_tag	链接会让标签在被贴近时用浏览器打开——而监视此标签的宏将不再运行，因为 Android 会在 Ottomatic 看到标签之前，就把它交给声明了该链接的应用。文本则不会这样。
-nfc_already_in_your_library	已在你的库中。
-nfc_any_tag	任意标签
-nfc_back	返回
-nfc_choose_a_tag	选择标签
-nfc_delete_tag	删除标签
-nfc_desk_car_dock_nightstand	书桌、车载支架、床头柜…
-nfc_hold_the_tag_to_the	把标签贴近手机背面
-nfc_hold_the_tag_to_the_2	把标签贴近手机背面，并保持不动。
-nfc_name	名称
-nfc_nfc_is_switched_off	NFC 已关闭
-nfc_nfc_tags	NFC 标签
-nfc_no_tags_yet_scan_one	还没有标签。扫描一个，好让触发器指向它——标签的 ID 终身不变，因此无需往里写入任何内容。
-nfc_open_settings	打开设置
-nfc_save	保存
-nfc_scan_a_new_tag	扫描新标签
-nfc_the_nfc_antenna_is_usually	NFC 天线通常位于背面靠上的位置。
-nfc_this_phone_has_no_nfc	此手机没有 NFC
-nfc_this_tag_reports_a_different	此标签每次被贴近时报告的 ID 都不同，宏永远无法认出它。银行卡、交通卡以及模拟成卡片的手机都是这样。请改用普通的 NFC 贴纸。
-nfc_write	写入
-nfc_write_data_to_this_tag	向此标签写入数据
-nfc_write_to_tag	写入标签
-mail_add_an_account	添加账户
-mail_back	返回
-mail_choose_a_folder	选择文件夹
-mail_choose_an_account	选择账户
-mail_delete_account	删除账户
-mail_email_address	电子邮件地址
-mail_inbox	INBOX
-mail_incoming_imap	接收（IMAP）
-mail_mail_accounts	邮件账户
-mail_name	名称
-mail_no_accounts_yet_add_one	还没有账户。添加一个，即可从宏发送邮件，或在邮件到达时启动宏。多数服务商需要应用专用密码而非你的常规密码——表单中会说明在哪里创建。
-mail_open_the_app_password_page	打开应用专用密码页面
-mail_outgoing_smtp	发送（SMTP）
-mail_port	端口
-mail_provider	服务商
-mail_save	保存
-mail_security	安全性
-mail_servers	服务器
-mail_test_connection	测试连接
-mail_this_account_s_password_could	无法读取此账户的密码——多半是它来自备份或另一台手机，而封存它的密钥并没有跟着过来。请重新输入以修复。
-mail_this_provider_cannot_be_added	无法添加此服务商
-mail_unchanged	未更改
-mail_username_only_if_it_differs	用户名（仅当与地址不同时填写）
-mail_work_personal_alarm_system	工作、私人、报警系统…
 workflowlist_add_to_home_screen	添加到主屏幕
 workflowlist_add_workflow	添加工作流
 workflowlist_app_access	应用访问
+workflowlist_armed	已启用
+workflowlist_armed_with_problems	已启用 · %1$s
 workflowlist_can_t_add_it_from	无法从这里添加
 workflowlist_cancel	取消
 workflowlist_choose_a_macro	选择宏
 workflowlist_delete	删除
+workflowlist_delete_confirm	删除“%1$s”？此操作无法撤销。
 workflowlist_delete_workflow	删除工作流
 workflowlist_edit	编辑
 workflowlist_geofences	地理围栏
 workflowlist_global_variables	全局变量
+workflowlist_launcher_cannot_place	此启动器不允许应用替你放置小部件。请自行从主屏幕的小部件列表中添加“运行磁贴”——它会询问对应哪个触发器。
 workflowlist_libraries	库
 workflowlist_mail_accounts	邮件账户
 workflowlist_more	更多
+workflowlist_new_workflow	新建工作流
 workflowlist_nfc_tags	NFC 标签
 workflowlist_no_other_macros_yet	还没有其他宏。
 workflowlist_no_workflows_yet_ntap_to	还没有工作流。\n点按 + 创建一个。
+workflowlist_off	已关闭
 workflowlist_permissions	权限
 workflowlist_plugins	插件
 workflowlist_smart_home	智能家居
-workflowlist_which_trigger	哪个触发器？
-workflowlist_workflows	工作流
-ai_add_connection	添加连接
-ai_ai_connections	AI 连接
-ai_answer_briefly_and_in_plain	请简短作答，用平实的语言。
-ai_back	返回
-ai_choose_a_connection	选择连接
-ai_delete	删除
-ai_edit	编辑
-ai_list_models	列出模型
-ai_models	模型
-ai_name	名称
-ai_no_connections_yet_add_one	还没有连接。添加一个即可使用“询问 AI”节点。只需一个来自 Google AI Studio 的免费 API 密钥——表单会一步步带你获取，并替你打开页面。
-ai_paste_key	粘贴密钥
-ai_provider	服务商
-ai_save	保存
-ai_save_the_connection_first_then	请先保存连接，再点按“测试”确认密钥可用。
-ai_sent_ahead_of_every_prompt	通过此连接发出的每个请求前都会先发送它。“询问 AI”节点自身的常驻指令会追加在它之后，而不是取代它。
-ai_server_address	服务器地址
-ai_standing_instruction_optional	常驻指令（可选）
-ai_test	测试
-ai_the_key_is_stored_encrypted	密钥以加密方式保存在此手机上，之后不会再显示。%1$s 除非宏运行到“询问 AI”节点，否则不会发送任何内容。
-ai_this_address_is_unencrypted_that	此地址未加密。对于你自己网络里的服务器这很正常，但不要用它做任何跨越互联网的事，因为密钥会以明文传输。
-smarthome_a_bridge_on_your_wi	你 Wi-Fi 上的一个网桥
-smarthome_add_a_hub	添加中枢
-smarthome_back	返回
-smarthome_connect	连接
-smarthome_done	完成
-smarthome_it_is_the_large_button	就是圆盘中央、三个小灯之间的那个大按钮。正在连接 %1$s。
-smarthome_looking_for_bridges_on_your	正在你的 Wi-Fi 上查找网桥…
-smarthome_name	名称
-smarthome_no_hubs_yet_add_one	还没有中枢。添加一个，即可从宏控制你的灯。你需要按一次网桥上的按钮，以证明你就在它旁边。
-smarthome_nothing_matches	没有与“%1$s”匹配的内容。
-smarthome_only_trust_it_if_you	只有在你重置或更换过网桥时才应信任它。如果没有，那就是你网络上的其他东西冒充了它。
-smarthome_or_type_the_bridge_s	或者输入网桥的地址
-smarthome_paired_this_is_the_name	已配对。你的宏将显示这个名称。
-smarthome_philips_hue	Philips Hue
-smarthome_press_the_round_button_on	按下网桥顶部的圆形按钮。
-smarthome_refresh_lights_and_scenes	  刷新灯与场景
-smarthome_remove_hub	移除中枢
-smarthome_save	保存
-smarthome_search	搜索
-smarthome_smart_home	智能家居
-smarthome_this_address_is_presenting_a	此地址出示了不同的证书
-smarthome_trust_new_certificate	信任新证书
-smarthome_what_are_you_connecting_to	你要连接的是什么？
-grapheditor_add_node	添加节点
-grapheditor_any_tag	任意标签
-grapheditor_back	返回
-grapheditor_cancel	取消
-grapheditor_clear_console	清空控制台
-grapheditor_clear_search	清除搜索
-grapheditor_clear_selection	取消选择
-grapheditor_close	关闭
-grapheditor_configure	配置
-grapheditor_configure_node	配置节点
-grapheditor_delete	删除
-grapheditor_delete_selection	删除所选
-grapheditor_delete_workflow	删除工作流
-grapheditor_edit	编辑…
-grapheditor_editor_surface	编辑器画面
-grapheditor_enabled	已启用
-grapheditor_fit_to_screen	适应屏幕
-grapheditor_grant	授予
-grapheditor_hh_mm	HH:mm
-grapheditor_name	名称
-grapheditor_next	下一步
-grapheditor_no_problems	没有问题
-grapheditor_nothing_selected_u2014_this_trigger	未选择任何内容——此触发器将退回为进入时触发。
-grapheditor_permission_needed	需要权限
-grapheditor_pick_a_date_and_time	选择日期和时间
-grapheditor_pick_a_time	选择时间
-grapheditor_remove_port	移除端口
-grapheditor_run_workflow	运行工作流
-grapheditor_search_nodes	搜索节点
-grapheditor_show_all	显示全部
-grapheditor_stop_workflow	停止工作流
-grapheditor_tap_to_add_your_first	点按 + 添加第一个节点
-grapheditor_this_node_needs_contacts_access	此节点需要通讯录使用权，才能查找你所选的号码。没有它，运行时什么也不会做。
-grapheditor_this_workflow_is_ready_to	此工作流已可运行。
-grapheditor_type	类型
-grapheditor_variables_are_unavailable_here	此处无法使用变量。
-grapheditor_workflow_actions	工作流操作
-grapheditor_your_canvas_is_empty	你的画布是空的
-grapheditor_zoom_in	放大
-grapheditor_zoom_out	缩小
-ai_add_ai_connection	添加 AI 连接
-ai_api_key	API 密钥
-ai_api_key_paste_it_in	API 密钥——请重新粘贴
-ai_edit_connection	编辑连接
-ai_key_needs_pasting_in_again	密钥需要重新粘贴
-ai_leave_these_empty_to_use	留空则使用服务商自己的模型。当某个模型下线，或你想固定使用某一个时，再填写其中一项。
-ai_name_the_model_your_server	填写你的服务器或账户所提供的模型。如果只填“快速”，另外两档也会使用它。
-ai_new_api_key_leave_empty	新的 API 密钥（留空则保留当前密钥）
-ai_provider_s_default	服务商默认
-api_no_macro_can_currently_be	目前没有任何宏可以从外部调用。
-api_no_other_app_can_run	没有其他应用可以运行你的宏。当有应用提出请求时，会先告诉你它是什么，由你当场决定；已批准的授权会显示在这里，方便你随时撤回。
-api_these_apps_can_see_and	这些应用可以看到并运行你添加了“由其他应用调用”触发器的宏。它们无法查看或更改 Ottomatic 中的其他任何内容，而一个应用会出现在这里，只是因为它提出请求时你同意了。
-apps_other_apps	其他应用
-geofence_edit_place	编辑地点
-geofence_new_place_2	新建地点
-grapheditor_add_node_2	添加节点
-grapheditor_no_nodes_can_connect_here	没有节点可以连接到这里
-grapheditor_no_nodes_match_your_search	没有与你的搜索匹配的节点
-grapheditor_no_place_selected	未选择地点
-grapheditor_place_missing	地点缺失
-grapheditor_variables	变量
-hue_find_your_bridge	找到你的网桥
-hue_hue_bridge	Hue 网桥
-hue_name_your_bridge	为网桥命名
-hue_press_the_link_button	按下配对按钮
-hue_text	 ·
-macro_colour	颜色
-macro_icon	图标
-mail_password_needed	需要密码
-nfc_ottomatic_cannot_switch_it_on	Ottomatic 无法替你打开它——Android 只允许在它自己的设置里操作。
-nfc_rename_tag	重命名标签
-nfc_scan_a_tag	扫描标签
-nfc_there_is_nothing_to_scan	没有可用于扫描的硬件。标签触发器在这里永远不会触发。
-permissions_ottomatic_couldn_t_resume_your	上次重启后，Ottomatic 未能在后台恢复你的宏。为了让自动化无需人工干预地持续运行，请允许 Ottomatic 不受电池限制地运行。你之后可以在“权限”中更改。
-plugins_a_plugin_adds_trigger_and	插件会往你的面板里添加触发器和动作节点。它是一个独立的应用：以自己的进程运行自己的代码，只使用它自己向你申请的权限。Ottomatic 不会把自己的权限分享给它。
-plugins_no_plugins_are_installed_a	尚未安装任何插件。插件是一个独立的应用，会往你的面板里添加触发器和动作节点；安装一个后它就会出现在这里。
-plugins_provides_no_nodes	未提供任何节点
-smarthome_address	地址
-smarthome_bridge_id	网桥 ID
-smarthome_hub	中枢
-smarthome_lights	灯
-smarthome_pair_again	重新配对
-smarthome_presented	出示的
-smarthome_refresh	刷新
-smarthome_rooms_and_zones	房间与区域
-smarthome_scenes	场景
-smarthome_trusted	受信任的
-sound_default_ringtone	默认铃声
-variables_holds	保存类型
-variables_name	名称
-variables_note_optional	备注（可选）
-variables_starts_at	初始值
-variables_value	值
-widget_a_count_of_macros_that	无法运行的宏的数量——没有时会隐藏
-widget_a_grid_of_manual_triggers	一组手动触发器，点按即可运行
-widget_new_macros_appear_on_the	新建的宏会自动出现在面板上
-widget_show	显示
-widget_whether_the_engine_is_running	引擎是否在运行，以及有多少宏处于启用状态
-widget_which_macro_ran_last_whether	最近运行的是哪个宏、是否成功、以及在什么时候
-widget_which_triggers	哪些触发器
 workflowlist_text	 ·
 workflowlist_this_macro	此宏
-grapheditor_nothing_selected	未选择任何内容
-grapheditor_selection_mixed	%1$s，%2$s
-widget_engine_running	引擎运行中
-widget_engine_stopped	引擎已停止
-widget_armed_of_total	%2$d 个中已启用 %1$d 个
-widget_state_running	运行中…
-widget_state_done	完成
-widget_state_failed	失败
-widget_state_ready	就绪
-widget_state_off	已关闭
-widget_outcome_running	运行中
-widget_outcome_ok	成功
-widget_outcome_failed	失败
-widget_last_run_line	%1$s · %2$s · %3$s
-widget_ago_just_now	刚刚
-widget_ago_minutes	%1$d 分钟前
-widget_ago_hours	%1$d 小时前
-widget_ago_days	%1$d 天前
-widget_ago_a_while	有一段时间了
-nfc_written	已写入。
-nfc_could_not_write	无法写入此标签。
-smarthome_up_to_date	已是最新
-smarthome_trusted_works_again	已信任。中枢应该可以重新工作了。
-smarthome_button_not_pressed	未能及时按下按钮——请重试
-workflowlist_new_workflow	新建工作流
-mail_account_deleted	该账户已被删除
-mail_account_needs_password	此账户需要重新输入密码
-mail_signed_in	已登录。收发均正常。
-kind_trigger	触发器
-kind_action	动作
-kind_value	值
-kind_transform	转换
-kind_triggers	触发器
-kind_actions	动作
-kind_values	值
-kind_transforms	转换
-console_nothing_at_level	此级别下没有内容
-console_nothing_logged	还没有日志
-console_widen_filter	放宽筛选条件，即可看到此工作流其余的历史记录。
-console_run_the_workflow	运行此工作流。错误、action.log 消息以及脚本的 console.log 都会显示在这里。
-console_filter_all	全部
-console_filter_info	信息
-console_filter_problems	问题
-editor_tab_problems	问题
-editor_tab_console	控制台
-editor_tab_variables	变量
-editor_back_to_graph	返回图表
-editor_back_to_variables	返回此工作流的变量
-permissions_node_section_blurb	这些来自你已放置的触发器和动作。缺少相应权限时，节点什么也不做，也什么都不说。
-permissions_app_section_blurb	由应用本身使用，而非某个具体节点。
-permissions_granted	已授予
-permissions_not_granted	未授予
-permissions_revoke	吊销
-permissions_grant	授予
-permissions_background_location_hint	Android 会在它自己的界面上询问——请选择“始终允许”。
-smarthome_choose_a_scene	选择场景
-smarthome_choose_a_light	选择灯
-smarthome_no_hub_yet	还没有中枢。添加一个，即可从宏控制你的灯。
-smarthome_nothing_read	尚未从此中枢读取到任何内容。请确认它已通电后重试。
-smarthome_rooms	房间
-smarthome_zones	区域
-smarthome_white_only	仅白光
-smarthome_everything_in_it	其中的全部
-mail_add_account	添加账户
-mail_edit_account	编辑账户
-mail_app_password	应用专用密码
-mail_app_password_keep	应用专用密码（留空则保留）
-mail_security_none	无（不推荐）
-mail_security_starttls	STARTTLS
-mail_security_tls	TLS / SSL
-workflowlist_launcher_cannot_place	此启动器不允许应用替你放置小部件。请自行从主屏幕的小部件列表中添加“运行磁贴”——它会询问对应哪个触发器。
-workflowlist_delete_confirm	删除“%1$s”？此操作无法撤销。
-workflowlist_armed	已启用
-workflowlist_off	已关闭
-workflowlist_armed_with_problems	已启用 · %1$s
-grapheditor_consequence_never_fires	永远不会触发
-grapheditor_consequence_reads_nothing	读不到任何内容
-grapheditor_consequence_fails	每次运行都会失败
-grapheditor_permission_joiner	 和
-grapheditor_node_needs_permissions	在你授予%2$s之前，此节点%1$s。
-problems_path_arrow	 →
-problems_skipped_nodes	已跳过：%1$s
-problems_wire_skipped	此连线被跳过
-problems_where_separator	  ·
-variables_edit_named	编辑%1$s
-variables_empty	空
-variables_constant_is	常量 · %1$s
-variables_equals	= %1$s
-variables_starts_at_value	初始值为 %1$s
-variables_unset	未设置
-variables_subtitle	%1$s · %2$s
-geofence_edit_named	编辑%1$s
-geofence_coordinates	%1$.4f, %2$.4f
-geofence_place_subtitle	%1$s · %2$s
-geofence_radius_km	%1$.1f 公里
-geofence_radius_m	%1$d 米
-config_now	现在
-config_set	设置
-config_add_row	添加%1$s
-config_port_carries_list	此端口传递一个列表
-config_port_carries_one	此端口传递单个值
-config_hub_removed	%1$s · 中枢已移除
-config_deleted_account	已删除的账户
-config_deleted_connection	已删除的连接
-config_global_variable	全局 · %1$s
-config_none_selected	未选择
-variables_edit_variable	编辑变量
-variables_every_workflow	所有工作流
-variables_empty_local	还什么都没有。这里的变量只属于此宏。
-variables_empty_global	还什么都没有。这里的变量由所有宏共享。
-nfc_kind_text	文本
-nfc_kind_link	链接
-nfc_rename_named	重命名%1$s
-mail_edit_named	编辑%1$s
-grapheditor_has_error	有一个错误
-grapheditor_has_warning	有一个警告
-grapheditor_cannot_connect_kinds	无法把执行端口连接到数据端口
-smarthome_settings_for	%1$s 的设置
-smarthome_hub_subtitle	%1$s · %2$d 个灯 · %3$d 个场景
-config_socket_use_typed_connected	对 %1$s 使用输入的值（已连接到 %2$s）
-config_socket_use_typed_free	对 %1$s 使用输入的值（未连接任何内容）
-config_socket_feed	从上游数据为 %1$s 供值
-grapheditor_delete_confirm	删除“%1$s”？它的运行日志也会一并删除。此操作无法撤销。
-grapheditor_zoom_percent	%1$d%%
-grapheditor_connect_from	从 %1$s 连接
-nfc_tag_says	此标签的内容是：%1$s
-plugins_node_rejected	%1$s 未被添加：%2$s
-widget_more_hidden	还有 %1$d 个——调整大小即可查看
-widget_showing_all	正在显示全部 %1$d 个触发器。关闭开关即可自行挑选。
-api_allow_app_to_run	允许 %1$s 运行你的宏吗？
-api_generate_key	生成密钥
-api_replace_key	更换密钥
-problems_summary_separator	 ·
-ai_model_answered	模型回答：%1$s
-mail_choose_account_first	请先在此节点上选择一个账户——文件夹在服务器上，Ottomatic 必须知道该向哪一个查询。
-mail_folder_list_unreadable	无法读取文件夹列表。
-mail_no_usable_folders	此账户没有报告任何可以存放邮件的文件夹。
-shortcut_macro_gone	该宏已不存在
-shortcut_running	运行中…
-shortcut_running_named	正在运行 %1$s
-ai_getting_a_key	获取密钥
-ai_pointing_at_own_server	指向你自己的服务器
-api_key_copied	密钥已复制
-api_allowed_on	授权于 %1$s
-geofence_small_radius_warning	低于 %1$d 米时，系统会牺牲定位精度以省电，因此进出往往会被漏报或延迟报告。
-grapheditor_port_path	%1$s › %2$s
-shortcut_macro_and_trigger	%1$s · %2$s
+workflowlist_which_trigger	哪个触发器？
+workflowlist_workflows	工作流
