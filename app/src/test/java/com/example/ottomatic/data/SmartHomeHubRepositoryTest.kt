@@ -2,7 +2,9 @@ package com.example.ottomatic.data
 
 import com.example.ottomatic.core.service.SmartHomeTargetKind
 import com.example.ottomatic.data.security.FakeSecrets
+import com.example.ottomatic.domain.model.HubAuthMode
 import com.example.ottomatic.domain.model.SmartHomeHub
+import com.example.ottomatic.domain.model.SmartHomeKind
 import com.example.ottomatic.domain.model.SmartHomeResource
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -137,6 +139,54 @@ class SmartHomeHubRepositoryTest {
         assertFalse(repository.get(created.id)!!.isComplete)
         repository.setKeys(created.id, "app-key")
         assertTrue(repository.get(created.id)!!.isComplete)
+    }
+
+    /**
+     * The line that would have made every Home Assistant hub read as "never finished
+     * pairing", everywhere in the app, while being perfectly set up: a Hue bridge is
+     * complete only with a pinned certificate, and a Home Assistant instance can never
+     * have one — it is reached over plain HTTP on the LAN, or over a certificate the
+     * platform verifies for itself.
+     */
+    @Test
+    fun `a Home Assistant hub is complete without a certificate`() = runBlocking {
+        val repository = repository()
+        val created = repository.create(
+            SmartHomeHub(
+                id = "",
+                kind = SmartHomeKind.HOME_ASSISTANT,
+                name = "Home Assistant",
+                host = "http://homeassistant.local:8123",
+                authMode = HubAuthMode.TOKEN,
+            ),
+        )
+
+        assertFalse(repository.get(created.id)!!.isComplete)
+        repository.setKeys(created.id, "long-lived-token")
+
+        val stored = repository.get(created.id)!!
+        assertTrue(stored.isComplete)
+        assertEquals("", stored.certSha256)
+    }
+
+    /**
+     * An OAuth hub whose access token expired while the phone was off is **complete**,
+     * not broken: the refresh token is what the transport renews from before anything
+     * is sent. Reading it as incomplete would send the user to sign in again over
+     * something the app fixes by itself.
+     */
+    @Test
+    fun `an OAuth hub with only a refresh token is complete`() {
+        val hub = SmartHomeHub(
+            id = "h",
+            kind = SmartHomeKind.HOME_ASSISTANT,
+            name = "Home Assistant",
+            host = "http://homeassistant.local:8123",
+            authMode = HubAuthMode.OAUTH,
+            refreshSecret = "sealed-refresh",
+        )
+
+        assertTrue(hub.isComplete)
     }
 
     @Test

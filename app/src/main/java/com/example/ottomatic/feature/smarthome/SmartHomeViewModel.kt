@@ -8,8 +8,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.data.SmartHomeHubRepository
-import com.example.ottomatic.data.hue.PairingStep
-import com.example.ottomatic.data.hue.SmartHomeSetup
+import com.example.ottomatic.data.smarthome.PairingStep
+import com.example.ottomatic.data.smarthome.SmartHomeSetup
 import com.example.ottomatic.domain.model.SmartHomeHub
 import com.example.ottomatic.domain.model.SmartHomeKind
 import kotlinx.coroutines.delay

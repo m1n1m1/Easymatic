@@ -21,6 +21,7 @@ javascriptengine = "1.1.0"
 material = "1.13.0"
 glance = "1.1.1"
 javamail = "1.6.7"
+okhttp = "4.12.0"
 # Pinned to what `:app` already resolves to transitively (via lifecycle-runtime-ktx).
 # `:plugin-sdk` needs it declared rather than inherited: a plugin app depends on the
 # SDK alone and would otherwise have no coroutines at all.
@@ -66,6 +67,17 @@ material = { group = "com.google.android.material", name = "material", version.r
 # block in app/build.gradle.kts, which must never exclude them.
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 javamail-android = { group = "com.sun.mail", name = "android-mail", version.ref = "javamail" }
+# The one WebSocket, for Home Assistant's push channel. Deliberately the exception to
+# this project's rule that networking is hand-rolled on `HttpURLConnection` —
+# `HueTransport` and `AiTransport` both are, and both stay that way. What is different
+# here is that a WebSocket is not one connection call: it is RFC 6455 framing, masking,
+# continuation frames, ping/pong liveness and reconnect backoff, none of which the JDK
+# offers below Java 11's `HttpClient` (API 34 on Android, where minSdk is 26). Written
+# by hand that is a few hundred lines whose bugs surface as a socket that silently
+# stops delivering — the failure shape this integration exists to avoid.
+# 4.12.0 rather than 5.x: it is the last line still targeting Java 8, so it needs no
+# desugaring at minSdk 26.
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 javamail-android-activation = { group = "com.sun.mail", name = "android-activation", version.ref = "javamail" }
 
 [plugins]

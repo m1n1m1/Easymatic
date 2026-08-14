@@ -144,13 +144,17 @@ dependencies {
     // and a view-model store stood up by hand — so it uses the Material 3 dialog
     // the view toolkit already ships, including its dynamic-colour support.
     implementation(libs.material)
-    // SMTP and IMAP for the mail nodes; the only networking dependency in the app,
-    // since everything else goes through HttpURLConnection. Roughly 600-800 KB of
-    // dex, which makes it the largest single dependency after the Maps SDK — the
-    // trade for not hand-rolling MIME parsing, RFC 2047 decoding and a
-    // literal-aware IMAP response reader, all of which fail quietly and wrongly.
+    // SMTP and IMAP for the mail nodes. Roughly 600-800 KB of dex, which makes it the
+    // largest single dependency after the Maps SDK — the trade for not hand-rolling
+    // MIME parsing, RFC 2047 decoding and a literal-aware IMAP response reader, all of
+    // which fail quietly and wrongly.
     implementation(libs.javamail.android)
     implementation(libs.javamail.android.activation)
+    // Home Assistant's push channel, and the only other networking dependency: every
+    // plain HTTP path in the app — `HueTransport`, `AiTransport`,
+    // `SystemServices.httpRequest` — is hand-rolled on HttpURLConnection and stays
+    // that way. See the catalog entry for why a WebSocket is not.
+    implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.play.services.location)

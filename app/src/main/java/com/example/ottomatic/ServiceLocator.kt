@@ -16,8 +16,11 @@ import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.MailAccountRepository
 import com.example.ottomatic.data.NfcTagRepository
 import com.example.ottomatic.data.SmartHomeHubRepository
-import com.example.ottomatic.data.hue.AndroidSmartHome
-import com.example.ottomatic.data.hue.SmartHomeSetup
+import com.example.ottomatic.core.service.SmartHome
+import com.example.ottomatic.data.hue.HueVendor
+import com.example.ottomatic.data.smarthome.RoutingSmartHome
+import com.example.ottomatic.domain.model.SmartHomeKind
+import com.example.ottomatic.data.smarthome.SmartHomeSetup
 import com.example.ottomatic.data.security.KeystoreSecrets
 import com.example.ottomatic.data.mail.AndroidMail
 import com.example.ottomatic.data.mail.AndroidMailSecrets
@@ -117,6 +120,29 @@ object ServiceLocator {
      */
     lateinit var smartHomeSetup: SmartHomeSetup
         private set
+
+    /**
+     * The lights facade, and the one place a smart-home vendor is named.
+     *
+     * One instance per vendor, built once and shared by every hub of that kind: they
+     * hold no per-hub state, resolving the hub and its credential on each call, so a
+     * second household bridge costs nothing here. [RoutingSmartHome] picks from this
+     * map by `hub.kind` and knows nothing else about any of them.
+     *
+     * Held here as well as inside [executionContext] because it must be **one**
+     * instance: a second would keep a second set of per-hub gates, and the whole point
+     * of those is that two commands to one bridge are ordered.
+     *
+     * `by lazy` rather than assigned in [init] so it is built after
+     * [smartHomeHubRepository] whatever order [init] grows into — first touched when
+     * the execution context is assembled, which is later in that same function.
+     */
+    private val smartHomeFacade: SmartHome by lazy {
+        RoutingSmartHome(
+            smartHomeHubRepository,
+            mapOf(SmartHomeKind.HUE to HueVendor(smartHomeHubRepository)),
+        )
+    }
 
     /**
      * The global variable declarations, shared by the globals screen, every config
@@ -327,10 +353,12 @@ object ServiceLocator {
             // handle is a live notification: one held from when the engine started
             // would be revoked long before a macro got round to using it.
             messaging = AndroidMessaging(appContext),
-            // Resolves its hub on every call for the same reason, and paces its
+            // Resolves its hub on every call for the same reason, and serialises its
             // commands per hub so a loop over twenty lights does not have half of
-            // them dropped by the bridge without anything saying so.
-            smartHome = AndroidSmartHome(smartHomeHubRepository),
+            // them dropped by the bridge without anything saying so. Which *vendor*
+            // is a per-hub fact, so one instance serves every hub on the phone and
+            // this line names none of them.
+            smartHome = smartHomeFacade,
             // Resolves the connection on every call for the same reason: a key
             // pasted in mid-run must be the one the next prompt uses, and a revoked
             // one must stop working without waiting for the process to die. Which

@@ -43,7 +43,7 @@ import com.example.ottomatic.feature.smarthome.SmartHomeViewModel
  * half-filled form would be a form nobody finishes.
  *
  * The hub exists from the moment stage two succeeds — see
- * [com.example.ottomatic.data.hue.SmartHomeSetup.pair]. Stage three renames it, so
+ * [com.example.ottomatic.data.smarthome.SmartHomeSetup.pair]. Stage three renames it, so
  * walking away leaves a working bridge rather than a lost key.
  */
 @Composable

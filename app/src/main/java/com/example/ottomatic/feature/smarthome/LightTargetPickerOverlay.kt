@@ -32,7 +32,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.ottomatic.core.service.SmartHomeTargetKind
-import com.example.ottomatic.data.hue.HueResources
 import com.example.ottomatic.domain.model.SmartHomeHub
 import com.example.ottomatic.domain.model.SmartHomeRef
 import com.example.ottomatic.domain.model.SmartHomeResource
@@ -56,7 +55,7 @@ private const val SEARCH_THRESHOLD = 15
  * It reads the **cached snapshot**, never the bridge, so the first frame draws
  * instantly and works with the hub unplugged. A refresh is fired on open and its
  * failure ignored, for the reason stated on
- * [com.example.ottomatic.data.hue.SmartHomeSetup.refresh].
+ * [com.example.ottomatic.data.smarthome.SmartHomeSetup.refresh].
  */
 @Composable
 fun LightTargetPickerOverlay(
@@ -181,11 +180,11 @@ private fun SmartHomeHub.sectionsFor(kind: SmartHomeTargetKind, query: String): 
         listOf(
             Section(
                 stringResource(R.string.smarthome_rooms),
-                matching(SmartHomeTargetKind.GROUP) { it.room != HueResources.ZONE },
+                matching(SmartHomeTargetKind.GROUP) { it.room != SmartHomeResource.ZONE },
             ),
             Section(
                 stringResource(R.string.smarthome_zones),
-                matching(SmartHomeTargetKind.GROUP) { it.room == HueResources.ZONE },
+                matching(SmartHomeTargetKind.GROUP) { it.room == SmartHomeResource.ZONE },
             ),
             Section(stringResource(R.string.smarthome_lights), matching(SmartHomeTargetKind.LIGHT)),
         )

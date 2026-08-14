@@ -200,9 +200,11 @@ internal object HueResources {
     /**
      * What a zone's `room` field says.
      *
-     * A zone has no room — it cuts across them, which is the whole reason it exists —
-     * so this is a section label rather than a location, and the picker uses it to
-     * keep zones out of the rooms list.
+     * Moved to [SmartHomeResource.ZONE] when Home Assistant arrived: a *picker* that
+     * has to import `data/hue/` in order to lay out its sections is one that only
+     * looks vendor-neutral. Kept here as an alias because this is where the value is
+     * written, and a reader of `parseSnapshot` should not have to go elsewhere to see
+     * what it puts in that field.
      */
-    const val ZONE = "Zone"
+    const val ZONE = SmartHomeResource.ZONE
 }

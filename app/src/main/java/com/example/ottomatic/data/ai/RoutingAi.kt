@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
  * the manifest already had.
  *
  * **The connection is resolved on every call and nothing is held**, which is
- * [com.example.ottomatic.data.hue.AndroidSmartHome]'s and
+ * [com.example.ottomatic.data.smarthome.RoutingSmartHome]'s and
  * [com.example.ottomatic.data.mail.AndroidMail]'s rule: a key replaced mid-run must
  * be the key the next request uses, and one cached at construction would keep a
  * revoked credential alive until the process died. It is also what makes the

@@ -1,7 +1,11 @@
-package com.example.ottomatic.data.hue
+package com.example.ottomatic.data.smarthome
 
 import android.os.Build
 import com.example.ottomatic.data.SmartHomeHubRepository
+import com.example.ottomatic.data.hue.HueEndpoint
+import com.example.ottomatic.data.hue.HueResources
+import com.example.ottomatic.data.hue.HueTransport
+import com.example.ottomatic.data.hue.PairingOutcome
 import com.example.ottomatic.domain.model.SmartHomeHub
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
