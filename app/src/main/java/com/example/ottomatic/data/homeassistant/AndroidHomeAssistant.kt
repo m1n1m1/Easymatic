@@ -32,6 +32,7 @@ import kotlinx.serialization.json.put
 internal class AndroidHomeAssistant(
     private val hubs: SmartHomeHubRepository,
     private val connections: HaConnections,
+    private val tokens: HaTokens = HaTokens(hubs),
 ) : HomeAssistant {
 
     @Suppress("ReturnCount") // A blank reference and an unknown entity both answer null.
@@ -60,7 +61,7 @@ internal class AndroidHomeAssistant(
             return failed("No service chosen — pick one like \"light.turn_on\"")
         }
         val hub = hubs.get(request.hubId) ?: return failed(DELETED_HUB)
-        val token = hubs.accessToken(request.hubId) ?: return failed(tokenUnreadable(hub.name))
+        val token = tokens.accessToken(request.hubId) ?: return failed(tokenUnreadable(hub.name))
         val body = bodyOf(request) ?: return failed("The extra data is not a JSON object: ${request.data.trim()}")
 
         val (status, response) = withContext(Dispatchers.IO) {

@@ -279,6 +279,42 @@
                 android:resource="@xml/nfc_tech_filter" />
         </activity>
 
+        <!-- Where the browser lands at the end of a Home Assistant sign-in.
+
+             Exported because a browser has to be able to reach it, and that is
+             safe here for the reason it would not be elsewhere: it validates
+             nothing and grants nothing. It hands a code and a nonce to a
+             process-wide flow and finishes; the nonce is compared where it was
+             generated, which is the check that actually matters. A custom URI
+             scheme is not exclusive on Android and any app may fire an intent at
+             this one, so what arrives is untrusted by construction.
+
+             Its own activity rather than an intent-filter on MainActivity, which
+             is the shorter-looking option and is wrong: MainActivity is the
+             launcher activity holding the Compose back stack, and a singleTask
+             relaunch to deliver a redirect would drop the user somewhere other
+             than where they were, mid-setup.
+
+             It wears RunTriggerActivity's disguise for its reasons — translucent,
+             noHistory, excludeFromRecents, and an empty taskAffinity so it does
+             not drag MainActivity's window into view behind it. -->
+        <activity
+            android:name=".data.homeassistant.HaAuthActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="ha-auth"
+                    android:scheme="ottomatic" />
+            </intent-filter>
+        </activity>
+
         <!-- ===== Home-screen widgets =====
 
              Each is a Glance widget: a receiver the launcher talks to, plus (for

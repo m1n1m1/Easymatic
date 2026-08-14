@@ -8,8 +8,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.data.SmartHomeHubRepository
+import com.example.ottomatic.data.homeassistant.HaAuthResults
 import com.example.ottomatic.data.smarthome.PairingStep
 import com.example.ottomatic.data.smarthome.SmartHomeSetup
+import com.example.ottomatic.domain.model.HaBaseUrl
 import com.example.ottomatic.domain.model.SmartHomeHub
 import com.example.ottomatic.domain.model.SmartHomeKind
 import kotlinx.coroutines.delay
@@ -112,12 +114,28 @@ class SmartHomeViewModel(
     private val appContext: Context,
 ) : ViewModel() {
 
+    /**
+     * The nonce of the sign-in currently in flight, or blank.
+     *
+     * Held here rather than in [SmartHomeUiState] because it is not something the screen
+     * draws, and putting a security value in a state object that gets copied, logged and
+     * inspected is how it ends up somewhere it should not be.
+     */
+    private var pendingState: String = ""
+
     private val _uiState = MutableStateFlow(SmartHomeUiState(hubs = repository.list()))
     val uiState: StateFlow<SmartHomeUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
             repository.hubs.collect { hubs -> _uiState.update { it.copy(hubs = hubs) } }
+        }
+        // Collected for the ViewModel's whole life rather than while a screen is up:
+        // the browser resumes the app and the redirect activity fires immediately, which
+        // can be before any composable is listening again after the process was
+        // backgrounded.
+        viewModelScope.launch {
+            HaAuthResults.codes.collect { completeSignIn(it.code, it.state) }
         }
     }
 
@@ -263,6 +281,53 @@ class SmartHomeViewModel(
             // The token is dropped from the state the moment it is sealed, so nothing
             // holds the plaintext once the repository has it.
             editPairing { it.copy(working = false, token = "") }
+            settle(step)
+        }
+    }
+
+    /** Whether the sign-in button should be drawn at all. See `HaOAuth.CLIENT_ID`. */
+    val canSignIn: Boolean get() = setup.canSignInToHomeAssistant
+
+    /**
+     * Starts a sign-in and answers where to send the browser, or null when the address
+     * will not do.
+     *
+     * The nonce is remembered here rather than passed through the browser and back
+     * unchecked, which is the whole point of it: the redirect arrives on a custom URI
+     * scheme any app may fire an intent at, so the only thing distinguishing this
+     * flow's answer from somebody else's is a value only this side ever knew.
+     */
+    @Suppress("ReturnCount") // No flow open, then a bad address, then the URL.
+    fun beginSignIn(): String? {
+        val pairing = _uiState.value.pairing ?: return null
+        val request = setup.homeAssistantSignIn(pairing.typedHost)
+        if (request == null) {
+            editPairing { it.copy(error = HaBaseUrl.REQUIREMENT) }
+            return null
+        }
+        // Anything left over from an abandoned attempt would otherwise be replayed into
+        // this one and rejected as a nonce mismatch.
+        HaAuthResults.clear()
+        pendingState = request.state
+        editPairing { it.copy(working = true, error = "", tested = "") }
+        return request.url
+    }
+
+    /**
+     * Finishes a sign-in with what the browser came back with.
+     *
+     * A **mismatched nonce is discarded in silence**, not reported: it means this is not
+     * the answer to the flow the user started, so there is nothing to tell them and
+     * saying anything would be a message about somebody else's redirect.
+     */
+    fun completeSignIn(code: String, state: String) {
+        val pairing = _uiState.value.pairing ?: return
+        if (state != pendingState || pendingState.isBlank()) return
+        pendingState = ""
+        HaAuthResults.clear()
+        viewModelScope.launch {
+            val step = setup.completeHomeAssistantSignIn(pairing.typedHost, code)
+            editPairing { it.copy(working = false) }
             settle(step)
         }
     }

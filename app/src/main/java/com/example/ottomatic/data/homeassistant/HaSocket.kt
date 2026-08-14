@@ -42,7 +42,15 @@ import okhttp3.WebSocketListener
 internal class HaSocket(
     private val client: OkHttpClient,
     private val baseUrl: String,
-    private val token: String,
+    /**
+     * Read afresh on every connect rather than captured once.
+     *
+     * A reconnect after an hour down is exactly when an OAuth access token has expired,
+     * so a token captured at construction is the one guaranteed to be stale by the time
+     * it is needed. The owner renews before calling [connect]; this reads whatever is
+     * stored at that moment.
+     */
+    private val token: () -> String,
     private val listener: Events,
 ) {
 
@@ -137,7 +145,7 @@ internal class HaSocket(
 
         override fun onMessage(webSocket: WebSocket, text: String) {
             when (val frame = HaMessages.parse(text)) {
-                is HaMessages.Frame.AuthRequired -> webSocket.send(HaMessages.auth(token))
+                is HaMessages.Frame.AuthRequired -> webSocket.send(HaMessages.auth(token()))
                 is HaMessages.Frame.AuthOk -> onAuthenticated()
                 is HaMessages.Frame.AuthInvalid ->
                     // Deliberately permanent: re-presenting a revoked token every half

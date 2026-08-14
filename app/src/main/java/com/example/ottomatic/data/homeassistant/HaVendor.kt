@@ -36,7 +36,10 @@ import com.example.ottomatic.domain.model.SmartHomeHub
  *   it. Hue falls back to two extra requests for a snapshot taken before scenes carried
  *   one.
  */
-internal class HaVendor(private val hubs: SmartHomeHubRepository) : SmartHomeVendor {
+internal class HaVendor(
+    private val hubs: SmartHomeHubRepository,
+    private val tokens: HaTokens = HaTokens(hubs),
+) : SmartHomeVendor {
 
     /**
      * No pacing at all, and that is the point of the constant living on the vendor: the
@@ -50,11 +53,18 @@ internal class HaVendor(private val hubs: SmartHomeHubRepository) : SmartHomeVen
     override val commandSpacingMs: Long = 0
 
     override fun unreachable(hub: SmartHomeHub): String? =
-        if (hubs.accessToken(hub.id) == null) TOKEN_UNREADABLE.format(hub.name) else null
+        // The repository rather than HaTokens, deliberately: this asks whether there
+        // is a credential at all, which renewing cannot change — and it is called before
+        // every command, where a network round trip would not belong.
+        if (hubs.accessToken(hub.id) == null && hubs.refreshToken(hub.id) == null) {
+            TOKEN_UNREADABLE.format(hub.name)
+        } else {
+            null
+        }
 
     @Suppress("ReturnCount") // An unreadable token, then "nothing was on", then the real answer.
     override suspend fun apply(hub: SmartHomeHub, command: LightCommand): LightCommandResult {
-        val token = hubs.accessToken(hub.id)
+        val token = tokens.accessToken(hub.id)
             ?: return LightCommandResult(changed = false, error = TOKEN_UNREADABLE.format(hub.name))
         val targets = if (command.onlyIfOn && command.op in RESTRICTABLE) {
             val lit = litMembers(hub, token, command)
@@ -74,7 +84,7 @@ internal class HaVendor(private val hubs: SmartHomeHubRepository) : SmartHomeVen
 
     @Suppress("ReturnCount") // An unreadable token, then a scene with no area, then the real answer.
     override suspend fun recall(hub: SmartHomeHub, request: SceneRecall): SceneResult {
-        val token = hubs.accessToken(hub.id)
+        val token = tokens.accessToken(hub.id)
             ?: return SceneResult(changed = false, error = TOKEN_UNREADABLE.format(hub.name))
         val groupRid = hub.resources
             .firstOrNull { it.kind == SmartHomeTargetKind.SCENE && it.rid == request.rid }
@@ -91,7 +101,7 @@ internal class HaVendor(private val hubs: SmartHomeHubRepository) : SmartHomeVen
     }
 
     override suspend fun read(hub: SmartHomeHub, request: LightRead): LightReading {
-        val token = hubs.accessToken(hub.id)
+        val token = tokens.accessToken(hub.id)
             ?: return LightReading(found = false, error = TOKEN_UNREADABLE.format(hub.name))
         return if (request.kind == SmartHomeTargetKind.GROUP) {
             readArea(hub, token, request.rid)

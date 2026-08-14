@@ -49,6 +49,22 @@ internal object HaTransport {
         }
 
     /**
+     * `POST {base}{path}` with a form body and **no** bearer token.
+     *
+     * The token endpoint alone, and both of those differences are the OAuth2 spec rather
+     * than Home Assistant's choice: the grant endpoint takes
+     * `application/x-www-form-urlencoded`, and it is the thing that *issues* credentials,
+     * so it cannot require one.
+     */
+    fun postForm(base: String, path: String, body: String): Pair<Int, String> =
+        call(base, token = "", path = path) { connection ->
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+            connection.doOutput = true
+            connection.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
+        }
+
+    /**
      * Turns a `(status, body)` into the sentence a user can act on, or null when it
      * worked.
      *
@@ -86,7 +102,9 @@ internal object HaTransport {
         val connection = (URL(url).openConnection() as HttpURLConnection).apply {
             connectTimeout = SmartHomeLimits.CONNECT_TIMEOUT_MS
             readTimeout = READ_TIMEOUT_MS
-            setRequestProperty("Authorization", "Bearer $token")
+            // Blank only for the token endpoint, which issues credentials and so cannot
+            // require one. Sending an empty bearer header there is refused outright.
+            if (token.isNotBlank()) setRequestProperty("Authorization", "Bearer $token")
             setRequestProperty("Accept", "application/json")
         }
         prepare(connection)

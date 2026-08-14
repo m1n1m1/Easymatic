@@ -147,6 +147,24 @@ private fun ConnectStage(pairing: PairingState, viewModel: SmartHomeViewModel) {
 
     TokenSteps(pairing, viewModel)
 
+    // Offered only when it can actually work — see HaOAuth.CLIENT_ID. A sign-in path
+    // with no client page behind it would fail inside a browser, worded by Home
+    // Assistant, about a URL the user has never heard of.
+    if (viewModel.canSignIn) {
+        TextButton(
+            onClick = {
+                viewModel.beginSignIn()?.let { url ->
+                    runCatching {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, url.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                        )
+                    }
+                }
+            },
+            enabled = !pairing.working,
+        ) { Text(stringResource(R.string.ha_sign_in)) }
+    }
+
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
         Button(
             onClick = viewModel::connectHomeAssistant,

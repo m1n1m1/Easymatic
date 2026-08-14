@@ -52,6 +52,7 @@ import kotlinx.serialization.json.JsonObject
 class HaConnections(
     private val hubs: SmartHomeHubRepository,
     private val scope: CoroutineScope,
+    private val tokens: HaTokens = HaTokens(hubs),
 ) : HubLink {
 
     /** One live connection and everything about it. */
@@ -195,20 +196,28 @@ class HaConnections(
     }
 
     @Suppress("ReturnCount") // A deleted hub and an unreadable token are both "no connection".
+    /**
+     * What identifies "the same connection".
+     *
+     * The **stored** credential rather than a renewed one, and non-suspending because of
+     * it: renewal is the socket's own business as it connects, and reconciling against a
+     * freshly renewed token would tear down and rebuild every OAuth connection each time
+     * one expired — which is exactly when it is least useful to lose it.
+     */
     private fun signatureOf(hubId: String): String? {
         val hub = hubs.get(hubId) ?: return null
-        val token = hubs.accessToken(hubId) ?: return null
+        val token = hubs.accessToken(hubId) ?: hubs.refreshToken(hubId) ?: return null
         return "${hub.host}|${token.hashCode()}"
     }
 
     private fun open(hubId: String, signature: String): Connection {
         val hub = hubs.get(hubId)
-        val token = hubs.accessToken(hubId)
         lateinit var connection: Connection
         val socket = HaSocket(
             client = client,
             baseUrl = hub?.host.orEmpty(),
-            token = token.orEmpty(),
+            // Read at handshake time, after the renewal below has run.
+            token = { hubs.accessToken(hubId).orEmpty() },
             listener = object : HaSocket.Events {
                 override fun onReady(states: List<HaResources.HaState>) {
                     connection.states.putAll(states.associateBy { it.entityId })
@@ -232,7 +241,14 @@ class HaConnections(
             },
         )
         connection = Connection(hubId, signature, socket)
-        socket.connect()
+        // Renew before connecting rather than after being refused. A reconnect after an
+        // hour down is precisely when an OAuth token has expired, and `auth_invalid` is
+        // deliberately not retried — so being refused there would take the connection
+        // down permanently over something the app can fix by itself.
+        scope.launch {
+            tokens.accessToken(hubId)
+            socket.connect()
+        }
         return connection
     }
 
@@ -276,6 +292,7 @@ class HaConnections(
             while (isActive && !connection.permanentlyFailed) {
                 delay(backoff)
                 if (!isStillWanted(connection)) return@launch
+                tokens.accessToken(connection.hubId)
                 connection.socket.connect()
                 val openedAt = System.currentTimeMillis()
                 // Give it a moment to fail; if it is still up after HEALTHY_MS the

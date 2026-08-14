@@ -28,7 +28,42 @@ import kotlinx.serialization.json.jsonPrimitive
  * The rule they *do* share is the one that matters: **the plaintext credential never
  * leaves `data/`.** A token that validates is sealed here and answered with an id.
  */
-internal class HaSetup(private val hubs: SmartHomeHubRepository) {
+internal class HaSetup(
+    private val hubs: SmartHomeHubRepository,
+    private val tokens: HaTokens = HaTokens(hubs),
+) {
+
+    /** Whether signing in can work on this build at all. See [HaOAuth.CLIENT_ID]. */
+    val canSignIn: Boolean get() = HaOAuth.isAvailable
+
+    /** Where to send the browser, and the nonce to check the answer against. */
+    fun signInRequest(baseUrl: String): HaOAuth.Request? = HaOAuth.authorizeRequest(baseUrl)
+
+    /**
+     * Exchanges an authorization code for tokens and connects the instance.
+     *
+     * The **nonce is compared by the caller**, not here: this is handed a code that has
+     * already been established as belonging to the flow the user started. See
+     * [HaAuthResults] for why that check cannot live at the receiving end.
+     */
+    @Suppress("ReturnCount") // A bad address, then a refused exchange, then the answer.
+    suspend fun completeSignIn(baseUrl: String, code: String): HaConnectResult {
+        val base = HaBaseUrl.parse(baseUrl) ?: return HaConnectResult.Failed(HaBaseUrl.REQUIREMENT)
+        val (status, body) = withContext(Dispatchers.IO) {
+            HaTransport.postForm(base, HaOAuth.TOKEN_PATH, HaOAuth.codeExchangeBody(code))
+        }
+        val issued = HaOAuth.readTokens(body).takeIf { HaTransport.isSuccess(status) }
+            ?: return HaConnectResult.Failed(
+                HaOAuth.errorOf(body) ?: HaTransport.problem(status, body, base) ?: SIGN_IN_REFUSED,
+            )
+        return connect(
+            baseUrl = base,
+            token = issued.accessToken,
+            refreshToken = issued.refreshToken,
+            expiresAtEpochMs = HaOAuth.expiryOf(System.currentTimeMillis(), issued.expiresInSeconds),
+            mode = HubAuthMode.OAUTH,
+        )
+    }
 
     /**
      * Checks [token] against [baseUrl] and answers what is wrong, or null when it
@@ -99,7 +134,10 @@ internal class HaSetup(private val hubs: SmartHomeHubRepository) {
     @Suppress("ReturnCount") // Two setup failures, then the network answer.
     suspend fun refresh(hubId: String): String? {
         val hub = hubs.get(hubId) ?: return "That hub has been removed"
-        val token = hubs.accessToken(hubId) ?: return TOKEN_UNREADABLE.format(hub.name)
+        // Through HaTokens rather than the repository: an OAuth hub whose token
+        // expired while the phone was off renews here rather than reporting a failure
+        // the app can fix by itself.
+        val token = tokens.accessToken(hubId) ?: return TOKEN_UNREADABLE.format(hub.name)
         return withContext(Dispatchers.IO) {
             val (statesStatus, statesBody) = HaTransport.get(hub.host, token, STATES_PATH)
             HaTransport.problem(statesStatus, statesBody, hub.host)?.let { return@withContext it }
@@ -164,6 +202,7 @@ internal class HaSetup(private val hubs: SmartHomeHubRepository) {
         const val SERVICES_PATH = "/api/services"
         const val TEMPLATE_PATH = "/api/template"
         const val DEFAULT_NAME = "Home Assistant"
+        const val SIGN_IN_REFUSED = "Home Assistant would not complete the sign-in — try again"
         const val TOKEN_UNREADABLE =
             "The token for \"%s\" could not be read on this device — open Smart home and paste it in again"
     }

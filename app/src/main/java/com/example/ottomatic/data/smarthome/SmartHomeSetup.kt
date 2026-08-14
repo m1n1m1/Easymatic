@@ -13,6 +13,16 @@ import com.example.ottomatic.domain.model.SmartHomeKind
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * One sign-in attempt: where to send the browser, and the nonce that ties the answer
+ * back to it.
+ *
+ * The nonce is compared when the redirect returns, and that comparison is the one line
+ * stopping another app's redirect from completing somebody else's sign-in — a custom URI
+ * scheme is not exclusive on Android.
+ */
+data class SignInRequest(val url: String, val state: String)
+
 /** One attempt at pairing, as the pairing screen sees it. */
 sealed interface PairingStep {
 
@@ -69,10 +79,30 @@ class SmartHomeSetup(private val hubs: SmartHomeHubRepository) {
      * [HaSetup].
      */
     suspend fun connectHomeAssistant(baseUrl: String, token: String): PairingStep =
-        when (val outcome = homeAssistant.connect(baseUrl, token)) {
-            is HaConnectResult.Connected -> PairingStep.Paired(outcome.hubId)
-            is HaConnectResult.Failed -> PairingStep.Failed(outcome.error)
-        }
+        homeAssistant.connect(baseUrl, token).asStep()
+
+    /**
+     * Whether signing in to Home Assistant can work on this build.
+     *
+     * False until somebody hosts the IndieAuth client page — see `HaOAuth.CLIENT_ID` —
+     * and the setup screen asks before drawing the button. A path that cannot succeed is
+     * worse than one that is absent: the failure would arrive in a browser, worded by
+     * Home Assistant, about a URL the user has never heard of.
+     */
+    val canSignInToHomeAssistant: Boolean get() = homeAssistant.canSignIn
+
+    /** Where to send the browser, and the nonce to check the answer against. */
+    fun homeAssistantSignIn(baseUrl: String): SignInRequest? =
+        homeAssistant.signInRequest(baseUrl)?.let { SignInRequest(it.url, it.state) }
+
+    /** Finishes a sign-in with the code the browser came back with. */
+    suspend fun completeHomeAssistantSignIn(baseUrl: String, code: String): PairingStep =
+        homeAssistant.completeSignIn(baseUrl, code).asStep()
+
+    private fun HaConnectResult.asStep(): PairingStep = when (this) {
+        is HaConnectResult.Connected -> PairingStep.Paired(hubId)
+        is HaConnectResult.Failed -> PairingStep.Failed(error)
+    }
 
     /**
      * One poll of the link button on [host].

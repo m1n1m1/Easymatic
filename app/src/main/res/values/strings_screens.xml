@@ -570,5 +570,6 @@
     <string name="ha_choose_an_entity">Choose an entity</string>
     <string name="ha_choose_a_service">Choose a service</string>
     <string name="ha_choose_a_hub">Choose a Home Assistant</string>
+    <string name="ha_sign_in">Or sign in to Home Assistant</string>
     <string name="ha_no_hub_yet">No Home Assistant yet. Add one in Smart home.</string>
 </resources>
