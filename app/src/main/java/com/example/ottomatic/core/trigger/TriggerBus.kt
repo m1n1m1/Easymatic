@@ -40,6 +40,24 @@ enum class TriggerSource {
     MEDIA,
     NFC,
     MAIL,
+
+    /**
+     * Something on a Home Assistant hub — an entity's state, or an event on its bus.
+     *
+     * **One source for both triggers**, unlike [MESSAGE] and [NOTIFICATION], and the
+     * difference is worth stating because the two cases look alike. There, the filtering
+     * happens in `engine/`: both triggers read the same bus, so they need to be able to
+     * tell one arrival from another. Here the `data/` side holds a registration table
+     * and addresses each event to **one node id** — a busy install emits hundreds of
+     * `state_changed` a minute, and broadcasting them would wake every armed trigger in
+     * the process to run its own filter chain. With the routing already done, a second
+     * source would distinguish nothing that the node id does not.
+     *
+     * A `state_changed` is also an ordinary event on the bus, so a `trigger.ha_event`
+     * watching that type still fires alongside a `trigger.ha_state` on the same entity.
+     * That is deliberate and is what having two nodes means.
+     */
+    HOME_ASSISTANT,
 }
 
 /**

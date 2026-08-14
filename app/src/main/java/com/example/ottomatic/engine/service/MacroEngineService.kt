@@ -119,6 +119,10 @@ class MacroEngineService : Service() {
         // MainActivity doesn't show a stale battery-optimisation prompt for a
         // start that actually worked.
         BootFailureStore.clear(this)
+        // Opened for every configured hub, independent of what is armed — see HubLink.
+        // A push connection is not an arm: it also keeps the cache `value.ha_state`
+        // reads, which every macro may pull whether or not it has a hub trigger in it.
+        ServiceLocator.hubLink.start()
         _engineRunning.value = true
         startForegroundCompat(buildNotification(activeJobs.size))
     }
@@ -217,6 +221,9 @@ class MacroEngineService : Service() {
         // A detached sound is held by this process, not by the run that started
         // it, so it would outlive the engine itself.
         systemServices.stopSounds()
+        // Held open for the engine's lifetime, so it ends with it. Nothing else would
+        // close it: it is not owned by any arm, which is the whole point of it.
+        ServiceLocator.hubLink.stop()
         scope.cancel()
         _engineRunning.value = false
         _armedCount.value = 0

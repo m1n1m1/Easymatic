@@ -8,6 +8,7 @@ import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.GeofencePlace
 import com.example.ottomatic.domain.model.MailAccount
 import com.example.ottomatic.domain.model.NfcTag
+import com.example.ottomatic.domain.model.SmartHomeHub
 import com.example.ottomatic.domain.model.WorkflowNode
 import kotlinx.coroutines.flow.Flow
 
@@ -366,6 +367,47 @@ interface TriggerHost {
         spec: MailWatchSpec,
         onReport: (String, LogLevel) -> Unit = { _, _ -> },
     ): ScheduleHandle = ScheduleHandle { }
+
+    /**
+     * Registers this node's interest in a Home Assistant entity or event type.
+     *
+     * [armMailWatch]'s shape, with one difference that shows through here: this does
+     * **not** open a connection on the node's behalf. The socket is held for every
+     * configured hub as long as the engine runs, independent of what is armed — see
+     * [com.example.ottomatic.core.service.HubLink] for why — so arming is only a row in
+     * a routing table, and disarming only removes it.
+     *
+     * That routing table is the reason this exists at all rather than the trigger
+     * filtering the bus itself: `TriggerEvent` carries **one** node id, and a busy
+     * install emits hundreds of `state_changed` a minute. Broadcasting them would wake
+     * every armed trigger in the process to run its own filter chain, which is what
+     * [sensorSamples]' KDoc refuses to do for the same reason.
+     *
+     * [onReport] carries a line back to the macro's own console, for [armMailWatch]'s
+     * reason: a token that stopped being accepted, a server that keeps dropping the
+     * socket, an instance that was upgraded — all of it happens *after* this returns and
+     * has nowhere else to be said. It may be called from a background thread at any time
+     * until the handle is cancelled.
+     *
+     * The default is a no-op, so a host with no Home Assistant behind it leaves the
+     * trigger silent rather than failing to arm.
+     */
+    fun armHomeAssistantWatch(
+        nodeId: NodeId,
+        spec: HaWatchSpec,
+        onReport: (String, LogLevel) -> Unit = { _, _ -> },
+    ): ScheduleHandle = ScheduleHandle { }
+
+    /**
+     * The smart-home hub [id] names, or null when it was never chosen or has been
+     * deleted.
+     *
+     * A library lookup on [mailAccount]'s shape and for its reason: a trigger has to be
+     * able to say *"the hub this points at is gone"* into the macro's own console rather
+     * than arming a watch on nothing and looking, from outside, exactly like a macro
+     * that is simply waiting.
+     */
+    fun smartHomeHub(id: String): SmartHomeHub? = null
 
     /**
      * Stream of variable-change events ([TriggerSource.VARIABLE]) for the variable

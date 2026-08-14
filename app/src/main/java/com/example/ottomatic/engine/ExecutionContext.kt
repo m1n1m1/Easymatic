@@ -13,6 +13,8 @@ import com.example.ottomatic.core.service.Messaging
 import com.example.ottomatic.core.service.NoMail
 import com.example.ottomatic.core.service.NoMessaging
 import com.example.ottomatic.core.service.NoPrompts
+import com.example.ottomatic.core.service.HomeAssistant
+import com.example.ottomatic.core.service.NoHomeAssistant
 import com.example.ottomatic.core.service.NoSmartHome
 import com.example.ottomatic.core.service.SmartHome
 import com.example.ottomatic.core.service.NoScripts
@@ -150,6 +152,22 @@ interface ExecutionContext {
      * an `action.if`, on the exec wire where the latency is visible.
      */
     val smartHome: SmartHome get() = NoSmartHome
+
+    /**
+     * Home Assistant — `action.ha_service` and `value.ha_state`. Defaults to
+     * [NoHomeAssistant] so engine-only tests need no server.
+     *
+     * **The first facade both sides of the graph may touch**, besides [variables], and
+     * the exception is real rather than a relaxation of the rule. [smartHome], [mail]
+     * and [ai] are actions' facades *because every member is a network round trip*;
+     * here `state` is a map lookup into a cache a websocket keeps warm, so it is cheap,
+     * repeatable and cannot fail — which is what the pull side actually requires. The
+     * bar was never "must not concern the network"; it was "must be cheap and must not
+     * fail", and a push channel clears it where a request-response API cannot.
+     *
+     * `call` is still an action's alone.
+     */
+    val homeAssistant: HomeAssistant get() = NoHomeAssistant
 
     /**
      * Asks a language model something — `action.ai_prompt`. Defaults to [NoAi] so

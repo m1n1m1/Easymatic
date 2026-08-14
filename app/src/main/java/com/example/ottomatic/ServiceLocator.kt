@@ -17,6 +17,9 @@ import com.example.ottomatic.data.MailAccountRepository
 import com.example.ottomatic.data.NfcTagRepository
 import com.example.ottomatic.data.SmartHomeHubRepository
 import com.example.ottomatic.core.service.SmartHome
+import com.example.ottomatic.core.service.HubLink
+import com.example.ottomatic.data.homeassistant.AndroidHomeAssistant
+import com.example.ottomatic.data.homeassistant.HaConnections
 import com.example.ottomatic.data.homeassistant.HaVendor
 import com.example.ottomatic.data.hue.HueVendor
 import com.example.ottomatic.data.smarthome.RoutingSmartHome
@@ -138,6 +141,24 @@ object ServiceLocator {
      * [smartHomeHubRepository] whatever order [init] grows into — first touched when
      * the execution context is assembled, which is later in that same function.
      */
+    /**
+     * The Home Assistant push connections, and the cache they keep warm.
+     *
+     * One object serving three callers with three needs — the facade reads its cache,
+     * the trigger host registers armed nodes with it, and [MacroEngineService] starts
+     * and stops it through [HubLink] — because all three are about the same sockets.
+     *
+     * Given [appScope] rather than the service's scope: the service stops itself
+     * whenever nothing is armed, and a connection torn down then would leave every
+     * `value.ha_state` reading null in a macro that has no Home Assistant trigger in it.
+     * The process is the honest owner, which is [MacroEngineService.runManual]'s
+     * reasoning for its deferred-branch scope.
+     */
+    private val haConnections: HaConnections by lazy { HaConnections(smartHomeHubRepository, appScope) }
+
+    /** The push connections, as the engine's service sees them. */
+    val hubLink: HubLink get() = haConnections
+
     private val smartHomeFacade: SmartHome by lazy {
         RoutingSmartHome(
             smartHomeHubRepository,
@@ -363,6 +384,10 @@ object ServiceLocator {
             // is a per-hub fact, so one instance serves every hub on the phone and
             // this line names none of them.
             smartHome = smartHomeFacade,
+            // Reads the cache the push connections keep warm, and sends its service
+            // calls over REST — so an action works in the seconds after a reconnect and
+            // from the editor's preview run, where no socket is up at all.
+            homeAssistant = AndroidHomeAssistant(smartHomeHubRepository, haConnections),
             // Resolves the connection on every call for the same reason: a key
             // pasted in mid-run must be the one the next prompt uses, and a revoked
             // one must stop working without waiting for the process to die. Which
@@ -381,14 +406,7 @@ object ServiceLocator {
         // (Context, WorkerParameters) constructor and nothing else — the same
         // problem VariableStore.attach solves the same way.
         MailRuntime.attach(mail = mailFacade, seen = MailSeenStore(appContext))
-        triggerHost = AndroidTriggerHost(
-            appContext,
-            geofencePlaceRepository,
-            nfcTagRepository,
-            sensorBridge,
-            contacts,
-            mailAccountRepository,
-        )
+        triggerHost = buildTriggerHost(sensorBridge, contacts)
         publishGrantedPrerequisites(appContext)
         publishPluginNodes(appContext)
     }
@@ -467,6 +485,26 @@ object ServiceLocator {
      * happen long after startup — and a node pointing at a removed hub is the case
      * this exists for.
      */
+    /**
+     * The trigger host, and every library a trigger resolves something against.
+     *
+     * Extracted from [init] rather than inlined because it is a list that grows once per
+     * integration, and a constructor call is not what [init] is for reading.
+     * [sensorBridge] and [contacts] are passed rather than rebuilt so an armed trigger
+     * and a value node share one platform registration between them.
+     */
+    private fun buildTriggerHost(sensorBridge: SensorBridge, contacts: AndroidContacts): TriggerHost =
+        AndroidTriggerHost(
+            appContext,
+            geofencePlaceRepository,
+            nfcTagRepository,
+            sensorBridge,
+            contacts,
+            mailAccountRepository,
+            smartHomeHubRepository,
+            haConnections,
+        )
+
     private fun publishSmartHomeHubs() {
         appScope.launch {
             smartHomeHubRepository.hubs.collect { hubs -> SmartHomeHubs.hydrate(hubs.map { it.id }) }

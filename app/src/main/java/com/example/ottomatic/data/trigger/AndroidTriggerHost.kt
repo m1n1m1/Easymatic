@@ -20,6 +20,8 @@ import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.MailAccountRepository
+import com.example.ottomatic.data.SmartHomeHubRepository
+import com.example.ottomatic.data.homeassistant.HaConnections
 import com.example.ottomatic.data.NfcTagRepository
 import com.example.ottomatic.data.mail.MailWatchers
 import com.example.ottomatic.data.nfc.NfcReader
@@ -27,10 +29,12 @@ import com.example.ottomatic.data.sensor.SensorBridge
 import com.example.ottomatic.data.service.AndroidContacts
 import com.example.ottomatic.domain.model.GeofencePlace
 import com.example.ottomatic.domain.model.MailAccount
+import com.example.ottomatic.domain.model.SmartHomeHub
 import com.example.ottomatic.domain.model.NfcTag
 import com.example.ottomatic.engine.trigger.BatteryDirection
 import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofenceTransition
+import com.example.ottomatic.engine.trigger.HaWatchSpec
 import com.example.ottomatic.engine.trigger.MailWatchSpec
 import com.example.ottomatic.engine.trigger.NfcStatus
 import com.example.ottomatic.engine.trigger.ScheduleHandle
@@ -56,7 +60,9 @@ import java.util.concurrent.TimeUnit
  * its configured place against; it is read synchronously from the repository's
  * in-memory cache, because arming happens outside a suspending context.
  */
-@Suppress("TooManyFunctions") // One override per TriggerHost capability; the interface sets the count.
+// One override per TriggerHost capability and one constructor parameter per library a
+// trigger resolves against; the interface sets both counts.
+@Suppress("TooManyFunctions", "LongParameterList")
 class AndroidTriggerHost(
     context: Context,
     private val geofencePlaces: GeofencePlaceRepository,
@@ -80,6 +86,16 @@ class AndroidTriggerHost(
      * mail trigger unarmed rather than watching nothing.
      */
     private val mailAccounts: MailAccountRepository? = null,
+    /**
+     * The hub library the two Home Assistant triggers resolve their chosen hub
+     * against, and the connections they register with.
+     *
+     * Both null for callers that only need the other triggers, which then leaves every
+     * Home Assistant trigger unarmed rather than watching nothing — [mailAccounts]'
+     * rule, for its reason.
+     */
+    private val smartHomeHubs: SmartHomeHubRepository? = null,
+    private val haConnections: HaConnections? = null,
 ) : TriggerHost {
 
     private val appContext = context.applicationContext
@@ -110,6 +126,18 @@ class AndroidTriggerHost(
         spec: MailWatchSpec,
         onReport: (String, LogLevel) -> Unit,
     ): ScheduleHandle = mailWatchers.arm(nodeId, accountId, spec, onReport)
+
+    override fun smartHomeHub(id: String): SmartHomeHub? = smartHomeHubs?.get(id)
+
+    override fun armHomeAssistantWatch(
+        nodeId: NodeId,
+        spec: HaWatchSpec,
+        onReport: (String, LogLevel) -> Unit,
+    ): ScheduleHandle =
+        // Not owned here, unlike `mailWatchers`: the connections outlive any arm and
+        // are held for the engine's lifetime, so this host is handed the manager rather
+        // than constructing one. See HubLink.
+        haConnections?.arm(nodeId, spec.hubId, spec, onReport) ?: ScheduleHandle { }
 
     override fun sensorSamples(kind: SensorKind, rate: SensorRate): Flow<SensorSample> =
         sensorBridge.samples(kind, rate)
