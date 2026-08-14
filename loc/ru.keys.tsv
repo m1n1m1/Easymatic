@@ -154,6 +154,7 @@ config_now	Сейчас
 config_port_carries_list	Этот порт передаёт список
 config_port_carries_one	Этот порт передаёт одно значение
 config_set	Задать
+config_show_suggestions	Показать подсказки
 config_socket_feed	Подавать в «%1$s» данные сверху по цепочке
 config_socket_use_typed_connected	Использовать введённое значение для «%1$s» (подключено к %2$s)
 config_socket_use_typed_free	Использовать введённое значение для «%1$s» (ничего не подключено)
@@ -258,11 +259,14 @@ grapheditor_zoom_percent	%1$d%%
 ha_access_token	Долгоживущий токен доступа
 ha_address	Адрес
 ha_all_entities	Сущности
+ha_any_state_change	При каждом изменении
+ha_any_state_change_hint	Любое изменение состояния, без дополнительных условий
 ha_auth_oauth	Выполнен вход
 ha_auth_token	Долгоживущий токен
 ha_authentication	Аутентификация
 ha_choose_a_hub	Выберите Home Assistant
 ha_choose_a_service	Выберите службу
+ha_choose_a_trigger	Выберите, что запускает
 ha_choose_an_entity	Выберите сущность
 ha_cleartext_warning	Этот адрес не зашифрован. Для сервера в собственной сети это нормально; через интернет токен ушёл бы в открытом виде.
 ha_connect_home_assistant	Подключить Home Assistant
@@ -273,9 +277,12 @@ ha_no_hub_yet	Home Assistant пока нет. Добавьте его в раз�
 ha_open_profile	Открыть страницу профиля
 ha_paste	Вставить
 ha_replace_token	Заменить токен
+ha_show_everything	Показать всё
+ha_show_matching	Показать только подходящее
 ha_sign_in	Или войдите в Home Assistant
 ha_test	Проверить
 ha_token_steps	В Home Assistant откройте профиль, выберите «Безопасность», прокрутите до «Долгоживущие токены доступа» и создайте токен. Он показывается один раз — скопируйте его и вставьте сюда.
+ha_trigger_built_in	Любое изменение
 hue_find_your_bridge	Найдите свой мост
 hue_hue_bridge	Мост Hue
 hue_name_your_bridge	Назовите свой мост

@@ -132,7 +132,7 @@ internal class HaSetup(
      * which is what lets a picker keep working with the server switched off.
      */
     @Suppress("ReturnCount") // Two setup failures, then the network answer.
-    suspend fun refresh(hubId: String): String? {
+    suspend fun refresh(hubId: String, socketServices: String? = null): String? {
         val hub = hubs.get(hubId) ?: return "That hub has been removed"
         // Through HaTokens rather than the repository: an OAuth hub whose token
         // expired while the phone was off renews here rather than reporting a failure
@@ -148,7 +148,13 @@ internal class HaSetup(
             // states read that worked. The pickers degrade to ungrouped rather than
             // empty, which is a far better answer than "nothing has been read yet".
             val areas = HaResources.parseAreas(renderTemplate(hub.host, token, HaResources.AREAS_TEMPLATE))
-            val (_, servicesBody) = HaTransport.get(hub.host, token, SERVICES_PATH)
+            // The socket's answer when there is one, because it is the **only** one carrying
+            // `target` and the field `selector`s — `/api/services` returns names and
+            // descriptions and nothing else, which is why the first cut of the service picker
+            // could not narrow itself no matter what it was asked to filter on. The endpoint
+            // stays as the fallback for a refresh taken before any socket is up.
+            val servicesBody = socketServices?.takeIf { it.isNotBlank() }
+                ?: HaTransport.get(hub.host, token, SERVICES_PATH).second
 
             hubs.setHomeAssistantSnapshot(
                 id = hubId,

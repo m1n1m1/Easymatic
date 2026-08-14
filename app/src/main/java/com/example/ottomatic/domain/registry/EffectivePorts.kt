@@ -205,6 +205,15 @@ val VARIABLE_VALUE_TYPE_ID = NodeTypeId("value.variable")
 /** typeId of the Home Assistant entity reader, whose answer depends on its config. */
 val HA_STATE_VALUE_TYPE_ID = NodeTypeId("value.ha_state")
 
+/** typeId of the Home Assistant service call, whose form grows with the service chosen. */
+val HA_SERVICE_TYPE_ID = NodeTypeId("action.ha_service")
+
+/** The config key naming the service, which decides which fields the form generates. */
+private val HA_SERVICE_KEY = ConfigKey("service")
+
+/** The config key whose JSON holds every generated field's value. */
+private val HA_SERVICE_DATA_KEY = ConfigKey("data")
+
 /** typeId of the variable writer, whose input port its declaration states. */
 val SET_VARIABLE_TYPE_ID = NodeTypeId("action.set_variable")
 
@@ -657,12 +666,28 @@ fun effectiveConfigSchema(
     node: WorkflowNode,
 ): NodeConfigSchema? {
     val declared = ConfigSchemaRegistry.byId(definition.typeId) ?: return null
-    val narrowed = if (definition.typeId in COMPARISON_TYPE_IDS) {
-        compareSchema(declared, workflow, node)
-    } else {
-        declared
+    val narrowed = when (definition.typeId) {
+        in COMPARISON_TYPE_IDS -> compareSchema(declared, workflow, node)
+        HA_SERVICE_TYPE_ID -> declared.withServiceFields(node)
+        else -> declared
     }
     return narrowed.visibleFor(node.config).takeIf { it.fields.isNotEmpty() }
+}
+
+/**
+ * The service-call form, with one field per input the chosen service accepts.
+ *
+ * The generated rows land **before** the raw JSON box rather than after it, so the box reads as
+ * the escape hatch it is: everything the server described is above it, and what is left is
+ * whatever this build could not render. See `GeneratedFields`.
+ */
+@Suppress("ReturnCount") // Nothing generated, no box to insert before, then the answer.
+private fun NodeConfigSchema.withServiceFields(node: WorkflowNode): NodeConfigSchema {
+    val generated = generatedServiceFields(node.config, HA_SERVICE_KEY, HA_SERVICE_DATA_KEY)
+    if (generated.isEmpty()) return this
+    val dataIndex = fields.indexOfFirst { it.key == HA_SERVICE_DATA_KEY }
+    if (dataIndex < 0) return copy(fields = fields + generated)
+    return copy(fields = fields.take(dataIndex) + generated + fields.drop(dataIndex))
 }
 
 /**

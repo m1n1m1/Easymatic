@@ -501,9 +501,16 @@
     <string name="ha_auth_oauth">Выполнен вход</string>
     <string name="ha_authentication">Аутентификация</string>
     <string name="smarthome_sign_in_again">Войти заново</string>
+    <string name="config_show_suggestions">Показать подсказки</string>
+    <string name="ha_show_everything">Показать всё</string>
+    <string name="ha_show_matching">Показать только подходящее</string>
     <string name="ha_choose_an_entity">Выберите сущность</string>
     <string name="ha_choose_a_service">Выберите службу</string>
     <string name="ha_choose_a_hub">Выберите Home Assistant</string>
+    <string name="ha_choose_a_trigger">Выберите, что запускает</string>
+    <string name="ha_trigger_built_in">Любое изменение</string>
+    <string name="ha_any_state_change">При каждом изменении</string>
+    <string name="ha_any_state_change_hint">Любое изменение состояния, без дополнительных условий</string>
     <string name="ha_sign_in">Или войдите в Home Assistant</string>
     <string name="ha_no_hub_yet">Home Assistant пока нет. Добавьте его в разделе «Умный дом».</string>
 </resources>

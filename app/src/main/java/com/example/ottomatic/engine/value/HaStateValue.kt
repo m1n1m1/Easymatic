@@ -6,6 +6,8 @@ import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
+import com.example.ottomatic.domain.model.config.Suggested
+import com.example.ottomatic.domain.model.config.SuggestionSource
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.ValueNode
@@ -22,6 +24,7 @@ data class HaStateValueConfig(
     @Picker(PickerKind.HA_ENTITY)
     val entity: String = "",
     @Label("Attribute (optional)")
+    @Suggested(SuggestionSource.HA_ENTITY_ATTRIBUTE, scopedBy = ["entity"])
     val attribute: String = "",
 )
 

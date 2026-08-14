@@ -276,7 +276,73 @@ data class HaEntity(
     val unit: String = "",
     /** The area the hub files this under, for grouping in the picker. Blank if it has none. */
     val area: String = "",
+    /**
+     * What it read at the moment of the Refresh.
+     *
+     * Stored because it is the **only offerable answer for an entity nothing can enumerate** —
+     * a temperature sensor's chooser has one honest row in it, "currently 21.4". It is a
+     * snapshot and will go stale, so a chooser must label it as the current reading rather than
+     * as an option; it feeds an editable field, where staleness costs nothing.
+     */
+    val state: String = "",
+    /**
+     * The attribute names this entity published, for `value.ha_state`'s Attribute chooser.
+     *
+     * Free — the `/api/states` payload is already parsed in full — and it is the entity's own
+     * keys rather than a filtered set: `friendly_name` and `unit_of_measurement` are real
+     * attributes a macro may legitimately read, and a chooser is not the place to decide
+     * otherwise.
+     *
+     * An entity that was `unavailable` at Refresh publishes almost nothing, so its list will be
+     * thin. That is the second reason the attribute field stays **editable**.
+     */
+    val attributes: List<String> = emptyList(),
 )
+
+/**
+ * One field a Home Assistant service accepts.
+ *
+ * [selector] is what makes a generated form field possible rather than a JSON box: Home
+ * Assistant publishes the *kind* of input each field wants, so a brightness can be a slider
+ * bounded at the values the server itself named.
+ */
+@Serializable
+data class HaField(
+    val name: String,
+    /** The hub's own label. Falls back to [name] when it offers none. */
+    val label: String = "",
+    val required: Boolean = false,
+    val selector: HaSelector = HaSelector.Unknown,
+)
+
+/**
+ * What kind of input a service field wants.
+ *
+ * [Unknown] is not a failure and is the commonest member: Home Assistant has a couple of dozen
+ * selector types and this models the four that map onto config widgets the app already has.
+ * Anything else is **not generated as a field**, and the raw JSON box stays as the escape hatch
+ * — so a selector this build has never been taught costs nothing at all.
+ */
+@Serializable
+sealed interface HaSelector {
+    @Serializable
+    data class Options(val values: List<String>) : HaSelector
+
+    @Serializable
+    data class Number(val min: Double, val max: Double, val step: Double = 1.0) : HaSelector
+
+    @Serializable
+    data object Toggle : HaSelector
+
+    @Serializable
+    data class Entity(val domains: List<String> = emptyList()) : HaSelector
+
+    @Serializable
+    data object Text : HaSelector
+
+    @Serializable
+    data object Unknown : HaSelector
+}
 
 /**
  * One service a Home Assistant hub offers, as the service picker lists it.
@@ -301,7 +367,56 @@ data class HaService(
     /** The hub's own name for it — "Turn on". Falls back to [service] when it offers none. */
     val name: String = "",
     val description: String = "",
+    /**
+     * Whether the service declares a `target` at all. False ⇒ it acts on no entity.
+     *
+     * **Two fields rather than one**, with [targetDomains], because an empty domain list is
+     * genuinely ambiguous: `homeassistant.restart` has no `target` key at all, while
+     * `homeassistant.turn_on` has one whose filter names no domain and means *any* entity.
+     * Collapsing them makes the blank-entity rule offer either far too much or nothing.
+     *
+     * Defaults to false so an older snapshot reports every service as taking no target, which
+     * combined with the degradation rule shows everything rather than nothing.
+     */
+    val takesTarget: Boolean = false,
+    /**
+     * The entity domains its target accepts. **Empty with [takesTarget] ⇒ any entity.**
+     *
+     * Only the domain filter is read. A `target` may also constrain by `device_class`,
+     * `integration` or `supported_features`, and those are deliberately ignored: partial
+     * scoping that offers a little too much is right here, and offering too little is not.
+     */
+    val targetDomains: List<String> = emptyList(),
+    /** What it accepts, required first — the source of the generated form fields. */
+    val fields: List<HaField> = emptyList(),
 ) {
     /** `light.turn_on` — what the user sees, and what a reference stores. */
     val id: String get() = "$domain.$service"
+
+    /**
+     * Whether this service is worth offering for [entityDomain], which is blank when no entity
+     * has been chosen.
+     *
+     * Three rules, and the asymmetry between the first two is deliberate:
+     *
+     * - A service that **takes no target** is offered *always*. With nothing chosen it is the
+     *   only kind that makes sense; with an entity chosen it simply ignores it, and hiding it
+     *   there would mean clearing the entity to reach `homeassistant.restart` — a dead end for
+     *   no gain.
+     * - A service that **needs** a target is hidden while none is chosen, because sending it
+     *   nowhere does nothing and reports success doing it.
+     * - Otherwise the entity's domain must be one the target accepts.
+     *
+     * The **degradation rule** lives in the middle branch and is the one thing every caller
+     * depends on: a service carrying no domain constraint — an old snapshot, a locked-down
+     * instance whose `/api/services` failed, a custom integration that publishes none — is
+     * offered for any entity. Empty metadata narrows nothing; it never narrows to nothing.
+     */
+    fun offersFor(entityDomain: String): Boolean = when {
+        // Nothing chosen yet: only the services that act on no entity make sense.
+        entityDomain.isBlank() -> !takesTarget
+        // No constraint published, so it may well take this entity. Show it.
+        targetDomains.isEmpty() -> true
+        else -> entityDomain in targetDomains
+    }
 }

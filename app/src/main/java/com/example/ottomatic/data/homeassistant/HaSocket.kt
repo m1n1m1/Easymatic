@@ -5,6 +5,8 @@ import com.example.ottomatic.domain.model.HaBaseUrl
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.JsonObject
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -65,6 +67,17 @@ internal class HaSocket(
         /** An event on a subscribed type, other than `state_changed`. */
         fun onEvent(eventType: String, data: JsonObject, origin: String)
 
+        /**
+         * One of Home Assistant's own triggers fired.
+         *
+         * [subscriptionId] is the **only** thing saying which node wanted it, and that is a
+         * fact about the protocol rather than a shortcut here: a trigger frame carries no
+         * event type, no entity and no trigger name — only the id of the message that asked
+         * for it. [payload] is `variables.trigger`, which is whatever that trigger platform
+         * publishes and is frequently very little.
+         */
+        fun onTriggerFired(subscriptionId: Int, payload: JsonObject)
+
         /** The socket went down. [permanent] means do not retry — the credential was refused. */
         fun onClosed(reason: String, permanent: Boolean, level: LogLevel)
     }
@@ -77,15 +90,35 @@ internal class HaSocket(
     @Volatile
     private var authenticated = false
 
-    /** Which subscription id belongs to which event type, so it can be dropped again. */
-    private val subscriptions = ConcurrentHashMap<String, Int>()
-
-    /** Event types wanted, applied on connect and as they are added. */
-    private val wanted = ConcurrentHashMap.newKeySet<String>()
+    /**
+     * What this connection listens for, and the ids the server assigned.
+     *
+     * `state_changed` is in there from the start rather than subscribed separately, which is
+     * what stops a `trigger.ha_event` naming that type subscribing to it a *second* time —
+     * Home Assistant accepts both and then delivers every state change twice. See
+     * [HaSubscriptions], which owns that invariant and is tested for it.
+     */
+    private val subscriptions = HaSubscriptions()
 
     /** The id of the seeding `get_states`, so its result can be told from any other. */
     @Volatile
     private var seedId = 0
+
+    /**
+     * Commands waiting for their answer, by message id.
+     *
+     * Home Assistant answers every command with a `result` carrying the id it was sent with, so
+     * correlation is the entire mechanism — there is no other way to tell one answer from
+     * another on a single multiplexed socket.
+     *
+     * **Every one of these is completed on disconnect**, exceptionally, rather than left to time
+     * out: a picker awaiting a service list when the socket drops should fall back at once, not
+     * sit there for however long its own timeout happens to be.
+     */
+    private val pending = ConcurrentHashMap<Int, CompletableDeferred<String>>()
+
+    /** Live trigger subscriptions by message id, so a fired trigger can be routed back. */
+    private val triggerSubscriptions = ConcurrentHashMap<Int, String>()
 
     val isConnected: Boolean get() = authenticated
 
@@ -98,7 +131,6 @@ internal class HaSocket(
         }
         ids.set(0)
         authenticated = false
-        subscriptions.clear()
         socket = client.newWebSocket(Request.Builder().url(url).build(), Handler())
     }
 
@@ -107,6 +139,61 @@ internal class HaSocket(
         authenticated = false
         socket?.close(NORMAL_CLOSURE, null)
         socket = null
+        failPending("The connection to Home Assistant closed")
+    }
+
+    /**
+     * Sends one command and waits for its answer, or null.
+     *
+     * Null covers the socket being down, Home Assistant refusing the command, and the connection
+     * dropping while waiting — three failures with one answer, because every caller does the
+     * same thing with them: fall back to whatever it already had. A command an older instance
+     * has never heard of comes back *refused*, which is exactly the shape that makes this
+     * degrade rather than break.
+     */
+    suspend fun request(frame: (Int) -> String): String? {
+        if (!authenticated) return null
+        val id = nextId()
+        val waiting = CompletableDeferred<String>()
+        pending[id] = waiting
+        send(frame(id))
+        return runCatching { withTimeoutOrNull(REQUEST_TIMEOUT_MS) { waiting.await() } }
+            .getOrNull()
+            .also { pending.remove(id) }
+    }
+
+    /**
+     * Subscribes to one of Home Assistant's own triggers, answering the id to cancel it with.
+     *
+     * Null when the socket is down or the server refused — most likely a trigger type an older
+     * instance has never heard of, which the caller reports into the macro's console rather than
+     * retrying.
+     */
+    suspend fun subscribeTrigger(trigger: String, entityId: String, options: JsonObject): Int? {
+        if (!authenticated) return null
+        val id = nextId()
+        val waiting = CompletableDeferred<String>()
+        pending[id] = waiting
+        triggerSubscriptions[id] = trigger
+        val answered = runCatching {
+            send(HaMessages.subscribeTrigger(id, trigger, entityId, options))
+            withTimeoutOrNull(REQUEST_TIMEOUT_MS) { waiting.await() }
+        }.getOrNull()
+        pending.remove(id)
+        if (answered == null) triggerSubscriptions.remove(id)
+        return id.takeIf { answered != null }
+    }
+
+    /** Drops a trigger subscription taken out by [subscribeTrigger]. */
+    fun unsubscribeTrigger(subscriptionId: Int) {
+        if (triggerSubscriptions.remove(subscriptionId) == null) return
+        send(HaMessages.unsubscribeEvents(nextId(), subscriptionId))
+    }
+
+    private fun failPending(reason: String) {
+        pending.values.forEach { it.completeExceptionally(IllegalStateException(reason)) }
+        pending.clear()
+        triggerSubscriptions.clear()
     }
 
     /**
@@ -118,13 +205,17 @@ internal class HaSocket(
      * when it is not, so arming a trigger before the socket lands is not a lost one.
      */
     fun watch(eventType: String) {
-        if (eventType.isBlank() || !wanted.add(eventType)) return
+        if (!subscriptions.add(eventType)) return
         if (authenticated) subscribe(eventType)
     }
 
-    /** Drops [eventType]. The last node interested in it having gone is the caller's business. */
+    /**
+     * Drops [eventType]. The last node interested in it having gone is the caller's business.
+     *
+     * A no-op for `state_changed` whatever the caller asks: the state cache behind
+     * `value.ha_state` goes on needing it after the last trigger watching it has disarmed.
+     */
     fun unwatch(eventType: String) {
-        if (!wanted.remove(eventType)) return
         val subscriptionId = subscriptions.remove(eventType) ?: return
         send(HaMessages.unsubscribeEvents(nextId(), subscriptionId))
     }
@@ -137,7 +228,7 @@ internal class HaSocket(
 
     private fun subscribe(eventType: String) {
         val id = nextId()
-        subscriptions[eventType] = id
+        subscriptions.assigned(eventType, id)
         send(HaMessages.subscribeEvents(id, eventType))
     }
 
@@ -160,12 +251,14 @@ internal class HaSocket(
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
             authenticated = false
             socket = null
+            failPending(t.message.orEmpty().ifBlank { "The connection to Home Assistant failed" })
             listener.onClosed(t.message.orEmpty(), permanent = false, level = LogLevel.WARN)
         }
 
         override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
             authenticated = false
             socket = null
+            failPending("The connection to Home Assistant closed")
             // A close the server initiated is ordinary — a restart, an update — and is
             // reported at INFO so a nightly Home Assistant upgrade does not file a
             // warning in every macro watching it.
@@ -179,11 +272,21 @@ internal class HaSocket(
         // holds only what has changed since the app started.
         seedId = nextId()
         send(HaMessages.getStates(seedId))
-        subscribe(HaMessages.STATE_CHANGED)
-        wanted.forEach { subscribe(it) }
+        // One pass over everything wanted, `state_changed` included. Subscribing to that one
+        // separately here is what used to deliver it twice to a node watching it — and, worse,
+        // overwrote the first subscription's id so it could never be cancelled at all.
+        subscriptions.onConnect().forEach { subscribe(it) }
     }
 
     private fun onResult(frame: HaMessages.Frame.Result) {
+        pending.remove(frame.id)?.let { waiting ->
+            if (frame.success) {
+                waiting.complete(frame.body)
+            } else {
+                waiting.completeExceptionally(IllegalStateException(frame.error.ifBlank { REFUSED }))
+            }
+            return
+        }
         if (frame.id != seedId) return
         if (frame.success) {
             listener.onReady(HaMessages.statesOf(frame.body))
@@ -195,6 +298,12 @@ internal class HaSocket(
     }
 
     private fun onEvent(frame: HaMessages.Frame.Event) {
+        // A trigger subscription's events carry no `event_type` at all — the message id is what
+        // says which trigger fired, which is why the id is kept rather than only the type.
+        if (triggerSubscriptions.containsKey(frame.id)) {
+            listener.onTriggerFired(frame.id, HaMessages.triggerOf(frame.variables))
+            return
+        }
         if (frame.eventType == HaMessages.STATE_CHANGED) {
             val (previous, current) = HaMessages.stateChange(frame.data)
             // A null `new_state` is an entity that has just been removed. There is
@@ -231,5 +340,16 @@ internal class HaSocket(
 
         private const val PING_INTERVAL_SECONDS = 30L
         private const val CONNECT_TIMEOUT_SECONDS = 10L
+
+        /** What a refusal with no message of its own is called. */
+        private const val REFUSED = "Home Assistant refused the request"
+
+        /**
+         * How long one command waits for its answer.
+         *
+         * Short, because every caller has something to fall back to and a picker that hangs is
+         * worse than one that quietly shows the wider list.
+         */
+        private const val REQUEST_TIMEOUT_MS = 5_000L
     }
 }

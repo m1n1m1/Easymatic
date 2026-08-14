@@ -154,6 +154,7 @@ config_now	Maintenant
 config_port_carries_list	Ce port transporte une liste
 config_port_carries_one	Ce port transporte une seule valeur
 config_set	Définir
+config_show_suggestions	Afficher les suggestions
 config_socket_feed	Alimenter %1$s depuis les données en amont
 config_socket_use_typed_connected	Utiliser la valeur saisie pour %1$s (relié à %2$s)
 config_socket_use_typed_free	Utiliser la valeur saisie pour %1$s (rien de relié)
@@ -258,11 +259,14 @@ grapheditor_zoom_percent	%1$d%%
 ha_access_token	Jeton d'accès de longue durée
 ha_address	Adresse
 ha_all_entities	Entités
+ha_any_state_change	À chaque changement
+ha_any_state_change_hint	Tout changement d’état, sans autre condition
 ha_auth_oauth	Connecté
 ha_auth_token	Jeton de longue durée
 ha_authentication	Authentification
 ha_choose_a_hub	Choisir un Home Assistant
 ha_choose_a_service	Choisir un service
+ha_choose_a_trigger	Choisis ce qui le déclenche
 ha_choose_an_entity	Choisir une entité
 ha_cleartext_warning	Cette adresse n'est pas chiffrée. C'est normal pour un serveur de ton propre réseau ; sur internet, ton jeton circulerait en clair.
 ha_connect_home_assistant	Connecter Home Assistant
@@ -273,9 +277,12 @@ ha_no_hub_yet	Aucun Home Assistant pour l'instant. Ajoutes-en un dans Maison con
 ha_open_profile	Ouvrir la page de profil
 ha_paste	Coller
 ha_replace_token	Remplacer le jeton
+ha_show_everything	Tout afficher
+ha_show_matching	N'afficher que ce qui correspond
 ha_sign_in	Ou connecte-toi à Home Assistant
 ha_test	Tester
 ha_token_steps	Dans Home Assistant, ouvre ton profil, choisis Sécurité, descends jusqu'à Jetons d'accès de longue durée et crées-en un. Il ne s'affiche qu'une fois : copie-le, puis colle-le ici.
+ha_trigger_built_in	N’importe quel changement
 hue_find_your_bridge	Trouve ton pont
 hue_hue_bridge	Pont Hue
 hue_name_your_bridge	Nomme ton pont

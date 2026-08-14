@@ -32,6 +32,9 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.domain.model.schema.conversionTarget
 import com.example.ottomatic.domain.registry.MacroDirectory
+import com.example.ottomatic.domain.registry.generatedTarget
+import com.example.ottomatic.domain.registry.keysScopedBy
+import com.example.ottomatic.domain.registry.withJsonValue
 import com.example.ottomatic.domain.registry.CONVERT_IN
 import com.example.ottomatic.domain.registry.CONVERT_TO_KEY
 import com.example.ottomatic.domain.registry.CONVERT_TYPE_ID
@@ -1032,12 +1035,39 @@ class GraphEditorViewModel(
     fun updateNodeConfig(nodeId: NodeId, key: ConfigKey, value: String) {
         _uiState.update { state ->
             val nodes = state.workflow.nodes.map { node ->
-                if (node.id == nodeId) node.copy(config = node.config + (key to value)) else node
+                if (node.id != nodeId) node else node.copy(config = node.config.after(key, value, node.typeId))
             }
             val workflow = state.workflow.copy(nodes = nodes)
             state.copy(workflow = pruneRetypedEdges(workflow, nodeId, key))
         }
         persist()
+    }
+
+    /**
+     * This config with [key] set, and anything that scoped by it cleared.
+     *
+     * The sibling of [pruneRetypedEdges], which is already a schema-aware follow-up to a config
+     * edit — that one drops edges the edit invalidated, this one drops *values* it invalidated.
+     * Both exist because an edit to one field can silently falsify another, and neither the
+     * validator nor the form can see it: a scoped picker renders the name cached inside its
+     * reference, so a service its entity can no longer accept still reads perfectly.
+     *
+     * Only when the new value is **non-blank and different**. Clearing a hub back to blank means
+     * "any hub", under which the entity beside it is still entirely coherent — blanking it there
+     * would be gratuitous.
+     */
+    @Suppress("ReturnCount") // A generated write, then an edit that clears nothing, then one that does.
+    private fun Map<ConfigKey, String>.after(key: ConfigKey, value: String, typeId: NodeTypeId):
+        Map<ConfigKey, String> {
+        // A generated field has no config key of its own: its value belongs inside another
+        // property's JSON. Routing it here rather than in the widget is what keeps
+        // `WorkflowNode.config` a flat map that nothing else has to learn about.
+        generatedTarget(key)?.let { (backing, name) ->
+            return this + (backing to withJsonValue(this[backing].orEmpty(), name, value))
+        }
+        val updated = this + (key to value)
+        if (value.isBlank() || this[key] == value) return updated
+        return updated - keysScopedBy(typeId, key)
     }
 
     fun setNodeDataInputVisible(nodeId: NodeId, portName: PortName, visible: Boolean) {

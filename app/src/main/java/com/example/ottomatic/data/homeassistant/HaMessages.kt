@@ -6,9 +6,11 @@ import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonObject
 
 /**
  * Every frame the Home Assistant websocket protocol sends and receives.
@@ -28,6 +30,9 @@ import kotlinx.serialization.json.put
  *   connection, and a reconnect is a new one. Carrying a counter across a reconnect
  *   works by accident and then fails the day the server checks.
  */
+// One function per frame the protocol defines, in each direction. The wire sets the count,
+// and splitting it would put half of one conversation in another file.
+@Suppress("TooManyFunctions")
 internal object HaMessages {
 
     private val json = Json { encodeDefaults = true }
@@ -49,6 +54,66 @@ internal object HaMessages {
     fun getStates(id: Int): String = encode {
         put(ID, id)
         put(TYPE, "get_states")
+    }
+
+    /**
+     * Asks for every service, **with its full description**.
+     *
+     * The REST `/api/services` does not carry `target` or the per-field `selector`s — it is a
+     * list of names and descriptions and nothing more. Everything that makes a service form
+     * possible is only here, which is why the app opens a socket to ask rather than using the
+     * endpoint that looks like it would do.
+     */
+    fun getServices(id: Int): String = encode {
+        put(ID, id)
+        put(TYPE, "get_services")
+    }
+
+    /**
+     * Asks which triggers apply to one entity.
+     *
+     * The command Home Assistant's own automation editor uses, and the reason this app stopped
+     * deriving a state list of its own: what belongs on a media player is
+     * `media_player.started_playing` and `media_player.volume_crossed_threshold`, which are not
+     * states at all and which no amount of reading `/api/states` could ever produce.
+     *
+     * `expand_group` asks Home Assistant to look through a group entity to its members, which is
+     * what makes a trigger on "the living room speakers" mean anything.
+     */
+    fun triggersForTarget(id: Int, entityId: String): String = encode {
+        put(ID, id)
+        put(TYPE, "get_triggers_for_target")
+        putJsonObject(TARGET) { put(ENTITY_ID, entityId) }
+        put("expand_group", true)
+    }
+
+    /** Asks which services apply to one entity. [triggersForTarget]'s sibling. */
+    fun servicesForTarget(id: Int, entityId: String): String = encode {
+        put(ID, id)
+        put(TYPE, "get_services_for_target")
+        putJsonObject(TARGET) { put(ENTITY_ID, entityId) }
+        put("expand_group", true)
+    }
+
+    /**
+     * Subscribes to one of Home Assistant's own triggers, so **it** decides when to fire.
+     *
+     * The alternative — watching `state_changed` and re-implementing each trigger's meaning —
+     * is what this replaces, and it could never have been complete: `volume_crossed_threshold`
+     * is not a state transition, and `for` and `behavior` are evaluation rules a client would
+     * have to reproduce exactly to agree with what the user sees in the web interface.
+     *
+     * [options] is passed through as the trigger's own options object — `for`, `behavior` and
+     * whatever else that trigger type declares.
+     */
+    fun subscribeTrigger(id: Int, trigger: String, entityId: String, options: JsonObject): String = encode {
+        put(ID, id)
+        put(TYPE, "subscribe_trigger")
+        putJsonObject(TRIGGER) {
+            put(TRIGGER, trigger)
+            putJsonObject(TARGET) { put(ENTITY_ID, entityId) }
+            options.forEach { (key, value) -> put(key, value) }
+        }
     }
 
     /**
@@ -87,8 +152,22 @@ internal object HaMessages {
         /** The answer to a request, matched by [id]. */
         data class Result(val id: Int, val success: Boolean, val error: String, val body: String) : Frame
 
-        /** An event on a subscription, matched by [id]. */
-        data class Event(val id: Int, val eventType: String, val data: JsonObject, val origin: String) : Frame
+        /**
+         * An event on a subscription, matched by [id].
+         *
+         * [variables] is what a **trigger** subscription delivers, and it is a different key
+         * rather than a different shape of the same one: an event-bus frame carries `data` and
+         * names its type, where a fired trigger carries `variables.trigger` and names nothing —
+         * the message id is the only thing saying which trigger it was. Both are read here so a
+         * caller does not have to know which kind of subscription it is looking at.
+         */
+        data class Event(
+            val id: Int,
+            val eventType: String,
+            val data: JsonObject,
+            val origin: String,
+            val variables: JsonObject = JsonObject(emptyMap()),
+        ) : Frame
 
         /** The server's own keepalive. */
         data object Pong : Frame
@@ -124,6 +203,7 @@ internal object HaMessages {
                     eventType = event.str("event_type"),
                     data = event[DATA] as? JsonObject ?: JsonObject(emptyMap()),
                     origin = event.str("origin"),
+                    variables = event[VARIABLES] as? JsonObject ?: JsonObject(emptyMap()),
                 )
             } ?: Frame.Unknown
             else -> Frame.Unknown
@@ -150,8 +230,36 @@ internal object HaMessages {
         return stateOf("old_state") to stateOf("new_state")
     }
 
+    /**
+     * What a fired trigger says about itself.
+     *
+     * `variables.trigger` on a trigger subscription's event, which carries whatever that
+     * trigger platform chose to publish — `entity_id` and `from_state`/`to_state` for the ones
+     * built on a state change, and rather less for the ones that are not. Empty when the frame
+     * is not shaped that way, which every caller treats as *nothing extra to say* rather than
+     * as a failure: the fact that it fired at all is the part that matters.
+     */
+    fun triggerOf(variables: JsonObject): JsonObject = variables[TRIGGER] as? JsonObject ?: JsonObject(emptyMap())
+
+    /** One string field of a trigger's own payload, or blank. */
+    fun field(obj: JsonObject, key: String): String = obj.str(key)
+
+    /** The `state` of a nested `from_state`/`to_state` object, or blank. */
+    fun nestedState(obj: JsonObject, key: String): String = (obj[key] as? JsonObject)?.str("state").orEmpty()
+
     /** The states in a `get_states` result body. */
     fun statesOf(resultBody: String): List<HaResources.HaState> = HaResources.parseStates(resultBody)
+
+    /**
+     * The plain strings in a result body that is a JSON array of them.
+     *
+     * What `get_triggers_for_target` and `get_services_for_target` answer with: a flat list of
+     * ids such as `media_player.started_playing`. Anything unparseable reads as empty, which
+     * every caller treats as *cannot narrow* rather than *nothing applies*.
+     */
+    fun stringsOf(resultBody: String): List<String> = runCatching {
+        Json.parseToJsonElement(resultBody).jsonArray.mapNotNull { it.jsonPrimitive.contentOrNull }
+    }.getOrDefault(emptyList())
 
     private fun encode(build: kotlinx.serialization.json.JsonObjectBuilder.() -> Unit): String =
         json.encodeToString(JsonObject.serializer(), buildJsonObject(build))
@@ -168,6 +276,10 @@ internal object HaMessages {
     private const val RESULT = "result"
     private const val EVENT = "event"
     private const val DATA = "data"
+    private const val VARIABLES = "variables"
+    private const val TARGET = "target"
+    private const val TRIGGER = "trigger"
+    private const val ENTITY_ID = "entity_id"
 
     /** The event every connection subscribes to, unconditionally. */
     const val STATE_CHANGED = "state_changed"

@@ -15,8 +15,31 @@ sealed interface HaWatchSpec {
     /** Which hub this watch is on. */
     val hubId: String
 
-    /** One entity's state changes. */
-    data class StateWatch(override val hubId: String, val entityId: String) : HaWatchSpec
+    /**
+     * One of Home Assistant's own triggers, evaluated by **it** rather than by us.
+     *
+     * This replaced a watch over `state_changed` with a from/to filter, and the reason is that
+     * the filter could never have been complete. Home Assistant's triggers for a media player
+     * are `started_playing`, `volume_crossed_threshold`, `muted` — things that are not state
+     * transitions at all, and whose `for` and `behavior` rules a client would have to reproduce
+     * exactly to agree with what the user already saw in the web interface. Subscribing means
+     * the answer is the same answer by construction.
+     *
+     * [trigger] is blank for the built-in fallback: plain "any state change", serviced from the
+     * `state_changed` stream the cache already needs. That row exists because an instance too
+     * old for the trigger platform, or an entity for which no integration declares triggers,
+     * would otherwise leave the node with an empty list and nothing to choose.
+     *
+     * [options] is the trigger's own options object as JSON — `for`, `behavior` and whatever
+     * else that type declares — passed through untouched, because what a given trigger accepts
+     * is the server's business and not this app's.
+     */
+    data class StateWatch(
+        override val hubId: String,
+        val entityId: String,
+        val trigger: String = "",
+        val options: String = "",
+    ) : HaWatchSpec
 
     /**
      * One named event type on the hub's event bus.

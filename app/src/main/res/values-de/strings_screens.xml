@@ -567,6 +567,13 @@
     <string name="ha_choose_an_entity">Entität wählen</string>
     <string name="ha_choose_a_service">Dienst wählen</string>
     <string name="ha_choose_a_hub">Home Assistant wählen</string>
+    <string name="config_show_suggestions">Vorschläge anzeigen</string>
+    <string name="ha_show_everything">Alles anzeigen</string>
+    <string name="ha_show_matching">Nur Passendes anzeigen</string>
+    <string name="ha_choose_a_trigger">Auslöser wählen</string>
+    <string name="ha_trigger_built_in">Jede Änderung</string>
+    <string name="ha_any_state_change">Bei jeder Änderung</string>
+    <string name="ha_any_state_change_hint">Jede Zustandsänderung, ohne weitere Bedingungen</string>
     <string name="ha_sign_in">Oder bei Home Assistant anmelden</string>
     <string name="ha_no_hub_yet">Noch kein Home Assistant. Füge unter Smart Home einen hinzu.</string>
 </resources>

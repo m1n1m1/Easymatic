@@ -59,9 +59,14 @@ import com.example.ottomatic.feature.grapheditor.EditorOverlay
  * [accountId] is the sibling field's value. Blank means the node has no account
  * chosen yet — or, for `action.mail_update`, has none to choose — so the overlay
  * asks which account before it can ask the server anything.
+ *
+ * Reached from `SuggestedField` rather than from the form's `when` directly, because a mailbox
+ * list is the one suggestion source that cannot be answered from a registry: it is an
+ * authenticated IMAP `LIST`, so it needs a ViewModel, a spinner and a *rendered* failure. The
+ * declaration a node writes is the same either way — see `@Suggested`.
  */
 @Composable
-internal fun MailFolderField(
+internal fun MailFolderChooser(
     value: String,
     accountId: String,
     onValueChange: (String) -> Unit,

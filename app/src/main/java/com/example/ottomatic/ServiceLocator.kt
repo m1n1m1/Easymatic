@@ -33,6 +33,7 @@ import com.example.ottomatic.data.mail.MailRuntime
 import com.example.ottomatic.data.mail.MailSeenStore
 import com.example.ottomatic.data.GlobalVariableRepository
 import com.example.ottomatic.domain.registry.GlobalVariables
+import com.example.ottomatic.domain.registry.HaCatalog
 import com.example.ottomatic.domain.registry.SmartHomeHubs
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.data.WorkflowRepository
@@ -323,7 +324,7 @@ object ServiceLocator {
             appContext.filesDir,
             KeystoreSecrets(SMART_HOME_KEY_ALIAS),
         )
-        smartHomeSetup = SmartHomeSetup(smartHomeHubRepository)
+        smartHomeSetup = SmartHomeSetup(smartHomeHubRepository, haConnections)
         // Its own keystore alias too, so revoking the AI key never touches mail or
         // a paired bridge — and so an AI key, which the user can regenerate in a
         // browser in ten seconds, is never the reason a light stops working.
@@ -507,7 +508,14 @@ object ServiceLocator {
 
     private fun publishSmartHomeHubs() {
         appScope.launch {
-            smartHomeHubRepository.hubs.collect { hubs -> SmartHomeHubs.hydrate(hubs.map { it.id }) }
+            smartHomeHubRepository.hubs.collect { hubs ->
+                SmartHomeHubs.hydrate(hubs.map { it.id })
+                // A projection and never the hubs themselves: what a config form needs to
+                // narrow a chooser, and nothing else. A hub also holds a sealed credential, an
+                // address and a certificate pin, and a registry anything in `domain` may read
+                // is no place for any of them.
+                HaCatalog.hydrate(hubs.associate { it.id to (it.entities to it.services) })
+            }
         }
     }
 

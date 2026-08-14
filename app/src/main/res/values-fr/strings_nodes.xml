@@ -58,9 +58,8 @@
     <string name="port_trigger_ha_state_out">Sortie</string>
     <string name="port_trigger_ha_state_change">Changement</string>
     <string name="cfg_trigger_ha_state_entity">Entité</string>
-    <string name="cfg_trigger_ha_state_to_state">Passe à</string>
-    <string name="cfg_trigger_ha_state_from_state">Passe de</string>
-    <string name="cfg_trigger_ha_state_include_attribute_changes">Aussi quand seuls ses détails changent</string>
+    <string name="cfg_trigger_ha_state_trigger">Ce qui le déclenche</string>
+    <string name="cfg_trigger_ha_state_for_seconds">Maintenu pendant (secondes)</string>
     <string name="node_trigger_ha_event_name">Événement Home Assistant</string>
     <string name="node_trigger_ha_event_desc">Démarre quand un événement est émis sur le bus d\'événements Home Assistant : un bouton Zigbee, un tag, un événement personnalisé</string>
     <string name="port_trigger_ha_event_out">Sortie</string>
@@ -644,8 +643,9 @@
     <string name="port_action_ha_service_out">Sortie</string>
     <string name="port_action_ha_service_data">Données supplémentaires (JSON)</string>
     <string name="port_action_ha_service_state">état</string>
-    <string name="cfg_action_ha_service_service">Service</string>
+    <string name="cfg_action_ha_service_hub">Home Assistant</string>
     <string name="cfg_action_ha_service_target">Entité</string>
+    <string name="cfg_action_ha_service_service">Service</string>
     <string name="cfg_action_ha_service_data">Données supplémentaires (JSON)</string>
     <string name="node_action_list_add_name">Ajouter à la liste</string>
     <string name="node_action_list_add_desc">Ajoute un élément à une liste nommée, généralement depuis une boucle</string>

@@ -642,8 +642,15 @@ ha_auth_token	Long-lived token
 ha_auth_oauth	Signed in
 ha_authentication	Authentication
 smarthome_sign_in_again	Sign in again
+config_show_suggestions	Show suggestions
+ha_show_everything	Show everything
+ha_show_matching	Show only what matches
 ha_choose_an_entity	Choose an entity
 ha_choose_a_service	Choose a service
 ha_choose_a_hub	Choose a Home Assistant
+ha_choose_a_trigger	Choose what starts it
+ha_trigger_built_in	Any change
+ha_any_state_change	Whenever it changes
+ha_any_state_change_hint	Every state change, with no further conditions
 ha_sign_in	Or sign in to Home Assistant
 ha_no_hub_yet	No Home Assistant yet. Add one in Smart home.

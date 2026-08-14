@@ -501,9 +501,16 @@
     <string name="ha_auth_oauth">已登录</string>
     <string name="ha_authentication">身份验证</string>
     <string name="smarthome_sign_in_again">重新登录</string>
+    <string name="config_show_suggestions">显示建议</string>
+    <string name="ha_show_everything">显示全部</string>
+    <string name="ha_show_matching">仅显示匹配项</string>
     <string name="ha_choose_an_entity">选择实体</string>
     <string name="ha_choose_a_service">选择服务</string>
     <string name="ha_choose_a_hub">选择 Home Assistant</string>
+    <string name="ha_choose_a_trigger">选择触发条件</string>
+    <string name="ha_trigger_built_in">任何变化</string>
+    <string name="ha_any_state_change">每次变化时</string>
+    <string name="ha_any_state_change_hint">任何状态变化，无其他条件</string>
     <string name="ha_sign_in">或登录 Home Assistant</string>
     <string name="ha_no_hub_yet">还没有 Home Assistant。请在智能家居中添加一个。</string>
 </resources>

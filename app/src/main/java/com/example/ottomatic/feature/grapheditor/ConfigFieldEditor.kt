@@ -81,11 +81,12 @@ import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
 import com.example.ottomatic.feature.ai.AiConnectionPickerOverlay
 import com.example.ottomatic.feature.ai.LocalAiConnections
 import com.example.ottomatic.feature.mail.LocalMailAccounts
-import com.example.ottomatic.feature.mail.MailFolderField
 import com.example.ottomatic.feature.mail.MailAccountPickerOverlay
 import com.example.ottomatic.feature.nfc.LocalNfcTags
 import com.example.ottomatic.feature.nfc.NfcTagPickerOverlay
+import com.example.ottomatic.domain.model.HaScope
 import com.example.ottomatic.domain.model.HomeAssistantRef
+import com.example.ottomatic.domain.model.haScopeOf
 import com.example.ottomatic.feature.smarthome.HaPickerMode
 import com.example.ottomatic.feature.smarthome.HaPickerOverlay
 import com.example.ottomatic.feature.smarthome.LightTargetPickerOverlay
@@ -251,14 +252,13 @@ internal fun ConfigFieldEditor(
                     colors = colors,
                 )
             }
-            is ConfigFieldType.MAIL_FOLDER -> {
-                // The only field whose editor depends on another field's value:
-                // folders live on a server, and which server is the account named
-                // beside it. Hence [siblingValue] — everything else here is
-                // answerable from the field alone.
-                MailFolderField(
+            is ConfigFieldType.SUGGESTED -> {
+                // An editable field with a dropdown of whatever its source can offer for the
+                // siblings it named. The suggestions never restrict what may be typed.
+                SuggestedField(
                     value = value,
-                    accountId = siblingValue(ConfigKey(type.accountKey)),
+                    source = type.source,
+                    scope = type.scopedBy.map { siblingValue(ConfigKey(it)) },
                     onValueChange = onValueChange,
                     labelSlot = labelSlot,
                     colors = colors,
@@ -284,6 +284,9 @@ internal fun ConfigFieldEditor(
                 PickerField(
                     kind = type.kind,
                     value = value,
+                    // Read off the siblings the property named. Blank everywhere means "do
+                    // not narrow", never "narrow to nothing" — see HaScope.
+                    scope = haScopeOf(type.scopedBy.map { siblingValue(ConfigKey(it)) }),
                     onValueChange = onValueChange,
                     labelSlot = labelSlot,
                     colors = colors,
@@ -698,6 +701,14 @@ private fun List<PortSpec>.dropping(index: Int): List<PortSpec> =
 private fun PickerField(
     kind: PickerKind,
     value: String,
+    /**
+     * What a sibling field has already decided, for the pickers that honour it.
+     *
+     * Defaulted, so the eleven unscoped branches below are unchanged — which is what makes
+     * this one parameter rather than "every branch's signature", the cost the rule against it
+     * used to name.
+     */
+    scope: HaScope = HaScope(),
     onValueChange: (String) -> Unit,
     labelSlot: @Composable () -> Unit,
     colors: TextFieldColors,
@@ -722,11 +733,12 @@ private fun PickerField(
             SmartHomePickerField(value, onValueChange, SmartHomeTargetKind.LIGHT, labelSlot, colors)
         PickerKind.LIGHT_SCENE ->
             SmartHomePickerField(value, onValueChange, SmartHomeTargetKind.SCENE, labelSlot, colors)
-        // The three Home Assistant kinds share one field and one overlay, on the app
-        // and light kinds' precedent: same hub, same snapshot, three lists in it.
-        PickerKind.HA_ENTITY -> HaPickerField(value, onValueChange, HaPickerMode.ENTITY, labelSlot, colors)
-        PickerKind.HA_SERVICE -> HaPickerField(value, onValueChange, HaPickerMode.SERVICE, labelSlot, colors)
-        PickerKind.HA_HUB -> HaPickerField(value, onValueChange, HaPickerMode.HUB, labelSlot, colors)
+        // The four Home Assistant kinds share one field and one overlay, on the app
+        // and light kinds' precedent: same hub, same snapshot, four lists in it.
+        PickerKind.HA_ENTITY -> HaPickerField(value, onValueChange, HaPickerMode.ENTITY, scope, labelSlot, colors)
+        PickerKind.HA_SERVICE -> HaPickerField(value, onValueChange, HaPickerMode.SERVICE, scope, labelSlot, colors)
+        PickerKind.HA_TRIGGER -> HaPickerField(value, onValueChange, HaPickerMode.TRIGGER, scope, labelSlot, colors)
+        PickerKind.HA_HUB -> HaPickerField(value, onValueChange, HaPickerMode.HUB, scope, labelSlot, colors)
     }
 }
 
@@ -745,6 +757,7 @@ private fun HaPickerField(
     value: String,
     onValueChange: (String) -> Unit,
     mode: HaPickerMode,
+    scope: HaScope,
     labelSlot: @Composable () -> Unit,
     colors: TextFieldColors,
 ) {
@@ -754,6 +767,9 @@ private fun HaPickerField(
 
     PickerFieldChrome(
         display = when {
+            // The one kind whose value is not a reference, and the one whose blank means
+            // something: "whenever it changes" is a real choice, not an unfilled field.
+            mode == HaPickerMode.TRIGGER -> value.ifBlank { stringResource(R.string.ha_any_state_change) }
             value.isBlank() -> ""
             parsed == null -> value
             hubs != null && hubs.hubById(parsed.hubId) == null ->
@@ -775,6 +791,7 @@ private fun HaPickerField(
         HaPickerOverlay(
             viewModel = hubs,
             mode = mode,
+            scope = scope,
             selected = value,
             onPick = { spec ->
                 onValueChange(spec)

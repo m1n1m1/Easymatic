@@ -10,6 +10,7 @@ import com.example.ottomatic.engine.trigger.HaEventTriggerConfig
 import com.example.ottomatic.engine.trigger.HaStateTriggerConfig
 import com.example.ottomatic.engine.trigger.matches
 import com.example.ottomatic.engine.trigger.matchesEvent
+import com.example.ottomatic.engine.trigger.triggerOptions
 import com.example.ottomatic.engine.value.HaStateValue
 import com.example.ottomatic.engine.value.HaStateValueConfig
 import com.example.ottomatic.domain.model.items.HaEvent
@@ -197,31 +198,45 @@ class HaNodesTest {
     )
 
     /**
-     * The default that decides whether the node is usable. Home Assistant fires
-     * `state_changed` for attribute-only changes too, so without this "when the porch
-     * light comes on" fires every time anything about that light moves.
+     * The one filter left, and the reason the built-in row is usable at all. Home Assistant
+     * fires `state_changed` for attribute-only changes too, so without this "whenever it
+     * changes" fires every time anything about a dimmed light moves.
      */
     @Test
-    fun `an attribute-only change is dropped by default and kept when asked for`() {
-        val unchanged = change(state = "on", previous = "on")
-
-        assertFalse(matches(HaStateTriggerConfig(), unchanged))
-        assertTrue(matches(HaStateTriggerConfig(includeAttributeChanges = true), unchanged))
-    }
-
-    @Test
-    fun `a blank filter matches any transition`() {
+    fun `the built-in watch drops an attribute-only change and keeps a real transition`() {
+        assertFalse(matches(HaStateTriggerConfig(), change(state = "on", previous = "on")))
         assertTrue(matches(HaStateTriggerConfig(), change(state = "on", previous = "off")))
     }
 
+    /**
+     * A named trigger was evaluated by Home Assistant, which already applied every rule the
+     * user set. Filtering it again here is exactly what this node stopped doing — and it would
+     * silently drop `media_player.volume_changed`, which reports no state transition at all.
+     */
     @Test
-    fun `the to and from filters are matched case-insensitively`() {
-        val opened = change(state = "on", previous = "off")
+    fun `a named trigger is never filtered again`() {
+        val config = HaStateTriggerConfig(trigger = "media_player.volume_changed")
 
-        assertTrue(matches(HaStateTriggerConfig(toState = "ON"), opened))
-        assertTrue(matches(HaStateTriggerConfig(fromState = " off "), opened))
-        assertFalse(matches(HaStateTriggerConfig(toState = "off"), opened))
-        assertFalse(matches(HaStateTriggerConfig(fromState = "on"), opened))
+        assertTrue(matches(config, change(state = "playing", previous = "playing")))
+    }
+
+    /**
+     * A trigger that declares no `for` option **refuses the whole subscription** rather than
+     * ignoring it, so an unasked-for option would stop the node firing at all — silently, and
+     * worse than the problem the field solves.
+     */
+    @Test
+    fun `for is sent only when it is set, in Home Assistant's own clock format`() {
+        assertEquals("", triggerOptions(HaStateTriggerConfig(trigger = "binary_sensor.opened")))
+        assertEquals("", triggerOptions(HaStateTriggerConfig(forSeconds = 90)))
+        assertEquals(
+            """{"for":"00:01:30"}""",
+            triggerOptions(HaStateTriggerConfig(trigger = "binary_sensor.opened", forSeconds = 90)),
+        )
+        assertEquals(
+            """{"for":"01:00:05"}""",
+            triggerOptions(HaStateTriggerConfig(trigger = "binary_sensor.opened", forSeconds = 3605)),
+        )
     }
 
     // ---- trigger.ha_event filters ----

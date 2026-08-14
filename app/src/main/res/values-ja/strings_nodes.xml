@@ -58,9 +58,8 @@
     <string name="port_trigger_ha_state_out">出力</string>
     <string name="port_trigger_ha_state_change">変化</string>
     <string name="cfg_trigger_ha_state_entity">エンティティ</string>
-    <string name="cfg_trigger_ha_state_to_state">変化後</string>
-    <string name="cfg_trigger_ha_state_from_state">変化前</string>
-    <string name="cfg_trigger_ha_state_include_attribute_changes">詳細だけが変わったときも</string>
+    <string name="cfg_trigger_ha_state_trigger">開始のきっかけ</string>
+    <string name="cfg_trigger_ha_state_for_seconds">継続時間（秒）</string>
     <string name="node_trigger_ha_event_name">Home Assistant のイベント</string>
     <string name="node_trigger_ha_event_desc">Home Assistant のイベントバスでイベントが発生したときに開始します — Zigbee ボタン、タグ、独自のイベント</string>
     <string name="port_trigger_ha_event_out">出力</string>
@@ -644,8 +643,9 @@
     <string name="port_action_ha_service_out">出力</string>
     <string name="port_action_ha_service_data">追加データ（JSON）</string>
     <string name="port_action_ha_service_state">状態</string>
-    <string name="cfg_action_ha_service_service">サービス</string>
+    <string name="cfg_action_ha_service_hub">Home Assistant</string>
     <string name="cfg_action_ha_service_target">エンティティ</string>
+    <string name="cfg_action_ha_service_service">サービス</string>
     <string name="cfg_action_ha_service_data">追加データ（JSON）</string>
     <string name="node_action_list_add_name">リストに追加</string>
     <string name="node_action_list_add_desc">指定したリストに要素を追加します。通常はループの中で使います</string>

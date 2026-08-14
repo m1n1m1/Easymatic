@@ -501,9 +501,16 @@
     <string name="ha_auth_oauth">サインイン済み</string>
     <string name="ha_authentication">認証</string>
     <string name="smarthome_sign_in_again">再度サインイン</string>
+    <string name="config_show_suggestions">候補を表示</string>
+    <string name="ha_show_everything">すべて表示</string>
+    <string name="ha_show_matching">一致するものだけ表示</string>
     <string name="ha_choose_an_entity">エンティティを選択</string>
     <string name="ha_choose_a_service">サービスを選択</string>
     <string name="ha_choose_a_hub">Home Assistant を選択</string>
+    <string name="ha_choose_a_trigger">開始のきっかけを選ぶ</string>
+    <string name="ha_trigger_built_in">すべての変化</string>
+    <string name="ha_any_state_change">変化するたび</string>
+    <string name="ha_any_state_change_hint">状態が変わるたび、条件なし</string>
     <string name="ha_sign_in">または Home Assistant にサインイン</string>
     <string name="ha_no_hub_yet">Home Assistant がまだありません。スマートホームで追加してください。</string>
 </resources>

@@ -7,7 +7,8 @@ import com.example.ottomatic.domain.model.MailRef
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.Label
-import com.example.ottomatic.domain.model.config.MailFolder
+import com.example.ottomatic.domain.model.config.Suggested
+import com.example.ottomatic.domain.model.config.SuggestionSource
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.dataOut
@@ -33,7 +34,7 @@ data class MailUpdateConfig(
     // reference rather than from a field, so the chooser asks which account
     // first. Blank is the honest answer to "which sibling holds it?" here.
     @Label("Move to folder")
-    @MailFolder(accountKey = "")
+    @Suggested(SuggestionSource.MAIL_FOLDER)
     @VisibleWhen("op", "MOVE")
     @Wired
     val targetFolder: String = "",

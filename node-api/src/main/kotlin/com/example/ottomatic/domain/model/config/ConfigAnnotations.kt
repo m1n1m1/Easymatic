@@ -47,11 +47,90 @@ annotation class Multiline
  * library or on the device), which is exactly what distinguishes this from an
  * enum: [Wired] and enum options are fixed at declaration time, a picker's are
  * not.
+ *
+ * **[scopedBy] names sibling properties that narrow this one.** A picker so declared offers
+ * only what makes sense beside what those fields already hold: an entity picker scoped by a hub
+ * lists that hub's entities, and a service picker scoped by an entity lists the services that
+ * entity accepts.
+ *
+ * This is the mechanism `@MailFolder` invented for one field and never generalised, and the
+ * rule it replaces — *"a picker receives only its kind"* — was declined on two premises that
+ * have both expired. It was *"for one caller"*, which is now several. And a second field naming
+ * a hub was said to make an **incoherent state representable** — hub A beside an entity from
+ * hub B — which is true of two *unrelated* fields and is precisely what scoping cures: choosing
+ * hub A is what makes hub B's entities unofferable. Scoping is that argument's goal reached by
+ * the other road, and the hub still lives inside every reference, so a scoping field is never
+ * the authority on which hub a reference belongs to.
+ *
+ * An `Array<String>` rather than one key because a field may be narrowed by more than one
+ * sibling, and because [optional] must follow it. [VisibleWhen] already proves `@SerialInfo`
+ * carries a string array through the descriptor.
+ *
+ * **A scoped list is by definition not complete**, which matters because a read-only picker is
+ * justified on exactly the opposite property — that the answer set is knowable and complete. So
+ * a scoped chooser must always offer a way back to the unscoped list. Without that the price of
+ * one wrong metadata field in somebody's custom integration is a service unreachable by any
+ * means at all.
+ *
+ * [optional] marks a picker whose **blank is a real answer** rather than an unfinished one, so
+ * the Problems panel stops reporting it. `action.ha_service`'s entity is the case: a service
+ * that acts on nothing takes no entity, and every such node was being badged for it.
  */
 @SerialInfo
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class Picker(val kind: PickerKind)
+annotation class Picker(
+    val kind: PickerKind,
+    val scopedBy: Array<String> = [],
+    val optional: Boolean = false,
+)
+
+/**
+ * Renders the `String` property as an **editable field with a dropdown of suggestions**.
+ *
+ * The shape for an answer set that is **known but not closed**, which is the case no other
+ * widget here covers. [Picker] is for a set that is complete — a mistyped value there names
+ * nothing, so typing is refused outright. A plain text field is for a set nothing knows. This
+ * is the middle: a `binary_sensor` reports `on` or `off` and a chooser should say so, but a
+ * `sensor` reports `21.4` and no list will ever contain it, and **the same field has to serve
+ * both** because which one it is depends on a sibling field's value rather than on the
+ * declaration.
+ *
+ * `@MailFolder` was this idea built for one field. It is now this, and mail is one of its
+ * users — which is the check that this generalised rather than merely being added.
+ *
+ * [source] says where the suggestions come from and [scopedBy] which sibling fields decide.
+ * **Neither ever restricts what may be typed**: the suggestions are a convenience over a wider
+ * answer set, exactly as `@WifiNetwork`'s scan is, and a value nothing suggested is accepted
+ * without comment.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class Suggested(
+    val source: SuggestionSource,
+    val scopedBy: Array<String> = [],
+)
+
+/**
+ * Where a [Suggested] property's suggestions come from.
+ *
+ * Each member needs a branch in `Suggestions`' exhaustive `when`, and **that is the only place
+ * a new one is registered** — not the annotation, not the schema, not the form's widget. A
+ * future integration adding one touches a single file, which is the test of whether this
+ * mechanism is generic rather than shaped around its first user.
+ *
+ * Some sources are answerable locally from a hydrated registry and some are not — a mailbox
+ * list is an authenticated network round trip. The *declaration* is uniform either way, so a
+ * node author never has to know which kind theirs is.
+ */
+enum class SuggestionSource {
+    /** The attribute names one Home Assistant entity publishes. */
+    HA_ENTITY_ATTRIBUTE,
+
+    /** The mailboxes on one account. Fetched over IMAP rather than from a registry. */
+    MAIL_FOLDER,
+}
 
 /**
  * The chooser a [Picker] property opens, and therefore what its stored string
@@ -254,41 +333,30 @@ enum class PickerKind {
      * exactly where nothing else determines it.**
      */
     HA_HUB,
+
+    /**
+     * One of Home Assistant's own triggers for the entity in scope —
+     * `media_player.started_playing`, `binary_sensor.opened`.
+     *
+     * **Not a [com.example.ottomatic.domain.model.HomeAssistantRef]**, and the exception is
+     * worth stating: every other picker here stores hub, id and cached name together because
+     * nothing else in the node says which hub the id belongs to. A trigger is always scoped by
+     * an entity field beside it, which already carries both — so wrapping it would record the
+     * same two facts twice and let them disagree. The bare id is stored, exactly as Home
+     * Assistant names it.
+     *
+     * Read-only for [HA_ENTITY]'s reason, and the answer set here is narrower than complete
+     * rather than wider: it is what the instance says applies to *this* entity. That is not
+     * something a person could type from memory even in principle — nothing publishes the list
+     * but the server — which is the strongest form the identifier-picker argument takes.
+     *
+     * **Blank is an answer**, unlike every other picker in this family: it means the built-in
+     * "whenever it changes", which is what the node did before it had a trigger list and what
+     * an instance with nothing to offer falls back to.
+     */
+    HA_TRIGGER,
 }
 
-/**
- * Renders the `String` property as a mailbox field: a text field the user can type
- * into, with a button beside it that lists the folders on the mail server.
- *
- * The **fourth** editable-with-a-chooser annotation, and it has to answer the bar
- * [WifiNetwork] sets for exactly that proposal. It clears it, but by a different
- * route than the other three, and the difference is worth stating.
- *
- * A folder name is *nominally* legible, which was the original argument for
- * leaving it a plain text field — `INBX` reads back as obviously wrong where a
- * mistyped UUID does not. That argument turns out to be false in the case that
- * matters most: Gmail's folders are bracketed *and localised*, so a German account
- * wants `[Gmail]/Alle Nachrichten` and nobody can be expected to guess the
- * spelling, the brackets or the language. Legible after the fact is not the same
- * as typeable in advance.
- *
- * So why not a [Picker], read-only? Because the option set lives on a server
- * reached over a network, behind a password that may be wrong and a radio that may
- * be off. A read-only field would be unfillable in precisely the situations where
- * the account is misconfigured — which is [WifiNetwork]'s "a chooser can only offer
- * what is reachable right now" in its second form. The difference from Wi-Fi is
- * that here the thing usually *is* reachable, which is what makes the chooser worth
- * having; the typing is the fallback rather than the main road.
- *
- * [accountKey] names the sibling config property holding the account whose folders
- * to list. When that property does not exist, or is blank, the chooser asks which
- * account first — which is what `action.mail_update` needs, since its account
- * arrives inside a wired message reference rather than from a field.
- */
-@SerialInfo
-@Target(AnnotationTarget.PROPERTY)
-@Retention(AnnotationRetention.RUNTIME)
-annotation class MailFolder(val accountKey: String = "accountId")
 
 /**
  * Renders the `String` property as a phone-number field: a text field the user can

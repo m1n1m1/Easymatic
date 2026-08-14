@@ -567,9 +567,16 @@
     <string name="ha_auth_oauth">Signed in</string>
     <string name="ha_authentication">Authentication</string>
     <string name="smarthome_sign_in_again">Sign in again</string>
+    <string name="config_show_suggestions">Show suggestions</string>
+    <string name="ha_show_everything">Show everything</string>
+    <string name="ha_show_matching">Show only what matches</string>
     <string name="ha_choose_an_entity">Choose an entity</string>
     <string name="ha_choose_a_service">Choose a service</string>
     <string name="ha_choose_a_hub">Choose a Home Assistant</string>
+    <string name="ha_choose_a_trigger">Choose what starts it</string>
+    <string name="ha_trigger_built_in">Any change</string>
+    <string name="ha_any_state_change">Whenever it changes</string>
+    <string name="ha_any_state_change_hint">Every state change, with no further conditions</string>
     <string name="ha_sign_in">Or sign in to Home Assistant</string>
     <string name="ha_no_hub_yet">No Home Assistant yet. Add one in Smart home.</string>
 </resources>

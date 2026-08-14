@@ -14,7 +14,7 @@ import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.PhoneNumber
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
-import com.example.ottomatic.domain.model.config.MailFolder
+import com.example.ottomatic.domain.model.config.Suggested
 import com.example.ottomatic.domain.model.config.Ports
 import com.example.ottomatic.domain.model.config.TimeOfDay
 import com.example.ottomatic.domain.model.config.VisibleWhen
@@ -132,13 +132,13 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                     type = formTypeOf(
                         element = element,
                         multiline = annotations.any { it is Multiline },
-                        picker = annotations.filterIsInstance<Picker>().firstOrNull()?.kind,
+                        picker = annotations.filterIsInstance<Picker>().firstOrNull(),
                         ports = annotations.any { it is Ports },
                         phone = annotations.any { it is PhoneNumber },
                         timeOfDay = annotations.any { it is TimeOfDay },
                         wifi = annotations.any { it is WifiNetwork },
                         contactName = annotations.any { it is ContactName },
-                        mailFolder = annotations.filterIsInstance<MailFolder>().firstOrNull(),
+                        suggested = annotations.filterIsInstance<Suggested>().firstOrNull(),
                         apiToken = annotations.any { it is ApiToken },
                         key = key,
                     ),
@@ -159,13 +159,13 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
     private fun formTypeOf(
         element: SerialDescriptor,
         multiline: Boolean,
-        picker: PickerKind?,
+        picker: Picker?,
         ports: Boolean,
         phone: Boolean,
         timeOfDay: Boolean,
         wifi: Boolean,
         contactName: Boolean,
-        mailFolder: MailFolder?,
+        suggested: Suggested?,
         apiToken: Boolean,
         key: String,
     ): ConfigFieldType<*> {
@@ -175,18 +175,18 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             // Counted rather than spelled out as a chain of `&&`: the list is the same
             // one [checkWidgetAnnotations] ends with, and a chain here grew by one
             // term per widget until it was the most complex thing in the function.
-            val widgets = widgetFlags(picker, ports, phone, timeOfDay, wifi, contactName, mailFolder, apiToken)
+            val widgets = widgetFlags(picker, ports, phone, timeOfDay, wifi, contactName, suggested, apiToken)
             check(widgets.none { it }) {
                 "Config property '${descriptor.serialName}.$key' is annotated with a widget but is a date; " +
                     "dates have their own picker, so the annotation is redundant"
             }
             return ConfigFieldType.DATE_TIME
         }
-        checkWidgetAnnotations(element, picker, ports, phone, timeOfDay, wifi, contactName, mailFolder, apiToken, key)
+        checkWidgetAnnotations(element, picker, ports, phone, timeOfDay, wifi, contactName, suggested, apiToken, key)
         return when (element.kind) {
             SerialKind.ENUM -> ConfigFieldType.ENUM(enumOptions(element))
             PrimitiveKind.STRING, PrimitiveKind.CHAR ->
-                stringFormType(multiline, picker, ports, phone, timeOfDay, wifi, contactName, mailFolder, apiToken)
+                stringFormType(multiline, picker, ports, phone, timeOfDay, wifi, contactName, suggested, apiToken)
             PrimitiveKind.INT, PrimitiveKind.LONG, PrimitiveKind.SHORT, PrimitiveKind.BYTE -> ConfigFieldType.INT
             PrimitiveKind.BOOLEAN -> ConfigFieldType.BOOL
             PrimitiveKind.DOUBLE, PrimitiveKind.FLOAT -> ConfigFieldType.DOUBLE
@@ -208,23 +208,23 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
     @Suppress("LongParameterList") // One parameter per widget annotation; they are independent.
     private fun stringFormType(
         multiline: Boolean,
-        picker: PickerKind?,
+        picker: Picker?,
         ports: Boolean,
         phone: Boolean,
         timeOfDay: Boolean,
         wifi: Boolean,
         contactName: Boolean,
-        mailFolder: MailFolder?,
+        suggested: Suggested?,
         apiToken: Boolean,
     ): ConfigFieldType<String> = when {
         ports -> ConfigFieldType.PORT_LIST
         apiToken -> ConfigFieldType.API_TOKEN
-        picker != null -> ConfigFieldType.PICKER(picker)
+        picker != null -> ConfigFieldType.PICKER(picker.kind, picker.scopedBy.toList(), picker.optional)
         phone -> ConfigFieldType.PHONE
         timeOfDay -> ConfigFieldType.TIME_OF_DAY
         wifi -> ConfigFieldType.WIFI_NETWORK
         contactName -> ConfigFieldType.CONTACT_NAME
-        mailFolder != null -> ConfigFieldType.MAIL_FOLDER(mailFolder.accountKey)
+        suggested != null -> ConfigFieldType.SUGGESTED(suggested.source, suggested.scopedBy.toList())
         multiline -> ConfigFieldType.MULTILINE
         else -> ConfigFieldType.STR
     }
@@ -238,13 +238,13 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
     @Suppress("LongParameterList") // Mirrors [formTypeOf]; one parameter per widget annotation.
     private fun checkWidgetAnnotations(
         element: SerialDescriptor,
-        picker: PickerKind?,
+        picker: Picker?,
         ports: Boolean,
         phone: Boolean,
         timeOfDay: Boolean,
         wifi: Boolean,
         contactName: Boolean,
-        mailFolder: MailFolder?,
+        suggested: Suggested?,
         apiToken: Boolean,
         key: String,
     ) {
@@ -268,8 +268,8 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             "Config property '${descriptor.serialName}.$key' is annotated @WifiNetwork but is a " +
                 "${element.kind}; a network field stores an SSID, so it must be a String"
         }
-        check(mailFolder == null || element.kind == PrimitiveKind.STRING) {
-            "Config property '${descriptor.serialName}.$key' is annotated @MailFolder but is a " +
+        check(suggested == null || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @Suggested but is a " +
                 "${element.kind}; a mailbox field stores a folder name, so it must be a String"
         }
         check(!contactName || element.kind == PrimitiveKind.STRING) {
@@ -280,11 +280,11 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             "Config property '${descriptor.serialName}.$key' is annotated @ApiToken but is a " +
                 "${element.kind}; a key is generated text, so it must be a String"
         }
-        val widgets = widgetFlags(picker, ports, phone, timeOfDay, wifi, contactName, mailFolder, apiToken)
+        val widgets = widgetFlags(picker, ports, phone, timeOfDay, wifi, contactName, suggested, apiToken)
             .count { it }
         check(widgets <= 1) {
             "Config property '${descriptor.serialName}.$key' is annotated with $widgets widgets " +
-                "(@Picker, @Ports, @PhoneNumber, @TimeOfDay, @WifiNetwork, @ContactName, @MailFolder, @ApiToken); " +
+                "(@Picker, @Ports, @PhoneNumber, @TimeOfDay, @WifiNetwork, @ContactName, @Suggested, @ApiToken); " +
                 "a property has one editor"
         }
     }
@@ -299,16 +299,16 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
      */
     @Suppress("LongParameterList") // Mirrors [formTypeOf]; one parameter per widget annotation.
     private fun widgetFlags(
-        picker: PickerKind?,
+        picker: Picker?,
         ports: Boolean,
         phone: Boolean,
         timeOfDay: Boolean,
         wifi: Boolean,
         contactName: Boolean,
-        mailFolder: MailFolder?,
+        suggested: Suggested?,
         apiToken: Boolean,
     ): List<Boolean> =
-        listOf(picker != null, ports, phone, timeOfDay, wifi, contactName, mailFolder != null, apiToken)
+        listOf(picker != null, ports, phone, timeOfDay, wifi, contactName, suggested != null, apiToken)
 
     private fun enumOptions(element: SerialDescriptor): List<ConfigOption> {
         val options = enumConfigOptions(element)

@@ -5,6 +5,7 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.PickerKind
+import com.example.ottomatic.domain.model.config.SuggestionSource
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -114,21 +115,26 @@ class PickerFieldsTest {
      * field first. Gmail's are bracketed and localised — `[Gmail]/Alle Nachrichten`
      * — so the chooser is what makes it usable, and the field stays editable
      * because listing folders needs a network and a working password.
+     *
+     * It is now declared with the **generic** `@Suggested` rather than a bespoke
+     * `@MailFolder`, and that is the whole point of the migration: mail was the one field
+     * that had this shape, and being able to express it in the general mechanism without
+     * losing anything is what shows the mechanism is not shaped around its newer users.
      */
     @Test
     fun `a mailbox is typed with a folder list beside it`() {
         assertEquals(
-            ConfigFieldType.MAIL_FOLDER(accountKey = "accountId"),
+            ConfigFieldType.SUGGESTED(SuggestionSource.MAIL_FOLDER, listOf("accountId")),
             fieldType("trigger.mail", "folder"),
         )
         assertEquals(
-            ConfigFieldType.MAIL_FOLDER(accountKey = "accountId"),
+            ConfigFieldType.SUGGESTED(SuggestionSource.MAIL_FOLDER, listOf("accountId")),
             fieldType("action.fetch_mail", "folder"),
         )
         // No sibling holds this node's account — it arrives inside the wired
         // message reference — so the chooser asks which account first.
         assertEquals(
-            ConfigFieldType.MAIL_FOLDER(accountKey = ""),
+            ConfigFieldType.SUGGESTED(SuggestionSource.MAIL_FOLDER),
             fieldType("action.mail_update", "targetFolder"),
         )
     }

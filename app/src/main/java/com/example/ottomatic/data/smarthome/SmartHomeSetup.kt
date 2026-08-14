@@ -7,6 +7,7 @@ import com.example.ottomatic.data.hue.HueResources
 import com.example.ottomatic.data.hue.HueTransport
 import com.example.ottomatic.data.hue.PairingOutcome
 import com.example.ottomatic.data.homeassistant.HaConnectResult
+import com.example.ottomatic.data.homeassistant.HaConnections
 import com.example.ottomatic.data.homeassistant.HaSetup
 import com.example.ottomatic.domain.model.SmartHomeHub
 import com.example.ottomatic.domain.model.SmartHomeKind
@@ -55,9 +56,38 @@ sealed interface PairingStep {
  */
 // Two vendors' setup flows plus the shared refresh; the vendors set the count.
 @Suppress("TooManyFunctions")
-class SmartHomeSetup(private val hubs: SmartHomeHubRepository) {
+class SmartHomeSetup(
+    private val hubs: SmartHomeHubRepository,
+    /**
+     * The live sockets, for the three things only they can answer.
+     *
+     * Nullable so a test can build this class without a connection manager, and because the
+     * three callers below all degrade to *cannot narrow* rather than failing — which is the
+     * same answer a socket that is simply down gives.
+     */
+    private val connections: HaConnections? = null,
+) {
 
     private val homeAssistant = HaSetup(hubs)
+
+    /**
+     * Which of Home Assistant's triggers apply to one entity.
+     *
+     * Asked of the instance, over the socket, because there is no other way to know: a media
+     * player's triggers are `started_playing` and `volume_crossed_threshold`, which are not
+     * states, are not services, and appear in no REST endpoint. This is the command the web
+     * interface's own automation editor sends, so what the picker lists is what the user has
+     * already seen there.
+     *
+     * Empty means **cannot narrow** — the socket is down, or the instance predates the trigger
+     * platform — never *nothing applies*.
+     */
+    suspend fun haTriggersFor(hubId: String, entityId: String): List<String> =
+        connections?.triggersFor(hubId, entityId).orEmpty()
+
+    /** Which services apply to one entity. [haTriggersFor]'s sibling, and its reasoning. */
+    suspend fun haServicesFor(hubId: String, entityId: String): List<String> =
+        connections?.servicesFor(hubId, entityId).orEmpty()
 
     /**
      * Checks a Home Assistant address and token together, answering what is wrong or
@@ -141,7 +171,7 @@ class SmartHomeSetup(private val hubs: SmartHomeHubRepository) {
     suspend fun refresh(hubId: String): String? =
         when (hubs.get(hubId)?.kind) {
             null -> "That hub has been removed"
-            SmartHomeKind.HOME_ASSISTANT -> homeAssistant.refresh(hubId)
+            SmartHomeKind.HOME_ASSISTANT -> homeAssistant.refresh(hubId, connections?.allServices(hubId))
             SmartHomeKind.HUE -> refreshHue(hubId)
         }
 

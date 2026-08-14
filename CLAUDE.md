@@ -184,7 +184,9 @@ Lights are three **actions and no triggers** — `action.light_control`, `action
 
 The typeIds say **`light`, not `hue`**, and that is not renameable later — a workflow persists the string and an older schema is discarded rather than migrated. Nothing above `data/hue/` is vendor-shaped: `SmartHome` (`core/service/`) speaks percent brightness, sRGB and kelvin where the bridge speaks CIE xy and mireds. "Philips Hue" lives in the *description*, which `NodeSuggestions` searches, so palette search still finds them. **That bet has now been collected**: Home Assistant lights, areas and scenes drive these same three nodes with nothing edited in `core/`, `engine/` or the nodes themselves — see **Home Assistant** below for what it did and did not cost.
 
-**A target is one spec, never two fields.** `SmartHomeRef` (`domain/model/`) is `sh:<hubId>|<kind>|<rid>|<name>`, split with a limit of four so a scene called "Dinner | warm" survives. A hub picker beside a target picker — the `@MailFolder(accountKey = …)` mechanism — would make an incoherent state *representable*: hub A selected with a light belonging to hub B, nothing detecting it. It would also thread `siblingValue` through `PickerField` for one caller. And a hub is not an independent decision the way a mail account is — choosing "Kitchen ceiling" already determines the bridge. The **name is cached inside the spec**, which is `PhoneRef`'s move for a stronger reason: resolving this id means a round trip to a device that may be unplugged, so the cached name is what lets a config form render "Kitchen ceiling" with no library in scope and the bridge dark. Display-only, never resolved against.
+**A light target is one spec, never two fields.** `SmartHomeRef` (`domain/model/`) is `sh:<hubId>|<kind>|<rid>|<name>`, split with a limit of four so a scene called "Dinner | warm" survives. The **name is cached inside the spec**, which is `PhoneRef`'s move for a stronger reason: resolving this id means a round trip to a device that may be unplugged, so the cached name is what lets a config form render "Kitchen ceiling" with no library in scope and the bridge dark. Display-only, never resolved against.
+
+This paragraph used to give three reasons against a hub field beside a target field, and **two of them have since expired** — which is worth knowing because the reasoning, not the conclusion, is what generalises. It said a hub picker beside a target picker makes an incoherent state *representable* (hub A with a light from hub B); that is true of two *unrelated* fields, and is exactly what **scoping** cures, since choosing hub A is what makes hub B's entities unofferable. It said threading `siblingValue` through `PickerField` was "for one caller"; there are several now. What survives is the third: a hub is not an independent decision the way a mail account is — choosing "Kitchen ceiling" already determines the bridge — so a hub field on a *light* node would be a mandatory always-one-option row. The generalised rule is **a scoping field earns its place exactly where nothing else determines it**, which is `action.ha_service` and not the light nodes. See **Scoped config fields** below.
 
 **"Only lights already on"** (`LightControlConfig.onlyLightsOn` → `LightCommand.onlyIfOn`) is the opt-out of the deliberate default that setting a value also switches the light on — right for "dim the lamp to 30 %", wrong for "warm the living room down for the evening", which should not light four lamps nobody had switched on. It is offered for the three value-setting operations only, because an explicit turn-on that skipped a light for being off would do nothing at all, and it is deliberately *not* restricted to groups: the same request with one light in it is still a sensible one. It cannot be one request — a `grouped_light` write reaches every light in the group with no "except the ones that are off" — so `data/hue/` reads the states in one GET and then writes **one light at a time**, paced. The group's member light rids are precomputed into `SmartHomeResource.memberRids` at snapshot time, two hops for a room (children are *devices*; a light names the device that owns it) and one for a zone.
 
@@ -199,6 +201,86 @@ A **room's `rid` is its `grouped_light` service's, not the room's own**, resolve
 **The resource snapshot never refreshes on an execution path.** It lives on the hub, is read synchronously in the repository constructor, and refreshes after pairing, when the library screen composes, on an explicit Refresh, and when a picker opens. A node PUTs to the rid it was handed: zero lookups. `RoutingSmartHome` serialises commands **per hub** and then waits `SmartHomeVendor.commandSpacingMs`, which is not politeness — a Hue bridge silently drops beyond roughly ten light commands a second, so a `for-each` over twenty lights would light twelve and report success for all twenty. The spacing lives on the *vendor* rather than in `SmartHomeLimits` because it is a fact about a bridge and not about smart homes: Home Assistant's is zero, and paying Hue's tax there would add a second and a half to a fifteen-light loop for a ceiling that is not there. Serialisation is shared, because both want ordering.
 
 Discovery is `MdnsBrowse` (`data/net/`) over `_hue._tcp.` plus a typed address field that is always present — `@WifiNetwork`'s argument in its second form, since mDNS is blocked by AP isolation, guest VLANs and many mesh routers, which are exactly the networks hardest to debug. It needs `CHANGE_WIFI_MULTICAST_STATE` and a `MulticastLock`, without which the browse silently finds nothing on most devices; the cloud discovery endpoint is deliberately not a fallback. Every hard-won detail of that browse — the lock, the serialised resolve that works around `FAILURE_ALREADY_ACTIVE`, the API-34 split, the IPv4 preference — is **general and shared**, because all of them fail *silently* when wrong and a second copy is a second chance to get one wrong; only the service type and the reading of the TXT record stay per vendor. `SmartHomeHubs` (`domain/registry/`) is the third hydrated registry, on `MacroDirectory`'s shape including `isHydrated`, so `validateSmartHomeRefs` can warn about a node whose hub is gone — the case worth catching precisely because the cached name makes such a node render perfectly and do nothing.
+
+### Scoped config fields
+
+A config field may name **sibling fields that narrow it**, and a second may offer *suggestions*
+without restricting what can be typed. One mechanism, declared two ways, and Home Assistant is
+its first heavy user rather than its shape.
+
+`@Picker(kind, scopedBy = […], optional = …)` narrows a **read-only** chooser: an entity picker
+scoped by a hub lists that hub's entities, a service picker scoped by an entity lists what that
+entity accepts. `@Suggested(source, scopedBy = […])` is the **editable** half — a text field with
+a dropdown — for an answer set that is *known but not closed*. That third shape is the one the
+app was missing: `@Picker` is for a set that is complete, a plain field for one nothing knows,
+and this is the middle, where **which of the two it is depends on a sibling's value rather than
+on the declaration**. A light publishes `brightness` and `color_temp_kelvin` and the dropdown
+says so; an entity that was `unavailable` at Refresh publishes almost nothing and the dropdown
+is empty; the same field serves both and never changes kind.
+
+`@MailFolder` was this idea built for one field, and it is **gone** — the three mail nodes now
+declare `@Suggested(MAIL_FOLDER, scopedBy = ["accountId"])`, and mail's own tests passing
+unchanged is what shows the mechanism generalised rather than merely arrived.
+
+**Options are computed in `domain`, which is what makes it generic**, and the enabling move is
+`HaCatalog` (`domain/registry/`) — the fifth hydrated registry after `MacroDirectory`,
+`GlobalVariables`, `SmartHomeHubs` and `AiConnections`. The other four exist so the *validator*
+can ask whether a reference resolves; this one additionally lets `effectiveConfigSchema` **narrow
+a form**, which nothing in `feature/` could do: `effectiveConfigSchema` is the only thing that
+decides which fields a form has, so generated fields can come from nowhere else. It carries a
+projection and never the hubs, because a hub also holds a sealed credential. Each
+`SuggestionSource` gets one branch in `Suggestions`' exhaustive `when` and **nothing else** — a
+future integration adds a member and a resolver and touches one file.
+
+**Empty always means "cannot narrow", never "nothing exists".** An unhydrated catalogue, a blank
+scope, an old snapshot with no metadata, a socket that is down — all leave the field exactly as
+it was before it was scoped. A form that silently empties its own choosers is worse than one
+never narrowed, and that rule is tested at every call site.
+
+**Not every scope can be answered from a registry, and pretending otherwise is what made the
+first cut of this wrong.** `Suggestions.isLocal` is that seam: a mailbox list is an authenticated
+IMAP `LIST`, and a Home Assistant *trigger* list is a websocket command about one entity — so
+both are fetched by the widget and cached in a ViewModel rather than resolved in `domain`. The
+*declaration* stays uniform, which is the whole point: a node author writes one annotation and
+never learns which kind theirs is. What the fetching side must preserve is the rule above, in a
+sharper form — **a request still in flight and a request that came back empty are different
+states**, and collapsing them makes every chooser flash "nothing matches" for the length of a
+round trip.
+
+**A scoped list is not complete**, which matters because `PickerKind.HA_ENTITY`'s read-only
+justification is precisely that the answer set *is* complete. So a scoped chooser always offers
+**Show everything**. Without it, one wrong `target` field in somebody's custom integration makes
+a service unreachable by any means.
+
+Changing a scoping field **clears the pickers below it**, transitively (`keysScopedBy`, called
+from `updateNodeConfig` beside `pruneRetypedEdges`, which is already a schema-aware follow-up to
+a config edit). Only pickers: a `@Suggested` value was *typed*, so it means what somebody meant
+by it — **a picker's value is only meaningful inside its scope; a typed value is meaningful
+because somebody typed it.** The validator could not do this job instead: it lives in `engine/`
+and could only ask whether the *hub* still exists, not whether a service is still legal beside an
+entity.
+
+**"Below it" is literal, and that is what makes a mutual scope legal rather than fatal.** Two
+fields may narrow *each other* — `action.ha_service`'s entity lists what the chosen service
+accepts and its service lists what the chosen entity accepts, and both are useful — but clearing
+in both directions means picking either one wipes the other and the form can never hold both.
+That shipped and was the first bug reported against it. So clearing runs **forwards only**, by
+declaration order, which is form order: you fill a form downwards, and answering a question
+re-asks the ones beneath it rather than the ones above. It also breaks any cycle by
+construction, which is a stronger guarantee than the visited-set guard it replaced — that
+terminated, and then cleared the wrong field.
+
+`ConfigField.backedBy` is the last piece and the most novel: **a form field whose value lives
+inside another field's structured value.** `action.ha_service` generates one row per input the
+chosen service accepts, from the `selector` Home Assistant publishes for it, and those land in
+the `data` property's JSON rather than under config keys of their own — they cannot be
+properties, because a config class is fixed at declaration time and which fields a service takes
+depends on a service chosen later. This is `@Ports`' trick (a parsed spec stored as text)
+generalised from a list to a map. A generated key is `data.brightness_pct`, and splitting on the
+first dot recovers both halves because a declared key is a Kotlin property name and cannot
+contain one. **An unrecognised selector generates nothing** and the raw JSON box stays beneath as
+the escape hatch, which is what makes this safe against a server that updates on its own
+schedule.
 
 ### Home Assistant
 
@@ -218,9 +300,17 @@ The **second vendor**, and the reason to read this section is not the integratio
 
 **Three things break silently and each has a test named after it.** `transition` is in **seconds** where the facade speaks milliseconds — passed through, the 400 ms default becomes a six-minute fade, which reads as the light never changing rather than as a unit bug. `brightness` is **0–255** where the facade speaks percent. And the attribute is `color_temp_kelvin`, not the deprecated `kelvin` or the mired-valued `color_temp`. This is Home Assistant's mireds, and the general point is that this vendor answers `{"success": true}` to a service call it carried out against nothing at all.
 
-**`trigger.ha_state` defaults `includeAttributeChanges` to false, and that default is the node's whole usability**: Home Assistant fires `state_changed` for attribute-only changes too, so without it "when the porch light comes on" fires every time a dimmer ticks. `HaSocket` seeds with `get_states` **before** subscribing, for a related reason — without the seed the cache holds only what has changed since the app started, so on a quiet house every value read would be null all morning and start working mysteriously in the afternoon.
+**`trigger.ha_state` subscribes to one of Home Assistant's own triggers rather than filtering `state_changed`, and the first cut got this wrong in a way worth keeping on record.** It offered *changes to*, *changes from* and "also when only its details change" — the fields somebody designs who has read `/api/states` and assumed a state machine underneath. Home Assistant does not work that way. What it offers for a media player is `started_playing`, `paused_playing`, `muted` and `volume_crossed_threshold`, a list **no reading of the state API can produce**: half of it is not about state at all, and the half that is carries evaluation rules (`for`, `behavior`) a client would have to reproduce exactly to agree with what the user already saw in the web interface. So the list is asked for with **`get_triggers_for_target`** — the command the web interface's own automation editor sends — and the chosen one is armed with **`subscribe_trigger`**, which makes the answer the same answer by construction. The generalisable form: *when the server publishes both the vocabulary and the evaluator, take both; deriving either is a near-miss that looks right.*
 
-**`trigger.ha_event`'s event type is the one HA field that is typed rather than picked**, and the exception is forced: Home Assistant publishes no way to list event types, so a chooser could only offer types already seen — which excludes the one the user is setting the node up for. Every other identifier comes from the hub's snapshot, and `PickerKind.HA_ENTITY` is the interesting case on the opacity line: `sensor.hall_temperature` is *legible*, so a wrong one can be seen to be wrong, and it is a read-only picker anyway — because the half `@WifiNetwork` fails is the one that decides, namely that **the answer set is knowable and complete**. `PickerKind.HA_HUB` is also the one place a hub is its own config field, and the generalised rule is: **a hub gets a field of its own exactly where nothing else determines it.**
+Three consequences, each of which reads as a bug if you meet it without this paragraph. **Blank means "whenever it changes"** — the one built-in row, serviced by the `state_changed` stream the cache already needs, kept because an entity no integration declares triggers for and an instance too old for the trigger platform would otherwise leave the picker empty and the node unconfigurable; it is also what a node saved before this reshape falls back to, which is the whole migration. **Only that built-in row filters** (`matches`): a named trigger was already evaluated by the server, and re-filtering it here would silently drop `volume_changed`, which reports no state transition at all. And **`forSeconds` is sent only when set**, because a trigger declaring no `for` option refuses the *whole subscription* rather than ignoring it — an unasked-for option would stop the node firing, silently, which is worse than the problem the field solves.
+
+Two things about the socket follow from all this. `HaSocket` correlates requests to answers by message id, which is the only mechanism the protocol has, and **every pending request is completed exceptionally on disconnect** rather than left to time out — a picker awaiting a list when the socket drops should widen at once. And a fired trigger arrives on a **different key from an event**: the bus publishes `data` and names its type, where a trigger publishes `variables.trigger` and names nothing at all, so the subscription id is the entire routing information. Reading the wrong key gives a frame that parses perfectly and carries nothing.
+
+`HaSocket` also seeds with `get_states` **before** subscribing — without the seed the cache holds only what has changed since the app started, so on a quiet house every value read would be null all morning and start working mysteriously in the afternoon.
+
+**The service list is narrowed by `get_services_for_target`, and the reason it could not be narrowed before is worth stating plainly: `/api/services` carries neither `target` nor the per-field `selector`s.** It is names and descriptions and nothing more. So a snapshot built from that endpoint can neither filter itself nor grow a single generated field, however the filtering is written — which is exactly what happened, and looked like a bug in the narrowing rather than a missing input. Refresh now prefers the websocket `get_services`; `HaResources.parseServices` reads **both** shapes (REST answers an array of `{domain, services}`, the socket answers one object keyed by domain) because the caller genuinely does not know which it will get, and the endpoint remains the fallback for a refresh taken before any socket is up. A snapshot from it narrows nothing and generates nothing, which is the degradation rule doing its job rather than a failure.
+
+**`trigger.ha_event`'s event type is the one HA field that is typed rather than picked**, and the exception is forced: Home Assistant publishes no way to list event types, so a chooser could only offer types already seen — which excludes the one the user is setting the node up for. Every other identifier comes from the hub's snapshot, and `PickerKind.HA_ENTITY` is the interesting case on the opacity line: `sensor.hall_temperature` is *legible*, so a wrong one can be seen to be wrong, and it is a read-only picker anyway — because the half `@WifiNetwork` fails is the one that decides, namely that **the answer set is knowable and complete**. `PickerKind.HA_HUB` is also the one place a hub is its own config field, and the generalised rule is: **a hub gets a field of its own exactly where nothing else determines it.** `PickerKind.HA_TRIGGER` is the fourth and the only one whose value is **not** a `HomeAssistantRef`: an entity field beside it already carries the hub and the entity, so wrapping the trigger id would record the same two facts twice and let them disagree. It is therefore deliberately absent from `HUB_SCOPED_PICKERS`, which validates by parsing — including it would report every configured trigger as pointing at a removed hub.
 
 **Auth is a pasted long-lived token, with OAuth built and switched off.** Home Assistant implements IndieAuth: the `client_id` *is* a URL the server fetches during authorize, so signing in needs a page somebody hosts serving `<link rel="redirect_uri" href="ottomatic://ha-auth">` **and** needs the user's own instance to reach the internet — an air-gapped install can never use it. `HaOAuth.CLIENT_ID` is therefore blank and `isAvailable` hides the button, because a path that cannot succeed is worse than one that is absent: the failure would arrive inside a browser, worded by Home Assistant, about a URL the user has never heard of. Filling that constant in is the entire cost of enabling it. HA's own docs point third-party apps at a token, which is why that path is offered first rather than as the fallback.
 

@@ -501,9 +501,16 @@
     <string name="ha_auth_oauth">Sessão iniciada</string>
     <string name="ha_authentication">Autenticação</string>
     <string name="smarthome_sign_in_again">Iniciar sessão de novo</string>
+    <string name="config_show_suggestions">Mostrar sugestões</string>
+    <string name="ha_show_everything">Mostrar tudo</string>
+    <string name="ha_show_matching">Mostrar só o que corresponde</string>
     <string name="ha_choose_an_entity">Escolher uma entidade</string>
     <string name="ha_choose_a_service">Escolher um serviço</string>
     <string name="ha_choose_a_hub">Escolher um Home Assistant</string>
+    <string name="ha_choose_a_trigger">Escolhe o que o inicia</string>
+    <string name="ha_trigger_built_in">Qualquer alteração</string>
+    <string name="ha_any_state_change">Sempre que mudar</string>
+    <string name="ha_any_state_change_hint">Qualquer mudança de estado, sem mais condições</string>
     <string name="ha_sign_in">Ou inicia sessão no Home Assistant</string>
     <string name="ha_no_hub_yet">Ainda não há nenhum Home Assistant. Adiciona um em Casa inteligente.</string>
 </resources>

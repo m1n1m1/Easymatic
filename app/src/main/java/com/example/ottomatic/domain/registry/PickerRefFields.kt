@@ -39,11 +39,32 @@ fun macroRefKeys(typeId: NodeTypeId): List<ConfigKey> =
  * with no compiler to notice the second.
  */
 fun smartHomeRefKeys(typeId: NodeTypeId): List<ConfigKey> =
+    smartHomeRefFields(typeId).map { it.key }
+
+/**
+ * The same fields, unreduced.
+ *
+ * The validator needs more than the key: it has to know whether a **blank** value is an
+ * unfinished field or a real answer, which only the declaration says. Returning the field
+ * rather than adding a second parallel lookup keeps that a property of the one thing that
+ * knows it.
+ */
+fun smartHomeRefFields(typeId: NodeTypeId): List<ConfigField<*>> =
     ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
         .filter { (it.type as? ConfigFieldType.PICKER)?.kind in HUB_SCOPED_PICKERS }
-        .map { it.key }
 
-/** Every picker whose value names something on a hub. */
+/** Whether this field's blank is a real answer rather than an unfinished one. */
+val ConfigField<*>.isOptionalPicker: Boolean
+    get() = (type as? ConfigFieldType.PICKER)?.optional == true
+
+/**
+ * Every picker whose value names something on a hub.
+ *
+ * [PickerKind.HA_TRIGGER] is deliberately **not** one, and this is the list that says why it
+ * matters: these are validated by parsing the value as a `HomeAssistantRef`, and a trigger is
+ * stored as Home Assistant's own bare id instead. Including it would report every configured
+ * trigger as a reference to a hub that has been removed.
+ */
 private val HUB_SCOPED_PICKERS = setOf(
     PickerKind.LIGHT_TARGET,
     PickerKind.LIGHT_SCENE,

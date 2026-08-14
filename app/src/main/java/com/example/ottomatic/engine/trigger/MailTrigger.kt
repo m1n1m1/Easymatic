@@ -7,7 +7,8 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.Label
-import com.example.ottomatic.domain.model.config.MailFolder
+import com.example.ottomatic.domain.model.config.Suggested
+import com.example.ottomatic.domain.model.config.SuggestionSource
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.VisibleWhen
@@ -49,7 +50,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MailTriggerConfig(
     @Label("Account") @Picker(PickerKind.MAIL_ACCOUNT) val accountId: String = "",
-    @Label("Folder") @MailFolder val folder: String = "INBOX",
+    @Label("Folder")
+    @Suggested(SuggestionSource.MAIL_FOLDER, scopedBy = ["accountId"])
+    val folder: String = "INBOX",
     @Label("From contains") val fromContains: String = "",
     @Label("Subject contains") val subjectContains: String = "",
     @Label("Only unread") val unreadOnly: Boolean = true,

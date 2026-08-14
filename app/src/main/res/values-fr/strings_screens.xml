@@ -501,9 +501,16 @@
     <string name="ha_auth_oauth">Connecté</string>
     <string name="ha_authentication">Authentification</string>
     <string name="smarthome_sign_in_again">Se reconnecter</string>
+    <string name="config_show_suggestions">Afficher les suggestions</string>
+    <string name="ha_show_everything">Tout afficher</string>
+    <string name="ha_show_matching">N\'afficher que ce qui correspond</string>
     <string name="ha_choose_an_entity">Choisir une entité</string>
     <string name="ha_choose_a_service">Choisir un service</string>
     <string name="ha_choose_a_hub">Choisir un Home Assistant</string>
+    <string name="ha_choose_a_trigger">Choisis ce qui le déclenche</string>
+    <string name="ha_trigger_built_in">N’importe quel changement</string>
+    <string name="ha_any_state_change">À chaque changement</string>
+    <string name="ha_any_state_change_hint">Tout changement d’état, sans autre condition</string>
     <string name="ha_sign_in">Ou connecte-toi à Home Assistant</string>
     <string name="ha_no_hub_yet">Aucun Home Assistant pour l\'instant. Ajoutes-en un dans Maison connectée.</string>
 </resources>

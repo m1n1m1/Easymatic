@@ -17,7 +17,6 @@ Airplane mode	Airplane mode
 Alarm	Alarm
 Alarms	Alarms
 All	All
-Also when only its details change	Also when only its details change
 Also when the device starts moving	Also when the device starts moving
 Always (high battery use)	Always (high battery use)
 Ambient Light	Ambient Light
@@ -69,8 +68,6 @@ Carries on at once and continues again at a chosen moment	Carries on at once and
 Carry on now	Carry on now
 Cc	Cc
 Change	Change
-Changes from	Changes from
-Changes to	Changes to
 Charging	Charging
 Charging started	Charging started
 Charging stopped	Charging stopped
@@ -180,6 +177,7 @@ Headset Plugged	Headset Plugged
 Headset hook	Headset hook
 Headset plugged in	Headset plugged in
 Held down	Held down
+Held for (seconds)	Held for (seconds)
 High — fires easily	High — fires easily
 Hint	Hint
 Hold for at least (ms)	Hold for at least (ms)
@@ -537,6 +535,7 @@ Wait Until	Wait Until
 Wait until finished	Wait until finished
 Warmth (K)	Warmth (K)
 Wednesdays	Wednesdays
+What starts it	What starts it
 What to do	What to do
 Whatsapp	Whatsapp
 When cancelled	When cancelled

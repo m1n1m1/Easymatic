@@ -14,18 +14,30 @@ import com.example.ottomatic.core.service.SmartHomeTargetKind
  * what lets it be an ordinary `String` config property in a package where a `List`
  * one is rejected outright.
  *
- * **Why the hub is inside the reference rather than in a field beside it.** The
- * obvious alternative is a hub picker plus a target picker that reads its sibling,
- * which is the `@MailFolder(accountKey = …)` mechanism — and it is the wrong shape
- * here for three separate reasons. It makes an **incoherent state representable**:
- * hub A selected with a light belonging to hub B in the target field, which nothing
- * prevents, nothing detects, and which fails at runtime with an error naming
- * neither. It would have to thread `siblingValue` through `PickerField`, changing
- * every branch's signature for one caller and breaking the rule that a picker
- * receives only its kind. And a hub is not an independent decision the way a mail
- * account is: an account is what a message is sent *from*, chosen before any folder
- * exists, whereas choosing "Kitchen ceiling" already *determines* which bridge —
- * so the hub field would be a mandatory always-one-option row on every node.
+ * **Why the hub is inside the reference rather than in a field beside it.** The obvious
+ * alternative is a hub picker plus a target picker that reads its sibling — and for a *light*
+ * that is still the wrong shape, for the last of the three reasons below. The first two have
+ * since expired, and how they expired is the interesting part.
+ *
+ * It was said to make an **incoherent state representable**: hub A selected with a light
+ * belonging to hub B, which nothing prevents and nothing detects. That is true of two
+ * *unrelated* fields — and it is precisely what **scoping** cures, because choosing hub A is
+ * what makes hub B's entities unofferable. `@Picker(scopedBy = …)` is that argument's goal
+ * reached by the other road rather than an abandonment of it.
+ *
+ * It was also said to cost threading `siblingValue` through `PickerField` "for one caller".
+ * There are several now, the parameter is defaulted, and the unscoped branches are unchanged
+ * text.
+ *
+ * **What survives, and is why a light target is still one spec:** a hub is not an independent
+ * decision the way a mail account is. An account is what a message is sent *from*, chosen before
+ * any folder exists, whereas choosing "Kitchen ceiling" already *determines* which bridge — so a
+ * hub field here would be a mandatory always-one-option row on every light node. Scoping is
+ * worth its field only where something is genuinely left to decide, which is
+ * `action.ha_service`, where a service and an entity are two real choices.
+ *
+ * The rule that replaced "a picker receives only its kind" is therefore narrower than it looks:
+ * **a scoping field earns its place exactly where nothing else determines it.**
  *
  * **Why the name is carried too.** [PhoneRef] caches a display name for convenience;
  * here it is closer to a requirement. Every other picker can re-resolve its id from

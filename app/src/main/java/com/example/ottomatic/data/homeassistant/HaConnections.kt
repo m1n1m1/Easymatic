@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 
 /**
  * Every Home Assistant connection this phone holds, and everything that wants one.
@@ -83,6 +84,16 @@ class HaConnections(
 
     private val watchers = ConcurrentHashMap<NodeId, Watcher>()
 
+    /**
+     * Which node each live trigger subscription belongs to.
+     *
+     * Separate from [watchers] because the key is the server's, not ours: a subscription is
+     * identified by the message id Home Assistant answered on, and a fired trigger carries that
+     * id and nothing else — no entity, no event type. Without this map there is no way back to
+     * the node that asked.
+     */
+    private val triggerNodes = ConcurrentHashMap<Int, NodeId>()
+
     private val client by lazy { HaSocket.client() }
 
     @Volatile
@@ -144,6 +155,44 @@ class HaConnections(
 
     fun isConnected(hubId: String): Boolean = synchronized(lock) { connections[hubId]?.socket?.isConnected } == true
 
+    /**
+     * Which triggers Home Assistant says apply to [entityId].
+     *
+     * Asked of the server rather than derived, which is the correction this whole area needed:
+     * a media player's triggers are `media_player.started_playing` and
+     * `media_player.volume_crossed_threshold`, which are not states and which no reading of
+     * `/api/states` could produce. This is the same command the web interface's automation
+     * editor uses, so what the picker offers is what the user has already seen there.
+     *
+     * Empty when the socket cannot be opened or the instance is too old to know the command —
+     * *cannot narrow*, never *nothing applies*.
+     */
+    suspend fun triggersFor(hubId: String, entityId: String): List<String> =
+        ask(hubId) { socket -> socket.request { id -> HaMessages.triggersForTarget(id, entityId) } }
+            ?.let(HaMessages::stringsOf)
+            .orEmpty()
+
+    /** Which services apply to [entityId]. [triggersFor]'s sibling, and its reasoning. */
+    suspend fun servicesFor(hubId: String, entityId: String): List<String> =
+        ask(hubId) { socket -> socket.request { id -> HaMessages.servicesForTarget(id, entityId) } }
+            ?.let(HaMessages::stringsOf)
+            .orEmpty()
+
+    /**
+     * Every service with its full description, for the snapshot.
+     *
+     * Over the socket rather than `/api/services`, which carries neither `target` nor the
+     * per-field `selector`s — so a form built from the REST answer can neither narrow itself nor
+     * grow a single field.
+     */
+    suspend fun allServices(hubId: String): String? =
+        ask(hubId) { socket -> socket.request(HaMessages::getServices) }
+
+    private suspend fun <T> ask(hubId: String, block: suspend (HaSocket) -> T?): T? {
+        val connection = synchronized(lock) { connections[hubId] } ?: openOnDemand(hubId) ?: return null
+        return runCatching { block(connection.socket) }.getOrNull()
+    }
+
     // ---- The trigger side ----
 
     /**
@@ -162,12 +211,45 @@ class HaConnections(
             synchronized(lock) { connections[hubId] }?.socket?.watch(eventType)
                 ?: scope.launch { openOnDemand(hubId)?.socket?.watch(eventType) }
         }
+        // A named Home Assistant trigger is a subscription of its own rather than a filter over
+        // the event bus, so the server evaluates it and pushes only what actually fired.
+        val named = (spec as? HaWatchSpec.StateWatch)?.takeIf { it.trigger.isNotBlank() }
+        if (named != null) scope.launch { subscribeTrigger(nodeId, hubId, named, onReport) }
+
         return ScheduleHandle {
             watchers.remove(nodeId)
             if (eventType != null && watchers.values.none { matchesType(it.spec, eventType) }) {
                 synchronized(lock) { connections[hubId] }?.socket?.unwatch(eventType)
             }
+            triggerNodes.entries.filter { it.value == nodeId }.forEach { (subscriptionId, _) ->
+                triggerNodes.remove(subscriptionId)
+                synchronized(lock) { connections[hubId] }?.socket?.unsubscribeTrigger(subscriptionId)
+            }
         }
+    }
+
+    /**
+     * Takes out one trigger subscription and remembers which node it belongs to.
+     *
+     * A refusal is **reported into the macro's own console and not retried**: it means this
+     * instance does not know that trigger type, which no amount of trying again will change,
+     * and the node would otherwise look like one that is simply waiting.
+     */
+    private suspend fun subscribeTrigger(
+        nodeId: NodeId,
+        hubId: String,
+        spec: HaWatchSpec.StateWatch,
+        onReport: (String, LogLevel) -> Unit,
+    ) {
+        val connection = synchronized(lock) { connections[hubId] } ?: openOnDemand(hubId) ?: return
+        val options = runCatching { Json.parseToJsonElement(spec.options).jsonObject }
+            .getOrDefault(JsonObject(emptyMap()))
+        val subscriptionId = connection.socket.subscribeTrigger(spec.trigger, spec.entityId, options)
+        if (subscriptionId == null) {
+            onReport("Home Assistant would not accept the trigger \"${spec.trigger}\"", LogLevel.WARN)
+            return
+        }
+        triggerNodes[subscriptionId] = nodeId
     }
 
     private fun matchesType(spec: HaWatchSpec, eventType: String): Boolean =
@@ -227,6 +309,10 @@ class HaConnections(
                 override fun onStateChanged(previous: HaResources.HaState?, current: HaResources.HaState) {
                     connection.states[current.entityId] = current
                     publishStateChange(hubId, previous, current)
+                }
+
+                override fun onTriggerFired(subscriptionId: Int, payload: JsonObject) {
+                    publishTrigger(hubId, subscriptionId, payload)
                 }
 
                 override fun onEvent(eventType: String, data: JsonObject, origin: String) {
@@ -316,7 +402,10 @@ class HaConnections(
     ) {
         val interested = watchers.filterValues { watcher ->
             (watcher.spec as? HaWatchSpec.StateWatch)?.let {
-                it.hubId == hubId && it.entityId == current.entityId
+                // A named trigger fires from its own subscription. Delivering the raw state
+                // change to it as well would fire it twice, and the second one would ignore
+                // every rule — `for`, `behavior` — the user set on it.
+                it.trigger.isBlank() && it.hubId == hubId && it.entityId == current.entityId
             } == true
         }
         if (interested.isEmpty()) return
@@ -336,6 +425,41 @@ class HaConnections(
         interested.keys.forEach { nodeId ->
             TriggerBus.emit(TriggerEvent(TriggerSource.HOME_ASSISTANT, nodeId, payload))
         }
+    }
+
+    /**
+     * Delivers one fired trigger to the single node that subscribed to it.
+     *
+     * **The reading comes from the cache rather than from the frame**, and that is the point
+     * worth knowing: a trigger's own payload is whatever its platform chose to publish, so
+     * `media_player.volume_crossed_threshold` says nothing about the entity's state and
+     * `started_playing` says nothing about its attributes. The cache is filled from the same
+     * `state_changed` stream Home Assistant evaluated the trigger against, so reading it here
+     * gives the node the full picture every other Home Assistant trigger already hands over —
+     * and the fields keep meaning what they meant before this trigger was reshaped.
+     */
+    private fun publishTrigger(hubId: String, subscriptionId: Int, payload: JsonObject) {
+        val nodeId = triggerNodes[subscriptionId] ?: return
+        val entityId = HaMessages.field(payload, "entity_id")
+            .ifBlank { (watchers[nodeId]?.spec as? HaWatchSpec.StateWatch)?.entityId.orEmpty() }
+        val current = synchronized(lock) { connections[hubId] }?.states?.get(entityId)
+        val attributes = current?.attributes ?: JsonObject(emptyMap())
+        TriggerBus.emit(
+            TriggerEvent(
+                TriggerSource.HOME_ASSISTANT,
+                nodeId,
+                mapOf(
+                    HaPayload.HUB_ID to hubId,
+                    HaPayload.ENTITY_ID to entityId,
+                    HaPayload.FRIENDLY_NAME to current?.friendlyName.orEmpty(),
+                    HaPayload.STATE to current?.state.orEmpty(),
+                    HaPayload.PREVIOUS_STATE to HaMessages.nestedState(payload, "from_state"),
+                    HaPayload.UNIT to attributes["unit_of_measurement"]?.toString()?.trim('"').orEmpty(),
+                    HaPayload.ATTRIBUTES to json.encodeToString(JsonObject.serializer(), attributes),
+                    HaPayload.CHANGED_AT to System.currentTimeMillis().toString(),
+                ),
+            ),
+        )
     }
 
     private fun publishEvent(hubId: String, eventType: String, data: JsonObject, origin: String) {

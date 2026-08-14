@@ -58,9 +58,8 @@
     <string name="port_trigger_ha_state_out">输出</string>
     <string name="port_trigger_ha_state_change">变化</string>
     <string name="cfg_trigger_ha_state_entity">实体</string>
-    <string name="cfg_trigger_ha_state_to_state">变化后为</string>
-    <string name="cfg_trigger_ha_state_from_state">变化前为</string>
-    <string name="cfg_trigger_ha_state_include_attribute_changes">仅细节变化时也触发</string>
+    <string name="cfg_trigger_ha_state_trigger">触发条件</string>
+    <string name="cfg_trigger_ha_state_for_seconds">持续时间（秒）</string>
     <string name="node_trigger_ha_event_name">Home Assistant 事件</string>
     <string name="node_trigger_ha_event_desc">当 Home Assistant 事件总线上触发事件时启动——Zigbee 按键、标签、自定义事件</string>
     <string name="port_trigger_ha_event_out">输出</string>
@@ -644,8 +643,9 @@
     <string name="port_action_ha_service_out">输出</string>
     <string name="port_action_ha_service_data">附加数据（JSON）</string>
     <string name="port_action_ha_service_state">状态</string>
-    <string name="cfg_action_ha_service_service">服务</string>
+    <string name="cfg_action_ha_service_hub">Home Assistant</string>
     <string name="cfg_action_ha_service_target">实体</string>
+    <string name="cfg_action_ha_service_service">服务</string>
     <string name="cfg_action_ha_service_data">附加数据（JSON）</string>
     <string name="node_action_list_add_name">添加到列表</string>
     <string name="node_action_list_add_desc">向指定列表追加一个元素，通常在循环内使用</string>

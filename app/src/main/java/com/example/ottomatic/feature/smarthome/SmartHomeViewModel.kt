@@ -75,8 +75,28 @@ data class PairingState(
     val tested: String = "",
 )
 
+/**
+ * What Home Assistant said applies to one entity, and whether the asking has come back.
+ *
+ * [ids] empty with [answered] true is a real answer — this entity genuinely has no triggers —
+ * where [answered] false means the question is still out. The picker needs the two apart: it
+ * shows the wide list while waiting and the honest empty state afterwards, and collapsing them
+ * would make every picker flash "nothing matches" for as long as the round trip takes.
+ */
+data class HaNarrowing(val ids: Set<String> = emptySet(), val answered: Boolean = false)
+
 data class SmartHomeUiState(
     val hubs: List<SmartHomeHub> = emptyList(),
+    /**
+     * Which triggers and services each entity accepts, keyed `<hubId>|<entityId>`.
+     *
+     * Held in the ViewModel rather than in the snapshot on disk because it is **per entity**
+     * and asked over the socket: caching every entity's trigger list at Refresh would be a few
+     * hundred round trips for a list the user will look at one of. It survives the picker
+     * closing and reopening, which is what makes going back to change an entity feel instant.
+     */
+    val haTriggers: Map<String, HaNarrowing> = emptyMap(),
+    val haServices: Map<String, HaNarrowing> = emptyMap(),
     /** Which hub's detail sheet is open, or blank. */
     val detailId: String = "",
     val detailName: String = "",
@@ -156,6 +176,45 @@ class SmartHomeViewModel(
     fun refreshAll() {
         viewModelScope.launch {
             repository.list().forEach { hub -> setup.refresh(hub.id) }
+        }
+    }
+
+    /**
+     * Asks Home Assistant which triggers or services apply to [entityId], once.
+     *
+     * Fired when a picker opens with an entity in scope, and **idempotent by key** — a
+     * recomposition, a search keystroke or a reopened picker must not send the request again.
+     * Nothing is reported when it fails: the picker falls back to the unscoped list, which is
+     * the same thing it shows while the answer is still in flight.
+     */
+    fun narrowHomeAssistant(mode: HaPickerMode, hubId: String, entityId: String) {
+        val key = "$hubId|$entityId"
+        val asked = when (mode) {
+            HaPickerMode.TRIGGER -> _uiState.value.haTriggers
+            HaPickerMode.SERVICE -> _uiState.value.haServices
+            // Neither list is per entity: an entity chooser is what *decides* the scope, and a
+            // hub has no entity above it to be narrowed by.
+            HaPickerMode.ENTITY, HaPickerMode.HUB -> return
+        }
+        if (hubId.isBlank() || entityId.isBlank() || asked.containsKey(key)) return
+        // Recorded as in flight before suspending, so two composers cannot both send it.
+        put(mode, key, HaNarrowing())
+        viewModelScope.launch {
+            val ids = when (mode) {
+                HaPickerMode.TRIGGER -> setup.haTriggersFor(hubId, entityId)
+                else -> setup.haServicesFor(hubId, entityId)
+            }
+            put(mode, key, HaNarrowing(ids.toSet(), answered = true))
+        }
+    }
+
+    private fun put(mode: HaPickerMode, key: String, value: HaNarrowing) {
+        _uiState.update {
+            if (mode == HaPickerMode.TRIGGER) {
+                it.copy(haTriggers = it.haTriggers + (key to value))
+            } else {
+                it.copy(haServices = it.haServices + (key to value))
+            }
         }
     }
 

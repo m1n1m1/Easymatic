@@ -154,6 +154,7 @@ config_now	现在
 config_port_carries_list	此端口传递一个列表
 config_port_carries_one	此端口传递单个值
 config_set	设置
+config_show_suggestions	显示建议
 config_socket_feed	从上游数据为 %1$s 供值
 config_socket_use_typed_connected	对 %1$s 使用输入的值（已连接到 %2$s）
 config_socket_use_typed_free	对 %1$s 使用输入的值（未连接任何内容）
@@ -258,11 +259,14 @@ grapheditor_zoom_percent	%1$d%%
 ha_access_token	长期访问令牌
 ha_address	地址
 ha_all_entities	实体
+ha_any_state_change	每次变化时
+ha_any_state_change_hint	任何状态变化，无其他条件
 ha_auth_oauth	已登录
 ha_auth_token	长期令牌
 ha_authentication	身份验证
 ha_choose_a_hub	选择 Home Assistant
 ha_choose_a_service	选择服务
+ha_choose_a_trigger	选择触发条件
 ha_choose_an_entity	选择实体
 ha_cleartext_warning	该地址未加密。对自家网络里的服务器来说这很正常；但经由互联网，令牌会以明文发送。
 ha_connect_home_assistant	连接 Home Assistant
@@ -273,9 +277,12 @@ ha_no_hub_yet	还没有 Home Assistant。请在智能家居中添加一个。
 ha_open_profile	打开个人资料页
 ha_paste	粘贴
 ha_replace_token	更换令牌
+ha_show_everything	显示全部
+ha_show_matching	仅显示匹配项
 ha_sign_in	或登录 Home Assistant
 ha_test	测试
 ha_token_steps	在 Home Assistant 中打开个人资料，选择“安全”，滚动到“长期访问令牌”并创建一个。它只显示一次——复制后粘贴到这里。
+ha_trigger_built_in	任何变化
 hue_find_your_bridge	找到你的网桥
 hue_hue_bridge	Hue 网桥
 hue_name_your_bridge	为网桥命名

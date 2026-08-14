@@ -25,7 +25,8 @@ import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.domain.registry.SmartHomeHubs
 import com.example.ottomatic.domain.registry.aiConnectionRefKeys
 import com.example.ottomatic.domain.registry.macroRefKeys
-import com.example.ottomatic.domain.registry.smartHomeRefKeys
+import com.example.ottomatic.domain.registry.isOptionalPicker
+import com.example.ottomatic.domain.registry.smartHomeRefFields
 import com.example.ottomatic.domain.registry.effectivePort
 import com.example.ottomatic.domain.registry.isDataAssignable
 import com.example.ottomatic.domain.registry.variableRefKeys
@@ -242,8 +243,14 @@ class GraphValidator(private val workflow: Workflow) {
      */
     private fun validateSmartHomeRefs(out: MutableList<ValidationIssue>) {
         for (node in workflow.nodes) {
-            for (key in smartHomeRefKeys(node.typeId)) {
-                val spec = node.config[key].orEmpty()
+            // An *optional* picker's blank is a real answer rather than an unfinished one, so
+            // it is dropped before anything is asked of it. `action.ha_service`'s entity is the
+            // case: a service that acts on nothing takes no entity, and every such node was
+            // being badged for saying so.
+            val fields = smartHomeRefFields(node.typeId)
+                .filterNot { it.isOptionalPicker && node.config[it.key].isNullOrBlank() }
+            for (field in fields) {
+                val spec = node.config[field.key].orEmpty()
                 // Either spelling: a light reference or a Home Assistant one. See hubIdOf.
                 val hubId = hubIdOf(spec)
                 val (reason, message) = when {

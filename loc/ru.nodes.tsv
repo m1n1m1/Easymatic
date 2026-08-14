@@ -12,8 +12,8 @@ Active from	Активно с
 Active until (earlier than \'from\' runs past midnight)	Активно до (если раньше, чем «с», интервал переходит через полночь)
 Add to List	Добавить в список
 Adjusts an audio stream\'s volume (up, down, set, mute or unmute)	Меняет громкость аудиопотока (громче, тише, задать, выключить или включить звук)
-Airplane mode	Режим полёта
 Airplane Mode Changed	Изменение режима полёта
+Airplane mode	Режим полёта
 Alarm	Будильник
 Alarms	Будильники
 All	Все
@@ -32,9 +32,9 @@ App Initialised	Приложение запущено
 App Installed / Removed	Установка / удаление приложения
 Appends an item to a named list, usually from inside a loop	Добавляет элемент в именованный список, обычно изнутри цикла
 Ask AI	Спросить ИИ
+Ask Yes or No	Спросить «да или нет»
 Ask for Input	Запросить ввод
 Ask to Choose	Предложить выбор
-Ask Yes or No	Спросить «да или нет»
 Asks the user a yes/no question in a popup dialog and branches on the answer	Задаёт пользователю вопрос «да/нет» во всплывающем окне и ветвится по ответу
 Asks the user to type a value in a popup dialog and puts it on a port	Просит пользователя ввести значение во всплывающем окне и выдаёт его на порт
 At	В
@@ -51,8 +51,8 @@ Battery level	Уровень заряда
 Bcc	Скрытая копия
 Below	Ниже
 Bluetooth Device Connected	Подключение Bluetooth-устройства
-Bluetooth enabled	Bluetooth включён
 Bluetooth State Change	Изменение состояния Bluetooth
+Bluetooth enabled	Bluetooth включён
 Body	Текст
 Boolean	Логическое
 Break Struct	Разобрать структуру
@@ -99,8 +99,8 @@ Covered	Закрыт
 Current time	Текущее время
 Custom	Свой
 Custom sound	Свой звук
-Dark theme	Тёмная тема
 Dark Theme Change	Изменение тёмной темы
+Dark theme	Тёмная тема
 Data contains	Данные содержат
 Date &amp; time	Дата и время
 Date rolled over	Наступил новый день
@@ -112,9 +112,9 @@ Device Boot	Загрузка устройства
 Device Docked	Устройство в док-станции
 Device Movement	Движение устройства
 Device Orientation	Ориентация устройства
-Device orientation	Ориентация устройства
 Device Shutting Down	Выключение устройства
 Device Unlocked	Устройство разблокировано
+Device orientation	Ориентация устройства
 Direction	Направление
 Disable Macro	Выключить макрос
 Disabled	Выключено
@@ -146,7 +146,6 @@ Face down	Экраном вниз
 Face up	Экраном вверх
 Fade time (ms)	Время перехода (мс)
 Falls below	Опускается ниже
-false	нет
 Fast	Быстрая
 Fetch Email	Получить письма
 Field	Поле
@@ -169,17 +168,19 @@ From position (0 is the first)	С позиции (0 — первая)
 Geofence	Геозона
 Gesture	Жест
 Get	Получить
-Get as	Получить как
 Get Light State	Состояние светильника
+Get as	Получить как
 Give up after (seconds)	Сдаться через (секунд)
 Greater than	Больше
 Greater than or equal	Больше или равно
+HTTP Request	HTTP-запрос
 Halts the current execution chain (stops following connected actions)	Останавливает текущую цепочку выполнения (дальше по связям не идёт)
 Headers (JSON, optional)	Заголовки (JSON, необязательно)
-Headset hook	Кнопка гарнитуры
 Headset Plugged	Гарнитура подключена
+Headset hook	Кнопка гарнитуры
 Headset plugged in	Гарнитура подключена
 Held down	Удержание
+Held for (seconds)	Удерживается (секунд)
 High — fires easily	Высокая — срабатывает легко
 Hint	Подсказка
 Hold for at least (ms)	Удерживать не менее (мс)
@@ -194,12 +195,10 @@ How many items are in a list	Сколько элементов в списке
 How many times	Сколько раз
 How the device is currently resting — face up or down, portrait or landscape (screen on only)	Как устройство лежит сейчас — экраном вверх или вниз, вертикально или горизонтально (только при включённом экране)
 How to watch	Как отслеживать
-HTTP Request	HTTP-запрос
 Idle	Свободна
 If	Если
 If it fails	При ошибке
 If missing	Если отсутствует
-in	Вход
 Incoming Call State	Состояние входящего звонка
 Index	Позиция
 Initiates a phone call to a number	Начинает телефонный звонок на номер
@@ -209,8 +208,8 @@ Int	Целое
 Item	Элемент
 Item at position	Элемент по позиции
 Item to find	Что искать
-Join list	Объединить список
 JSON text	Текст JSON
+Join list	Объединить список
 Key	Ключ
 Landscape left	Горизонтально влево
 Landscape right	Горизонтально вправо
@@ -262,11 +261,11 @@ Move to folder	Переместить в папку
 Multiple lines	Несколько строк
 Must hold for (ms)	Удерживать (мс)
 Mute	Выключить звук
+NFC Tag	NFC-метка
+NFC enabled	NFC включён
 Name other apps see	Название, видимое другим приложениям
 Network	Сеть
 Next	Далее
-NFC enabled	NFC включён
-NFC Tag	NFC-метка
 Normal	Обычный
 Not equals	Не равно
 Notification	Уведомление
@@ -288,13 +287,12 @@ Only unread	Только непрочитанные
 Only when it ends up lying flat	Только если оказалось лежать плашмя
 Only while the screen is on	Только при включённом экране
 Open URL	Открыть ссылку
-Opens a URL in the default handler (browser or app). Typing google.com is enough	Открывает ссылку в приложении по умолчанию (браузере или другом). Достаточно ввести google.com
 Opens WhatsApp, Signal or Telegram with a message ready to send	Открывает WhatsApp, Signal или Telegram с готовым к отправке сообщением
+Opens a URL in the default handler (browser or app). Typing google.com is enough	Открывает ссылку в приложении по умолчанию (браузере или другом). Достаточно ввести google.com
 Operator	Оператор
 Options — one per line	Варианты — по одному в строке
 Order	Порядок
 Orientation	Ориентация
-out	Выход
 Outputs	Выходы
 Package	Пакет
 Part of list	Часть списка
@@ -306,8 +304,8 @@ Picked up	Поднято
 Place	Место
 Planned for	Запланировано на
 Play	Воспроизвести
-Play pause	Воспроизведение / пауза
 Play Sound	Воспроизвести звук
+Play pause	Воспроизведение / пауза
 Play through	Воспроизводить через
 Plays a notification, ringtone, alarm or chosen sound	Воспроизводит звук уведомления, мелодию, будильник или выбранный звук
 Plugged	Подключено
@@ -321,8 +319,8 @@ Position (0 is the first)	Позиция (0 — первая)
 Position in list	Позиция в списке
 Post	Показать
 Posts a notification on this device	Показывает уведомление на этом устройстве
-Power save mode	Режим энергосбережения
 Power Save Mode Changed	Изменение режима энергосбережения
+Power save mode	Режим энергосбережения
 Prefilled	Заполнено заранее
 Pressed	Нажатие
 Pressed several times	Несколько нажатий
@@ -351,47 +349,48 @@ Repeat while	Повторять пока
 Replaced	Заменено
 Replies to a message in WhatsApp, Signal, Telegram or another messenger	Отвечает на сообщение в WhatsApp, Signal, Telegram или другом мессенджере
 Reply to Message	Ответить на сообщение
-response	ответ
 Resumed at	Возобновлено в
 Ring	Звонок
-Ringer mode	Режим звонка
 Ringer Mode Changed	Изменение режима звонка
+Ringer mode	Режим звонка
 Ringing	Звонит
 Ringtone	Мелодия звонка
 Rises above	Поднимается выше
 Routes execution by comparing a value against another	Направляет выполнение, сравнивая одно значение с другим
-Run action	Выполнить действие
 Run Script	Запустить скрипт
-Runs any Home Assistant service — a thermostat, a media player, a lock, a vacuum, a script	Вызывает любую службу Home Assistant — термостат, медиаплеер, замок, пылесос, скрипт
+Run action	Выполнить действие
 Runs JavaScript over inputs you name and returns values on ports you name	Выполняет JavaScript над входами, которые вы назвали, и возвращает значения на порты, которые вы назвали
+Runs any Home Assistant service — a thermostat, a media player, a lock, a vacuum, a script	Вызывает любую службу Home Assistant — термостат, медиаплеер, замок, пылесос, скрипт
+SMS	SMS
+SMS Received	Получено SMS
 Saturdays	Субботы
 Scene	Сцена
 Schedule	Расписание
-Screen on	Экран включён
 Screen On / Off	Экран включён / выключен
+Screen on	Экран включён
 Script — each input is a variable of its own name	Скрипт — каждый вход доступен как переменная с тем же именем
 Seconds	Секунды
-Send as HTML	Отправить как HTML
 Send Email	Отправить письмо
 Send Message	Отправить сообщение
 Send SMS	Отправить SMS
+Send as HTML	Отправить как HTML
 Sender (optional — any sender when empty)	Отправитель (необязательно — пусто означает любого)
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text	Отправляет запрос модели ИИ — Gemini, Claude, ChatGPT, OpenRouter или своей собственной — и возвращает ответ текстом
-Sends an email through one of your mail accounts	Отправляет письмо через один из ваших почтовых аккаунтов
 Sends an SMS to a number with a body	Отправляет SMS с текстом на указанный номер
+Sends an email through one of your mail accounts	Отправляет письмо через один из ваших почтовых аккаунтов
 Sensitivity	Чувствительность
 Separator	Разделитель
 Separator (blank for a new line)	Разделитель (пусто — перенос строки)
 Service	Служба
 Set	Задать
 Set Brightness	Задать яркость
-Set brightness	Задать яркость
-Set colour	Задать цвет
 Set Ringer Mode	Задать режим звонка
 Set Screen Timeout	Задать таймаут экрана
-Set temperature	Задать температуру
 Set Variable	Задать переменную
 Set Volume	Задать громкость
+Set brightness	Задать яркость
+Set colour	Задать цвет
+Set temperature	Задать температуру
 Sets or clears the clipboard	Записывает в буфер обмена или очищает его
 Sets screen brightness (absolute value or auto)	Задаёт яркость экрана (значением или автоматически)
 Sets the ringer mode to normal, silent or vibrate	Переводит звонок в обычный, беззвучный режим или вибрацию
@@ -404,8 +403,6 @@ Shows a popup dialog offering a list of options and reports which one was picked
 Signal	Signal
 Silence	Тишина
 Silent	Беззвучный
-SMS	SMS
-SMS Received	Получено SMS
 Sort list	Отсортировать список
 Sound	Звук
 Source	Источник
@@ -420,21 +417,22 @@ Starts once after the device finishes booting	Срабатывает один р
 Starts the workflow on an interval or at a time of day	Запускает сценарий с интервалом или в определённое время суток
 Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it	Запускает сценарий, когда другое приложение, скрипт или ярлык просит Ottomatic его выполнить
 Starts the workflow when you tap run, or tap its widget or shortcut	Запускает сценарий, когда вы нажимаете «Запустить» или его виджет либо ярлык
+Starts when Bluetooth is turned on or off	Срабатывает при включении или выключении Bluetooth
+Starts when Wi-Fi is enabled or disabled	Срабатывает при включении или выключении Wi-Fi
 Starts when a Bluetooth device connects or disconnects	Срабатывает при подключении или отключении Bluetooth-устройства
 Starts when a Home Assistant entity changes — a sensor, a switch, a door, a thermostat	Запускается, когда меняется сущность Home Assistant — датчик, выключатель, дверь, термостат
+Starts when a USB device is connected or disconnected	Срабатывает при подключении или отключении USB-устройства
 Starts when a matching notification arrives	Срабатывает, когда приходит подходящее уведомление
 Starts when a media button is pressed (play, pause, next, etc.)	Срабатывает при нажатии медиакнопки (воспроизведение, пауза, далее и т. д.)
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	Срабатывает, когда приходит сообщение в WhatsApp, Signal, Telegram или другом мессенджере
-Starts when a USB device is connected or disconnected	Срабатывает при подключении или отключении USB-устройства
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	Срабатывает при нажатии, удержании или многократном нажатии кнопки громкости. Нужен доступ к спецвозможностям; сами кнопки продолжают работать как обычно
 Starts when a wired headset is plugged or unplugged	Срабатывает при подключении или отключении проводной гарнитуры
 Starts when airplane mode is toggled	Срабатывает при переключении режима полёта
+Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	Срабатывает, когда к телефону подносят NFC-метку. Работает только при включённом и разблокированном экране
+Starts when an SMS arrives	Срабатывает при получении SMS
 Starts when an app is installed, removed or replaced	Срабатывает при установке, удалении или замене приложения
 Starts when an email arrives in a mailbox you are watching	Срабатывает, когда в отслеживаемый почтовый ящик приходит письмо
 Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	Запускается, когда на шине событий Home Assistant возникает событие — кнопка Zigbee, метка, своё событие
-Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	Срабатывает, когда к телефону подносят NFC-метку. Работает только при включённом и разблокированном экране
-Starts when an SMS arrives	Срабатывает при получении SMS
-Starts when Bluetooth is turned on or off	Срабатывает при включении или выключении Bluetooth
 Starts when external media is mounted, unmounted or ejected	Срабатывает при подключении, отключении или извлечении внешнего носителя
 Starts when power-save mode is toggled on or off	Срабатывает при включении или выключении режима энергосбережения
 Starts when the battery level crosses a threshold (polls in the background)	Срабатывает, когда уровень заряда пересекает порог (опрашивает в фоне)
@@ -455,13 +453,11 @@ Starts when the ringer mode changes (normal, silent, vibrate)	Срабатыва
 Starts when the screen turns on or off	Срабатывает при включении или выключении экрана
 Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)	Срабатывает, когда датчик над экраном закрывают или открывают. Рука должна касаться стекла или почти касаться его (на большинстве устройств только при включённом экране)
 Starts when the user unlocks the device	Срабатывает, когда пользователь разблокирует устройство
-Starts when Wi-Fi is enabled or disabled	Срабатывает при включении или выключении Wi-Fi
 State	Состояние
-state	состояние
 Stop	Стоп
-Stop after (seconds, 0 = play to the end)	Остановить через (секунд, 0 — до конца)
 Stop Macro	Остановить макрос
 Stop Sound	Остановить звук
+Stop after (seconds, 0 = play to the end)	Остановить через (секунд, 0 — до конца)
 Stops every sound started by Play Sound	Останавливает все звуки, запущенные узлом «Воспроизвести звук»
 Stream	Поток
 String	Текст
@@ -502,18 +498,19 @@ Toggle Flashlight	Переключить фонарик
 Toggle Wi-Fi	Переключить Wi-Fi
 Toggles Do-Not-Disturb on or off with a chosen policy level	Включает или выключает режим «Не беспокоить» с выбранным уровнем строгости
 Triple tap	Тройное касание
-true	да
 Tuesdays	Вторники
 Turn off	Выключить
 Turn on	Включить
+Turns Bluetooth on or off and reports the resulting state	Включает или выключает Bluetooth и сообщает получившееся состояние
+Turns Wi-Fi on or off and reports the resulting state	Включает или выключает Wi-Fi и сообщает получившееся состояние
 Turns a light, room or zone on or off, or sets its brightness, colour or warmth — Philips Hue	Включает или выключает светильник, комнату либо зону, а также задаёт яркость, цвет или теплоту — Philips Hue
 Turns a list into one piece of text, separated by what you choose	Превращает список в один текст, разделяя элементы тем, что вы выберете
 Turns a value into another type — text, a number, yes/no or a date	Превращает значение в другой тип — текст, число, «да/нет» или дату
 Turns accelerometer auto-rotation on or off	Включает или выключает автоповорот по акселерометру
-Turns Bluetooth on or off and reports the resulting state	Включает или выключает Bluetooth и сообщает получившееся состояние
 Turns the camera torch (flashlight) on or off	Включает или выключает фонарик камеры
-Turns Wi-Fi on or off and reports the resulting state	Включает или выключает Wi-Fi и сообщает получившееся состояние
 Type	Тип
+URL	Ссылка
+USB Device Connected	Подключено USB-устройство
 Uncovered	Открыт
 Undocked	Извлечено из док-станции
 Unit	Единица
@@ -525,8 +522,6 @@ Until a date and time	До даты и времени
 Until a time of day	До времени суток
 Up	Вверх
 Update Email	Изменить письмо
-URL	Ссылка
-USB Device Connected	Подключено USB-устройство
 Value	Значение
 Value (0-100, only when mode is set)	Значение (0–100, только в режиме «Задать»)
 Value (0-255, only when auto is off)	Значение (0–255, только когда автояркость выключена)
@@ -543,6 +538,7 @@ Wait Until	Ждать до
 Wait until finished	Ждать завершения
 Warmth (K)	Теплота (K)
 Wednesdays	Среды
+What starts it	Что запускает
 What to do	Что сделать
 Whatsapp	WhatsApp
 When cancelled	При отмене
@@ -552,26 +548,32 @@ When the light level	Когда освещённость
 When the time comes	Когда наступит время
 When time runs out	Когда время истечёт
 Where an item sits in a list, counting from 0, or -1 when it is not there	На каком месте элемент стоит в списке, считая от 0, или -1, если его там нет
+Whether Bluetooth is currently enabled	Включён ли Bluetooth сейчас
+Whether Do-Not-Disturb is currently active	Активен ли сейчас режим «Не беспокоить»
+Whether NFC is currently switched on	Включён ли NFC сейчас
+Whether Wi-Fi is currently enabled	Включён ли Wi-Fi сейчас
 Whether a list holds a given item	Содержит ли список заданный элемент
 Whether a wired or USB headset is currently plugged in	Подключена ли сейчас проводная или USB-гарнитура
 Whether airplane mode is currently on	Включён ли сейчас режим полёта
 Whether battery saver is currently on	Включено ли сейчас энергосбережение
-Whether Bluetooth is currently enabled	Включён ли Bluetooth сейчас
-Whether Do-Not-Disturb is currently active	Активен ли сейчас режим «Не беспокоить»
-Whether NFC is currently switched on	Включён ли NFC сейчас
 Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	Закрыто ли что-нибудь датчик над экраном — карман, рука на стекле, устройство экраном вниз
 Whether the device is currently charging	Заряжается ли устройство сейчас
 Whether the device is currently in dark theme (night mode)	Включена ли сейчас на устройстве тёмная тема (ночной режим)
 Whether the device is currently sitting in a dock	Стоит ли устройство сейчас в док-станции
 Whether the screen is currently on and interactive	Включён ли сейчас экран и доступен ли он для взаимодействия
-Whether Wi-Fi is currently enabled	Включён ли Wi-Fi сейчас
 While the screen is off	При выключенном экране
 Whole number	Целое число
-Wi-Fi enabled	Wi-Fi включён
 Wi-Fi Network	Сеть Wi-Fi
-Wi-Fi network	Сеть Wi-Fi
 Wi-Fi State Change	Изменение состояния Wi-Fi
+Wi-Fi enabled	Wi-Fi включён
+Wi-Fi network	Сеть Wi-Fi
 Within (ms)	В пределах (мс)
 Writes a message to this workflow\'s console	Записывает сообщение в консоль этого сценария
 Yes or no	Да или нет
 Z to A / largest first	От Я до А / сначала большие
+false	нет
+in	Вход
+out	Выход
+response	ответ
+state	состояние
+true	да

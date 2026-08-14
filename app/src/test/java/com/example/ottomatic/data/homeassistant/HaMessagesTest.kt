@@ -163,4 +163,85 @@ class HaMessagesTest {
         assertEquals(1, states.size)
         assertEquals("light.a", states.single().entityId)
     }
+
+    // ---- The trigger platform ----
+
+    /**
+     * The exact frame the web interface's own automation editor sends, pinned because the app's
+     * trigger list is only as right as this: the entity goes in a `target` object rather than
+     * beside the type, and `expand_group` is what makes a trigger on a group of speakers mean
+     * anything.
+     */
+    @Test
+    fun `the trigger list is asked for with a target rather than a bare entity`() {
+        val frame = HaMessages.triggersForTarget(68, "media_player.ultra")
+
+        assertTrue(frame.contains("\"type\":\"get_triggers_for_target\""))
+        assertTrue(frame.contains("\"target\":{\"entity_id\":\"media_player.ultra\"}"))
+        assertTrue(frame.contains("\"expand_group\":true"))
+        assertTrue(frame.contains("\"id\":68"))
+    }
+
+    /**
+     * The answer is a flat array of ids, and anything else reads as **empty meaning "cannot
+     * narrow"** rather than as a failure — an instance too old for the command answers a
+     * refusal, and a picker must widen rather than empty.
+     */
+    @Test
+    fun `a list of ids is read, and anything else reads as empty`() {
+        assertEquals(
+            listOf("media_player.turned_on", "media_player.paused_playing"),
+            HaMessages.stringsOf("""["media_player.turned_on","media_player.paused_playing"]"""),
+        )
+        assertTrue(HaMessages.stringsOf("").isEmpty())
+        assertTrue(HaMessages.stringsOf("""{"error":"unknown command"}""").isEmpty())
+    }
+
+    /**
+     * The **options are merged into the trigger object**, not nested under a key of their own —
+     * `for` and `behavior` are siblings of `trigger` and `target` in Home Assistant's schema,
+     * and a nested one is rejected as an unknown field, taking the whole subscription with it.
+     */
+    @Test
+    fun `a trigger subscription names the trigger, its target and its options together`() {
+        val frame = HaMessages.subscribeTrigger(
+            id = 4,
+            trigger = "binary_sensor.opened",
+            entityId = "binary_sensor.front_door",
+            options = kotlinx.serialization.json.Json.parseToJsonElement("""{"for":"00:01:30"}""")
+                .let { it as kotlinx.serialization.json.JsonObject },
+        )
+
+        assertTrue(frame.contains("\"type\":\"subscribe_trigger\""))
+        assertTrue(frame.contains("\"trigger\":\"binary_sensor.opened\""))
+        assertTrue(frame.contains("\"target\":{\"entity_id\":\"binary_sensor.front_door\"}"))
+        assertTrue(frame.contains("\"for\":\"00:01:30\""))
+    }
+
+    /**
+     * **A fired trigger arrives on a different key from an event**, and reading the wrong one
+     * gives an event that parses perfectly and carries nothing: the bus publishes `data` and
+     * names its type, where a trigger publishes `variables.trigger` and names nothing at all.
+     */
+    @Test
+    fun `a fired trigger carries its payload under variables`() {
+        val frame = HaMessages.parse(
+            """
+            {"id":7,"type":"event","event":{"variables":{"trigger":
+              {"entity_id":"binary_sensor.front_door","from_state":{"state":"off"}}}}}
+            """.trimIndent(),
+        )
+
+        val event = frame as HaMessages.Frame.Event
+        assertEquals(7, event.id)
+        // No event_type at all — the id is the whole of the routing information.
+        assertEquals("", event.eventType)
+
+        val trigger = HaMessages.triggerOf(event.variables)
+        assertEquals("binary_sensor.front_door", HaMessages.field(trigger, "entity_id"))
+        assertEquals("off", HaMessages.nestedState(trigger, "from_state"))
+        // A trigger platform that publishes nothing of the sort is ordinary, not a failure.
+        assertEquals("", HaMessages.nestedState(trigger, "to_state"))
+        assertTrue(HaMessages.triggerOf(event.data).isEmpty())
+    }
 }

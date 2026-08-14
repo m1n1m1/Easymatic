@@ -48,16 +48,18 @@ data class OptionWire(
 )
 
 /**
- * The config widgets a plugin may ask for — eight of the host's fourteen.
+ * The config widgets a plugin may ask for — eight of the host's fifteen.
  *
- * The six that are missing are missing on purpose, and for one reason each rather
- * than a blanket one: `PICKER`, `PORT_LIST`, `PHONE`, `WIFI_NETWORK`,
- * `CONTACT_NAME` and `MAIL_FOLDER` all reach a host library or a host
- * `CompositionLocal`. `PickerKind` alone spans geofence places, variables, macros,
- * mail accounts, smart-home hubs and AI connections — so a plugin declaring
- * `@Picker(PickerKind.MACRO)` would be handed one of the user's macro ids by a
- * field it merely asked to render, which is precisely the capability the boundary
- * exists to withhold.
+ * The seven that are missing are missing on purpose, and for one reason each rather
+ * than a blanket one: `PICKER`, `SUGGESTED`, `PORT_LIST`, `PHONE`, `WIFI_NETWORK`,
+ * `CONTACT_NAME` and `API_TOKEN` all reach a host library, a host
+ * `CompositionLocal` or a host trust boundary. `PickerKind` alone spans geofence
+ * places, variables, macros, mail accounts, smart-home hubs and AI connections — so
+ * a plugin declaring `@Picker(PickerKind.MACRO)` would be handed one of the user's
+ * macro ids by a field it merely asked to render, which is precisely the capability
+ * the boundary exists to withhold. `SUGGESTED` is the same hazard one step along: a
+ * plugin naming a suggestion source would be handed the user's entity list, or their
+ * mailboxes, by declaring a field.
  *
  * `DateTime` and `TimeOfDay` stay, because both are pure parsers in `domain` with
  * no library behind them and nothing of the user's to leak.

@@ -1,6 +1,8 @@
 package com.example.ottomatic.data.homeassistant
 
 import com.example.ottomatic.core.service.SmartHomeTargetKind
+import com.example.ottomatic.domain.model.HaSelector
+import com.example.ottomatic.domain.model.HaService
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -213,6 +215,167 @@ class HaResourcesTest {
     }
 
     /**
+     * **The shape that empties the list for a whole class of installs if it is got wrong.**
+     * Current Home Assistant writes `entity` as an array of filters whose `domain` is itself an
+     * array; older instances and some custom integrations write an object at the outer level
+     * and a bare string at the inner one. Both must parse, or those users see a chooser that
+     * silently offers nothing.
+     */
+    @Test
+    fun `a target entity filter parses in both the array and the legacy object shape`() {
+        val modern = """
+            [{"domain": "light", "services": {"turn_on": {
+              "target": {"entity": [{"domain": ["light", "switch"]}]}}}}]
+        """.trimIndent()
+        val legacy = """
+            [{"domain": "light", "services": {"turn_on": {
+              "target": {"entity": {"domain": "light"}}}}}]
+        """.trimIndent()
+
+        assertEquals(listOf("light", "switch"), HaResources.parseServices(modern).single().targetDomains)
+        assertEquals(listOf("light"), HaResources.parseServices(legacy).single().targetDomains)
+    }
+
+    /**
+     * The three-way distinction the blank-entity rule rests on, and the reason `takesTarget`
+     * and `targetDomains` are two fields rather than one.
+     */
+    @Test
+    fun `an absent target is not the same as an unconstrained one`() {
+        val payload = """
+            [{"domain": "homeassistant", "services": {
+               "restart": {"name": "Restart"},
+               "turn_on": {"target": {"entity": [{}]}},
+               "update_entity": {"target": {}}}}]
+        """.trimIndent()
+
+        val services = HaResources.parseServices(payload).associateBy { it.id }
+
+        // No target key at all: acts on no entity.
+        assertFalse(services.getValue("homeassistant.restart").takesTarget)
+        // A filter naming no domain means *any* entity, not none.
+        assertTrue(services.getValue("homeassistant.turn_on").takesTarget)
+        assertTrue(services.getValue("homeassistant.turn_on").targetDomains.isEmpty())
+        assertTrue(services.getValue("homeassistant.update_entity").takesTarget)
+    }
+
+    /**
+     * Which services a chooser offers, and the **degradation rule** that keeps it honest: a
+     * service carrying no target metadata is offered always, because empty metadata narrows
+     * nothing and must never narrow to nothing.
+     */
+    @Test
+    fun `a service is offered for the domains its target accepts`() {
+        val payload = """
+            [{"domain": "light", "services": {
+               "turn_on": {"target": {"entity": [{"domain": ["light"]}]}},
+               "restart": {},
+               "any": {"target": {"entity": [{}]}}}}]
+        """.trimIndent()
+        val services = HaResources.parseServices(payload).associateBy { it.id }
+
+        with(services.getValue("light.turn_on")) {
+            assertTrue(offersFor("light"))
+            assertFalse(offersFor("lock"))
+            // Nothing chosen yet: a service that needs an entity is not the answer.
+            assertFalse(offersFor(""))
+        }
+        with(services.getValue("light.restart")) {
+            // Takes no entity, so it is exactly what a blank entity should show — and it is
+            // still offered once one is chosen, because it ignores the entity rather than
+            // conflicting with it. Hiding it there would mean clearing the entity to reach
+            // `homeassistant.restart`, which is a dead end for no gain.
+            assertTrue(offersFor(""))
+            assertTrue(offersFor("light"))
+        }
+        with(services.getValue("light.any")) {
+            assertTrue(offersFor("lock"))
+        }
+    }
+
+    /** An old snapshot has no target metadata at all, and must offer everything. */
+    @Test
+    fun `a service with no metadata is offered whatever the entity`() {
+        val bare = HaService(domain = "light", service = "turn_on")
+
+        assertTrue(bare.offersFor("light"))
+        assertTrue(bare.offersFor("lock"))
+        assertTrue(bare.offersFor(""))
+    }
+
+    /**
+     * Home Assistant 2024.8+ groups advanced fields into a collapsible section whose value
+     * carries its own `fields`. Not flattening it makes the form offer `advanced_fields` where
+     * the user needed `profile`.
+     */
+    @Test
+    fun `a collapsible field section is flattened one level`() {
+        val payload = """
+            [{"domain": "light", "services": {"turn_on": {"fields": {
+               "brightness_pct": {"required": true, "selector": {"number": {"min": 0, "max": 100}}},
+               "advanced_fields": {"collapsed": true, "fields": {
+                  "profile": {"selector": {"text": null}}}}}}}}]
+        """.trimIndent()
+
+        val fields = HaResources.parseServices(payload).single().fields
+
+        assertEquals(listOf("brightness_pct", "profile"), fields.map { it.name })
+        // Required first, because the hint's whole job is to say what the box needs.
+        assertTrue(fields.first().required)
+    }
+
+    @Test
+    fun `each selector kind is read, and an unknown one is not generated`() {
+        val payload = """
+            [{"domain": "x", "services": {"y": {"fields": {
+               "mode":   {"selector": {"select": {"options": ["a", "b"]}}},
+               "level":  {"selector": {"number": {"min": 1, "max": 5, "step": 2}}},
+               "flag":   {"selector": {"boolean": null}},
+               "who":    {"selector": {"entity": {"domain": "light"}}},
+               "note":   {"selector": {"text": null}},
+               "colour": {"selector": {"color_rgb": null}}}}}}]
+        """.trimIndent()
+
+        val fields = HaResources.parseServices(payload).single().fields.associateBy { it.name }
+
+        assertEquals(HaSelector.Options(listOf("a", "b")), fields.getValue("mode").selector)
+        assertEquals(HaSelector.Number(1.0, 5.0, 2.0), fields.getValue("level").selector)
+        assertEquals(HaSelector.Toggle, fields.getValue("flag").selector)
+        assertEquals(HaSelector.Entity(listOf("light")), fields.getValue("who").selector)
+        assertEquals(HaSelector.Text, fields.getValue("note").selector)
+        // A selector this build has never been taught: recorded, but nothing is generated for
+        // it, and the raw JSON box stays as the escape hatch.
+        assertEquals(HaSelector.Unknown, fields.getValue("colour").selector)
+    }
+
+    /**
+     * What a form field can offer without a round trip: the entity's own attribute names and
+     * the reading it had at Refresh.
+     */
+    @Test
+    fun `an entity carries its attributes and its reading`() {
+        val states = HaResources.parseStates(
+            """
+            [
+              {"entity_id": "input_select.mode", "state": "Home",
+               "attributes": {"friendly_name": "Mode", "options": ["Home", "Away"]}},
+              {"entity_id": "climate.hall", "state": "heat",
+               "attributes": {"hvac_modes": ["off", "heat"]}},
+              {"entity_id": "sensor.temperature", "state": "21.4",
+               "attributes": {"unit_of_measurement": "°C"}}
+            ]
+            """.trimIndent(),
+        )
+
+        val entities = HaResources.entitiesOf(states, emptyList()).associateBy { it.entityId }
+
+        assertEquals(listOf("friendly_name", "options"), entities.getValue("input_select.mode").attributes)
+        assertEquals("heat", entities.getValue("climate.hall").state)
+        assertEquals("21.4", entities.getValue("sensor.temperature").state)
+        assertEquals(listOf("unit_of_measurement"), entities.getValue("sensor.temperature").attributes)
+    }
+
+    /**
      * A locked-down instance can refuse the template endpoint, and a proxy can return
      * HTML for anything. Neither may take the states read down with it — the pickers
      * degrade to ungrouped, which beats "nothing has been read yet" by a long way.
@@ -223,6 +386,52 @@ class HaResourcesTest {
         assertTrue(HaResources.parseAreas("").isEmpty())
         assertTrue(HaResources.parseServices("{}").isEmpty())
         assertTrue(HaResources.parseStates("""[{"state": "on"}]""").isEmpty())
+    }
+
+    /**
+     * The two shapes the same services come in, and the reason both are read here.
+     *
+     * REST `/api/services` wraps them in an array of `{domain, services}`; the websocket
+     * `get_services` answers one object keyed by domain. Only the second carries `target` and
+     * the field `selector`s, which is why the socket is preferred — and why a snapshot taken
+     * from the endpoint narrows nothing and grows no fields rather than misbehaving.
+     */
+    @Test
+    fun `services parse from the websocket shape as well as the REST one`() {
+        val socketShape = """
+            {"light": {"turn_on": {"name": "Turn on",
+              "target": {"entity": [{"domain": ["light"]}]},
+              "fields": {"brightness_pct": {"required": true, "selector": {"number": {"min": 0, "max": 100}}}}}}}
+        """.trimIndent()
+
+        val service = HaResources.parseServices(socketShape).single()
+
+        assertEquals("light.turn_on", service.id)
+        assertEquals("Turn on", service.name)
+        assertTrue(service.takesTarget)
+        assertEquals(listOf("light"), service.targetDomains)
+        assertEquals(HaSelector.Number(0.0, 100.0), service.fields.single().selector)
+    }
+
+    /**
+     * The REST answer, which is what a refresh taken before any socket is up falls back to. It
+     * is deliberately **not** an error that everything narrowing depends on is missing from it:
+     * empty metadata narrows nothing, so the picker shows the wide list and the JSON box stays
+     * as the way to say what a generated field would have said.
+     */
+    @Test
+    fun `the REST shape parses with no target and no selectors, and that is not a failure`() {
+        val restShape = """[{"domain": "homeassistant", "services": {"restart": {"name": "Restart"}}}]"""
+
+        val service = HaResources.parseServices(restShape).single()
+
+        assertEquals("homeassistant.restart", service.id)
+        assertFalse(service.takesTarget)
+        assertTrue(service.targetDomains.isEmpty())
+        assertTrue(service.fields.isEmpty())
+        // The rule that keeps it usable: a service with no target metadata is offered whatever
+        // entity is in scope, rather than filtered away by a domain it never named.
+        assertTrue(service.offersFor("media_player"))
     }
 
     @Test

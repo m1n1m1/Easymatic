@@ -154,6 +154,7 @@ config_now	Agora
 config_port_carries_list	Esta porta transporta uma lista
 config_port_carries_one	Esta porta transporta um único valor
 config_set	Definir
+config_show_suggestions	Mostrar sugestões
 config_socket_feed	Alimentar %1$s a partir dos dados anteriores
 config_socket_use_typed_connected	Usar o valor escrito para %1$s (ligado a %2$s)
 config_socket_use_typed_free	Usar o valor escrito para %1$s (nada ligado)
@@ -258,11 +259,14 @@ grapheditor_zoom_percent	%1$d%%
 ha_access_token	Token de acesso de longa duração
 ha_address	Endereço
 ha_all_entities	Entidades
+ha_any_state_change	Sempre que mudar
+ha_any_state_change_hint	Qualquer mudança de estado, sem mais condições
 ha_auth_oauth	Sessão iniciada
 ha_auth_token	Token de longa duração
 ha_authentication	Autenticação
 ha_choose_a_hub	Escolher um Home Assistant
 ha_choose_a_service	Escolher um serviço
+ha_choose_a_trigger	Escolhe o que o inicia
 ha_choose_an_entity	Escolher uma entidade
 ha_cleartext_warning	Este endereço não está cifrado. É normal para um servidor da tua própria rede; pela internet, enviaria o teu token às claras.
 ha_connect_home_assistant	Ligar o Home Assistant
@@ -273,9 +277,12 @@ ha_no_hub_yet	Ainda não há nenhum Home Assistant. Adiciona um em Casa intelige
 ha_open_profile	Abrir a página de perfil
 ha_paste	Colar
 ha_replace_token	Substituir o token
+ha_show_everything	Mostrar tudo
+ha_show_matching	Mostrar só o que corresponde
 ha_sign_in	Ou inicia sessão no Home Assistant
 ha_test	Testar
 ha_token_steps	No Home Assistant, abre o teu perfil, escolhe Segurança, desce até Tokens de acesso de longa duração e cria um. Só é mostrado uma vez: copia-o e cola-o aqui.
+ha_trigger_built_in	Qualquer alteração
 hue_find_your_bridge	Encontra a tua ponte
 hue_hue_bridge	Ponte Hue
 hue_name_your_bridge	Dá um nome à tua ponte

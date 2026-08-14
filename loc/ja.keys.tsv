@@ -154,6 +154,7 @@ config_now	現在
 config_port_carries_list	このポートはリストを運びます
 config_port_carries_one	このポートは単一の値を運びます
 config_set	設定
+config_show_suggestions	候補を表示
 config_socket_feed	%1$s に上流のデータを流し込む
 config_socket_use_typed_connected	%1$s には入力した値を使う（%2$s に接続中）
 config_socket_use_typed_free	%1$s には入力した値を使う（何も接続されていません）
@@ -258,11 +259,14 @@ grapheditor_zoom_percent	%1$d%%
 ha_access_token	長期アクセストークン
 ha_address	アドレス
 ha_all_entities	エンティティ
+ha_any_state_change	変化するたび
+ha_any_state_change_hint	状態が変わるたび、条件なし
 ha_auth_oauth	サインイン済み
 ha_auth_token	長期トークン
 ha_authentication	認証
 ha_choose_a_hub	Home Assistant を選択
 ha_choose_a_service	サービスを選択
+ha_choose_a_trigger	開始のきっかけを選ぶ
 ha_choose_an_entity	エンティティを選択
 ha_cleartext_warning	このアドレスは暗号化されていません。自宅ネットワーク内のサーバーなら通常のことですが、インターネット越しではトークンが平文で送られます。
 ha_connect_home_assistant	Home Assistant に接続
@@ -273,9 +277,12 @@ ha_no_hub_yet	Home Assistant がまだありません。スマートホームで
 ha_open_profile	プロフィールページを開く
 ha_paste	貼り付け
 ha_replace_token	トークンを差し替える
+ha_show_everything	すべて表示
+ha_show_matching	一致するものだけ表示
 ha_sign_in	または Home Assistant にサインイン
 ha_test	テスト
 ha_token_steps	Home Assistant でプロフィールを開き、「セキュリティ」を選び、「長期アクセストークン」までスクロールして作成します。表示は一度きりです。コピーしてここに貼り付けてください。
+ha_trigger_built_in	すべての変化
 hue_find_your_bridge	ブリッジを見つける
 hue_hue_bridge	Hue ブリッジ
 hue_name_your_bridge	ブリッジに名前を付ける

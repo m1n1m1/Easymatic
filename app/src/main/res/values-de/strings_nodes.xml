@@ -1038,9 +1038,8 @@
     <string name="cfg_trigger_ha_event_event_type">Ereignistyp</string>
     <string name="cfg_trigger_ha_event_hub">Home Assistant</string>
     <string name="cfg_trigger_ha_state_entity">Entität</string>
-    <string name="cfg_trigger_ha_state_from_state">Wechselt von</string>
-    <string name="cfg_trigger_ha_state_include_attribute_changes">Auch wenn sich nur Details ändern</string>
-    <string name="cfg_trigger_ha_state_to_state">Wechselt zu</string>
+    <string name="cfg_trigger_ha_state_for_seconds">Gehalten für (Sekunden)</string>
+    <string name="cfg_trigger_ha_state_trigger">Was ihn startet</string>
     <string name="cfg_value_ha_state_attribute">Attribut (optional)</string>
     <string name="cfg_value_ha_state_entity">Entität</string>
     <string name="node_action_ha_service_desc">Führt einen beliebigen Home-Assistant-Dienst aus — ein Thermostat, einen Mediaplayer, ein Schloss, einen Staubsauger, ein Skript</string>
