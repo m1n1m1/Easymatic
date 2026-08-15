@@ -28,6 +28,27 @@ object Permissions {
      * statically; see `usesContacts`.
      */
     val READ_CONTACTS = Permission("android.permission.READ_CONTACTS")
+
+    /**
+     * Reading the device's calendars and the events in them.
+     *
+     * Declared *statically* by every calendar node, which is the opposite call from
+     * [READ_CONTACTS] and worth saying why: there is no chooser here that hands back
+     * a row under a transient grant. The system offers no calendar picker at all, so
+     * Ottomatic lists the calendars itself — which needs this grant before the config
+     * form can show anything, not merely when a node runs.
+     */
+    val READ_CALENDAR = Permission("android.permission.READ_CALENDAR")
+
+    /**
+     * Creating, changing and deleting calendar events.
+     *
+     * Separate from [READ_CALENDAR] because the platform separates them, and because
+     * the split is real to a user: a macro that reads the day's meetings is a very
+     * different proposition from one that can delete them. Only the three writing
+     * operations of `action.calendar_update` and `action.calendar_add` declare it.
+     */
+    val WRITE_CALENDAR = Permission("android.permission.WRITE_CALENDAR")
     val POST_NOTIFICATIONS = Permission("android.permission.POST_NOTIFICATIONS")
     val ACCESS_FINE_LOCATION = Permission("android.permission.ACCESS_FINE_LOCATION")
     val ACCESS_COARSE_LOCATION = Permission("android.permission.ACCESS_COARSE_LOCATION")

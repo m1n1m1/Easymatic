@@ -57,15 +57,43 @@ class NodeSchemaTest {
         @Wired val at: DateTime = DateTime.EPOCH,
     )
 
+    /** A date property whose default is a real moment rather than "not set". */
+    @Serializable
+    data class Dawn(
+        val at: DateTime = DateTime(1_753_617_791_000),
+    )
+
     private val schema = nodeSchema<Sample>()
     private val dated = nodeSchema<Dated>()
 
     @Test
-    fun `a date property gets a date field, port and default`() {
+    fun `a date property gets a date field and port`() {
         val field = dated.fields.single()
         assertEquals(ConfigFieldType.DATE_TIME, field.type)
-        assertEquals(DateTime.EPOCH.toString(), field.defaultValue)
         assertEquals(ItemSchema.Primitive(DateTime::class), dated.wiredPorts.single().schema)
+    }
+
+    /**
+     * The epoch is how a date property spells "not set", so the *form* leaves the box
+     * empty rather than writing 1970 into it — which put that date in front of the user
+     * and opened the date picker on it.
+     */
+    @Test
+    fun `a date defaulting to the epoch shows an empty field`() {
+        assertEquals("", dated.fields.single().defaultValue)
+    }
+
+    /** And the run-time meaning is untouched: blank still decodes to the property default. */
+    @Test
+    fun `an empty date field still decodes to the epoch`() {
+        assertEquals(DateTime.EPOCH, dated.decode(mapOf(ConfigKey("at") to "")).at)
+        assertEquals(DateTime.EPOCH, dated.decode(emptyMap()).at)
+    }
+
+    /** Only the epoch is hidden. A date somebody actually chose as a default still shows. */
+    @Test
+    fun `a real date default is shown as it is`() {
+        assertEquals(DateTime(1_753_617_791_000).toString(), nodeSchema<Dawn>().fields.single().defaultValue)
     }
 
     @Test

@@ -21,6 +21,13 @@
     <string name="category_smart_home">Casa inteligente</string>
     <string name="category_ai">IA</string>
     <string name="category_files">Ficheiros</string>
+    <string name="category_calendar">Calendário</string>
+    <string name="calendar_choose_a_calendar">Escolher um calendário</string>
+    <string name="calendar_any_calendar">Qualquer calendário</string>
+    <string name="calendar_no_calendars">Não há calendários neste telemóvel.</string>
+    <string name="calendar_no_writable_calendars">Não é possível adicionar nada a nenhum dos calendários deste telemóvel. Um calendário subscrito, como um de feriados, só pode ser lido.</string>
+    <string name="calendar_needs_access">O Ottomatic precisa de acesso ao calendário para listar os seus calendários.</string>
+    <string name="calendar_grant_access">Conceder</string>
     <string name="category_data">Dados</string>
     <string name="category_value_power">Energia e bateria</string>
     <string name="category_value_connectivity">Conectividade</string>

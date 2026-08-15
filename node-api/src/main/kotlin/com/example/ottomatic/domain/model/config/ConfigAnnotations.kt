@@ -274,6 +274,44 @@ enum class PickerKind {
     LIGHT_SCENE,
 
     /**
+     * A [com.example.ottomatic.domain.model.CalendarRef] spec naming one calendar on
+     * this phone, for a field that must name exactly one.
+     *
+     * **Read-only, and the argument is worth having** because a calendar looks at first
+     * like [WifiNetwork]'s case: its chooser needs a grant, and a chooser that cannot be
+     * filled would normally argue for an editable field so a denied permission does not
+     * leave the field unsettable. It does not argue for one here, for two independent
+     * reasons. The node cannot work without the same grant either way — a typed calendar
+     * id would buy the ability to configure a node that is dead regardless — and the half
+     * of [WifiNetwork]'s test that actually decides fails outright: **the answer set is
+     * knowable and complete.** The provider lists every calendar on the phone, so there
+     * is nothing a typed id could reach that the chooser cannot, where a Wi-Fi scan can
+     * only offer what is in range at this moment.
+     *
+     * The stored value is also opaque in the [MACRO] and [MAIL_ACCOUNT] sense: a
+     * calendar's id is a bare local row number, so a typed one is indistinguishable from
+     * a correct one and the node merely looks broken.
+     *
+     * Blank is not an answer, on [MAIL_ACCOUNT]'s reasoning: "any calendar" is not a
+     * thing to add an appointment to.
+     */
+    CALENDAR,
+
+    /**
+     * A [com.example.ottomatic.domain.model.CalendarRef] spec, for a field that
+     * *filters* by calendar.
+     *
+     * A separate kind from [CALENDAR] for the reason [APP_FILTER] is separate from
+     * [APP] and [LIGHT_SCENE] from [LIGHT_TARGET]: the two ask different questions with
+     * different answer sets — "every calendar" is a valid answer to a filter and not to
+     * "which one do I add this to" — and a property may carry only one `@Picker`, so no
+     * mode enum could switch the chooser. The renderer is handed the kind and its scope
+     * and nothing else, so `optional` cannot do this job either: it decides whether the
+     * *validator* forgives a blank, not whether the chooser offers one.
+     */
+    CALENDAR_FILTER,
+
+    /**
      * An [com.example.ottomatic.domain.model.AiModelProfile] id, chosen from the AI
      * connection library.
      *

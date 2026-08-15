@@ -21,6 +21,8 @@
     <string name="perm_title_send_sms">Send texts</string>
     <string name="perm_title_call_phone">Make calls</string>
     <string name="perm_title_read_contacts">Contacts</string>
+    <string name="perm_title_read_calendar">Calendar</string>
+    <string name="perm_title_write_calendar">Change your calendar</string>
     <string name="perm_title_post_notifications">Notifications</string>
     <string name="perm_title_bluetooth_connect">Bluetooth</string>
 
@@ -42,6 +44,8 @@
     <string name="perm_desc_send_sms">Lets a macro send a text on your behalf.</string>
     <string name="perm_desc_call_phone">Lets a macro place a call without you confirming it.</string>
     <string name="perm_desc_read_contacts">Lets a macro look up the number of a contact you chose. Choosing one needs nothing; dialling it later does.</string>
+    <string name="perm_desc_read_calendar">Lets a macro read your appointments, and lets you pick a calendar when setting one up. Unlike contacts, there is no system picker to lean on, so this is needed before a calendar node can show you anything.</string>
+    <string name="perm_desc_write_calendar">Lets a macro create, change and delete appointments. Reading them is a separate switch above.</string>
     <string name="perm_desc_post_notifications">Lets Ottomatic show a notification — both the ones a macro posts and the one that tells you the engine failed to start after a reboot.</string>
     <string name="perm_desc_bluetooth_connect">Lets a macro turn Bluetooth on and off.</string>
     <string name="perm_desc_unknown">Used by a node on one of your macros.</string>
@@ -53,6 +57,8 @@
     <string name="perm_rationale_overlay_dialog">Ottomatic needs permission to draw over other apps so this dialog can reach you while you are somewhere else on your phone. Without it the node cancels instead of asking.</string>
     <string name="perm_rationale_nfc_radio">This trigger needs NFC switched on, which is a system-wide setting rather than something Ottomatic can grant itself. Tags are also only read while the screen is on and unlocked — a tap will not reach a phone asleep in your pocket.</string>
     <string name="perm_rationale_alarm_exact">Ottomatic needs permission to set exact alarms so this wait ends at the minute you asked for. Without it the wait still happens, but Android batches the wake-up with other work and it can be minutes late.</string>
+    <string name="perm_rationale_calendar_read">Ottomatic needs calendar access to read your appointments. Without it this node reads nothing at all, and the calendar chooser above has nothing to offer.</string>
+    <string name="perm_rationale_calendar_write">Ottomatic needs permission to change your calendar so this node can create, edit or delete an appointment. Reading appointments is a separate grant.</string>
     <string name="perm_rationale_overlay_launch">Ottomatic needs permission to draw over other apps so it can open one while you are somewhere else on your phone. Android blocks a background app from opening another, and without this the node does nothing and says so in the console.</string>
 
 </resources>

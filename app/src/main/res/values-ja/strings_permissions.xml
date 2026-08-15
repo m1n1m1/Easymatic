@@ -18,6 +18,8 @@
     <string name="perm_title_send_sms">SMS の送信</string>
     <string name="perm_title_call_phone">電話の発信</string>
     <string name="perm_title_read_contacts">連絡先</string>
+    <string name="perm_title_read_calendar">カレンダー</string>
+    <string name="perm_title_write_calendar">カレンダーの変更</string>
     <string name="perm_title_post_notifications">通知</string>
     <string name="perm_title_bluetooth_connect">Bluetooth</string>
     <string name="perm_desc_overlay">他のことをしている最中でも、マクロがダイアログを表示したり他のアプリを開いたりできるようにします。これがないと、Android はバックグラウンドのアプリに対してどちらも許可しません。</string>
@@ -37,6 +39,8 @@
     <string name="perm_desc_send_sms">マクロがあなたに代わって SMS を送信できるようにします。</string>
     <string name="perm_desc_call_phone">確認なしにマクロが電話を発信できるようにします。</string>
     <string name="perm_desc_read_contacts">選んだ連絡先の番号をマクロが調べられるようにします。連絡先を選ぶだけなら権限は不要ですが、後で発信するときには必要です。</string>
+    <string name="perm_desc_read_calendar">マクロが予定を読み取れるようになり、設定時にカレンダーを選べるようになります。連絡先と違って頼れるシステムの選択画面がないため、カレンダーのノードが何かを表示するにはこれが必要です。</string>
+    <string name="perm_desc_write_calendar">マクロが予定を作成・変更・削除できるようになります。読み取りは上にある別のスイッチです。</string>
     <string name="perm_desc_post_notifications">Ottomatic が通知を表示できるようにします。マクロが出す通知だけでなく、再起動後にエンジンが起動できなかったことを知らせる通知も含みます。</string>
     <string name="perm_desc_bluetooth_connect">マクロが Bluetooth のオン・オフを切り替えられるようにします。</string>
     <string name="perm_desc_unknown">あなたのいずれかのマクロのノードが使用しています。</string>
@@ -46,5 +50,7 @@
     <string name="perm_rationale_overlay_dialog">端末で他のことをしている最中でもこのダイアログが届くように、Ottomatic は他のアプリの上に表示する権限を必要とします。これがないと、このノードは尋ねる代わりにキャンセルします。</string>
     <string name="perm_rationale_nfc_radio">このトリガーには NFC がオンになっている必要がありますが、これはシステム全体の設定であり、Ottomatic が自分で付与できるものではありません。またタグは画面がオンでロック解除されている間しか読み取られません。ポケットの中でスリープしている端末にかざしても反応しません。</string>
     <string name="perm_rationale_alarm_exact">この待機を指定した分ちょうどに終えるために、Ottomatic は正確なアラームを設定する権限を必要とします。これがなくても待機自体は行われますが、Android が起動を他の処理とまとめるため、数分遅れることがあります。</string>
+    <string name="perm_rationale_calendar_read">Ottomatic が予定を読み取るにはカレンダーへのアクセスが必要です。これがないとこのノードは何も読み取れず、上のカレンダー選択にも候補が出ません。</string>
+    <string name="perm_rationale_calendar_write">このノードが予定を作成・編集・削除するには、Ottomatic にカレンダーを変更する権限が必要です。予定の読み取りは別の権限です。</string>
     <string name="perm_rationale_overlay_launch">端末で他のことをしている最中でも別のアプリを開けるように、Ottomatic は他のアプリの上に表示する権限を必要とします。Android はバックグラウンドのアプリが別のアプリを開くことを禁じており、この権限がないとこのノードは何もせず、その旨をコンソールに出力します。</string>
 </resources>

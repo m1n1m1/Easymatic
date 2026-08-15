@@ -1,6 +1,8 @@
 package com.example.ottomatic.engine
 
 import com.example.ottomatic.core.service.Ai
+import com.example.ottomatic.core.service.Calendars
+import com.example.ottomatic.core.service.NoCalendars
 import com.example.ottomatic.core.service.Files
 import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.service.DeviceState
@@ -63,6 +65,7 @@ class DefaultExecutionContext(
     override val mqtt: Mqtt = NoMqtt,
     override val ai: Ai = NoAi,
     override val files: Files = NoFiles,
+    override val calendars: Calendars = NoCalendars,
     private val logger: (LogEntry) -> Unit = {},
 ) : ExecutionContext {
 

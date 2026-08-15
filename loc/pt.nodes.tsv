@@ -634,3 +634,52 @@ Tools	Ferramentas
 What to ask	O que perguntar
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	Envia um pedido a um modelo de IA (Gemini, Claude, ChatGPT, OpenRouter ou um modelo alojado por si) e devolve a resposta como texto, deixando-o executar nós e macros como ferramentas quando o permitir
 Let it use tools	Deixar usar ferramentas
+Add Calendar Event	Adicionar compromisso
+All day	Todo o dia
+Applies to	Aplica-se a
+Appointment	Compromisso
+Between two times	Entre dois momentos
+Busy	Ocupado
+Calendar	Calendário
+Calendar Changed	Calendário alterado
+Calendar Event	Compromisso do calendário
+Change how it shows you	Alterar como o mostra
+Changes or deletes an appointment, either one occurrence of it or the whole series	Altera ou elimina um compromisso, seja uma única ocorrência, seja toda a série
+Creates an appointment in one of the calendars on this phone	Cria um compromisso num dos calendários deste telemóvel
+Days ahead	Dias à frente
+Details	Detalhes
+Events	Compromissos
+Find Calendar Events	Procurar compromissos
+Fire when	Disparar quando
+Free	Livre
+How long (minutes)	Duração (minutos)
+In an appointment	Num compromisso
+Include cancelled and declined ones	Incluir os cancelados e recusados
+It ends	Termina
+It starts	Começa
+Its reminder falls due	O seu lembrete fica devido
+Look at	Ver
+Minutes before (negative fires afterwards)	Minutos antes (negativo dispara depois)
+New details (leave empty to keep them)	Novos detalhes (deixe vazio para os manter)
+New length in minutes (-1 to keep it)	Nova duração em minutos (-1 para a manter)
+New place (leave empty to keep it)	Novo local (deixe vazio para o manter)
+New start (leave empty to keep it)	Novo início (deixe vazio para o manter)
+New title (leave empty to keep it)	Novo título (deixe vazio para o manter)
+Next appointment	Próximo compromisso
+Reads appointments out of a calendar onto a list you can loop over	Lê os compromissos de um calendário para uma lista que pode percorrer
+Remind you (minutes before, -1 for no reminder)	Lembrá-lo (minutos antes, -1 para nenhum lembrete)
+Shows you as	Mostra-o como
+Starts at	Começa às
+Starts when an appointment begins, ends, or its reminder falls due	Inicia quando um compromisso começa, termina ou o seu lembrete fica devido
+Starts when an appointment is added, changed or removed in any calendar	Inicia quando um compromisso é adicionado, alterado ou removido em qualquer calendário
+Tentative	Provisório
+The next appointment due to start in any calendar	O próximo compromisso que vai começar em qualquer calendário
+The next few days	Os próximos dias
+The rest of today	O resto de hoje
+This occurrence	Apenas este compromisso
+Title contains	O título contém
+Update	Alterá-lo
+Update Calendar Event	Atualizar compromisso
+Where	Onde
+Whether an appointment is on in any calendar right now	Se há neste momento um compromisso a decorrer em algum calendário
+Whole series	Toda a série

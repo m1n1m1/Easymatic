@@ -736,3 +736,16 @@ ai_tools_choose_a_model_first	请先选择模型
 ai_tools_reset	恢复跟随模型
 ai_tools_reset_all	全部重置
 config_tools_ai_chooses	由 AI 从可访问的 %1$d 项中选择%2$s
+perm_title_read_calendar	日历
+perm_title_write_calendar	修改你的日历
+perm_desc_read_calendar	允许宏读取你的日程，并让你在设置时选择日历。与通讯录不同，系统没有可供依赖的选择器，所以日历节点必须先获得此权限才能显示任何内容。
+perm_desc_write_calendar	允许宏创建、修改和删除日程。读取日程是上面那个单独的开关。
+perm_rationale_calendar_read	Ottomatic 需要日历访问权限才能读取你的日程。没有它，此节点什么也读不到，上面的日历选择器也没有内容可选。
+perm_rationale_calendar_write	Ottomatic 需要修改日历的权限，此节点才能创建、编辑或删除日程。读取日程是单独的一项权限。
+category_calendar	日历
+calendar_choose_a_calendar	选择日历
+calendar_any_calendar	任意日历
+calendar_no_calendars	这台手机上没有日历。
+calendar_no_writable_calendars	这台手机上的日历都无法写入。订阅的日历（例如节假日日历）只能读取。
+calendar_needs_access	Ottomatic 需要日历访问权限才能列出你的日历。
+calendar_grant_access	授予

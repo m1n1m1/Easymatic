@@ -14,8 +14,13 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.example.ottomatic.ServiceLocator
 import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.service.CalendarLimits
+import com.example.ottomatic.core.service.Calendars
 import com.example.ottomatic.core.service.Contacts
+import com.example.ottomatic.core.service.EventQuery
+import com.example.ottomatic.data.calendar.CalendarWatchers
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.data.GeofencePlaceRepository
@@ -33,6 +38,9 @@ import com.example.ottomatic.domain.model.MailAccount
 import com.example.ottomatic.domain.model.SmartHomeHub
 import com.example.ottomatic.domain.model.NfcTag
 import com.example.ottomatic.engine.trigger.BatteryDirection
+import com.example.ottomatic.engine.trigger.CalendarOccurrence
+import com.example.ottomatic.engine.trigger.CalendarWatchSpec
+import com.example.ottomatic.engine.trigger.planNext
 import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.HaWatchSpec
@@ -51,8 +59,12 @@ import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.TimeUnit
+
+private const val MS_PER_MINUTE = 60_000L
+private const val MS_PER_DAY = 24L * 60 * 60 * 1000
 
 /**
  * Android implementation of [TriggerHost]. Supplies real system streams and
@@ -103,6 +115,21 @@ class AndroidTriggerHost(
     private val smartHomeHubs: SmartHomeHubRepository? = null,
     private val haConnections: HaConnections? = null,
     private val mqttConnections: MqttConnections? = null,
+    /**
+     * The same instance the execution context holds, on `contacts`' reasoning: an action
+     * reading an appointment and a trigger planning an alarm against one must not disagree
+     * about it.
+     *
+     * Nullable on `mailAccounts`' shape — null leaves every calendar trigger unarmed and
+     * silent rather than watching nothing, which is what a test double wants.
+     */
+    private val calendars: Calendars? = null,
+    /**
+     * Where a coalesced calendar notification is published from. Defaults to the
+     * application scope for the same reason the watchers are owned here at all: the
+     * observer outlives any one arm's coroutine.
+     */
+    private val calendarScope: CoroutineScope = ServiceLocator.appScope,
 ) : TriggerHost {
 
     private val appContext = context.applicationContext
@@ -125,7 +152,43 @@ class AndroidTriggerHost(
     // reason: a trigger is handed a host and nothing else.
     private val mailWatchers = MailWatchers(appContext, mailAccounts)
 
+    // One per process, holding the single ContentObserver and the table of nodes that
+    // asked for it. Owned here on `mailWatchers`' reasoning.
+    private val calendarWatchers = CalendarWatchers(appContext, calendarScope)
+
     override fun mailAccount(id: String): MailAccount? = mailAccounts?.get(id)
+
+    /**
+     * Reads the look-ahead window and hands it to the planner.
+     *
+     * The window starts *before* [afterEpochMs] when the node fires after an appointment
+     * rather than before it — a negative lead. Without that, "ten minutes after my last
+     * meeting ends" would miss whenever the trigger re-planned inside those ten minutes,
+     * because a meeting that has already finished no longer overlaps the window and the
+     * provider would not return it at all.
+     */
+    override suspend fun nextCalendarOccurrence(
+        spec: CalendarWatchSpec,
+        afterEpochMs: Long,
+    ): CalendarOccurrence? {
+        val calendars = calendars ?: return null
+        val trailing = (-spec.leadMinutes).coerceAtLeast(0) * MS_PER_MINUTE
+        val listing = calendars.events(
+            EventQuery(
+                calendarSpec = spec.calendarSpec,
+                fromEpochMs = afterEpochMs - trailing,
+                untilEpochMs = afterEpochMs + CalendarLimits.HORIZON_DAYS * MS_PER_DAY,
+                titleContains = spec.titleContains,
+                limit = CalendarLimits.MAX_EVENTS,
+            ),
+        )
+        return planNext(spec, listing.events, afterEpochMs)
+    }
+
+    override fun armCalendarWatch(
+        nodeId: NodeId,
+        onReport: (String, LogLevel) -> Unit,
+    ): ScheduleHandle = calendarWatchers.arm(nodeId, onReport)
 
     override fun armMailWatch(
         nodeId: NodeId,

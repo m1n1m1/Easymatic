@@ -634,3 +634,52 @@ Tools	Outils
 What to ask	Quoi demander
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	Envoie une requête à un modèle d'IA (Gemini, Claude, ChatGPT, OpenRouter ou un modèle auto-hébergé) et renvoie sa réponse sous forme de texte, en le laissant exécuter des nœuds et des macros comme outils lorsque vous l'autorisez
 Let it use tools	Le laisser utiliser des outils
+Add Calendar Event	Ajouter un rendez-vous
+All day	Journée entière
+Applies to	S'applique à
+Appointment	Rendez-vous
+Between two times	Entre deux moments
+Busy	Occupé
+Calendar	Agenda
+Calendar Changed	Agenda modifié
+Calendar Event	Rendez-vous de l'agenda
+Change how it shows you	Changer comment il vous affiche
+Changes or deletes an appointment, either one occurrence of it or the whole series	Modifie ou supprime un rendez-vous, soit une seule occurrence, soit toute la série
+Creates an appointment in one of the calendars on this phone	Crée un rendez-vous dans l'un des agendas de ce téléphone
+Days ahead	Jours à venir
+Details	Détails
+Events	Rendez-vous
+Find Calendar Events	Chercher des rendez-vous
+Fire when	Déclencher quand
+Free	Libre
+How long (minutes)	Durée (minutes)
+In an appointment	En rendez-vous
+Include cancelled and declined ones	Inclure ceux annulés et refusés
+It ends	Il se termine
+It starts	Il commence
+Its reminder falls due	Son rappel arrive à échéance
+Look at	Regarder
+Minutes before (negative fires afterwards)	Minutes avant (négatif déclenche après)
+New details (leave empty to keep them)	Nouveaux détails (laisser vide pour les conserver)
+New length in minutes (-1 to keep it)	Nouvelle durée en minutes (-1 pour la conserver)
+New place (leave empty to keep it)	Nouveau lieu (laisser vide pour le conserver)
+New start (leave empty to keep it)	Nouveau début (laisser vide pour le conserver)
+New title (leave empty to keep it)	Nouveau titre (laisser vide pour le conserver)
+Next appointment	Prochain rendez-vous
+Reads appointments out of a calendar onto a list you can loop over	Lit les rendez-vous d'un agenda dans une liste que vous pouvez parcourir
+Remind you (minutes before, -1 for no reminder)	Vous rappeler (minutes avant, -1 pour aucun rappel)
+Shows you as	Vous affiche comme
+Starts at	Commence à
+Starts when an appointment begins, ends, or its reminder falls due	Démarre quand un rendez-vous commence, se termine ou que son rappel arrive à échéance
+Starts when an appointment is added, changed or removed in any calendar	Démarre quand un rendez-vous est ajouté, modifié ou supprimé dans un agenda
+Tentative	Provisoire
+The next appointment due to start in any calendar	Le prochain rendez-vous qui doit commencer dans un agenda
+The next few days	Les prochains jours
+The rest of today	Le reste de la journée
+This occurrence	Ce rendez-vous uniquement
+Title contains	Le titre contient
+Update	Le modifier
+Update Calendar Event	Modifier un rendez-vous
+Where	Où
+Whether an appointment is on in any calendar right now	Si un rendez-vous est en cours dans un agenda en ce moment
+Whole series	Toute la série

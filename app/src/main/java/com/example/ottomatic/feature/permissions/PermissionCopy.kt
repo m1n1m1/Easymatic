@@ -60,6 +60,8 @@ private fun runtimeTitleRes(manifest: String?): Int? = when (manifest) {
     Permissions.SEND_SMS.manifest -> R.string.perm_title_send_sms
     Permissions.CALL_PHONE.manifest -> R.string.perm_title_call_phone
     Permissions.READ_CONTACTS.manifest -> R.string.perm_title_read_contacts
+    Permissions.READ_CALENDAR.manifest -> R.string.perm_title_read_calendar
+    Permissions.WRITE_CALENDAR.manifest -> R.string.perm_title_write_calendar
     Permissions.POST_NOTIFICATIONS.manifest -> R.string.perm_title_post_notifications
     Permissions.BLUETOOTH_CONNECT.manifest -> R.string.perm_title_bluetooth_connect
     else -> null
@@ -98,6 +100,8 @@ private fun runtimeDescriptionRes(manifest: String?): Int = when (manifest) {
     Permissions.SEND_SMS.manifest -> R.string.perm_desc_send_sms
     Permissions.CALL_PHONE.manifest -> R.string.perm_desc_call_phone
     Permissions.READ_CONTACTS.manifest -> R.string.perm_desc_read_contacts
+    Permissions.READ_CALENDAR.manifest -> R.string.perm_desc_read_calendar
+    Permissions.WRITE_CALENDAR.manifest -> R.string.perm_desc_write_calendar
     Permissions.POST_NOTIFICATIONS.manifest -> R.string.perm_desc_post_notifications
     Permissions.BLUETOOTH_CONNECT.manifest -> R.string.perm_desc_bluetooth_connect
     else -> R.string.perm_desc_unknown
@@ -123,6 +127,8 @@ internal fun rationaleRes(requirement: PermissionRequirement): Int? =
         "nfc.radio" -> R.string.perm_rationale_nfc_radio
         "alarm.exact" -> R.string.perm_rationale_alarm_exact
         "overlay.launch" -> R.string.perm_rationale_overlay_launch
+        "calendar.read" -> R.string.perm_rationale_calendar_read
+        "calendar.write" -> R.string.perm_rationale_calendar_write
         else -> null
     }
 

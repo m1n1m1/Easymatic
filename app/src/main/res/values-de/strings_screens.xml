@@ -627,6 +627,13 @@
     <string name="mqtt_topics_heard">Gehörte Topics</string>
     <string name="mqtt_broker_subtitle">%1$s · %2$s</string>
     <string name="category_files">Dateien</string>
+    <string name="category_calendar">Kalender</string>
+    <string name="calendar_choose_a_calendar">Kalender wählen</string>
+    <string name="calendar_any_calendar">Jeder Kalender</string>
+    <string name="calendar_no_calendars">Auf diesem Telefon gibt es keine Kalender.</string>
+    <string name="calendar_no_writable_calendars">In keinen der Kalender auf diesem Telefon kann eingetragen werden. Ein abonnierter Kalender, etwa ein Feiertagskalender, lässt sich nur lesen.</string>
+    <string name="calendar_needs_access">Ottomatic braucht Kalenderzugriff, um deine Kalender aufzulisten.</string>
+    <string name="calendar_grant_access">Erteilen</string>
     <string name="files_path_placeholder">Ein Pfad oder ein Name für Ottomatics eigenen Speicher</string>
     <string name="files_choose">Datei oder Ordner wählen</string>
     <string name="files_choose_folder">Ordner wählen…</string>

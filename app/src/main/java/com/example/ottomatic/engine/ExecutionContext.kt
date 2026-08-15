@@ -1,11 +1,13 @@
 package com.example.ottomatic.engine
 
 import com.example.ottomatic.core.service.Ai
+import com.example.ottomatic.core.service.Calendars
 import com.example.ottomatic.core.service.Files
 import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.NoAi
+import com.example.ottomatic.core.service.NoCalendars
 import com.example.ottomatic.core.service.NoFiles
 import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogSource
@@ -215,6 +217,26 @@ interface ExecutionContext {
      * `action.if` is the honest shape, on the exec wire where the wait is visible.
      */
     val files: Files get() = NoFiles
+
+    /**
+     * Reads and writes the device's calendars — the three `action.calendar_*` nodes and
+     * the two calendar values. Defaults to [NoCalendars], so engine-only tests see
+     * exactly what a phone that has granted nothing does.
+     *
+     * **The third facade both sides of the graph may touch**, after [variables] and
+     * [homeAssistant], and it is the one that shows what that exception was actually
+     * about. [homeAssistant] earned its place with a websocket keeping a map warm, which
+     * read at the time like "a push channel is the exception" — but the rule underneath
+     * was always *cheap, and cannot fail*. This has no push channel at all and clears it
+     * anyway: a calendar query is local IPC to a provider that is always installed, which
+     * is the same class of read as `value.wifi_network`, not the same class as [files],
+     * where a granted folder may be served over the network by a cloud provider.
+     *
+     * What the pull side does not get is the *reporting*: [Calendars.busyNow] and
+     * [Calendars.nextStart] answer a bare null, so "nothing on" and "could not tell" look
+     * alike there. Keeping those apart is the action side's job, on the exec wire.
+     */
+    val calendars: Calendars get() = NoCalendars
 
     /** Optional handle to enable/disable other macros at runtime, or null. */
     val macroControl: MacroControl? get() = null

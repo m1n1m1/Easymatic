@@ -24,6 +24,13 @@
     <string name="category_smart_home">Smart Home</string>
     <string name="category_ai">AI</string>
     <string name="category_files">Files</string>
+    <string name="category_calendar">Calendar</string>
+    <string name="calendar_choose_a_calendar">Choose a calendar</string>
+    <string name="calendar_any_calendar">Any calendar</string>
+    <string name="calendar_no_calendars">There are no calendars on this phone.</string>
+    <string name="calendar_no_writable_calendars">None of the calendars on this phone can be added to. A subscribed calendar, like a holiday feed, can only be read.</string>
+    <string name="calendar_needs_access">Ottomatic needs calendar access to list your calendars.</string>
+    <string name="calendar_grant_access">Grant</string>
     <string name="category_data">Data</string>
     <string name="category_value_power">Power &amp; Battery</string>
     <string name="category_value_connectivity">Connectivity</string>

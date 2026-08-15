@@ -430,6 +430,11 @@ class MainActivity : ComponentActivity() {
         // repeat: a handful of synchronous checks over the distinct grants the node
         // types declare.
         GrantedPrerequisites.hydrateFrom(ServiceLocator.permissionChecker)
+        // The same signal, one layer out: calendar access is granted by leaving the app,
+        // and until it lands there is no calendar the validator or the AI tool catalogue
+        // can name. A read that fails publishes nothing rather than an empty list — see
+        // CalendarDirectory.isHydrated for why those two must not be confused.
+        ServiceLocator.refreshCalendars()
         // Surface the battery-optimisation prompt only when a background start
         // actually failed, at least one macro is enabled (no point prompting about
         // a failure to arm nothing), AND the exemption is not already in hand.

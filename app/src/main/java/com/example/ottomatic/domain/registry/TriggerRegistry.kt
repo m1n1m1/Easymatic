@@ -27,6 +27,12 @@ object TriggerRegistry {
         // among the broadcast tiers below because nothing broadcasts it: mail is
         // reached over the network, by a poll and by a held-open connection.
         add(com.example.ottomatic.engine.trigger.MailTrigger())
+        // Beside the schedule trigger in spirit and here in the list, because that is
+        // what somebody is looking at when they want this. Not among the broadcast tiers
+        // below: nothing broadcasts a calendar event that an app may hear, which is why
+        // both of these plan their own alarm and watch the provider themselves.
+        add(com.example.ottomatic.engine.trigger.CalendarEventTrigger())
+        add(com.example.ottomatic.engine.trigger.CalendarChangedTrigger())
         // Beside the mail trigger for its reason: nothing broadcasts these either — a
         // hub is reached over the network, by a connection held open for as long as the
         // engine runs. The state trigger leads because "when this entity changes" is

@@ -2,6 +2,7 @@ package com.example.ottomatic
 
 import android.content.Context
 import com.example.ottomatic.core.permissions.PermissionChecker
+import com.example.ottomatic.core.service.Calendars
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.RunLog
@@ -38,6 +39,7 @@ import com.example.ottomatic.domain.registry.GlobalVariables
 import com.example.ottomatic.domain.registry.HaCatalog
 import com.example.ottomatic.domain.registry.MqttCatalog
 import com.example.ottomatic.domain.registry.SmartHomeHubs
+import com.example.ottomatic.domain.registry.CalendarDirectory
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.log.RunLogStore
@@ -51,6 +53,7 @@ import com.example.ottomatic.data.plugin.PluginRepository
 import com.example.ottomatic.data.prompt.OverlayPrompts
 import com.example.ottomatic.data.script.WebViewScriptEngine
 import com.example.ottomatic.data.sensor.SensorBridge
+import com.example.ottomatic.data.calendar.AndroidCalendars
 import com.example.ottomatic.data.service.AndroidContacts
 import com.example.ottomatic.data.service.AndroidDeviceState
 import com.example.ottomatic.data.service.AndroidMacroControl
@@ -235,6 +238,19 @@ object ServiceLocator {
     lateinit var deviceState: DeviceState
         private set
 
+    /**
+     * The calendar provider, published because the **editor** needs it and no
+     * `ExecutionContext` is in scope there: the calendar picker enumerates calendars, and
+     * that is the one place in the app that does.
+     *
+     * `SmartHomeSetup`'s reasoning, arrived at from the other side — there a second class
+     * exists so the editor's needs stay out of the nodes' facade, and here the editor
+     * wants exactly one member the nodes already have, so a second class would be a
+     * wrapper around one call.
+     */
+    lateinit var calendars: Calendars
+        private set
+
     lateinit var macroControl: MacroControl
         private set
 
@@ -389,6 +405,16 @@ object ServiceLocator {
         // One facade for the process, shared by the nodes and by the poll worker,
         // so an account edited in the app is the account the next check uses.
         val mailFacade = AndroidMail(mailAccountRepository)
+        // One calendar reader for the process, passed to the trigger host as well rather
+        // than rebuilt there — `AndroidContacts`' reason: an action reading an appointment
+        // and a trigger planning an alarm against one must not disagree about it.
+        //
+        // Nothing is snapshotted here: the provider is asked on every call, on
+        // `RoutingFiles`' reasoning and for the case that happens most, which is somebody
+        // granting calendar access on the Permissions screen and running the macro from
+        // the next screen along.
+        val calendarsFacade = AndroidCalendars(appContext)
+        calendars = calendarsFacade
         executionContext = DefaultExecutionContext(
             systemServices = systemServices,
             deviceState = deviceState,
@@ -435,6 +461,7 @@ object ServiceLocator {
             // Folder access screen and runs the macro from the next screen along, and
             // a snapshot taken at start-up would make that work only after a restart.
             files = RoutingFiles(appContext),
+            calendars = calendarsFacade,
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.
@@ -449,6 +476,7 @@ object ServiceLocator {
         MailRuntime.attach(mail = mailFacade, seen = MailSeenStore(appContext))
         triggerHost = buildTriggerHost(sensorBridge, contacts)
         publishGrantedPrerequisites(appContext)
+        refreshCalendars()
         publishPluginNodes(appContext)
     }
 
@@ -463,6 +491,29 @@ object ServiceLocator {
     private fun publishGrantedPrerequisites(appContext: Context) {
         permissionChecker = AndroidPermissionChecker(appContext)
         GrantedPrerequisites.hydrateFrom(permissionChecker)
+    }
+
+    /**
+     * Publishes the phone's calendars into [CalendarDirectory], if they can be read.
+     *
+     * Asynchronous, on `publishSmartHomeHubs`' shape, because the read is a provider round
+     * trip and the first frames after process start must not wait on one.
+     *
+     * **Only a successful read publishes anything**, which is the whole subtlety. Before
+     * `READ_CALENDAR` is granted this answers an error and an empty list, and hydrating
+     * *that* would flip `isHydrated` to true and make every calendar reference on the
+     * device look deleted — on a fresh install, before the user has done anything wrong.
+     * Empty and unasked are different states, and this is the line that keeps them so.
+     *
+     * Called at start-up and again from `MainActivity.onResume`, since the grant is given
+     * outside the app — `GrantedPrerequisites`' reason exactly.
+     */
+    fun refreshCalendars() {
+        if (!::calendars.isInitialized) return
+        appScope.launch {
+            val listing = calendars.calendars()
+            if (listing.ok) CalendarDirectory.hydrate(listing.calendars)
+        }
     }
 
     /**
@@ -545,6 +596,7 @@ object ServiceLocator {
             smartHomeHubRepository,
             haConnections,
             mqttConnections,
+            calendars,
         )
 
     private fun publishSmartHomeHubs() {

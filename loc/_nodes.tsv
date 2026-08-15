@@ -10,6 +10,7 @@ Activates a lighting scene you set up in the Hue app, or turns its room off — 
 Active	Active
 Active from	Active from
 Active until (earlier than \'from\' runs past midnight)	Active until (earlier than \'from\' runs past midnight)
+Add Calendar Event	Add Calendar Event
 Add to List	Add to List
 Add to the end instead of replacing	Add to the end instead of replacing
 Adjusts an audio stream\'s volume (up, down, set, mute or unmute)	Adjusts an audio stream\'s volume (up, down, set, mute or unmute)
@@ -18,6 +19,7 @@ Airplane mode	Airplane mode
 Alarm	Alarm
 Alarms	Alarms
 All	All
+All day	All day
 Also fire on messages the broker had stored	Also fire on messages the broker had stored
 Also when the device starts moving	Also when the device starts moving
 Always (high battery use)	Always (high battery use)
@@ -33,6 +35,8 @@ App (optional)	App (optional)
 App Initialised	App Initialised
 App Installed / Removed	App Installed / Removed
 Appends an item to a named list, usually from inside a loop	Appends an item to a named list, usually from inside a loop
+Applies to	Applies to
+Appointment	Appointment
 Ask AI	Ask AI
 Ask AI About a Picture	Ask AI About a Picture
 Ask Yes or No	Ask Yes or No
@@ -53,6 +57,7 @@ Battery Level	Battery Level
 Battery level	Battery level
 Bcc	Bcc
 Below	Below
+Between two times	Between two times
 Bluetooth Device Connected	Bluetooth Device Connected
 Bluetooth State Change	Bluetooth State Change
 Bluetooth enabled	Bluetooth enabled
@@ -63,9 +68,13 @@ Break Struct	Break Struct
 Brightness %	Brightness %
 Broker	Broker
 Build text	Build text
+Busy	Busy
 Button	Button
 Button label	Button label
 C	C
+Calendar	Calendar
+Calendar Changed	Calendar Changed
+Calendar Event	Calendar Event
 Call Home Assistant Service	Call Home Assistant Service
 Called by Another App	Called by Another App
 Calls a web API and exposes the typed response	Calls a web API and exposes the typed response
@@ -74,6 +83,8 @@ Carries on at once and continues again at a chosen moment	Carries on at once and
 Carry on now	Carry on now
 Cc	Cc
 Change	Change
+Change how it shows you	Change how it shows you
+Changes or deletes an appointment, either one occurrence of it or the whole series	Changes or deletes an appointment, either one occurrence of it or the whole series
 Charging	Charging
 Charging started	Charging started
 Charging stopped	Charging stopped
@@ -103,6 +114,7 @@ Copy or Move File	Copy or Move File
 Count	Count
 Count items	Count items
 Covered	Covered
+Creates an appointment in one of the calendars on this phone	Creates an appointment in one of the calendars on this phone
 Current time	Current time
 Custom	Custom
 Custom sound	Custom sound
@@ -113,10 +125,12 @@ Date &amp; time	Date &amp; time
 Date rolled over	Date rolled over
 Date time	Date time
 Days	Days
+Days ahead	Days ahead
 Days of month (e.g. 1,15, empty = every day)	Days of month (e.g. 1,15, empty = every day)
 Delete	Delete
 Delete File	Delete File
 Delivery	Delivery
+Details	Details
 Device Boot	Device Boot
 Device Docked	Device Docked
 Device Movement	Device Movement
@@ -150,6 +164,7 @@ Entity	Entity
 Equals	Equals
 Event	Event
 Event type	Event type
+Events	Events
 Extra data (JSON)	Extra data (JSON)
 Face down	Face down
 Face up	Face up
@@ -161,7 +176,9 @@ File	File
 File Details	File Details
 File or folder	File or folder
 Files	Files
+Find Calendar Events	Find Calendar Events
 Fire time	Fire time
+Fire when	Fire when
 Fires immediately when the workflow starts (no external event)	Fires immediately when the workflow starts (no external event)
 Fires when a macro finishes executing after being triggered	Fires when a macro finishes executing after being triggered
 Fires when a named variable changes value	Fires when a named variable changes value
@@ -173,6 +190,7 @@ Folder	Folder
 Folders	Folders
 For a length of time	For a length of time
 Found	Found
+Free	Free
 Fridays	Fridays
 From	From
 From (optional)	From (optional)
@@ -203,6 +221,7 @@ Home Assistant Entity	Home Assistant Entity
 Home Assistant Entity Changed	Home Assistant Entity Changed
 Home Assistant Event	Home Assistant Event
 Hours	Hours
+How long (minutes)	How long (minutes)
 How many	How many
 How many at most	How many at most
 How many items are in a list	How many items are in a list
@@ -214,15 +233,20 @@ If	If
 If a file is already there	If a file is already there
 If it fails	If it fails
 If missing	If missing
+In an appointment	In an appointment
+Include cancelled and declined ones	Include cancelled and declined ones
 Incoming Call State	Incoming Call State
 Index	Index
 Initiates a phone call to a number	Initiates a phone call to a number
 Inputs	Inputs
 Installed	Installed
 Int	Int
+It ends	It ends
+It starts	It starts
 Item	Item
 Item at position	Item at position
 Item to find	Item to find
+Its reminder falls due	Its reminder falls due
 JSON text	JSON text
 Join list	Join list
 Keep both, adding a number	Keep both, adding a number
@@ -248,6 +272,7 @@ Locale Changed	Locale Changed
 Log Message	Log Message
 Long	Long
 Longest reply (tokens)	Longest reply (tokens)
+Look at	Look at
 Loops over a list, running the following steps once for every item in it	Loops over a list, running the following steps once for every item in it
 Loops the following steps a set number of times — repeat 10 times, and so on	Loops the following steps a set number of times — repeat 10 times, and so on
 Loops the following steps for as long as a comparison holds	Loops the following steps for as long as a comparison holds
@@ -276,6 +301,7 @@ Message contains	Message contains
 Messages	Messages
 Method	Method
 Minutes	Minutes
+Minutes before (negative fires afterwards)	Minutes before (negative fires afterwards)
 Mode	Mode
 Model	Model
 Mondays	Mondays
@@ -291,7 +317,13 @@ NFC Tag	NFC Tag
 NFC enabled	NFC enabled
 Name other apps see	Name other apps see
 Network	Network
+New details (leave empty to keep them)	New details (leave empty to keep them)
+New length in minutes (-1 to keep it)	New length in minutes (-1 to keep it)
+New place (leave empty to keep it)	New place (leave empty to keep it)
+New start (leave empty to keep it)	New start (leave empty to keep it)
+New title (leave empty to keep it)	New title (leave empty to keep it)
 Next	Next
+Next appointment	Next appointment
 Normal	Normal
 Not equals	Not equals
 Notification	Notification
@@ -366,11 +398,13 @@ Read File	Read File
 Read from JSON	Read from JSON
 Reading	Reading
 Reads a text file from the phone and passes its contents on	Reads a text file from the phone and passes its contents on
+Reads appointments out of a calendar onto a list you can loop over	Reads appointments out of a calendar onto a list you can loop over
 Reads messages from a mailbox onto a list you can loop over	Reads messages from a mailbox onto a list you can loop over
 Reads one value out of JSON text, such as an HTTP response body	Reads one value out of JSON text, such as an HTTP response body
 Reads whether a light is on, how bright it is and what colour — Philips Hue	Reads whether a light is on, how bright it is and what colour — Philips Hue
 Reason (optional, logged before halting)	Reason (optional, logged before halting)
 Remembers a value in a variable, readable by later runs	Remembers a value in a variable, readable by later runs
+Remind you (minutes before, -1 for no reminder)	Remind you (minutes before, -1 for no reminder)
 Removed	Removed
 Removes a file from the phone	Removes a file from the phone
 Repeat	Repeat
@@ -439,6 +473,7 @@ Show Notification	Show Notification
 Shows a popup dialog and waits until the user has acknowledged it	Shows a popup dialog and waits until the user has acknowledged it
 Shows a popup dialog offering a list of options and reports which one was picked	Shows a popup dialog offering a list of options and reports which one was picked
 Shows an AI model a picture from this phone and returns what it says about it	Shows an AI model a picture from this phone and returns what it says about it
+Shows you as	Shows you as
 Signal	Signal
 Silence	Silence
 Silent	Silent
@@ -452,6 +487,7 @@ Standing instruction	Standing instruction
 Start at (seconds into the sound)	Start at (seconds into the sound)
 Started moving — low power, works with the screen off	Started moving — low power, works with the screen off
 Starts a named list over, ready to collect into	Starts a named list over, ready to collect into
+Starts at	Starts at
 Starts once after the device finishes booting	Starts once after the device finishes booting
 Starts the workflow on an interval or at a time of day	Starts the workflow on an interval or at a time of day
 Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it	Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it
@@ -471,6 +507,8 @@ Starts when airplane mode is toggled	Starts when airplane mode is toggled
 Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked
 Starts when an SMS arrives	Starts when an SMS arrives
 Starts when an app is installed, removed or replaced	Starts when an app is installed, removed or replaced
+Starts when an appointment begins, ends, or its reminder falls due	Starts when an appointment begins, ends, or its reminder falls due
+Starts when an appointment is added, changed or removed in any calendar	Starts when an appointment is added, changed or removed in any calendar
 Starts when an email arrives in a mailbox you are watching	Starts when an email arrives in a mailbox you are watching
 Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event
 Starts when external media is mounted, unmounted or ejected	Starts when external media is mounted, unmounted or ejected
@@ -511,6 +549,7 @@ Tap on Device	Tap on Device
 Taps	Taps
 Telegram	Telegram
 Template — use {A}, {B}, {C}	Template — use {A}, {B}, {C}
+Tentative	Tentative
 Text	Text
 Text contains (optional)	Text contains (optional)
 Text encoding	Text encoding
@@ -523,14 +562,19 @@ The device\'s current ringer mode	The device\'s current ringer mode
 The last message published to a topic on an MQTT broker	The last message published to a topic on an MQTT broker
 The light level around the device in lux — a dim room is around 30, an office a few hundred	The light level around the device in lux — a dim room is around 30, an office a few hundred
 The name of the Wi-Fi network the device is currently connected to	The name of the Wi-Fi network the device is currently connected to
+The next appointment due to start in any calendar	The next appointment due to start in any calendar
+The next few days	The next few days
+The rest of today	The rest of today
 The same list, in order	The same list, in order
 This is a list	This is a list
+This occurrence	This occurrence
 Threshold (0-100)	Threshold (0-100)
 Threshold (lux)	Threshold (lux)
 Thursdays	Thursdays
 Timeout (ms)	Timeout (ms)
 Timezone changed	Timezone changed
 Title	Title
+Title contains	Title contains
 To	To
 Toggle	Toggle
 Toggle Auto-Rotate	Toggle Auto-Rotate
@@ -566,6 +610,8 @@ Until	Until
 Until a date and time	Until a date and time
 Until a time of day	Until a time of day
 Up	Up
+Update	Update
+Update Calendar Event	Update Calendar Event
 Update Email	Update Email
 Value	Value
 Value (0-100, only when mode is set)	Value (0-100, only when mode is set)
@@ -593,6 +639,7 @@ When finished	When finished
 When the light level	When the light level
 When the time comes	When the time comes
 When time runs out	When time runs out
+Where	Where
 Where an item sits in a list, counting from 0, or -1 when it is not there	Where an item sits in a list, counting from 0, or -1 when it is not there
 Whether Bluetooth is currently enabled	Whether Bluetooth is currently enabled
 Whether Do-Not-Disturb is currently active	Whether Do-Not-Disturb is currently active
@@ -601,6 +648,7 @@ Whether Wi-Fi is currently enabled	Whether Wi-Fi is currently enabled
 Whether a list holds a given item	Whether a list holds a given item
 Whether a wired or USB headset is currently plugged in	Whether a wired or USB headset is currently plugged in
 Whether airplane mode is currently on	Whether airplane mode is currently on
+Whether an appointment is on in any calendar right now	Whether an appointment is on in any calendar right now
 Whether battery saver is currently on	Whether battery saver is currently on
 Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down
 Whether the device is currently charging	Whether the device is currently charging
@@ -609,6 +657,7 @@ Whether the device is currently sitting in a dock	Whether the device is currentl
 Whether the screen is currently on and interactive	Whether the screen is currently on and interactive
 While the screen is off	While the screen is off
 Whole number	Whole number
+Whole series	Whole series
 Wi-Fi Network	Wi-Fi Network
 Wi-Fi State Change	Wi-Fi State Change
 Wi-Fi enabled	Wi-Fi enabled

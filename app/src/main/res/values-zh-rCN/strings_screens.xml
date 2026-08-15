@@ -21,6 +21,13 @@
     <string name="category_smart_home">智能家居</string>
     <string name="category_ai">AI</string>
     <string name="category_files">文件</string>
+    <string name="category_calendar">日历</string>
+    <string name="calendar_choose_a_calendar">选择日历</string>
+    <string name="calendar_any_calendar">任意日历</string>
+    <string name="calendar_no_calendars">这台手机上没有日历。</string>
+    <string name="calendar_no_writable_calendars">这台手机上的日历都无法写入。订阅的日历（例如节假日日历）只能读取。</string>
+    <string name="calendar_needs_access">Ottomatic 需要日历访问权限才能列出你的日历。</string>
+    <string name="calendar_grant_access">授予</string>
     <string name="category_data">数据</string>
     <string name="category_value_power">电源与电池</string>
     <string name="category_value_connectivity">连接</string>

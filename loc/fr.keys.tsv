@@ -736,3 +736,16 @@ ai_tools_choose_a_model_first	Choisissez d'abord un modèle
 ai_tools_reset	Suivre à nouveau le modèle
 ai_tools_reset_all	Tout réinitialiser
 config_tools_ai_chooses	L'IA choisit %2$s, parmi les %1$d qu'elle peut atteindre
+perm_title_read_calendar	Agenda
+perm_title_write_calendar	Modifier votre agenda
+perm_desc_read_calendar	Permet à une macro de lire vos rendez-vous, et vous permet de choisir un agenda lors de la configuration. Contrairement aux contacts, il n'existe pas de sélecteur système sur lequel s'appuyer : c'est donc nécessaire avant qu'un nœud d'agenda puisse vous montrer quoi que ce soit.
+perm_desc_write_calendar	Permet à une macro de créer, modifier et supprimer des rendez-vous. Les lire est une autorisation distincte, celle du dessus.
+perm_rationale_calendar_read	Ottomatic a besoin de l'accès à l'agenda pour lire vos rendez-vous. Sans lui, ce nœud ne lit rien du tout et le sélecteur d'agenda ci-dessus n'a rien à proposer.
+perm_rationale_calendar_write	Ottomatic a besoin de l'autorisation de modifier votre agenda pour que ce nœud puisse créer, modifier ou supprimer un rendez-vous. Lire les rendez-vous est une autorisation distincte.
+category_calendar	Agenda
+calendar_choose_a_calendar	Choisir un agenda
+calendar_any_calendar	N'importe quel agenda
+calendar_no_calendars	Il n'y a aucun agenda sur ce téléphone.
+calendar_no_writable_calendars	Aucun des agendas de ce téléphone n'accepte d'ajout. Un agenda auquel on est abonné, comme un calendrier de jours fériés, ne peut être que lu.
+calendar_needs_access	Ottomatic a besoin de l'accès à l'agenda pour lister vos agendas.
+calendar_grant_access	Accorder

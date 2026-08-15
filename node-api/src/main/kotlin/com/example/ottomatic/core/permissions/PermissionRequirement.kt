@@ -132,6 +132,9 @@ data class PermissionRequirement(
             manifestPermission == Permissions.SEND_SMS.manifest -> "permission to send texts"
             manifestPermission == Permissions.RECEIVE_SMS.manifest -> "permission to receive texts"
             manifestPermission == Permissions.READ_CONTACTS.manifest -> "contacts access"
+            manifestPermission == Permissions.READ_CALENDAR.manifest -> "calendar access"
+            manifestPermission == Permissions.WRITE_CALENDAR.manifest ->
+                "permission to change your calendar"
             manifestPermission == Permissions.POST_NOTIFICATIONS.manifest ->
                 "permission to post notifications"
             else -> manifestPermission.orEmpty().substringAfterLast('.')

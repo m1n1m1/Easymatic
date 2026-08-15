@@ -18,6 +18,8 @@
     <string name="perm_title_send_sms">Enviar mensagens</string>
     <string name="perm_title_call_phone">Fazer chamadas</string>
     <string name="perm_title_read_contacts">Contactos</string>
+    <string name="perm_title_read_calendar">Calendário</string>
+    <string name="perm_title_write_calendar">Alterar o seu calendário</string>
     <string name="perm_title_post_notifications">Notificações</string>
     <string name="perm_title_bluetooth_connect">Bluetooth</string>
     <string name="perm_desc_overlay">Permite que uma macro mostre uma caixa de diálogo no ecrã e abra outras aplicações enquanto estás a fazer outra coisa. Sem esta permissão, o Android bloqueia ambas as coisas a partir de uma aplicação em segundo plano.</string>
@@ -37,6 +39,8 @@
     <string name="perm_desc_send_sms">Permite que uma macro envie uma mensagem em teu nome.</string>
     <string name="perm_desc_call_phone">Permite que uma macro faça uma chamada sem que a confirmes.</string>
     <string name="perm_desc_read_contacts">Permite que uma macro procure o número de um contacto que escolheste. Escolhê-lo não exige nada; marcá-lo mais tarde exige.</string>
+    <string name="perm_desc_read_calendar">Permite que uma macro leia os seus compromissos e que escolha um calendário ao configurá-la. Ao contrário dos contactos, não há um seletor do sistema em que apoiar-se, por isso isto é necessário antes de um nó de calendário lhe poder mostrar seja o que for.</string>
+    <string name="perm_desc_write_calendar">Permite que uma macro crie, altere e elimine compromissos. Lê-los é uma permissão separada, a de cima.</string>
     <string name="perm_desc_post_notifications">Permite que o Ottomatic mostre uma notificação: tanto as que uma macro envia como a que te avisa de que o motor não conseguiu arrancar depois de um reinício.</string>
     <string name="perm_desc_bluetooth_connect">Permite que uma macro ligue e desligue o Bluetooth.</string>
     <string name="perm_desc_unknown">Usada por um nó de uma das tuas macros.</string>
@@ -46,5 +50,7 @@
     <string name="perm_rationale_overlay_dialog">O Ottomatic precisa de permissão para se sobrepor a outras aplicações, para que esta caixa de diálogo te alcance quando estiveres noutro sítio do telemóvel. Sem ela, o nó cancela em vez de perguntar.</string>
     <string name="perm_rationale_nfc_radio">Este acionador precisa do NFC ligado, que é uma definição de todo o sistema e não algo que o Ottomatic possa conceder a si próprio. Além disso, as etiquetas só são lidas com o ecrã ligado e desbloqueado: um toque não chega a um telemóvel adormecido no bolso.</string>
     <string name="perm_rationale_alarm_exact">O Ottomatic precisa de permissão para definir alarmes exatos, para que esta espera termine ao minuto que pediste. Sem ela a espera acontece na mesma, mas o Android agrupa o despertar com outras tarefas e pode atrasar-se minutos.</string>
+    <string name="perm_rationale_calendar_read">O Ottomatic precisa de acesso ao calendário para ler os seus compromissos. Sem ele, este nó não lê nada e o seletor de calendário acima não tem nada para oferecer.</string>
+    <string name="perm_rationale_calendar_write">O Ottomatic precisa de permissão para alterar o seu calendário, para que este nó possa criar, editar ou eliminar um compromisso. Ler compromissos é uma permissão separada.</string>
     <string name="perm_rationale_overlay_launch">O Ottomatic precisa de permissão para se sobrepor a outras aplicações e assim poder abrir uma enquanto estás noutro sítio do telemóvel. O Android impede que uma aplicação em segundo plano abra outra e, sem esta permissão, o nó não faz nada e di-lo na consola.</string>
 </resources>

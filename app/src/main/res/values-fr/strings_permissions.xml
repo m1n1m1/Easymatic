@@ -18,6 +18,8 @@
     <string name="perm_title_send_sms">Envoyer des SMS</string>
     <string name="perm_title_call_phone">Passer des appels</string>
     <string name="perm_title_read_contacts">Contacts</string>
+    <string name="perm_title_read_calendar">Agenda</string>
+    <string name="perm_title_write_calendar">Modifier votre agenda</string>
     <string name="perm_title_post_notifications">Notifications</string>
     <string name="perm_title_bluetooth_connect">Bluetooth</string>
     <string name="perm_desc_overlay">Permet à une macro d\'afficher une boîte de dialogue et d\'ouvrir d\'autres applications pendant que tu fais autre chose. Sans cette autorisation, Android bloque les deux depuis une application en arrière-plan.</string>
@@ -37,6 +39,8 @@
     <string name="perm_desc_send_sms">Permet à une macro d\'envoyer un SMS en ton nom.</string>
     <string name="perm_desc_call_phone">Permet à une macro de passer un appel sans que tu le confirmes.</string>
     <string name="perm_desc_read_contacts">Permet à une macro de retrouver le numéro d\'un contact que tu as choisi. Le choisir ne demande rien ; le composer plus tard, si.</string>
+    <string name="perm_desc_read_calendar">Permet à une macro de lire vos rendez-vous, et vous permet de choisir un agenda lors de la configuration. Contrairement aux contacts, il n\'existe pas de sélecteur système sur lequel s\'appuyer : c\'est donc nécessaire avant qu\'un nœud d\'agenda puisse vous montrer quoi que ce soit.</string>
+    <string name="perm_desc_write_calendar">Permet à une macro de créer, modifier et supprimer des rendez-vous. Les lire est une autorisation distincte, celle du dessus.</string>
     <string name="perm_desc_post_notifications">Permet à Ottomatic d\'afficher une notification : celles qu\'une macro envoie comme celle qui t\'avertit que le moteur n\'a pas pu démarrer après un redémarrage.</string>
     <string name="perm_desc_bluetooth_connect">Permet à une macro d\'activer et désactiver le Bluetooth.</string>
     <string name="perm_desc_unknown">Utilisée par un nœud de l\'une de tes macros.</string>
@@ -46,5 +50,7 @@
     <string name="perm_rationale_overlay_dialog">Ottomatic a besoin de l\'autorisation d\'afficher par-dessus les autres applications pour que cette boîte de dialogue puisse t\'atteindre quand tu es ailleurs sur ton téléphone. Sans elle, le nœud annule au lieu de demander.</string>
     <string name="perm_rationale_nfc_radio">Ce déclencheur a besoin que le NFC soit activé, ce qui est un réglage système et non quelque chose qu\'Ottomatic peut s\'accorder. De plus, les tags ne sont lus que si l\'écran est allumé et déverrouillé : un contact n\'atteindra pas un téléphone endormi dans une poche.</string>
     <string name="perm_rationale_alarm_exact">Ottomatic a besoin de l\'autorisation de programmer des alarmes exactes pour que cette attente se termine à la minute demandée. Sans elle, l\'attente a quand même lieu, mais Android regroupe le réveil avec d\'autres tâches et cela peut prendre plusieurs minutes de plus.</string>
+    <string name="perm_rationale_calendar_read">Ottomatic a besoin de l\'accès à l\'agenda pour lire vos rendez-vous. Sans lui, ce nœud ne lit rien du tout et le sélecteur d\'agenda ci-dessus n\'a rien à proposer.</string>
+    <string name="perm_rationale_calendar_write">Ottomatic a besoin de l\'autorisation de modifier votre agenda pour que ce nœud puisse créer, modifier ou supprimer un rendez-vous. Lire les rendez-vous est une autorisation distincte.</string>
     <string name="perm_rationale_overlay_launch">Ottomatic a besoin de l\'autorisation d\'afficher par-dessus les autres applications pour pouvoir en ouvrir une pendant que tu es ailleurs sur ton téléphone. Android empêche une application en arrière-plan d\'en ouvrir une autre et, sans cette autorisation, le nœud ne fait rien et le signale dans la console.</string>
 </resources>

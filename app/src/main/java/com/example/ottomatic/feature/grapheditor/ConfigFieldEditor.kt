@@ -75,6 +75,7 @@ import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.domain.registry.enumConfigOptions
 import com.example.ottomatic.feature.api.ApiTokenField
 import com.example.ottomatic.feature.apps.AppPickerField
+import com.example.ottomatic.feature.calendar.CalendarPickerField
 import com.example.ottomatic.feature.contacts.ContactNameField
 import com.example.ottomatic.feature.files.FilePathField
 import com.example.ottomatic.feature.contacts.PhoneNumberField
@@ -370,10 +371,18 @@ private fun DateTimeField(
 ) {
     var stage by remember { mutableStateOf(DateTimeStage.CLOSED) }
     var pickedDate by remember { mutableStateOf<LocalDate?>(null) }
-    // What the pickers open on: whatever is in the field, or now if it is empty
-    // or unreadable. Read at open time, so editing the text moves the picker too.
+    // What the pickers open on: whatever is in the field, or now if it is empty,
+    // unreadable, or the epoch. Read at open time, so editing the text moves the
+    // picker too.
+    //
+    // The epoch is excluded because it is how a date property spells "not set" — see
+    // NodeSchema.formDefault, which now keeps it out of the field in the first place.
+    // This second guard is for a node saved before that, whose config holds the epoch
+    // as a literal value: without it the picker would still open on 1970.
     val seed = ZonedDateTime.ofInstant(
-        Instant.ofEpochMilli((DateTime.parse(value) ?: DateTime.now()).epochMs),
+        Instant.ofEpochMilli(
+            (DateTime.parse(value)?.takeIf { it != DateTime.EPOCH } ?: DateTime.now()).epochMs,
+        ),
         ZoneId.systemDefault(),
     )
 
@@ -764,6 +773,11 @@ private fun PickerField(
         PickerKind.HA_TRIGGER -> HaPickerField(value, onValueChange, HaPickerMode.TRIGGER, scope, labelSlot, colors)
         PickerKind.HA_HUB -> HaPickerField(value, onValueChange, HaPickerMode.HUB, scope, labelSlot, colors)
         PickerKind.MQTT_BROKER -> MqttBrokerPickerField(value, onValueChange, labelSlot, colors)
+        // One field, the flag flipped, on the app and light kinds' arrangement: the two
+        // ask different questions with different answer sets, and only the *writing* side
+        // of the chooser differs.
+        PickerKind.CALENDAR -> CalendarPickerField(value, onValueChange, forFilter = false, labelSlot, colors)
+        PickerKind.CALENDAR_FILTER -> CalendarPickerField(value, onValueChange, forFilter = true, labelSlot, colors)
     }
 }
 

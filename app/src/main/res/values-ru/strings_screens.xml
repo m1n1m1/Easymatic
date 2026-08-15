@@ -21,6 +21,13 @@
     <string name="category_smart_home">Умный дом</string>
     <string name="category_ai">ИИ</string>
     <string name="category_files">Файлы</string>
+    <string name="category_calendar">Календарь</string>
+    <string name="calendar_choose_a_calendar">Выберите календарь</string>
+    <string name="calendar_any_calendar">Любой календарь</string>
+    <string name="calendar_no_calendars">На этом телефоне нет календарей.</string>
+    <string name="calendar_no_writable_calendars">Ни в один календарь на этом телефоне нельзя добавлять записи. Подписной календарь, например с праздниками, доступен только для чтения.</string>
+    <string name="calendar_needs_access">Ottomatic нужен доступ к календарю, чтобы показать список ваших календарей.</string>
+    <string name="calendar_grant_access">Разрешить</string>
     <string name="category_data">Данные</string>
     <string name="category_value_power">Питание и батарея</string>
     <string name="category_value_connectivity">Подключения</string>

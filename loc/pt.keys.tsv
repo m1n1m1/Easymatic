@@ -736,3 +736,16 @@ ai_tools_choose_a_model_first	Escolha primeiro um modelo
 ai_tools_reset	Voltar a seguir o modelo
 ai_tools_reset_all	Repor tudo
 config_tools_ai_chooses	A IA escolhe %2$s, entre as %1$d ao seu alcance
+perm_title_read_calendar	Calendário
+perm_title_write_calendar	Alterar o seu calendário
+perm_desc_read_calendar	Permite que uma macro leia os seus compromissos e que escolha um calendário ao configurá-la. Ao contrário dos contactos, não há um seletor do sistema em que apoiar-se, por isso isto é necessário antes de um nó de calendário lhe poder mostrar seja o que for.
+perm_desc_write_calendar	Permite que uma macro crie, altere e elimine compromissos. Lê-los é uma permissão separada, a de cima.
+perm_rationale_calendar_read	O Ottomatic precisa de acesso ao calendário para ler os seus compromissos. Sem ele, este nó não lê nada e o seletor de calendário acima não tem nada para oferecer.
+perm_rationale_calendar_write	O Ottomatic precisa de permissão para alterar o seu calendário, para que este nó possa criar, editar ou eliminar um compromisso. Ler compromissos é uma permissão separada.
+category_calendar	Calendário
+calendar_choose_a_calendar	Escolher um calendário
+calendar_any_calendar	Qualquer calendário
+calendar_no_calendars	Não há calendários neste telemóvel.
+calendar_no_writable_calendars	Não é possível adicionar nada a nenhum dos calendários deste telemóvel. Um calendário subscrito, como um de feriados, só pode ser lido.
+calendar_needs_access	O Ottomatic precisa de acesso ao calendário para listar os seus calendários.
+calendar_grant_access	Conceder

@@ -20,6 +20,8 @@
     <string name="perm_title_send_sms">SMS senden</string>
     <string name="perm_title_call_phone">Anrufe tätigen</string>
     <string name="perm_title_read_contacts">Kontakte</string>
+    <string name="perm_title_read_calendar">Kalender</string>
+    <string name="perm_title_write_calendar">Kalender ändern</string>
     <string name="perm_title_post_notifications">Benachrichtigungen</string>
     <string name="perm_title_bluetooth_connect">Bluetooth</string>
 
@@ -41,6 +43,8 @@
     <string name="perm_desc_send_sms">Erlaubt einem Makro, in deinem Namen eine SMS zu senden.</string>
     <string name="perm_desc_call_phone">Erlaubt einem Makro, einen Anruf zu tätigen, ohne dass du ihn bestätigst.</string>
     <string name="perm_desc_read_contacts">Erlaubt einem Makro, die Nummer eines von dir gewählten Kontakts nachzuschlagen. Das Auswählen braucht nichts; das spätere Wählen schon.</string>
+    <string name="perm_desc_read_calendar">Erlaubt einem Makro, deine Termine zu lesen, und dir, beim Einrichten einen Kalender auszuwählen. Anders als bei Kontakten gibt es keine Systemauswahl, auf die man sich stützen könnte — deshalb braucht ein Kalender-Knoten das schon, bevor er dir überhaupt etwas anzeigen kann.</string>
+    <string name="perm_desc_write_calendar">Erlaubt einem Makro, Termine anzulegen, zu ändern und zu löschen. Das Lesen ist der eigene Schalter darüber.</string>
     <string name="perm_desc_post_notifications">Erlaubt Ottomatic, eine Benachrichtigung anzuzeigen — sowohl die, die ein Makro sendet, als auch die, die dir sagt, dass die Engine nach einem Neustart nicht starten konnte.</string>
     <string name="perm_desc_bluetooth_connect">Erlaubt einem Makro, Bluetooth ein- und auszuschalten.</string>
     <string name="perm_desc_unknown">Wird von einem Knoten in einem deiner Makros verwendet.</string>
@@ -52,6 +56,8 @@
     <string name="perm_rationale_overlay_dialog">Ottomatic braucht die Berechtigung, über anderen Apps anzuzeigen, damit dieser Dialog dich auch erreicht, wenn du gerade woanders auf deinem Telefon bist. Ohne sie bricht der Knoten ab, statt zu fragen.</string>
     <string name="perm_rationale_nfc_radio">Dieser Auslöser braucht eingeschaltetes NFC — das ist eine systemweite Einstellung und nichts, was Ottomatic sich selbst erteilen kann. Außerdem werden Tags nur gelesen, solange der Bildschirm an und entsperrt ist: ein Tippen erreicht kein Telefon, das in der Tasche schläft.</string>
     <string name="perm_rationale_alarm_exact">Ottomatic braucht die Berechtigung für exakte Wecker, damit diese Wartezeit auf die Minute genau endet. Ohne sie findet die Wartezeit trotzdem statt, aber Android bündelt das Aufwachen mit anderen Aufgaben und es kann Minuten später sein.</string>
+    <string name="perm_rationale_calendar_read">Ottomatic braucht Kalenderzugriff, um deine Termine zu lesen. Ohne ihn liest dieser Knoten gar nichts, und die Kalenderauswahl darüber hat nichts anzubieten.</string>
+    <string name="perm_rationale_calendar_write">Ottomatic braucht die Berechtigung, deinen Kalender zu ändern, damit dieser Knoten einen Termin anlegen, bearbeiten oder löschen kann. Das Lesen von Terminen ist eine eigene Berechtigung.</string>
     <string name="perm_rationale_overlay_launch">Ottomatic braucht die Berechtigung, über anderen Apps anzuzeigen, um eine App zu öffnen, während du gerade woanders auf deinem Telefon bist. Android blockiert das Öffnen einer App aus dem Hintergrund; ohne diese Berechtigung tut der Knoten nichts und sagt das in der Konsole.</string>
 
 </resources>

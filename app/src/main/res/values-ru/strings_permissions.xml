@@ -18,6 +18,8 @@
     <string name="perm_title_send_sms">Отправка SMS</string>
     <string name="perm_title_call_phone">Совершение звонков</string>
     <string name="perm_title_read_contacts">Контакты</string>
+    <string name="perm_title_read_calendar">Календарь</string>
+    <string name="perm_title_write_calendar">Изменение календаря</string>
     <string name="perm_title_post_notifications">Уведомления</string>
     <string name="perm_title_bluetooth_connect">Bluetooth</string>
     <string name="perm_desc_overlay">Позволяет макросу показать диалог на экране и открывать другие приложения, пока вы заняты чем-то ещё. Без этого Android запрещает и то и другое фоновому приложению.</string>
@@ -37,6 +39,8 @@
     <string name="perm_desc_send_sms">Позволяет макросу отправлять SMS от вашего имени.</string>
     <string name="perm_desc_call_phone">Позволяет макросу совершить звонок без вашего подтверждения.</string>
     <string name="perm_desc_read_contacts">Позволяет макросу найти номер выбранного вами контакта. Выбрать контакт можно без разрешений; чтобы потом набрать номер, оно нужно.</string>
+    <string name="perm_desc_read_calendar">Позволяет макросу читать ваши встречи, а вам — выбрать календарь при настройке. В отличие от контактов, системного выбора здесь нет, поэтому без этого разрешения узел календаря ничего не покажет.</string>
+    <string name="perm_desc_write_calendar">Позволяет макросу создавать, изменять и удалять встречи. Чтение — отдельный переключатель выше.</string>
     <string name="perm_desc_post_notifications">Позволяет Ottomatic показывать уведомления — как те, что отправляет макрос, так и то, которое сообщает, что движок не смог запуститься после перезагрузки.</string>
     <string name="perm_desc_bluetooth_connect">Позволяет макросу включать и выключать Bluetooth.</string>
     <string name="perm_desc_unknown">Используется узлом в одном из ваших макросов.</string>
@@ -46,5 +50,7 @@
     <string name="perm_rationale_overlay_dialog">Ottomatic нужно разрешение показываться поверх других приложений, чтобы этот диалог дошёл до вас, когда вы заняты чем-то другим на телефоне. Без него узел отменяется вместо того, чтобы спросить.</string>
     <string name="perm_rationale_nfc_radio">Этому триггеру нужен включённый NFC — это общесистемная настройка, которую Ottomatic не может выдать себе сам. Кроме того, метки считываются только при включённом и разблокированном экране: касание не разбудит телефон, спящий в кармане.</string>
     <string name="perm_rationale_alarm_exact">Ottomatic нужно разрешение на точные будильники, чтобы это ожидание завершилось ровно в указанную минуту. Без него ожидание всё равно произойдёт, но Android объединит пробуждение с другими задачами, и оно может опоздать на несколько минут.</string>
+    <string name="perm_rationale_calendar_read">Ottomatic нужен доступ к календарю, чтобы читать ваши встречи. Без него этот узел не прочитает ничего, а выбор календаря выше останется пустым.</string>
+    <string name="perm_rationale_calendar_write">Ottomatic нужно разрешение на изменение календаря, чтобы этот узел мог создать, изменить или удалить встречу. Чтение встреч — отдельное разрешение.</string>
     <string name="perm_rationale_overlay_launch">Ottomatic нужно разрешение показываться поверх других приложений, чтобы открыть одно из них, пока вы заняты чем-то другим на телефоне. Android запрещает фоновому приложению открывать другое, и без этого разрешения узел ничего не делает и сообщает об этом в консоли.</string>
 </resources>

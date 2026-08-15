@@ -634,3 +634,52 @@ Tools	ツール
 What to ask	尋ねる内容
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	AI モデル（Gemini、Claude、ChatGPT、OpenRouter、または自前のモデル）にプロンプトを送り、返答をテキストで返します。許可すればノードやマクロをツールとして実行させられます
 Let it use tools	ツールの使用を許可
+Add Calendar Event	予定を追加
+All day	終日
+Applies to	適用範囲
+Appointment	予定
+Between two times	2つの時刻の間
+Busy	予定あり
+Calendar	カレンダー
+Calendar Changed	カレンダー変更
+Calendar Event	カレンダーの予定
+Change how it shows you	表示状態を変更する
+Changes or deletes an appointment, either one occurrence of it or the whole series	予定を変更または削除します。1件だけにも、繰り返し全体にも適用できます
+Creates an appointment in one of the calendars on this phone	このスマートフォンのカレンダーに予定を作成します
+Days ahead	何日先まで
+Details	詳細
+Events	予定
+Find Calendar Events	予定を探す
+Fire when	実行するタイミング
+Free	空き時間
+How long (minutes)	長さ（分）
+In an appointment	予定中
+Include cancelled and declined ones	キャンセル済み・辞退済みも含める
+It ends	終了したとき
+It starts	開始したとき
+Its reminder falls due	通知の時刻になったとき
+Look at	対象期間
+Minutes before (negative fires afterwards)	何分前（マイナスなら後に実行）
+New details (leave empty to keep them)	新しい詳細（空欄ならそのまま）
+New length in minutes (-1 to keep it)	新しい長さ・分（-1 ならそのまま）
+New place (leave empty to keep it)	新しい場所（空欄ならそのまま）
+New start (leave empty to keep it)	新しい開始時刻（空欄ならそのまま）
+New title (leave empty to keep it)	新しいタイトル（空欄ならそのまま）
+Next appointment	次の予定
+Reads appointments out of a calendar onto a list you can loop over	カレンダーから予定を読み取り、繰り返し処理できるリストにします
+Remind you (minutes before, -1 for no reminder)	通知する（何分前、-1 なら通知なし）
+Shows you as	表示状態
+Starts at	開始時刻
+Starts when an appointment begins, ends, or its reminder falls due	予定が始まったとき、終わったとき、または通知の時刻になったときに開始します
+Starts when an appointment is added, changed or removed in any calendar	いずれかのカレンダーで予定が追加・変更・削除されたときに開始します
+Tentative	仮の予定
+The next appointment due to start in any calendar	いずれかのカレンダーで次に始まる予定
+The next few days	これから数日
+The rest of today	今日の残り
+This occurrence	この予定だけ
+Title contains	タイトルに含む
+Update	変更する
+Update Calendar Event	予定を更新
+Where	場所
+Whether an appointment is on in any calendar right now	いまいずれかのカレンダーで予定が進行中かどうか
+Whole series	繰り返し全体

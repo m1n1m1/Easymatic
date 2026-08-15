@@ -634,3 +634,52 @@ Tools	工具
 What to ask	要问什么
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	向 AI 模型（Gemini、Claude、ChatGPT、OpenRouter 或自托管模型）发送提示，并以文本返回回复；开启后还可让它把节点和宏当作工具来执行
 Let it use tools	允许它使用工具
+Add Calendar Event	添加日程
+All day	全天
+Applies to	应用于
+Appointment	日程
+Between two times	两个时间点之间
+Busy	忙碌
+Calendar	日历
+Calendar Changed	日历已更改
+Calendar Event	日历日程
+Change how it shows you	更改显示状态
+Changes or deletes an appointment, either one occurrence of it or the whole series	修改或删除日程，可以只针对一次，也可以针对整个系列
+Creates an appointment in one of the calendars on this phone	在这台手机的某个日历中创建日程
+Days ahead	往后几天
+Details	详情
+Events	日程
+Find Calendar Events	查找日程
+Fire when	触发时机
+Free	空闲
+How long (minutes)	时长（分钟）
+In an appointment	正在日程中
+Include cancelled and declined ones	包含已取消和已拒绝的
+It ends	结束时
+It starts	开始时
+Its reminder falls due	提醒到期时
+Look at	查看范围
+Minutes before (negative fires afterwards)	提前几分钟（负数表示之后触发）
+New details (leave empty to keep them)	新详情（留空则保持不变）
+New length in minutes (-1 to keep it)	新时长，分钟（-1 表示保持不变）
+New place (leave empty to keep it)	新地点（留空则保持不变）
+New start (leave empty to keep it)	新开始时间（留空则保持不变）
+New title (leave empty to keep it)	新标题（留空则保持不变）
+Next appointment	下一个日程
+Reads appointments out of a calendar onto a list you can loop over	从日历读取日程，生成可循环遍历的列表
+Remind you (minutes before, -1 for no reminder)	提醒你（提前几分钟，-1 表示不提醒）
+Shows you as	将你显示为
+Starts at	开始于
+Starts when an appointment begins, ends, or its reminder falls due	当日程开始、结束或其提醒到期时启动
+Starts when an appointment is added, changed or removed in any calendar	当任意日历中添加、修改或删除日程时启动
+Tentative	暂定
+The next appointment due to start in any calendar	任意日历中下一个即将开始的日程
+The next few days	接下来几天
+The rest of today	今天剩下的时间
+This occurrence	仅这一次
+Title contains	标题包含
+Update	修改
+Update Calendar Event	更新日程
+Where	地点
+Whether an appointment is on in any calendar right now	此刻任意日历中是否有日程正在进行
+Whole series	整个系列

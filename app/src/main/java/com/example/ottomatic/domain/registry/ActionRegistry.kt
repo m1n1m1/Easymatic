@@ -11,6 +11,9 @@ import com.example.ottomatic.engine.action.AutoRotateAction
 import com.example.ottomatic.engine.action.BluetoothAction
 import com.example.ottomatic.engine.action.BreakStructAction
 import com.example.ottomatic.engine.action.BrightnessAction
+import com.example.ottomatic.engine.action.CalendarAddAction
+import com.example.ottomatic.engine.action.CalendarQueryAction
+import com.example.ottomatic.engine.action.CalendarUpdateAction
 import com.example.ottomatic.engine.action.CallAction
 import com.example.ottomatic.engine.action.ClipboardAction
 import com.example.ottomatic.engine.action.DelayAction
@@ -139,6 +142,13 @@ object ActionRegistry {
         SendMailAction(),
         FetchMailAction(),
         MailUpdateAction(),
+        // The calendar family, kept together on the mail family's reasoning and in the
+        // same order: read the diary, put something in it, then act on what was read.
+        // "Find" leads here rather than "Add" because a macro that writes into a calendar
+        // almost always looked at it first.
+        CalendarQueryAction(),
+        CalendarAddAction(),
+        CalendarUpdateAction(),
         // The messenger family, kept together on the mail family's reasoning and in
         // the same order: send into a conversation, then act on the notification it
         // came from. "Send Message" is third because it is the one that cannot send

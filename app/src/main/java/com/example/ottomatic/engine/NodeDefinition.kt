@@ -601,13 +601,22 @@ inline fun <reified C : Any, O : Any> triggerNode(
     permissions = permissions,
 )
 
-/** Declares a trigger that only pulses execution, carrying no data. */
+/**
+ * Declares a trigger that only pulses execution, carrying no data.
+ *
+ * [permissions] arrived with `trigger.calendar_changed`, which is the first pulse trigger
+ * that needs a grant to hear anything at all — every earlier one is a broadcast the
+ * platform hands over freely. Carrying no data says nothing about what a trigger needs in
+ * order to fire, which is [adaptiveNode]'s argument for the same parameter.
+ */
+@Suppress("LongParameterList") // A node definition is intentionally a flat declaration DSL.
 inline fun <reified C : Any> pulseTriggerNode(
     typeId: String,
     displayName: String,
     description: String,
     category: NodeCategory,
     icon: NodeIcon,
+    permissions: List<PermissionRequirement> = emptyList(),
 ): TriggerNodeDefinition<C, Unit> = TriggerNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -616,6 +625,7 @@ inline fun <reified C : Any> pulseTriggerNode(
     icon = icon,
     schema = nodeSchema<C>(),
     output = null,
+    permissions = permissions,
 )
 
 /**

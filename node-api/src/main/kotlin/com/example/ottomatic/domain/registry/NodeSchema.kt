@@ -146,7 +146,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                         apiToken = annotations.any { it is ApiToken },
                         key = key,
                     ),
-                    defaultValue = defaultValues[key].orEmpty(),
+                    defaultValue = formDefault(element, defaultValues[key].orEmpty()),
                     visibleWhen = annotations.visibilityRule(),
                 ),
             )
@@ -158,6 +158,28 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         val encoded = ENCODER.encodeToJsonElement(serializer, defaults) as? JsonObject ?: return emptyMap()
         return encoded.mapValues { (_, value) -> jsonElementToString(value) }
     }
+
+    /**
+     * What the *form* shows for a property nothing has been stored for, which is the
+     * encoded default with one exception.
+     *
+     * [DateTime.EPOCH] is how a date property spells **"not set"** — `action.wait_until`,
+     * `action.calendar_add` and `action.calendar_query` all use it that way, and there is
+     * no macro whose author meant the first of January 1970. Encoding it literally put
+     * that date in the box and opened the date picker on it, which is the one default in
+     * the app that looked like a bug because it was one.
+     *
+     * Blank instead, so the field shows its own placeholder and the picker opens on today.
+     * **Nothing changes at run time**: [ConfigElement.encode] already reads a blank value
+     * as absent and substitutes this very property default, so a node left alone still
+     * decodes to [DateTime.EPOCH] and still means whatever it meant.
+     */
+    private fun formDefault(element: SerialDescriptor, encoded: String): String =
+        if (element.serialName == DateTime.SERIAL_NAME && DateTime.parse(encoded) == DateTime.EPOCH) {
+            ""
+        } else {
+            encoded
+        }
 
     @Suppress("LongParameterList") // One parameter per rendering annotation; they are all independent.
     private fun formTypeOf(

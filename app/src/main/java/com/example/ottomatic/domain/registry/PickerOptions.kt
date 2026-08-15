@@ -57,6 +57,12 @@ object PickerOptions {
         PickerKind.HA_SERVICE -> haServices(scope)
         PickerKind.MACRO -> macros()
         PickerKind.VARIABLE -> globalVariables()
+        // Only the ones an appointment can be added to, for the target kind: offering a
+        // model a subscribed holiday feed to write into is offering it a guaranteed
+        // failure, which is what this whole file exists to stop. The filter kind is not
+        // narrowed, because reading a read-only calendar is exactly what one is for.
+        PickerKind.CALENDAR -> CalendarDirectory.writable().map { it.ref }
+        PickerKind.CALENDAR_FILTER -> CalendarDirectory.all().map { it.ref }
 
         // ---- Deliberately not enumerable, each for its own reason. ----
 

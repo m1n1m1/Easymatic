@@ -369,6 +369,59 @@ interface TriggerHost {
     ): ScheduleHandle = ScheduleHandle { }
 
     /**
+     * The next appointment [spec] describes at or after [afterEpochMs], or null when there
+     * is nothing inside the look-ahead horizon.
+     *
+     * **A lookup rather than a registration**, on [geofencePlace]'s and [mailAccount]'s
+     * shape: everything it answers is one query away, and it is asked at arm time, after
+     * every fire and after every calendar change. Keeping it a lookup is what leaves the
+     * re-arming loop in `engine/`, beside `ScheduleTrigger.alarmFlow`'s, where it is
+     * testable against a fake host with no calendar provider anywhere.
+     *
+     * The split is not arbitrary. The *policy* — which occurrences count, where the offset
+     * comes from, what "nothing found" means — is macro logic and belongs where macro
+     * logic is tested. The *platform* half reduces to one query, which is exactly the
+     * shape the other lookups here already have.
+     *
+     * **Null is not "never".** For a schedule, no next fire time means the trigger is
+     * finished; for a calendar it means only that nothing is in the diary *yet*, and
+     * somebody may add something in ten minutes. The caller re-checks rather than
+     * stopping — see `CalendarEventTrigger`.
+     *
+     * Suspending, unlike every other lookup here, because it is a provider round trip
+     * rather than a map read. It is only ever called from inside a trigger's flow, which
+     * has somewhere to suspend.
+     */
+    suspend fun nextCalendarOccurrence(spec: CalendarWatchSpec, afterEpochMs: Long): CalendarOccurrence? = null
+
+    /**
+     * Registers this node's interest in *any* change to the phone's calendars, emitting a
+     * bus event (source `CALENDAR`, `triggerNodeId = nodeId`) when one happens.
+     *
+     * [armMailWatch]'s shape and its reference counting: one observer serves the process
+     * however many nodes are armed. It is registered on the **first** arm rather than at
+     * start-up, and that is not tidiness — registering it needs `READ_CALENDAR`, so a
+     * registration taken in `ServiceLocator.init` would be attempted before the user has
+     * granted anything and would never recover without a process restart.
+     *
+     * The events are **coalesced**, because the provider notifies once per row it touches:
+     * an account sync that pulls twelve appointments fires it twelve times, and a macro
+     * that posts a notification on "calendar changed" would post twelve.
+     *
+     * Used by both calendar triggers, which is the part worth knowing: `trigger.calendar_changed`
+     * is *about* the change, and `trigger.calendar_event` needs it because an appointment
+     * moved after its alarm was armed would otherwise fire at the old time, silently.
+     *
+     * [onReport] carries a line back to the macro's own console, for [armMailWatch]'s
+     * reason. The default is a no-op, so a host with no calendar behind it leaves the
+     * trigger silent.
+     */
+    fun armCalendarWatch(
+        nodeId: NodeId,
+        onReport: (String, LogLevel) -> Unit = { _, _ -> },
+    ): ScheduleHandle = ScheduleHandle { }
+
+    /**
      * Registers this node's interest in a Home Assistant entity or event type.
      *
      * [armMailWatch]'s shape, with one difference that shows through here: this does

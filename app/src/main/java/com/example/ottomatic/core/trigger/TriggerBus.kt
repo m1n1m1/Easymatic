@@ -75,6 +75,23 @@ enum class TriggerSource {
      * other.
      */
     MQTT,
+
+    /**
+     * Something in the phone's calendars changed.
+     *
+     * Addressed to one node rather than broadcast, on [HOME_ASSISTANT]'s rule and for a
+     * sharper version of its reason: a single account sync fires the provider's observer
+     * once per row it touched, so waking every armed trigger in the process to run its own
+     * filter chain would turn one background sync into dozens of pointless wake-ups.
+     * `CalendarWatchers` holds the registration table and emits one event per interested
+     * node.
+     *
+     * **A calendar trigger's *alarm* does not come through here.** `armAlarm` already
+     * emits [SCHEDULE] keyed by the node id, and a calendar node's alarm reaches only that
+     * node, so a second source for it would be a distinction nothing acts on. What arrives
+     * on this one is only "the diary changed, re-plan" — see `CalendarEventTrigger`.
+     */
+    CALENDAR,
 }
 
 /**

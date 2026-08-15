@@ -21,6 +21,13 @@
     <string name="category_smart_home">Hogar inteligente</string>
     <string name="category_ai">IA</string>
     <string name="category_files">Archivos</string>
+    <string name="category_calendar">Calendario</string>
+    <string name="calendar_choose_a_calendar">Elegir un calendario</string>
+    <string name="calendar_any_calendar">Cualquier calendario</string>
+    <string name="calendar_no_calendars">No hay calendarios en este teléfono.</string>
+    <string name="calendar_no_writable_calendars">No se puede añadir nada a ninguno de los calendarios de este teléfono. Un calendario suscrito, como uno de festivos, solo se puede leer.</string>
+    <string name="calendar_needs_access">Ottomatic necesita acceso al calendario para listar tus calendarios.</string>
+    <string name="calendar_grant_access">Conceder</string>
     <string name="category_data">Datos</string>
     <string name="category_value_power">Energía y batería</string>
     <string name="category_value_connectivity">Conectividad</string>

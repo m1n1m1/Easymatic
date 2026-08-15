@@ -21,6 +21,13 @@
     <string name="category_smart_home">スマートホーム</string>
     <string name="category_ai">AI</string>
     <string name="category_files">ファイル</string>
+    <string name="category_calendar">カレンダー</string>
+    <string name="calendar_choose_a_calendar">カレンダーを選択</string>
+    <string name="calendar_any_calendar">すべてのカレンダー</string>
+    <string name="calendar_no_calendars">このスマートフォンにカレンダーがありません。</string>
+    <string name="calendar_no_writable_calendars">このスマートフォンのカレンダーはどれも書き込めません。祝日カレンダーなどの購読カレンダーは読み取り専用です。</string>
+    <string name="calendar_needs_access">カレンダーを一覧表示するには、Ottomatic にカレンダーへのアクセスが必要です。</string>
+    <string name="calendar_grant_access">許可</string>
     <string name="category_data">データ</string>
     <string name="category_value_power">電源とバッテリー</string>
     <string name="category_value_connectivity">接続</string>

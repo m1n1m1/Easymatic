@@ -21,6 +21,13 @@
     <string name="category_smart_home">Maison connectée</string>
     <string name="category_ai">IA</string>
     <string name="category_files">Fichiers</string>
+    <string name="category_calendar">Agenda</string>
+    <string name="calendar_choose_a_calendar">Choisir un agenda</string>
+    <string name="calendar_any_calendar">N\'importe quel agenda</string>
+    <string name="calendar_no_calendars">Il n\'y a aucun agenda sur ce téléphone.</string>
+    <string name="calendar_no_writable_calendars">Aucun des agendas de ce téléphone n\'accepte d\'ajout. Un agenda auquel on est abonné, comme un calendrier de jours fériés, ne peut être que lu.</string>
+    <string name="calendar_needs_access">Ottomatic a besoin de l\'accès à l\'agenda pour lister vos agendas.</string>
+    <string name="calendar_grant_access">Accorder</string>
     <string name="category_data">Données</string>
     <string name="category_value_power">Alimentation et batterie</string>
     <string name="category_value_connectivity">Connectivité</string>

@@ -1,6 +1,8 @@
 package com.example.ottomatic.domain.model.items
 
 import com.example.ottomatic.core.service.AudioStream
+import com.example.ottomatic.core.service.CalendarAvailability
+import com.example.ottomatic.core.service.CalendarEventStatus
 import com.example.ottomatic.core.service.DndLevel
 import com.example.ottomatic.core.service.HttpMethod
 import com.example.ottomatic.core.service.RingerMode
@@ -502,6 +504,83 @@ data class MailSent(
 data class MailFlagged(
     val ref: String,
     val op: String,
+    val changed: Boolean,
+    val error: String = "",
+)
+
+/**
+ * One occurrence of one appointment, on `action.calendar_query`'s `events` list and
+ * `value.calendar_next`'s output.
+ *
+ * [MailMessage]'s shape and its conventions, with four things worth reading twice:
+ *
+ * - [ref] is **text**, not a nested struct, so one `action.break` reaches it and it wires
+ *   straight into `action.calendar_update`'s scalar `ref` port. It names *this occurrence*
+ *   rather than the series — see
+ *   [CalendarEventRef][com.example.ottomatic.domain.model.CalendarEventRef], where the
+ *   difference between deleting today's stand-up and deleting every stand-up lives.
+ * - [startsAt] and [endsAt] are [DateTime]s, already shifted out of the provider's UTC
+ *   for an all-day appointment, so a comparison against `value.now` means what it looks
+ *   like. [durationMinutes] beside them is a plain number, because **a duration is not a
+ *   DateTime** — `ScheduleFire.elapsedMs`' rule.
+ * - [endsAt] is **exclusive**, and for an all-day appointment it is midnight on the
+ *   following day. That is the provider's own convention, kept rather than tidied away,
+ *   because it makes `start <= now < end` correct for both kinds of appointment at once.
+ * - [calendar] and [calendarRef] are separate for [MailMessage]'s `from`/`fromName`
+ *   reason: the name belongs in a notification, the spec belongs in a wire. Wiring
+ *   [calendarRef] into another node's Calendar field is what lets a macro find an
+ *   appointment in one calendar and file something beside it.
+ */
+@Serializable
+data class CalendarEvent(
+    val ref: String,
+    val title: String = "",
+    val description: String = "",
+    val location: String = "",
+    val startsAt: DateTime,
+    val endsAt: DateTime,
+    val allDay: Boolean = false,
+    val durationMinutes: Long = 0,
+    val calendar: String = "",
+    val calendarRef: String = "",
+    val organiser: String = "",
+    val availability: CalendarAvailability = CalendarAvailability.BUSY,
+    val status: CalendarEventStatus = CalendarEventStatus.CONFIRMED,
+    val recurring: Boolean = false,
+    /** Minutes before the start of the earliest reminder, or -1 when there is none. */
+    val reminderMinutes: Int = -1,
+)
+
+/**
+ * Result of `action.calendar_add` on its `state` data port.
+ *
+ * [MailSent]'s shape, plus [ref] — which is the point of the node answering at all: a
+ * macro that creates an appointment and then wants to change or cancel it later has
+ * nothing else to hold on to. Blank when nothing was created.
+ */
+@Serializable
+data class CalendarWritten(
+    val ref: String,
+    val title: String,
+    val created: Boolean,
+    val error: String = "",
+)
+
+/**
+ * Result of `action.calendar_update` on its `state` data port.
+ *
+ * [MailFlagged]'s shape and its reasoning — [changed] is false both when the provider
+ * refused and when the reference named an appointment that has since been deleted, and
+ * [error] says which — plus [scope], which is the one extra field and earns its place:
+ * this node's most consequential setting is whether it touched one occurrence or a whole
+ * series, and a receipt that cannot say leaves somebody to work it out from the calendar
+ * afterwards.
+ */
+@Serializable
+data class CalendarChanged(
+    val ref: String,
+    val op: String,
+    val scope: String,
     val changed: Boolean,
     val error: String = "",
 )

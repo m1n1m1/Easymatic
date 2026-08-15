@@ -10,6 +10,26 @@
       the one row it returns.
     -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!--
+      The calendar nodes, and the calendar chooser in their config forms.
+
+      Unlike READ_CONTACTS above there is no transient grant to lean on: the platform
+      offers no calendar picker, so Ottomatic lists the calendars itself and needs the
+      read grant before a form can show anything at all. WRITE_CALENDAR is declared
+      only by the two nodes that create or change an event; reading and writing are
+      separate grants to the platform, and the difference between "reads my meetings"
+      and "can delete my meetings" is a real one to the person granting them.
+
+      No receiver goes with these. CalendarContract.ACTION_EVENT_REMINDER exists and is
+      genuinely broadcast by the provider, but it is an *implicit* broadcast and is not on
+      Android 8's exemption list, so a manifest receiver for it is never delivered — the
+      same fact ScreenBroadcastBridge's KDoc states about ACTION_TIME_TICK. The reminder
+      mode of `trigger.calendar_event` therefore plans its own exact alarm from the
+      event's own reminder row, which additionally works when the provider's alert path is
+      one an OEM calendar has replaced.
+    -->
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />

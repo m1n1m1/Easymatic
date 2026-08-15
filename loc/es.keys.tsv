@@ -736,3 +736,16 @@ ai_tools_choose_a_model_first	Elige primero un modelo
 ai_tools_reset	Volver a seguir al modelo
 ai_tools_reset_all	Restablecer todo
 config_tools_ai_chooses	La IA elige %2$s, entre las %1$d a su alcance
+perm_title_read_calendar	Calendario
+perm_title_write_calendar	Cambiar tu calendario
+perm_desc_read_calendar	Permite que una macro lea tus citas y que elijas un calendario al configurarla. A diferencia de los contactos, no hay un selector del sistema en el que apoyarse, así que esto hace falta antes de que un nodo de calendario pueda mostrarte nada.
+perm_desc_write_calendar	Permite que una macro cree, cambie y elimine citas. Leerlas es un permiso aparte, el de arriba.
+perm_rationale_calendar_read	Ottomatic necesita acceso al calendario para leer tus citas. Sin él, este nodo no lee nada en absoluto y el selector de calendario de arriba no tiene nada que ofrecer.
+perm_rationale_calendar_write	Ottomatic necesita permiso para cambiar tu calendario y que este nodo pueda crear, editar o eliminar una cita. Leer citas es un permiso aparte.
+category_calendar	Calendario
+calendar_choose_a_calendar	Elegir un calendario
+calendar_any_calendar	Cualquier calendario
+calendar_no_calendars	No hay calendarios en este teléfono.
+calendar_no_writable_calendars	No se puede añadir nada a ninguno de los calendarios de este teléfono. Un calendario suscrito, como uno de festivos, solo se puede leer.
+calendar_needs_access	Ottomatic necesita acceso al calendario para listar tus calendarios.
+calendar_grant_access	Conceder

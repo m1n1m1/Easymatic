@@ -634,3 +634,52 @@ Tools	Инструменты
 What to ask	О чём спросить
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	Отправляет запрос модели ИИ (Gemini, Claude, ChatGPT, OpenRouter или собственной модели) и возвращает ответ текстом, а при разрешении позволяет ей запускать узлы и макросы как инструменты
 Let it use tools	Разрешить ей пользоваться инструментами
+Add Calendar Event	Добавить встречу
+All day	Весь день
+Applies to	Применить к
+Appointment	Встреча
+Between two times	Между двумя моментами
+Busy	Занят
+Calendar	Календарь
+Calendar Changed	Календарь изменён
+Calendar Event	Встреча в календаре
+Change how it shows you	Изменить показ занятости
+Changes or deletes an appointment, either one occurrence of it or the whole series	Изменяет или удаляет встречу — либо одно повторение, либо всю серию
+Creates an appointment in one of the calendars on this phone	Создаёт встречу в одном из календарей на этом телефоне
+Days ahead	На сколько дней вперёд
+Details	Описание
+Events	Встречи
+Find Calendar Events	Найти встречи
+Fire when	Срабатывать когда
+Free	Свободен
+How long (minutes)	Длительность (минуты)
+In an appointment	Идёт встреча
+Include cancelled and declined ones	Включая отменённые и отклонённые
+It ends	Заканчивается
+It starts	Начинается
+Its reminder falls due	Наступает её напоминание
+Look at	Период
+Minutes before (negative fires afterwards)	За сколько минут (отрицательное — после)
+New details (leave empty to keep them)	Новое описание (пусто — оставить как есть)
+New length in minutes (-1 to keep it)	Новая длительность в минутах (-1 — оставить)
+New place (leave empty to keep it)	Новое место (пусто — оставить как есть)
+New start (leave empty to keep it)	Новое начало (пусто — оставить как есть)
+New title (leave empty to keep it)	Новое название (пусто — оставить как есть)
+Next appointment	Следующая встреча
+Reads appointments out of a calendar onto a list you can loop over	Читает встречи из календаря в список, который можно перебрать
+Remind you (minutes before, -1 for no reminder)	Напомнить (за сколько минут, -1 — без напоминания)
+Shows you as	Показывать вас как
+Starts at	Начало
+Starts when an appointment begins, ends, or its reminder falls due	Запускается, когда встреча начинается, заканчивается или наступает её напоминание
+Starts when an appointment is added, changed or removed in any calendar	Запускается, когда в любом календаре встречу добавили, изменили или удалили
+Tentative	Под вопросом
+The next appointment due to start in any calendar	Ближайшая встреча, которая начнётся в любом календаре
+The next few days	Ближайшие дни
+The rest of today	Остаток сегодняшнего дня
+This occurrence	Только эту встречу
+Title contains	Название содержит
+Update	Изменить
+Update Calendar Event	Обновить встречу
+Where	Место
+Whether an appointment is on in any calendar right now	Идёт ли сейчас встреча в каком-либо календаре
+Whole series	Всю серию

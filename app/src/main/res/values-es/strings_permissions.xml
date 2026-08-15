@@ -18,6 +18,8 @@
     <string name="perm_title_send_sms">Enviar mensajes</string>
     <string name="perm_title_call_phone">Hacer llamadas</string>
     <string name="perm_title_read_contacts">Contactos</string>
+    <string name="perm_title_read_calendar">Calendario</string>
+    <string name="perm_title_write_calendar">Cambiar tu calendario</string>
     <string name="perm_title_post_notifications">Notificaciones</string>
     <string name="perm_title_bluetooth_connect">Bluetooth</string>
     <string name="perm_desc_overlay">Permite que una macro muestre un diálogo en pantalla y abra otras aplicaciones mientras estás mirando otra cosa. Sin este permiso, Android bloquea ambas cosas desde una aplicación en segundo plano.</string>
@@ -37,6 +39,8 @@
     <string name="perm_desc_send_sms">Permite que una macro envíe un mensaje en tu nombre.</string>
     <string name="perm_desc_call_phone">Permite que una macro haga una llamada sin que la confirmes.</string>
     <string name="perm_desc_read_contacts">Permite que una macro busque el número de un contacto que elegiste. Elegirlo no requiere nada; marcarlo después sí.</string>
+    <string name="perm_desc_read_calendar">Permite que una macro lea tus citas y que elijas un calendario al configurarla. A diferencia de los contactos, no hay un selector del sistema en el que apoyarse, así que esto hace falta antes de que un nodo de calendario pueda mostrarte nada.</string>
+    <string name="perm_desc_write_calendar">Permite que una macro cree, cambie y elimine citas. Leerlas es un permiso aparte, el de arriba.</string>
     <string name="perm_desc_post_notifications">Permite que Ottomatic muestre una notificación: tanto las que envía una macro como la que te avisa de que el motor no pudo arrancar tras un reinicio.</string>
     <string name="perm_desc_bluetooth_connect">Permite que una macro active y desactive el Bluetooth.</string>
     <string name="perm_desc_unknown">Lo usa un nodo de alguna de tus macros.</string>
@@ -46,5 +50,7 @@
     <string name="perm_rationale_overlay_dialog">Ottomatic necesita permiso para mostrarse sobre otras aplicaciones, de modo que este diálogo pueda alcanzarte cuando estés en otra parte del teléfono. Sin él, el nodo se cancela en lugar de preguntar.</string>
     <string name="perm_rationale_nfc_radio">Este activador necesita el NFC encendido, que es un ajuste de todo el sistema y no algo que Ottomatic pueda concederse a sí mismo. Además, las etiquetas solo se leen con la pantalla encendida y desbloqueada: un toque no llegará a un teléfono dormido en el bolsillo.</string>
     <string name="perm_rationale_alarm_exact">Ottomatic necesita permiso para poner alarmas exactas, de modo que esta espera termine en el minuto que pediste. Sin él la espera ocurre igual, pero Android agrupa el despertar con otras tareas y puede retrasarse minutos.</string>
+    <string name="perm_rationale_calendar_read">Ottomatic necesita acceso al calendario para leer tus citas. Sin él, este nodo no lee nada en absoluto y el selector de calendario de arriba no tiene nada que ofrecer.</string>
+    <string name="perm_rationale_calendar_write">Ottomatic necesita permiso para cambiar tu calendario y que este nodo pueda crear, editar o eliminar una cita. Leer citas es un permiso aparte.</string>
     <string name="perm_rationale_overlay_launch">Ottomatic necesita permiso para mostrarse sobre otras aplicaciones y así poder abrir una mientras estás en otra parte del teléfono. Android impide que una aplicación en segundo plano abra otra y, sin este permiso, el nodo no hace nada y lo indica en la consola.</string>
 </resources>

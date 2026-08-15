@@ -634,3 +634,52 @@ Tools	Herramientas
 What to ask	Qué preguntar
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	Envía una petición a un modelo de IA (Gemini, Claude, ChatGPT, OpenRouter o un modelo autoalojado) y devuelve su respuesta como texto, dejándole ejecutar nodos y macros como herramientas cuando se lo permitas
 Let it use tools	Dejar que use herramientas
+Add Calendar Event	Añadir cita
+All day	Todo el día
+Applies to	Se aplica a
+Appointment	Cita
+Between two times	Entre dos momentos
+Busy	Ocupado
+Calendar	Calendario
+Calendar Changed	Calendario modificado
+Calendar Event	Cita del calendario
+Change how it shows you	Cambiar cómo te muestra
+Changes or deletes an appointment, either one occurrence of it or the whole series	Cambia o elimina una cita, ya sea una repetición concreta o toda la serie
+Creates an appointment in one of the calendars on this phone	Crea una cita en uno de los calendarios de este teléfono
+Days ahead	Días por delante
+Details	Detalles
+Events	Citas
+Find Calendar Events	Buscar citas
+Fire when	Activar cuando
+Free	Libre
+How long (minutes)	Duración (minutos)
+In an appointment	En una cita
+Include cancelled and declined ones	Incluir las canceladas y rechazadas
+It ends	Termina
+It starts	Empieza
+Its reminder falls due	Vence su recordatorio
+Look at	Mirar
+Minutes before (negative fires afterwards)	Minutos antes (en negativo se activa después)
+New details (leave empty to keep them)	Nuevos detalles (déjalo vacío para conservarlos)
+New length in minutes (-1 to keep it)	Nueva duración en minutos (-1 para conservarla)
+New place (leave empty to keep it)	Nuevo lugar (déjalo vacío para conservarlo)
+New start (leave empty to keep it)	Nuevo inicio (déjalo vacío para conservarlo)
+New title (leave empty to keep it)	Nuevo título (déjalo vacío para conservarlo)
+Next appointment	Próxima cita
+Reads appointments out of a calendar onto a list you can loop over	Lee las citas de un calendario en una lista que puedes recorrer
+Remind you (minutes before, -1 for no reminder)	Recordártelo (minutos antes, -1 para ninguno)
+Shows you as	Te muestra como
+Starts at	Empieza a las
+Starts when an appointment begins, ends, or its reminder falls due	Se inicia cuando una cita empieza, termina o vence su recordatorio
+Starts when an appointment is added, changed or removed in any calendar	Se inicia cuando se añade, cambia o elimina una cita en cualquier calendario
+Tentative	Provisional
+The next appointment due to start in any calendar	La próxima cita que va a empezar en cualquier calendario
+The next few days	Los próximos días
+The rest of today	Lo que queda de hoy
+This occurrence	Solo esta cita
+Title contains	El título contiene
+Update	Cambiarla
+Update Calendar Event	Actualizar cita
+Where	Dónde
+Whether an appointment is on in any calendar right now	Si ahora mismo hay una cita en curso en cualquier calendario
+Whole series	Toda la serie

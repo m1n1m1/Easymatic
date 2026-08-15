@@ -84,6 +84,8 @@ perm_title_receive_sms	Receive texts
 perm_title_send_sms	Send texts
 perm_title_call_phone	Make calls
 perm_title_read_contacts	Contacts
+perm_title_read_calendar	Calendar
+perm_title_write_calendar	Change your calendar
 perm_title_post_notifications	Notifications
 perm_title_bluetooth_connect	Bluetooth
 perm_desc_overlay	Lets a macro put a dialog on screen, and open other apps, while you are looking at something else. Android blocks both from a background app without it.
@@ -103,6 +105,8 @@ perm_desc_receive_sms	Lets a macro run when a text arrives, and read who it is f
 perm_desc_send_sms	Lets a macro send a text on your behalf.
 perm_desc_call_phone	Lets a macro place a call without you confirming it.
 perm_desc_read_contacts	Lets a macro look up the number of a contact you chose. Choosing one needs nothing; dialling it later does.
+perm_desc_read_calendar	Lets a macro read your appointments, and lets you pick a calendar when setting one up. Unlike contacts, there is no system picker to lean on, so this is needed before a calendar node can show you anything.
+perm_desc_write_calendar	Lets a macro create, change and delete appointments. Reading them is a separate switch above.
 perm_desc_post_notifications	Lets Ottomatic show a notification — both the ones a macro posts and the one that tells you the engine failed to start after a reboot.
 perm_desc_bluetooth_connect	Lets a macro turn Bluetooth on and off.
 perm_desc_unknown	Used by a node on one of your macros.
@@ -112,6 +116,8 @@ perm_rationale_dnd_policy	Ottomatic needs Do Not Disturb access to change your r
 perm_rationale_overlay_dialog	Ottomatic needs permission to draw over other apps so this dialog can reach you while you are somewhere else on your phone. Without it the node cancels instead of asking.
 perm_rationale_nfc_radio	This trigger needs NFC switched on, which is a system-wide setting rather than something Ottomatic can grant itself. Tags are also only read while the screen is on and unlocked — a tap will not reach a phone asleep in your pocket.
 perm_rationale_alarm_exact	Ottomatic needs permission to set exact alarms so this wait ends at the minute you asked for. Without it the wait still happens, but Android batches the wake-up with other work and it can be minutes late.
+perm_rationale_calendar_read	Ottomatic needs calendar access to read your appointments. Without it this node reads nothing at all, and the calendar chooser above has nothing to offer.
+perm_rationale_calendar_write	Ottomatic needs permission to change your calendar so this node can create, edit or delete an appointment. Reading appointments is a separate grant.
 perm_rationale_overlay_launch	Ottomatic needs permission to draw over other apps so it can open one while you are somewhere else on your phone. Android blocks a background app from opening another, and without this the node does nothing and says so in the console.
 problem_permission_missing	\'%1$s\' needs %2$s, which has not been granted — it may do nothing when it runs
 problem_plugin_permission_missing	\'%1$s\' needs %2$s, which %3$s has not been granted — it may do nothing when it runs
@@ -164,6 +170,13 @@ category_device_settings	Device Settings
 category_smart_home	Smart Home
 category_ai	AI
 category_files	Files
+category_calendar	Calendar
+calendar_choose_a_calendar	Choose a calendar
+calendar_any_calendar	Any calendar
+calendar_no_calendars	There are no calendars on this phone.
+calendar_no_writable_calendars	None of the calendars on this phone can be added to. A subscribed calendar, like a holiday feed, can only be read.
+calendar_needs_access	Ottomatic needs calendar access to list your calendars.
+calendar_grant_access	Grant
 category_data	Data
 category_value_power	Power &amp; Battery
 category_value_connectivity	Connectivity

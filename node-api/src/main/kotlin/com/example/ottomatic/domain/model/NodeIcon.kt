@@ -89,4 +89,15 @@ enum class NodeIcon {
 
     /** A folder, and what is inside it. See [FILE] for why the two are separate. */
     FOLDER,
+
+    /**
+     * An appointment in a calendar.
+     *
+     * Distinct from [SCHEDULE], which it would otherwise be tempting to reuse, and the
+     * difference is the one that matters on a canvas: [SCHEDULE] is a *rule the app
+     * follows* — every Monday at seven — where this is an entry in a diary somebody else
+     * keeps. A macro that mixes the two is a macro whose author has to read the card to
+     * tell which is which.
+     */
+    CALENDAR,
 }

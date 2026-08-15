@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
@@ -271,4 +272,7 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // differently at a glance from the one that answers with a folder's contents.
     NodeIcon.FILE -> Icons.AutoMirrored.Filled.InsertDriveFile
     NodeIcon.FOLDER -> Icons.Filled.FolderOpen
+    // A month grid rather than SCHEDULE's clock: this is a diary somebody else keeps,
+    // not a rule the app follows.
+    NodeIcon.CALENDAR -> Icons.Filled.CalendarMonth
 }
