@@ -17,8 +17,8 @@ import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.Suggested
 import com.example.ottomatic.domain.model.config.Ports
-import com.example.ottomatic.domain.model.config.Tools
 import com.example.ottomatic.domain.model.config.TimeOfDay
+import com.example.ottomatic.domain.model.config.Tools
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.WifiNetwork
 import com.example.ottomatic.domain.model.config.Wired
@@ -136,7 +136,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                         multiline = annotations.any { it is Multiline },
                         picker = annotations.filterIsInstance<Picker>().firstOrNull(),
                         ports = annotations.any { it is Ports },
-                        tools = annotations.any { it is Tools },
+                        tools = annotations.filterIsInstance<Tools>().firstOrNull(),
                         phone = annotations.any { it is PhoneNumber },
                         timeOfDay = annotations.any { it is TimeOfDay },
                         wifi = annotations.any { it is WifiNetwork },
@@ -165,7 +165,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         multiline: Boolean,
         picker: Picker?,
         ports: Boolean,
-        tools: Boolean,
+        tools: Tools?,
         phone: Boolean,
         timeOfDay: Boolean,
         wifi: Boolean,
@@ -224,7 +224,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         multiline: Boolean,
         picker: Picker?,
         ports: Boolean,
-        tools: Boolean,
+        tools: Tools?,
         phone: Boolean,
         timeOfDay: Boolean,
         wifi: Boolean,
@@ -234,7 +234,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         apiToken: Boolean,
     ): ConfigFieldType<String> = when {
         ports -> ConfigFieldType.PORT_LIST
-        tools -> ConfigFieldType.TOOL_LIST
+        tools != null -> ConfigFieldType.TOOL_LIST(tools.scopedBy.toList())
         apiToken -> ConfigFieldType.API_TOKEN
         picker != null -> ConfigFieldType.PICKER(picker.kind, picker.scopedBy.toList(), picker.optional)
         phone -> ConfigFieldType.PHONE
@@ -258,7 +258,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         element: SerialDescriptor,
         picker: Picker?,
         ports: Boolean,
-        tools: Boolean,
+        tools: Tools?,
         phone: Boolean,
         timeOfDay: Boolean,
         wifi: Boolean,
@@ -276,9 +276,9 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             "Config property '${descriptor.serialName}.$key' is annotated @Ports but is a " +
                 "${element.kind}; a port list is persisted as one 'name:TYPE' line per port, so it must be a String"
         }
-        check(!tools || element.kind == PrimitiveKind.STRING) {
+        check(tools == null || element.kind == PrimitiveKind.STRING) {
             "Config property '${descriptor.serialName}.$key' is annotated @Tools but is a " +
-                "${element.kind}; a tool list is persisted as one line per tool, so it must be a String"
+                "${element.kind}; tool overrides are persisted as one line each, so it must be a String"
         }
         check(!phone || element.kind == PrimitiveKind.STRING) {
             "Config property '${descriptor.serialName}.$key' is annotated @PhoneNumber but is a " +
@@ -331,7 +331,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
     private fun widgetFlags(
         picker: Picker?,
         ports: Boolean,
-        tools: Boolean,
+        tools: Tools?,
         phone: Boolean,
         timeOfDay: Boolean,
         wifi: Boolean,
@@ -340,7 +340,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         suggested: Suggested?,
         apiToken: Boolean,
     ): List<Boolean> = listOf(
-        picker != null, ports, tools, phone, timeOfDay, wifi, contactName, filePath,
+        picker != null, ports, tools != null, phone, timeOfDay, wifi, contactName, filePath,
         suggested != null, apiToken,
     )
 

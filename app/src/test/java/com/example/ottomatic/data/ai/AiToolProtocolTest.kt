@@ -32,14 +32,10 @@ class AiToolProtocolTest {
         parameters = listOf(AiParam("scale", AiParamSchema.Text(listOf("percent")))),
     )
 
-    private fun request(model: AiModel = AiModel.FAST) = AiRequest(
-        connectionId = "connection-id",
-        prompt = "how full is the battery?",
-        model = model,
-    )
+    private fun request() = AiRequest(modelRef = TEST_MODEL_REF, prompt = "how full is the battery?")
 
     private fun connection(provider: AiProvider) =
-        AiConnection(id = "connection-id", name = "Test", provider = provider, fastModel = "m")
+        target(AiConnection(id = "connection-id", name = "Test", provider = provider), modelId = "m")
 
     /** The exchange every provider is asked to render: ask, model calls, tool answers. */
     private fun exchangeAfter(turn: AiTurn, result: AiToolResult) = listOf(
@@ -128,7 +124,7 @@ class AiToolProtocolTest {
             exchange = listOf(AiExchange.Ask("hello")),
             tools = listOf(tool),
             request = request(),
-            connection = connection(AiProvider.ANTHROPIC),
+            target = connection(AiProvider.ANTHROPIC),
         )
         assertTrue(body.contains("""{"type":"text","text":"hello"}"""))
         assertTrue(body.contains(""""input_schema":{"type":"object""""))
@@ -149,7 +145,7 @@ class AiToolProtocolTest {
             exchange = exchangeAfter(turn, AiToolResult("72")),
             tools = listOf(tool),
             request = request(),
-            connection = connection(AiProvider.ANTHROPIC),
+            target = connection(AiProvider.ANTHROPIC),
         )
         assertTrue(body.contains(""""type":"thinking""""))
         assertTrue(body.contains(""""signature":"abc""""))
@@ -163,7 +159,7 @@ class AiToolProtocolTest {
             exchange = exchangeAfter(turn, AiToolResult("72")),
             tools = listOf(tool),
             request = request(),
-            connection = connection(AiProvider.ANTHROPIC),
+            target = connection(AiProvider.ANTHROPIC),
         )
         assertTrue(body.contains(""""type":"tool_result""""))
         assertTrue(body.contains(""""tool_use_id":"toolu_01""""))
@@ -176,7 +172,7 @@ class AiToolProtocolTest {
             exchange = exchangeAfter(turn, AiToolResult("no such light", isError = true)),
             tools = listOf(tool),
             request = request(),
-            connection = connection(AiProvider.ANTHROPIC),
+            target = connection(AiProvider.ANTHROPIC),
         )
         assertTrue(body.contains(""""is_error":true"""))
     }
@@ -189,7 +185,7 @@ class AiToolProtocolTest {
             exchange = listOf(AiExchange.Ask("hello")),
             tools = listOf(tool),
             request = request(),
-            connection = connection(AiProvider.OPENAI),
+            target = connection(AiProvider.OPENAI),
         )
         assertTrue(body.contains(""""type":"function""""))
         assertTrue(body.contains(""""name":"value_battery""""))
@@ -232,7 +228,7 @@ class AiToolProtocolTest {
             exchange = exchangeAfter(turn, AiToolResult("72")),
             tools = listOf(tool),
             request = request(),
-            connection = connection(AiProvider.OPENAI),
+            target = connection(AiProvider.OPENAI),
         )
         assertTrue(body.contains(""""role":"tool""""))
         assertTrue(body.contains(""""tool_call_id":"call_1""""))
@@ -246,7 +242,7 @@ class AiToolProtocolTest {
             exchange = listOf(AiExchange.Ask("hello")),
             tools = listOf(tool),
             request = request(),
-            connection = connection(AiProvider.GEMINI),
+            target = connection(AiProvider.GEMINI),
         )
         assertTrue(body.contains(""""tools":[{"functionDeclarations":["""))
         // The single-prompt body's own rules still hold in this mode.
@@ -298,7 +294,7 @@ class AiToolProtocolTest {
             exchange = exchangeAfter(turn, AiToolResult("72")),
             tools = listOf(tool),
             request = request(),
-            connection = connection(AiProvider.GEMINI),
+            target = connection(AiProvider.GEMINI),
         )
         assertTrue(body.contains(""""functionResponse":{"name":"value_battery","response":{"result":"72"}}"""))
         assertTrue(body.contains(""""role":"model""""))
@@ -311,7 +307,7 @@ class AiToolProtocolTest {
             exchange = exchangeAfter(turn, AiToolResult("unreachable", isError = true)),
             tools = listOf(tool),
             request = request(),
-            connection = connection(AiProvider.GEMINI),
+            target = connection(AiProvider.GEMINI),
         )
         assertTrue(body.contains(""""response":{"error":"unreachable"}"""))
     }

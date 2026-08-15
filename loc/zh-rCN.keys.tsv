@@ -701,3 +701,38 @@ config_tools_fixed	在此固定，而不是交给 AI 决定
 config_tools_must_fix	在此选定：AI 无法指明它
 config_tools_nothing_to_fix	此工具没有可设置的项
 config_tools_add	添加工具
+ai_add_model	添加模型
+ai_choose_a_model	选择模型
+ai_delete_model	删除此模型
+ai_model_effort	思考程度
+ai_model_effort_help	模型回答前要思考多久。上方标识符为空时，也由它决定供应商使用哪个模型。
+ai_model_id	模型标识符
+ai_model_id_required	必填
+ai_model_name	名称
+ai_model_name_help	宏将看到的名称。请按用途而不是按模型命名：“家居”、“总结邮件”。
+ai_model_name_placeholder	家居
+ai_model_not_finished	尚未完成：请填写名称和模型
+ai_model_provider_default	%1$s · 供应商自带的模型
+ai_no_model_to_test	请先添加模型并保存，然后再测试。
+ai_no_models_on_this_account	此帐户下还没有模型。
+ai_no_models_yet	还没有模型。添加一个，宏才有可指向的对象。
+ai_tools_allow_everything	全部允许
+ai_tools_allowed_count	已允许 %1$d / %2$d
+ai_tools_macros	宏
+ai_tools_many_warning	每一轮都会向模型描述每个工具。列表过长会挤占提示，导致选择变差。
+ai_tools_n_allowed	已允许 %1$d 个
+ai_tools_need_a_choice	还有 %1$d 个需要先选定内容才能生效。
+ai_tools_needs	需要 %1$s
+ai_tools_none_allowed	未允许任何工具：此模型只能回答
+ai_tools_over_the_cap	超出 %1$d 的上限，超出部分将被忽略；请取消勾选一些。
+ai_tools_title	工具
+ai_unnamed_model	未命名的模型
+ai_tools_adjusted	已在此调整
+ai_tools_adjusted_count	已为此节点调整 %1$d 项
+ai_tools_adjusted_off	已在此关闭
+ai_tools_adjusting	这些属于模型。在此修改只对本节点生效。
+ai_tools_as_the_model_says	模型允许的全部
+ai_tools_choose_a_model_first	请先选择模型
+ai_tools_reset	恢复跟随模型
+ai_tools_reset_all	全部重置
+config_tools_ai_chooses	由 AI 从可访问的 %1$d 项中选择%2$s

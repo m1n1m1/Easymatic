@@ -47,11 +47,10 @@ enum class IssueReason {
     /** node */
     AI_UNFINISHED,
 
-    /** node, tool */
-    AI_TOOL_MISSING,
-
-    /** node, tool, fields */
-    AI_TOOL_UNPINNED,
+    // AI_TOOL_MISSING and AI_TOOL_UNPINNED were here. Tools moved from the node onto
+    // the model profile, so a broken one is a fact about the connection library and is
+    // reported on the row that fixes it — a Problems entry would point at the canvas,
+    // where there is nothing to change.
 
     /** node */
     VARIABLE_UNSET,

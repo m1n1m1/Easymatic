@@ -1,7 +1,9 @@
 package com.example.ottomatic.data
 
+import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.data.security.Secrets
 import com.example.ottomatic.domain.model.AiConnection
+import com.example.ottomatic.domain.model.AiModelProfile
 import com.example.ottomatic.domain.model.AiProvider
 import java.io.File
 import java.util.UUID
@@ -52,6 +54,9 @@ class AiConnectionRepository(
 
     private val file = File(this.directory, FILE_NAME)
 
+    /** Written once the profile upconvert has run; see [upconvertProfiles]. */
+    private val marker = File(this.directory, PROFILES_MARKER_NAME)
+
     // Read synchronously at construction, as the other libraries are.
     private val cache = MutableStateFlow(readFile())
 
@@ -63,6 +68,22 @@ class AiConnectionRepository(
 
     /** The connection with [id], or null when it was never created or has been deleted. */
     fun get(id: String): AiConnection? = cache.value.firstOrNull { it.id == id }
+
+    /**
+     * The connection holding the profile with [profileId], and that profile.
+     *
+     * A node stores the **profile** id and nothing else, so every read starts here.
+     * Searching rather than indexing is deliberate: the library is a handful of
+     * connections with a handful of profiles each, and a second map is a second thing
+     * to keep in step with the first.
+     */
+    fun resolve(profileId: String): Pair<AiConnection, AiModelProfile>? = cache.value
+        .firstNotNullOfOrNull { connection ->
+            connection.models.firstOrNull { it.id == profileId }?.let { connection to it }
+        }
+
+    /** Just the account half of [resolve], for a picker rendering "Household · Personal key". */
+    fun connectionForProfile(profileId: String): AiConnection? = resolve(profileId)?.first
 
     /**
      * The API key for [id] right now, or null — no such connection, no stored
@@ -141,8 +162,69 @@ class AiConnectionRepository(
 
     private fun readFile(): List<AiConnection> = runCatching {
         if (!file.exists()) return@runCatching adoptSingleKey()
-        json.decodeFromString(serializer, file.readText()).sortedBy { it.name.lowercase() }
+        val stored = json.decodeFromString(serializer, file.readText()).sortedBy { it.name.lowercase() }
+        upconvertProfiles(stored)
     }.getOrDefault(emptyList())
+
+    /**
+     * Splits a pre-profile connection into the three [AiModelProfile]s it was already
+     * describing.
+     *
+     * The old layout held one standing prompt and three model-id overrides on the
+     * connection itself, which is a provider account doing a model preset's job.
+     * Every such connection becomes three profiles — Fast, Balanced and Thorough —
+     * each carrying its own legacy id and a copy of the prompt, so nothing a user
+     * configured is lost and no node has to be re-pointed by hand.
+     *
+     * **Deterministic ids**, from [AiModelProfile.legacyId]: a node saved before this
+     * holds a connection id and a tier, and deriving the profile id from exactly those
+     * two is what lets `repairAiRefs` repair a node as a pure function of its own
+     * config. The two migrations therefore need no ordering between them, which
+     * matters because a workflow is loaded on a different thread from this file.
+     *
+     * A connection with **no** legacy ids still gets three profiles, with blank
+     * [AiModelProfile.modelId]s: blank already means "the provider's own id for this
+     * tier", so that is the same three choices the user had before, named.
+     *
+     * **A marker file and not "has no profiles" decides whether this has run**, and
+     * the difference is a real bug rather than a nicety. An empty list cannot tell a
+     * pre-profile connection from one whose profiles the user *deleted* — so keying on
+     * it would put three profiles back every time the app started, on a connection
+     * somebody had deliberately emptied. The marker is [adoptSingleKey]'s
+     * one-way-and-self-erasing idiom in its other form: there the old file is deleted,
+     * here a new one is written, and both mean "this conversion has happened".
+     *
+     * Safe to remove entirely, marker and all, once no install predates profiles.
+     */
+    private fun upconvertProfiles(stored: List<AiConnection>): List<AiConnection> {
+        if (marker.exists()) return stored
+        val upconverted = stored.map { connection ->
+            if (connection.models.isNotEmpty()) connection else connection.copy(
+                models = AiModel.entries.map { effort ->
+                    AiModelProfile(
+                        id = AiModelProfile.legacyId(connection.id, effort),
+                        name = effort.name.lowercase().replaceFirstChar { it.uppercase() },
+                        modelId = connection.legacyModelId(effort),
+                        effort = effort,
+                        systemPrompt = connection.systemPrompt,
+                    )
+                },
+                systemPrompt = "",
+                fastModel = "",
+                balancedModel = "",
+                thoroughModel = "",
+            )
+        }
+        if (upconverted != stored) writeFile(upconverted)
+        runCatching { marker.createNewFile() }
+        return upconverted
+    }
+
+    private fun AiConnection.legacyModelId(effort: AiModel): String = when (effort) {
+        AiModel.FAST -> fastModel
+        AiModel.BALANCED -> balancedModel
+        AiModel.THOROUGH -> thoroughModel
+    }
 
     /**
      * Brings across the key stored by the single-key layout this library replaced.
@@ -191,6 +273,7 @@ class AiConnectionRepository(
         const val DIR_NAME = "ai"
         const val FILE_NAME = "connections.json"
         const val LEGACY_FILE_NAME = "key.json"
+        const val PROFILES_MARKER_NAME = ".profiles"
         const val LEGACY_NAME = "Gemini"
     }
 }

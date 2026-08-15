@@ -1,5 +1,8 @@
 package com.example.ottomatic.domain.registry
 
+import com.example.ottomatic.domain.model.AiConnection
+import com.example.ottomatic.domain.model.isConfigured
+
 /**
  * Which AI connections exist, as a lookup anything in `domain` may reach.
  *
@@ -29,11 +32,37 @@ object AiConnections {
     @Volatile
     private var configured: Set<String> = emptySet()
 
+    @Volatile
+    private var profiles: Set<String> = emptySet()
+
+    @Volatile
+    private var configuredProfiles: Set<String> = emptySet()
+
     /** Whether anything has published a list yet; see the class KDoc. */
     val isHydrated: Boolean get() = current != null
 
     /** Whether [connectionId] names a connection that is still set up on this device. */
     fun exists(connectionId: String): Boolean = current?.contains(connectionId) == true
+
+    /**
+     * Whether [profileId] names an `AiModelProfile` that still exists, on any connection.
+     *
+     * A profile id is unique across the library — minted as a UUID, or derived from a
+     * connection id and a tier — so this asks nothing about *which* connection holds
+     * it, and a node stores nothing but the id. That is the same shape
+     * `PickerKind.AI_CONNECTION` already had, one level down.
+     */
+    fun profileExists(profileId: String): Boolean = profileId in profiles
+
+    /**
+     * Whether [profileId] names everything its provider needs — the profile's own
+     * model id, and its connection's address.
+     *
+     * The second question beside [profileExists], for the reason [isConfigured] is the
+     * second question beside [exists]: deleted and unfinished have different fixes and
+     * deserve different sentences.
+     */
+    fun profileIsConfigured(profileId: String): Boolean = profileId in configuredProfiles
 
     /**
      * Whether [connectionId] has everything its provider needs to answer a prompt —
@@ -58,14 +87,51 @@ object AiConnections {
      * seeing a half-finished connection — otherwise the Problems panel would report
      * it as deleted, which is the wrong sentence about a connection the user can see.
      */
-    fun hydrate(connectionIds: Collection<String>, configuredIds: Collection<String> = connectionIds) {
+    fun hydrate(
+        connectionIds: Collection<String>,
+        configuredIds: Collection<String> = connectionIds,
+        profileIds: Collection<String> = emptyList(),
+        configuredProfileIds: Collection<String> = profileIds,
+    ) {
         current = connectionIds.toSet()
         configured = configuredIds.toSet()
+        profiles = profileIds.toSet()
+        configuredProfiles = configuredProfileIds.toSet()
+    }
+
+    /**
+     * Publishes the four sets from the library itself.
+     *
+     * Both callers — `ServiceLocator` and `AiConnectionsViewModel` — publish the same
+     * derivation from the same list, so it lives here rather than being written twice:
+     * a projection duplicated across two files is one that eventually disagrees with
+     * itself, and this one has to stay exact because it is what the Problems panel
+     * says about every AI node. `GrantedPrerequisites.hydrateFrom` is the same shape.
+     *
+     * A profile is *configured* only when its connection is too, which is why this
+     * cannot be derived from the profiles alone: a self-hosted account with no address
+     * makes every profile on it unanswerable however completely each one is filled in.
+     */
+    fun hydrateFrom(connections: List<AiConnection>) {
+        hydrate(
+            connectionIds = connections.map { it.id },
+            configuredIds = connections.filter { it.isConfigured }.map { it.id },
+            profileIds = connections.flatMap { connection -> connection.models.map { it.id } },
+            configuredProfileIds = connections
+                .filter { it.isConfigured }
+                .flatMap { connection ->
+                    connection.models
+                        .filter { it.isConfigured(connection.provider) }
+                        .map { it.id }
+                },
+        )
     }
 
     /** Returns to the unhydrated state. Test seam, mirroring [MacroDirectory.reset]. */
     internal fun reset() {
         current = null
         configured = emptySet()
+        profiles = emptySet()
+        configuredProfiles = emptySet()
     }
 }

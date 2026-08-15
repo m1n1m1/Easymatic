@@ -40,6 +40,9 @@ object HaCatalog {
     /** Whether anything has published a catalogue yet; see the class KDoc. */
     val isHydrated: Boolean get() = current != null
 
+    /** Every hub the catalogue holds anything for, so an unscoped question can ask them all. */
+    fun hubIds(): List<String> = current?.keys?.toList().orEmpty()
+
     /** Every entity on [hubId], or empty when it is unknown or nothing has been read from it. */
     fun entities(hubId: String): List<HaEntity> = current?.get(hubId)?.entities.orEmpty()
 

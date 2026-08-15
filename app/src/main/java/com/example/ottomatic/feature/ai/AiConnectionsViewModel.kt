@@ -10,15 +10,18 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.core.service.Ai
 import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.AiRequest
+import com.example.ottomatic.core.service.CallableMacro
+import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.data.ai.AiModelCatalog
 import com.example.ottomatic.domain.model.AiBaseUrl
 import com.example.ottomatic.domain.model.AiConnection
+import com.example.ottomatic.domain.model.AiModelProfile
 import com.example.ottomatic.domain.model.AiProvider
-import com.example.ottomatic.domain.model.isConfigured
 import com.example.ottomatic.domain.model.needsBaseUrl
 import com.example.ottomatic.domain.model.needsModelIds
 import com.example.ottomatic.domain.registry.AiConnections
+import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,37 +44,42 @@ data class AiConnectionDraft(
     val name: String = "",
     val provider: AiProvider = AiProvider.GEMINI,
     val key: String = "",
-    val systemPrompt: String = "",
     val baseUrl: String = "",
-    val fastModel: String = "",
-    val balancedModel: String = "",
-    val thoroughModel: String = "",
+    /** This account's ways of asking — see [AiModelProfileDraft]. */
+    val models: List<AiModelProfileDraft> = emptyList(),
     val isNew: Boolean = true,
     val needsKey: Boolean = false,
     val busy: Boolean = false,
     val message: String = "",
     val failed: Boolean = false,
     /** The listing from this connection's own server, once somebody has asked for it. */
-    val models: List<String> = emptyList(),
-    /** Which speed setting the open chooser is filling in, or null when none is open. */
-    val choosingFor: AiModel? = null,
+    val modelIds: List<String> = emptyList(),
+    /** Which profile's sub-editor is open, by id, or null when none is. */
+    val editingModel: String? = null,
+    /** Whether the id chooser is open over the profile being edited. */
+    val choosingModelId: Boolean = false,
 ) {
     /**
      * A new connection needs a name and a key; an existing one needs only a name,
      * unless its stored key has become unreadable — the restored-phone case, where
      * saving without one would leave it just as broken as it was.
      *
-     * The two provider-shaped requirements are read off the same rules the Problems
-     * panel and the facade use, rather than restated here: a self-hosted connection
-     * needs somewhere to send requests, and a provider with no model table needs the
-     * model named. Saving without them is allowed by nothing — it would produce a
+     * The address requirement is read off the same rule the Problems panel and the
+     * facade use rather than restated here: a self-hosted connection needs somewhere
+     * to send requests. Saving without it is allowed by nothing — it would produce a
      * connection that renders perfectly in the picker and answers nothing.
+     *
+     * **Every model has to be complete too**, and that gate lives here rather than on
+     * a Save button of its own inside the sub-editor: the profiles are part of this
+     * draft and commit with it, so one incomplete row would otherwise be written
+     * alongside four good ones and only ever surface as a node that quietly stops
+     * answering. The row says which one it is.
      */
     val canSave: Boolean
         get() = name.isNotBlank() &&
             (key.isNotBlank() || (!isNew && !needsKey)) &&
             (!provider.needsBaseUrl || AiBaseUrl.parse(baseUrl) != null) &&
-            (!provider.needsModelIds || fastModel.isNotBlank())
+            models.all { it.isComplete(provider) }
 
     /** Whether the address, as typed, would send an API key unencrypted. */
     val cleartext: Boolean get() = AiBaseUrl.isCleartext(baseUrl)
@@ -79,16 +87,43 @@ data class AiConnectionDraft(
     /** Whether the address, as typed, is not a URL at all — distinct from being empty. */
     val badBaseUrl: Boolean get() = baseUrl.isNotBlank() && AiBaseUrl.parse(baseUrl) == null
 
-    internal fun modelFor(model: AiModel): String = when (model) {
-        AiModel.FAST -> fastModel
-        AiModel.BALANCED -> balancedModel
-        AiModel.THOROUGH -> thoroughModel
-    }
+    /** The profile the sub-editor is open over, if any. */
+    val openModel: AiModelProfileDraft? get() = models.firstOrNull { it.id == editingModel }
+}
+
+/**
+ * One model profile being edited, inside its connection's draft.
+ *
+ * Nested rather than a draft of its own with a Save button, because a profile has no
+ * existence apart from the account that answers it: the id is minted here and only
+ * reaches storage when the connection is saved, so abandoning the form abandons the
+ * profile too — which is what somebody who backed out of adding one means.
+ */
+data class AiModelProfileDraft(
+    val id: String,
+    val name: String = "",
+    val modelId: String = "",
+    val effort: AiModel = AiModel.FAST,
+    val systemPrompt: String = "",
+    /** A `ToolSpec` list, edited by the tool permission screen and stored verbatim. */
+    val tools: String = "",
+) {
+    /** Whether this row would answer anything — a name to pick it by, and a model to ask. */
+    fun isComplete(provider: AiProvider): Boolean =
+        name.isNotBlank() && (!provider.needsModelIds || modelId.isNotBlank())
 }
 
 data class AiConnectionsUiState(
     val connections: List<AiConnection> = emptyList(),
     val draft: AiConnectionDraft? = null,
+    /**
+     * The macros a model may be allowed to run — those carrying a `trigger.api` node.
+     *
+     * Held on the state rather than read where it is drawn because it is a file read
+     * per macro: the permission list has to be able to say "no macros can be called
+     * from outside" without having gone and looked while the screen was composing.
+     */
+    val callableMacros: List<CallableMacro> = emptyList(),
 )
 
 /**
@@ -115,6 +150,8 @@ class AiConnectionsViewModel(
     private val repository: AiConnectionRepository,
     private val ai: Ai,
     private val catalog: AiModelCatalog,
+    /** Lists the macros a model profile may be allowed to run; null in tests and previews. */
+    private val macroControl: MacroControl? = null,
     /**
      * For the status lines this holds — appContext.getString(R.string.ai_loading_models), the test result. They are
      * user-facing, so they come from resources; a ViewModel has no composition to read
@@ -134,10 +171,7 @@ class AiConnectionsViewModel(
                 // Republished here rather than only from ServiceLocator so the
                 // Problems panel updates the moment a connection is deleted from
                 // this screen, without waiting for anything else to notice.
-                AiConnections.hydrate(
-                    connectionIds = connections.map { it.id },
-                    configuredIds = connections.filter { it.isConfigured }.map { it.id },
-                )
+                AiConnections.hydrateFrom(connections)
             }
         }
     }
@@ -145,14 +179,87 @@ class AiConnectionsViewModel(
     /** The connection with [id], for the picker field's display name. */
     fun connectionById(id: String): AiConnection? = repository.get(id)
 
+    /** The connection holding the profile with [profileId], for the model picker's rows. */
+    fun connectionForProfile(profileId: String): AiConnection? = repository.connectionForProfile(profileId)
+
+    /** The profile with [profileId], for the picker field's display name. */
+    fun modelProfile(profileId: String): AiModelProfile? = repository.resolve(profileId)?.second
+
     /** Whether [id]'s key is missing or unreadable — badged on the row. */
     fun needsKey(id: String): Boolean = repository.needsKey(id)
 
+    /**
+     * A new connection starts with **one** model rather than none.
+     *
+     * An empty list is technically the honest starting state and a bad one to present:
+     * a connection with no model answers nothing, and the form would give no hint that
+     * anything more was needed. One row named after the tier it uses is a working
+     * connection the moment the key is pasted, and deleting it is one tap for the
+     * minority who want something else.
+     */
     fun addConnection() {
         val provider = AiProvider.GEMINI
         state.value = state.value.copy(
-            draft = AiConnectionDraft(provider = provider, name = suggestedName(provider)),
+            draft = AiConnectionDraft(
+                provider = provider,
+                name = suggestedName(provider),
+                models = listOf(newModelDraft(AiModel.FAST)),
+            ),
         )
+    }
+
+    /** Appends a model to the draft and opens its sub-editor on it. */
+    fun addModel() {
+        val added = newModelDraft(nextEffort(state.value.draft?.models.orEmpty()))
+        editDraft { it.copy(models = it.models + added) }
+        editModel(added.id)
+    }
+
+    /**
+     * Opens a model's sub-editor, and reads the callable-macro list while it is open.
+     *
+     * Read here rather than in `init` because it is a file read per macro and most
+     * visits to this screen never open the permission list at all — and re-read on
+     * every open, because a macro may have gained a `trigger.api` node since last time.
+     */
+    fun editModel(profileId: String) {
+        editDraft { it.copy(editingModel = profileId, choosingModelId = false) }
+        loadCallableMacros()
+    }
+
+    /**
+     * Reads the macros a model may be allowed to run.
+     *
+     * Its own member because two screens open the permission list — a profile's editor
+     * and an Ask AI node's — and both need it read at the moment the list opens rather
+     * than at construction: it is a file read per macro, most visits never open the
+     * list at all, and a macro may have gained a `trigger.api` node since last time.
+     */
+    fun loadCallableMacros() {
+        viewModelScope.launch {
+            state.value = state.value.copy(callableMacros = macroControl?.callable().orEmpty())
+        }
+    }
+
+    fun closeModelEditor() = editDraft { it.copy(editingModel = null, choosingModelId = false) }
+
+    fun deleteModel(profileId: String) = editDraft { draft ->
+        draft.copy(
+            models = draft.models.filterNot { it.id == profileId },
+            editingModel = draft.editingModel.takeIf { it != profileId },
+        )
+    }
+
+    /**
+     * Changes one field of one model.
+     *
+     * A single transform rather than a setter per field, which is the one place this
+     * screen departs from the flat `onXChange` shape around it: a profile has six
+     * fields and will grow more, and six near-identical three-line methods is how one
+     * of them ends up copying the wrong branch.
+     */
+    fun updateModel(profileId: String, transform: (AiModelProfileDraft) -> AiModelProfileDraft) = editDraft { draft ->
+        draft.copy(models = draft.models.map { if (it.id == profileId) transform(it) else it })
     }
 
     fun editConnection(id: String) {
@@ -162,11 +269,17 @@ class AiConnectionsViewModel(
                 id = connection.id,
                 name = connection.name,
                 provider = connection.provider,
-                systemPrompt = connection.systemPrompt,
                 baseUrl = connection.baseUrl,
-                fastModel = connection.fastModel,
-                balancedModel = connection.balancedModel,
-                thoroughModel = connection.thoroughModel,
+                models = connection.models.map { profile ->
+                    AiModelProfileDraft(
+                        id = profile.id,
+                        name = profile.name,
+                        modelId = profile.modelId,
+                        effort = profile.effort,
+                        systemPrompt = profile.systemPrompt,
+                        tools = profile.tools,
+                    )
+                },
                 isNew = false,
                 needsKey = repository.needsKey(connection.id),
             ),
@@ -181,17 +294,7 @@ class AiConnectionsViewModel(
 
     fun onKeyChange(value: String) = editDraft { it.copy(key = value, message = "", failed = false) }
 
-    fun onSystemPromptChange(value: String) = editDraft { it.copy(systemPrompt = value) }
-
     fun onBaseUrlChange(value: String) = editDraft { it.copy(baseUrl = value, message = "", failed = false) }
-
-    fun onModelChange(model: AiModel, value: String) = editDraft { draft ->
-        when (model) {
-            AiModel.FAST -> draft.copy(fastModel = value)
-            AiModel.BALANCED -> draft.copy(balancedModel = value)
-            AiModel.THOROUGH -> draft.copy(thoroughModel = value)
-        }
-    }
 
     /**
      * Switches provider, carrying the suggested name along if it has not been typed
@@ -207,7 +310,7 @@ class AiConnectionsViewModel(
      */
     fun onProviderChange(value: AiProvider) = editDraft { draft ->
         val renamed = if (draft.name == suggestedName(draft.provider)) suggestedName(value) else draft.name
-        draft.copy(provider = value, name = renamed, models = emptyList(), choosingFor = null)
+        draft.copy(provider = value, name = renamed, modelIds = emptyList(), choosingModelId = false)
     }
 
     /** Fills a base URL preset in; the host is a placeholder only the user can replace. */
@@ -225,7 +328,7 @@ class AiConnectionsViewModel(
      * serve a listing at all, so the field stays editable and the name can be typed
      * — the chooser is a convenience over an open answer set, not a gate on it.
      */
-    fun loadModels(model: AiModel) {
+    fun loadModels() {
         val draft = state.value.draft ?: return
         if (draft.id.isBlank()) return
         editDraft { it.copy(busy = true, message = appContext.getString(R.string.ai_loading_models), failed = false) }
@@ -234,8 +337,8 @@ class AiConnectionsViewModel(
             editDraft {
                 it.copy(
                     busy = false,
-                    models = models.ids,
-                    choosingFor = if (models.ids.isEmpty()) null else model,
+                    modelIds = models.ids,
+                    choosingModelId = models.ids.isNotEmpty(),
                     message = models.error,
                     failed = models.error.isNotBlank(),
                 )
@@ -243,7 +346,7 @@ class AiConnectionsViewModel(
         }
     }
 
-    fun closeModelChooser() = editDraft { it.copy(choosingFor = null) }
+    fun closeModelChooser() = editDraft { it.copy(choosingModelId = false) }
 
     /**
      * Persists the draft, then the key if one was typed.
@@ -268,7 +371,11 @@ class AiConnectionsViewModel(
             val keyStored = draft.key.isBlank() || repository.setKey(connection.id, draft.key)
             if (keyStored) {
                 state.value = state.value.copy(draft = null)
-                onSaved(connection.id)
+                // The **first profile's** id and not the connection's: a node stores a
+                // profile id, and the only caller is a picker that wants to select what
+                // was just created. Blank when the connection has no model yet, which
+                // the picker reads as "nothing to select".
+                onSaved(connection.models.firstOrNull()?.id.orEmpty())
             } else {
                 editDraft {
                     it.copy(
@@ -299,13 +406,21 @@ class AiConnectionsViewModel(
      * because seeing the model actually say something is what makes the feature
      * believable before any macro has been built on it.
      */
+    @Suppress("ReturnCount") // Nothing to test, nothing saved, no model — three distinct refusals.
     fun test() {
         val draft = state.value.draft ?: return
         if (draft.id.isBlank()) return
+        // Through the **stored** first model, for the reason the test exists at all: a
+        // request built from the form would prove a route no macro will ever take.
+        val modelRef = repository.get(draft.id)?.models?.firstOrNull()?.id
+        if (modelRef == null) {
+            editDraft { it.copy(message = appContext.getString(R.string.ai_no_model_to_test), failed = true) }
+            return
+        }
         editDraft { it.copy(busy = true, message = appContext.getString(R.string.ai_asking_the_model), failed = false) }
         viewModelScope.launch {
             val reply = ai.complete(
-                AiRequest(connectionId = draft.id, prompt = TEST_PROMPT, maxOutputTokens = TEST_MAX_TOKENS),
+                AiRequest(modelRef = modelRef, prompt = TEST_PROMPT, maxOutputTokens = TEST_MAX_TOKENS),
             )
             editDraft {
                 it.copy(
@@ -324,6 +439,23 @@ class AiConnectionsViewModel(
     private fun editDraft(transform: (AiConnectionDraft) -> AiConnectionDraft) {
         state.value.draft?.let { state.value = state.value.copy(draft = transform(it)) }
     }
+
+    /**
+     * A fresh profile, named after the tier it starts on.
+     *
+     * The id is minted here and is a UUID, unlike the deterministic ones the migration
+     * writes — nothing has to derive this one from anything, and a UUID cannot collide
+     * with a legacy id or with a second profile added in the same breath.
+     */
+    private fun newModelDraft(effort: AiModel) = AiModelProfileDraft(
+        id = UUID.randomUUID().toString(),
+        name = appContext.getString(effort.labelRes()),
+        effort = effort,
+    )
+
+    /** The first tier this connection has no profile on, so adding twice gives two different rows. */
+    private fun nextEffort(existing: List<AiModelProfileDraft>): AiModel =
+        AiModel.entries.firstOrNull { effort -> existing.none { it.effort == effort } } ?: AiModel.FAST
 
     /** "Claude", then "Claude 2" and so on — a name the user can accept without typing. */
     private fun suggestedName(provider: AiProvider): String {
@@ -344,8 +476,9 @@ class AiConnectionsViewModel(
             ai: Ai,
             catalog: AiModelCatalog,
             appContext: Context,
+            macroControl: MacroControl? = null,
         ): ViewModelProvider.Factory = viewModelFactory {
-            initializer { AiConnectionsViewModel(repository, ai, catalog, appContext) }
+            initializer { AiConnectionsViewModel(repository, ai, catalog, macroControl, appContext) }
         }
     }
 }
@@ -364,9 +497,15 @@ class AiConnectionsViewModel(
 private fun AiConnectionDraft.applyTo(connection: AiConnection): AiConnection = connection.copy(
     name = name.trim(),
     provider = provider,
-    systemPrompt = systemPrompt.trim(),
     baseUrl = AiBaseUrl.parse(baseUrl).orEmpty(),
-    fastModel = fastModel.trim(),
-    balancedModel = balancedModel.trim(),
-    thoroughModel = thoroughModel.trim(),
+    models = models.map { profile ->
+        AiModelProfile(
+            id = profile.id,
+            name = profile.name.trim(),
+            modelId = profile.modelId.trim(),
+            effort = profile.effort,
+            systemPrompt = profile.systemPrompt.trim(),
+            tools = profile.tools,
+        )
+    },
 )

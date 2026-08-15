@@ -21,36 +21,31 @@ import org.junit.Test
  */
 class OpenAiProtocolTest {
 
-    private fun connection(
-        provider: AiProvider,
-        baseUrl: String = "",
-        fastModel: String = "",
-        balancedModel: String = "",
-    ) = AiConnection(
+    private fun connection(provider: AiProvider, baseUrl: String = "") = AiConnection(
         id = "connection-id",
         name = provider.name,
         provider = provider,
         baseUrl = baseUrl,
-        fastModel = fastModel,
-        balancedModel = balancedModel,
     )
 
     private val openAi = connection(AiProvider.OPENAI)
-    private val openRouter = connection(AiProvider.OPENROUTER, fastModel = "meta-llama/llama-4")
+    private val openRouter = connection(AiProvider.OPENROUTER)
     private val selfHosted = connection(
         AiProvider.OPENAI_COMPATIBLE,
         baseUrl = "http://192.168.1.10:8000/v1",
-        fastModel = "Qwen/Qwen3-8B",
     )
 
+    /** The account paired with a profile naming a model, which is what a request needs. */
+    private val openAiTarget = target(openAi)
+    private val openRouterTarget = target(openRouter, modelId = "meta-llama/llama-4")
+    private val selfHostedTarget = target(selfHosted, modelId = "Qwen/Qwen3-8B")
+
     private fun request(
-        model: AiModel = AiModel.FAST,
         maxOutputTokens: Int = 100,
         systemInstruction: String = "",
     ) = AiRequest(
-        connectionId = "connection-id",
+        modelRef = TEST_MODEL_REF,
         prompt = "hi",
-        model = model,
         maxOutputTokens = maxOutputTokens,
         systemInstruction = systemInstruction,
     )
@@ -164,16 +159,17 @@ class OpenAiProtocolTest {
      */
     @Test
     fun `OpenAI is asked with max_completion_tokens and everything else with max_tokens`() {
-        val toOpenAi = OpenAiProtocol.OpenAi.requestBody(request(), openAi)
+        val toOpenAi = OpenAiProtocol.OpenAi.requestBody(request(), openAiTarget)
         assertTrue(toOpenAi.contains("\"max_completion_tokens\""))
         assertFalse(toOpenAi.contains("\"max_tokens\""))
 
         for ((protocol, on) in listOf(
-            OpenAiProtocol.OpenRouter to openRouter,
-            OpenAiProtocol.SelfHosted to selfHosted,
+            OpenAiProtocol.OpenRouter to openRouterTarget,
+            OpenAiProtocol.SelfHosted to selfHostedTarget,
         )) {
             val body = protocol.requestBody(request(), on)
-            assertTrue("${on.provider} must be asked with max_tokens", body.contains("\"max_tokens\""))
+            val provider = on.connection.provider
+            assertTrue("$provider must be asked with max_tokens", body.contains("\"max_tokens\""))
             assertFalse(body.contains("\"max_completion_tokens\""))
         }
     }
@@ -185,12 +181,12 @@ class OpenAiProtocolTest {
      */
     @Test
     fun `reasoning effort is sent to OpenAI and to nobody else`() {
-        assertTrue(OpenAiProtocol.OpenAi.requestBody(request(), openAi).contains("reasoning_effort"))
+        assertTrue(OpenAiProtocol.OpenAi.requestBody(request(), openAiTarget).contains("reasoning_effort"))
         assertFalse(
-            OpenAiProtocol.OpenRouter.requestBody(request(), openRouter).contains("reasoning_effort"),
+            OpenAiProtocol.OpenRouter.requestBody(request(), openRouterTarget).contains("reasoning_effort"),
         )
         assertFalse(
-            OpenAiProtocol.SelfHosted.requestBody(request(), selfHosted).contains("reasoning_effort"),
+            OpenAiProtocol.SelfHosted.requestBody(request(), selfHostedTarget).contains("reasoning_effort"),
         )
     }
 
@@ -198,15 +194,15 @@ class OpenAiProtocolTest {
     fun `each provider posts to its own chat completions endpoint`() {
         assertEquals(
             "https://api.openai.com/v1/chat/completions",
-            OpenAiProtocol.OpenAi.endpoint(openAi, AiModel.FAST),
+            OpenAiProtocol.OpenAi.endpoint(openAiTarget),
         )
         assertEquals(
             "https://openrouter.ai/api/v1/chat/completions",
-            OpenAiProtocol.OpenRouter.endpoint(openRouter, AiModel.FAST),
+            OpenAiProtocol.OpenRouter.endpoint(openRouterTarget),
         )
         assertEquals(
             "http://192.168.1.10:8000/v1/chat/completions",
-            OpenAiProtocol.SelfHosted.endpoint(selfHosted, AiModel.FAST),
+            OpenAiProtocol.SelfHosted.endpoint(selfHostedTarget),
         )
     }
 
@@ -215,7 +211,7 @@ class OpenAiProtocolTest {
         val proxied = openAi.copy(baseUrl = "https://proxy.example.com/v1")
         assertEquals(
             "https://proxy.example.com/v1/chat/completions",
-            OpenAiProtocol.OpenAi.endpoint(proxied, AiModel.FAST),
+            OpenAiProtocol.OpenAi.endpoint(target(proxied)),
         )
     }
 
@@ -248,28 +244,35 @@ class OpenAiProtocolTest {
     }
 
     /**
-     * The dominant self-hosted setup is one machine serving one model. Naming it
-     * once and having every tier use it is what somebody means; demanding three
-     * copies of the same string is a form filled in for nothing.
+     * The one machine serving one model is now one *profile* naming it, so its effort
+     * is free to be whatever the user set — there is no second field for a blank one
+     * to borrow from, which is what the cross-tier fallback used to exist for.
      */
     @Test
-    fun `a tier left blank falls back to the fast model where there is no table`() {
-        val body = OpenAiProtocol.SelfHosted.requestBody(request(AiModel.THOROUGH), selfHosted)
+    fun `the profile's model is sent whatever effort it asks for`() {
+        val body = OpenAiProtocol.SelfHosted.requestBody(
+            request(),
+            target(selfHosted, AiModel.THOROUGH, modelId = "Qwen/Qwen3-8B"),
+        )
         assertTrue(body.contains("Qwen/Qwen3-8B"))
     }
 
     @Test
-    fun `a tier that was filled in is used rather than the fast model`() {
-        val both = selfHosted.copy(balancedModel = "Qwen/Qwen3-32B")
-        val body = OpenAiProtocol.SelfHosted.requestBody(request(AiModel.BALANCED), both)
-        assertTrue(body.contains("Qwen/Qwen3-32B"))
-        assertFalse(body.contains("Qwen3-8B"))
+    fun `two profiles on one account can name two different models`() {
+        val big = OpenAiProtocol.SelfHosted.requestBody(
+            request(),
+            target(selfHosted, AiModel.BALANCED, modelId = "Qwen/Qwen3-32B"),
+        )
+        assertTrue(big.contains("Qwen/Qwen3-32B"))
+        assertFalse(big.contains("Qwen3-8B"))
     }
 
     @Test
-    fun `a model named on the connection wins over OpenAI's table`() {
-        val overridden = openAi.copy(fastModel = "gpt-something-new")
-        val body = OpenAiProtocol.OpenAi.requestBody(request(AiModel.FAST), overridden)
+    fun `a model named on the profile wins over OpenAI's table`() {
+        val body = OpenAiProtocol.OpenAi.requestBody(
+            request(),
+            target(openAi, modelId = "gpt-something-new"),
+        )
         assertTrue(body.contains("gpt-something-new"))
     }
 
@@ -283,25 +286,21 @@ class OpenAiProtocolTest {
     @Test
     fun `a self-hosted connection with no address is refused before the network`() {
         val problem = OpenAiProtocol.SelfHosted.configurationProblem(
-            connection(AiProvider.OPENAI_COMPATIBLE, fastModel = "x"),
-            AiModel.FAST,
+            target(connection(AiProvider.OPENAI_COMPATIBLE), modelId = "x"),
         )
         assertTrue(problem.orEmpty().contains("server address"))
     }
 
     @Test
-    fun `a connection with no model named is refused before the network`() {
-        val problem = OpenAiProtocol.OpenRouter.configurationProblem(
-            connection(AiProvider.OPENROUTER),
-            AiModel.FAST,
-        )
+    fun `a profile with no model named is refused before the network`() {
+        val problem = OpenAiProtocol.OpenRouter.configurationProblem(target(connection(AiProvider.OPENROUTER)))
         assertTrue(problem.orEmpty().contains("model"))
     }
 
     @Test
-    fun `a fully configured connection has nothing to complain about`() {
-        assertEquals(null, OpenAiProtocol.SelfHosted.configurationProblem(selfHosted, AiModel.THOROUGH))
-        assertEquals(null, OpenAiProtocol.OpenAi.configurationProblem(openAi, AiModel.FAST))
+    fun `a fully configured profile has nothing to complain about`() {
+        assertEquals(null, OpenAiProtocol.SelfHosted.configurationProblem(selfHostedTarget))
+        assertEquals(null, OpenAiProtocol.OpenAi.configurationProblem(openAiTarget))
     }
 
     // ---- listing ---------------------------------------------------------------
@@ -327,13 +326,13 @@ class OpenAiProtocolTest {
 
     @Test
     fun `a blank standing instruction sends no system turn at all`() {
-        val body = OpenAiProtocol.OpenAi.requestBody(request(), openAi)
+        val body = OpenAiProtocol.OpenAi.requestBody(request(), openAiTarget)
         assertFalse(body.contains("\"system\""))
     }
 
     @Test
     fun `a standing instruction that was given leads the message array`() {
-        val body = OpenAiProtocol.OpenAi.requestBody(request(systemInstruction = "In German"), openAi)
+        val body = OpenAiProtocol.OpenAi.requestBody(request(systemInstruction = "In German"), openAiTarget)
         assertTrue(body.indexOf("\"system\"") < body.indexOf("\"user\""))
         assertTrue(body.contains("In German"))
     }

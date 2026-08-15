@@ -4,12 +4,17 @@ import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.service.AiParamSchema
 import com.example.ottomatic.core.service.CallableMacro
+import com.example.ottomatic.core.service.SmartHomeTargetKind
 import com.example.ottomatic.domain.model.NodeKind
+import com.example.ottomatic.domain.model.SmartHomeRef
+import com.example.ottomatic.domain.model.SmartHomeResource
 import com.example.ottomatic.domain.model.ToolSpec
 import com.example.ottomatic.domain.model.ToolTarget
 import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.domain.registry.ConfigSchemaRegistry
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.domain.registry.SmartHomeHubs
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -61,13 +66,16 @@ class NodeToolCatalogTest {
     // ---- what a model may and may not fill in -----------------------------------
 
     /**
-     * The load-bearing exclusion. `action.light_control`'s target is a
-     * `sh:<hubId>|<kind>|<rid>|<name>` spec and no model can invent one — and a wrong
-     * one names nothing rather than failing, which is the failure `@Picker` exists to
-     * prevent in the form.
+     * The load-bearing exclusion, in the half of it that survives: a picker nothing can
+     * *enumerate* is never offered, because the model would have to invent the
+     * identifier and a wrong one names nothing rather than failing.
+     *
+     * `action.ai_prompt`'s own model field is the sharpest case — `PickerOptions` could
+     * trivially list every profile and refuses to, because letting a model choose which
+     * model bills the user is not a gap to be filled.
      */
     @Test
-    fun `a picker field is never offered as an argument`() {
+    fun `a picker nothing can enumerate is never offered as an argument`() {
         val pickerFields = ConfigSchemaRegistry.byId(NodeTypeId("action.ai_prompt"))?.fields
             ?.filter { it.type is ConfigFieldType.PICKER }
             .orEmpty()
@@ -77,6 +85,61 @@ class NodeToolCatalogTest {
         pickerFields.forEach { field ->
             assertFalse("$field was offered to the model", field.key.value in offered)
         }
+    }
+
+    /**
+     * **The other half, and the point of the whole change.** An unpinned light scene
+     * becomes an enum of real `SmartHomeRef` specs, so "put on whichever scene suits"
+     * is expressible and the model still cannot name anything that is not a scene.
+     */
+    @Test
+    fun `an unpinned scene becomes a choice among the real ones`() {
+        SmartHomeHubs.hydrate(
+            mapOf(
+                "hub-1" to listOf(
+                    SmartHomeResource(SmartHomeTargetKind.SCENE, rid = "s1", name = "Dinner"),
+                    SmartHomeResource(SmartHomeTargetKind.SCENE, rid = "s2", name = "Relax"),
+                    SmartHomeResource(SmartHomeTargetKind.LIGHT, rid = "l1", name = "Desk lamp"),
+                ),
+            ),
+        )
+        val target = toolFor(node("action.light_scene"))?.parameters?.firstOrNull { it.name == "scene" }
+        val choices = (target?.schema as? AiParamSchema.Text)?.options.orEmpty()
+
+        assertEquals(
+            listOf(
+                SmartHomeRef.format("hub-1", SmartHomeTargetKind.SCENE, "s1", "Dinner"),
+                SmartHomeRef.format("hub-1", SmartHomeTargetKind.SCENE, "s2", "Relax"),
+            ),
+            choices,
+        )
+        assertTrue("a light is not a scene", choices.none { it.contains("Desk lamp") })
+    }
+
+    /** A pinned one is still the author's answer, enumerable or not. */
+    @Test
+    fun `pinning a scene keeps it out of the arguments`() {
+        SmartHomeHubs.hydrate(
+            mapOf("hub-1" to listOf(SmartHomeResource(SmartHomeTargetKind.SCENE, rid = "s1", name = "Dinner"))),
+        )
+        val spec = node("action.light_scene", "scene" to "sh:hub-1|SCENE|s1|Dinner")
+        assertFalse("scene" in toolFor(spec)?.parameters?.map { it.name }.orEmpty())
+    }
+
+    /**
+     * The degradation rule, and the reason nothing regresses on a cold start: an
+     * unhydrated registry leaves the field required-to-pin rather than offering the
+     * model an empty choice it could never satisfy.
+     */
+    @Test
+    fun `an unhydrated library offers no choice rather than an empty one`() {
+        SmartHomeHubs.reset()
+        assertFalse("scene" in toolFor(node("action.light_scene"))?.parameters?.map { it.name }.orEmpty())
+    }
+
+    @After
+    fun clearRegistries() {
+        SmartHomeHubs.reset()
     }
 
     @Test

@@ -79,23 +79,23 @@ private val HUB_SCOPED_PICKERS = setOf(
     PickerKind.MQTT_BROKER,
 )
 
-/** The config keys of [typeId] that hold an [com.example.ottomatic.domain.model.AiConnection] id. */
-fun aiConnectionRefKeys(typeId: NodeTypeId): List<ConfigKey> =
+/** The config keys of [typeId] that hold an [com.example.ottomatic.domain.model.AiModelProfile] id. */
+fun aiModelRefKeys(typeId: NodeTypeId): List<ConfigKey> =
     ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
-        .filter { (it.type as? ConfigFieldType.PICKER)?.kind == PickerKind.AI_CONNECTION }
+        .filter { (it.type as? ConfigFieldType.PICKER)?.kind == PickerKind.AI_MODEL }
         .map { it.key }
 
 /**
  * The config keys of [typeId] that hold a
- * [com.example.ottomatic.domain.model.ToolSpec] list.
+ * [com.example.ottomatic.domain.model.ToolOverrides] list.
  *
  * One node has this today, and it is still derived rather than named: a second AI node
- * that offers tools should be validated by having the annotation, not by being added
- * to a list somewhere else.
+ * that adjusts its profile's tools should be covered by having the annotation, not by
+ * being added to a list somewhere else.
  */
 fun toolListKeys(typeId: NodeTypeId): List<ConfigKey> =
     ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
-        .filter { it.type == ConfigFieldType.TOOL_LIST }
+        .filter { it.type is ConfigFieldType.TOOL_LIST }
         .map { it.key }
 
 /** The config keys of [typeId] that hold a [PhoneRef] spec. */

@@ -116,9 +116,9 @@ internal object GeminiProtocol : AiProtocol {
         AiModel.THOROUGH -> HIGH_THINKING_HEADROOM
     }
 
-    override fun endpoint(connection: AiConnection, model: AiModel): String {
-        val id = modelIdFor(connection, model, modelId(model))
-        return "${modelsEndpoint(connection)}/$id:$GENERATE_CONTENT"
+    override fun endpoint(target: AiTarget): String {
+        val id = modelIdFor(target, modelId(target.effort))
+        return "${modelsEndpoint(target.connection)}/$id:$GENERATE_CONTENT"
     }
 
     override fun modelsEndpoint(connection: AiConnection): String =
@@ -136,7 +136,7 @@ internal object GeminiProtocol : AiProtocol {
      * rejects a `parts` array containing an empty string, so "no standing
      * instruction" has to be an absent field and not an empty one.
      */
-    override fun requestBody(request: AiRequest, connection: AiConnection): String = buildJsonObject {
+    override fun requestBody(request: AiRequest, target: AiTarget): String = buildJsonObject {
         if (request.systemInstruction.isNotBlank()) {
             putJsonObject(SYSTEM_KEY) {
                 putJsonArray(PARTS_KEY) { add(buildJsonObject { put(TEXT_KEY, request.systemInstruction) }) }
@@ -169,10 +169,10 @@ internal object GeminiProtocol : AiProtocol {
             // The user's limit plus the thinking headroom, not either alone: the
             // two are drawn from one budget on the wire, and sending the bare
             // limit is what makes a thinking model answer nothing at all.
-            put(MAX_TOKENS_KEY, request.maxOutputTokens.coerceAtLeast(1) + thinkingHeadroom(request.model))
+            put(MAX_TOKENS_KEY, request.maxOutputTokens.coerceAtLeast(1) + thinkingHeadroom(target.effort))
             // `thinkingLevel` alone, never beside `thinkingBudget`: sending both is
             // a 400 rather than a preference the server picks between.
-            putJsonObject(THINKING_KEY) { put(THINKING_LEVEL_KEY, thinkingLevel(request.model)) }
+            putJsonObject(THINKING_KEY) { put(THINKING_LEVEL_KEY, thinkingLevel(target.effort)) }
         }
     }.toString()
 
@@ -193,7 +193,7 @@ internal object GeminiProtocol : AiProtocol {
         exchange: List<AiExchange>,
         tools: List<AiTool>,
         request: AiRequest,
-        connection: AiConnection,
+        target: AiTarget,
     ): String = buildJsonObject {
         if (request.systemInstruction.isNotBlank()) {
             putJsonObject(SYSTEM_KEY) {
@@ -211,8 +211,8 @@ internal object GeminiProtocol : AiProtocol {
         }
         putJsonArray(CONTENTS_KEY) { exchange.forEach { appendTurn(it) } }
         putJsonObject(GENERATION_KEY) {
-            put(MAX_TOKENS_KEY, request.maxOutputTokens.coerceAtLeast(1) + thinkingHeadroom(request.model))
-            putJsonObject(THINKING_KEY) { put(THINKING_LEVEL_KEY, thinkingLevel(request.model)) }
+            put(MAX_TOKENS_KEY, request.maxOutputTokens.coerceAtLeast(1) + thinkingHeadroom(target.effort))
+            putJsonObject(THINKING_KEY) { put(THINKING_LEVEL_KEY, thinkingLevel(target.effort)) }
         }
     }.toString()
 

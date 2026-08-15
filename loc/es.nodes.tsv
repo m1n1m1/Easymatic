@@ -632,3 +632,5 @@ Picture	Imagen
 Shows an AI model a picture from this phone and returns what it says about it	Muestra a un modelo de IA una imagen de este teléfono y devuelve lo que dice sobre ella
 Tools	Herramientas
 What to ask	Qué preguntar
+Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	Envía una petición a un modelo de IA (Gemini, Claude, ChatGPT, OpenRouter o un modelo autoalojado) y devuelve su respuesta como texto, dejándole ejecutar nodos y macros como herramientas cuando se lo permitas
+Let it use tools	Dejar que use herramientas

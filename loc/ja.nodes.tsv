@@ -632,3 +632,5 @@ Picture	画像
 Shows an AI model a picture from this phone and returns what it says about it	この端末の画像を AI モデルに見せ、その説明を返します
 Tools	ツール
 What to ask	尋ねる内容
+Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	AI モデル（Gemini、Claude、ChatGPT、OpenRouter、または自前のモデル）にプロンプトを送り、返答をテキストで返します。許可すればノードやマクロをツールとして実行させられます
+Let it use tools	ツールの使用を許可

@@ -27,19 +27,21 @@ class AnthropicProtocolTest {
     )
 
     private fun request(
-        model: AiModel = AiModel.FAST,
         maxOutputTokens: Int = 100,
         systemInstruction: String = "",
     ) = AiRequest(
-        connectionId = connection.id,
+        modelRef = TEST_MODEL_REF,
         prompt = "hi",
-        model = model,
         maxOutputTokens = maxOutputTokens,
         systemInstruction = systemInstruction,
     )
 
-    private fun body(request: AiRequest, on: AiConnection = connection) =
-        AnthropicProtocol.requestBody(request, on)
+    private fun body(
+        request: AiRequest,
+        on: AiConnection = connection,
+        effort: AiModel = AiModel.FAST,
+        modelId: String = "",
+    ) = AnthropicProtocol.requestBody(request, target(on, effort, modelId))
 
     private fun maxTokensIn(body: String): Int =
         Regex("\"max_tokens\":(\\d+)").find(body)!!.groupValues[1].toInt()
@@ -185,10 +187,10 @@ class AnthropicProtocolTest {
     fun `the fast tier sends no thinking field and the slower tiers do`() {
         assertFalse(
             "the fast tier's model rejects a thinking field outright",
-            body(request(AiModel.FAST)).contains("\"thinking\""),
+            body(request(), effort = AiModel.FAST).contains("\"thinking\""),
         )
-        assertTrue(body(request(AiModel.BALANCED)).contains("\"thinking\""))
-        assertTrue(body(request(AiModel.THOROUGH)).contains("\"thinking\""))
+        assertTrue(body(request(), effort = AiModel.BALANCED).contains("\"thinking\""))
+        assertTrue(body(request(), effort = AiModel.THOROUGH).contains("\"thinking\""))
     }
 
     /**
@@ -199,17 +201,17 @@ class AnthropicProtocolTest {
      */
     @Test
     fun `every thinking tier gets headroom on top of the requested reply length`() {
-        assertEquals(100, maxTokensIn(body(request(AiModel.FAST))))
-        assertTrue(maxTokensIn(body(request(AiModel.BALANCED))) > 100)
+        assertEquals(100, maxTokensIn(body(request(), effort = AiModel.FAST)))
+        assertTrue(maxTokensIn(body(request(), effort = AiModel.BALANCED)) > 100)
         assertTrue(
-            maxTokensIn(body(request(AiModel.THOROUGH))) >
-                maxTokensIn(body(request(AiModel.BALANCED))),
+            maxTokensIn(body(request(), effort = AiModel.THOROUGH)) >
+                maxTokensIn(body(request(), effort = AiModel.BALANCED)),
         )
     }
 
     @Test
     fun `a zero reply limit still asks for at least one token`() {
-        assertTrue(maxTokensIn(body(request(AiModel.FAST, maxOutputTokens = 0))) >= 1)
+        assertTrue(maxTokensIn(body(request(maxOutputTokens = 0), effort = AiModel.FAST)) >= 1)
     }
 
     /**
@@ -234,9 +236,9 @@ class AnthropicProtocolTest {
         for (model in AiModel.entries) {
             val id = AnthropicProtocol.modelId(model)
             assertTrue("$model has no model id", id.isNotBlank())
-            assertTrue(body(request(model)).contains(id))
+            assertTrue(body(request(), effort = model).contains(id))
         }
-        val endpoint = AnthropicProtocol.endpoint(connection, AiModel.FAST)
+        val endpoint = AnthropicProtocol.endpoint(target(connection))
         assertTrue(endpoint.startsWith("https://"))
         assertTrue(endpoint.endsWith("/messages"))
     }
@@ -254,9 +256,9 @@ class AnthropicProtocolTest {
     }
 
     @Test
-    fun `a model named on the connection wins over the built-in table`() {
-        val overridden = connection.copy(thoroughModel = "claude-something-new")
-        assertTrue(body(request(AiModel.THOROUGH), on = overridden).contains("claude-something-new"))
+    fun `a model named on the profile wins over the built-in table`() {
+        val sent = body(request(), effort = AiModel.THOROUGH, modelId = "claude-something-new")
+        assertTrue(sent.contains("claude-something-new"))
     }
 
     @Test

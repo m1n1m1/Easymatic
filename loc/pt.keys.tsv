@@ -701,3 +701,38 @@ config_tools_fixed	Fixado aqui em vez de ficar ao critério da IA
 config_tools_must_fix	Escolhido aqui: a IA não consegue nomeá-lo
 config_tools_nothing_to_fix	Esta ferramenta não tem definições
 config_tools_add	Adicionar uma ferramenta
+ai_add_model	Adicionar um modelo
+ai_choose_a_model	Escolher um modelo
+ai_delete_model	Eliminar este modelo
+ai_model_effort	Esforço
+ai_model_effort_help	Quanto o modelo deve pensar antes de responder. Também decide que modelo o fornecedor usa quando o identificador acima está vazio.
+ai_model_id	Identificador do modelo
+ai_model_id_required	obrigatório
+ai_model_name	Nome
+ai_model_name_help	Como as macros lhe vão chamar. Dê-lhe o nome da tarefa e não o do modelo: «Casa», «Resumir um e-mail».
+ai_model_name_placeholder	Casa
+ai_model_not_finished	Por terminar: dê-lhe um nome e um modelo
+ai_model_provider_default	%1$s · o modelo do próprio fornecedor
+ai_no_model_to_test	Adicione um modelo e guarde primeiro; depois teste.
+ai_no_models_on_this_account	Ainda não há modelos nesta conta.
+ai_no_models_yet	Ainda não há modelos. Adicione um para as macros terem para onde apontar.
+ai_tools_allow_everything	Permitir tudo
+ai_tools_allowed_count	%1$d de %2$d permitidas
+ai_tools_macros	Macros
+ai_tools_many_warning	Cada ferramenta é descrita ao modelo em cada turno. Uma lista longa entope o pedido e leva-o a escolher mal.
+ai_tools_n_allowed	%1$d permitidas
+ai_tools_need_a_choice	%1$d ainda precisam de uma escolha antes de fazerem alguma coisa.
+ai_tools_needs	Precisa de %1$s
+ai_tools_none_allowed	Nada permitido: este modelo só pode responder
+ai_tools_over_the_cap	Acima do limite de %1$d. As que sobram ficam de fora; desmarque algumas.
+ai_tools_title	Ferramentas
+ai_unnamed_model	Modelo sem nome
+ai_tools_adjusted	Ajustado aqui
+ai_tools_adjusted_count	%1$d ajustadas para este nó
+ai_tools_adjusted_off	Desligada aqui
+ai_tools_adjusting	Estas pertencem ao modelo. Mudar uma aqui só vale para este nó.
+ai_tools_as_the_model_says	O que o modelo permitir
+ai_tools_choose_a_model_first	Escolha primeiro um modelo
+ai_tools_reset	Voltar a seguir o modelo
+ai_tools_reset_all	Repor tudo
+config_tools_ai_chooses	A IA escolhe %2$s, entre as %1$d ao seu alcance

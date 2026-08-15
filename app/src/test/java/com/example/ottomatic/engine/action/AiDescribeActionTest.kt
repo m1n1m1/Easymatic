@@ -1,4 +1,4 @@
-package com.example.ottomatic.engine.action
+﻿package com.example.ottomatic.engine.action
 
 import com.example.ottomatic.core.service.AiReply
 import com.example.ottomatic.core.service.FileBytes
@@ -16,7 +16,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * `action.ai_describe` — the one AI node that needed something of the platform.
+ * `action.ai_describe` â€” the one AI node that needed something of the platform.
  *
  * Everything else here is built out of what the app already had; this one brought
  * `Files.readBytes` and one image rendering per protocol with it. So what is pinned is
@@ -40,7 +40,7 @@ class AiDescribeActionTest {
     fun `the picture is read through the files facade and sent as an image`() = runBlocking {
         ai.reply = AiReply(text = "a cat")
         val out = action.execute(
-            AiDescribeConfig(connectionId = CONNECTION, image = "/DCIM/cat.jpg", prompt = "what is this?"),
+            AiDescribeConfig(modelRef = MODEL, image = "/DCIM/cat.jpg", prompt = "what is this?"),
             context,
         )
         assertEquals("a cat", out.value)
@@ -52,13 +52,13 @@ class AiDescribeActionTest {
 
     /**
      * Every provider requires the media type, and one guessed wrong comes back as a
-     * generic 400 naming neither the file nor the reason — so the refusal happens here.
+     * generic 400 naming neither the file nor the reason â€” so the refusal happens here.
      */
     @Test
     fun `a file that is not a known picture kind is refused before the network`() = runBlocking {
         files.bytes = FileBytes(base64 = "AAAA", mediaType = "")
         val out = action.execute(
-            AiDescribeConfig(connectionId = CONNECTION, image = "/notes.txt", fallback = "no picture"),
+            AiDescribeConfig(modelRef = MODEL, image = "/notes.txt", fallback = "no picture"),
             context,
         )
         assertEquals("no picture", out.value)
@@ -70,7 +70,7 @@ class AiDescribeActionTest {
     fun `an unreadable file lands on the fallback and says why`() = runBlocking {
         files.bytes = FileBytes(error = "There is no file at /DCIM/cat.jpg")
         val out = action.execute(
-            AiDescribeConfig(connectionId = CONNECTION, image = "/DCIM/cat.jpg", fallback = "nothing"),
+            AiDescribeConfig(modelRef = MODEL, image = "/DCIM/cat.jpg", fallback = "nothing"),
             context,
         )
         assertEquals("nothing", out.value)
@@ -79,7 +79,7 @@ class AiDescribeActionTest {
 
     @Test
     fun `no picture chosen never reaches the facade`() = runBlocking {
-        val out = action.execute(AiDescribeConfig(connectionId = CONNECTION, fallback = "idle"), context)
+        val out = action.execute(AiDescribeConfig(modelRef = MODEL, fallback = "idle"), context)
         assertEquals("idle", out.value)
         assertEquals(emptyList<Any>(), files.calls)
         assertEquals(emptyList<Any>(), ai.requests)
@@ -90,7 +90,7 @@ class AiDescribeActionTest {
     fun `a refused request lands on the fallback and still pulses out`() = runBlocking {
         ai.reply = AiReply(error = "API key not valid")
         val out = action.execute(
-            AiDescribeConfig(connectionId = CONNECTION, image = "/DCIM/cat.jpg", fallback = "could not look"),
+            AiDescribeConfig(modelRef = MODEL, image = "/DCIM/cat.jpg", fallback = "could not look"),
             context,
         )
         assertEquals("could not look", out.value)
@@ -100,6 +100,6 @@ class AiDescribeActionTest {
     }
 
     private companion object {
-        const val CONNECTION = "connection-id"
+        const val MODEL = "model-profile-id"
     }
 }

@@ -3,6 +3,7 @@ package com.example.ottomatic.feature.ai
 import androidx.compose.ui.res.stringResource
 import com.example.ottomatic.R
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -18,14 +19,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -39,6 +39,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,12 +53,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.sp
-import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.domain.model.AiBaseUrl
 import com.example.ottomatic.domain.model.AiProvider
 import com.example.ottomatic.domain.model.needsBaseUrl
-import com.example.ottomatic.domain.model.needsModelIds
 import com.example.ottomatic.feature.grapheditor.EditorColors
 import com.example.ottomatic.feature.grapheditor.EditorOverlay
 
@@ -94,6 +94,8 @@ fun AiConnectionEditorOverlay(
 ) {
     val uriHandler = LocalUriHandler.current
     val clipboard = LocalClipboardManager.current
+    val state by viewModel.uiState.collectAsState()
+    val macros = state.callableMacros
 
     EditorOverlay(
         title = if (draft.isNew)
@@ -162,14 +164,11 @@ fun AiConnectionEditorOverlay(
                 onPaste = { clipboard.getText()?.text?.let(viewModel::onKeyChange) },
             )
 
-            ModelFields(
+            ModelList(
                 draft = draft,
-                onModelChange = viewModel::onModelChange,
-                onLoadModels = viewModel::loadModels,
-                onChooserDismiss = viewModel::closeModelChooser,
+                onOpen = viewModel::editModel,
+                onAdd = viewModel::addModel,
             )
-
-            SystemPromptField(draft = draft, onValueChange = viewModel::onSystemPromptChange)
 
             ActionButtons(
                 draft = draft,
@@ -209,6 +208,14 @@ fun AiConnectionEditorOverlay(
                 fontSize = 12.sp,
             )
         }
+    }
+
+    // A second window over the first, which is what [EditorOverlay] being a Dialog
+    // buys — the same nesting the node config form already does for its pin sheet.
+    // The profile is edited in place in the draft, so closing this is a step back
+    // rather than a save, and nothing reaches storage until the connection does.
+    draft.openModel?.let { profile ->
+        AiModelEditorOverlay(draft = draft, profile = profile, viewModel = viewModel, macros = macros)
     }
 }
 
@@ -384,24 +391,26 @@ private fun KeyField(
 }
 
 /**
- * Which model each of the node's three speed settings uses.
+ * The models this account offers, one row each.
  *
- * **Three rows rather than one**, because `AiModel` is a trade-off the *macro*
- * chooses and this is where that trade-off is bound to products. Leaving a row blank
- * is meaningful and different per provider: where the provider publishes a table it
- * means "use the default", and where it does not it means "use whatever the Fast row
- * names", which is exactly right for a machine serving one model.
+ * **This replaced three fixed rows — Fast, Balanced, Thorough — and the change is the
+ * point of the whole restructure.** Those three were the *node's* trade-off bound to
+ * products here, which meant everything else about how a model should behave had
+ * nowhere to live: the persona sat on the account and applied to all three, and what
+ * the model was allowed to do sat on each node separately. A profile is the unit
+ * somebody actually has in mind — "my household assistant" — and the tier is now one
+ * of its fields rather than its identity.
  *
- * The list button is the [com.example.ottomatic.data.ai.AiModelCatalog] chooser, and
- * it needs the connection saved for the reason Test does — it reads through what is
- * *stored*, which is what a macro will use.
+ * A row names its model rather than its tier, because that is what a node's picker
+ * will show. An incomplete one says so on the row: it is the connection's Save that
+ * is blocked by it, and a Save button greyed out with nothing saying why is the worst
+ * form that failure can take.
  */
 @Composable
-private fun ModelFields(
+private fun ModelList(
     draft: AiConnectionDraft,
-    onModelChange: (AiModel, String) -> Unit,
-    onLoadModels: (AiModel) -> Unit,
-    onChooserDismiss: () -> Unit,
+    onOpen: (String) -> Unit,
+    onAdd: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
@@ -410,102 +419,67 @@ private fun ModelFields(
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
         )
-        AiModel.entries.forEach { model ->
-            ModelRow(
-                draft = draft,
-                model = model,
-                onValueChange = { onModelChange(model, it) },
-                onLoad = { onLoadModels(model) },
-                onPick = {
-                    onModelChange(model, it)
-                    onChooserDismiss()
-                },
-                onDismiss = onChooserDismiss,
+        if (draft.models.isEmpty()) {
+            Text(
+                text = stringResource(R.string.ai_no_models_yet),
+                color = EditorColors.textSecondary,
+                fontSize = 12.sp,
             )
         }
-        Text(
-            text = if (draft.provider.needsModelIds) {
-                stringResource(R.string.ai_name_the_model_your_server)
-            } else {
-                stringResource(R.string.ai_leave_these_empty_to_use)
-            },
-            color = EditorColors.textSecondary,
-            fontSize = 12.sp,
-        )
+        draft.models.forEach { profile ->
+            ModelRow(
+                profile = profile,
+                provider = draft.provider,
+                onOpen = { onOpen(profile.id) },
+            )
+        }
+        TextButton(onClick = onAdd, enabled = !draft.busy) {
+            Text(stringResource(R.string.ai_add_model), color = EditorColors.actionAccent)
+        }
     }
 }
 
 @Composable
 private fun ModelRow(
-    draft: AiConnectionDraft,
-    model: AiModel,
-    onValueChange: (String) -> Unit,
-    onLoad: () -> Unit,
-    onPick: (String) -> Unit,
-    onDismiss: () -> Unit,
+    profile: AiModelProfileDraft,
+    provider: AiProvider,
+    onOpen: () -> Unit,
 ) {
-    val required = draft.provider.needsModelIds && model == AiModel.FAST
+    val incomplete = !profile.isComplete(provider)
     Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(EditorColors.nodeBackground)
+            .clickable(onClick = onOpen)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        OutlinedTextField(
-            value = draft.modelFor(model),
-            onValueChange = onValueChange,
-            label = { Text(stringResource(model.labelRes())) },
-            placeholder = { Text(if (required) "required" else stringResource(R.string.ai_provider_s_default)) },
-            singleLine = true,
-            isError = required && draft.modelFor(model).isBlank(),
-            enabled = !draft.busy,
-            colors = fieldColors(),
-            modifier = Modifier.weight(1f),
-        )
-        Column {
-            OutlinedButton(onClick = onLoad, enabled = !draft.busy && !draft.isNew) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
-                    contentDescription = stringResource(R.string.ai_list_models),
-                    tint = if (draft.isNew) EditorColors.textSecondary else EditorColors.textPrimary,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-            DropdownMenu(
-                expanded = draft.choosingFor == model,
-                onDismissRequest = onDismiss,
-            ) {
-                draft.models.forEach { id ->
-                    DropdownMenuItem(text = { Text(id) }, onClick = { onPick(id) })
-                }
-            }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = profile.name.ifBlank { stringResource(R.string.ai_unnamed_model) },
+                color = EditorColors.textPrimary,
+                fontSize = 14.sp,
+            )
+            Text(
+                text = when {
+                    incomplete -> stringResource(R.string.ai_model_not_finished)
+                    profile.modelId.isNotBlank() -> profile.modelId
+                    else -> stringResource(
+                        R.string.ai_model_provider_default,
+                        stringResource(profile.effort.labelRes()),
+                    )
+                },
+                color = if (incomplete) EditorColors.warnAccent else EditorColors.textSecondary,
+                fontSize = 12.sp,
+            )
         }
-    }
-}
-
-/**
- * A standing instruction for every macro that uses this connection.
- *
- * Its helper text spells out that it is *added to* rather than replaced by the node's
- * own field, because that is the one thing about it somebody could reasonably guess
- * wrong — and guessing wrong means a persona quietly dropped by every node that sets
- * a task instruction.
- */
-@Composable
-private fun SystemPromptField(draft: AiConnectionDraft, onValueChange: (String) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        OutlinedTextField(
-            value = draft.systemPrompt,
-            onValueChange = onValueChange,
-            label = { Text(stringResource(R.string.ai_standing_instruction_optional)) },
-            placeholder = { Text(stringResource(R.string.ai_answer_briefly_and_in_plain)) },
-            minLines = 2,
-            enabled = !draft.busy,
-            colors = fieldColors(),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Text(
-            text = stringResource(R.string.ai_sent_ahead_of_every_prompt),
-            color = EditorColors.textSecondary,
-            fontSize = 12.sp,
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = EditorColors.textSecondary,
+            modifier = Modifier.size(18.dp),
         )
     }
 }

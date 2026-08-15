@@ -1,6 +1,8 @@
 package com.example.ottomatic.data
 
+import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.data.security.FakeSecrets
+import com.example.ottomatic.domain.model.AiModelProfile
 import com.example.ottomatic.domain.model.AiProvider
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -159,23 +161,107 @@ class AiConnectionRepositoryTest {
     }
 
     @Test
-    fun `a provider's address, models and standing instruction survive a restart`() = runBlocking {
+    fun `a provider's address and its model profiles survive a restart`() = runBlocking {
         val repository = repository()
         val created = repository.create("Local", AiProvider.OPENAI_COMPATIBLE)
         repository.upsert(
             repository.get(created.id)!!.copy(
                 baseUrl = "http://192.168.1.10:8000/v1",
-                fastModel = "Qwen/Qwen3-8B",
-                thoroughModel = "Qwen/Qwen3-32B",
-                systemPrompt = "Answer in German.",
+                models = listOf(
+                    AiModelProfile(
+                        id = "profile-1",
+                        name = "Household",
+                        modelId = "Qwen/Qwen3-8B",
+                        effort = AiModel.BALANCED,
+                        systemPrompt = "Answer in German.",
+                        tools = "action.notify",
+                    ),
+                ),
             ),
         )
         val reopened = repository().get(created.id)!!
         assertEquals(AiProvider.OPENAI_COMPATIBLE, reopened.provider)
         assertEquals("http://192.168.1.10:8000/v1", reopened.baseUrl)
-        assertEquals("Qwen/Qwen3-8B", reopened.fastModel)
-        assertEquals("Qwen/Qwen3-32B", reopened.thoroughModel)
-        assertEquals("Answer in German.", reopened.systemPrompt)
+        val profile = reopened.models.single()
+        assertEquals("Household", profile.name)
+        assertEquals("Qwen/Qwen3-8B", profile.modelId)
+        assertEquals(AiModel.BALANCED, profile.effort)
+        assertEquals("Answer in German.", profile.systemPrompt)
+        assertEquals("action.notify", profile.tools)
+    }
+
+    /** Both halves of [AiConnectionRepository.resolve], which every AI node starts from. */
+    @Test
+    fun `a profile resolves to itself and to the account behind it`() = runBlocking {
+        val repository = repository()
+        val created = repository.create("Personal", AiProvider.GEMINI)
+        repository.upsert(
+            repository.get(created.id)!!.copy(models = listOf(AiModelProfile(id = "p1", name = "Household"))),
+        )
+        val (connection, profile) = repository.resolve("p1")!!
+        assertEquals(created.id, connection.id)
+        assertEquals("Household", profile.name)
+        assertNull(repository.resolve("no-such-profile"))
+    }
+
+    /**
+     * **The upconvert, which is the migration off the pre-profile layout.** One
+     * standing prompt and three model-id overrides on the account become three named
+     * profiles, so nothing the user configured is lost and no node has to be
+     * re-pointed by hand.
+     */
+    @Test
+    fun `a pre-profile connection becomes three named profiles`() {
+        writeLegacyLibrary()
+        val loaded = repository().list().single()
+
+        assertEquals(listOf("Fast", "Balanced", "Thorough"), loaded.models.map { it.name })
+        assertEquals(listOf(AiModel.FAST, AiModel.BALANCED, AiModel.THOROUGH), loaded.models.map { it.effort })
+        assertEquals(listOf("qwen-small", "", "qwen-big"), loaded.models.map { it.modelId })
+        // The persona was one field for all three, so all three keep it.
+        assertTrue(loaded.models.all { it.systemPrompt == "Answer in German." })
+    }
+
+    /**
+     * The ids are **derived from the connection id and the tier**, which is what lets
+     * `repairAiRefs` repair a saved node as a pure function of that node's own config
+     * — no library lookup, and no ordering between the two migrations.
+     */
+    @Test
+    fun `a migrated profile's id is derived rather than generated`() {
+        writeLegacyLibrary()
+        val loaded = repository().list().single()
+        assertEquals(AiModelProfile.legacyId("old-id", AiModel.BALANCED), loaded.models[1].id)
+    }
+
+    /** One-way and self-erasing, on `adoptSingleKey`'s model: a second read converts nothing. */
+    @Test
+    fun `the upconvert erases what it read and does not run twice`() {
+        writeLegacyLibrary()
+        val first = repository().list().single()
+        assertEquals("", first.systemPrompt)
+        assertEquals("", first.fastModel)
+
+        val reopened = repository().list().single()
+        assertEquals(first.models.map { it.id }, reopened.models.map { it.id })
+        assertEquals(3, reopened.models.size)
+    }
+
+    /**
+     * A connection with no overrides at all still gets three profiles, with blank
+     * model ids — blank already meant "the provider's own model for this tier", so
+     * that is the same three choices the user had before, now named.
+     */
+    @Test
+    fun `a connection that overrode nothing still gets its three choices back`() {
+        val sealed = secrets.seal("AIza-old")!!
+        folder.root.resolve("ai").mkdirs()
+        folder.root.resolve("ai/connections.json").writeText(
+            """[{"id":"old-id","name":"Personal","provider":"GEMINI","secret":"$sealed"}]""",
+        )
+        val loaded = repository().list().single()
+        assertEquals(3, loaded.models.size)
+        assertTrue(loaded.models.all { it.modelId.isEmpty() })
     }
 
     /**
@@ -198,7 +284,20 @@ class AiConnectionRepositoryTest {
         assertEquals(AiProvider.GEMINI, loaded.provider)
         assertEquals("AIza-old", repository.apiKey("old-id"))
         assertEquals("", loaded.baseUrl)
-        assertEquals("", loaded.systemPrompt)
-        assertEquals("", loaded.fastModel)
+    }
+
+    /** A library in the shape the pre-profile build wrote: prompt and ids on the account. */
+    private fun writeLegacyLibrary() {
+        val sealed = secrets.seal("AIza-old")!!
+        folder.root.resolve("ai").mkdirs()
+        folder.root.resolve("ai/connections.json").writeText(
+            """
+            [{
+              "id":"old-id","name":"Personal","provider":"GEMINI","secret":"$sealed",
+              "systemPrompt":"Answer in German.",
+              "fastModel":"qwen-small","thoroughModel":"qwen-big"
+            }]
+            """.trimIndent(),
+        )
     }
 }

@@ -80,8 +80,9 @@ import com.example.ottomatic.feature.files.FilePathField
 import com.example.ottomatic.feature.contacts.PhoneNumberField
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
-import com.example.ottomatic.feature.ai.AiConnectionPickerOverlay
+import com.example.ottomatic.feature.ai.AiModelPickerOverlay
 import com.example.ottomatic.feature.ai.LocalAiConnections
+import com.example.ottomatic.feature.ai.ToolOverrideField
 import com.example.ottomatic.feature.mail.LocalMailAccounts
 import com.example.ottomatic.feature.mail.MailAccountPickerOverlay
 import com.example.ottomatic.feature.nfc.LocalNfcTags
@@ -315,11 +316,12 @@ internal fun ConfigFieldEditor(
                     colors = colors,
                 )
             }
-            ConfigFieldType.TOOL_LIST -> {
-                ToolListField(
+            is ConfigFieldType.TOOL_LIST -> {
+                ToolOverrideField(
                     value = value,
                     onValueChange = onValueChange,
                     label = label,
+                    modelRef = type.scopedBy.firstOrNull()?.let { siblingValue(ConfigKey(it)) }.orEmpty(),
                 )
             }
             ConfigFieldType.API_TOKEN -> {
@@ -748,7 +750,7 @@ private fun PickerField(
         PickerKind.MACRO -> MacroPickerField(value, onValueChange, labelSlot, colors)
         PickerKind.NFC_TAG -> NfcTagPickerField(value, onValueChange, labelSlot, colors)
         PickerKind.MAIL_ACCOUNT -> MailAccountPickerField(value, onValueChange, labelSlot, colors)
-        PickerKind.AI_CONNECTION -> AiConnectionPickerField(value, onValueChange, labelSlot, colors)
+        PickerKind.AI_MODEL -> AiModelPickerField(value, onValueChange, labelSlot, colors)
         // The two light kinds share one field and one overlay, on the app kinds'
         // precedent: same hub, same snapshot, different section of it.
         PickerKind.LIGHT_TARGET ->
@@ -979,20 +981,24 @@ private fun MailAccountPickerField(
 }
 
 /**
- * A `@Picker(AI_CONNECTION)` field: which connection this node sends prompts
+ * A `@Picker(AI_MODEL)` field: which saved way of asking this node sends prompts
  * through.
  *
  * [MailAccountPickerField]'s twin on both of its peculiarities, and for the same
- * reasons. Blank is **not** an answer — there is no connection to fall back on, and
- * an implicit one would silently bill a key the user did not choose — so the
- * placeholder is the ordinary "None selected". And an id that resolves to nothing
- * is genuinely broken rather than merely unnamed, since the connection carried the
- * provider and the key: it falls back to a phrase saying so instead of to a
- * prettified id, because there is nothing about a deleted connection left to
- * format.
+ * reasons. Blank is **not** an answer — there is no model to fall back on, and an
+ * implicit one would silently bill a key the user did not choose — so the placeholder
+ * is the ordinary "None selected". And an id that resolves to nothing is genuinely
+ * broken rather than merely unnamed, since the profile carried the model, the persona
+ * and the permissions: it falls back to a phrase saying so instead of to a prettified
+ * id, because there is nothing about a deleted profile left to format.
+ *
+ * The row shows the profile's name and, beneath it, the account behind it — because
+ * two accounts may well hold a profile called "Household", and the account is the
+ * thing that distinguishes them. There is deliberately no account *field*: choosing
+ * the profile already determines it.
  */
 @Composable
-private fun AiConnectionPickerField(
+private fun AiModelPickerField(
     value: String,
     onValueChange: (String) -> Unit,
     labelSlot: @Composable () -> Unit,
@@ -1004,7 +1010,8 @@ private fun AiConnectionPickerField(
     PickerFieldChrome(
         display = when {
             value.isBlank() -> ""
-            else -> connections?.connectionById(value)?.name ?: stringResource(R.string.config_deleted_connection)
+            else -> connections?.modelProfile(value)?.name
+                ?: stringResource(R.string.config_deleted_connection)
         },
         icon = Icons.Filled.Psychology,
         enabled = connections != null,
@@ -1014,7 +1021,7 @@ private fun AiConnectionPickerField(
     )
 
     if (picking && connections != null) {
-        AiConnectionPickerOverlay(
+        AiModelPickerOverlay(
             viewModel = connections,
             selectedId = value.takeIf { it.isNotBlank() },
             onPick = { id ->

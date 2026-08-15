@@ -52,15 +52,29 @@ data class ToolSpec(val target: ToolTarget, val pinned: Map<ConfigKey, String> =
     companion object {
 
         /**
-         * How many tools one node may offer.
+         * How many tools one model profile may be granted.
          *
          * Not a rendering limit like [PortSpec.MAX_PORTS] — nothing here is drawn on
-         * the card — but a *prompt* limit: every tool's name, description and
-         * argument schema is sent on every turn, so a list of sixty would cost more
-         * context than the question and leave the model choosing badly among things
-         * it cannot hold in view at once.
+         * the card — but a *prompt* limit: every tool's name, description and argument
+         * schema is sent on every turn, so a long list costs more context than the
+         * question and leaves the model choosing badly among things it cannot hold in
+         * view at once. The editor says so above roughly twenty.
+         *
+         * **It is high enough to cover "allow everything", and that is what changed.**
+         * It was 16 while a list was built one tool at a time; the permission editor
+         * offers a switch that ticks every runnable node at once, and a cap below that
+         * number would silently drop whatever fell off the end — so "allow everything"
+         * would not have meant it. A test pins that it stays above the runnable count
+         * as nodes are added, and the number is round and generous rather than fitted
+         * to today's total, because a ceiling reached by an ordinary gesture is one
+         * somebody meets by accident.
+         *
+         * What is left of the prompt-budget argument is a **warning** in the editor
+         * well below this, at roughly two dozen, which is where a list starts costing
+         * more context than the question. The ceiling is now the runaway guard rather
+         * than the advice.
          */
-        const val MAX_TOOLS = 16
+        const val MAX_TOOLS = 128
 
         private val json = Json { ignoreUnknownKeys = true }
 
@@ -73,12 +87,17 @@ data class ToolSpec(val target: ToolTarget, val pinned: Map<ConfigKey, String> =
          * longer exists still parses; deciding that is the validator's job, and it is
          * the difference between a warning the user can act on and a tool that
          * silently vanished.
+         *
+         * **It does not truncate at [MAX_TOOLS], deliberately.** It used to, and that
+         * was a silent cap: the editor would show a list the runtime had quietly
+         * shortened, and nothing anywhere said which end was dropped. Enforcing the
+         * ceiling belongs where it can be *reported* — the editor refuses to add past
+         * it, and `NodeToolCatalog` logs whatever it leaves out.
          */
         fun parse(raw: String?): List<ToolSpec> = raw.orEmpty()
             .lineSequence()
             .mapNotNull(::parseLine)
             .distinctBy { it.target }
-            .take(MAX_TOOLS)
             .toList()
 
         /** The persisted form of [specs]; round-trips through [parse]. */

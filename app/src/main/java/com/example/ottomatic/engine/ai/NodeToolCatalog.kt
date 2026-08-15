@@ -15,6 +15,7 @@ import com.example.ottomatic.domain.registry.ConfigField
 import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.domain.registry.ConfigSchemaRegistry
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.domain.registry.PickerOptions
 
 /** One offered tool, and the spec it came from. */
 data class NodeTool(val spec: ToolSpec, val tool: AiTool)
@@ -43,15 +44,27 @@ object NodeToolCatalog {
      * it would let a model spend a turn discovering what the Problems panel already
      * says. [macros] is passed in rather than looked up so this stays testable without
      * a repository.
+     *
+     * **The cap is enforced here and announced through [onDropped]**, which is the
+     * *no silent caps* rule: `ToolSpec.parse` deliberately no longer truncates, so
+     * this is the one place a list longer than the ceiling is cut — and cutting
+     * without saying so would read as "covered everything" when it did not. The
+     * callback is optional so this stays a pure function in its own tests.
      */
-    fun build(specs: List<ToolSpec>, macros: List<CallableMacro> = emptyList()): List<NodeTool> {
+    fun build(
+        specs: List<ToolSpec>,
+        macros: List<CallableMacro> = emptyList(),
+        onDropped: (Int) -> Unit = {},
+    ): List<NodeTool> {
         val used = mutableSetOf<String>()
-        return specs.mapNotNull { spec ->
+        val runnable = specs.mapNotNull { spec ->
             when (val target = spec.target) {
                 is ToolTarget.Node -> nodeTool(spec, target.typeId)
                 is ToolTarget.Macro -> macroTool(spec, macros.firstOrNull { it.id == target.macroId })
             }
-        }.map { tool -> tool.withUniqueName(used) }
+        }
+        if (runnable.size > ToolSpec.MAX_TOOLS) onDropped(runnable.size - ToolSpec.MAX_TOOLS)
+        return runnable.take(ToolSpec.MAX_TOOLS).map { tool -> tool.withUniqueName(used) }
     }
 
     /** One node type, with its unpinned config fields as arguments. */
@@ -109,17 +122,28 @@ object NodeToolCatalog {
     /**
      * One config field as an argument, or null where the model must not fill it.
      *
-     * Three kinds are withheld, each for a different reason:
+     * What is withheld, and why each:
      *
      * - **Pinned** fields are the author's answer and are not the model's to change.
-     * - **Pickers** hold an opaque identifier — a hub reference, a UUID — that a model
-     *   cannot invent and whose mistyping does not fail loudly. An unpinned one is
-     *   simply left at its default here; the validator is what tells the user.
      * - **Generated and port-list** fields describe a shape rather than a value:
      *   `backedBy` fields exist only relative to a placed node's other config, and a
      *   port list names wires the tool has none of.
+     * - **A picker nothing can enumerate** — a sound URI, an app package, a mail
+     *   account — holds an opaque identifier a model cannot invent and whose mistyping
+     *   does not fail loudly, so it stays the author's to pin.
+     *
+     * **A picker that *can* be enumerated is offered as an enum instead**, and that is
+     * the point of [PickerOptions]: the objection to handing a model a `SmartHomeRef`
+     * was never that it should not choose a light, it was that it would have to invent
+     * the spec. Given the set, it chooses from it and the provider enforces that it
+     * chose nothing else — so "put on whichever scene suits" becomes expressible while
+     * the thing `@Picker` exists to prevent stays prevented.
+     *
+     * The scope is the spec's own [pinned] map, which is what makes the narrowing
+     * behave: pin the hub and the entities offered are that hub's, leave it open and
+     * every hub's are offered. `Suggestions`' degradation rule, one layer out.
      */
-    @Suppress("ReturnCount") // Three separate reasons to withhold a field; folding them hides which.
+    @Suppress("ReturnCount") // Several separate reasons to withhold a field; folding them hides which.
     private fun parameterFor(field: ConfigField<*>, pinned: Map<ConfigKey, String>): AiParam? {
         if (field.key in pinned || field.backedBy != null) return null
         val schema = when (val type = field.type) {
@@ -127,10 +151,22 @@ object NodeToolCatalog {
             ConfigFieldType.DOUBLE -> AiParamSchema.Decimal
             ConfigFieldType.BOOL -> AiParamSchema.Flag
             is ConfigFieldType.ENUM -> AiParamSchema.Text(type.options.map { it.value })
-            is ConfigFieldType.PICKER, ConfigFieldType.PORT_LIST -> return null
+            is ConfigFieldType.PICKER -> pickerSchema(type, pinned) ?: return null
+            ConfigFieldType.PORT_LIST -> return null
             else -> AiParamSchema.Text()
         }
         return AiParam(name = field.key.value, schema = schema, description = describe(field))
+    }
+
+    /** The choices for an unpinned picker, or null when there are none to offer. */
+    private fun pickerSchema(
+        type: ConfigFieldType.PICKER,
+        pinned: Map<ConfigKey, String>,
+    ): AiParamSchema? {
+        val scope = type.scopedBy.map { pinned[ConfigKey(it)].orEmpty() }
+        return PickerOptions.of(type.kind, scope)
+            .takeIf { it.isNotEmpty() }
+            ?.let { AiParamSchema.Text(it) }
     }
 
     /**

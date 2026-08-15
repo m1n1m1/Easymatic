@@ -44,11 +44,22 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
         when (val resolved = resolve(request)) {
             is Resolution.Refused -> AiReply(error = resolved.error)
             is Resolution.Ready -> {
-                val body = resolved.protocol.requestBody(resolved.request, resolved.connection)
+                val body = resolved.protocol.requestBody(resolved.request, resolved.target)
                 val (status, answer) = resolved.post(body)
                 resolved.protocol.readReply(status, answer)
             }
         }
+
+    /**
+     * The tool list the profile [modelRef] names carries, as stored.
+     *
+     * Answers **blank** for a profile that is gone rather than reporting, because the
+     * caller's next step either way is to ask with no tools — and a node whose profile
+     * has been deleted already fails at [complete] with a sentence naming that, which
+     * is the one message worth showing.
+     */
+    override suspend fun toolsFor(modelRef: String): String =
+        connections.resolve(modelRef)?.second?.tools.orEmpty()
 
     /**
      * The tool-using exchange.
@@ -69,7 +80,7 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
             is Resolution.Ready -> runToolExchange(
                 protocol = resolved.protocol,
                 request = resolved.request,
-                connection = resolved.connection,
+                target = resolved.target,
                 tools = tools,
                 maxTurns = maxTurns,
                 invoke = invoke,
@@ -82,7 +93,7 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
     private suspend fun Resolution.Ready.post(body: String): Pair<Int, String> =
         withContext(Dispatchers.IO) {
             AiTransport.post(
-                url = protocol.endpoint(connection, request.model),
+                url = protocol.endpoint(target),
                 headers = protocol.headers(key),
                 body = body,
             )
@@ -100,25 +111,25 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
     @Suppress("ReturnCount") // Guards that must never reach the network, then the resolved request.
     private fun resolve(request: AiRequest): Resolution {
         if (request.prompt.isBlank()) return Resolution.Refused("No prompt to send")
-        if (request.connectionId.isBlank()) {
-            return Resolution.Refused("No AI connection chosen on this node")
+        if (request.modelRef.isBlank()) {
+            return Resolution.Refused("No AI model chosen on this node")
         }
-        val connection = connections.get(request.connectionId)
-            ?: return Resolution.Refused(DELETED_CONNECTION)
-        val key = connections.apiKey(request.connectionId)
+        val (connection, profile) = connections.resolve(request.modelRef)
+            ?: return Resolution.Refused(DELETED_MODEL)
+        val key = connections.apiKey(connection.id)
             ?: return Resolution.Refused(unreadableKeyText(connection))
 
+        val target = AiTarget(connection, profile)
         val protocol = protocolFor(connection.provider)
-        protocol.configurationProblem(connection, request.model)
-            ?.let { return Resolution.Refused(it) }
+        protocol.configurationProblem(target)?.let { return Resolution.Refused(it) }
 
         return Resolution.Ready(
-            connection = connection,
+            target = target,
             key = key,
             protocol = protocol,
             request = request.copy(
                 systemInstruction = combineInstructions(
-                    connection.systemPrompt,
+                    profile.systemPrompt,
                     request.systemInstruction,
                 ),
             ),
@@ -132,11 +143,13 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
 
         /** A request that has passed every guard, with its standing instruction folded in. */
         data class Ready(
-            val connection: AiConnection,
+            val target: AiTarget,
             val key: String,
             val protocol: AiProtocol,
             val request: AiRequest,
-        ) : Resolution
+        ) : Resolution {
+            val connection: AiConnection get() = target.connection
+        }
     }
 
     /**
@@ -156,32 +169,37 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
             "open AI settings and paste it in again"
 
     private companion object {
-        const val DELETED_CONNECTION = "This node points at an AI connection that no longer exists"
+        const val DELETED_MODEL = "This node points at an AI model that no longer exists"
     }
 }
 
 /**
- * The connection's standing instruction and the node's, as one system prompt.
+ * The profile's standing instruction and the node's, as one system prompt.
  *
- * **Combined rather than overridden, connection first.** The two answer different
- * questions: the connection's is about the connection — the persona, the language,
- * the house rules that should hold wherever it is used — and the node's is about the
- * one task it is doing. If the node's replaced it, then any node that set a single
- * task instruction would silently throw the connection's rules away, and nothing on
- * the card would say so. Order matters for the same reason a system prompt is not
- * one more thing the user said: the standing rules are the frame, and the task
- * arrives inside it.
+ * **Combined rather than overridden, profile first.** The two answer different
+ * questions: the profile's is about the model — the persona, the language, the house
+ * rules that should hold wherever it is used — and the node's is about the one task it
+ * is doing. If the node's replaced it, then any node that set a single task
+ * instruction would silently throw the persona away, and nothing on the card would say
+ * so. Order matters for the same reason a system prompt is not one more thing the user
+ * said: the standing rules are the frame, and the task arrives inside it.
+ *
+ * **Two levels rather than three.** This prompt used to live on the connection, which
+ * made it one persona for every way of asking through that account; moving it onto the
+ * profile is what lets one key carry a terse summariser beside a chatty assistant. The
+ * account keeps no prompt of its own, deliberately — a third layer would be a
+ * standing instruction nothing on either screen showed beside the other two.
  *
  * Joined by a **blank line**, not a space: these are two instructions and not one
  * sentence, and every model here reads a paragraph break as the boundary it is.
- * Either half alone passes through untouched, so a connection with no prompt behaves
- * exactly as it did before this field existed — which is what makes the change
+ * Either half alone passes through untouched, so a profile with no prompt behaves
+ * exactly as one did before this field existed — which is what makes the change
  * invisible to every macro already written.
  *
  * File-level and not a member, so it is testable without a repository.
  */
-internal fun combineInstructions(connectionPrompt: String, nodeInstruction: String): String =
-    listOf(connectionPrompt, nodeInstruction)
+internal fun combineInstructions(profilePrompt: String, nodeInstruction: String): String =
+    listOf(profilePrompt, nodeInstruction)
         .map { it.trim() }
         .filter { it.isNotBlank() }
         .joinToString(separator = "\n\n")
@@ -217,7 +235,7 @@ internal fun combineInstructions(connectionPrompt: String, nodeInstruction: Stri
 internal suspend fun runToolExchange(
     protocol: AiProtocol,
     request: AiRequest,
-    connection: AiConnection,
+    target: AiTarget,
     tools: List<AiTool>,
     maxTurns: Int,
     invoke: suspend (AiToolCall) -> AiToolResult,
@@ -233,7 +251,7 @@ internal suspend fun runToolExchange(
         if (now() - startedAt > AiToolLimits.OVERALL_BUDGET_MS) {
             return AiReply(error = OUT_OF_TIME)
         }
-        val (status, body) = send(protocol.conversationBody(exchange, tools, request, connection))
+        val (status, body) = send(protocol.conversationBody(exchange, tools, request, target))
         val turn = protocol.readTurn(status, body)
         // A failed turn and a finished one both end the exchange; only a turn that
         // asks for something continues it.

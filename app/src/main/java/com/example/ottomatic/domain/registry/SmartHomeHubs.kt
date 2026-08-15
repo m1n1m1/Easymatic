@@ -1,5 +1,7 @@
 package com.example.ottomatic.domain.registry
 
+import com.example.ottomatic.domain.model.SmartHomeResource
+
 /**
  * Which smart-home hubs exist, as a lookup anything in `domain` may reach.
  *
@@ -23,17 +25,43 @@ package com.example.ottomatic.domain.registry
 object SmartHomeHubs {
 
     @Volatile
-    private var current: Set<String>? = null
+    private var current: Map<String, List<SmartHomeResource>>? = null
 
     /** Whether anything has published a list yet; see the class KDoc. */
     val isHydrated: Boolean get() = current != null
 
     /** Whether [hubId] names a hub that is still set up on this device. */
-    fun exists(hubId: String): Boolean = current?.contains(hubId) == true
+    fun exists(hubId: String): Boolean = current?.containsKey(hubId) == true
 
-    /** Publishes [hubIds] as the current set. Called as the hub library emits. */
-    fun hydrate(hubIds: Collection<String>) {
-        current = hubIds.toSet()
+    /** Every hub's id, in the order the library emitted them. */
+    fun ids(): List<String> = current?.keys?.toList().orEmpty()
+
+    /**
+     * The cached lights, groups and scenes on [hubId], or on **every** hub when it is
+     * blank.
+     *
+     * Published so [PickerOptions] can offer them — nothing in `domain` could
+     * enumerate a scene before this, which is why a light field on a tool had to be
+     * pinned by the author and could never be left for the model to choose. The
+     * snapshot already sat on the hub (`SmartHomeHub.resources`); only the *registry*
+     * was narrower than what it had.
+     *
+     * [HaCatalog]'s shape exactly, and for its reason: a projection of the library
+     * that carries no credential, so `domain` can answer a question about a hub
+     * without being able to reach one.
+     */
+    fun resources(hubId: String = ""): List<SmartHomeResource> {
+        val byHub = current ?: return emptyList()
+        return if (hubId.isBlank()) byHub.values.flatten() else byHub[hubId].orEmpty()
+    }
+
+    /** The hub holding [rid], for turning a bare resource back into a full reference. */
+    fun hubOf(rid: String): String? =
+        current?.entries?.firstOrNull { (_, resources) -> resources.any { it.rid == rid } }?.key
+
+    /** Publishes the library. Called as the hub repository emits. */
+    fun hydrate(byHub: Map<String, List<SmartHomeResource>>) {
+        current = byHub
     }
 
     /** Returns to the unhydrated state. Test seam, mirroring [MacroDirectory.reset]. */

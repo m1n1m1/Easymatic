@@ -27,9 +27,8 @@ import com.example.ottomatic.nodeapi.plugin.PluginLimits
 import com.example.ottomatic.domain.model.hubIdOf
 import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.domain.registry.SmartHomeHubs
-import com.example.ottomatic.domain.registry.aiConnectionRefKeys
+import com.example.ottomatic.domain.registry.aiModelRefKeys
 import com.example.ottomatic.domain.registry.macroRefKeys
-import com.example.ottomatic.domain.registry.toolListKeys
 import com.example.ottomatic.domain.registry.isOptionalPicker
 import com.example.ottomatic.domain.registry.smartHomeRefFields
 import com.example.ottomatic.domain.registry.effectivePort
@@ -111,8 +110,7 @@ class GraphValidator(private val workflow: Workflow) {
         validateVariableRefs(issues)
         validateMacroRefs(issues)
         validateSmartHomeRefs(issues)
-        validateAiConnectionRefs(issues)
-        validateAiToolRefs(issues)
+        validateAiModelRefs(issues)
         validatePrerequisites(issues)
         validatePluginPermissions(issues)
         return GraphValidation(issues)
@@ -278,7 +276,7 @@ class GraphValidator(private val workflow: Workflow) {
     }
 
     /**
-     * An AI node that names no connection, or one that has been deleted.
+     * An AI node that names no model, or one that has been deleted.
      *
      * The fourth member of the [validateVariableRefs] / [validateMacroRefs] /
      * [validateSmartHomeRefs] family, with the same stance — a warning that blocks
@@ -287,14 +285,14 @@ class GraphValidator(private val workflow: Workflow) {
      *
      * The unset case is the one that earns it here. Every other field on `Ask AI`
      * has a sensible default and a freshly dropped node looks complete, so "no
-     * connection chosen" is easy to miss until a macro runs at three in the morning
+     * model chosen" is easy to miss until a macro runs at three in the morning
      * and answers nothing — which is exactly the failure the whole AI credential
      * design is arranged around.
      */
-    private fun validateAiConnectionRefs(out: MutableList<ValidationIssue>) {
+    private fun validateAiModelRefs(out: MutableList<ValidationIssue>) {
         for (node in workflow.nodes) {
-            for (key in aiConnectionRefKeys(node.typeId)) {
-                aiConnectionProblem(node, node.config[key].orEmpty())?.let { (reason, message) ->
+            for (key in aiModelRefKeys(node.typeId)) {
+                aiModelProblem(node, node.config[key].orEmpty())?.let { (reason, message) ->
                     out += ValidationIssue(
                         Severity.WARNING,
                         message,
@@ -308,105 +306,31 @@ class GraphValidator(private val workflow: Workflow) {
     }
 
     /**
-     * What is wrong with [node]'s AI connection, or null when nothing is.
+     * What is wrong with [node]'s AI model, or null when nothing is.
      *
      * The three cases get three sentences because they have three different fixes:
-     * pick a connection, point somewhere that still exists, or finish setting the
-     * one you have up. The third arrived with the open-ended providers and is the
-     * one that most needs saying — a self-hosted connection with no server address
-     * renders perfectly in the picker, name and provider and key, and answers
-     * nothing.
+     * pick a model, point at one that still exists, or finish setting the one you have
+     * up. The third arrived with the open-ended providers and is the one that most
+     * needs saying — a self-hosted profile with no model id, or one on an account with
+     * no server address, renders perfectly in the picker and answers nothing.
+     *
+     * **Tools are deliberately not validated here any more.** They used to be, when a
+     * node carried its own list; they now live on the profile, so a tool naming a node
+     * type that is gone or leaving a picker unpinned is a fact about the *connection
+     * library* and is reported on the row where it is fixed. A Problems entry on the
+     * canvas would point at the wrong screen.
      */
-    private fun aiConnectionProblem(node: WorkflowNode, id: String): Pair<IssueReason, String>? = when {
+    private fun aiModelProblem(node: WorkflowNode, id: String): Pair<IssueReason, String>? = when {
         id.isBlank() ->
-            IssueReason.AI_UNSET to "'${node.name}' has no AI connection chosen, so it will do nothing"
+            IssueReason.AI_UNSET to "'${node.name}' has no AI model chosen, so it will do nothing"
         !AiConnections.isHydrated -> null
-        !AiConnections.exists(id) ->
-            IssueReason.AI_MISSING to "'${node.name}' points at an AI connection that no longer exists"
-        !AiConnections.isConfigured(id) ->
+        !AiConnections.profileExists(id) ->
+            IssueReason.AI_MISSING to "'${node.name}' points at an AI model that no longer exists"
+        !AiConnections.profileIsConfigured(id) ->
             IssueReason.AI_UNFINISHED to
-                "'${node.name}' points at an AI connection that is not finished being set up"
+                "'${node.name}' points at an AI model that is not finished being set up"
         else -> null
     }
-
-    /**
-     * A tool an AI node offers that will not work.
-     *
-     * The fourth member of the [validateVariableRefs] / [validateMacroRefs] /
-     * [validateSmartHomeRefs] family, with the same stance — a warning that blocks
-     * nothing, because the catalogue already drops an unusable tool rather than
-     * offering it, and a node with one fewer tool still runs.
-     *
-     * Two things are reported, and the second is the one that could not be caught
-     * anywhere else:
-     *
-     * - A tool naming a **node type or macro that is gone**. Nothing on the canvas
-     *   says so — the row keeps rendering — and the only symptom is a model that
-     *   cannot do something it used to.
-     * - A tool with an **unpinned picker field**. That field holds an identifier a
-     *   model cannot invent, so the tool will run with the field at its default and
-     *   name nothing. This is the exact failure `@Picker` exists to prevent in a
-     *   form, reappearing one level out, and the run log cannot catch it because
-     *   nothing *fails* — the node runs and does nothing.
-     *
-     * A missing *grant* is deliberately not reported here: [validatePrerequisites]
-     * already walks every node's declared permissions, and a tool is a node type, so
-     * a second report would badge the same fact twice with different words.
-     */
-    private fun validateAiToolRefs(out: MutableList<ValidationIssue>) {
-        for (node in workflow.nodes) {
-            val specs = toolListKeys(node.typeId).flatMap { key -> ToolSpec.parse(node.config[key]) }
-            for (problem in specs.mapNotNull { spec -> toolProblem(node, spec) }) {
-                out += ValidationIssue(
-                    Severity.WARNING,
-                    problem.message,
-                    nodes = setOf(node.id),
-                    reason = problem.reason,
-                    args = problem.args,
-                )
-            }
-        }
-    }
-
-    /**
-     * What is wrong with one tool, or null when nothing is.
-     *
-     * The English [ValidationIssue.message] and the panel's resource are built from
-     * the same [args], so the two cannot drift — which is the rule the whole
-     * [IssueReason] mechanism exists to keep.
-     */
-    @Suppress("ReturnCount") // One exit per distinct problem, each with its own sentence.
-    private fun toolProblem(node: WorkflowNode, spec: ToolSpec): ToolProblem? {
-        val target = spec.target
-        if (target is ToolTarget.Macro) {
-            if (!MacroDirectory.isHydrated || MacroDirectory.byId(target.macroId) != null) return null
-            return missingTool(node, MacroDirectory.byId(target.macroId)?.name ?: target.macroId)
-        }
-        val typeId = (target as ToolTarget.Node).typeId
-        val definition = NodeTypeRegistry.byId(typeId) ?: return missingTool(node, typeId.value)
-        val loose = ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
-            .filter { it.type is ConfigFieldType.PICKER && it.key !in spec.pinned }
-        if (loose.isEmpty()) return null
-        val fields = loose.joinToString(" and ") { it.label }
-        return ToolProblem(
-            reason = IssueReason.AI_TOOL_UNPINNED,
-            message = "'${node.name}' offers '${definition.displayName}' without choosing its " +
-                "$fields, which the AI cannot fill in",
-            args = listOf(node.name, definition.displayName, fields),
-        )
-    }
-
-    private fun missingTool(node: WorkflowNode, tool: String) = ToolProblem(
-        reason = IssueReason.AI_TOOL_MISSING,
-        message = "'${node.name}' offers the AI '$tool', which is no longer available",
-        args = listOf(node.name, tool),
-    )
-
-    private data class ToolProblem(
-        val reason: IssueReason,
-        val message: String,
-        val args: List<String>,
-    )
 
     /**
      * A node that names no variable, or one whose declaration has been deleted.

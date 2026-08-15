@@ -701,3 +701,38 @@ config_tools_fixed	AI に任せず、ここで固定します
 config_tools_must_fix	ここで選択します。AI には指定できません
 config_tools_nothing_to_fix	このツールに設定はありません
 config_tools_add	ツールを追加
+ai_add_model	モデルを追加
+ai_choose_a_model	モデルを選ぶ
+ai_delete_model	このモデルを削除
+ai_model_effort	思考の深さ
+ai_model_effort_help	答える前にモデルがどれだけ考えるか。上の ID が空のときにプロバイダーが使うモデルもこれで決まります。
+ai_model_id	モデル ID
+ai_model_id_required	必須
+ai_model_name	名前
+ai_model_name_help	マクロから見える名前です。モデル名ではなく用途を付けましょう—「家事」「メールの要約」。
+ai_model_name_placeholder	家事
+ai_model_not_finished	未完成：名前とモデルを指定してください
+ai_model_provider_default	%1$s · プロバイダー既定のモデル
+ai_no_model_to_test	先にモデルを追加して保存してからテストしてください。
+ai_no_models_on_this_account	このアカウントにはまだモデルがありません。
+ai_no_models_yet	まだモデルがありません。マクロから指定できるように一つ追加してください。
+ai_tools_allow_everything	すべて許可
+ai_tools_allowed_count	%2$d 中 %1$d を許可
+ai_tools_macros	マクロ
+ai_tools_many_warning	すべてのツールが毎回モデルに説明されます。長い一覧はプロンプトを圧迫し、選択を下手にします。
+ai_tools_n_allowed	%1$d 件を許可
+ai_tools_need_a_choice	%1$d 件は何かを選ばないと動作しません。
+ai_tools_needs	%1$s が必要
+ai_tools_none_allowed	何も許可されていません—このモデルは答えることしかできません
+ai_tools_over_the_cap	上限 %1$d を超えています。超過分は除外されます—いくつか外してください。
+ai_tools_title	ツール
+ai_unnamed_model	名前のないモデル
+ai_tools_adjusted	ここで調整済み
+ai_tools_adjusted_count	このノード用に %1$d 件を調整
+ai_tools_adjusted_off	ここでオフにしました
+ai_tools_adjusting	これらはモデルのものです。ここでの変更はこのノードにだけ反映されます。
+ai_tools_as_the_model_says	モデルが許可するもの
+ai_tools_choose_a_model_first	先にモデルを選んでください
+ai_tools_reset	モデルに従うに戻す
+ai_tools_reset_all	すべてをリセット
+config_tools_ai_chooses	AI が利用できる %1$d 件から%2$sを選びます

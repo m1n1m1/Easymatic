@@ -701,3 +701,38 @@ config_tools_fixed	Fixé ici plutôt que laissé à l'IA
 config_tools_must_fix	Choisi ici : l'IA ne peut pas le nommer
 config_tools_nothing_to_fix	Cet outil n'a aucun réglage
 config_tools_add	Ajouter un outil
+ai_add_model	Ajouter un modèle
+ai_choose_a_model	Choisir un modèle
+ai_delete_model	Supprimer ce modèle
+ai_model_effort	Effort
+ai_model_effort_help	À quel point le modèle doit réfléchir avant de répondre. Détermine aussi quel modèle le fournisseur utilise quand l'identifiant ci-dessus est vide.
+ai_model_id	Identifiant du modèle
+ai_model_id_required	obligatoire
+ai_model_name	Nom
+ai_model_name_help	Le nom que les macros verront. Nommez la tâche plutôt que le modèle : « Maison », « Résumer un e-mail ».
+ai_model_name_placeholder	Maison
+ai_model_not_finished	Incomplet : donnez-lui un nom et un modèle
+ai_model_provider_default	%1$s · le modèle du fournisseur
+ai_no_model_to_test	Ajoutez un modèle et enregistrez d'abord, puis testez.
+ai_no_models_on_this_account	Aucun modèle sur ce compte pour l'instant.
+ai_no_models_yet	Aucun modèle pour l'instant. Ajoutez-en un pour que les macros aient quelque chose à viser.
+ai_tools_allow_everything	Tout autoriser
+ai_tools_allowed_count	%1$d sur %2$d autorisés
+ai_tools_macros	Macros
+ai_tools_many_warning	Chaque outil est décrit au modèle à chaque tour. Une longue liste encombre la requête et le fait mal choisir.
+ai_tools_n_allowed	%1$d autorisés
+ai_tools_need_a_choice	%1$d attendent encore un choix avant de pouvoir faire quoi que ce soit.
+ai_tools_needs	Demande %1$s
+ai_tools_none_allowed	Rien d'autorisé : ce modèle peut seulement répondre
+ai_tools_over_the_cap	Au-delà de la limite de %1$d. Ceux en trop sont ignorés ; décochez-en.
+ai_tools_title	Outils
+ai_unnamed_model	Modèle sans nom
+ai_tools_adjusted	Ajusté ici
+ai_tools_adjusted_count	%1$d ajustés pour ce nœud
+ai_tools_adjusted_off	Désactivé ici
+ai_tools_adjusting	Ceux-ci appartiennent au modèle. En changer un ici ne vaut que pour ce nœud.
+ai_tools_as_the_model_says	Ce que le modèle autorise
+ai_tools_choose_a_model_first	Choisissez d'abord un modèle
+ai_tools_reset	Suivre à nouveau le modèle
+ai_tools_reset_all	Tout réinitialiser
+config_tools_ai_chooses	L'IA choisit %2$s, parmi les %1$d qu'elle peut atteindre

@@ -65,22 +65,21 @@ internal sealed class OpenAiProtocol(
     abstract fun defaultModelId(model: AiModel): String
 
     /**
-     * The id actually sent, with the single-model fallback.
+     * The id actually sent: what the profile names, else this provider's own table.
      *
-     * A tier left blank falls back to the **Fast** id rather than failing, because
-     * the dominant self-hosted setup is one machine serving one model: naming it
-     * once and having every tier use it is what somebody means. Where the provider
-     * has a table, that table wins before this ever applies.
+     * **The cross-tier fallback that used to live here is gone, and profiles are why.**
+     * It existed because a connection carried three model-id fields and the dominant
+     * self-hosted setup is one machine serving one model — so a blank Balanced field
+     * borrowed the Fast one rather than failing. A profile names exactly one model, so
+     * "one machine, one model" is now one profile, and there is no second field for a
+     * blank one to borrow from. Where a provider has a table, that table still wins.
      */
-    private fun resolvedModelId(connection: AiConnection, model: AiModel): String {
-        val chosen = modelIdFor(connection, model, defaultModelId(model))
-        return chosen.ifBlank { connection.fastModel.trim() }
-    }
+    private fun resolvedModelId(target: AiTarget): String =
+        modelIdFor(target, defaultModelId(target.effort))
 
     private fun base(connection: AiConnection): String = baseUrlFor(connection, defaultBaseUrl)
 
-    override fun endpoint(connection: AiConnection, model: AiModel): String =
-        "${base(connection)}/chat/completions"
+    override fun endpoint(target: AiTarget): String = "${base(target.connection)}/chat/completions"
 
     override fun modelsEndpoint(connection: AiConnection): String = "${base(connection)}/models"
 
@@ -99,11 +98,11 @@ internal sealed class OpenAiProtocol(
      * over a blank field in this app. The same rule the editor and the Problems
      * panel apply, read off `AiConnection.isConfigured`'s two halves.
      */
-    override fun configurationProblem(connection: AiConnection, model: AiModel): String? = when {
-        base(connection).isBlank() ->
-            "\"${connection.name}\" has no server address — open AI settings and add one"
-        resolvedModelId(connection, model).isBlank() ->
-            "\"${connection.name}\" has no model chosen — open AI settings and name one"
+    override fun configurationProblem(target: AiTarget): String? = when {
+        base(target.connection).isBlank() ->
+            "\"${target.connection.name}\" has no server address — open AI settings and add one"
+        resolvedModelId(target).isBlank() ->
+            "\"${target.profile.name}\" has no model chosen — open AI settings and name one"
         else -> null
     }
 
@@ -114,13 +113,13 @@ internal sealed class OpenAiProtocol(
      * omitted entirely when blank rather than sent empty — an absent turn and an
      * empty one are different requests, and several servers refuse the second.
      */
-    override fun requestBody(request: AiRequest, connection: AiConnection): String = buildJsonObject {
-        put(MODEL_KEY, resolvedModelId(connection, request.model))
+    override fun requestBody(request: AiRequest, target: AiTarget): String = buildJsonObject {
+        put(MODEL_KEY, resolvedModelId(target))
         // No thinking headroom is added here, unlike Gemini and Anthropic: on this
         // API reasoning tokens are counted separately from the reply on the servers
         // that produce them at all, so the user's limit means the reply.
         put(tokenField, request.maxOutputTokens.coerceAtLeast(1))
-        if (sendsReasoningEffort) put(EFFORT_KEY, reasoningEffort(request.model))
+        if (sendsReasoningEffort) put(EFFORT_KEY, reasoningEffort(target.effort))
         putJsonArray(MESSAGES_KEY) {
             if (request.systemInstruction.isNotBlank()) {
                 add(message(SYSTEM_ROLE, request.systemInstruction))
@@ -176,11 +175,11 @@ internal sealed class OpenAiProtocol(
         exchange: List<AiExchange>,
         tools: List<AiTool>,
         request: AiRequest,
-        connection: AiConnection,
+        target: AiTarget,
     ): String = buildJsonObject {
-        put(MODEL_KEY, resolvedModelId(connection, request.model))
+        put(MODEL_KEY, resolvedModelId(target))
         put(tokenField, request.maxOutputTokens.coerceAtLeast(1))
-        if (sendsReasoningEffort) put(EFFORT_KEY, reasoningEffort(request.model))
+        if (sendsReasoningEffort) put(EFFORT_KEY, reasoningEffort(target.effort))
         if (tools.isNotEmpty()) putJsonArray(TOOLS_KEY) { tools.forEach { add(declare(it)) } }
         putJsonArray(MESSAGES_KEY) {
             if (request.systemInstruction.isNotBlank()) {

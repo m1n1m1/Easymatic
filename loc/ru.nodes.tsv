@@ -632,3 +632,5 @@ Picture	Изображение
 Shows an AI model a picture from this phone and returns what it says about it	Показывает модели ИИ изображение с этого телефона и возвращает её описание
 Tools	Инструменты
 What to ask	О чём спросить
+Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	Отправляет запрос модели ИИ (Gemini, Claude, ChatGPT, OpenRouter или собственной модели) и возвращает ответ текстом, а при разрешении позволяет ей запускать узлы и макросы как инструменты
+Let it use tools	Разрешить ей пользоваться инструментами

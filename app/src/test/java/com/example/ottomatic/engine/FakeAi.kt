@@ -41,6 +41,23 @@ class FakeAi(var reply: AiReply = AiReply(text = "answered")) : Ai {
     /** What the model will "say", in order. Empty means: answer [reply] immediately. */
     val turns = ArrayDeque<FakeTurn>()
 
+    /**
+     * What the chosen profile allows, as the `ToolSpec` text a node parses.
+     *
+     * Blank by default, which is the shape that matters most: a node with the tools
+     * switch off must never ask for this, and one whose profile grants nothing must
+     * behave exactly like a plain prompt.
+     */
+    var tools: String = ""
+
+    /** Every profile id [toolsFor] was asked about, so a node can be pinned to ask once. */
+    val toolLookups = mutableListOf<String>()
+
+    override suspend fun toolsFor(modelRef: String): String {
+        toolLookups += modelRef
+        return tools
+    }
+
     override suspend fun complete(request: AiRequest): AiReply {
         requests += request
         return reply

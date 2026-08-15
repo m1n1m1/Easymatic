@@ -34,13 +34,11 @@ App Initialised	App Initialised
 App Installed / Removed	App Installed / Removed
 Appends an item to a named list, usually from inside a loop	Appends an item to a named list, usually from inside a loop
 Ask AI	Ask AI
-Ask AI (with tools)	Ask AI (with tools)
 Ask AI About a Picture	Ask AI About a Picture
 Ask Yes or No	Ask Yes or No
 Ask for Input	Ask for Input
 Ask the broker to keep this message	Ask the broker to keep this message
 Ask to Choose	Ask to Choose
-Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer	Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer
 Asks the user a yes/no question in a popup dialog and branches on the answer	Asks the user a yes/no question in a popup dialog and branches on the answer
 Asks the user to type a value in a popup dialog and puts it on a port	Asks the user to type a value in a popup dialog and puts it on a port
 At	At
@@ -51,7 +49,6 @@ Auto brightness	Auto brightness
 Automatic	Automatic
 Away for (minutes)	Away for (minutes)
 B	B
-Balanced	Balanced
 Battery Level	Battery Level
 Battery level	Battery level
 Bcc	Bcc
@@ -94,7 +91,6 @@ Confirm button	Confirm button
 Confirmed by the broker	Confirmed by the broker
 Confirmed exactly once	Confirmed exactly once
 Connected	Connected
-Connection	Connection
 Contains	Contains
 Control Light	Control Light
 Control Scene	Control Scene
@@ -159,7 +155,6 @@ Face down	Face down
 Face up	Face up
 Fade time (ms)	Fade time (ms)
 Falls below	Falls below
-Fast	Fast
 Fetch Email	Fetch Email
 Field	Field
 File	File
@@ -240,6 +235,7 @@ Launches another app by package name	Launches another app by package name
 Leave the old one alone	Leave the old one alone
 Less than	Less than
 Less than or equal	Less than or equal
+Let it use tools	Let it use tools
 Level (%)	Level (%)
 Level (when on)	Level (when on)
 Light or room	Light or room
@@ -417,7 +413,7 @@ Send and forget	Send and forget
 Send as HTML	Send as HTML
 Sender (optional — any sender when empty)	Sender (optional — any sender when empty)
 Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome	Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome
-Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text	Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text
+Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it
 Sends an SMS to a number with a body	Sends an SMS to a number with a body
 Sends an email through one of your mail accounts	Sends an email through one of your mail accounts
 Sensitivity	Sensitivity
@@ -529,7 +525,6 @@ The light level around the device in lux — a dim room is around 30, an office 
 The name of the Wi-Fi network the device is currently connected to	The name of the Wi-Fi network the device is currently connected to
 The same list, in order	The same list, in order
 This is a list	This is a list
-Thorough	Thorough
 Threshold (0-100)	Threshold (0-100)
 Threshold (lux)	Threshold (lux)
 Thursdays	Thursdays

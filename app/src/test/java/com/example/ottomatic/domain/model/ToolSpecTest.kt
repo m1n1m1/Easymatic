@@ -2,6 +2,8 @@ package com.example.ottomatic.domain.model
 
 import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.domain.registry.NodeTypeRegistry
+import com.example.ottomatic.engine.ai.canRunAsTool
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -112,12 +114,25 @@ class ToolSpecTest {
     }
 
     /**
-     * Not a rendering limit but a prompt one: every tool's schema is sent on every
-     * turn, so an unbounded list costs more context than the question.
+     * **Parsing does not enforce the cap, deliberately.** It used to, and that was a
+     * silent truncation: the editor showed a list the runtime had quietly shortened,
+     * with nothing anywhere saying which end went. The ceiling belongs where it can be
+     * *reported* — the editor refuses to add past it, and `NodeToolCatalog` logs what
+     * it leaves out.
      */
     @Test
-    fun `the list is capped`() {
-        val many = (1..40).joinToString("\n") { "action.tool$it" }
-        assertEquals(ToolSpec.MAX_TOOLS, ToolSpec.parse(many).size)
+    fun `parsing keeps every tool rather than truncating at the cap`() {
+        val many = (1..ToolSpec.MAX_TOOLS + 10).joinToString("\n") { "action.tool$it" }
+        assertEquals(ToolSpec.MAX_TOOLS + 10, ToolSpec.parse(many).size)
+    }
+
+    /**
+     * The cap is high enough for "allow everything", which is what changed: a ceiling
+     * reachable by an ordinary gesture is one that has to be visible, and one *below*
+     * that gesture would drop tools nobody asked to drop.
+     */
+    @Test
+    fun `the cap covers every node that can run as a tool`() {
+        assertTrue(ToolSpec.MAX_TOOLS >= NodeTypeRegistry.all.count { canRunAsTool(it.typeId, it.kind) })
     }
 }

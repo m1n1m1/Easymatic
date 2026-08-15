@@ -182,7 +182,7 @@ class GraphValidatorTest {
      */
     @Test
     fun `a light pointing at a removed hub warns and blocks nothing`() {
-        SmartHomeHubs.hydrate(listOf("other-hub"))
+        SmartHomeHubs.hydrate(mapOf("other-hub" to emptyList()))
         try {
             val node = WorkflowNode(
                 NodeId("l1"), NodeTypeId("action.light_control"), "Control Light", 0f, 0f,
@@ -206,7 +206,7 @@ class GraphValidatorTest {
 
     @Test
     fun `a light on a hub that is still there raises nothing`() {
-        SmartHomeHubs.hydrate(listOf("hub-1"))
+        SmartHomeHubs.hydrate(mapOf("hub-1" to emptyList()))
         try {
             val node = WorkflowNode(
                 NodeId("l1"), NodeTypeId("action.light_control"), "Control Light", 0f, 0f,

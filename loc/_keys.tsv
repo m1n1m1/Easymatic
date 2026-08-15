@@ -361,6 +361,40 @@ ai_delete	Delete
 ai_edit	Edit
 ai_list_models	List models
 ai_models	Models
+ai_add_model	Add a model
+ai_delete_model	Delete this model
+ai_model_effort	Effort
+ai_model_effort_help	How hard the model should think before answering. Also picks which model the provider uses when the id above is empty.
+ai_model_id	Model id
+ai_model_id_required	required
+ai_model_name	Name
+ai_model_name_help	What macros will call this. Give it the job rather than the model — \"Household\", \"Summarise a mail\".
+ai_model_name_placeholder	Household
+ai_model_not_finished	Not finished — name it and give it a model
+ai_model_provider_default	%1$s · the provider\'s own model
+ai_no_models_yet	No models yet. Add one to give macros something to point at.
+ai_no_models_on_this_account	No models on this account yet.
+ai_no_model_to_test	Add a model and save first, then test.
+ai_choose_a_model	Choose a model
+ai_tools_title	Tools
+ai_tools_none_allowed	Nothing allowed — this model can only answer
+ai_tools_n_allowed	%1$d allowed
+ai_tools_macros	Macros
+ai_tools_allow_everything	Allow everything
+ai_tools_allowed_count	%1$d of %2$d allowed
+ai_tools_many_warning	Every tool is described to the model on every turn. A long list crowds the prompt and makes it choose badly.
+ai_tools_over_the_cap	Over the limit of %1$d. The ones past it are left out — untick some.
+ai_tools_need_a_choice	%1$d still need something chosen before they will do anything.
+ai_tools_needs	Needs %1$s
+ai_tools_adjusting	These belong to the model. Change one here and only this node sees it.
+ai_tools_adjusted	Adjusted here
+ai_tools_adjusted_off	Turned off here
+ai_tools_adjusted_count	%1$d adjusted for this node
+ai_tools_reset	Follow the model again
+ai_tools_reset_all	Reset all
+ai_tools_as_the_model_says	Whatever the model allows
+ai_tools_choose_a_model_first	Choose a model first
+ai_unnamed_model	Unnamed model
 ai_name	Name
 ai_no_connections_yet_add_one	No connections yet. Add one to use the Ask AI node. It takes a free API key from Google AI Studio — the form walks you through getting one, and opens the page for you.
 ai_paste_key	Paste key
@@ -441,8 +475,6 @@ ai_api_key	API key
 ai_api_key_paste_it_in	API key — paste it in again
 ai_edit_connection	Edit connection
 ai_key_needs_pasting_in_again	Key needs pasting in again
-ai_leave_these_empty_to_use	Leave these empty to use the provider\'s own models. Fill one in when a model is retired, or to pin a particular one.
-ai_name_the_model_your_server	Name the model your server or account serves. If you only fill in Fast, the other two use it as well.
 ai_new_api_key_leave_empty	New API key (leave empty to keep the current one)
 ai_provider_s_default	provider\'s default
 api_no_macro_can_currently_be	No macro can currently be called from outside.
@@ -605,6 +637,7 @@ config_tools_remove	Remove this tool
 config_tools_missing	No longer available
 config_tools_fixed	Fixed here rather than left to the AI
 config_tools_must_fix	Chosen here — the AI cannot name this
+config_tools_ai_chooses	The AI picks the %2$s, from %1$d it can reach
 config_tools_nothing_to_fix	This tool takes no settings
 config_port_carries_list	This port carries a list
 config_port_carries_one	This port carries one value

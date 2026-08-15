@@ -4,6 +4,7 @@ import com.example.ottomatic.domain.model.MacroAccent
 import com.example.ottomatic.domain.model.MacroIcon
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowSummary
+import com.example.ottomatic.domain.registry.repairAiRefs
 import com.example.ottomatic.domain.registry.repairVariableRefs
 import java.io.File
 import java.util.UUID
@@ -108,8 +109,11 @@ class WorkflowRepository(directory: File, private val globals: GlobalVariableRep
      * reads as deleted.
      */
     private fun repaired(workflow: Workflow): Workflow {
-        val library = globals ?: return workflow
-        val result = repairVariableRefs(workflow, library.list().associate { it.name to it.id })
+        // Pure and lookup-free, so it runs whether or not a globals library is bound —
+        // see `repairAiRefs` for why it needs nothing from the connection repository.
+        val withAi = repairAiRefs(workflow)
+        val library = globals ?: return withAi
+        val result = repairVariableRefs(withAi, library.list().associate { it.name to it.id })
         library.adopt(result.adopted)
         return result.workflow
     }

@@ -133,6 +133,7 @@ class MainActivity : ComponentActivity() {
             ai = ServiceLocator.executionContext.ai,
             catalog = ServiceLocator.aiModelCatalog,
             appContext = applicationContext,
+            macroControl = ServiceLocator.macroControl,
         )
     }
 

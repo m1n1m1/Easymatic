@@ -164,21 +164,24 @@ sealed interface ConfigFieldType<out T> {
     data object PORT_LIST : ConfigFieldType<String>
 
     /**
-     * A list of things an AI may do — a node type or another macro per row, each with
-     * the config its author pinned — declared with `@Tools` and stored as one line per
-     * tool (see [com.example.ottomatic.domain.model.ToolSpec]).
+     * How this node differs from its model profile about what an AI may do — declared
+     * with `@Tools` and stored as one line per adjustment (see
+     * [com.example.ottomatic.domain.model.ToolOverrides]).
      *
      * [PORT_LIST]'s storage model and a different editor, because a row here is not a
-     * name and a type but **a chosen node plus a nested config form**. That nesting is
-     * the point rather than an implementation detail: a tool's opaque fields — a hub
-     * reference, another connection's id — have to be filled in with the same pickers
-     * the node's own form uses, because an identifier a model invents names nothing
-     * and fails silently. Pinning them is what makes the tool safe to offer.
+     * name and a type but **a node plus a nested config form**. That nesting is the
+     * point rather than an implementation detail: a tool's opaque fields have to be
+     * either filled in with the same pickers the node's own form uses, or deliberately
+     * left open for the model to choose from a list — and only a real form can offer
+     * both.
      *
-     * `action.ai_agent` has this, and nothing else should: it is the node whose whole
-     * subject is what the model is allowed to reach.
+     * **It holds a diff and not a list**, which is why a node may carry it at all while
+     * the list itself lives on the profile: see `@Tools`.
+     *
+     * [scopedBy] names the sibling holding the profile id, so the editor can show what
+     * is being adjusted. `action.ai_prompt` has this, and nothing else should.
      */
-    data object TOOL_LIST : ConfigFieldType<String>
+    data class TOOL_LIST(val scopedBy: List<String> = emptyList()) : ConfigFieldType<String>
 
     /**
      * A generated key, rendered read-only with Copy and Regenerate beside it

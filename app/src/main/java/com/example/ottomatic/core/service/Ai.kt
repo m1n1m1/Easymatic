@@ -67,6 +67,19 @@ interface Ai {
         maxTurns: Int = AiToolLimits.DEFAULT_MAX_TURNS,
         invoke: suspend (AiToolCall) -> AiToolResult,
     ): AiReply
+
+    /**
+     * What the model profile [modelRef] names is allowed to do, as the `ToolSpec` text
+     * its editor wrote. Blank when nothing is, or when the profile is gone.
+     *
+     * **The seam that keeps the tool list out of `engine/`.** Which tools a model may
+     * use is a property of the *connection library*, which lives in `data/`; building
+     * a catalogue and running a call needs an `ExecutionContext`, which lives in
+     * `engine/`. So the list crosses as text through this facade, exactly as every
+     * other fact about a connection already does, and nothing library-shaped reaches
+     * `core/` — a `ToolSpec` is parsed on the far side by the caller that will run it.
+     */
+    suspend fun toolsFor(modelRef: String): String
 }
 
 /**
@@ -74,17 +87,23 @@ interface Ai {
  * what the provider currently calls it.
  *
  * **This is the load-bearing half of "generic rather than Gemini", and it is not
- * only tidiness.** A workflow persists this enum's *name* into its config JSON,
- * and an unknown name is a discarded schema rather than a migration. Published
- * model ids churn on a scale of months — `gemini-2.0-flash` to `gemini-3.5-flash`
- * to whatever is next — so a config holding `GEMINI_2_0_FLASH` would turn every
- * saved macro into a broken one the day that id was retired, with the user having
- * chosen nothing wrong. A trade-off outlives the model that currently implements
- * it: the mapping lives in `data/ai/`, where changing it is one line and no
- * persisted workflow notices.
+ * only tidiness.** Published model ids churn on a scale of months —
+ * `gemini-2.0-flash` to `gemini-3.5-flash` to whatever is next — and anything
+ * *persisted* that names one turns into a broken reference the day that id is
+ * retired, with the user having chosen nothing wrong. A trade-off outlives the model
+ * that currently implements it: the mapping lives in `data/ai/`, where changing it is
+ * one line that nothing persisted notices.
  *
- * `@Serializable` because an `engine/` config class names it as a property type,
- * and the config form is derived from the serialization descriptor.
+ * **It is no longer a node's config, and the argument is stronger for the move.**
+ * This used to be a property of every AI node, so a workflow persisted the enum's
+ * name — safe, because an enum name does not churn, but it also meant a macro chose
+ * between three trade-offs and could say nothing else about the model. It is now a
+ * field of an [com.example.ottomatic.domain.model.AiModelProfile], and what a
+ * workflow persists is that profile's **id**: a string the user minted, which churns
+ * not at all, and behind which the tier, the published id, the persona and the tool
+ * permissions can all be re-decided without touching a macro.
+ *
+ * `@Serializable` because it is persisted in the connection library.
  *
  * Carries no `@Label`s, which is a package rule rather than an omission: that
  * annotation lives in `domain`, and `core` may not import it. It costs nothing —
@@ -121,19 +140,25 @@ enum class AiModel {
  */
 data class AiRequest(
     /**
-     * Which configured connection to send through — an
-     * [com.example.ottomatic.domain.model.AiConnection] id.
+     * Which saved way of asking to send through — an
+     * [com.example.ottomatic.domain.model.AiModelProfile] id.
+     *
+     * **One field where there used to be two.** A node named a connection *and* an
+     * [AiModel] tier, which meant a macro was choosing between three trade-offs and
+     * nothing else about the model: the persona and the model id were bound elsewhere
+     * and the tool permissions nowhere at all. A profile carries all four, so a node
+     * points at one id and everything about how that model behaves is edited in one
+     * place — including for macros written months earlier.
      *
      * Carried on the request rather than bound into the facade, which is
      * [SmartHome]'s shape for [SmartHome]'s reason: one instance serves the whole
-     * process, and the connection is resolved on every call so that a key replaced
-     * mid-run is the key the next prompt uses. Blank is not a default — it is a
-     * node with nothing chosen, and the facade says so rather than picking one.
+     * process, and the profile is resolved on every call so that a key replaced or a
+     * model retargeted mid-run is what the next prompt uses. Blank is not a default —
+     * it is a node with nothing chosen, and the facade says so rather than picking one.
      */
-    val connectionId: String,
+    val modelRef: String,
     val prompt: String,
     val systemInstruction: String = "",
-    val model: AiModel = AiModel.FAST,
     val maxOutputTokens: Int = DEFAULT_MAX_OUTPUT_TOKENS,
     /**
      * Pictures to look at alongside [prompt].
@@ -216,6 +241,8 @@ object NoAi : Ai {
         maxTurns: Int,
         invoke: suspend (AiToolCall) -> AiToolResult,
     ): AiReply = AiReply(error = UNAVAILABLE)
+
+    override suspend fun toolsFor(modelRef: String): String = ""
 
     private const val UNAVAILABLE =
         "No AI connection is set up on this phone — add one under AI in the menu on the macro list"

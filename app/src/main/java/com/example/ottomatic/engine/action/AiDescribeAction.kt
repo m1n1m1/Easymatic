@@ -1,7 +1,6 @@
 package com.example.ottomatic.engine.action
 
 import com.example.ottomatic.core.service.AiImage
-import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.AiRequest
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
@@ -28,10 +27,9 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class AiDescribeConfig(
-    @Label("Connection") @Picker(PickerKind.AI_CONNECTION) val connectionId: String = "",
+    @Label("Model") @Picker(PickerKind.AI_MODEL) val modelRef: String = "",
     @Label("Picture") @FilePath @Wired val image: String = "",
     @Label("What to ask") @Multiline @Wired val prompt: String = "What is in this picture?",
-    @Label("Model") val model: AiModel = AiModel.BALANCED,
     @Label("Longest reply (tokens)") val maxOutputTokens: Int = AiRequest.DEFAULT_MAX_OUTPUT_TOKENS,
     @Label("If it fails") @Multiline val fallback: String = "",
 )
@@ -97,9 +95,8 @@ class AiDescribeAction : Action<AiDescribeConfig, String> {
 
         val reply = context.ai.complete(
             AiRequest(
-                connectionId = input.connectionId,
+                modelRef = input.modelRef,
                 prompt = input.prompt.ifBlank { DEFAULT_PROMPT },
-                model = input.model,
                 maxOutputTokens = input.maxOutputTokens,
                 images = listOf(AiImage(base64 = bytes.base64, mediaType = bytes.mediaType)),
             ),

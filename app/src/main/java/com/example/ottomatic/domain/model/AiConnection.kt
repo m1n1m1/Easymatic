@@ -1,5 +1,6 @@
 package com.example.ottomatic.domain.model
 
+import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.domain.model.config.Label
 import kotlinx.serialization.Serializable
 
@@ -44,6 +45,77 @@ enum class AiProvider {
     @Label("Self-hosted / OpenAI-compatible")
     OPENAI_COMPATIBLE,
 }
+
+/**
+ * One saved way of asking: a model, a persona, and what it is allowed to do.
+ *
+ * **This is the unit a node points at**, and the reason it exists is that neither of
+ * the two things that came before it was that unit. A connection is an *account* —
+ * who I am with this provider — and the [AiModel] tier is a *trade-off*; between them
+ * they could not express "this is my household assistant: this model, these house
+ * rules, these powers", which is what somebody setting up a macro actually has in
+ * mind. Splitting the two is what makes that answerable once and reusable four times.
+ *
+ * **The tier moved here from the node's config, and [AiModel]'s argument survives the
+ * move intact.** That KDoc's point is that a workflow must never persist a published
+ * model id, because published ids churn on a scale of months and an unknown one is a
+ * discarded schema. A workflow now persists **[id]** — a string the *user* minted,
+ * which churns not at all — and the tier, the published id and the prompt all sit in
+ * this library where changing them is an edit rather than a migration. The tier is
+ * still real: `data/ai/` reads [effort] to decide Gemini's `thinkingLevel`, OpenAI's
+ * `reasoning_effort` and whether Anthropic's fast tier is sent a `thinking` field at
+ * all.
+ *
+ * [modelId] blank means *the provider's own published id for [effort]*, which is the
+ * ordinary case for the three providers that publish a table and impossible for the
+ * two that do not — see [AiProvider.needsModelIds].
+ *
+ * [systemPrompt] is combined with the node's own instruction rather than replacing
+ * it, profile first, joined by a blank line. That rule and its reasoning are
+ * unchanged from when this field lived on the connection: the two answer different
+ * questions, and an override would mean any node setting a single task instruction
+ * silently threw the persona away.
+ *
+ * [tools] is a [ToolSpec] list encoded exactly as an AI node used to hold it,
+ * so the catalogue, the runner and the pin form are reused unchanged. Blank is what
+ * "nothing allowed" parses to — `@Ports`' rule, and load-bearing here for its reason:
+ * the editor and the runtime both read this raw text.
+ */
+@Serializable
+data class AiModelProfile(
+    val id: String,
+    /** What the picker shows. The user's own word for it — "Household", "Summarise". */
+    val name: String,
+    /** The provider's published id. Blank uses the provider's own id for [effort]. */
+    val modelId: String = "",
+    val effort: AiModel = AiModel.FAST,
+    val systemPrompt: String = "",
+    /** A [ToolSpec] list, one tool per line. Blank means the model may do nothing. */
+    val tools: String = "",
+) {
+    companion object {
+        /**
+         * The id a profile minted from the pre-profile layout carries.
+         *
+         * **Deterministic on purpose.** A node saved before profiles existed holds a
+         * connection id and a tier; deriving the profile id from exactly those two is
+         * what lets `repairAiRefs` be a pure function of a node's own config, with no
+         * library lookup and no ordering between the two migrations. `#` cannot occur
+         * in a UUID or an enum name, so it separates them unambiguously.
+         */
+        fun legacyId(connectionId: String, effort: AiModel): String = "$connectionId#${effort.name}"
+    }
+}
+
+/**
+ * Whether this profile names everything its provider needs.
+ *
+ * The provider is a parameter rather than a field because a profile always lives
+ * inside the connection that answers it — storing the provider twice is how the two
+ * come to disagree.
+ */
+fun AiModelProfile.isConfigured(provider: AiProvider): Boolean =
+    !provider.needsModelIds || modelId.isNotBlank()
 
 /**
  * One configured way of reaching a language model — a provider and a key.
@@ -92,23 +164,6 @@ data class AiConnection(
     val secret: String = "",
 
     /**
-     * A standing instruction sent ahead of every prompt through this connection.
-     *
-     * **Combined with `action.ai_prompt`'s own "Standing instruction" rather than
-     * replacing it**, connection first, joined by a blank line. The two answer
-     * different questions and both are worth keeping: this one is about the
-     * *connection* — the persona, the language, the house rules that should hold
-     * wherever it is used — where the node's is about the one task it is doing. An
-     * override would mean any node that set a single task instruction silently threw
-     * the connection's rules away, which is exactly the failure that is invisible
-     * from the card.
-     *
-     * Combining happens in `data/ai/`, where the connection can be resolved. Nothing
-     * in `core/` or `engine/` knows this field exists.
-     */
-    val systemPrompt: String = "",
-
-    /**
      * Where to send requests, when it is not the provider's own published endpoint.
      *
      * **Required for [AiProvider.OPENAI_COMPATIBLE]** and blank everywhere else,
@@ -118,15 +173,39 @@ data class AiConnection(
      */
     val baseUrl: String = "",
 
-    /** Overrides the provider's own [com.example.ottomatic.core.service.AiModel] FAST id. Blank uses it. */
+    /**
+     * The ways of asking that this account offers — see [AiModelProfile].
+     *
+     * Empty is the **migration discriminator** rather than an ordinary state: a
+     * library written before profiles existed has none, and `AiConnectionRepository`
+     * mints three from the legacy fields below on the first read.
+     */
+    val models: List<AiModelProfile> = emptyList(),
+
+    // ---- The pre-profile layout, read once by the upconvert and then blanked. ----
+    //
+    // These cannot simply be deleted, and the reason is the same `ignoreUnknownKeys`
+    // that makes every other field here safe to add: a removed property is silently
+    // dropped on decode, so deleting them would throw away exactly the values the
+    // migration exists to carry across. They are written back blank, so a library
+    // that has been through the upconvert holds nothing here. Safe to remove once no
+    // install predates profiles.
+
+    /** Legacy: the standing instruction, now [AiModelProfile.systemPrompt]. */
+    val systemPrompt: String = "",
+
+    /** Legacy: the FAST model id, now an [AiModelProfile] of its own. */
     val fastModel: String = "",
 
-    /** Overrides the provider's own BALANCED id. Blank uses it. */
+    /** Legacy: the BALANCED model id, now an [AiModelProfile] of its own. */
     val balancedModel: String = "",
 
-    /** Overrides the provider's own THOROUGH id. Blank uses it. */
+    /** Legacy: the THOROUGH model id, now an [AiModelProfile] of its own. */
     val thoroughModel: String = "",
 )
+
+/** The profile with [profileId], or null when it was never created or has been deleted. */
+fun AiConnection.profile(profileId: String): AiModelProfile? = models.firstOrNull { it.id == profileId }
 
 /**
  * Whether this provider has no endpoint of its own, so the user must give one.
@@ -153,13 +232,14 @@ val AiProvider.needsModelIds: Boolean
     get() = this == AiProvider.OPENAI_COMPATIBLE || this == AiProvider.OPENROUTER
 
 /**
- * Whether this connection has everything its provider needs to answer a prompt.
+ * Whether this connection has everything its provider needs of the **account**.
  *
- * Only the **Fast** model is required even when [needsModelIds] is true, because the
- * dominant self-hosted case is a machine serving one model: naming it once and
- * having all three tiers use it is what somebody means, where demanding three copies
- * of the same string is a form to fill in for nothing. A tier left blank falls back
- * to the Fast id — see `OpenAiProtocol`.
+ * Deliberately narrower than it used to be. Before profiles this had to answer for
+ * the model id as well, because there was one place to put it; now naming a model is
+ * [AiModelProfile.isConfigured]'s question, asked per profile, and a connection whose
+ * account details are complete is genuinely usable — it just has nothing to point a
+ * node at yet, which the profile picker says far more clearly than a warning here
+ * would.
  *
  * The key is deliberately **not** part of this. A connection whose key is missing or
  * unreadable is a different state with a different fix, already answered by
@@ -168,5 +248,4 @@ val AiProvider.needsModelIds: Boolean
  * finished months ago.
  */
 val AiConnection.isConfigured: Boolean
-    get() = (!provider.needsBaseUrl || baseUrl.isNotBlank()) &&
-        (!provider.needsModelIds || fastModel.isNotBlank())
+    get() = !provider.needsBaseUrl || baseUrl.isNotBlank()

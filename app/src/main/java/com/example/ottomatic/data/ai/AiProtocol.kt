@@ -6,6 +6,7 @@ import com.example.ottomatic.core.service.AiRequest
 import com.example.ottomatic.core.service.AiTool
 import com.example.ottomatic.domain.model.AiBaseUrl
 import com.example.ottomatic.domain.model.AiConnection
+import com.example.ottomatic.domain.model.AiModelProfile
 import com.example.ottomatic.domain.model.AiProvider
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -35,8 +36,8 @@ import kotlinx.serialization.json.jsonObject
  */
 internal interface AiProtocol {
 
-    /** Where a prompt is sent for [model] through [connection]. */
-    fun endpoint(connection: AiConnection, model: AiModel): String
+    /** Where a prompt is sent for [target]. */
+    fun endpoint(target: AiTarget): String
 
     /** Where this provider lists the models a key may use, for the editor's chooser. */
     fun modelsEndpoint(connection: AiConnection): String
@@ -45,13 +46,13 @@ internal interface AiProtocol {
     fun headers(key: String): Map<String, String>
 
     /**
-     * The request body for [request] sent through [connection].
+     * The request body for [request] sent at [target].
      *
-     * [connection] rather than [request] alone because the model id may be
-     * overridden per connection, and because a provider's tier mapping is the thing
-     * most likely to churn under it.
+     * [target] rather than [request] alone because the published model id lives in the
+     * profile and the address lives on the account, and because a provider's tier
+     * mapping is the thing most likely to churn under both.
      */
-    fun requestBody(request: AiRequest, connection: AiConnection): String
+    fun requestBody(request: AiRequest, target: AiTarget): String
 
     /** What [body] means, given the [status] it arrived with. */
     fun readReply(status: Int, body: String): AiReply
@@ -79,8 +80,8 @@ internal interface AiProtocol {
         exchange: List<AiExchange>,
         tools: List<AiTool>,
         request: AiRequest,
-        connection: AiConnection,
-    ): String = requestBody(request, connection)
+        target: AiTarget,
+    ): String = requestBody(request, target)
 
     /**
      * What [body] means when tools were offered.
@@ -101,8 +102,8 @@ internal interface AiProtocol {
     fun readModels(status: Int, body: String): AiModels
 
     /**
-     * What is missing before [connection] can be used for [model], or null when it
-     * is ready. Checked before anything reaches the network.
+     * What is missing before [target] can be used, or null when it is ready. Checked
+     * before anything reaches the network.
      *
      * Null for the providers that publish their own endpoint and model table, which
      * is why it defaults rather than being declared on each: there is nothing a user
@@ -112,7 +113,24 @@ internal interface AiProtocol {
      * and worded "check the phone's connection" — sending somebody to look at their
      * Wi-Fi over an empty box in this app.
      */
-    fun configurationProblem(connection: AiConnection, model: AiModel): String? = null
+    fun configurationProblem(target: AiTarget): String? = null
+}
+
+/**
+ * The account and the saved way of asking, which always travel together.
+ *
+ * One parameter rather than two everywhere below, because every question a protocol
+ * asks needs both halves and neither is meaningful alone: the address, the key and
+ * the provider come from the connection, and the published model id and the effort
+ * come from the profile. Passing them separately is how a body eventually gets built
+ * for one profile and sent to another account's endpoint.
+ */
+internal data class AiTarget(
+    val connection: AiConnection,
+    val profile: AiModelProfile,
+) {
+    /** The trade-off this profile asks for, which is what the tier tables key on. */
+    val effort: AiModel get() = profile.effort
 }
 
 /**
@@ -139,25 +157,23 @@ internal fun protocolFor(provider: AiProvider): AiProtocol = when (provider) {
 }
 
 /**
- * The published id [model] maps to on this connection: the user's override if they
- * set one, else the provider's own table.
+ * The published id this profile asks for: the one it names, else the provider's own
+ * table for its effort.
  *
  * **The override is not a power-user knob, it is the fix for the failure this table
  * has already had twice.** `GeminiProtocol`'s ids were withdrawn once and quietly
  * restricted to existing keys once, and both times the app was broken on somebody
- * else's phone with nothing to do about it but wait for an update. A per-connection
- * override makes that a text field instead. For a self-hosted server there is no
- * table to fall back to at all — the model is whatever that machine was started
+ * else's phone with nothing to do about it but wait for an update. Naming the model
+ * on the profile makes that a text field instead. For a self-hosted server there is
+ * no table to fall back to at all — the model is whatever that machine was started
  * with — so [default] is blank there and the field is required.
+ *
+ * It became one field rather than a three-armed `when` over the tier when the tiers
+ * moved onto the profile: a profile *is* one tier, so there is nothing left to choose
+ * between.
  */
-internal fun modelIdFor(connection: AiConnection, model: AiModel, default: String): String {
-    val override = when (model) {
-        AiModel.FAST -> connection.fastModel
-        AiModel.BALANCED -> connection.balancedModel
-        AiModel.THOROUGH -> connection.thoroughModel
-    }
-    return override.trim().ifBlank { default }
-}
+internal fun modelIdFor(target: AiTarget, default: String): String =
+    target.profile.modelId.trim().ifBlank { default }
 
 /**
  * The connection's own base URL if it has one, else [default].

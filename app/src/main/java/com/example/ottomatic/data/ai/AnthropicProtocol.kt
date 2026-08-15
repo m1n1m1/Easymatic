@@ -78,8 +78,8 @@ internal object AnthropicProtocol : AiProtocol {
         AiModel.THOROUGH -> HIGH_THINKING_HEADROOM
     }
 
-    override fun endpoint(connection: AiConnection, model: AiModel): String =
-        "${baseUrlFor(connection, BASE_URL)}/messages"
+    override fun endpoint(target: AiTarget): String =
+        "${baseUrlFor(target.connection, BASE_URL)}/messages"
 
     override fun modelsEndpoint(connection: AiConnection): String =
         "${baseUrlFor(connection, BASE_URL)}/models"
@@ -106,18 +106,18 @@ internal object AnthropicProtocol : AiProtocol {
      * is — an absent field and an empty string are not the same request, and only
      * one of them is what "no standing instruction" means.
      */
-    override fun requestBody(request: AiRequest, connection: AiConnection): String = buildJsonObject {
-        put(MODEL_KEY, modelIdFor(connection, request.model, modelId(request.model)))
+    override fun requestBody(request: AiRequest, target: AiTarget): String = buildJsonObject {
+        put(MODEL_KEY, modelIdFor(target, modelId(target.effort)))
         // The user's limit plus the thinking headroom, for the reason spelled out
         // on `thinks`: the two are drawn from one budget on the wire.
         put(
             MAX_TOKENS_KEY,
-            request.maxOutputTokens.coerceAtLeast(1) + thinkingHeadroom(request.model),
+            request.maxOutputTokens.coerceAtLeast(1) + thinkingHeadroom(target.effort),
         )
         if (request.systemInstruction.isNotBlank()) {
             put(SYSTEM_KEY, request.systemInstruction)
         }
-        if (thinks(request.model)) {
+        if (thinks(target.effort)) {
             putJsonObject(THINKING_KEY) { put(TYPE_KEY, ADAPTIVE) }
         }
         putJsonArray(MESSAGES_KEY) { add(userTurn(request)) }
@@ -174,15 +174,15 @@ internal object AnthropicProtocol : AiProtocol {
         exchange: List<AiExchange>,
         tools: List<AiTool>,
         request: AiRequest,
-        connection: AiConnection,
+        target: AiTarget,
     ): String = buildJsonObject {
-        put(MODEL_KEY, modelIdFor(connection, request.model, modelId(request.model)))
+        put(MODEL_KEY, modelIdFor(target, modelId(target.effort)))
         put(
             MAX_TOKENS_KEY,
-            request.maxOutputTokens.coerceAtLeast(1) + thinkingHeadroom(request.model),
+            request.maxOutputTokens.coerceAtLeast(1) + thinkingHeadroom(target.effort),
         )
         if (request.systemInstruction.isNotBlank()) put(SYSTEM_KEY, request.systemInstruction)
-        if (thinks(request.model)) putJsonObject(THINKING_KEY) { put(TYPE_KEY, ADAPTIVE) }
+        if (thinks(target.effort)) putJsonObject(THINKING_KEY) { put(TYPE_KEY, ADAPTIVE) }
         if (tools.isNotEmpty()) putJsonArray(TOOLS_KEY) { tools.forEach { add(declare(it)) } }
         putJsonArray(MESSAGES_KEY) { exchange.forEach { appendTurn(it) } }
     }.toString()

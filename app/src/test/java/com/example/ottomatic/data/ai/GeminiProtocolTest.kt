@@ -21,12 +21,6 @@ import org.junit.Test
  */
 class GeminiProtocolTest {
 
-    /**
-     * Any id at all. Which connection a prompt is billed to is resolved by
-     * [RoutingAi] before this object is reached, so nothing here reads it — it is
-     * carried only because [AiRequest] refuses to be built without one, which is
-     * itself the point: there is no implicit connection to fall back on.
-     */
     private val testConnection = "connection-id"
 
     /** A plain Gemini connection with nothing overridden. */
@@ -37,20 +31,19 @@ class GeminiProtocolTest {
     )
 
     /** A request with only the fields this object reads varied. */
-    private fun request(model: AiModel, maxOutputTokens: Int = 100) =
-        AiRequest(
-            connectionId = testConnection,
-            prompt = "hi",
-            model = model,
-            maxOutputTokens = maxOutputTokens,
-        )
+    private fun request(maxOutputTokens: Int = 100) =
+        AiRequest(modelRef = TEST_MODEL_REF, prompt = "hi", maxOutputTokens = maxOutputTokens)
 
-    private fun body(request: AiRequest, on: AiConnection = connection) =
-        GeminiProtocol.requestBody(request, on)
+    private fun body(
+        request: AiRequest,
+        on: AiConnection = connection,
+        effort: AiModel = AiModel.FAST,
+        modelId: String = "",
+    ) = GeminiProtocol.requestBody(request, target(on, effort, modelId))
 
     /** The `maxOutputTokens` actually sent for [model], less the [asked] reply limit. */
     private fun headroomOf(model: AiModel, asked: Int = 100): Int {
-        val sent = body(request(model, asked))
+        val sent = body(request(asked), effort = model)
         return Regex("\"maxOutputTokens\":(\\d+)").find(sent)!!.groupValues[1].toInt() - asked
     }
 
@@ -173,7 +166,7 @@ class GeminiProtocolTest {
 
     @Test
     fun `a blank standing instruction is left out of the body entirely`() {
-        val sent = body(AiRequest(connectionId = testConnection, prompt = "hello"))
+        val sent = body(AiRequest(modelRef = TEST_MODEL_REF, prompt = "hello"))
         assertFalse(sent.contains("systemInstruction"))
         assertTrue(sent.contains("hello"))
     }
@@ -181,7 +174,7 @@ class GeminiProtocolTest {
     @Test
     fun `a standing instruction that was given is sent as its own field`() {
         val sent = body(
-            AiRequest(connectionId = testConnection, prompt = "hello", systemInstruction = "Answer in German"),
+            AiRequest(modelRef = TEST_MODEL_REF, prompt = "hello", systemInstruction = "Answer in German"),
         )
         assertTrue(sent.contains("systemInstruction"))
         assertTrue(sent.contains("Answer in German"))
@@ -189,23 +182,23 @@ class GeminiProtocolTest {
 
     /**
      * The table has been broken twice by Google and once would have been enough:
-     * an override is what turns "wait for an app update" into a text field.
+     * naming the model on the profile is what turns "wait for an app update" into a
+     * text field.
      */
     @Test
-    fun `a model named on the connection wins over the built-in table`() {
-        val overridden = connection.copy(balancedModel = "gemini-9-something")
+    fun `a model named on the profile wins over the built-in table`() {
         // Gemini carries the model in the URL rather than the body, so that is where
         // the override has to land.
-        assertTrue(
-            GeminiProtocol.endpoint(overridden, AiModel.BALANCED).contains("gemini-9-something"),
+        val endpoint = GeminiProtocol.endpoint(
+            target(connection, AiModel.BALANCED, modelId = "gemini-9-something"),
         )
+        assertTrue(endpoint.contains("gemini-9-something"))
     }
 
     @Test
-    fun `a tier nobody overrode still comes off the table`() {
-        val overridden = connection.copy(balancedModel = "gemini-9-something")
+    fun `a profile that names no model still comes off the table`() {
         assertTrue(
-            GeminiProtocol.endpoint(overridden, AiModel.FAST)
+            GeminiProtocol.endpoint(target(connection, AiModel.FAST))
                 .contains(GeminiProtocol.modelId(AiModel.FAST)),
         )
     }
@@ -219,7 +212,7 @@ class GeminiProtocolTest {
     @Test
     fun `the thinking level is sent and the legacy budget field never is`() {
         for (model in AiModel.entries) {
-            val sent = body(request(model))
+            val sent = body(request(), effort = model)
             assertTrue("$model sends no thinking level", sent.contains("\"thinkingLevel\""))
             assertFalse("$model still sends the legacy budget field", sent.contains("thinkingBudget"))
         }
@@ -251,8 +244,8 @@ class GeminiProtocolTest {
 
     @Test
     fun `a zero reply limit still asks for at least one token beyond the headroom`() {
-        val zero = body(request(AiModel.FAST, maxOutputTokens = 0))
-        val one = body(request(AiModel.FAST, maxOutputTokens = 1))
+        val zero = body(request(maxOutputTokens = 0))
+        val one = body(request(maxOutputTokens = 1))
         assertEquals(
             Regex("\"maxOutputTokens\":(\\d+)").find(one)!!.groupValues[1],
             Regex("\"maxOutputTokens\":(\\d+)").find(zero)!!.groupValues[1],
@@ -284,7 +277,7 @@ class GeminiProtocolTest {
         for (model in AiModel.entries) {
             val id = GeminiProtocol.modelId(model)
             assertTrue("$model has no model id", id.isNotBlank())
-            val endpoint = GeminiProtocol.endpoint(connection, model)
+            val endpoint = GeminiProtocol.endpoint(target(connection, model))
             assertTrue(endpoint.startsWith("https://"))
             assertTrue(endpoint.endsWith(":generateContent"))
             assertTrue(endpoint.contains(id))

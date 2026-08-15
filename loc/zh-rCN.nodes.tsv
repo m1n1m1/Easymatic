@@ -632,3 +632,5 @@ Picture	图片
 Shows an AI model a picture from this phone and returns what it says about it	把本机上的一张图片交给 AI 模型，并返回它的描述
 Tools	工具
 What to ask	要问什么
+Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	向 AI 模型（Gemini、Claude、ChatGPT、OpenRouter 或自托管模型）发送提示，并以文本返回回复；开启后还可让它把节点和宏当作工具来执行
+Let it use tools	允许它使用工具

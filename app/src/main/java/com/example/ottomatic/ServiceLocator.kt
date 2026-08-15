@@ -11,7 +11,6 @@ import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.data.ai.AiModelCatalog
 import com.example.ottomatic.data.ai.RoutingAi
 import com.example.ottomatic.data.files.RoutingFiles
-import com.example.ottomatic.domain.model.isConfigured
 import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.MailAccountRepository
@@ -551,7 +550,7 @@ object ServiceLocator {
     private fun publishSmartHomeHubs() {
         appScope.launch {
             smartHomeHubRepository.hubs.collect { hubs ->
-                SmartHomeHubs.hydrate(hubs.map { it.id })
+                SmartHomeHubs.hydrate(hubs.associate { it.id to it.resources })
                 // A projection and never the hubs themselves: what a config form needs to
                 // narrow a chooser, and nothing else. A hub also holds a sealed credential, an
                 // address and a certificate pin, and a registry anything in `domain` may read
@@ -587,12 +586,7 @@ object ServiceLocator {
 
     private fun publishAiConnections() {
         appScope.launch {
-            aiConnectionRepository.connections.collect { list ->
-                AiConnections.hydrate(
-                    connectionIds = list.map { it.id },
-                    configuredIds = list.filter { it.isConfigured }.map { it.id },
-                )
-            }
+            aiConnectionRepository.connections.collect(AiConnections::hydrateFrom)
         }
     }
 

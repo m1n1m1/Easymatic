@@ -274,24 +274,31 @@ enum class PickerKind {
     LIGHT_SCENE,
 
     /**
-     * An [com.example.ottomatic.domain.model.AiConnection] id, chosen from the AI
+     * An [com.example.ottomatic.domain.model.AiModelProfile] id, chosen from the AI
      * connection library.
      *
      * [MAIL_ACCOUNT]'s twin in every respect that matters, and for the same
      * reasons. The stored value is a UUID, so a typed one names nothing and looks
      * exactly like a correct one. What it identifies is not typeable either — a
-     * connection is a provider and a sealed API key, which is a thing to be *set
-     * up* once rather than referred to by name. And **blank is not an answer**:
-     * "any connection" is not a thing to send a prompt through, so the field reads
-     * "None selected" and the node reports it rather than picking one.
+     * profile is a model, a persona and a set of permissions behind a sealed API key,
+     * which is a thing to be *set up* once rather than referred to by name. And
+     * **blank is not an answer**: "any model" is not a thing to send a prompt through,
+     * so the field reads "None selected" and the node reports it rather than picking
+     * one.
      *
      * Picking one rather than defaulting to the only one is deliberate even while
      * most phones will have exactly one. An implicit default is invisible on the
-     * card, so the day a second connection is added every existing node silently
-     * keeps using whichever one happened to sort first — and quota is per key, so
-     * that is a real consequence rather than a cosmetic one.
+     * card, so the day a second one is added every existing node silently keeps
+     * using whichever happened to sort first — and quota is per key, so that is a
+     * real consequence rather than a cosmetic one.
+     *
+     * **There is deliberately no connection field beside it**, on the rule
+     * [LIGHT_TARGET] states: a scoping field earns its place exactly where nothing
+     * else determines it, and choosing "Household" already determines which account
+     * answers it. A connection row on an AI node would be a mandatory
+     * always-one-option row.
      */
-    AI_CONNECTION,
+    AI_MODEL,
 
     /**
      * A [com.example.ottomatic.domain.model.HomeAssistantRef] spec naming one entity on
@@ -548,26 +555,33 @@ annotation class FilePath
 annotation class Ports
 
 /**
- * Renders the `String` property as an editor for a list of **tools an AI may use** —
- * a node type or another macro per row, each with the config the author pinned.
+ * Renders the `String` property as an editor for **how this node differs from its model
+ * profile** about what an AI may do.
  *
  * [Ports]' model exactly, and for [Ports]' reason: the stored value is one line per
- * entry (parsed by [com.example.ottomatic.domain.model.ToolSpec]) so that "every
- * property is a scalar" holds, and this changes only how the list is *entered*.
+ * adjustment (parsed by [com.example.ottomatic.domain.model.ToolOverrides]) so that
+ * "every property is a scalar" holds, and this changes only how it is *entered*.
  *
- * The reason it is a distinct annotation rather than a second use of [Ports] is what
- * a row *is*: a port row is a name and a type, where a tool row is a chosen node and a
- * whole nested config form — including the pickers that make an identifier chosen
- * rather than typed, which is the entire safety argument for the feature. One editor
- * could not render both.
+ * **It is a diff and not a list, and that distinction is the whole reason it exists.**
+ * A tool list belongs to the *model profile* — the same question answered once for a
+ * model is answered once, where the same question answered per node is four copies of
+ * one list that drift. What a node genuinely has of its own is what should be
+ * *different*: one extra tool for this macro, or a field the author does not want to
+ * fix so the model may choose it. A property carrying this is therefore named for the
+ * difference (`toolOverrides`) and never for the list.
  *
- * Declared by `action.ai_agent` alone. Like [Picker] and [Ports] it needs a renderer
+ * [scopedBy] names the sibling field holding the profile id, so the editor knows which
+ * list is being adjusted — [Picker]'s mechanism, resolved through the same
+ * `siblingValue` lookup. Without it the form could render the adjustments and not the
+ * thing they adjust.
+ *
+ * Declared by `action.ai_prompt` alone. Like [Picker] and [Ports] it needs a renderer
  * in the config form; adding it without one fails the form's exhaustive `when`.
  */
 @SerialInfo
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class Tools
+annotation class Tools(vararg val scopedBy: String)
 
 /**
  * Renders the `String` property as a generated **key**: a read-only field showing

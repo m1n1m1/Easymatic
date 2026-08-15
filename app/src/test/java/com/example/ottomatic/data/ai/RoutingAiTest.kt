@@ -11,6 +11,7 @@ import com.example.ottomatic.core.service.AiToolResult
 import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.data.security.FakeSecrets
 import com.example.ottomatic.domain.model.AiConnection
+import com.example.ottomatic.domain.model.AiModelProfile
 import com.example.ottomatic.domain.model.AiProvider
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -38,17 +39,29 @@ class RoutingAiTest {
 
     private fun repository() = AiConnectionRepository(folder.root, secrets)
 
-    private fun request(connectionId: String, prompt: String = "hi") =
-        AiRequest(connectionId = connectionId, prompt = prompt)
+    private fun request(modelRef: String, prompt: String = "hi") =
+        AiRequest(modelRef = modelRef, prompt = prompt)
+
+    /** A connection with one model on it, which is what a node's ref has to resolve to. */
+    private suspend fun AiConnectionRepository.withModel(
+        name: String,
+        provider: AiProvider,
+        modelId: String = "",
+    ): String {
+        val created = create(name, provider)
+        val profile = AiModelProfile(id = "${created.id}#p", name = "Model", modelId = modelId)
+        upsert(get(created.id)!!.copy(models = listOf(profile)))
+        return profile.id
+    }
 
     // ---- combining the two standing instructions -------------------------------
 
     /**
-     * The order is the design decision, not an implementation detail: the
-     * connection's rules are the frame and the node's task arrives inside it.
+     * The order is the design decision, not an implementation detail: the profile's
+     * rules are the frame and the node's task arrives inside it.
      */
     @Test
-    fun `both instructions are sent, the connection's first`() {
+    fun `both instructions are sent, the profile's first`() {
         assertEquals(
             "Answer in German.\n\nReply with one word.",
             combineInstructions("Answer in German.", "Reply with one word."),
@@ -57,7 +70,7 @@ class RoutingAiTest {
 
     /**
      * The case that makes the change invisible to every macro written before it: a
-     * connection with no standing instruction behaves exactly as it always did.
+     * profile with no standing instruction behaves exactly as it always did.
      */
     @Test
     fun `the node's instruction alone passes through untouched`() {
@@ -65,7 +78,7 @@ class RoutingAiTest {
     }
 
     @Test
-    fun `the connection's instruction alone passes through untouched`() {
+    fun `the profile's instruction alone passes through untouched`() {
         assertEquals("Answer in German.", combineInstructions("Answer in German.", ""))
     }
 
@@ -96,39 +109,36 @@ class RoutingAiTest {
     fun `the three OpenAI-shaped providers keep their own endpoints`() {
         val openAi = protocolFor(AiProvider.OPENAI)
         val openRouter = protocolFor(AiProvider.OPENROUTER)
-        val blank = com.example.ottomatic.domain.model.AiConnection(id = "x", name = "x")
-        assertNotEquals(
-            openAi.endpoint(blank, AiModel.FAST),
-            openRouter.endpoint(blank, AiModel.FAST),
-        )
+        val blank = target(com.example.ottomatic.domain.model.AiConnection(id = "x", name = "x"))
+        assertNotEquals(openAi.endpoint(blank), openRouter.endpoint(blank))
     }
 
     // ---- the guards that never reach the network -------------------------------
 
     @Test
-    fun `a blank prompt is refused without a connection being looked up`() = runBlocking {
-        val reply = RoutingAi(repository()).complete(request(connectionId = "anything", prompt = "  "))
+    fun `a blank prompt is refused without a model being looked up`() = runBlocking {
+        val reply = RoutingAi(repository()).complete(request(modelRef = "anything", prompt = "  "))
         assertTrue(reply.error.contains("No prompt"))
     }
 
     @Test
-    fun `a node with no connection chosen says so rather than picking one`() = runBlocking {
-        val reply = RoutingAi(repository()).complete(request(connectionId = ""))
-        assertTrue(reply.error.contains("No AI connection chosen"))
+    fun `a node with no model chosen says so rather than picking one`() = runBlocking {
+        val reply = RoutingAi(repository()).complete(request(modelRef = ""))
+        assertTrue(reply.error.contains("No AI model chosen"))
     }
 
     /**
-     * The two messages must differ, because the fixes do: re-pick the connection
-     * versus paste the key in again.
+     * The two messages must differ, because the fixes do: re-pick the model versus
+     * paste the key in again.
      */
     @Test
-    fun `a deleted connection and an unreadable key are reported differently`() = runBlocking {
+    fun `a deleted model and an unreadable key are reported differently`() = runBlocking {
         val repository = repository()
         val ai = RoutingAi(repository)
-        val deleted = ai.complete(request(connectionId = "never-existed")).error
+        val deleted = ai.complete(request(modelRef = "never-existed")).error
 
-        val created = repository.create("Personal", AiProvider.GEMINI)
-        val noKey = ai.complete(request(connectionId = created.id)).error
+        val modelRef = repository.withModel("Personal", AiProvider.GEMINI)
+        val noKey = ai.complete(request(modelRef = modelRef)).error
 
         assertTrue(deleted.contains("no longer exists"))
         assertTrue(noKey.contains("Personal"))
@@ -144,11 +154,30 @@ class RoutingAiTest {
     @Test
     fun `a self-hosted connection with no address never reaches the network`() = runBlocking {
         val repository = repository()
-        val created = repository.create("Local", AiProvider.OPENAI_COMPATIBLE)
-        repository.setKey(created.id, "anything")
-        val reply = RoutingAi(repository).complete(request(connectionId = created.id))
+        val modelRef = repository.withModel("Local", AiProvider.OPENAI_COMPATIBLE, modelId = "m")
+        repository.setKey(repository.connectionForProfile(modelRef)!!.id, "anything")
+        val reply = RoutingAi(repository).complete(request(modelRef = modelRef))
         assertTrue(reply.error.contains("server address"))
         assertFalse(reply.error.contains("connection"))
+    }
+
+    /**
+     * The tool list crosses from the library as text, which is the seam that keeps
+     * `engine/` from reaching into `data/`. A profile that is gone answers **blank**
+     * rather than reporting: the caller's next step either way is to ask with no
+     * tools, and [RoutingAi.complete] already has the sentence worth showing.
+     */
+    @Test
+    fun `the tool list comes off the profile and a missing one answers blank`() = runBlocking {
+        val repository = repository()
+        val modelRef = repository.withModel("Personal", AiProvider.GEMINI)
+        val connection = repository.connectionForProfile(modelRef)!!
+        repository.upsert(
+            connection.copy(models = connection.models.map { it.copy(tools = "action.notify") }),
+        )
+        val ai = RoutingAi(repository)
+        assertEquals("action.notify", ai.toolsFor(modelRef))
+        assertEquals("", ai.toolsFor("never-existed"))
     }
 
     /**
@@ -159,7 +188,7 @@ class RoutingAiTest {
     @Test
     fun `the tool path is stopped by the same guards as the plain one`() = runBlocking {
         val reply = RoutingAi(repository()).converse(
-            request = request(connectionId = "anything", prompt = "  "),
+            request = request(modelRef = "anything", prompt = "  "),
             tools = listOf(tool),
         ) { AiToolResult("") }
         assertTrue(reply.error.contains("No prompt"))
@@ -242,8 +271,8 @@ class RoutingAiTest {
         val clock = ArrayDeque(listOf(0L, AiToolLimits.OVERALL_BUDGET_MS + 1))
         val reply = runToolExchange(
             protocol = AnthropicProtocol,
-            request = request(connectionId = "c"),
-            connection = AiConnection(id = "c", name = "Claude", provider = AiProvider.ANTHROPIC),
+            request = request(modelRef = "c#p"),
+            target = target(AiConnection(id = "c", name = "Claude", provider = AiProvider.ANTHROPIC)),
             tools = listOf(tool),
             maxTurns = 8,
             invoke = { AiToolResult("72") },
@@ -261,8 +290,8 @@ class RoutingAiTest {
         val refusal = """{"error":{"message":"API key not valid"}}"""
         val reply = runToolExchange(
             protocol = AnthropicProtocol,
-            request = request(connectionId = "c"),
-            connection = AiConnection(id = "c", name = "Claude", provider = AiProvider.ANTHROPIC),
+            request = request(modelRef = "c#p"),
+            target = target(AiConnection(id = "c", name = "Claude", provider = AiProvider.ANTHROPIC)),
             tools = listOf(tool),
             maxTurns = 8,
             invoke = { AiToolResult("72") },
@@ -288,8 +317,8 @@ class RoutingAiTest {
         val queue = ArrayDeque(replies)
         return runToolExchange(
             protocol = AnthropicProtocol,
-            request = request(connectionId = "c", prompt = "how full is the battery?"),
-            connection = AiConnection(id = "c", name = "Claude", provider = AiProvider.ANTHROPIC),
+            request = request(modelRef = "c#p", prompt = "how full is the battery?"),
+            target = target(AiConnection(id = "c", name = "Claude", provider = AiProvider.ANTHROPIC)),
             tools = listOf(tool),
             maxTurns = maxTurns,
             invoke = invoke,
