@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CallSplit
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.LocationOn
@@ -265,4 +267,8 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // Distinct from DIALOG's speech bubble, which is Ottomatic talking to the user.
     NodeIcon.CHAT -> Icons.AutoMirrored.Filled.Message
     NodeIcon.AI -> Icons.Filled.Psychology
+    // Two icons rather than one so the four nodes acting on a named file read
+    // differently at a glance from the one that answers with a folder's contents.
+    NodeIcon.FILE -> Icons.AutoMirrored.Filled.InsertDriveFile
+    NodeIcon.FOLDER -> Icons.Filled.FolderOpen
 }

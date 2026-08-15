@@ -699,6 +699,55 @@ data class MqttPublished(
 )
 
 /**
+ * Receipt from `action.file_write`, `action.file_delete` and `action.file_transfer`.
+ *
+ * One struct for the three of them, on `SystemState`'s precedent: they answer the same
+ * question — did this happen, to what, and if not why — so three near-identical structs
+ * would only be three places to edit when a field is added.
+ *
+ * [name] is the field that has to be here and would not be obvious: the Storage Access
+ * Framework **renames silently**. Asked to create `notes.txt` where one already exists
+ * it produces `notes (1).txt` and reports success, and a mime type inferred from an
+ * extension can have another appended. So the name a macro asked for is not necessarily
+ * the name that now exists, and this is what the macro reads to find out.
+ *
+ * [changed] `false` with a blank [error] is not a failure — it is `SKIP` declining to
+ * overwrite, or a delete of something that was already gone. That is
+ * `LightChanged.changed`'s distinction, for its reason.
+ */
+@Serializable
+data class FileResultItem(
+    val changed: Boolean,
+    /** Where it ended up, which is not where it was asked for if the name changed. */
+    val path: String = "",
+    val name: String = "",
+    val error: String = "",
+)
+
+/**
+ * What `action.file_info` found out about one path.
+ *
+ * [exists] is deliberately its own field beside [error], because "there is no file
+ * there" is an **answer** where "I could not find out" is a failure, and a macro
+ * branching on the two needs them apart. Collapsing them onto one value is most of why
+ * there is no `value.file_exists`.
+ *
+ * [sizeBytes] and [modifiedEpochMs] are **-1 when unknown, never 0**. A document
+ * provider may leave either column out — cloud-backed ones routinely do — and a 0 there
+ * would be a lie a macro would act on, reading an unmeasured file as an empty one.
+ */
+@Serializable
+data class FileInfoItem(
+    val exists: Boolean,
+    val path: String,
+    val name: String = "",
+    val isFolder: Boolean = false,
+    val sizeBytes: Long = -1,
+    val modified: DateTime? = null,
+    val error: String = "",
+)
+
+/**
  * Result of the call action on its `state` data port.
  *
  * - [number]: the destination phone number.

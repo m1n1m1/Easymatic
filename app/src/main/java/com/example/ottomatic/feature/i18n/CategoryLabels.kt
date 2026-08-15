@@ -44,6 +44,7 @@ internal fun NodeCategory.labelRes(): Int = when (this) {
     NodeCategory.DEVICE_SETTINGS -> R.string.category_device_settings
     NodeCategory.SMART_HOME -> R.string.category_smart_home
     NodeCategory.AI -> R.string.category_ai
+    NodeCategory.FILES -> R.string.category_files
     NodeCategory.DATA -> R.string.category_data
     NodeCategory.VALUE_POWER -> R.string.category_value_power
     NodeCategory.VALUE_CONNECTIVITY -> R.string.category_value_connectivity

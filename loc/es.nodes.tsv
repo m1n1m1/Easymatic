@@ -592,3 +592,35 @@ Confirmed exactly once	Confirmada exactamente una vez
 Ask the broker to keep this message	Pedir al broker que guarde este mensaje
 MQTT Topic	Topic MQTT
 The last message published to a topic on an MQTT broker	El último mensaje publicado en un topic de un broker MQTT
+Write to File	Escribir en un archivo
+Saves text to a file on the phone, replacing it or adding to the end	Guarda texto en un archivo del teléfono, reemplazándolo o añadiéndolo al final
+File	Archivo
+Result	Resultado
+Add to the end instead of replacing	Añadir al final en lugar de reemplazar
+If a file is already there	Si ya hay un archivo
+Replace it	Reemplazarlo
+Keep both, adding a number	Conservar ambos, añadiendo un número
+Leave the old one alone	Dejar el antiguo como está
+Text encoding	Codificación del texto
+UTF-8	UTF-8
+UTF-16	UTF-16
+Latin-1 (ISO 8859-1)	Latin-1 (ISO 8859-1)
+Read File	Leer un archivo
+Reads a text file from the phone and passes its contents on	Lee un archivo de texto del teléfono y pasa su contenido
+List Files	Listar archivos
+Lists the files in a folder, as paths you can loop over	Lista los archivos de una carpeta, como rutas que puedes recorrer
+Only names matching	Solo nombres que coincidan con
+Paths	Rutas
+Files	Archivos
+Folders	Carpetas
+Both	Ambos
+File Details	Detalles del archivo
+Answers whether a file exists, how big it is and when it changed	Indica si un archivo existe, cuánto ocupa y cuándo cambió
+File or folder	Archivo o carpeta
+Copy or Move File	Copiar o mover un archivo
+Copies, moves or renames a file on the phone	Copia, mueve o renombra un archivo del teléfono
+From	Desde
+Copy it	Copiarlo
+Move it	Moverlo
+Delete File	Eliminar un archivo
+Removes a file from the phone	Elimina un archivo del teléfono

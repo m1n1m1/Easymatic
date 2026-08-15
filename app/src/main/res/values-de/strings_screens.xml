@@ -594,4 +594,25 @@
     <string name="mqtt_listen_for_topics">Nach Topics lauschen</string>
     <string name="mqtt_topics_heard">Gehörte Topics</string>
     <string name="mqtt_broker_subtitle">%1$s · %2$s</string>
+    <string name="category_files">Dateien</string>
+    <string name="files_path_placeholder">Ein Pfad oder ein Name für Ottomatics eigenen Speicher</string>
+    <string name="files_choose">Datei oder Ordner wählen</string>
+    <string name="files_choose_folder">Ordner wählen…</string>
+    <string name="files_choose_file">Datei wählen…</string>
+    <string name="files_folder_access">Ordnerzugriff</string>
+    <string name="files_no_folders">Ottomatic kann noch auf keinen deiner Ordner zugreifen.</string>
+    <string name="files_no_folders_hint">Wähle einen Ordner, damit Makros die Dateien darin lesen und schreiben können. Android erlaubt es nicht, den gesamten internen Speicher oder den Download-Ordner selbst freizugeben – lege stattdessen einen Ordner darin an oder wähle einen aus, etwa Download/Ottomatic.</string>
+    <string name="files_grant">Ordner wählen</string>
+    <string name="files_regrant">Erneut freigeben</string>
+    <string name="files_revoke">Entziehen</string>
+    <string name="files_read_only">Kann nur lesen</string>
+    <string name="files_read_write">Kann lesen und schreiben</string>
+    <string name="files_missing">Diesen Ordner gibt es nicht mehr. Gib ihn erneut frei oder entziehe den Zugriff.</string>
+    <string name="files_own_storage">Ottomatics eigener Speicher</string>
+    <string name="files_own_storage_hint">Ein Pfad ohne Ordner darin, etwa report.csv, wird hier gespeichert. Er braucht keine Berechtigung, und kein Makro kann auf die Dateien einer anderen App zugreifen.</string>
+    <string name="files_no_path">Diese Datei hat keinen Ort auf diesem Telefon, deshalb kann ein Makro sie nicht benennen. Online gespeicherte Dateien und manche Downloads lassen sich so nicht verwenden – kopiere sie zuerst in einen Ordner auf dem Telefon.</string>
+    <string name="files_add_file">Datei hinzufügen</string>
+    <string name="files_files_heading">Einzelne Dateien</string>
+    <string name="files_download_note">Android erlaubt es nicht, den Download-Ordner selbst freizugeben. Um etwas zu nutzen, das schon darin liegt, füge diese Datei hier mit „Datei hinzufügen“ ein – oder lege deine Downloads in einen Ordner darin, der sich ganz freigeben lässt.</string>
+    <string name="files_read_only_file">Kann nur diese eine Datei lesen</string>
 </resources>

@@ -208,18 +208,21 @@ configure.
 
 The annotations, all in `domain/model/config/ConfigAnnotations.kt`: `@Label` names the
 row, `@Multiline` makes it a text area, `@Wired` gives it a socket, and `@VisibleWhen`
-hides it until a sibling holds a given value. Then the seven widget annotations —
-`@Picker`, `@Ports`, `@PhoneNumber`, `@TimeOfDay`, `@WifiNetwork`, `@ContactName` and
-`@MailFolder` — of which **at most one may claim a property**, and each requires a
-`String`. A second is a registry-initialisation failure, not something the form renders
-around.
+hides it until a sibling holds a given value. Then the nine widget annotations —
+`@Picker`, `@Ports`, `@PhoneNumber`, `@TimeOfDay`, `@WifiNetwork`, `@ContactName`,
+`@FilePath`, `@Suggested` and `@ApiToken` — of which **at most one may claim a
+property**, and each requires a `String`. A second is a registry-initialisation failure,
+not something the form renders around.
 
 `@Picker` is for an identifier chosen from a chooser, never typed: a mistyped identifier
 does not fail loudly, it names something else or nothing, and the node just looks broken.
-The four editable-with-a-chooser widgets exist because a phone number, a time of day, a
-network name and a person's name are things people genuinely type, and because the
-answer set is wider than any chooser can offer — the office Wi-Fi cannot be scanned from
-home. Adding a `PickerKind` or a `ConfigFieldType` requires a matching branch in
+The five editable-with-a-chooser widgets exist because a phone number, a time of day, a
+network name, a person's name and a file path are things people genuinely type, and
+because the answer set is wider than any chooser can offer — the office Wi-Fi cannot be
+scanned from home, and the file a macro is about to write does not exist yet. Adding a
+widget annotation costs one entry in `NodeSchema.widgetFlags` as well as its branch in
+`stringFormType` — miss that one and two widgets on a property are silently allowed.
+Adding a `PickerKind` or a `ConfigFieldType` requires a matching branch in
 `ConfigFieldEditor`'s exhaustive `when`; reusing one costs nothing.
 
 Two rules cause real bugs. A `@Ports` property's **default must be what "nothing

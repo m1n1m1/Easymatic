@@ -669,3 +669,24 @@ mqtt_no_broker_yet	Aucun broker MQTT pour l’instant. Ajoutes-en un dans Maison
 mqtt_listen_for_topics	Écouter les topics
 mqtt_topics_heard	Topics entendus
 mqtt_broker_subtitle	%1$s · %2$s
+category_files	Fichiers
+files_path_placeholder	Un chemin, ou un nom pour le stockage propre d'Ottomatic
+files_choose	Choisir un fichier ou un dossier
+files_choose_folder	Choisir un dossier…
+files_choose_file	Choisir un fichier…
+files_folder_access	Accès aux dossiers
+files_no_folders	Ottomatic n'a encore accès à aucun de tes dossiers.
+files_no_folders_hint	Choisis un dossier pour que les macros puissent lire et écrire les fichiers qu'il contient. Android n'autorise pas à accorder tout le stockage interne ni le dossier Download lui-même : crée ou choisis un dossier à l'intérieur, comme Download/Ottomatic.
+files_grant	Choisir un dossier
+files_regrant	Accorder à nouveau
+files_revoke	Révoquer
+files_read_only	Lecture seule
+files_read_write	Lecture et écriture
+files_missing	Ce dossier n'existe plus. Accordez-le à nouveau ou révoquez-le.
+files_own_storage	Stockage propre d'Ottomatic
+files_own_storage_hint	Un chemin sans aucun dossier, comme report.csv, est conservé ici. Il ne demande aucune autorisation et aucune macro ne peut accéder aux fichiers d'une autre application.
+files_no_path	Ce fichier n'a pas d'emplacement sur ce téléphone, donc une macro ne peut pas le nommer. Les fichiers stockés en ligne, et certains téléchargements, ne peuvent pas être utilisés ainsi : copie-le d'abord dans un dossier du téléphone.
+files_add_file	Ajouter un fichier
+files_files_heading	Fichiers isolés
+files_download_note	Android n'autorise pas à accorder le dossier Download lui-même. Pour utiliser quelque chose qui s'y trouve déjà, ajoute ce fichier ici avec Ajouter un fichier — ou garde tes téléchargements dans un dossier à l'intérieur, qui peut être accordé en entier.
+files_read_only_file	Peut lire ce seul fichier

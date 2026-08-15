@@ -669,3 +669,24 @@ mqtt_no_broker_yet	还没有 MQTT 代理。请在智能家居中添加一个。
 mqtt_listen_for_topics	监听主题
 mqtt_topics_heard	已听到的主题
 mqtt_broker_subtitle	%1$s · %2$s
+category_files	文件
+files_path_placeholder	一个路径，或用于 Ottomatic 自有存储的文件名
+files_choose	选择文件或文件夹
+files_choose_folder	选择文件夹…
+files_choose_file	选择文件…
+files_folder_access	文件夹访问权限
+files_no_folders	Ottomatic 还无法访问你的任何文件夹。
+files_no_folders_hint	选择一个文件夹，让宏可以读写其中的文件。Android 不允许授予整个内部存储或 Download 文件夹本身：请在其中新建或选择一个子文件夹，例如 Download/Ottomatic。
+files_grant	选择文件夹
+files_regrant	重新授予
+files_revoke	撤销
+files_read_only	只能读取
+files_read_write	可以读取和写入
+files_missing	该文件夹已不存在。请重新授予，或将其撤销。
+files_own_storage	Ottomatic 自有存储
+files_own_storage_hint	不含任何文件夹的路径（例如 report.csv）保存在这里。它不需要任何权限，任何宏也无法访问其他应用的文件。
+files_no_path	该文件在这台手机上没有位置，宏无法指定它。存放在云端的文件，以及部分下载内容，无法这样使用——请先把它复制到手机上的某个文件夹。
+files_add_file	添加文件
+files_files_heading	单个文件
+files_download_note	Android 不允许授予 Download 文件夹本身。要使用其中已有的文件，请用“添加文件”把该文件加到这里；或者把下载内容放在其中的子文件夹里，子文件夹可以整个授予。
+files_read_only_file	只能读取这一个文件

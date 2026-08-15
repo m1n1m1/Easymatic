@@ -592,3 +592,35 @@ Confirmed exactly once	确认且仅一次
 Ask the broker to keep this message	请求代理保留此消息
 MQTT Topic	MQTT 主题
 The last message published to a topic on an MQTT broker	MQTT 代理某个主题上最后发布的消息
+Write to File	写入文件
+Saves text to a file on the phone, replacing it or adding to the end	把文本保存到手机上的文件，覆盖原内容或追加到末尾
+File	文件
+Result	结果
+Add to the end instead of replacing	追加到末尾而不是覆盖
+If a file is already there	如果文件已存在
+Replace it	覆盖它
+Keep both, adding a number	两个都保留，加上编号
+Leave the old one alone	保留原来的文件
+Text encoding	文本编码
+UTF-8	UTF-8
+UTF-16	UTF-16
+Latin-1 (ISO 8859-1)	Latin-1 (ISO 8859-1)
+Read File	读取文件
+Reads a text file from the phone and passes its contents on	读取手机上的文本文件并传出其内容
+List Files	列出文件
+Lists the files in a folder, as paths you can loop over	列出文件夹中的文件，作为可循环遍历的路径
+Only names matching	仅匹配以下名称
+Paths	路径
+Files	文件
+Folders	文件夹
+Both	两者
+File Details	文件详情
+Answers whether a file exists, how big it is and when it changed	告诉你文件是否存在、有多大、何时改动过
+File or folder	文件或文件夹
+Copy or Move File	复制或移动文件
+Copies, moves or renames a file on the phone	复制、移动或重命名手机上的文件
+From	从
+Copy it	复制
+Move it	移动
+Delete File	删除文件
+Removes a file from the phone	从手机上删除一个文件

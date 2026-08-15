@@ -20,3 +20,5 @@ api_macros_callable:one	%1$d macro can currently be called from outside.
 api_macros_callable:other	%1$d macros can currently be called from outside.
 variables_shared_by_every_macro:one	%1$d shared by every macro
 variables_shared_by_every_macro:other	%1$d shared by every macro
+mqtt_topics_seen:one	%1$d topic
+mqtt_topics_seen:other	%1$d topics

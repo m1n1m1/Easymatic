@@ -1,10 +1,12 @@
 package com.example.ottomatic.engine
 
 import com.example.ottomatic.core.service.Ai
+import com.example.ottomatic.core.service.Files
 import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.NoAi
+import com.example.ottomatic.core.service.NoFiles
 import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
@@ -199,6 +201,20 @@ interface ExecutionContext {
      * it never was for a light.
      */
     val ai: Ai get() = NoAi
+
+    /**
+     * Reads and writes files — the six `action.file_*` nodes. Defaults to [NoFiles],
+     * so engine-only tests see exactly what a phone that has granted no folder does.
+     *
+     * An action's facade, never a value node's, and here the proof is different from
+     * [mail]'s and [ai]'s rather than the same: it is not that a filesystem is slow but
+     * that **nothing pushes**. [homeAssistant] and [mqtt] earn a place on the pull side
+     * because a socket keeps a map warm; a filesystem answers only when asked, and a
+     * folder the user granted may be served by a cloud provider, so the cheapest
+     * possible read is still a round trip that can fail. `action.file_info` into
+     * `action.if` is the honest shape, on the exec wire where the wait is visible.
+     */
+    val files: Files get() = NoFiles
 
     /** Optional handle to enable/disable other macros at runtime, or null. */
     val macroControl: MacroControl? get() = null

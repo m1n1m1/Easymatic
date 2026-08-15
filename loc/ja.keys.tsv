@@ -669,3 +669,24 @@ mqtt_no_broker_yet	MQTT ブローカーがまだありません。スマート�
 mqtt_listen_for_topics	トピックを聞き取る
 mqtt_topics_heard	聞き取ったトピック
 mqtt_broker_subtitle	%1$s · %2$s
+category_files	ファイル
+files_path_placeholder	パス、または Ottomatic 専用ストレージ内の名前
+files_choose	ファイルまたはフォルダを選ぶ
+files_choose_folder	フォルダを選ぶ…
+files_choose_file	ファイルを選ぶ…
+files_folder_access	フォルダへのアクセス
+files_no_folders	Ottomatic はまだどのフォルダにもアクセスできません。
+files_no_folders_hint	フォルダを選ぶと、マクロがその中のファイルを読み書きできるようになります。Android は内部ストレージ全体や Download フォルダそのものへの許可を認めていません。その中に Download/Ottomatic のようなフォルダを作るか選んでください。
+files_grant	フォルダを選ぶ
+files_regrant	もう一度許可する
+files_revoke	取り消す
+files_read_only	読み取りのみ
+files_read_write	読み書きできます
+files_missing	このフォルダはもうありません。もう一度許可するか、取り消してください。
+files_own_storage	Ottomatic 専用ストレージ
+files_own_storage_hint	report.csv のようにフォルダを含まないパスは、ここに保存されます。権限は不要で、どのマクロも他のアプリのファイルにはアクセスできません。
+files_no_path	そのファイルはこの端末上に場所がないため、マクロから指定できません。オンラインに保存されたファイルや一部のダウンロードはこの方法では使えません。先に端末内のフォルダへコピーしてください。
+files_add_file	ファイルを追加
+files_files_heading	個別のファイル
+files_download_note	Android は Download フォルダそのものへの許可を認めていません。すでにその中にあるものを使うには、「ファイルを追加」でそのファイルをここに追加してください。または、ダウンロード先をその中のフォルダにすれば、そのフォルダごと許可できます。
+files_read_only_file	このファイルだけ読み取れます

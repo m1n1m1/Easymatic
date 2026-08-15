@@ -44,6 +44,8 @@ import com.example.ottomatic.feature.smarthome.SmartHomeViewModel
 import com.example.ottomatic.feature.mail.MailAccountsViewModel
 import com.example.ottomatic.feature.nfc.NfcTagsScreen
 import com.example.ottomatic.feature.nfc.NfcTagsViewModel
+import com.example.ottomatic.feature.files.FolderAccessScreen
+import com.example.ottomatic.feature.files.FolderAccessViewModel
 import com.example.ottomatic.feature.grapheditor.GraphEditorScreen
 import com.example.ottomatic.feature.grapheditor.GraphEditorViewModel
 import com.example.ottomatic.feature.variables.GlobalVariablesScreen
@@ -89,6 +91,13 @@ class MainActivity : ComponentActivity() {
             repository = ServiceLocator.nfcTagRepository,
             appContext = applicationContext,
         )
+    }
+
+    // Activity-scoped like the libraries above, and holding no repository at all:
+    // the platform's own list of persisted grants is the list, so there is nothing
+    // to keep in sync and nothing that could disagree with it.
+    private val folderAccessViewModel: FolderAccessViewModel by viewModels {
+        FolderAccessViewModel.factory(applicationContext)
     }
 
     // Activity-scoped for the same reason the others are, and with one extra edge
@@ -269,6 +278,7 @@ class MainActivity : ComponentActivity() {
                     onOpenNfcTags = { navController.navigate(ROUTE_NFC_TAGS) },
                     onOpenMailAccounts = { navController.navigate(ROUTE_MAIL_ACCOUNTS) },
                     onOpenSmartHome = { navController.navigate(ROUTE_SMART_HOME) },
+                    onOpenFolders = { navController.navigate(ROUTE_FOLDER_ACCESS) },
                     onOpenAi = { navController.navigate(ROUTE_AI) },
                     onOpenVariables = { navController.navigate(ROUTE_VARIABLES) },
                     onOpenPermissions = { navController.navigate(ROUTE_PERMISSIONS) },
@@ -285,6 +295,12 @@ class MainActivity : ComponentActivity() {
             composable(ROUTE_NFC_TAGS) {
                 NfcTagsScreen(
                     viewModel = nfcTagsViewModel,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(ROUTE_FOLDER_ACCESS) {
+                FolderAccessScreen(
+                    viewModel = folderAccessViewModel,
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -519,6 +535,7 @@ class MainActivity : ComponentActivity() {
         private const val ROUTE_GRAPH_EDITOR = "graphEditor"
         private const val ROUTE_GEOFENCES = "geofences"
         private const val ROUTE_NFC_TAGS = "nfcTags"
+        private const val ROUTE_FOLDER_ACCESS = "folderAccess"
         private const val ROUTE_MAIL_ACCOUNTS = "mailAccounts"
         private const val ROUTE_SMART_HOME = "smartHome"
         private const val ROUTE_AI = "ai"

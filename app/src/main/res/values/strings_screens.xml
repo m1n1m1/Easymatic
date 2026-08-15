@@ -23,6 +23,7 @@
     <string name="category_device_settings">Device Settings</string>
     <string name="category_smart_home">Smart Home</string>
     <string name="category_ai">AI</string>
+    <string name="category_files">Files</string>
     <string name="category_data">Data</string>
     <string name="category_value_power">Power &amp; Battery</string>
     <string name="category_value_connectivity">Connectivity</string>
@@ -65,6 +66,28 @@
     <string name="contacts_clear_the_contact_and_type">Clear the contact and type a number instead</string>
     <string name="contacts_fill_in_a_contact_s">Fill in a contact\'s name</string>
     <string name="contacts_type_a_number">Type a number</string>
+
+    <!-- feature/files -->
+    <string name="files_path_placeholder">A path, or a name for Ottomatic\'s own storage</string>
+    <string name="files_choose">Choose a file or folder</string>
+    <string name="files_choose_folder">Choose a folder…</string>
+    <string name="files_choose_file">Choose a file…</string>
+    <string name="files_folder_access">Folder access</string>
+    <string name="files_no_folders">Ottomatic cannot reach any of your folders yet.</string>
+    <string name="files_no_folders_hint">Choose a folder to let macros read and write the files inside it. Android does not allow granting all of internal storage or the Download folder itself — make or pick a folder inside one, such as Download/Ottomatic.</string>
+    <string name="files_grant">Choose a folder</string>
+    <string name="files_regrant">Grant again</string>
+    <string name="files_revoke">Revoke</string>
+    <string name="files_read_only">Can read only</string>
+    <string name="files_read_write">Can read and write</string>
+    <string name="files_missing">This folder is gone. Grant it again, or revoke it.</string>
+    <string name="files_no_path">That file has no location on this phone, so a macro cannot name it. Files stored online, and some downloads, cannot be used this way — copy it into a folder on the phone first.</string>
+    <string name="files_add_file">Add a file</string>
+    <string name="files_files_heading">Single files</string>
+    <string name="files_download_note">Android does not allow granting the Download folder itself. To use something already in it, add that file here with Add a file — or keep downloads in a folder inside it, which can be granted whole.</string>
+    <string name="files_read_only_file">Can read this one file</string>
+    <string name="files_own_storage">Ottomatic\'s own storage</string>
+    <string name="files_own_storage_hint">A path with no folder in it, such as report.csv, is kept here. It needs no permission and no macro can be given access to another app\'s files.</string>
 
     <!-- feature/macro -->
     <string name="macro_cancel">Cancel</string>

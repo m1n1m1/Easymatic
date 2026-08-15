@@ -669,3 +669,24 @@ mqtt_no_broker_yet	MQTT-брокера пока нет. Добавьте его 
 mqtt_listen_for_topics	Прослушать темы
 mqtt_topics_heard	Услышано тем
 mqtt_broker_subtitle	%1$s · %2$s
+category_files	Файлы
+files_path_placeholder	Путь или имя в собственном хранилище Ottomatic
+files_choose	Выбрать файл или папку
+files_choose_folder	Выбрать папку…
+files_choose_file	Выбрать файл…
+files_folder_access	Доступ к папкам
+files_no_folders	Ottomatic пока не может обратиться ни к одной из ваших папок.
+files_no_folders_hint	Выберите папку, чтобы макросы могли читать и записывать файлы внутри неё. Android не разрешает выдать доступ ко всему внутреннему хранилищу или к самой папке Download — создайте или выберите папку внутри, например Download/Ottomatic.
+files_grant	Выбрать папку
+files_regrant	Выдать заново
+files_revoke	Отозвать
+files_read_only	Только чтение
+files_read_write	Чтение и запись
+files_missing	Этой папки больше нет. Выдайте доступ заново или отозовите его.
+files_own_storage	Собственное хранилище Ottomatic
+files_own_storage_hint	Путь без папки, например report.csv, хранится здесь. Он не требует разрешений, и ни один макрос не получит доступ к файлам другого приложения.
+files_no_path	У этого файла нет места на телефоне, поэтому макрос не может его назвать. Файлы, хранящиеся в облаке, и некоторые загрузки так использовать нельзя — сначала скопируйте файл в папку на телефоне.
+files_add_file	Добавить файл
+files_files_heading	Отдельные файлы
+files_download_note	Android не разрешает выдать доступ к самой папке Download. Чтобы использовать то, что уже в ней лежит, добавьте этот файл сюда через «Добавить файл» — или храните загрузки в папке внутри неё, её можно выдать целиком.
+files_read_only_file	Может читать только этот файл

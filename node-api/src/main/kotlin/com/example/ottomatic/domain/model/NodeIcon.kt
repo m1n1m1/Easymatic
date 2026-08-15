@@ -77,4 +77,16 @@ enum class NodeIcon {
      * lighting nodes.
      */
     HOME,
+
+    /**
+     * One file on the device's storage — read, written, copied or deleted.
+     *
+     * Distinct from [FOLDER], and the distinction is the useful one on a canvas
+     * rather than a decorative one: at a glance it separates the four nodes that act
+     * on a single named file from the one that answers with a folder's contents.
+     */
+    FILE,
+
+    /** A folder, and what is inside it. See [FILE] for why the two are separate. */
+    FOLDER,
 }

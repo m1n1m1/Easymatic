@@ -669,3 +669,24 @@ mqtt_no_broker_yet	Ainda não há nenhum broker MQTT. Adiciona um em Casa inteli
 mqtt_listen_for_topics	Escutar os tópicos
 mqtt_topics_heard	Tópicos ouvidos
 mqtt_broker_subtitle	%1$s · %2$s
+category_files	Ficheiros
+files_path_placeholder	Um caminho, ou um nome para o armazenamento do próprio Ottomatic
+files_choose	Escolher um ficheiro ou uma pasta
+files_choose_folder	Escolher uma pasta…
+files_choose_file	Escolher um ficheiro…
+files_folder_access	Acesso a pastas
+files_no_folders	O Ottomatic ainda não consegue aceder a nenhuma das tuas pastas.
+files_no_folders_hint	Escolhe uma pasta para que as macros possam ler e escrever os ficheiros que estão lá dentro. O Android não permite conceder todo o armazenamento interno nem a própria pasta Download: cria ou escolhe uma pasta dentro de uma delas, como Download/Ottomatic.
+files_grant	Escolher uma pasta
+files_regrant	Conceder novamente
+files_revoke	Revogar
+files_read_only	Só pode ler
+files_read_write	Pode ler e escrever
+files_missing	Esta pasta já não existe. Concede-a novamente ou revoga-a.
+files_own_storage	Armazenamento do próprio Ottomatic
+files_own_storage_hint	Um caminho sem nenhuma pasta, como report.csv, fica guardado aqui. Não precisa de qualquer permissão e nenhuma macro pode aceder aos ficheiros de outra aplicação.
+files_no_path	Esse ficheiro não tem uma localização neste telemóvel, por isso uma macro não o consegue nomear. Os ficheiros guardados online, e algumas transferências, não podem ser usados assim: copia-o primeiro para uma pasta do telemóvel.
+files_add_file	Adicionar um ficheiro
+files_files_heading	Ficheiros avulso
+files_download_note	O Android não permite conceder a própria pasta Download. Para usar algo que já lá está, adiciona esse ficheiro aqui com Adicionar um ficheiro — ou guarda as transferências numa pasta lá dentro, que pode ser concedida por inteiro.
+files_read_only_file	Só pode ler este ficheiro

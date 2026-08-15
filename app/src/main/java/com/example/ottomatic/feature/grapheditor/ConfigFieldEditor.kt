@@ -76,6 +76,7 @@ import com.example.ottomatic.domain.registry.enumConfigOptions
 import com.example.ottomatic.feature.api.ApiTokenField
 import com.example.ottomatic.feature.apps.AppPickerField
 import com.example.ottomatic.feature.contacts.ContactNameField
+import com.example.ottomatic.feature.files.FilePathField
 import com.example.ottomatic.feature.contacts.PhoneNumberField
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
@@ -277,6 +278,17 @@ internal fun ConfigFieldEditor(
             }
             ConfigFieldType.WIFI_NETWORK -> {
                 WifiNetworkField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    labelSlot = labelSlot,
+                    colors = colors,
+                )
+            }
+            ConfigFieldType.FILE_PATH -> {
+                // The chooser here does two things at once: it takes the persistable
+                // access grant *and* fills the path in. Typing works afterwards for
+                // anything the grant covers.
+                FilePathField(
                     value = value,
                     onValueChange = onValueChange,
                     labelSlot = labelSlot,

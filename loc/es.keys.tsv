@@ -669,3 +669,24 @@ mqtt_no_broker_yet	Aún no hay ningún broker MQTT. Añade uno en Hogar intelige
 mqtt_listen_for_topics	Escuchar los topics
 mqtt_topics_heard	Topics oídos
 mqtt_broker_subtitle	%1$s · %2$s
+category_files	Archivos
+files_path_placeholder	Una ruta, o un nombre para el almacenamiento propio de Ottomatic
+files_choose	Elegir un archivo o una carpeta
+files_choose_folder	Elegir una carpeta…
+files_choose_file	Elegir un archivo…
+files_folder_access	Acceso a carpetas
+files_no_folders	Ottomatic todavía no puede acceder a ninguna de tus carpetas.
+files_no_folders_hint	Elige una carpeta para que las macros puedan leer y escribir los archivos que contiene. Android no permite conceder todo el almacenamiento interno ni la propia carpeta Download: crea o elige una carpeta dentro de una de ellas, como Download/Ottomatic.
+files_grant	Elegir una carpeta
+files_regrant	Conceder de nuevo
+files_revoke	Revocar
+files_read_only	Solo puede leer
+files_read_write	Puede leer y escribir
+files_missing	Esta carpeta ya no existe. Concédela de nuevo o revócala.
+files_own_storage	Almacenamiento propio de Ottomatic
+files_own_storage_hint	Una ruta sin ninguna carpeta, como report.csv, se guarda aquí. No necesita ningún permiso y ninguna macro puede acceder a los archivos de otra aplicación.
+files_no_path	Ese archivo no tiene una ubicación en este teléfono, así que una macro no puede nombrarlo. Los archivos guardados en la nube, y algunas descargas, no se pueden usar así: cópialo primero a una carpeta del teléfono.
+files_add_file	Añadir un archivo
+files_files_heading	Archivos sueltos
+files_download_note	Android no permite conceder la propia carpeta Download. Para usar algo que ya está dentro, añade ese archivo aquí con Añadir un archivo, o guarda las descargas en una carpeta dentro de ella, que sí se puede conceder entera.
+files_read_only_file	Solo puede leer este archivo

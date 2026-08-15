@@ -592,3 +592,35 @@ Confirmed exactly once	ちょうど一度だけ確認
 Ask the broker to keep this message	このメッセージを保持するようブローカーに依頼する
 MQTT Topic	MQTT トピック
 The last message published to a topic on an MQTT broker	MQTT ブローカーのトピックに最後に publish されたメッセージ
+Write to File	ファイルに書き込む
+Saves text to a file on the phone, replacing it or adding to the end	テキストを端末のファイルに保存します。上書きするか末尾に追加します
+File	ファイル
+Result	結果
+Add to the end instead of replacing	上書きせずに末尾へ追加する
+If a file is already there	すでにファイルがある場合
+Replace it	上書きする
+Keep both, adding a number	番号を付けて両方残す
+Leave the old one alone	元のファイルをそのままにする
+Text encoding	文字コード
+UTF-8	UTF-8
+UTF-16	UTF-16
+Latin-1 (ISO 8859-1)	Latin-1 (ISO 8859-1)
+Read File	ファイルを読む
+Reads a text file from the phone and passes its contents on	端末のテキストファイルを読み、その内容を渡します
+List Files	ファイルを一覧する
+Lists the files in a folder, as paths you can loop over	フォルダ内のファイルを、繰り返し処理できるパスとして一覧します
+Only names matching	次に一致する名前だけ
+Paths	パス
+Files	ファイル
+Folders	フォルダ
+Both	両方
+File Details	ファイルの詳細
+Answers whether a file exists, how big it is and when it changed	ファイルがあるか、大きさ、最終更新日時を返します
+File or folder	ファイルまたはフォルダ
+Copy or Move File	ファイルをコピーまたは移動
+Copies, moves or renames a file on the phone	端末のファイルをコピー、移動、名前変更します
+From	コピー元
+Copy it	コピーする
+Move it	移動する
+Delete File	ファイルを削除
+Removes a file from the phone	端末からファイルを削除します

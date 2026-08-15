@@ -9,6 +9,7 @@ import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.config.ApiToken
 import com.example.ottomatic.domain.model.config.ContactName
+import com.example.ottomatic.domain.model.config.FilePath
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.PhoneNumber
@@ -138,6 +139,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                         timeOfDay = annotations.any { it is TimeOfDay },
                         wifi = annotations.any { it is WifiNetwork },
                         contactName = annotations.any { it is ContactName },
+                        filePath = annotations.any { it is FilePath },
                         suggested = annotations.filterIsInstance<Suggested>().firstOrNull(),
                         apiToken = annotations.any { it is ApiToken },
                         key = key,
@@ -165,6 +167,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         timeOfDay: Boolean,
         wifi: Boolean,
         contactName: Boolean,
+        filePath: Boolean,
         suggested: Suggested?,
         apiToken: Boolean,
         key: String,
@@ -175,18 +178,22 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             // Counted rather than spelled out as a chain of `&&`: the list is the same
             // one [checkWidgetAnnotations] ends with, and a chain here grew by one
             // term per widget until it was the most complex thing in the function.
-            val widgets = widgetFlags(picker, ports, phone, timeOfDay, wifi, contactName, suggested, apiToken)
+            val widgets =
+                widgetFlags(picker, ports, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken)
             check(widgets.none { it }) {
                 "Config property '${descriptor.serialName}.$key' is annotated with a widget but is a date; " +
                     "dates have their own picker, so the annotation is redundant"
             }
             return ConfigFieldType.DATE_TIME
         }
-        checkWidgetAnnotations(element, picker, ports, phone, timeOfDay, wifi, contactName, suggested, apiToken, key)
+        checkWidgetAnnotations(
+            element, picker, ports, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken, key,
+        )
         return when (element.kind) {
             SerialKind.ENUM -> ConfigFieldType.ENUM(enumOptions(element))
-            PrimitiveKind.STRING, PrimitiveKind.CHAR ->
-                stringFormType(multiline, picker, ports, phone, timeOfDay, wifi, contactName, suggested, apiToken)
+            PrimitiveKind.STRING, PrimitiveKind.CHAR -> stringFormType(
+                multiline, picker, ports, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken,
+            )
             PrimitiveKind.INT, PrimitiveKind.LONG, PrimitiveKind.SHORT, PrimitiveKind.BYTE -> ConfigFieldType.INT
             PrimitiveKind.BOOLEAN -> ConfigFieldType.BOOL
             PrimitiveKind.DOUBLE, PrimitiveKind.FLOAT -> ConfigFieldType.DOUBLE
@@ -214,6 +221,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         timeOfDay: Boolean,
         wifi: Boolean,
         contactName: Boolean,
+        filePath: Boolean,
         suggested: Suggested?,
         apiToken: Boolean,
     ): ConfigFieldType<String> = when {
@@ -224,6 +232,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         timeOfDay -> ConfigFieldType.TIME_OF_DAY
         wifi -> ConfigFieldType.WIFI_NETWORK
         contactName -> ConfigFieldType.CONTACT_NAME
+        filePath -> ConfigFieldType.FILE_PATH
         suggested != null -> ConfigFieldType.SUGGESTED(suggested.source, suggested.scopedBy.toList())
         multiline -> ConfigFieldType.MULTILINE
         else -> ConfigFieldType.STR
@@ -244,6 +253,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         timeOfDay: Boolean,
         wifi: Boolean,
         contactName: Boolean,
+        filePath: Boolean,
         suggested: Suggested?,
         apiToken: Boolean,
         key: String,
@@ -280,12 +290,17 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             "Config property '${descriptor.serialName}.$key' is annotated @ApiToken but is a " +
                 "${element.kind}; a key is generated text, so it must be a String"
         }
-        val widgets = widgetFlags(picker, ports, phone, timeOfDay, wifi, contactName, suggested, apiToken)
-            .count { it }
+        check(!filePath || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @FilePath but is a " +
+                "${element.kind}; a path field stores the path itself, so it must be a String"
+        }
+        val widgets =
+            widgetFlags(picker, ports, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken)
+                .count { it }
         check(widgets <= 1) {
             "Config property '${descriptor.serialName}.$key' is annotated with $widgets widgets " +
-                "(@Picker, @Ports, @PhoneNumber, @TimeOfDay, @WifiNetwork, @ContactName, @Suggested, @ApiToken); " +
-                "a property has one editor"
+                "(@Picker, @Ports, @PhoneNumber, @TimeOfDay, @WifiNetwork, @ContactName, @FilePath, " +
+                "@Suggested, @ApiToken); a property has one editor"
         }
     }
 
@@ -305,10 +320,11 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         timeOfDay: Boolean,
         wifi: Boolean,
         contactName: Boolean,
+        filePath: Boolean,
         suggested: Suggested?,
         apiToken: Boolean,
     ): List<Boolean> =
-        listOf(picker != null, ports, phone, timeOfDay, wifi, contactName, suggested != null, apiToken)
+        listOf(picker != null, ports, phone, timeOfDay, wifi, contactName, filePath, suggested != null, apiToken)
 
     private fun enumOptions(element: SerialDescriptor): List<ConfigOption> {
         val options = enumConfigOptions(element)

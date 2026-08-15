@@ -58,6 +58,7 @@ enum class NodeCategory(
     DEVICE_SETTINGS(NodeKind.ACTION, "Device Settings"),
     SMART_HOME(NodeKind.ACTION, "Smart Home"),
     AI(NodeKind.ACTION, "AI"),
+    FILES(NodeKind.ACTION, "Files"),
     DATA(NodeKind.ACTION, "Data"),
     VALUE_POWER(NodeKind.VALUE, "Power & Battery"),
     VALUE_CONNECTIVITY(NodeKind.VALUE, "Connectivity"),

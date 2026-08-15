@@ -492,6 +492,40 @@ annotation class WifiNetwork
 annotation class ContactName
 
 /**
+ * Renders the `String` property as a **path to a file**: a text field the user can
+ * type into, with a button beside it that opens the system's file or folder chooser.
+ *
+ * The fifth of the editable-with-a-chooser family, and it earns the shape more
+ * sharply than any of the other four, because two of the three arguments are
+ * absolute rather than merely usual:
+ *
+ * - **The answer set cannot be closed.** A chooser can only offer files that exist
+ *   *now*, and the whole point of a write is a file that does not. "Read the file
+ *   the last run wrote" is the commonest shape there is, and it names a file that is
+ *   absent at the moment somebody is configuring the node.
+ * - **It has to be [Wired].** Every file macro worth writing builds its path with
+ *   `transform.text` — `report-{A}.csv` — and a read-only picker can never be wired.
+ * - A path is **legible**, so a wrong one can be read back and seen to be wrong.
+ *   That is the half [Picker] exists for and the half this does not need.
+ *
+ * **The chooser does double duty**, and that is what makes the whole design work
+ * rather than being a convenience: choosing takes the persistable access grant *and*
+ * fills the path in, in one tap. Typing a path by hand then works for anything a
+ * grant already covers — which, after one folder has been chosen, is every file in
+ * it, forever and from the background.
+ *
+ * A value with **no separator in it** means the app's own storage, which needs no
+ * grant at all and is what a macro writes a scratch file to. Anything else is an
+ * ordinary absolute path, and reaches whatever the user has granted; the run log
+ * says which folder to grant when nothing covers it. Read through
+ * [com.example.ottomatic.domain.model.FilePath].
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class FilePath
+
+/**
  * Renders the `String` property as an editor for a list of **output ports** —
  * a name and a type per row — rather than as a text field.
  *

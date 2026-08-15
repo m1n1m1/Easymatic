@@ -16,6 +16,12 @@ import com.example.ottomatic.engine.action.DelayAction
 import com.example.ottomatic.engine.action.DisableMacroAction
 import com.example.ottomatic.engine.action.DndAction
 import com.example.ottomatic.engine.action.EnableMacroAction
+import com.example.ottomatic.engine.action.FileDeleteAction
+import com.example.ottomatic.engine.action.FileInfoAction
+import com.example.ottomatic.engine.action.FileListAction
+import com.example.ottomatic.engine.action.FileReadAction
+import com.example.ottomatic.engine.action.FileTransferAction
+import com.example.ottomatic.engine.action.FileWriteAction
 import com.example.ottomatic.engine.action.FlashlightAction
 import com.example.ottomatic.engine.action.ForEachAction
 import com.example.ottomatic.engine.action.HaServiceAction
@@ -113,6 +119,15 @@ object ActionRegistry {
         LightStateAction(),
         HaServiceAction(),
         MqttPublishAction(),
+        // The file family, kept together on the mail family's reasoning and in the
+        // order somebody meets them: put something somewhere, read it back, find out
+        // what is there, then tidy up.
+        FileWriteAction(),
+        FileReadAction(),
+        FileListAction(),
+        FileInfoAction(),
+        FileTransferAction(),
+        FileDeleteAction(),
         ListAddAction(),
         ListClearAction(),
         LogAction(),

@@ -10,6 +10,7 @@ import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.data.ai.AiModelCatalog
 import com.example.ottomatic.data.ai.RoutingAi
+import com.example.ottomatic.data.files.RoutingFiles
 import com.example.ottomatic.domain.model.isConfigured
 import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.data.GeofencePlaceRepository
@@ -430,6 +431,11 @@ object ServiceLocator {
             // *provider* is therefore also a per-call fact, so one instance serves
             // every connection on the phone and this line names none of them.
             ai = RoutingAi(aiConnectionRepository),
+            // Resolves the covering grant on every call, on `RoutingAi`'s reasoning
+            // and for a case that happens more often: somebody grants a folder on the
+            // Folder access screen and runs the macro from the next screen along, and
+            // a snapshot taken at start-up would make that work only after a restart.
+            files = RoutingFiles(appContext),
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.

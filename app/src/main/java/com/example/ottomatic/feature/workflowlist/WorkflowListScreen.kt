@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Place
@@ -79,6 +80,7 @@ fun WorkflowListScreen(
     onOpenNfcTags: () -> Unit,
     onOpenMailAccounts: () -> Unit,
     onOpenSmartHome: () -> Unit,
+    onOpenFolders: () -> Unit,
     onOpenAi: () -> Unit,
     onOpenPlugins: () -> Unit,
     onOpenAppAccess: () -> Unit,
@@ -163,6 +165,7 @@ fun WorkflowListScreen(
                         onOpenNfcTags = onOpenNfcTags,
                         onOpenMailAccounts = onOpenMailAccounts,
                         onOpenSmartHome = onOpenSmartHome,
+                        onOpenFolders = onOpenFolders,
                         onOpenAi = onOpenAi,
                         onOpenPlugins = onOpenPlugins,
                         onOpenAppAccess = onOpenAppAccess,
@@ -331,6 +334,7 @@ private fun LibraryMenu(
     onOpenNfcTags: () -> Unit,
     onOpenMailAccounts: () -> Unit,
     onOpenSmartHome: () -> Unit,
+    onOpenFolders: () -> Unit,
     onOpenAi: () -> Unit,
     onOpenPlugins: () -> Unit,
     onOpenAppAccess: () -> Unit,
@@ -375,6 +379,17 @@ private fun LibraryMenu(
                 onClick = {
                     expanded = false
                     onOpenSmartHome()
+                },
+            )
+            // Not a library of records like the four above but a list of what the
+            // phone has let this app reach. It belongs here anyway, on the same
+            // reading: it is set up once and every macro shares it.
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.files_folder_access)) },
+                leadingIcon = { Icon(Icons.Filled.FolderOpen, contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    onOpenFolders()
                 },
             )
             // Last, and the one entry here that is not a library of many things:

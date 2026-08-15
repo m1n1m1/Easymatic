@@ -592,3 +592,35 @@ Confirmed exactly once	Подтверждена ровно один раз
 Ask the broker to keep this message	Попросить брокер сохранить это сообщение
 MQTT Topic	Тема MQTT
 The last message published to a topic on an MQTT broker	Последнее сообщение, опубликованное в теме на MQTT-брокере
+Write to File	Записать в файл
+Saves text to a file on the phone, replacing it or adding to the end	Сохраняет текст в файл на телефоне, заменяя его или дописывая в конец
+File	Файл
+Result	Результат
+Add to the end instead of replacing	Дописывать в конец, а не заменять
+If a file is already there	Если файл уже есть
+Replace it	Заменить его
+Keep both, adding a number	Оставить оба, добавив номер
+Leave the old one alone	Оставить старый как есть
+Text encoding	Кодировка текста
+UTF-8	UTF-8
+UTF-16	UTF-16
+Latin-1 (ISO 8859-1)	Latin-1 (ISO 8859-1)
+Read File	Прочитать файл
+Reads a text file from the phone and passes its contents on	Читает текстовый файл на телефоне и передаёт его содержимое дальше
+List Files	Список файлов
+Lists the files in a folder, as paths you can loop over	Перечисляет файлы в папке в виде путей, которые можно перебрать
+Only names matching	Только имена, подходящие под
+Paths	Пути
+Files	Файлы
+Folders	Папки
+Both	И то, и другое
+File Details	Сведения о файле
+Answers whether a file exists, how big it is and when it changed	Сообщает, есть ли файл, какого он размера и когда изменялся
+File or folder	Файл или папка
+Copy or Move File	Копировать или переместить файл
+Copies, moves or renames a file on the phone	Копирует, перемещает или переименовывает файл на телефоне
+From	Откуда
+Copy it	Копировать
+Move it	Переместить
+Delete File	Удалить файл
+Removes a file from the phone	Удаляет файл с телефона

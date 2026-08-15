@@ -524,6 +524,22 @@ Every protocol in `data/ai/` is pure and JVM-tested for `WebUrl`'s and `Messenge
 
 `AiBaseUrl` (`domain/model/`) is a second URL reader beside `WebUrl` rather than a reuse of it, and the reason is exact: `WebUrl`'s one rule is *add https*, right for a browser address bar and wrong for `192.168.1.5:8000`, which it reads as host-plus-port, prepends `https://` to, and turns into a TLS handshake error that reads like the server being down. So this one **refuses a scheme-less address** and says which two schemes it wants — because unlike the web, both are ordinary here. It also strips a trailing `/chat/completions`, the likeliest mistake this field will ever see.
 
+### Files
+
+Six actions and **no storage permission at all** — `action.file_write`, `file_read`, `file_list`, `file_info`, `file_transfer`, `file_delete`, in a `Files` palette category of their own. The road is `action.play_sound`'s, widened from one file to a folder: the editor's chooser hands back a URI the app has been *granted*, `takePersistableUriPermission` makes it outlive the task and a reboot, and the engine opens it days later from the service. The rule generalises — **choosing needs an Activity; using does not** — and it is what makes file access viable for an app whose point is running unattended.
+
+**There is deliberately no storage-area concept**, and the reasoning matters more than the conclusion. An early cut had `StorageArea { APP_FOLDER, SAVED_FOLDER }` beside every path field; it was Android's problem modelled as the user's vocabulary. Every node now takes one `@FilePath` property, and `RoutingFiles` (`data/files/`) answers *which handle opens this path?* — no leading `/` is the app's own storage and needs no grant, anything else goes to whichever granted folder covers it. Removing the enum made the design strictly better in one specific way: **nothing in a workflow references a grant**, so re-granting a folder — which yields a *different* tree URI for the same folder — repairs every macro on the phone with nothing edited, where a stored folder id would have orphaned the lot.
+
+**`@FilePath` is the fifth editable-with-a-chooser field** after `@PhoneNumber`, `@TimeOfDay`, `@WifiNetwork` and `@ContactName`, and it earns the shape more sharply than any: the answer set *cannot* be closed, since the point of a write is a file that does not exist yet, and the field must be `@Wired` because every real file macro builds its path with `transform.text`. Its chooser does two jobs — takes the grant *and* fills the path in.
+
+**No value node**, and the argument is three-part because the weak form does not cover an app-storage read. Nothing pushes, so this is `value.light_state`'s side of the line rather than `value.ha_state`'s; the answer depends entirely on config, which is what already excludes `value.variable` from `sourceOptions()`; and a value would collapse "there is no file", "no grant covers this" and "the provider failed" onto one `null`, which is exactly what `action.file_info`'s `exists`-beside-`error` keeps apart.
+
+**Confinement is two gates.** `FilePath` (`domain/model/`, pure, JVM-tested) refuses `..` *before* normalisation, plus `.`, empty segments, control characters and backslashes — a security boundary rather than a formatting check, since the property is `@Wired` and an HTTP response can carry it. `AppFileStore` then re-checks the canonical path, because the pure half cannot see a symlink; its root is `{filesDir}/macrofiles/` and never `filesDir`, which holds `workflows/` and every credential library.
+
+**Folder access is a screen and not a `PrerequisiteType`**: all four Settings-page members of that enum name one system-wide switch with its own page, which a per-folder URI grant is not, so a row for it could never turn green. `contentResolver.persistedUriPermissions` *is* the list, so there is no repository — a JSON copy would survive a restore where the grants behind it cannot. The corollary is accepted rather than papered over: a missing grant **cannot** reach the Problems panel, because `GraphValidator` lives in `engine/` and cannot touch a `ContentResolver`. The run log names the path and the folder to grant.
+
+The Storage Access Framework's silently-wrong behaviours — `"w"` not truncating, `createDocument` renaming and appending extensions, `"wa"` being ignored by some providers, `listFiles()` costing 1 + N IPC, nullable size and modified columns, recursive folder deletes — are in the **`files-and-storage`** skill, along with the platform's refusal to grant internal-storage root or `Download` itself.
+
 ### Called from outside
 
 `trigger.api` ("Called by Another App") is how another app, a script or a shortcut starts a macro. The author-facing guide is **`docs/EXTERNAL_API.md`**; what follows is why it is shaped this way.
@@ -656,6 +672,7 @@ These subsystems each have their own file so they are not resident in every sess
 - **The run log** (`ExecutionContext.log`, `RunLogStore`, the editor console) — `run-log` skill
 - **Widgets and shortcuts** (the three Glance widgets, `MacroIcon`/`MacroAccent`, `RunFeedback`, launcher shortcuts) — `widgets-and-shortcuts` skill
 - **NFC tags** (`trigger.nfc`, `value.nfc`, the tag library, the capture chooser, `emitOrHoldBroadcast`) — `nfc-tags` skill
+- **Files and storage** (the six `action.file_*` nodes, the `Files` facade, `@FilePath`, `FilePath`, the SAF stores and the Folder access screen) — `files-and-storage` skill
 - **Plugins** (`:node-api`, `:plugin-sdk`, the wire format, `PluginNodes`, `PluginRegistry`, the Plugins screen) — `plugins` skill; the author-facing guide is `docs/PLUGINS.md`
 - **The process API** (`trigger.api`, `ApiTriggerProvider`, `ApiTriggerReceiver`, `ApiCallers`, the consent and App access screens) — **Called from outside** above; the author-facing guide is `docs/EXTERNAL_API.md`
 - **The editor UI** (the bottom bar, its three surfaces, `EditorOverlay`) — `app/src/main/java/com/example/ottomatic/feature/CLAUDE.md`, loaded when working under `feature/`

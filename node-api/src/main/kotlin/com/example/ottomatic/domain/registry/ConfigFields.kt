@@ -96,6 +96,19 @@ sealed interface ConfigFieldType<out T> {
      */
     data object CONTACT_NAME : ConfigFieldType<String>
 
+    /**
+     * A path to a file, rendered as a text field with a button that opens the
+     * system's file or folder chooser (declared with `@FilePath`).
+     *
+     * The fifth of the editable-with-a-chooser fields, and the one whose read-only
+     * form is not merely unhelpful but impossible: the point of a write is a file
+     * that does not exist yet, so there is nothing for a chooser to offer. The
+     * chooser here also *takes the access grant* rather than only naming a file,
+     * which is what lets a typed path work afterwards. Read through
+     * [com.example.ottomatic.domain.model.FilePath].
+     */
+    data object FILE_PATH : ConfigFieldType<String>
+
     /** One of [options], stored as the option's [ConfigOption.value]. */
     data class ENUM(val options: List<ConfigOption>) : ConfigFieldType<String>
 
