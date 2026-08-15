@@ -624,3 +624,11 @@ Copy it	复制
 Move it	移动
 Delete File	删除文件
 Removes a file from the phone	从手机上删除一个文件
+Ask AI (with tools)	询问 AI（可用工具）
+Ask AI About a Picture	就图片询问 AI
+Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer	让 AI 模型去做一件事，允许它读取手机信息并运行你选定的节点和宏，直到得出答案
+Most turns	最多轮次
+Picture	图片
+Shows an AI model a picture from this phone and returns what it says about it	把本机上的一张图片交给 AI 模型，并返回它的描述
+Tools	工具
+What to ask	要问什么

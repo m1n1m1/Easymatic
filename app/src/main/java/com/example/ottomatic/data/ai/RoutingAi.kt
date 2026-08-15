@@ -3,6 +3,10 @@ package com.example.ottomatic.data.ai
 import com.example.ottomatic.core.service.Ai
 import com.example.ottomatic.core.service.AiReply
 import com.example.ottomatic.core.service.AiRequest
+import com.example.ottomatic.core.service.AiTool
+import com.example.ottomatic.core.service.AiToolCall
+import com.example.ottomatic.core.service.AiToolLimits
+import com.example.ottomatic.core.service.AiToolResult
 import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.domain.model.AiConnection
 import kotlinx.coroutines.Dispatchers
@@ -36,31 +40,103 @@ import kotlinx.coroutines.withContext
  */
 class RoutingAi(private val connections: AiConnectionRepository) : Ai {
 
-    @Suppress("ReturnCount") // Guards that must never reach the network, then the real answer.
-    override suspend fun complete(request: AiRequest): AiReply {
-        if (request.prompt.isBlank()) return AiReply(error = "No prompt to send")
-        if (request.connectionId.isBlank()) {
-            return AiReply(error = "No AI connection chosen on this node")
+    override suspend fun complete(request: AiRequest): AiReply =
+        when (val resolved = resolve(request)) {
+            is Resolution.Refused -> AiReply(error = resolved.error)
+            is Resolution.Ready -> {
+                val body = resolved.protocol.requestBody(resolved.request, resolved.connection)
+                val (status, answer) = resolved.post(body)
+                resolved.protocol.readReply(status, answer)
+            }
         }
-        val connection = connections.get(request.connectionId)
-            ?: return AiReply(error = DELETED_CONNECTION)
-        val key = connections.apiKey(request.connectionId)
-            ?: return AiReply(error = unreadableKeyText(connection))
 
-        val protocol = protocolFor(connection.provider)
-        protocol.configurationProblem(connection, request.model)?.let { return AiReply(error = it) }
+    /**
+     * The tool-using exchange.
+     *
+     * **An empty [tools] delegates rather than failing**, because a user who cleared
+     * the tool list on an agent node has written a node that asks a question — which
+     * is a legitimate thing to have done, and is exactly [complete].
+     */
+    override suspend fun converse(
+        request: AiRequest,
+        tools: List<AiTool>,
+        maxTurns: Int,
+        invoke: suspend (AiToolCall) -> AiToolResult,
+    ): AiReply {
+        if (tools.isEmpty()) return complete(request)
+        return when (val resolved = resolve(request)) {
+            is Resolution.Refused -> AiReply(error = resolved.error)
+            is Resolution.Ready -> runToolExchange(
+                protocol = resolved.protocol,
+                request = resolved.request,
+                connection = resolved.connection,
+                tools = tools,
+                maxTurns = maxTurns,
+                invoke = invoke,
+                send = { body -> resolved.post(body) },
+            )
+        }
+    }
 
-        val effective = request.copy(
-            systemInstruction = combineInstructions(connection.systemPrompt, request.systemInstruction),
-        )
-        val (status, body) = withContext(Dispatchers.IO) {
+    /** One round trip on this connection. */
+    private suspend fun Resolution.Ready.post(body: String): Pair<Int, String> =
+        withContext(Dispatchers.IO) {
             AiTransport.post(
                 url = protocol.endpoint(connection, request.model),
                 headers = protocol.headers(key),
-                body = protocol.requestBody(effective, connection),
+                body = body,
             )
         }
-        return protocol.readReply(status, body)
+
+    /**
+     * Everything a request needs before it may reach the network, or the sentence
+     * saying what is missing.
+     *
+     * Extracted so the single-prompt path and the tool path cannot drift: these five
+     * guards are the difference between a node that reports "no connection chosen"
+     * and one that bills a request it should never have sent, and having them written
+     * twice is how one of the two eventually loses a check.
+     */
+    @Suppress("ReturnCount") // Guards that must never reach the network, then the resolved request.
+    private fun resolve(request: AiRequest): Resolution {
+        if (request.prompt.isBlank()) return Resolution.Refused("No prompt to send")
+        if (request.connectionId.isBlank()) {
+            return Resolution.Refused("No AI connection chosen on this node")
+        }
+        val connection = connections.get(request.connectionId)
+            ?: return Resolution.Refused(DELETED_CONNECTION)
+        val key = connections.apiKey(request.connectionId)
+            ?: return Resolution.Refused(unreadableKeyText(connection))
+
+        val protocol = protocolFor(connection.provider)
+        protocol.configurationProblem(connection, request.model)
+            ?.let { return Resolution.Refused(it) }
+
+        return Resolution.Ready(
+            connection = connection,
+            key = key,
+            protocol = protocol,
+            request = request.copy(
+                systemInstruction = combineInstructions(
+                    connection.systemPrompt,
+                    request.systemInstruction,
+                ),
+            ),
+        )
+    }
+
+    private sealed interface Resolution {
+
+        /** Why this request will not be sent. */
+        data class Refused(val error: String) : Resolution
+
+        /** A request that has passed every guard, with its standing instruction folded in. */
+        data class Ready(
+            val connection: AiConnection,
+            val key: String,
+            val protocol: AiProtocol,
+            val request: AiRequest,
+        ) : Resolution
     }
 
     /**
@@ -109,3 +185,73 @@ internal fun combineInstructions(connectionPrompt: String, nodeInstruction: Stri
         .map { it.trim() }
         .filter { it.isNotBlank() }
         .joinToString(separator = "\n\n")
+
+/**
+ * Post, read, run the tools it asked for, repeat — until the model answers, fails, or
+ * runs out of turns or time.
+ *
+ * **File-level and not a member, with [send] and [now] passed in, for
+ * [combineInstructions]' reason carried further.** This file's own KDoc says that
+ * everything past the guards is a live HTTP call and that this is exactly why the
+ * protocols are pure objects tested separately. That reasoning applies to the loop
+ * with more force, not less: the interesting behaviour here — a tool that fails, a
+ * model that keeps asking, a cap reached — is *sequence*, which no single round trip
+ * exercises and which a live server cannot be made to produce on demand. Taking the
+ * transport as a parameter is what makes it a JVM test rather than an aspiration.
+ *
+ * **The connection and key are resolved once for the whole exchange**, unlike
+ * [RoutingAi.complete] which resolves per call. That is a deliberate narrowing of the
+ * "nothing is held" rule rather than an exception to it: these turns are one logical
+ * request, and re-reading the key between them could send the first half of a
+ * conversation under one credential and the second half under another — which no
+ * provider expects and which would fail in a way nothing could explain.
+ *
+ * **Both stopping conditions report rather than truncating.** A cap reached silently
+ * would look exactly like a model that chose to stop, which is the one thing the run
+ * log must never leave ambiguous.
+ */
+@Suppress(
+    "LongParameterList", // Every argument is a distinct collaborator; a holder would only rename them.
+    "ReturnCount", // Three ways to stop, each with its own sentence; folding them loses the diagnosis.
+)
+internal suspend fun runToolExchange(
+    protocol: AiProtocol,
+    request: AiRequest,
+    connection: AiConnection,
+    tools: List<AiTool>,
+    maxTurns: Int,
+    invoke: suspend (AiToolCall) -> AiToolResult,
+    now: () -> Long = System::currentTimeMillis,
+    send: suspend (String) -> Pair<Int, String>,
+): AiReply {
+    val turns = maxTurns.coerceIn(1, AiToolLimits.MAX_TURNS)
+    val exchange = mutableListOf<AiExchange>(AiExchange.Ask(request.prompt))
+    val startedAt = now()
+    repeat(turns) {
+        // Checked *between* turns rather than enforced by cancelling one, so a tool
+        // halfway through switching a light off is never stopped mid-write.
+        if (now() - startedAt > AiToolLimits.OVERALL_BUDGET_MS) {
+            return AiReply(error = OUT_OF_TIME)
+        }
+        val (status, body) = send(protocol.conversationBody(exchange, tools, request, connection))
+        val turn = protocol.readTurn(status, body)
+        // A failed turn and a finished one both end the exchange; only a turn that
+        // asks for something continues it.
+        if (turn.error.isNotBlank() || !turn.wantsTools) return turn.asReply()
+        exchange += AiExchange.Said(turn)
+        exchange += AiExchange.Ran(turn.toolCalls.map { call -> call to invoke(call) })
+    }
+    return AiReply(error = outOfTurnsText(turns))
+}
+
+/**
+ * The turn cap, worded as the thing to change.
+ *
+ * A model that keeps calling tools is usually being asked for something it has no tool
+ * for, so the message names both fixes rather than only the symptom.
+ */
+private fun outOfTurnsText(maxTurns: Int): String =
+    "The AI was still using tools after $maxTurns turns and was stopped — " +
+        "raise the turn limit, or give it a clearer prompt"
+
+private const val OUT_OF_TIME = "The AI was still using tools after five minutes and was stopped"

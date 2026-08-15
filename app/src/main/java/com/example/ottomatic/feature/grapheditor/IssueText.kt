@@ -40,6 +40,8 @@ private fun IssueReason.messageRes(): Int = when (this) {
     IssueReason.AI_UNSET -> R.string.problem_ai_unset
     IssueReason.AI_MISSING -> R.string.problem_ai_missing
     IssueReason.AI_UNFINISHED -> R.string.problem_ai_unfinished
+    IssueReason.AI_TOOL_MISSING -> R.string.problem_ai_tool_missing
+    IssueReason.AI_TOOL_UNPINNED -> R.string.problem_ai_tool_unpinned
     IssueReason.VARIABLE_UNSET -> R.string.problem_variable_unset
     IssueReason.VARIABLE_MISSING -> R.string.problem_variable_missing
     IssueReason.EMPTY_LOOP_BODY -> R.string.problem_empty_loop_body

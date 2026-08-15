@@ -122,6 +122,8 @@ problem_hub_missing	\'%1$s\' points at a hub that is no longer set up
 problem_ai_unset	\'%1$s\' has no AI connection chosen, so it will do nothing
 problem_ai_missing	\'%1$s\' points at an AI connection that no longer exists
 problem_ai_unfinished	\'%1$s\' points at an AI connection that is not finished being set up
+problem_ai_tool_missing	\'%1$s\' offers the AI \'%2$s\', which is no longer available
+problem_ai_tool_unpinned	\'%1$s\' offers \'%2$s\' without choosing its %3$s, which the AI cannot fill in
 problem_variable_unset	\'%1$s\' has no variable chosen, so it will do nothing
 problem_variable_missing	\'%1$s\' uses a variable that no longer exists
 problem_empty_loop_body	\'%1$s\' has nothing in its loop body, so repeating does nothing
@@ -205,6 +207,11 @@ files_revoke	Revoke
 files_read_only	Can read only
 files_read_write	Can read and write
 files_missing	This folder is gone. Grant it again, or revoke it.
+files_no_path	That file has no location on this phone, so a macro cannot name it. Files stored online, and some downloads, cannot be used this way — copy it into a folder on the phone first.
+files_add_file	Add a file
+files_files_heading	Single files
+files_download_note	Android does not allow granting the Download folder itself. To use something already in it, add that file here with Add a file — or keep downloads in a folder inside it, which can be granted whole.
+files_read_only_file	Can read this one file
 files_own_storage	Ottomatic\'s own storage
 files_own_storage_hint	A path with no folder in it, such as report.csv, is kept here. It needs no permission and no macro can be given access to another app\'s files.
 macro_cancel	Cancel
@@ -590,6 +597,15 @@ geofence_radius_m	%1$d m
 config_now	Now
 config_set	Set
 config_add_row	Add %1$s
+config_tools_add	Add a tool
+config_tools_choose	What may the AI use?
+config_tools_none	Nothing yet — the AI will only answer, not act
+config_tools_fixed_count	%1$d value(s) fixed here
+config_tools_remove	Remove this tool
+config_tools_missing	No longer available
+config_tools_fixed	Fixed here rather than left to the AI
+config_tools_must_fix	Chosen here — the AI cannot name this
+config_tools_nothing_to_fix	This tool takes no settings
 config_port_carries_list	This port carries a list
 config_port_carries_one	This port carries one value
 config_hub_removed	%1$s · hub removed

@@ -3,8 +3,12 @@ package com.example.ottomatic.data.ai
 import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.AiReply
 import com.example.ottomatic.core.service.AiRequest
+import com.example.ottomatic.core.service.AiTool
+import com.example.ottomatic.core.service.AiToolCall
 import com.example.ottomatic.domain.model.AiConnection
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonArrayBuilder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.add
@@ -142,7 +146,22 @@ internal object GeminiProtocol : AiProtocol {
             add(
                 buildJsonObject {
                     put(ROLE_KEY, USER_ROLE)
-                    putJsonArray(PARTS_KEY) { add(buildJsonObject { put(TEXT_KEY, request.prompt) }) }
+                    putJsonArray(PARTS_KEY) {
+                        // Pictures before the words: a turn is read in order, and
+                        // "what is in this photo?" ahead of the photo asks about
+                        // nothing.
+                        request.images.forEach { image ->
+                            add(
+                                buildJsonObject {
+                                    putJsonObject(INLINE_DATA_KEY) {
+                                        put(MIME_TYPE_KEY, image.mediaType)
+                                        put(IMAGE_DATA_KEY, image.base64)
+                                    }
+                                },
+                            )
+                        }
+                        add(buildJsonObject { put(TEXT_KEY, request.prompt) })
+                    }
                 },
             )
         }
@@ -156,6 +175,134 @@ internal object GeminiProtocol : AiProtocol {
             putJsonObject(THINKING_KEY) { put(THINKING_LEVEL_KEY, thinkingLevel(request.model)) }
         }
     }.toString()
+
+    /**
+     * The request body for an exchange that may use [tools].
+     *
+     * Two things are peculiar to this provider and both are load-bearing:
+     *
+     * - **A tool result is addressed by name, not by id.** Gemini mints no call id at
+     *   all, so [AiToolCall.id] is synthesized in [readTurn] and never sent — the
+     *   `functionResponse` names the function instead. That is also why a model
+     *   asking for the same tool twice in one turn is answered in order.
+     * - **`response` must be an object**, not the bare string every other provider
+     *   accepts, so a result is wrapped in one key. A failed tool uses a different
+     *   key so the model can see it failed without the wording having to say so.
+     */
+    override fun conversationBody(
+        exchange: List<AiExchange>,
+        tools: List<AiTool>,
+        request: AiRequest,
+        connection: AiConnection,
+    ): String = buildJsonObject {
+        if (request.systemInstruction.isNotBlank()) {
+            putJsonObject(SYSTEM_KEY) {
+                putJsonArray(PARTS_KEY) { add(buildJsonObject { put(TEXT_KEY, request.systemInstruction) }) }
+            }
+        }
+        if (tools.isNotEmpty()) {
+            putJsonArray(TOOLS_KEY) {
+                add(
+                    buildJsonObject {
+                        putJsonArray(DECLARATIONS_KEY) { tools.forEach { add(declare(it)) } }
+                    },
+                )
+            }
+        }
+        putJsonArray(CONTENTS_KEY) { exchange.forEach { appendTurn(it) } }
+        putJsonObject(GENERATION_KEY) {
+            put(MAX_TOKENS_KEY, request.maxOutputTokens.coerceAtLeast(1) + thinkingHeadroom(request.model))
+            putJsonObject(THINKING_KEY) { put(THINKING_LEVEL_KEY, thinkingLevel(request.model)) }
+        }
+    }.toString()
+
+    /** One tool, in this API's spelling. */
+    private fun declare(tool: AiTool): JsonObject = buildJsonObject {
+        put(NAME_KEY, tool.name)
+        put(DESCRIPTION_KEY, tool.description)
+        put(PARAMETERS_KEY, toolParameterSchema(tool.parameters))
+    }
+
+    /** One thing that happened, as the `contents` entry this API expects for it. */
+    private fun JsonArrayBuilder.appendTurn(entry: AiExchange) {
+        when (entry) {
+            is AiExchange.Ask -> add(
+                buildJsonObject {
+                    put(ROLE_KEY, USER_ROLE)
+                    putJsonArray(PARTS_KEY) { add(buildJsonObject { put(TEXT_KEY, entry.prompt) }) }
+                },
+            )
+            is AiExchange.Said -> entry.turn.raw?.let { raw ->
+                add(buildJsonObject { put(ROLE_KEY, MODEL_ROLE); put(PARTS_KEY, raw) })
+            }
+            is AiExchange.Ran -> add(
+                buildJsonObject {
+                    put(ROLE_KEY, USER_ROLE)
+                    putJsonArray(PARTS_KEY) {
+                        entry.results.forEach { (call, result) ->
+                            add(
+                                buildJsonObject {
+                                    putJsonObject(FUNCTION_RESPONSE_KEY) {
+                                        put(NAME_KEY, call.name)
+                                        putJsonObject(RESPONSE_KEY) {
+                                            put(if (result.isError) FAILED_KEY else RESULT_KEY, result.text)
+                                        }
+                                    }
+                                },
+                            )
+                        }
+                    }
+                },
+            )
+        }
+    }
+
+    /**
+     * What [body] means when tools were offered.
+     *
+     * A turn's text and its function calls arrive as *sibling parts* of one content
+     * object, so both are read from the same array — a model may narrate and then
+     * call in the same breath, and dropping either half loses something.
+     */
+    @Suppress("ReturnCount") // Each exit names a distinct outcome, as in `readReply`.
+    override fun readTurn(status: Int, body: String): AiTurn {
+        val root = runCatching { json.parseToJsonElement(body).jsonObject }.getOrNull()
+        if (status !in SUCCESS_RANGE) return AiTurn.failed(errorText(status, root))
+        root ?: return AiTurn.failed("The model returned something unreadable (HTTP $status)")
+        val candidate = root[CANDIDATES_KEY]?.arrayOrNull()?.firstOrNull()?.objectOrNull()
+            ?: return AiTurn.failed(blockedText(root))
+        val parts = candidate[CONTENT_KEY]?.objectOrNull()?.get(PARTS_KEY)?.arrayOrNull()
+            ?: return AiTurn.failed("The model returned no answer")
+        val text = parts.mapNotNull { it.objectOrNull()?.get(TEXT_KEY)?.stringOrNull() }
+            .joinToString(separator = "")
+        val calls = toolCallsIn(parts)
+        val finish = candidate[FINISH_KEY]?.stringOrNull().orEmpty()
+        if (calls.isEmpty() && text.isBlank()) return AiTurn.failed(emptyAnswerText(finish))
+        return AiTurn(
+            text = text,
+            toolCalls = calls,
+            raw = parts,
+            truncated = finish == MAX_TOKENS_FINISH,
+        )
+    }
+
+    /**
+     * The turn's function calls, with ids synthesized.
+     *
+     * The id is never sent back — this API matches a response to its call by name —
+     * but [AiToolCall] carries one so the engine has a single shape to log and
+     * correlate against, and the index keeps two calls to the same tool distinct.
+     */
+    private fun toolCallsIn(parts: JsonArray): List<AiToolCall> = parts
+        .mapNotNull { it.objectOrNull()?.get(FUNCTION_CALL_KEY)?.objectOrNull() }
+        .mapIndexedNotNull { index, call ->
+            val name = call[NAME_KEY]?.stringOrNull() ?: return@mapIndexedNotNull null
+            AiToolCall(
+                id = "$name-$index",
+                name = name,
+                arguments = call[ARGS_KEY]?.objectOrNull()?.asToolArguments().orEmpty(),
+            )
+        }
 
     /**
      * What [body] means, given the [status] it arrived with.
@@ -255,6 +402,22 @@ internal object GeminiProtocol : AiProtocol {
     private const val MAX_TOKENS_FINISH = "MAX_TOKENS"
     private const val STOP_FINISH = "STOP"
     private const val USER_ROLE = "user"
+    private const val MODEL_ROLE = "model"
+    private const val TOOLS_KEY = "tools"
+    private const val DECLARATIONS_KEY = "functionDeclarations"
+    private const val DESCRIPTION_KEY = "description"
+    private const val PARAMETERS_KEY = "parameters"
+    private const val FUNCTION_CALL_KEY = "functionCall"
+    private const val FUNCTION_RESPONSE_KEY = "functionResponse"
+    private const val RESPONSE_KEY = "response"
+    private const val ARGS_KEY = "args"
+    private const val INLINE_DATA_KEY = "inlineData"
+    private const val MIME_TYPE_KEY = "mimeType"
+    private const val IMAGE_DATA_KEY = "data"
+    private const val RESULT_KEY = "result"
+
+    /** Named apart from the file-level `ERROR_KEY`, which is the envelope's own. */
+    private const val FAILED_KEY = "error"
     private const val SYSTEM_KEY = "systemInstruction"
     private const val CONTENTS_KEY = "contents"
     private const val GENERATION_KEY = "generationConfig"

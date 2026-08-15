@@ -47,6 +47,12 @@ enum class IssueReason {
     /** node */
     AI_UNFINISHED,
 
+    /** node, tool */
+    AI_TOOL_MISSING,
+
+    /** node, tool, fields */
+    AI_TOOL_UNPINNED,
+
     /** node */
     VARIABLE_UNSET,
 

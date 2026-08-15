@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine
 
+import com.example.ottomatic.core.service.FileBytes
 import com.example.ottomatic.core.service.FileFacts
 import com.example.ottomatic.core.service.FileListing
 import com.example.ottomatic.core.service.FileRead
@@ -37,6 +38,7 @@ class RecordingFiles(
     var result: FileResult = FileResult(changed = true),
     var listing: FileListing = FileListing(ok = true),
     var facts: FileFacts = FileFacts(exists = true, path = ""),
+    var bytes: FileBytes = FileBytes(base64 = "AAAA", mediaType = "image/jpeg"),
 ) : Files {
 
     val calls = mutableListOf<FileCall>()
@@ -44,6 +46,11 @@ class RecordingFiles(
     override suspend fun readText(path: String, encoding: TextEncoding): FileRead {
         calls += FileCall("readText", path, encoding = encoding)
         return read
+    }
+
+    override suspend fun readBytes(path: String): FileBytes {
+        calls += FileCall("readBytes", path)
+        return bytes
     }
 
     override suspend fun writeText(

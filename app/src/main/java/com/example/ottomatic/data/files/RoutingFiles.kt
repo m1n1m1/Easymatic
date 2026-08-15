@@ -1,6 +1,7 @@
 package com.example.ottomatic.data.files
 
 import android.content.Context
+import com.example.ottomatic.core.service.FileBytes
 import com.example.ottomatic.core.service.FileFacts
 import com.example.ottomatic.core.service.FileListing
 import com.example.ottomatic.core.service.FileRead
@@ -58,6 +59,9 @@ class RoutingFiles(context: Context) : Files {
 
     override suspend fun list(path: String, pattern: String, show: ListFilter): FileListing =
         route(path, { FileListing(error = it) }) { store, parsed -> store.list(parsed, pattern, show) }
+
+    override suspend fun readBytes(path: String): FileBytes =
+        route(path, { FileBytes(error = it) }) { store, parsed -> store.readBytes(parsed) }
 
     override suspend fun info(path: String): FileFacts =
         route(path, { FileFacts(error = it) }) { store, parsed -> store.info(parsed) }

@@ -454,6 +454,15 @@
     <string name="config_now">Ahora</string>
     <string name="config_set">Fijar</string>
     <string name="config_add_row">Añadir %1$s</string>
+    <string name="config_tools_add">Añadir una herramienta</string>
+    <string name="config_tools_choose">¿Qué puede usar la IA?</string>
+    <string name="config_tools_none">Nada todavía: la IA solo responderá, no actuará</string>
+    <string name="config_tools_fixed_count">%1$d valor(es) fijados aquí</string>
+    <string name="config_tools_remove">Quitar esta herramienta</string>
+    <string name="config_tools_missing">Ya no está disponible</string>
+    <string name="config_tools_fixed">Fijado aquí en vez de dejarlo a la IA</string>
+    <string name="config_tools_must_fix">Se elige aquí: la IA no puede nombrarlo</string>
+    <string name="config_tools_nothing_to_fix">Esta herramienta no tiene ajustes</string>
     <string name="config_port_carries_list">Este puerto lleva una lista</string>
     <string name="config_port_carries_one">Este puerto lleva un solo valor</string>
     <string name="config_hub_removed">%1$s · hub eliminado</string>

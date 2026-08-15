@@ -10,6 +10,8 @@
     <string name="problem_ai_unset">“%1$s”没有选择 AI 连接，因此什么也不会做</string>
     <string name="problem_ai_missing">“%1$s”指向一个已不存在的 AI 连接</string>
     <string name="problem_ai_unfinished">“%1$s”指向一个尚未设置完成的 AI 连接</string>
+    <string name="problem_ai_tool_missing">“%1$s”向 AI 提供了“%2$s”，但它已不可用</string>
+    <string name="problem_ai_tool_unpinned">“%1$s”提供了“%2$s”，却没有选定其%3$s，AI 无法自行填写</string>
     <string name="problem_variable_unset">“%1$s”没有选择变量，因此什么也不会做</string>
     <string name="problem_variable_missing">“%1$s”使用了一个已不存在的变量</string>
     <string name="problem_empty_loop_body">“%1$s”的循环体里什么也没有，重复也就毫无作用</string>

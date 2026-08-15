@@ -454,6 +454,15 @@
     <string name="config_now">现在</string>
     <string name="config_set">设置</string>
     <string name="config_add_row">添加%1$s</string>
+    <string name="config_tools_add">添加工具</string>
+    <string name="config_tools_choose">AI 可以使用什么？</string>
+    <string name="config_tools_none">暂无：AI 只会回答，不会执行任何操作</string>
+    <string name="config_tools_fixed_count">已在此固定 %1$d 个值</string>
+    <string name="config_tools_remove">移除此工具</string>
+    <string name="config_tools_missing">已不可用</string>
+    <string name="config_tools_fixed">在此固定，而不是交给 AI 决定</string>
+    <string name="config_tools_must_fix">在此选定：AI 无法指明它</string>
+    <string name="config_tools_nothing_to_fix">此工具没有可设置的项</string>
     <string name="config_port_carries_list">此端口传递一个列表</string>
     <string name="config_port_carries_one">此端口传递单个值</string>
     <string name="config_hub_removed">%1$s · 中枢已移除</string>

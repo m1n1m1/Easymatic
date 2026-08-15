@@ -69,7 +69,40 @@ interface Files {
 
     /** Copies or moves [from] to [to], content untouched. */
     suspend fun transfer(from: String, to: String, move: Boolean, whenExists: WhenExists): FileResult
+
+    /**
+     * The bytes at [path], Base64-encoded, or a failure.
+     *
+     * **Base64 rather than a `ByteArray`**, which looks like a needless expansion and
+     * is not. The only caller is an image on its way to a model, and every provider
+     * wants exactly this string on the wire — so returning bytes would mean encoding
+     * them again at the point of use, and holding *both* forms in memory inside the
+     * engine's foreground service. It also keeps the facade's "everything crossing
+     * this boundary is a value the engine can log and compare" property, which a
+     * mutable array does not have.
+     *
+     * Bounded by [FileLimits.MAX_READ_BYTES] while the stream is read, exactly as
+     * [readText] is, and for the identical reason: a 200 MB video is not a slow read
+     * but an out-of-memory kill that takes every armed macro with it.
+     *
+     * Defaulted so the facade's other implementations — and any future one — need not
+     * grow a member for a case only images have.
+     */
+    suspend fun readBytes(path: String): FileBytes = FileBytes(error = "Reading bytes is not available here")
 }
+
+/**
+ * The Base64 content of a file, or why it could not be read.
+ *
+ * [FileRead]'s shape and its rules: a non-blank [error] always comes with blank
+ * [base64], and nothing throws.
+ */
+data class FileBytes(
+    val base64: String = "",
+    /** What the platform said this is, when it knows — `image/jpeg` and the like. */
+    val mediaType: String = "",
+    val error: String = "",
+)
 
 /** How a write or a transfer behaves when something is already at the destination. */
 enum class WhenExists {

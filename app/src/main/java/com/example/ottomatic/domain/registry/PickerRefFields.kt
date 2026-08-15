@@ -85,6 +85,19 @@ fun aiConnectionRefKeys(typeId: NodeTypeId): List<ConfigKey> =
         .filter { (it.type as? ConfigFieldType.PICKER)?.kind == PickerKind.AI_CONNECTION }
         .map { it.key }
 
+/**
+ * The config keys of [typeId] that hold a
+ * [com.example.ottomatic.domain.model.ToolSpec] list.
+ *
+ * One node has this today, and it is still derived rather than named: a second AI node
+ * that offers tools should be validated by having the annotation, not by being added
+ * to a list somewhere else.
+ */
+fun toolListKeys(typeId: NodeTypeId): List<ConfigKey> =
+    ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
+        .filter { it.type == ConfigFieldType.TOOL_LIST }
+        .map { it.key }
+
 /** The config keys of [typeId] that hold a [PhoneRef] spec. */
 fun phoneRefKeys(typeId: NodeTypeId): List<ConfigKey> =
     ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()

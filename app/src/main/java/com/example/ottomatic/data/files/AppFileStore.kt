@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.files
 
+import com.example.ottomatic.core.service.FileBytes
 import com.example.ottomatic.core.service.FileFacts
 import com.example.ottomatic.core.service.FileLimits
 import com.example.ottomatic.core.service.FileListing
@@ -46,6 +47,13 @@ internal class AppFileStore(filesDir: File) : FileStore {
             runCatching { file.inputStream().use { readBounded(it, encoding) } }
                 .getOrElse { FileRead(error = it.message.orEmpty().ifBlank { "Could not read $path" }) }
         }
+
+    override suspend fun readBytes(path: FilePath): FileBytes = withContext(Dispatchers.IO) {
+        val file = resolve(path) ?: return@withContext FileBytes(error = outside(path))
+        if (!file.isFile) return@withContext FileBytes(error = "There is no file at ${'$'}path")
+        runCatching { file.inputStream().use { readBoundedBase64(it, mediaTypeOf(file.name)) } }
+            .getOrElse { FileBytes(error = it.message.orEmpty().ifBlank { "Could not read ${'$'}path" }) }
+    }
 
     override suspend fun writeText(
         path: FilePath,

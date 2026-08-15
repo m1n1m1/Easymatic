@@ -3,6 +3,7 @@ package com.example.ottomatic.data.ai
 import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.AiReply
 import com.example.ottomatic.core.service.AiRequest
+import com.example.ottomatic.core.service.AiTool
 import com.example.ottomatic.domain.model.AiBaseUrl
 import com.example.ottomatic.domain.model.AiConnection
 import com.example.ottomatic.domain.model.AiProvider
@@ -54,6 +55,47 @@ internal interface AiProtocol {
 
     /** What [body] means, given the [status] it arrived with. */
     fun readReply(status: Int, body: String): AiReply
+
+    /**
+     * The request body for an exchange that may use [tools], carrying everything said
+     * so far in [exchange].
+     *
+     * **Parallel to [requestBody] rather than replacing it**, and that is worth a
+     * sentence because collapsing the two looks tempting. Every existing test in this
+     * package pins [requestBody]'s exact envelope — a blank system instruction
+     * omitted, `thinkingLevel` sent without `thinkingBudget`, `max_completion_tokens`
+     * on OpenAI and `max_tokens` everywhere else — and those pins are the whole value
+     * of this file being pure functions. A tool-carrying body is a *different* shape
+     * (Anthropic's `content` stops being a bare string; OpenAI grows a `tool` role
+     * Gemini does not have), so it gets its own member and its own tests, and the
+     * single-prompt path keeps working exactly as it did.
+     *
+     * Defaults to the single-prompt body, ignoring [tools]. That is the graceful
+     * degradation a protocol which has not implemented tools should have: its node
+     * answers directly instead of failing, and nothing needs a capability flag to say
+     * so.
+     */
+    fun conversationBody(
+        exchange: List<AiExchange>,
+        tools: List<AiTool>,
+        request: AiRequest,
+        connection: AiConnection,
+    ): String = requestBody(request, connection)
+
+    /**
+     * What [body] means when tools were offered.
+     *
+     * Separate from [readReply] for the reason [AiTurn] exists at all: a turn that
+     * asks for a tool has to carry the calls *and* the assistant's own turn verbatim,
+     * neither of which fits an [AiReply]. It also must not treat blank text as a
+     * failure the way [readReply] correctly does — a tool-calling turn has null or
+     * absent text on OpenAI and Gemini, and would otherwise be reported as "the model
+     * returned an empty answer" on every request that worked.
+     */
+    fun readTurn(status: Int, body: String): AiTurn {
+        val reply = readReply(status, body)
+        return AiTurn(text = reply.text, error = reply.error, truncated = reply.truncated)
+    }
 
     /** What a listing response means. Never throws; a failure is a sentence. */
     fun readModels(status: Int, body: String): AiModels
@@ -172,3 +214,20 @@ internal fun JsonElement.arrayOrNull(): JsonArray? = runCatching { jsonArray }.g
 
 internal fun JsonElement.stringOrNull(): String? =
     (this as? JsonPrimitive)?.takeIf { it.isString }?.content
+
+/**
+ * A model's tool arguments, as the text every consumer of them wants.
+ *
+ * **Shared by all three protocols because all three hand back the same thing under a
+ * different key** — Gemini's `functionCall.args`, Anthropic's `tool_use.input` and
+ * OpenAI's parsed `function.arguments` are one JSON object each.
+ *
+ * A string value yields its *content* rather than its quoted form, which is the whole
+ * reason this is not `toString()`: a config key given `"kitchen"` must decode to
+ * `kitchen`, and the quotes would survive into a Wi-Fi name or a notification title.
+ * Anything else — a number, a boolean, a nested object a model sent where a scalar
+ * was asked for — keeps its JSON text, which is exactly what `Item.asText()` does
+ * with the same values and what `NodeSchema.decode` then parses back.
+ */
+internal fun JsonObject.asToolArguments(): Map<String, String> =
+    mapValues { (_, value) -> value.stringOrNull() ?: value.toString() }

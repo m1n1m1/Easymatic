@@ -34,6 +34,39 @@ interface Ai {
 
     /** Answers [request], or reports in [AiReply.error] why it could not. */
     suspend fun complete(request: AiRequest): AiReply
+
+    /**
+     * Answers [request], letting the model call [tools] along the way, and stopping
+     * after at most [maxTurns] replies from it.
+     *
+     * **Two methods rather than one with an empty list**, because the two make
+     * different promises and a caller chooses between them knowingly: [complete] is
+     * one round trip that either answers or does not, where this one may run
+     * arbitrary [invoke] work an unbounded number of times up to the cap. A node
+     * whose card says "Ask AI" and a node whose card says "Ask AI (with tools)"
+     * should not be the same call with a different argument. An empty [tools] is
+     * still legal and simply delegates — a tool list the user emptied is not an
+     * error.
+     *
+     * **The loop lives below this interface, not above it.** `engine/` supplies what
+     * a tool *is* and what running one *does*; the turn bookkeeping — which shape a
+     * reply-with-tool-calls takes, which parts of the assistant's turn have to be
+     * echoed back verbatim, how a result is addressed — is per provider and stops in
+     * `data/ai/`, exactly as the request envelope does. That is also why [invoke] is
+     * a callback rather than this returning tool calls for the caller to service: a
+     * caller servicing them would have to reproduce the echo rules, and those are the
+     * part that differs.
+     *
+     * [invoke] is called once per tool the model asks for. It must not throw — an
+     * [AiToolResult] with `isError` set is how a tool reports that it failed, and the
+     * model gets to try something else.
+     */
+    suspend fun converse(
+        request: AiRequest,
+        tools: List<AiTool>,
+        maxTurns: Int = AiToolLimits.DEFAULT_MAX_TURNS,
+        invoke: suspend (AiToolCall) -> AiToolResult,
+    ): AiReply
 }
 
 /**
@@ -102,6 +135,18 @@ data class AiRequest(
     val systemInstruction: String = "",
     val model: AiModel = AiModel.FAST,
     val maxOutputTokens: Int = DEFAULT_MAX_OUTPUT_TOKENS,
+    /**
+     * Pictures to look at alongside [prompt].
+     *
+     * A list rather than one, because "which of these two photos has the parcel in
+     * it" is a question people ask — and because every provider here takes an array
+     * anyway, so the singular form would be the special case.
+     *
+     * Defaulted empty, which is what makes this invisible to every existing caller and
+     * every existing test: a request with no images renders exactly the body it did
+     * before this field existed.
+     */
+    val images: List<AiImage> = emptyList(),
 ) {
     companion object {
         /**
@@ -113,6 +158,22 @@ data class AiRequest(
         const val DEFAULT_MAX_OUTPUT_TOKENS = 1_024
     }
 }
+
+/**
+ * One picture, ready for the wire.
+ *
+ * **Base64 rather than bytes**, matching [Files.readBytes] and for its reason: this is
+ * the form all three providers want, so bytes would be encoded again at the point of
+ * use and held twice in a foreground service's heap.
+ *
+ * [mediaType] is required rather than sniffed. Every provider here demands it
+ * explicitly, and guessing it from the bytes would put an image decoder in `core/`
+ * for a fact the file's own name already carries.
+ */
+data class AiImage(
+    val base64: String,
+    val mediaType: String,
+)
 
 /**
  * What a model answered, or why it did not.
@@ -148,6 +209,13 @@ data class AiReply(
 object NoAi : Ai {
 
     override suspend fun complete(request: AiRequest): AiReply = AiReply(error = UNAVAILABLE)
+
+    override suspend fun converse(
+        request: AiRequest,
+        tools: List<AiTool>,
+        maxTurns: Int,
+        invoke: suspend (AiToolCall) -> AiToolResult,
+    ): AiReply = AiReply(error = UNAVAILABLE)
 
     private const val UNAVAILABLE =
         "No AI connection is set up on this phone — add one under AI in the menu on the macro list"

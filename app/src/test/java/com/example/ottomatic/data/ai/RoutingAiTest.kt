@@ -1,9 +1,16 @@
 package com.example.ottomatic.data.ai
 
 import com.example.ottomatic.core.service.AiModel
+import com.example.ottomatic.core.service.AiParam
+import com.example.ottomatic.core.service.AiParamSchema
 import com.example.ottomatic.core.service.AiRequest
+import com.example.ottomatic.core.service.AiTool
+import com.example.ottomatic.core.service.AiToolCall
+import com.example.ottomatic.core.service.AiToolLimits
+import com.example.ottomatic.core.service.AiToolResult
 import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.data.security.FakeSecrets
+import com.example.ottomatic.domain.model.AiConnection
 import com.example.ottomatic.domain.model.AiProvider
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -142,5 +149,165 @@ class RoutingAiTest {
         val reply = RoutingAi(repository).complete(request(connectionId = created.id))
         assertTrue(reply.error.contains("server address"))
         assertFalse(reply.error.contains("connection"))
+    }
+
+    /**
+     * The guards are shared between the two paths deliberately, so this is the test
+     * that they did not drift: a tool-using node must refuse the same things a
+     * plain one does, before anything is billed.
+     */
+    @Test
+    fun `the tool path is stopped by the same guards as the plain one`() = runBlocking {
+        val reply = RoutingAi(repository()).converse(
+            request = request(connectionId = "anything", prompt = "  "),
+            tools = listOf(tool),
+        ) { AiToolResult("") }
+        assertTrue(reply.error.contains("No prompt"))
+    }
+
+    // ---- the exchange ----------------------------------------------------------
+    //
+    // Driven through a real protocol with a scripted transport: the sequence is the
+    // whole behaviour here, and no live server produces one on demand.
+
+    /** The ordinary shape: the model asks for something, gets it, and answers. */
+    @Test
+    fun `a tool call is run and its answer reaches the next turn`() = runBlocking {
+        val sent = mutableListOf<String>()
+        val ran = mutableListOf<AiToolCall>()
+        val reply = exchange(sent, listOf(CALLS_BATTERY, ANSWERS)) { call ->
+            ran += call
+            AiToolResult("72")
+        }
+
+        assertEquals("The battery is at 72%", reply.text)
+        assertEquals("", reply.error)
+        assertEquals(listOf("value_battery"), ran.map { it.name })
+        assertEquals(mapOf("scale" to "percent"), ran.single().arguments)
+
+        // The second request must carry the assistant's own turn back and the result
+        // beside it, or the server refuses the continuation.
+        assertEquals(2, sent.size)
+        assertTrue(sent[1].contains(""""role":"assistant""""))
+        assertTrue(sent[1].contains(""""type":"tool_result""""))
+        assertTrue(sent[1].contains("72"))
+    }
+
+    /**
+     * A failing tool is not a failing run. The model is told, in the provider's own
+     * terms, and gets to try something else — which is why [AiToolResult] carries a
+     * flag rather than the runner throwing.
+     */
+    @Test
+    fun `a tool that fails is reported to the model rather than ending the run`() = runBlocking {
+        val sent = mutableListOf<String>()
+        val reply = exchange(sent, listOf(CALLS_BATTERY, ANSWERS)) {
+            AiToolResult("the sensor is unavailable", isError = true)
+        }
+        assertEquals("The battery is at 72%", reply.text)
+        assertTrue(sent[1].contains(""""is_error":true"""))
+    }
+
+    /** Nothing else bounds a loop the model drives, so the cap is what stops it. */
+    @Test
+    fun `the turn cap stops the exchange and says so`() = runBlocking {
+        val sent = mutableListOf<String>()
+        var ran = 0
+        val reply = exchange(sent, List(10) { CALLS_BATTERY }, maxTurns = 3) {
+            ran++
+            AiToolResult("72")
+        }
+        assertEquals(3, sent.size)
+        assertEquals(3, ran)
+        assertTrue(reply.error.contains("3 turns"))
+        assertTrue(reply.error.contains("turn limit"))
+        assertEquals("", reply.text)
+    }
+
+    /** The cap is a ceiling as well as a default; a node cannot ask for a hundred turns. */
+    @Test
+    fun `the turn count is clamped to the ceiling`() = runBlocking {
+        val sent = mutableListOf<String>()
+        exchange(sent, List(100) { CALLS_BATTERY }, maxTurns = 500) { AiToolResult("72") }
+        assertEquals(AiToolLimits.MAX_TURNS, sent.size)
+    }
+
+    /**
+     * Checked between turns rather than by cancelling one, so a tool halfway through
+     * switching a light off is never stopped mid-write.
+     */
+    @Test
+    fun `the overall budget stops the exchange before another turn is sent`() = runBlocking {
+        val sent = mutableListOf<String>()
+        val clock = ArrayDeque(listOf(0L, AiToolLimits.OVERALL_BUDGET_MS + 1))
+        val reply = runToolExchange(
+            protocol = AnthropicProtocol,
+            request = request(connectionId = "c"),
+            connection = AiConnection(id = "c", name = "Claude", provider = AiProvider.ANTHROPIC),
+            tools = listOf(tool),
+            maxTurns = 8,
+            invoke = { AiToolResult("72") },
+            now = { clock.removeFirstOrNull() ?: Long.MAX_VALUE },
+            send = { body -> sent += body; 200 to CALLS_BATTERY },
+        )
+        assertEquals(0, sent.size)
+        assertTrue(reply.error.contains("five minutes"))
+    }
+
+    /** A failed turn ends the exchange rather than being retried into the cap. */
+    @Test
+    fun `a refused request ends the exchange at once`() = runBlocking {
+        val sent = mutableListOf<String>()
+        val refusal = """{"error":{"message":"API key not valid"}}"""
+        val reply = runToolExchange(
+            protocol = AnthropicProtocol,
+            request = request(connectionId = "c"),
+            connection = AiConnection(id = "c", name = "Claude", provider = AiProvider.ANTHROPIC),
+            tools = listOf(tool),
+            maxTurns = 8,
+            invoke = { AiToolResult("72") },
+            send = { body -> sent += body; 401 to refusal },
+        )
+        assertEquals(1, sent.size)
+        assertTrue(reply.error.contains("API key not valid"))
+    }
+
+    private val tool = AiTool(
+        name = "value_battery",
+        description = "Reads the phone's battery level",
+        parameters = listOf(AiParam("scale", AiParamSchema.Text(listOf("percent")))),
+    )
+
+    /** Runs [replies] back in order through a real protocol, recording each body sent. */
+    private suspend fun exchange(
+        sent: MutableList<String>,
+        replies: List<String>,
+        maxTurns: Int = 8,
+        invoke: suspend (AiToolCall) -> AiToolResult,
+    ): com.example.ottomatic.core.service.AiReply {
+        val queue = ArrayDeque(replies)
+        return runToolExchange(
+            protocol = AnthropicProtocol,
+            request = request(connectionId = "c", prompt = "how full is the battery?"),
+            connection = AiConnection(id = "c", name = "Claude", provider = AiProvider.ANTHROPIC),
+            tools = listOf(tool),
+            maxTurns = maxTurns,
+            invoke = invoke,
+            send = { body ->
+                sent += body
+                200 to (queue.removeFirstOrNull() ?: ANSWERS)
+            },
+        )
+    }
+
+    private companion object {
+        val CALLS_BATTERY = """
+            {"content":[{"type":"tool_use","id":"toolu_01","name":"value_battery",
+             "input":{"scale":"percent"}}],"stop_reason":"tool_use"}
+        """.trimIndent()
+
+        val ANSWERS = """
+            {"content":[{"type":"text","text":"The battery is at 72%"}],"stop_reason":"end_turn"}
+        """.trimIndent()
     }
 }

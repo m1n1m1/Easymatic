@@ -615,4 +615,14 @@
     <string name="files_files_heading">Einzelne Dateien</string>
     <string name="files_download_note">Android erlaubt es nicht, den Download-Ordner selbst freizugeben. Um etwas zu nutzen, das schon darin liegt, füge diese Datei hier mit „Datei hinzufügen“ ein – oder lege deine Downloads in einen Ordner darin, der sich ganz freigeben lässt.</string>
     <string name="files_read_only_file">Kann nur diese eine Datei lesen</string>
+
+    <string name="config_tools_add">Werkzeug hinzufügen</string>
+    <string name="config_tools_choose">Was darf die KI benutzen?</string>
+    <string name="config_tools_none">Noch nichts — die KI antwortet nur, sie handelt nicht</string>
+    <string name="config_tools_fixed_count">%1$d Wert(e) hier festgelegt</string>
+    <string name="config_tools_remove">Dieses Werkzeug entfernen</string>
+    <string name="config_tools_missing">Nicht mehr verfügbar</string>
+    <string name="config_tools_fixed">Hier festgelegt, statt der KI überlassen</string>
+    <string name="config_tools_must_fix">Wird hier gewählt — die KI kann das nicht benennen</string>
+    <string name="config_tools_nothing_to_fix">Dieses Werkzeug hat keine Einstellungen</string>
 </resources>

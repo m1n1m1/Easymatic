@@ -10,6 +10,8 @@
     <string name="problem_ai_unset">Aucune connexion IA n\'est choisie pour « %1$s », il ne fera donc rien</string>
     <string name="problem_ai_missing">« %1$s » pointe vers une connexion IA qui n\'existe plus</string>
     <string name="problem_ai_unfinished">« %1$s » pointe vers une connexion IA dont la configuration n\'est pas terminée</string>
+    <string name="problem_ai_tool_missing">« %1$s » propose à l\'IA « %2$s », qui n\'est plus disponible</string>
+    <string name="problem_ai_tool_unpinned">« %1$s » propose « %2$s » sans choisir son %3$s, que l\'IA ne peut pas remplir</string>
     <string name="problem_variable_unset">Aucune variable n\'est choisie pour « %1$s », il ne fera donc rien</string>
     <string name="problem_variable_missing">« %1$s » utilise une variable qui n\'existe plus</string>
     <string name="problem_empty_loop_body">Le corps de boucle de « %1$s » est vide, répéter ne fait donc rien</string>

@@ -164,6 +164,23 @@ sealed interface ConfigFieldType<out T> {
     data object PORT_LIST : ConfigFieldType<String>
 
     /**
+     * A list of things an AI may do — a node type or another macro per row, each with
+     * the config its author pinned — declared with `@Tools` and stored as one line per
+     * tool (see [com.example.ottomatic.domain.model.ToolSpec]).
+     *
+     * [PORT_LIST]'s storage model and a different editor, because a row here is not a
+     * name and a type but **a chosen node plus a nested config form**. That nesting is
+     * the point rather than an implementation detail: a tool's opaque fields — a hub
+     * reference, another connection's id — have to be filled in with the same pickers
+     * the node's own form uses, because an identifier a model invents names nothing
+     * and fails silently. Pinning them is what makes the tool safe to offer.
+     *
+     * `action.ai_agent` has this, and nothing else should: it is the node whose whole
+     * subject is what the model is allowed to reach.
+     */
+    data object TOOL_LIST : ConfigFieldType<String>
+
+    /**
      * A generated key, rendered read-only with Copy and Regenerate beside it
      * (declared with `@ApiToken`).
      *

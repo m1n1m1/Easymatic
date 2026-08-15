@@ -690,3 +690,14 @@ files_add_file	添加文件
 files_files_heading	单个文件
 files_download_note	Android 不允许授予 Download 文件夹本身。要使用其中已有的文件，请用“添加文件”把该文件加到这里；或者把下载内容放在其中的子文件夹里，子文件夹可以整个授予。
 files_read_only_file	只能读取这一个文件
+problem_ai_tool_missing	“%1$s”向 AI 提供了“%2$s”，但它已不可用
+problem_ai_tool_unpinned	“%1$s”提供了“%2$s”，却没有选定其%3$s，AI 无法自行填写
+config_tools_choose	AI 可以使用什么？
+config_tools_none	暂无：AI 只会回答，不会执行任何操作
+config_tools_fixed_count	已在此固定 %1$d 个值
+config_tools_remove	移除此工具
+config_tools_missing	已不可用
+config_tools_fixed	在此固定，而不是交给 AI 决定
+config_tools_must_fix	在此选定：AI 无法指明它
+config_tools_nothing_to_fix	此工具没有可设置的项
+config_tools_add	添加工具

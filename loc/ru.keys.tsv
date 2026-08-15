@@ -690,3 +690,14 @@ files_add_file	Добавить файл
 files_files_heading	Отдельные файлы
 files_download_note	Android не разрешает выдать доступ к самой папке Download. Чтобы использовать то, что уже в ней лежит, добавьте этот файл сюда через «Добавить файл» — или храните загрузки в папке внутри неё, её можно выдать целиком.
 files_read_only_file	Может читать только этот файл
+problem_ai_tool_missing	«%1$s» предлагает ИИ «%2$s», но это больше недоступно
+problem_ai_tool_unpinned	«%1$s» предлагает «%2$s», но не выбрано %3$s, а ИИ не может это заполнить
+config_tools_choose	Чем может пользоваться ИИ?
+config_tools_none	Пока ничего: ИИ только ответит, но ничего не сделает
+config_tools_fixed_count	Здесь задано значений: %1$d
+config_tools_remove	Убрать этот инструмент
+config_tools_missing	Больше недоступно
+config_tools_fixed	Задано здесь, а не оставлено на усмотрение ИИ
+config_tools_must_fix	Выбирается здесь: ИИ не может это указать
+config_tools_nothing_to_fix	У этого инструмента нет настроек
+config_tools_add	Добавить инструмент

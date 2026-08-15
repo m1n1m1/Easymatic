@@ -1134,4 +1134,40 @@
     <string name="port_action_file_delete_path">Datei</string>
     <string name="port_action_file_delete_state">Ergebnis</string>
     <string name="cfg_action_file_delete_path">Datei</string>
+
+    <string name="node_action_ai_agent_name">KI fragen (mit Werkzeugen)</string>
+    <string name="node_action_ai_agent_desc">Bittet ein KI-Modell, etwas zu tun, und lässt es dabei vom Telefon lesen sowie die von dir gewählten Knoten und Makros ausführen, bis es eine Antwort hat</string>
+    <string name="port_action_ai_agent_in">Eingang</string>
+    <string name="port_action_ai_agent_out">Ausgang</string>
+    <string name="port_action_ai_agent_prompt">Was zu tun ist</string>
+    <string name="port_action_ai_agent_system_instruction">Dauerhafte Anweisung</string>
+    <string name="port_action_ai_agent_answer">Antwort</string>
+    <string name="cfg_action_ai_agent_connection_id">Verbindung</string>
+    <string name="cfg_action_ai_agent_prompt">Was zu tun ist</string>
+    <string name="cfg_action_ai_agent_system_instruction">Dauerhafte Anweisung</string>
+    <string name="cfg_action_ai_agent_model">Modell</string>
+    <string name="opt_action_ai_agent_model_fast">Schnell</string>
+    <string name="opt_action_ai_agent_model_balanced">Ausgewogen</string>
+    <string name="opt_action_ai_agent_model_thorough">Gründlich</string>
+    <string name="cfg_action_ai_agent_tools">Werkzeuge</string>
+    <string name="cfg_action_ai_agent_max_turns">Höchstens Runden</string>
+    <string name="cfg_action_ai_agent_max_output_tokens">Längste Antwort (Tokens)</string>
+    <string name="cfg_action_ai_agent_fallback">Wenn es fehlschlägt</string>
+
+    <string name="node_action_ai_describe_name">KI zu einem Bild fragen</string>
+    <string name="node_action_ai_describe_desc">Zeigt einem KI-Modell ein Bild von diesem Telefon und gibt zurück, was es dazu sagt</string>
+    <string name="port_action_ai_describe_in">Eingang</string>
+    <string name="port_action_ai_describe_out">Ausgang</string>
+    <string name="port_action_ai_describe_image">Bild</string>
+    <string name="port_action_ai_describe_prompt">Was zu fragen ist</string>
+    <string name="port_action_ai_describe_answer">Antwort</string>
+    <string name="cfg_action_ai_describe_connection_id">Verbindung</string>
+    <string name="cfg_action_ai_describe_image">Bild</string>
+    <string name="cfg_action_ai_describe_prompt">Was zu fragen ist</string>
+    <string name="cfg_action_ai_describe_model">Modell</string>
+    <string name="opt_action_ai_describe_model_fast">Schnell</string>
+    <string name="opt_action_ai_describe_model_balanced">Ausgewogen</string>
+    <string name="opt_action_ai_describe_model_thorough">Gründlich</string>
+    <string name="cfg_action_ai_describe_max_output_tokens">Längste Antwort (Tokens)</string>
+    <string name="cfg_action_ai_describe_fallback">Wenn es fehlschlägt</string>
 </resources>

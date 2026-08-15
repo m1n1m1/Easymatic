@@ -624,3 +624,11 @@ Copy it	Le copier
 Move it	Le déplacer
 Delete File	Supprimer un fichier
 Removes a file from the phone	Supprime un fichier du téléphone
+Ask AI (with tools)	Demander à l'IA (avec outils)
+Ask AI About a Picture	Interroger l'IA sur une image
+Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer	Demande à un modèle d'IA de faire quelque chose, en le laissant lire le téléphone et exécuter les nœuds et macros que vous choisissez jusqu'à obtenir une réponse
+Most turns	Tours maximum
+Picture	Image
+Shows an AI model a picture from this phone and returns what it says about it	Montre une image de ce téléphone à un modèle d'IA et renvoie ce qu'il en dit
+Tools	Outils
+What to ask	Quoi demander

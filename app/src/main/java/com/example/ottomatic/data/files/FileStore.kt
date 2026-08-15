@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.files
 
+import com.example.ottomatic.core.service.FileBytes
 import com.example.ottomatic.core.service.FileFacts
 import com.example.ottomatic.core.service.FileListing
 import com.example.ottomatic.core.service.FileRead
@@ -29,6 +30,9 @@ import com.example.ottomatic.domain.model.FilePath
 internal interface FileStore {
 
     suspend fun readText(path: FilePath, encoding: TextEncoding): FileRead
+
+    /** The bytes at [path], Base64-encoded — see [com.example.ottomatic.core.service.Files.readBytes]. */
+    suspend fun readBytes(path: FilePath): FileBytes
 
     suspend fun writeText(
         path: FilePath,

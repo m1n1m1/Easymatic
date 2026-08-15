@@ -10,6 +10,8 @@
     <string name="problem_ai_unset">「%1$s」で AI 接続が選ばれていないため、何も行われません</string>
     <string name="problem_ai_missing">「%1$s」はすでに存在しない AI 接続を指しています</string>
     <string name="problem_ai_unfinished">「%1$s」は設定が完了していない AI 接続を指しています</string>
+    <string name="problem_ai_tool_missing">「%1$s」は AI に「%2$s」を提供していますが、現在は利用できません</string>
+    <string name="problem_ai_tool_unpinned">「%1$s」は「%2$s」を提供していますが、%3$s が選ばれていません。AI には指定できません</string>
     <string name="problem_variable_unset">「%1$s」で変数が選ばれていないため、何も行われません</string>
     <string name="problem_variable_missing">「%1$s」はすでに存在しない変数を使用しています</string>
     <string name="problem_empty_loop_body">「%1$s」のループ本体が空のため、繰り返しても何も起きません</string>

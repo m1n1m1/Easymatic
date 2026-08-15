@@ -34,10 +34,13 @@ App Initialised	App Initialised
 App Installed / Removed	App Installed / Removed
 Appends an item to a named list, usually from inside a loop	Appends an item to a named list, usually from inside a loop
 Ask AI	Ask AI
+Ask AI (with tools)	Ask AI (with tools)
+Ask AI About a Picture	Ask AI About a Picture
 Ask Yes or No	Ask Yes or No
 Ask for Input	Ask for Input
 Ask the broker to keep this message	Ask the broker to keep this message
 Ask to Choose	Ask to Choose
+Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer	Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer
 Asks the user a yes/no question in a popup dialog and branches on the answer	Asks the user a yes/no question in a popup dialog and branches on the answer
 Asks the user to type a value in a popup dialog and puts it on a port	Asks the user to type a value in a popup dialog and puts it on a port
 At	At
@@ -280,6 +283,7 @@ Minutes	Minutes
 Mode	Mode
 Model	Model
 Mondays	Mondays
+Most turns	Most turns
 Mounted	Mounted
 Move	Move
 Move it	Move it
@@ -329,6 +333,7 @@ Pattern (comma-separated ms, e.g. 0,200,500,200)	Pattern (comma-separated ms, e.
 Pause	Pause
 Pauses the workflow for a while	Pauses the workflow for a while
 Picked up	Picked up
+Picture	Picture
 Place	Place
 Planned for	Planned for
 Play	Play
@@ -437,6 +442,7 @@ Show Message	Show Message
 Show Notification	Show Notification
 Shows a popup dialog and waits until the user has acknowledged it	Shows a popup dialog and waits until the user has acknowledged it
 Shows a popup dialog offering a list of options and reports which one was picked	Shows a popup dialog offering a list of options and reports which one was picked
+Shows an AI model a picture from this phone and returns what it says about it	Shows an AI model a picture from this phone and returns what it says about it
 Signal	Signal
 Silence	Silence
 Silent	Silent
@@ -537,6 +543,7 @@ Toggle Bluetooth	Toggle Bluetooth
 Toggle Flashlight	Toggle Flashlight
 Toggle Wi-Fi	Toggle Wi-Fi
 Toggles Do-Not-Disturb on or off with a chosen policy level	Toggles Do-Not-Disturb on or off with a chosen policy level
+Tools	Tools
 Topic	Topic
 Triple tap	Triple tap
 Tuesdays	Tuesdays
@@ -582,6 +589,7 @@ Wait until finished	Wait until finished
 Warmth (K)	Warmth (K)
 Wednesdays	Wednesdays
 What starts it	What starts it
+What to ask	What to ask
 What to do	What to do
 Whatsapp	Whatsapp
 When cancelled	When cancelled

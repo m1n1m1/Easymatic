@@ -5,6 +5,8 @@ import com.example.ottomatic.engine.ExecutableAction
 import com.example.ottomatic.engine.action.AskChoiceAction
 import com.example.ottomatic.engine.action.AskConfirmAction
 import com.example.ottomatic.engine.action.AskInputAction
+import com.example.ottomatic.engine.action.AiAgentAction
+import com.example.ottomatic.engine.action.AiDescribeAction
 import com.example.ottomatic.engine.action.AiPromptAction
 import com.example.ottomatic.engine.action.AutoRotateAction
 import com.example.ottomatic.engine.action.BluetoothAction
@@ -89,6 +91,8 @@ object ActionRegistry {
 
     private val actions: List<ExecutableAction> = listOf(
         AiPromptAction(),
+        AiAgentAction(),
+        AiDescribeAction(),
         AutoRotateAction(),
         BluetoothAction(),
         BrightnessAction(),

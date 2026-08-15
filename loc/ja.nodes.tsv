@@ -624,3 +624,11 @@ Copy it	コピーする
 Move it	移動する
 Delete File	ファイルを削除
 Removes a file from the phone	端末からファイルを削除します
+Ask AI (with tools)	AI に依頼（ツールあり）
+Ask AI About a Picture	画像について AI に尋ねる
+Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer	AI モデルに作業を依頼します。答えが出るまで、端末の情報を読み取り、選んだノードやマクロを実行させます
+Most turns	最大ターン数
+Picture	画像
+Shows an AI model a picture from this phone and returns what it says about it	この端末の画像を AI モデルに見せ、その説明を返します
+Tools	ツール
+What to ask	尋ねる内容

@@ -37,4 +37,7 @@
     <string name="problem_not_exec_upstream">„%1$s“ wird noch nicht gelaufen sein, wenn „%2$s“ ausgeführt wird</string>
     <string name="problem_fork_branch_cross">„%1$s“ und „%2$s“ liegen auf gegenüberliegenden Zweigen von „%3$s“, es kann also nichts zwischen ihnen übergeben werden</string>
 
+
+    <string name="problem_ai_tool_missing">„%1$s“ bietet der KI „%2$s“ an, das es nicht mehr gibt</string>
+    <string name="problem_ai_tool_unpinned">„%1$s“ bietet „%2$s“ an, ohne %3$s festzulegen — das kann die KI nicht ausfüllen</string>
 </resources>

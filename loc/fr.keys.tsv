@@ -690,3 +690,14 @@ files_add_file	Ajouter un fichier
 files_files_heading	Fichiers isolés
 files_download_note	Android n'autorise pas à accorder le dossier Download lui-même. Pour utiliser quelque chose qui s'y trouve déjà, ajoute ce fichier ici avec Ajouter un fichier — ou garde tes téléchargements dans un dossier à l'intérieur, qui peut être accordé en entier.
 files_read_only_file	Peut lire ce seul fichier
+problem_ai_tool_missing	« %1$s » propose à l'IA « %2$s », qui n'est plus disponible
+problem_ai_tool_unpinned	« %1$s » propose « %2$s » sans choisir son %3$s, que l'IA ne peut pas remplir
+config_tools_choose	Que peut utiliser l'IA ?
+config_tools_none	Rien pour l'instant : l'IA répondra seulement, sans agir
+config_tools_fixed_count	%1$d valeur(s) fixée(s) ici
+config_tools_remove	Retirer cet outil
+config_tools_missing	N'est plus disponible
+config_tools_fixed	Fixé ici plutôt que laissé à l'IA
+config_tools_must_fix	Choisi ici : l'IA ne peut pas le nommer
+config_tools_nothing_to_fix	Cet outil n'a aucun réglage
+config_tools_add	Ajouter un outil

@@ -10,6 +10,8 @@
     <string name="problem_ai_unset">Для «%1$s» не выбрано подключение к ИИ, поэтому ничего не произойдёт</string>
     <string name="problem_ai_missing">«%1$s» указывает на подключение к ИИ, которого больше нет</string>
     <string name="problem_ai_unfinished">«%1$s» указывает на подключение к ИИ, настройка которого не завершена</string>
+    <string name="problem_ai_tool_missing">«%1$s» предлагает ИИ «%2$s», но это больше недоступно</string>
+    <string name="problem_ai_tool_unpinned">«%1$s» предлагает «%2$s», но не выбрано %3$s, а ИИ не может это заполнить</string>
     <string name="problem_variable_unset">Для «%1$s» не выбрана переменная, поэтому ничего не произойдёт</string>
     <string name="problem_variable_missing">«%1$s» использует переменную, которой больше нет</string>
     <string name="problem_empty_loop_body">В теле цикла «%1$s» ничего нет, поэтому повторение ничего не даёт</string>

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.webkit.MimeTypeMap
+import com.example.ottomatic.core.service.FileBytes
 import com.example.ottomatic.core.service.FileFacts
 import com.example.ottomatic.core.service.FileLimits
 import com.example.ottomatic.core.service.FileListing
@@ -61,6 +62,15 @@ internal class SafFileStore(private val context: Context) : FileStore {
             runCatching { stream.use { readBounded(it, encoding) } }
                 .getOrElse { FileRead(error = it.message.orEmpty().ifBlank { "Could not read $path" }) }
         }
+
+    override suspend fun readBytes(path: FilePath): FileBytes = withContext(Dispatchers.IO) {
+        val stream = openRead(path)
+            ?: return@withContext FileBytes(
+                error = if (SafGrants.treeFor(context, path.toString()) == null) noGrant(path) else missing(path),
+            )
+        runCatching { stream.use { readBoundedBase64(it, mediaTypeOf(path.toString())) } }
+            .getOrElse { FileBytes(error = it.message.orEmpty().ifBlank { "Could not read ${'$'}path" }) }
+    }
 
     override suspend fun writeText(
         path: FilePath,

@@ -454,6 +454,15 @@
     <string name="config_now">Сейчас</string>
     <string name="config_set">Задать</string>
     <string name="config_add_row">Добавить: %1$s</string>
+    <string name="config_tools_add">Добавить инструмент</string>
+    <string name="config_tools_choose">Чем может пользоваться ИИ?</string>
+    <string name="config_tools_none">Пока ничего: ИИ только ответит, но ничего не сделает</string>
+    <string name="config_tools_fixed_count">Здесь задано значений: %1$d</string>
+    <string name="config_tools_remove">Убрать этот инструмент</string>
+    <string name="config_tools_missing">Больше недоступно</string>
+    <string name="config_tools_fixed">Задано здесь, а не оставлено на усмотрение ИИ</string>
+    <string name="config_tools_must_fix">Выбирается здесь: ИИ не может это указать</string>
+    <string name="config_tools_nothing_to_fix">У этого инструмента нет настроек</string>
     <string name="config_port_carries_list">Этот порт передаёт список</string>
     <string name="config_port_carries_one">Этот порт передаёт одно значение</string>
     <string name="config_hub_removed">%1$s · хаб удалён</string>

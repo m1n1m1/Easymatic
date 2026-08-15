@@ -454,6 +454,15 @@
     <string name="config_now">現在</string>
     <string name="config_set">設定</string>
     <string name="config_add_row">%1$sを追加</string>
+    <string name="config_tools_add">ツールを追加</string>
+    <string name="config_tools_choose">AI が使えるもの</string>
+    <string name="config_tools_none">まだありません。AI は答えるだけで、操作はしません</string>
+    <string name="config_tools_fixed_count">ここで %1$d 件を固定</string>
+    <string name="config_tools_remove">このツールを削除</string>
+    <string name="config_tools_missing">利用できません</string>
+    <string name="config_tools_fixed">AI に任せず、ここで固定します</string>
+    <string name="config_tools_must_fix">ここで選択します。AI には指定できません</string>
+    <string name="config_tools_nothing_to_fix">このツールに設定はありません</string>
     <string name="config_port_carries_list">このポートはリストを運びます</string>
     <string name="config_port_carries_one">このポートは単一の値を運びます</string>
     <string name="config_hub_removed">%1$s · ハブが削除されました</string>

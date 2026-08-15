@@ -1,0 +1,127 @@
+package com.example.ottomatic.engine.action
+
+import com.example.ottomatic.core.service.AiImage
+import com.example.ottomatic.core.service.AiModel
+import com.example.ottomatic.core.service.AiRequest
+import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.domain.model.NodeCategory
+import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.FilePath
+import com.example.ottomatic.domain.model.config.Label
+import com.example.ottomatic.domain.model.config.Multiline
+import com.example.ottomatic.domain.model.config.Picker
+import com.example.ottomatic.domain.model.config.PickerKind
+import com.example.ottomatic.domain.model.config.Wired
+import com.example.ottomatic.domain.model.dataOut
+import com.example.ottomatic.engine.Action
+import com.example.ottomatic.engine.ExecutionContext
+import com.example.ottomatic.engine.NodeOutput
+import com.example.ottomatic.engine.actionNode
+import kotlinx.serialization.Serializable
+
+/**
+ * Config for `action.ai_describe`.
+ *
+ * [image] is `@FilePath` and `@Wired` for the reason every file node's path is: the
+ * picture worth asking about is usually the one a macro just found, so the commonest
+ * shape is `action.file_list` → `transform.text` → here.
+ */
+@Serializable
+data class AiDescribeConfig(
+    @Label("Connection") @Picker(PickerKind.AI_CONNECTION) val connectionId: String = "",
+    @Label("Picture") @FilePath @Wired val image: String = "",
+    @Label("What to ask") @Multiline @Wired val prompt: String = "What is in this picture?",
+    @Label("Model") val model: AiModel = AiModel.BALANCED,
+    @Label("Longest reply (tokens)") val maxOutputTokens: Int = AiRequest.DEFAULT_MAX_OUTPUT_TOKENS,
+    @Label("If it fails") @Multiline val fallback: String = "",
+)
+
+/**
+ * `action.ai_describe` — asks a model about a picture on the phone.
+ *
+ * **The one AI node that needed something the app did not have.** The other three are
+ * built entirely out of what was already there; this one needs *bytes*, and the
+ * `Files` facade only ever read text. So it brought [Files.readBytes] with it —
+ * Base64 rather than a `ByteArray`, because that is the form all three providers want
+ * and holding both would double what a foreground service carries.
+ *
+ * **The file is read through the same `Files` facade every file node uses**, which is
+ * what makes "choosing needs an Activity; using does not" hold here too: the picture
+ * can be one the user granted a folder for months ago, read from the service at three
+ * in the morning with nothing on screen.
+ *
+ * **Vision support genuinely varies**, and the node does not pretend otherwise. A
+ * self-hosted server given an image part usually refuses it, and that refusal reaches
+ * the run log as the server's own sentence — `readReply` prefers `error.message`
+ * precisely so a case like this says something the user can act on.
+ *
+ * Defaults to the balanced tier rather than the fast one, on `action.ai_agent`'s
+ * reasoning: the small models are markedly worse at seeing than at writing.
+ *
+ * A failure lands on [AiDescribeConfig.fallback] and still pulses `out`, which is
+ * `action.script`'s contract for its reason.
+ */
+class AiDescribeAction : Action<AiDescribeConfig, String> {
+
+    override val definition = actionNode<AiDescribeConfig, String>(
+        typeId = "action.ai_describe",
+        displayName = "Ask AI About a Picture",
+        description = "Shows an AI model a picture from this phone and returns what it says about it",
+        category = NodeCategory.AI,
+        icon = NodeIcon.AI,
+        output = dataOut<String>("answer", label = "Answer"),
+    )
+
+    @Suppress("ReturnCount") // No picture, an unreadable one, a refused answer — each says its own thing.
+    override suspend fun execute(input: AiDescribeConfig, context: ExecutionContext): NodeOutput<String> {
+        if (input.image.isBlank()) {
+            context.log("Ask AI About a Picture: no picture chosen", LogLevel.ERROR)
+            return NodeOutput(input.fallback)
+        }
+        val bytes = context.files.readBytes(input.image)
+        if (bytes.error.isNotBlank()) {
+            context.log("Ask AI About a Picture: ${bytes.error}", LogLevel.ERROR)
+            return NodeOutput(input.fallback)
+        }
+        // A file whose name says nothing about its type is refused here rather than
+        // sent: every provider requires the media type, and one guessed wrong comes
+        // back as a generic 400 that names neither the file nor the reason.
+        if (bytes.mediaType.isBlank()) {
+            context.log(
+                "Ask AI About a Picture: '${input.image}' is not a kind of picture this can send " +
+                    "(JPEG, PNG, GIF or WebP)",
+                LogLevel.ERROR,
+            )
+            return NodeOutput(input.fallback)
+        }
+
+        val reply = context.ai.complete(
+            AiRequest(
+                connectionId = input.connectionId,
+                prompt = input.prompt.ifBlank { DEFAULT_PROMPT },
+                model = input.model,
+                maxOutputTokens = input.maxOutputTokens,
+                images = listOf(AiImage(base64 = bytes.base64, mediaType = bytes.mediaType)),
+            ),
+        )
+        if (reply.error.isNotBlank()) {
+            context.log("Ask AI About a Picture failed: ${reply.error}", LogLevel.ERROR)
+            return NodeOutput(input.fallback)
+        }
+        if (reply.truncated) {
+            context.log(
+                "The reply was cut off at ${input.maxOutputTokens} tokens — raise the reply limit",
+                LogLevel.WARN,
+            )
+        }
+        return NodeOutput(reply.text)
+    }
+
+    private companion object {
+        /**
+         * What an empty prompt means. A picture and no question is still a sensible
+         * thing to have wired up, and refusing it would be pedantry.
+         */
+        const val DEFAULT_PROMPT = "Describe this picture."
+    }
+}

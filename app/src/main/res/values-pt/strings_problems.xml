@@ -10,6 +10,8 @@
     <string name="problem_ai_unset">«%1$s» não tem nenhuma ligação de IA escolhida, por isso não fará nada</string>
     <string name="problem_ai_missing">«%1$s» aponta para uma ligação de IA que já não existe</string>
     <string name="problem_ai_unfinished">«%1$s» aponta para uma ligação de IA que ainda não está totalmente configurada</string>
+    <string name="problem_ai_tool_missing">«%1$s» oferece à IA «%2$s», que já não está disponível</string>
+    <string name="problem_ai_tool_unpinned">«%1$s» oferece «%2$s» sem escolher o seu %3$s, que a IA não consegue preencher</string>
     <string name="problem_variable_unset">«%1$s» não tem nenhuma variável escolhida, por isso não fará nada</string>
     <string name="problem_variable_missing">«%1$s» usa uma variável que já não existe</string>
     <string name="problem_empty_loop_body">«%1$s» não tem nada no corpo do ciclo, por isso repetir não faz nada</string>

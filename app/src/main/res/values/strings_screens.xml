@@ -515,6 +515,17 @@
     <string name="config_now">Now</string>
     <string name="config_set">Set</string>
     <string name="config_add_row">Add %1$s</string>
+
+    <!-- The @Tools editor: what an AI node is allowed to do. -->
+    <string name="config_tools_add">Add a tool</string>
+    <string name="config_tools_choose">What may the AI use?</string>
+    <string name="config_tools_none">Nothing yet — the AI will only answer, not act</string>
+    <string name="config_tools_fixed_count">%1$d value(s) fixed here</string>
+    <string name="config_tools_remove">Remove this tool</string>
+    <string name="config_tools_missing">No longer available</string>
+    <string name="config_tools_fixed">Fixed here rather than left to the AI</string>
+    <string name="config_tools_must_fix">Chosen here — the AI cannot name this</string>
+    <string name="config_tools_nothing_to_fix">This tool takes no settings</string>
     <string name="config_port_carries_list">This port carries a list</string>
     <string name="config_port_carries_one">This port carries one value</string>
     <string name="config_hub_removed">%1$s · hub removed</string>

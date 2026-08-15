@@ -315,6 +315,13 @@ internal fun ConfigFieldEditor(
                     colors = colors,
                 )
             }
+            ConfigFieldType.TOOL_LIST -> {
+                ToolListField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    label = label,
+                )
+            }
             ConfigFieldType.API_TOKEN -> {
                 ApiTokenField(
                     value = value,

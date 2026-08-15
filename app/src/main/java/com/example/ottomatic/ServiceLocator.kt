@@ -365,7 +365,7 @@ object ServiceLocator {
         publishSmartHomeHubs()
         systemServices = AndroidSystemServices(appContext)
         deviceState = AndroidDeviceState(appContext)
-        macroControl = AndroidMacroControl(appContext)
+        macroControl = buildMacroControl(appContext)
         // Connects to the WebView sandbox lazily, on the first script a macro
         // runs — a process spawn is not something a user who never scripts
         // should pay for at startup.
@@ -570,6 +570,21 @@ object ServiceLocator {
      * connections are added and deleted long after startup, and a node pointing at
      * a deleted one is the case this exists for.
      */
+    /**
+     * The macro facade, whose execution context is passed as a **supplier**.
+     *
+     * The two are mutually dependent: [executionContext] is built below holding this,
+     * and this needs that context to run a macro a tool asked for. A lambda is the
+     * smaller of the two ways out — the other being a settable back-reference nothing
+     * would stop being read before it was assigned.
+     */
+    private fun buildMacroControl(appContext: Context): MacroControl = AndroidMacroControl(
+        context = appContext,
+        repository = workflowRepository,
+        executionContext = { executionContext },
+        deferredScope = appScope,
+    )
+
     private fun publishAiConnections() {
         appScope.launch {
             aiConnectionRepository.connections.collect { list ->

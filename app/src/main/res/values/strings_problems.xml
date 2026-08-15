@@ -14,6 +14,8 @@
     <string name="problem_ai_unset">\'%1$s\' has no AI connection chosen, so it will do nothing</string>
     <string name="problem_ai_missing">\'%1$s\' points at an AI connection that no longer exists</string>
     <string name="problem_ai_unfinished">\'%1$s\' points at an AI connection that is not finished being set up</string>
+    <string name="problem_ai_tool_missing">\'%1$s\' offers the AI \'%2$s\', which is no longer available</string>
+    <string name="problem_ai_tool_unpinned">\'%1$s\' offers \'%2$s\' without choosing its %3$s, which the AI cannot fill in</string>
     <string name="problem_variable_unset">\'%1$s\' has no variable chosen, so it will do nothing</string>
     <string name="problem_variable_missing">\'%1$s\' uses a variable that no longer exists</string>
 

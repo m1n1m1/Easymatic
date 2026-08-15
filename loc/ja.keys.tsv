@@ -690,3 +690,14 @@ files_add_file	ファイルを追加
 files_files_heading	個別のファイル
 files_download_note	Android は Download フォルダそのものへの許可を認めていません。すでにその中にあるものを使うには、「ファイルを追加」でそのファイルをここに追加してください。または、ダウンロード先をその中のフォルダにすれば、そのフォルダごと許可できます。
 files_read_only_file	このファイルだけ読み取れます
+problem_ai_tool_missing	「%1$s」は AI に「%2$s」を提供していますが、現在は利用できません
+problem_ai_tool_unpinned	「%1$s」は「%2$s」を提供していますが、%3$s が選ばれていません。AI には指定できません
+config_tools_choose	AI が使えるもの
+config_tools_none	まだありません。AI は答えるだけで、操作はしません
+config_tools_fixed_count	ここで %1$d 件を固定
+config_tools_remove	このツールを削除
+config_tools_missing	利用できません
+config_tools_fixed	AI に任せず、ここで固定します
+config_tools_must_fix	ここで選択します。AI には指定できません
+config_tools_nothing_to_fix	このツールに設定はありません
+config_tools_add	ツールを追加

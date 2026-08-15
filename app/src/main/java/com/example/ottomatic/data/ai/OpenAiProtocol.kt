@@ -3,14 +3,18 @@ package com.example.ottomatic.data.ai
 import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.AiReply
 import com.example.ottomatic.core.service.AiRequest
+import com.example.ottomatic.core.service.AiTool
+import com.example.ottomatic.core.service.AiToolCall
 import com.example.ottomatic.domain.model.AiConnection
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArrayBuilder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
+import kotlinx.serialization.json.putJsonObject
 
 /**
  * OpenAI's chat-completions format — and, because everybody copied it, most of the
@@ -121,9 +125,148 @@ internal sealed class OpenAiProtocol(
             if (request.systemInstruction.isNotBlank()) {
                 add(message(SYSTEM_ROLE, request.systemInstruction))
             }
-            add(message(USER_ROLE, request.prompt))
+            add(userTurn(request))
         }
     }.toString()
+
+    /**
+     * The user turn: a plain string, or a content array once it carries a picture.
+     *
+     * Kept as a string in the ordinary case rather than always sending the array
+     * form, so a request with no images renders exactly the body it did before — which
+     * matters more here than for the other two, since several self-hosted servers
+     * accept only the string shape.
+     */
+    private fun userTurn(request: AiRequest): JsonObject = buildJsonObject {
+        put(ROLE_KEY, USER_ROLE)
+        if (request.images.isEmpty()) {
+            put(CONTENT_KEY, request.prompt)
+            return@buildJsonObject
+        }
+        putJsonArray(CONTENT_KEY) {
+            request.images.forEach { image ->
+                add(
+                    buildJsonObject {
+                        put(TYPE_KEY, IMAGE_URL_TYPE)
+                        // This API takes a `data:` URI rather than the two separate
+                        // fields the other two want.
+                        putJsonObject(IMAGE_URL_KEY) {
+                            put(URL_KEY, "data:${image.mediaType};base64,${image.base64}")
+                        }
+                    },
+                )
+            }
+            add(buildJsonObject { put(TYPE_KEY, TEXT_TYPE); put(TEXT_KEY, request.prompt) })
+        }
+    }
+
+    /**
+     * The request body for an exchange that may use [tools].
+     *
+     * The `tool` role is this API's alone — Anthropic puts a result inside a `user`
+     * turn and Gemini inside a `functionResponse` part — and it is addressed by the
+     * `tool_call_id` the server minted, so nothing here can be matched by name.
+     *
+     * The assistant turn is echoed as the whole `message` object it arrived as,
+     * rather than rebuilt from its parts: it carries `tool_calls` in the exact shape
+     * the server expects back, and reconstructing that is a way to get it subtly
+     * wrong for no gain.
+     */
+    override fun conversationBody(
+        exchange: List<AiExchange>,
+        tools: List<AiTool>,
+        request: AiRequest,
+        connection: AiConnection,
+    ): String = buildJsonObject {
+        put(MODEL_KEY, resolvedModelId(connection, request.model))
+        put(tokenField, request.maxOutputTokens.coerceAtLeast(1))
+        if (sendsReasoningEffort) put(EFFORT_KEY, reasoningEffort(request.model))
+        if (tools.isNotEmpty()) putJsonArray(TOOLS_KEY) { tools.forEach { add(declare(it)) } }
+        putJsonArray(MESSAGES_KEY) {
+            if (request.systemInstruction.isNotBlank()) {
+                add(message(SYSTEM_ROLE, request.systemInstruction))
+            }
+            exchange.forEach { appendTurn(it) }
+        }
+    }.toString()
+
+    /** One tool, wrapped in this API's `function` envelope. */
+    private fun declare(tool: AiTool): JsonObject = buildJsonObject {
+        put(TYPE_KEY, FUNCTION_TYPE)
+        putJsonObject(FUNCTION_KEY) {
+            put(NAME_KEY, tool.name)
+            put(DESCRIPTION_KEY, tool.description)
+            put(PARAMETERS_KEY, toolParameterSchema(tool.parameters))
+        }
+    }
+
+    /** One thing that happened, as the one or more messages this API expects for it. */
+    private fun JsonArrayBuilder.appendTurn(entry: AiExchange) {
+        when (entry) {
+            is AiExchange.Ask -> add(message(USER_ROLE, entry.prompt))
+            is AiExchange.Said -> entry.turn.raw?.let { add(it) }
+            is AiExchange.Ran -> entry.results.forEach { (call, result) ->
+                add(
+                    buildJsonObject {
+                        put(ROLE_KEY, TOOL_ROLE)
+                        put(TOOL_CALL_ID_KEY, call.id)
+                        put(CONTENT_KEY, result.text)
+                    },
+                )
+            }
+        }
+    }
+
+    /**
+     * What [body] means when tools were offered.
+     *
+     * `content` is **null** on a tool-calling turn here, not merely empty — which is
+     * why [readReply]'s correct "an empty answer is a failure" rule has to be
+     * conditional in this path rather than reused.
+     */
+    @Suppress("ReturnCount") // Each exit names a distinct outcome, as in `readReply`.
+    override fun readTurn(status: Int, body: String): AiTurn {
+        val root = runCatching { json.parseToJsonElement(body).jsonObject }.getOrNull()
+        if (status !in SUCCESS_RANGE) return AiTurn.failed(errorText(status, root))
+        root ?: return AiTurn.failed("The model returned something unreadable (HTTP $status)")
+        val choice = root[CHOICES_KEY]?.arrayOrNull()?.firstOrNull()?.objectOrNull()
+            ?: return AiTurn.failed("The model returned no answer")
+        val message = choice[CHOICE_MESSAGE_KEY]?.objectOrNull()
+            ?: return AiTurn.failed("The model returned no answer")
+        val text = message[CONTENT_KEY]?.stringOrNull().orEmpty()
+        val calls = toolCallsIn(message)
+        val finish = choice[FINISH_KEY]?.stringOrNull().orEmpty()
+        if (calls.isEmpty() && text.isBlank()) return AiTurn.failed(emptyAnswerText(finish))
+        return AiTurn(
+            text = text,
+            toolCalls = calls,
+            raw = message,
+            truncated = finish == LENGTH_FINISH,
+        )
+    }
+
+    /**
+     * The turn's tool calls.
+     *
+     * `function.arguments` is a **JSON string** on this API rather than an object —
+     * the one place the three providers disagree about more than a key name — so it
+     * is parsed before being read. A model that emits malformed JSON there yields no
+     * arguments rather than failing the turn, and the node then decodes the config
+     * defaults, which is the same degradation a blank config field already has.
+     */
+    private fun toolCallsIn(message: JsonObject): List<AiToolCall> =
+        message[TOOL_CALLS_KEY]?.arrayOrNull().orEmpty().mapNotNull { entry ->
+            val call = entry.objectOrNull() ?: return@mapNotNull null
+            val function = call[FUNCTION_KEY]?.objectOrNull() ?: return@mapNotNull null
+            val name = function[NAME_KEY]?.stringOrNull() ?: return@mapNotNull null
+            val raw = function[ARGUMENTS_KEY]?.stringOrNull().orEmpty()
+            AiToolCall(
+                id = call[ID_KEY]?.stringOrNull().orEmpty(),
+                name = name,
+                arguments = runCatching { json.parseToJsonElement(raw).jsonObject }
+                    .getOrNull()?.asToolArguments().orEmpty(),
+            )
+        }
 
     /**
      * What [body] means, given the [status] it arrived with.
@@ -252,6 +395,22 @@ internal sealed class OpenAiProtocol(
         const val FILTER_FINISH = "content_filter"
         const val SYSTEM_ROLE = "system"
         const val USER_ROLE = "user"
+        const val TOOL_ROLE = "tool"
+        const val FUNCTION_TYPE = "function"
+        const val TOOLS_KEY = "tools"
+        const val TOOL_CALLS_KEY = "tool_calls"
+        const val TOOL_CALL_ID_KEY = "tool_call_id"
+        const val FUNCTION_KEY = "function"
+        const val ARGUMENTS_KEY = "arguments"
+        const val PARAMETERS_KEY = "parameters"
+        const val NAME_KEY = "name"
+        const val DESCRIPTION_KEY = "description"
+        const val TYPE_KEY = "type"
+        const val TEXT_TYPE = "text"
+        const val TEXT_KEY = "text"
+        const val IMAGE_URL_TYPE = "image_url"
+        const val IMAGE_URL_KEY = "image_url"
+        const val URL_KEY = "url"
         const val MODEL_KEY = "model"
         const val EFFORT_KEY = "reasoning_effort"
         const val MESSAGES_KEY = "messages"

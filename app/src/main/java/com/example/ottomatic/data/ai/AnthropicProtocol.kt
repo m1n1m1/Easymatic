@@ -3,8 +3,12 @@ package com.example.ottomatic.data.ai
 import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.AiReply
 import com.example.ottomatic.core.service.AiRequest
+import com.example.ottomatic.core.service.AiTool
+import com.example.ottomatic.core.service.AiToolCall
 import com.example.ottomatic.domain.model.AiConnection
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonArrayBuilder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
@@ -116,15 +120,159 @@ internal object AnthropicProtocol : AiProtocol {
         if (thinks(request.model)) {
             putJsonObject(THINKING_KEY) { put(TYPE_KEY, ADAPTIVE) }
         }
-        putJsonArray(MESSAGES_KEY) {
-            add(
+        putJsonArray(MESSAGES_KEY) { add(userTurn(request)) }
+    }.toString()
+
+    /**
+     * The user turn: a bare string, or a block array once it carries a picture.
+     *
+     * Kept as a string in the ordinary case rather than always sending blocks, so a
+     * request with no images renders byte for byte as it did before images existed —
+     * which is exactly what this file's existing tests pin.
+     */
+    private fun userTurn(request: AiRequest): JsonObject = buildJsonObject {
+        put(ROLE_KEY, USER_ROLE)
+        if (request.images.isEmpty()) {
+            put(CONTENT_KEY, request.prompt)
+            return@buildJsonObject
+        }
+        putJsonArray(CONTENT_KEY) {
+            // Pictures before the words, for the reason every provider here shares: a
+            // turn is read in order.
+            request.images.forEach { image ->
+                add(
+                    buildJsonObject {
+                        put(TYPE_KEY, IMAGE_TYPE)
+                        putJsonObject(SOURCE_KEY) {
+                            put(TYPE_KEY, BASE64_TYPE)
+                            put(MEDIA_TYPE_KEY, image.mediaType)
+                            put(IMAGE_DATA_KEY, image.base64)
+                        }
+                    },
+                )
+            }
+            add(buildJsonObject { put(TYPE_KEY, TEXT_TYPE); put(TEXT_KEY, request.prompt) })
+        }
+    }
+
+    /**
+     * The request body for an exchange that may use [tools].
+     *
+     * Two differences from [requestBody], both forced by the API rather than chosen:
+     *
+     * - **`content` becomes a block array.** A bare string is legal for a plain user
+     *   turn and is what [requestBody] sends, but a tool result *must* be a
+     *   `tool_result` block, so the whole conversation switches to blocks and stays
+     *   uniform rather than mixing the two shapes.
+     * - **The assistant's turn is echoed verbatim.** [AiTurn.raw] is put back
+     *   untouched, thinking blocks included. This is the one place in the file where
+     *   *not* filtering is the correct behaviour: [readReply] drops thinking blocks so
+     *   they are never read as the answer, and this must keep them so the server
+     *   accepts the continuation.
+     */
+    override fun conversationBody(
+        exchange: List<AiExchange>,
+        tools: List<AiTool>,
+        request: AiRequest,
+        connection: AiConnection,
+    ): String = buildJsonObject {
+        put(MODEL_KEY, modelIdFor(connection, request.model, modelId(request.model)))
+        put(
+            MAX_TOKENS_KEY,
+            request.maxOutputTokens.coerceAtLeast(1) + thinkingHeadroom(request.model),
+        )
+        if (request.systemInstruction.isNotBlank()) put(SYSTEM_KEY, request.systemInstruction)
+        if (thinks(request.model)) putJsonObject(THINKING_KEY) { put(TYPE_KEY, ADAPTIVE) }
+        if (tools.isNotEmpty()) putJsonArray(TOOLS_KEY) { tools.forEach { add(declare(it)) } }
+        putJsonArray(MESSAGES_KEY) { exchange.forEach { appendTurn(it) } }
+    }.toString()
+
+    /** One tool, in this API's spelling. */
+    private fun declare(tool: AiTool): JsonObject = buildJsonObject {
+        put(NAME_KEY, tool.name)
+        put(DESCRIPTION_KEY, tool.description)
+        put(INPUT_SCHEMA_KEY, toolParameterSchema(tool.parameters))
+    }
+
+    /** One thing that happened, as the one or two messages this API expects for it. */
+    private fun JsonArrayBuilder.appendTurn(entry: AiExchange) {
+        when (entry) {
+            is AiExchange.Ask -> add(
                 buildJsonObject {
                     put(ROLE_KEY, USER_ROLE)
-                    put(CONTENT_KEY, request.prompt)
+                    putJsonArray(CONTENT_KEY) {
+                        add(buildJsonObject { put(TYPE_KEY, TEXT_TYPE); put(TEXT_KEY, entry.prompt) })
+                    }
+                },
+            )
+            // Verbatim, thinking blocks and all — see the note on `conversationBody`.
+            is AiExchange.Said -> entry.turn.raw?.let { raw ->
+                add(buildJsonObject { put(ROLE_KEY, ASSISTANT_ROLE); put(CONTENT_KEY, raw) })
+            }
+            is AiExchange.Ran -> add(
+                buildJsonObject {
+                    put(ROLE_KEY, USER_ROLE)
+                    putJsonArray(CONTENT_KEY) {
+                        entry.results.forEach { (call, result) ->
+                            add(
+                                buildJsonObject {
+                                    put(TYPE_KEY, TOOL_RESULT_TYPE)
+                                    put(TOOL_USE_ID_KEY, call.id)
+                                    put(CONTENT_KEY, result.text)
+                                    if (result.isError) put(IS_ERROR_KEY, true)
+                                },
+                            )
+                        }
+                    }
                 },
             )
         }
-    }.toString()
+    }
+
+    /**
+     * What [body] means when tools were offered.
+     *
+     * The blank-text branch below is conditional where [readReply]'s is not, and that
+     * is the whole difference: a turn asking for a tool legitimately carries no text
+     * at all, and reporting it as an empty answer would fail every request that
+     * worked.
+     */
+    @Suppress("ReturnCount") // Each exit names a distinct outcome, as in `readReply`.
+    override fun readTurn(status: Int, body: String): AiTurn {
+        val root = runCatching { json.parseToJsonElement(body).jsonObject }.getOrNull()
+        if (status !in SUCCESS_RANGE) return AiTurn.failed(errorText(status, root))
+        root ?: return AiTurn.failed("The model returned something unreadable (HTTP $status)")
+        val blocks = root[CONTENT_KEY]?.arrayOrNull()
+            ?: return AiTurn.failed("The model returned no answer")
+        val text = textOf(blocks)
+        val calls = toolCallsIn(blocks)
+        val stop = root[STOP_KEY]?.stringOrNull().orEmpty()
+        if (calls.isEmpty() && text.isBlank()) return AiTurn.failed(emptyAnswerText(stop))
+        return AiTurn(
+            text = text,
+            toolCalls = calls,
+            raw = blocks,
+            truncated = stop == MAX_TOKENS_STOP,
+        )
+    }
+
+    private fun textOf(blocks: JsonArray): String = blocks
+        .mapNotNull { it.objectOrNull() }
+        .filter { it[TYPE_KEY]?.stringOrNull() == TEXT_TYPE }
+        .mapNotNull { it[TEXT_KEY]?.stringOrNull() }
+        .joinToString(separator = "")
+
+    private fun toolCallsIn(blocks: JsonArray): List<AiToolCall> = blocks
+        .mapNotNull { it.objectOrNull() }
+        .filter { it[TYPE_KEY]?.stringOrNull() == TOOL_USE_TYPE }
+        .mapNotNull { block ->
+            val name = block[NAME_KEY]?.stringOrNull() ?: return@mapNotNull null
+            AiToolCall(
+                id = block[ID_KEY]?.stringOrNull().orEmpty(),
+                name = name,
+                arguments = block[INPUT_KEY]?.objectOrNull()?.asToolArguments().orEmpty(),
+            )
+        }
 
     /**
      * What [body] means, given the [status] it arrived with.
@@ -197,6 +345,21 @@ internal object AnthropicProtocol : AiProtocol {
 
     private const val ADAPTIVE = "adaptive"
     private const val TEXT_TYPE = "text"
+    private const val TOOL_USE_TYPE = "tool_use"
+    private const val TOOL_RESULT_TYPE = "tool_result"
+    private const val TOOLS_KEY = "tools"
+    private const val NAME_KEY = "name"
+    private const val DESCRIPTION_KEY = "description"
+    private const val INPUT_SCHEMA_KEY = "input_schema"
+    private const val INPUT_KEY = "input"
+    private const val TOOL_USE_ID_KEY = "tool_use_id"
+    private const val IS_ERROR_KEY = "is_error"
+    private const val ASSISTANT_ROLE = "assistant"
+    private const val IMAGE_TYPE = "image"
+    private const val SOURCE_KEY = "source"
+    private const val BASE64_TYPE = "base64"
+    private const val MEDIA_TYPE_KEY = "media_type"
+    private const val IMAGE_DATA_KEY = "data"
     private const val MAX_TOKENS_STOP = "max_tokens"
     private const val END_TURN_STOP = "end_turn"
     private const val REFUSAL_STOP = "refusal"

@@ -548,6 +548,28 @@ annotation class FilePath
 annotation class Ports
 
 /**
+ * Renders the `String` property as an editor for a list of **tools an AI may use** —
+ * a node type or another macro per row, each with the config the author pinned.
+ *
+ * [Ports]' model exactly, and for [Ports]' reason: the stored value is one line per
+ * entry (parsed by [com.example.ottomatic.domain.model.ToolSpec]) so that "every
+ * property is a scalar" holds, and this changes only how the list is *entered*.
+ *
+ * The reason it is a distinct annotation rather than a second use of [Ports] is what
+ * a row *is*: a port row is a name and a type, where a tool row is a chosen node and a
+ * whole nested config form — including the pickers that make an identifier chosen
+ * rather than typed, which is the entire safety argument for the feature. One editor
+ * could not render both.
+ *
+ * Declared by `action.ai_agent` alone. Like [Picker] and [Ports] it needs a renderer
+ * in the config form; adding it without one fails the form's exhaustive `when`.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class Tools
+
+/**
  * Renders the `String` property as a generated **key**: a read-only field showing
  * the current value, with Copy and Regenerate beside it.
  *

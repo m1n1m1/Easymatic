@@ -624,3 +624,11 @@ Copy it	Копировать
 Move it	Переместить
 Delete File	Удалить файл
 Removes a file from the phone	Удаляет файл с телефона
+Ask AI (with tools)	Запрос к ИИ (с инструментами)
+Ask AI About a Picture	Спросить ИИ об изображении
+Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer	Просит модель ИИ выполнить задачу, позволяя ей читать данные телефона и запускать выбранные вами узлы и макросы, пока не будет получен ответ
+Most turns	Максимум ходов
+Picture	Изображение
+Shows an AI model a picture from this phone and returns what it says about it	Показывает модели ИИ изображение с этого телефона и возвращает её описание
+Tools	Инструменты
+What to ask	О чём спросить

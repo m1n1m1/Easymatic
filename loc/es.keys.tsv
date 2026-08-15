@@ -690,3 +690,14 @@ files_add_file	Añadir un archivo
 files_files_heading	Archivos sueltos
 files_download_note	Android no permite conceder la propia carpeta Download. Para usar algo que ya está dentro, añade ese archivo aquí con Añadir un archivo, o guarda las descargas en una carpeta dentro de ella, que sí se puede conceder entera.
 files_read_only_file	Solo puede leer este archivo
+problem_ai_tool_missing	«%1$s» ofrece a la IA «%2$s», que ya no está disponible
+problem_ai_tool_unpinned	«%1$s» ofrece «%2$s» sin elegir su %3$s, que la IA no puede rellenar
+config_tools_choose	¿Qué puede usar la IA?
+config_tools_none	Nada todavía: la IA solo responderá, no actuará
+config_tools_fixed_count	%1$d valor(es) fijados aquí
+config_tools_remove	Quitar esta herramienta
+config_tools_missing	Ya no está disponible
+config_tools_fixed	Fijado aquí en vez de dejarlo a la IA
+config_tools_must_fix	Se elige aquí: la IA no puede nombrarlo
+config_tools_nothing_to_fix	Esta herramienta no tiene ajustes
+config_tools_add	Añadir una herramienta

@@ -690,3 +690,14 @@ files_add_file	Adicionar um ficheiro
 files_files_heading	Ficheiros avulso
 files_download_note	O Android não permite conceder a própria pasta Download. Para usar algo que já lá está, adiciona esse ficheiro aqui com Adicionar um ficheiro — ou guarda as transferências numa pasta lá dentro, que pode ser concedida por inteiro.
 files_read_only_file	Só pode ler este ficheiro
+problem_ai_tool_missing	«%1$s» oferece à IA «%2$s», que já não está disponível
+problem_ai_tool_unpinned	«%1$s» oferece «%2$s» sem escolher o seu %3$s, que a IA não consegue preencher
+config_tools_choose	O que pode a IA usar?
+config_tools_none	Ainda nada: a IA só vai responder, não agir
+config_tools_fixed_count	%1$d valor(es) fixados aqui
+config_tools_remove	Remover esta ferramenta
+config_tools_missing	Já não está disponível
+config_tools_fixed	Fixado aqui em vez de ficar ao critério da IA
+config_tools_must_fix	Escolhido aqui: a IA não consegue nomeá-lo
+config_tools_nothing_to_fix	Esta ferramenta não tem definições
+config_tools_add	Adicionar uma ferramenta

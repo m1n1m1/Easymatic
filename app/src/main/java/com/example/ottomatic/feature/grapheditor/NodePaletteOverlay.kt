@@ -75,12 +75,19 @@ private val CARD_SHAPE = RoundedCornerShape(18.dp)
 
 /**
  * The node palette, shown either as the full catalogue (the `+` FAB) or
- * restricted to the types that can connect to a dragged port ([restrictedTo],
- * with [title] naming the origin). A restricted palette offers a "Show all"
- * escape hatch that widens it to the full catalogue.
+ * restricted to a set of types ([restrictedTo], with [title] naming why).
  *
  * Each node kind is one accent-tinted card holding its categories, which start
  * collapsed — see [AUTO_EXPAND_THRESHOLD] for when they do not.
+ *
+ * **[canWiden] is what tells the two kinds of restriction apart**, and it is the
+ * reason this takes a flag rather than inferring one. A palette restricted to what
+ * can connect to a dragged port is a *suggestion*: everything it hides is still a
+ * legal node to place, so hiding it without a way back would be the app deciding what
+ * the user may build, and "Show all" is the escape hatch. A palette restricted to what
+ * can run as an AI tool is a *rule*: a trigger or a loop offered there would produce a
+ * tool that silently does nothing, which is the worst failure that feature has. The
+ * first widens; the second must not.
  */
 @Composable
 @Suppress("LongMethod") // Single declarative surface: search field + grouped, collapsible list.
@@ -89,11 +96,12 @@ fun NodePaletteOverlay(
     onPick: (NodeTypeDefinition) -> Unit,
     title: String? = null,
     restrictedTo: Set<NodeTypeId>? = null,
+    canWiden: Boolean = true,
 ) {
     var query by remember { mutableStateOf("") }
     var expandedGroups by remember { mutableStateOf(emptySet<PaletteGroup>()) }
     var showAll by remember { mutableStateOf(false) }
-    val restriction = restrictedTo?.takeUnless { showAll }
+    val restriction = restrictedTo?.takeUnless { showAll && canWiden }
     val searchTerm = query.trim()
     val searching = searchTerm.isNotEmpty()
     // `NodeTypeRegistry.all` is no longer a constant: it is the compiled registries plus
@@ -131,7 +139,7 @@ fun NodePaletteOverlay(
     EditorOverlay(
         title = title ?: stringResource(R.string.grapheditor_add_node_2),
         onClose = { picked?.let(onPick) ?: onDismiss() },
-        action = if (restriction != null) {
+        action = if (restriction != null && canWiden) {
             { TextButton(onClick = { showAll = true }) { Text(stringResource(R.string.grapheditor_show_all)) } }
         } else {
             null
@@ -160,18 +168,7 @@ fun NodePaletteOverlay(
                     .weight(1f),
             ) {
                 if (matchingDefinitions.isEmpty()) {
-                    item {
-                        Text(
-                            text = if (restriction != null) {
-                                stringResource(R.string.grapheditor_no_nodes_can_connect_here)
-                            } else {
-                                stringResource(R.string.grapheditor_no_nodes_match_your_search)
-                            },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = EditorColors.textSecondary,
-                            modifier = Modifier.padding(20.dp),
-                        )
-                    }
+                    item { PaletteEmptyText(restricted = restriction != null, searching = searching) }
                 } else {
                     NodeKind.values().forEach { kind ->
                         // Groups rather than categories: a plugin's nodes are headed with
@@ -205,6 +202,28 @@ fun NodePaletteOverlay(
             }
         }
     }
+}
+
+/**
+ * Why the list is empty.
+ *
+ * A search that found nothing says so even inside a restricted palette: "nothing can
+ * connect here" would be a statement about the *port* when the user narrowed the list
+ * themselves — and it is wrong outright for a palette restricted for some other
+ * reason, such as what can run as an AI tool.
+ */
+@Composable
+private fun PaletteEmptyText(restricted: Boolean, searching: Boolean) {
+    Text(
+        text = if (restricted && !searching) {
+            stringResource(R.string.grapheditor_no_nodes_can_connect_here)
+        } else {
+            stringResource(R.string.grapheditor_no_nodes_match_your_search)
+        },
+        style = MaterialTheme.typography.bodyMedium,
+        color = EditorColors.textSecondary,
+        modifier = Modifier.padding(20.dp),
+    )
 }
 
 /** Search field, themed to the overlay's fixed dark chrome rather than the app's dynamic colors. */

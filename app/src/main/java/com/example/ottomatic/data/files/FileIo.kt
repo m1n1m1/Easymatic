@@ -4,6 +4,8 @@ import com.example.ottomatic.core.service.FileLimits
 import com.example.ottomatic.core.service.FileRead
 import com.example.ottomatic.core.service.TextEncoding
 import kotlinx.coroutines.ensureActive
+import android.util.Base64
+import com.example.ottomatic.core.service.FileBytes
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
@@ -54,6 +56,32 @@ internal fun readBounded(stream: InputStream, encoding: TextEncoding): FileRead 
 }
 
 /**
+ * [readBounded]'s Base64 twin, sharing its cap and its reason for having one.
+ *
+ * **Refuses a truncated read rather than returning it**, which is the one place these
+ * two differ and is forced by what the bytes are for: half a text file is still text
+ * somebody may want, where half a JPEG is not an image at all — a model sent one
+ * reports that it cannot see the picture, which reads as the feature being broken.
+ */
+internal fun readBoundedBase64(stream: InputStream, mediaType: String): FileBytes {
+    val cap = FileLimits.MAX_READ_BYTES
+    val buffer = ByteArray(cap)
+    var filled = 0
+    while (filled < cap) {
+        val read = stream.read(buffer, filled, cap - filled)
+        if (read <= 0) break
+        filled += read
+    }
+    if (filled == cap && stream.read() != -1) {
+        return FileBytes(error = "That file is too big to send (over ${'$'}cap bytes)")
+    }
+    return FileBytes(
+        base64 = Base64.encodeToString(buffer.copyOf(filled), Base64.NO_WRAP),
+        mediaType = mediaType,
+    )
+}
+
+/**
  * Copies [from] into [to], in blocks, checking for cancellation between them.
  *
  * The `ensureActive` is not decoration: this is the fallback path for every transfer
@@ -72,4 +100,21 @@ internal suspend fun copyStream(from: InputStream, to: OutputStream): Long {
         total += read
     }
     return total
+}
+
+/**
+ * What a file's name says it is, or blank when nothing does.
+ *
+ * Read off the extension rather than sniffed from the bytes, and read here rather
+ * than asked of the platform, because the two callers disagree about what they can
+ * ask: an app-storage file has no `ContentResolver` entry to query at all. The set is
+ * the four every model here accepts and no more — offering a media type a provider
+ * will reject only moves the failure later.
+ */
+internal fun mediaTypeOf(name: String): String = when (name.substringAfterLast('.', "").lowercase()) {
+    "jpg", "jpeg" -> "image/jpeg"
+    "png" -> "image/png"
+    "gif" -> "image/gif"
+    "webp" -> "image/webp"
+    else -> ""
 }
