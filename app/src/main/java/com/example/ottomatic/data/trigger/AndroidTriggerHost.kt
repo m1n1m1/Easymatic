@@ -21,6 +21,7 @@ import com.example.ottomatic.core.service.Calendars
 import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.service.EventQuery
 import com.example.ottomatic.data.calendar.CalendarWatchers
+import com.example.ottomatic.data.images.ImageWatchers
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.data.GeofencePlaceRepository
@@ -40,6 +41,7 @@ import com.example.ottomatic.domain.model.NfcTag
 import com.example.ottomatic.engine.trigger.BatteryDirection
 import com.example.ottomatic.engine.trigger.CalendarOccurrence
 import com.example.ottomatic.engine.trigger.CalendarWatchSpec
+import com.example.ottomatic.engine.trigger.ImageWatchSpec
 import com.example.ottomatic.engine.trigger.planNext
 import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofencePresence
@@ -161,6 +163,11 @@ class AndroidTriggerHost(
     // asked for it. Owned here on `mailWatchers`' reasoning.
     private val calendarWatchers = CalendarWatchers(appContext, calendarScope)
 
+    // Likewise one per process. Shares `calendarScope` rather than taking a scope of
+    // its own: both are debounce timers that must outlive any single arm, and a second
+    // scope would be a second thing to remember to cancel.
+    private val imageWatchers = ImageWatchers(appContext, calendarScope)
+
     override fun mailAccount(id: String): MailAccount? = mailAccounts?.get(id)
 
     /**
@@ -194,6 +201,12 @@ class AndroidTriggerHost(
         nodeId: NodeId,
         onReport: (String, LogLevel) -> Unit,
     ): ScheduleHandle = calendarWatchers.arm(nodeId, onReport)
+
+    override fun armImageWatch(
+        nodeId: NodeId,
+        spec: ImageWatchSpec,
+        onReport: (String, LogLevel) -> Unit,
+    ): ScheduleHandle = imageWatchers.arm(nodeId, spec, onReport)
 
     override fun armMailWatch(
         nodeId: NodeId,

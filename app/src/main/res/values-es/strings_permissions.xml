@@ -9,6 +9,10 @@
     <string name="perm_title_exact_alarm">Alarmas y recordatorios</string>
     <string name="perm_title_write_settings">Modificar los ajustes del sistema</string>
     <string name="perm_title_nfc">NFC</string>
+    <string name="perm_title_read_media_images">Fotos</string>
+    <string name="perm_title_write_media_images">Modificar fotos</string>
+    <string name="perm_title_access_media_location">Ubicación de las fotos</string>
+    <string name="perm_title_manage_media">Gestión de medios</string>
     <string name="perm_title_foreground_service">Servicio en primer plano</string>
     <string name="perm_title_device_admin">Administrador del dispositivo</string>
     <string name="perm_title_access_fine_location">Ubicación</string>
@@ -30,6 +34,10 @@
     <string name="perm_desc_exact_alarm">Hace que una programación se dispare, y una espera termine, en el minuto que pediste. Sin este permiso Android puede agruparlo con otras tareas, así que puede ejecutarse tarde.</string>
     <string name="perm_desc_write_settings">Permite que una macro cambie el brillo de pantalla, el tiempo de espera y la rotación automática.</string>
     <string name="perm_desc_nfc">Permite que una macro se ejecute cuando acercas una etiqueta NFC a la parte trasera del teléfono. Ottomatic no puede activar el NFC por ti, y las etiquetas solo se leen con la pantalla encendida y desbloqueada.</string>
+    <string name="perm_desc_read_media_images">Permite que una macro busque y lea las imágenes de tu teléfono, y que se inicie cuando se guarde una nueva. Sin esto, ningún nodo de fotos hace nada.</string>
+    <string name="perm_desc_write_media_images">Permite que una macro modifique, mueva o elimine una foto en versiones antiguas de Android. A partir de Android 10 no hay nada que conceder aquí: Android te pide que confirmes cada cambio.</string>
+    <string name="perm_desc_access_media_location">Permite que una macro lea dónde se tomó una foto. Sin esto, Android oculta la ubicación en las fotos guardadas por otras aplicaciones y la macro cree que la foto no tiene ninguna.</string>
+    <string name="perm_desc_manage_media">Permite que una macro modifique, mueva o elimine fotos sin pedirte que confirmes cada una. Opcional: sin esto todo sigue funcionando, pero Android pregunta cada vez, lo que exige que tengas el teléfono en la mano.</string>
     <string name="perm_desc_foreground_service">Permite que Ottomatic mantenga su motor en marcha mientras tus macros están activas.</string>
     <string name="perm_desc_device_admin">Permite que Ottomatic use funciones de administrador del dispositivo.</string>
     <string name="perm_desc_access_fine_location">Hace que una geovalla sepa cuándo llegas a un sitio o lo abandonas.</string>
@@ -52,5 +60,10 @@
     <string name="perm_rationale_alarm_exact">Ottomatic necesita permiso para poner alarmas exactas, de modo que esta espera termine en el minuto que pediste. Sin él la espera ocurre igual, pero Android agrupa el despertar con otras tareas y puede retrasarse minutos.</string>
     <string name="perm_rationale_calendar_read">Ottomatic necesita acceso al calendario para leer tus citas. Sin él, este nodo no lee nada en absoluto y el selector de calendario de arriba no tiene nada que ofrecer.</string>
     <string name="perm_rationale_calendar_write">Ottomatic necesita permiso para cambiar tu calendario y que este nodo pueda crear, editar o eliminar una cita. Leer citas es un permiso aparte.</string>
+    <string name="perm_rationale_media_read">Ottomatic necesita acceso a tus fotos para que este nodo pueda buscarlas y leerlas. Elegir una imagen tú mismo no lo necesita; buscar una mientras la macro se ejecuta, sí.</string>
+    <string name="perm_rationale_media_write">Ottomatic necesita permiso para modificar tus fotos y que este nodo pueda reescribir una. En Android 10 y posteriores este permiso no hace nada y Android te pide que confirmes cada cambio.</string>
+    <string name="perm_rationale_media_location">Ottomatic necesita permiso para leer dónde se tomó una foto; si no, este nodo informa de que ninguna imagen tiene ubicación. Las fotos que hiciste tú no se ven afectadas.</string>
+    <string name="perm_rationale_media_manage">Ottomatic puede modificar fotos sin preguntarte cada vez. Es opcional: sin esto el nodo sigue funcionando, pero Android muestra una confirmación en pantalla, así que no puede ejecutarse desatendido.</string>
+    <string name="perm_rationale_overlay_media">Ottomatic necesita permiso para superponerse a otras aplicaciones y poder mostrar la confirmación de Android mientras la macro se ejecuta en segundo plano. Sin esto, modificar una foto guardada por otra aplicación falla cuando no estás en Ottomatic.</string>
     <string name="perm_rationale_overlay_launch">Ottomatic necesita permiso para mostrarse sobre otras aplicaciones y así poder abrir una mientras estás en otra parte del teléfono. Android impide que una aplicación en segundo plano abra otra y, sin este permiso, el nodo no hace nada y lo indica en la consola.</string>
 </resources>

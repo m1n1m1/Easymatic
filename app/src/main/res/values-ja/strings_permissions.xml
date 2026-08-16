@@ -9,6 +9,10 @@
     <string name="perm_title_exact_alarm">アラームとリマインダー</string>
     <string name="perm_title_write_settings">システム設定の変更</string>
     <string name="perm_title_nfc">NFC</string>
+    <string name="perm_title_read_media_images">写真</string>
+    <string name="perm_title_write_media_images">写真の変更</string>
+    <string name="perm_title_access_media_location">写真の位置情報</string>
+    <string name="perm_title_manage_media">メディアの管理</string>
     <string name="perm_title_foreground_service">フォアグラウンドサービス</string>
     <string name="perm_title_device_admin">デバイス管理者</string>
     <string name="perm_title_access_fine_location">位置情報</string>
@@ -30,6 +34,10 @@
     <string name="perm_desc_exact_alarm">スケジュールの発火と待機の終了を、指定した分ちょうどに行えるようにします。これがないと Android は他の処理とまとめてよいことになり、遅れて実行される場合があります。</string>
     <string name="perm_desc_write_settings">マクロが画面の明るさ、画面消灯までの時間、自動回転を変更できるようにします。</string>
     <string name="perm_desc_nfc">NFC タグを端末の背面にかざしたときにマクロを実行できるようにします。Ottomatic が代わりに NFC をオンにすることはできず、タグは画面がオンでロック解除されている間しか読み取られません。</string>
+    <string name="perm_desc_read_media_images">マクロが端末内の画像を検索・読み取りでき、新しい画像が保存されたときに開始できるようになります。これがないと、写真ノードはすべて何もしません。</string>
+    <string name="perm_desc_write_media_images">古いバージョンの Android で、マクロが写真を変更・移動・削除できるようになります。Android 10 以降はここで許可するものはなく、Android が変更のたびに確認を求めます。</string>
+    <string name="perm_desc_access_media_location">マクロが写真の撮影場所を読み取れるようになります。これがないと、他のアプリが保存した写真の位置情報は Android に隠され、マクロは位置情報がないものとして扱います。</string>
+    <string name="perm_desc_manage_media">マクロが確認を求められることなく写真を変更・移動・削除できるようになります。任意です。なくても動作しますが、Android が毎回確認するため端末を手に持っている必要があります。</string>
     <string name="perm_desc_foreground_service">マクロが有効な間、Ottomatic がエンジンを動かし続けられるようにします。</string>
     <string name="perm_desc_device_admin">Ottomatic がデバイス管理者の機能を使えるようにします。</string>
     <string name="perm_desc_access_fine_location">ジオフェンスが、ある場所への到着や離脱を検知できるようにします。</string>
@@ -52,5 +60,10 @@
     <string name="perm_rationale_alarm_exact">この待機を指定した分ちょうどに終えるために、Ottomatic は正確なアラームを設定する権限を必要とします。これがなくても待機自体は行われますが、Android が起動を他の処理とまとめるため、数分遅れることがあります。</string>
     <string name="perm_rationale_calendar_read">Ottomatic が予定を読み取るにはカレンダーへのアクセスが必要です。これがないとこのノードは何も読み取れず、上のカレンダー選択にも候補が出ません。</string>
     <string name="perm_rationale_calendar_write">このノードが予定を作成・編集・削除するには、Ottomatic にカレンダーを変更する権限が必要です。予定の読み取りは別の権限です。</string>
+    <string name="perm_rationale_media_read">このノードが画像を検索して読み取るには、Ottomatic に写真へのアクセスが必要です。自分で画像を選ぶだけなら不要ですが、マクロの実行中に探す場合は必要です。</string>
+    <string name="perm_rationale_media_write">このノードが写真を書き換えるには、Ottomatic に写真を変更する権限が必要です。Android 10 以降ではこの権限は機能せず、Android が変更のたびに確認を求めます。</string>
+    <string name="perm_rationale_media_location">Ottomatic に写真の撮影場所を読み取る権限が必要です。ないと、このノードはどの画像にも位置情報がないと報告します。自分で撮影した写真は影響を受けません。</string>
+    <string name="perm_rationale_media_manage">Ottomatic は毎回確認を求めずに写真を変更できます。任意です。なくてもノードは動作しますが、Android が画面に確認を表示するため、無人では実行できません。</string>
+    <string name="perm_rationale_overlay_media">マクロがバックグラウンドで動作している間に Android の確認画面を表示するため、Ottomatic には他のアプリの上に重ねて表示する権限が必要です。これがないと、Ottomatic を開いていないときに他のアプリが保存した写真を変更できません。</string>
     <string name="perm_rationale_overlay_launch">端末で他のことをしている最中でも別のアプリを開けるように、Ottomatic は他のアプリの上に表示する権限を必要とします。Android はバックグラウンドのアプリが別のアプリを開くことを禁じており、この権限がないとこのノードは何もせず、その旨をコンソールに出力します。</string>
 </resources>

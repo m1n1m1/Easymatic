@@ -9,6 +9,10 @@
     <string name="perm_title_exact_alarm">闹钟与提醒</string>
     <string name="perm_title_write_settings">修改系统设置</string>
     <string name="perm_title_nfc">NFC</string>
+    <string name="perm_title_read_media_images">照片</string>
+    <string name="perm_title_write_media_images">修改照片</string>
+    <string name="perm_title_access_media_location">照片位置</string>
+    <string name="perm_title_manage_media">媒体管理</string>
     <string name="perm_title_foreground_service">前台服务</string>
     <string name="perm_title_device_admin">设备管理员</string>
     <string name="perm_title_access_fine_location">位置信息</string>
@@ -30,6 +34,10 @@
     <string name="perm_desc_exact_alarm">让定时计划在你指定的那一分钟触发，让等待在那一刻结束。没有它，Android 可以把它和其他工作合并处理，因此可能会晚一些运行。</string>
     <string name="perm_desc_write_settings">允许宏更改屏幕亮度、屏幕超时和自动旋转。</string>
     <string name="perm_desc_nfc">允许宏在你把 NFC 标签贴近手机背面时运行。Ottomatic 无法替你打开 NFC，而且只有在屏幕点亮并解锁时才会读取标签。</string>
+    <string name="perm_desc_read_media_images">允许宏查找和读取手机中的图片，并在保存新图片时启动。没有此权限，所有图片节点都不会执行。</string>
+    <string name="perm_desc_write_media_images">允许宏在旧版 Android 上修改、移动或删除照片。从 Android 10 起，此处无需授权：Android 会要求你逐次确认。</string>
+    <string name="perm_desc_access_media_location">允许宏读取照片的拍摄地点。没有此权限，Android 会隐藏其他应用保存的照片中的位置信息，宏会认为照片没有位置。</string>
+    <string name="perm_desc_manage_media">允许宏修改、移动或删除照片而无需逐次确认。可选：没有它一切仍可运行，只是 Android 每次都会询问，这需要你拿着手机。</string>
     <string name="perm_desc_foreground_service">允许 Ottomatic 在你的宏处于启用状态时保持引擎运行。</string>
     <string name="perm_desc_device_admin">允许 Ottomatic 使用设备管理员功能。</string>
     <string name="perm_desc_access_fine_location">让地理围栏知道你何时到达或离开某个地点。</string>
@@ -52,5 +60,10 @@
     <string name="perm_rationale_alarm_exact">Ottomatic 需要设置精确闹钟的权限，才能让这次等待在你指定的那一分钟结束。没有它，等待照样会发生，但 Android 会把唤醒和其他工作合并，可能会晚上几分钟。</string>
     <string name="perm_rationale_calendar_read">Ottomatic 需要日历访问权限才能读取你的日程。没有它，此节点什么也读不到，上面的日历选择器也没有内容可选。</string>
     <string name="perm_rationale_calendar_write">Ottomatic 需要修改日历的权限，此节点才能创建、编辑或删除日程。读取日程是单独的一项权限。</string>
+    <string name="perm_rationale_media_read">Ottomatic 需要访问你的照片，这个节点才能查找和读取它们。你自己选择图片不需要此权限，宏运行时查找才需要。</string>
+    <string name="perm_rationale_media_write">Ottomatic 需要修改照片的权限，这个节点才能重写照片。在 Android 10 及更高版本上此权限无效，Android 会要求你逐次确认。</string>
+    <string name="perm_rationale_media_location">Ottomatic 需要读取照片拍摄地点的权限，否则这个节点会报告所有图片都没有位置。你自己拍摄的照片不受影响。</string>
+    <string name="perm_rationale_media_manage">Ottomatic 可以在不逐次询问的情况下修改照片。这是可选的：没有它节点仍能工作，但 Android 会在屏幕上显示确认，因此无法无人值守运行。</string>
+    <string name="perm_rationale_overlay_media">Ottomatic 需要显示在其他应用上层的权限，才能在宏于后台运行时显示 Android 的确认对话框。没有它，当你不在 Ottomatic 中时，修改其他应用保存的照片会失败。</string>
     <string name="perm_rationale_overlay_launch">Ottomatic 需要显示在其他应用上层的权限，才能在你正忙于手机上别的事情时打开另一个应用。Android 会阻止后台应用打开其他应用；没有这项权限，该节点什么也不做，并会在控制台里说明。</string>
 </resources>

@@ -449,6 +449,35 @@ interface TriggerHost {
     ): ScheduleHandle = ScheduleHandle { }
 
     /**
+     * Registers this node's interest in new pictures matching [spec].
+     *
+     * [armCalendarWatch]'s shape with [armHomeAssistantWatch]'s routing, and it needs
+     * both halves. Like the calendar it is one content observer for the whole process,
+     * registered on the first arm because it needs a runtime grant. Like Home Assistant
+     * it addresses each event to **one node id** rather than broadcasting, because every
+     * node keeps its own high-water mark: one photo is new to a trigger armed yesterday
+     * and old to one armed a minute ago, so there is no such thing as a "new picture"
+     * event that is true for every listener.
+     *
+     * Arming also **takes a baseline**, which is why the spec is needed here rather than
+     * only at delivery: a node arming for the first time records where the collection is
+     * and reports nothing, so a macro does not run once per photo already on the phone.
+     *
+     * [onReport] carries a line back to the macro's own console, for [armMailWatch]'s
+     * reason, and here it has three things to say that have nowhere else to be said: the
+     * grant is missing so nothing can be noticed, more pictures arrived at once than one
+     * scan reports, and the phone rebuilt its photo index so there is a gap.
+     *
+     * The default is a no-op, so a host with no media access behind it leaves the trigger
+     * silent rather than failing to arm.
+     */
+    fun armImageWatch(
+        nodeId: NodeId,
+        spec: ImageWatchSpec,
+        onReport: (String, LogLevel) -> Unit = { _, _ -> },
+    ): ScheduleHandle = ScheduleHandle { }
+
+    /**
      * Registers this node's interest in a Home Assistant entity or event type.
      *
      * [armMailWatch]'s shape, with one difference that shows through here: this does

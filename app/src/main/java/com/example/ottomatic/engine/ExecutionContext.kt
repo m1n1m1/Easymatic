@@ -3,12 +3,14 @@ package com.example.ottomatic.engine
 import com.example.ottomatic.core.service.Ai
 import com.example.ottomatic.core.service.Calendars
 import com.example.ottomatic.core.service.Files
+import com.example.ottomatic.core.service.Images
 import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.NoAi
 import com.example.ottomatic.core.service.NoCalendars
 import com.example.ottomatic.core.service.NoFiles
+import com.example.ottomatic.core.service.NoImages
 import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
@@ -217,6 +219,20 @@ interface ExecutionContext {
      * `action.if` is the honest shape, on the exec wire where the wait is visible.
      */
     val files: Files get() = NoFiles
+
+    /**
+     * Finds, reads and changes the pictures on the phone — the six `action.image_*` nodes,
+     * `trigger.image_saved` and `value.latest_image`. Defaults to [NoImages].
+     *
+     * **Reachable from the pull side, unlike [files], and the difference is not slowness.**
+     * A filesystem answers only when asked and a granted folder may be served over a
+     * network, which is why there is no `value.file_exists`. MediaStore is a local
+     * provider that is always installed: [Images.latest] is one indexed cursor query with
+     * no socket, no credential and no timeout — `value.calendar_busy`'s argument, and the
+     * same road [homeAssistant] and [mqtt] reach the pull side by. Only that one member
+     * qualifies; everything else here decodes bitmaps or asks the user for permission.
+     */
+    val images: Images get() = NoImages
 
     /**
      * Reads and writes the device's calendars — the three `action.calendar_*` nodes and

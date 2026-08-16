@@ -52,6 +52,12 @@ object TriggerRegistry {
         // Not a Tier 1 broadcast trigger: an NFC tap is dispatched to an
         // Activity, because Android does no background tag scanning at all.
         add(com.example.ottomatic.engine.trigger.NfcTagTrigger())
+        // Also not a Tier 1 broadcast trigger, and not for NFC's reason: this is a
+        // ContentObserver over the media collection, routed to one node id because each
+        // node keeps its own high-water mark. Placed here, beside the other prominent
+        // triggers, rather than down with `trigger.media_mount` — the two share a word
+        // and nothing else.
+        add(com.example.ottomatic.engine.trigger.ImageSavedTrigger())
         // Tier 0 — engine-internal triggers.
         add(com.example.ottomatic.engine.trigger.EmptyTrigger())
         add(com.example.ottomatic.engine.trigger.AppInitTrigger())

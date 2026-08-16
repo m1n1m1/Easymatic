@@ -683,3 +683,67 @@ Update Calendar Event	更新日程
 Where	地点
 Whether an appointment is on in any calendar right now	此刻任意日历中是否有日程正在进行
 Whole series	整个系列
+Picture Saved	图片已保存
+Starts when a photo, screenshot or downloaded picture is added to this phone	当手机中新增照片、屏幕截图或下载的图片时启动
+Path	路径
+Only in this folder	仅在此文件夹中
+Find Pictures	查找图片
+Finds photos and screenshots on this phone onto a list you can loop over	查找手机中的照片和屏幕截图，生成可循环遍历的列表
+Names matching	名称匹配
+Pictures	图片
+Taken after	拍摄时间晚于
+Taken before	拍摄时间早于
+Newest first	最新的在前
+Oldest first	最旧的在前
+Most to return	最多返回数量
+Picture Details	图片详情
+Reads a picture\'s size, camera, date and location out of the file	从文件中读取图片的尺寸、相机、日期和位置
+Edit Picture	编辑图片
+Resizes, rotates, mirrors, crops or re-encodes a picture into a new file	将图片缩放、旋转、镜像、裁剪或重新编码后保存为新文件
+Longest side (pixels)	最长边（像素）
+Left	左
+Top	上
+Width	宽度
+Height	高度
+Into folder	放入文件夹
+File name	文件名
+Resize	缩放
+Rotate	旋转
+Mirror	镜像
+Crop	裁剪
+Change format or quality	更改格式或质量
+Turn	旋转方向
+A quarter turn right	向右旋转 90°
+Upside down	上下颠倒
+A quarter turn left	向左旋转 90°
+Left to right	左右翻转
+Top to bottom	上下翻转
+Save as	保存为
+Same as the original	与原图相同
+JPEG	JPEG
+PNG	PNG
+WebP	WebP
+Quality	质量
+If one is already there	如果已存在
+Change Picture Details	修改图片详情
+Writes or removes a picture\'s description, date, location or camera details	写入或删除图片的描述、日期、位置或相机信息
+New value (blank removes it)	新值（留空则删除）
+What to change	要修改的内容
+Description	描述
+Date taken	拍摄日期
+Location	位置
+Which way up	方向
+Camera maker	相机厂商
+Camera model	相机型号
+Artist	作者
+Copyright	版权
+Move or Copy Picture	移动或复制图片
+Moves or copies a photo into another folder, keeping it in the gallery	将照片移动或复制到其他文件夹，并保留在图库中
+Operation	操作
+Delete Picture	删除图片
+Moves a photo to the bin, or deletes it for good	将照片移入回收站，或彻底删除
+How	方式
+Move to the bin	移入回收站
+Delete for good	彻底删除
+Latest picture	最新图片
+The most recent photo, screenshot or picture saved on this phone	此手机上最近保存的照片、屏幕截图或图片

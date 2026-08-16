@@ -683,3 +683,67 @@ Update Calendar Event	予定を更新
 Where	場所
 Whether an appointment is on in any calendar right now	いまいずれかのカレンダーで予定が進行中かどうか
 Whole series	繰り返し全体
+Picture Saved	画像が保存された
+Starts when a photo, screenshot or downloaded picture is added to this phone	写真・スクリーンショット・ダウンロードした画像がこの端末に追加されたときに開始します
+Path	パス
+Only in this folder	このフォルダー内のみ
+Find Pictures	画像を検索
+Finds photos and screenshots on this phone onto a list you can loop over	この端末の写真とスクリーンショットを探し、繰り返し処理できるリストにします
+Names matching	名前が一致
+Pictures	画像
+Taken after	撮影日時が次より後
+Taken before	撮影日時が次より前
+Newest first	新しい順
+Oldest first	古い順
+Most to return	返す最大件数
+Picture Details	画像の詳細
+Reads a picture\'s size, camera, date and location out of the file	画像のサイズ・カメラ・日時・場所をファイルから読み取ります
+Edit Picture	画像を編集
+Resizes, rotates, mirrors, crops or re-encodes a picture into a new file	画像のサイズ変更・回転・反転・切り抜き・再エンコードを行い、新しいファイルに保存します
+Longest side (pixels)	長辺（ピクセル）
+Left	左
+Top	上
+Width	幅
+Height	高さ
+Into folder	保存先フォルダー
+File name	ファイル名
+Resize	サイズ変更
+Rotate	回転
+Mirror	反転
+Crop	切り抜き
+Change format or quality	形式または画質を変更
+Turn	回転
+A quarter turn right	右に 90 度
+Upside down	上下逆さま
+A quarter turn left	左に 90 度
+Left to right	左右
+Top to bottom	上下
+Save as	保存形式
+Same as the original	元の画像と同じ
+JPEG	JPEG
+PNG	PNG
+WebP	WebP
+Quality	画質
+If one is already there	すでにある場合
+Change Picture Details	画像の詳細を変更
+Writes or removes a picture\'s description, date, location or camera details	画像の説明・日時・場所・カメラ情報を書き込む、または削除します
+New value (blank removes it)	新しい値（空にすると削除）
+What to change	変更する項目
+Description	説明
+Date taken	撮影日時
+Location	場所
+Which way up	向き
+Camera maker	カメラのメーカー
+Camera model	カメラの機種
+Artist	作成者
+Copyright	著作権
+Move or Copy Picture	画像を移動またはコピー
+Moves or copies a photo into another folder, keeping it in the gallery	写真を別のフォルダーへ移動またはコピーします。ギャラリーには残ります
+Operation	操作
+Delete Picture	画像を削除
+Moves a photo to the bin, or deletes it for good	写真をゴミ箱に移動するか、完全に削除します
+How	方法
+Move to the bin	ゴミ箱に移動
+Delete for good	完全に削除
+Latest picture	最新の画像
+The most recent photo, screenshot or picture saved on this phone	この端末に最後に保存された写真・スクリーンショット・画像

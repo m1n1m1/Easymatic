@@ -74,12 +74,19 @@ interface Files {
      * The bytes at [path], Base64-encoded, or a failure.
      *
      * **Base64 rather than a `ByteArray`**, which looks like a needless expansion and
-     * is not. The only caller is an image on its way to a model, and every provider
-     * wants exactly this string on the wire — so returning bytes would mean encoding
-     * them again at the point of use, and holding *both* forms in memory inside the
-     * engine's foreground service. It also keeps the facade's "everything crossing
-     * this boundary is a value the engine can log and compare" property, which a
-     * mutable array does not have.
+     * is not: it is the form anything sending bytes onward wants, so returning an array
+     * would mean encoding it again at the point of use and holding *both* forms in the
+     * engine's foreground service. It also keeps the facade's "everything crossing this
+     * boundary is a value the engine can log and compare" property, which a mutable
+     * array does not have.
+     *
+     * **No longer what `action.ai_describe` uses**, and the reason is worth keeping here
+     * because it is the shape of the mistake: this member is bounded by
+     * [FileLimits.MAX_READ_BYTES] and *refuses* what is over it, which is correct for a
+     * facade that cannot know what the bytes are — and useless for a photo, since one
+     * megabyte is well under what any phone camera produces. Showing a picture to a model
+     * is `Images.encodeForModel`, which shrinks by construction instead. Reach for this
+     * one only where the bytes must arrive unchanged.
      *
      * Bounded by [FileLimits.MAX_READ_BYTES] while the stream is read, exactly as
      * [readText] is, and for the identical reason: a 200 MB video is not a slow read

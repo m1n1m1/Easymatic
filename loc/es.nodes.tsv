@@ -683,3 +683,67 @@ Update Calendar Event	Actualizar cita
 Where	Dónde
 Whether an appointment is on in any calendar right now	Si ahora mismo hay una cita en curso en cualquier calendario
 Whole series	Toda la serie
+Picture Saved	Imagen guardada
+Starts when a photo, screenshot or downloaded picture is added to this phone	Se inicia cuando se añade a este teléfono una foto, una captura de pantalla o una imagen descargada
+Path	Ruta
+Only in this folder	Solo en esta carpeta
+Find Pictures	Buscar imágenes
+Finds photos and screenshots on this phone onto a list you can loop over	Busca fotos y capturas de pantalla en este teléfono y las pone en una lista que puedes recorrer
+Names matching	Nombres que coinciden con
+Pictures	Imágenes
+Taken after	Tomada después de
+Taken before	Tomada antes de
+Newest first	Más recientes primero
+Oldest first	Más antiguas primero
+Most to return	Máximo que devolver
+Picture Details	Detalles de la imagen
+Reads a picture\'s size, camera, date and location out of the file	Lee del archivo el tamaño, la cámara, la fecha y la ubicación de una imagen
+Edit Picture	Editar imagen
+Resizes, rotates, mirrors, crops or re-encodes a picture into a new file	Cambia el tamaño, gira, refleja, recorta o vuelve a codificar una imagen en un archivo nuevo
+Longest side (pixels)	Lado más largo (píxeles)
+Left	Izquierda
+Top	Arriba
+Width	Anchura
+Height	Altura
+Into folder	En la carpeta
+File name	Nombre del archivo
+Resize	Cambiar tamaño
+Rotate	Girar
+Mirror	Reflejar
+Crop	Recortar
+Change format or quality	Cambiar formato o calidad
+Turn	Giro
+A quarter turn right	Un cuarto de vuelta a la derecha
+Upside down	Boca abajo
+A quarter turn left	Un cuarto de vuelta a la izquierda
+Left to right	De izquierda a derecha
+Top to bottom	De arriba abajo
+Save as	Guardar como
+Same as the original	Igual que el original
+JPEG	JPEG
+PNG	PNG
+WebP	WebP
+Quality	Calidad
+If one is already there	Si ya hay uno
+Change Picture Details	Cambiar detalles de la imagen
+Writes or removes a picture\'s description, date, location or camera details	Escribe o elimina la descripción, la fecha, la ubicación o los datos de la cámara de una imagen
+New value (blank removes it)	Nuevo valor (en blanco lo elimina)
+What to change	Qué cambiar
+Description	Descripción
+Date taken	Fecha de la toma
+Location	Ubicación
+Which way up	Orientación
+Camera maker	Fabricante de la cámara
+Camera model	Modelo de la cámara
+Artist	Autor
+Copyright	Derechos de autor
+Move or Copy Picture	Mover o copiar imagen
+Moves or copies a photo into another folder, keeping it in the gallery	Mueve o copia una foto a otra carpeta, manteniéndola en la galería
+Operation	Operación
+Delete Picture	Eliminar imagen
+Moves a photo to the bin, or deletes it for good	Mueve una foto a la papelera o la elimina definitivamente
+How	Cómo
+Move to the bin	Mover a la papelera
+Delete for good	Eliminar definitivamente
+Latest picture	Última imagen
+The most recent photo, screenshot or picture saved on this phone	La foto, captura de pantalla o imagen más reciente guardada en este teléfono

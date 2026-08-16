@@ -59,6 +59,10 @@ enum class NodeCategory(
     SMART_HOME(NodeKind.ACTION, "Smart Home"),
     AI(NodeKind.ACTION, "AI"),
     FILES(NodeKind.ACTION, "Files"),
+    // Separate from FILES rather than folded into it: six image nodes under "Files"
+    // would bury the six file nodes, and the two families cannot be wired to each
+    // other freely anyway — one addresses a path, the other a media row.
+    IMAGES(NodeKind.ACTION, "Photos"),
     CALENDAR(NodeKind.ACTION, "Calendar"),
     DATA(NodeKind.ACTION, "Data"),
     VALUE_POWER(NodeKind.VALUE, "Power & Battery"),
@@ -66,6 +70,7 @@ enum class NodeCategory(
     VALUE_DEVICE(NodeKind.VALUE, "Device State"),
     VALUE_SENSORS(NodeKind.VALUE, "Sensors"),
     VALUE_TIME(NodeKind.VALUE, "Date & Time"),
+    VALUE_IMAGES(NodeKind.VALUE, "Photos"),
     VALUE_SMART_HOME(NodeKind.VALUE, "Smart Home"),
     VALUE_VARIABLES(NodeKind.VALUE, "Variables"),
     TRANSFORM_DATA(NodeKind.TRANSFORM, "Data"),

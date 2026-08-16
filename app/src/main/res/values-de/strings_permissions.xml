@@ -60,4 +60,17 @@
     <string name="perm_rationale_calendar_write">Ottomatic braucht die Berechtigung, deinen Kalender zu ändern, damit dieser Knoten einen Termin anlegen, bearbeiten oder löschen kann. Das Lesen von Terminen ist eine eigene Berechtigung.</string>
     <string name="perm_rationale_overlay_launch">Ottomatic braucht die Berechtigung, über anderen Apps anzuzeigen, um eine App zu öffnen, während du gerade woanders auf deinem Telefon bist. Android blockiert das Öffnen einer App aus dem Hintergrund; ohne diese Berechtigung tut der Knoten nichts und sagt das in der Konsole.</string>
 
+    <string name="perm_title_read_media_images">Fotos</string>
+    <string name="perm_title_write_media_images">Fotos ändern</string>
+    <string name="perm_title_access_media_location">Fotostandorte</string>
+    <string name="perm_title_manage_media">Medienverwaltung</string>
+    <string name="perm_desc_read_media_images">Erlaubt einem Makro, die Bilder auf deinem Telefon zu finden und zu lesen und zu starten, wenn ein neues gespeichert wird. Ohne dies tut kein Foto-Knoten etwas.</string>
+    <string name="perm_desc_write_media_images">Erlaubt einem Makro, ein Foto auf älteren Android-Versionen zu ändern, zu verschieben oder zu löschen. Ab Android 10 gibt es hier nichts zu erteilen: Android fragt stattdessen bei jeder Änderung nach.</string>
+    <string name="perm_desc_access_media_location">Erlaubt einem Makro zu lesen, wo ein Foto aufgenommen wurde. Ohne dies verbirgt Android den Ort in Fotos, die andere Apps gespeichert haben, und das Makro hält das Foto für ortslos.</string>
+    <string name="perm_desc_manage_media">Erlaubt einem Makro, Fotos zu ändern, zu verschieben oder zu löschen, ohne dich jedes Mal zu fragen. Optional: ohne dies funktioniert alles weiterhin, Android fragt nur jedes Mal nach, wofür du das Telefon in der Hand haben musst.</string>
+    <string name="perm_rationale_media_read">Ottomatic braucht Zugriff auf deine Fotos, damit dieser Knoten sie finden und lesen kann. Ein Bild selbst auszuwählen braucht das nicht; während des Makrolaufs eines zu suchen schon.</string>
+    <string name="perm_rationale_media_write">Ottomatic braucht die Berechtigung, deine Fotos zu ändern, damit dieser Knoten eines neu schreiben kann. Ab Android 10 bewirkt diese Berechtigung nichts und Android fragt stattdessen bei jeder Änderung nach.</string>
+    <string name="perm_rationale_media_location">Ottomatic braucht die Berechtigung zu lesen, wo ein Foto aufgenommen wurde, sonst meldet dieser Knoten für jedes Bild, es habe keinen Ort. Selbst aufgenommene Fotos sind nicht betroffen.</string>
+    <string name="perm_rationale_media_manage">Ottomatic kann Fotos ändern, ohne dich jedes Mal zu fragen. Optional: ohne dies funktioniert der Knoten weiterhin, aber Android zeigt eine Bestätigung an, sodass er nicht unbeaufsichtigt laufen kann.</string>
+    <string name="perm_rationale_overlay_media">Ottomatic braucht die Berechtigung, sich über andere Apps zu legen, um Androids Bestätigung anzuzeigen, während das Makro im Hintergrund läuft. Ohne sie schlägt das Ändern eines von einer anderen App gespeicherten Fotos fehl, wenn du nicht in Ottomatic bist.</string>
 </resources>

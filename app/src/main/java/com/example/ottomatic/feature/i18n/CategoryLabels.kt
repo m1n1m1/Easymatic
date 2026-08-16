@@ -45,6 +45,7 @@ internal fun NodeCategory.labelRes(): Int = when (this) {
     NodeCategory.SMART_HOME -> R.string.category_smart_home
     NodeCategory.AI -> R.string.category_ai
     NodeCategory.FILES -> R.string.category_files
+    NodeCategory.IMAGES -> R.string.category_images
     NodeCategory.CALENDAR -> R.string.category_calendar
     NodeCategory.DATA -> R.string.category_data
     NodeCategory.VALUE_POWER -> R.string.category_value_power
@@ -52,6 +53,9 @@ internal fun NodeCategory.labelRes(): Int = when (this) {
     NodeCategory.VALUE_DEVICE -> R.string.category_value_device
     NodeCategory.VALUE_SENSORS -> R.string.category_value_sensors
     NodeCategory.VALUE_TIME -> R.string.category_value_time
+    // The same string as the action category, on VALUE_SMART_HOME's precedent: the two
+    // are one family to the user and the palette already separates them by kind.
+    NodeCategory.VALUE_IMAGES -> R.string.category_images
     NodeCategory.VALUE_SMART_HOME -> R.string.category_smart_home
     NodeCategory.VALUE_VARIABLES -> R.string.category_value_variables
     NodeCategory.TRANSFORM_DATA -> R.string.category_transform_data

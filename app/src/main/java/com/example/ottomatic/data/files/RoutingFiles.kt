@@ -11,6 +11,7 @@ import com.example.ottomatic.core.service.ListFilter
 import com.example.ottomatic.core.service.TextEncoding
 import com.example.ottomatic.core.service.WhenExists
 import com.example.ottomatic.domain.model.FilePath
+import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -36,6 +37,8 @@ import kotlinx.coroutines.withContext
  * working after a restart", which is the kind of thing nobody reports as a bug and
  * everybody remembers as the app being unreliable.
  */
+@Suppress("TooManyFunctions") // The seven Files members plus the routing helpers each
+// one of them needs; splitting would put the route in a different file from the members.
 class RoutingFiles(context: Context) : Files {
 
     private val appContext = context.applicationContext
@@ -120,6 +123,24 @@ class RoutingFiles(context: Context) : Files {
             }
         }
         FileResult(changed = true, path = to, name = target.name)
+    }
+
+    /**
+     * Opens [path] for reading, whichever backend holds it, or null.
+     *
+     * The one member here that is not part of the [Files] contract, and it exists for the
+     * image layer: showing a photo to a model means *decoding* it, which needs a stream
+     * rather than the whole file as text or Base64. Putting it here rather than opening
+     * files over there keeps the "which handle opens this path?" question in the one class
+     * whose job that is — a second reading of a path is how the two would drift apart.
+     *
+     * `internal`, because it hands out a resource the caller must close, which is not
+     * something the facade's own rule ("nothing here throws, everything is a value") can
+     * cover.
+     */
+    internal suspend fun openStream(path: String): InputStream? = withContext(Dispatchers.IO) {
+        val parsed = FilePath.parse(path) ?: return@withContext null
+        runCatching { storeFor(parsed).openRead(parsed) }.getOrNull()
     }
 
     /** Parses [path] and hands it to whichever backend can open it. */

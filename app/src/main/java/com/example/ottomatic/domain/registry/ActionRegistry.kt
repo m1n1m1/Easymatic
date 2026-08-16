@@ -26,6 +26,12 @@ import com.example.ottomatic.engine.action.FileListAction
 import com.example.ottomatic.engine.action.FileReadAction
 import com.example.ottomatic.engine.action.FileTransferAction
 import com.example.ottomatic.engine.action.FileWriteAction
+import com.example.ottomatic.engine.action.ImageDeleteAction
+import com.example.ottomatic.engine.action.ImageEditAction
+import com.example.ottomatic.engine.action.ImageInfoAction
+import com.example.ottomatic.engine.action.ImageListAction
+import com.example.ottomatic.engine.action.ImageMetadataAction
+import com.example.ottomatic.engine.action.ImageMoveAction
 import com.example.ottomatic.engine.action.FlashlightAction
 import com.example.ottomatic.engine.action.ForEachAction
 import com.example.ottomatic.engine.action.HaServiceAction
@@ -133,6 +139,16 @@ object ActionRegistry {
         FileInfoAction(),
         FileTransferAction(),
         FileDeleteAction(),
+
+        // The picture family, after the file family and grouped the same way: the
+        // order somebody meets them is find one, look at it, then change it — read
+        // before write, and the destructive one last.
+        ImageListAction(),
+        ImageInfoAction(),
+        ImageEditAction(),
+        ImageMetadataAction(),
+        ImageMoveAction(),
+        ImageDeleteAction(),
         ListAddAction(),
         ListClearAction(),
         LogAction(),

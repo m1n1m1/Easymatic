@@ -159,6 +159,9 @@ dependencies {
     // hand-rolled the way every plain HTTP path in this app is.
     implementation(libs.paho.mqtt)
     implementation(libs.kotlinx.serialization.json)
+    // EXIF for the image nodes. See the catalogue comment for why the framework
+    // ExifInterface is not a substitute at minSdk 26.
+    implementation(libs.androidx.exifinterface)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.play.services.location)
     implementation(libs.play.services.maps)

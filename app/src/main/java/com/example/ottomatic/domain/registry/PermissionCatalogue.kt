@@ -109,6 +109,11 @@ object PermissionCatalogue {
         // forbids — the derivation described above, doing what it was built to do.
         special(PrerequisiteType.WRITE_SETTINGS, "settings.write"),
         special(PrerequisiteType.NFC, "nfc.radio"),
+        // Offered, never required. Every image node works without it — Android asks
+        // the user to confirm each change instead — so no node declares it, which
+        // would put a permanent amber badge on a node that is working. What it buys
+        // is "stop asking me every time", and that is a proposition for this screen.
+        special(PrerequisiteType.MANAGE_MEDIA, "media.manage"),
     )
 }
 

@@ -12,6 +12,7 @@ import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.data.ai.AiModelCatalog
 import com.example.ottomatic.data.ai.RoutingAi
 import com.example.ottomatic.data.files.RoutingFiles
+import com.example.ottomatic.data.images.MediaImages
 import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.data.GeofencePlaceRepository
 import com.example.ottomatic.data.MailAccountRepository
@@ -349,8 +350,16 @@ object ServiceLocator {
      */
     val appContextOrNull: Context? get() = if (::appContext.isInitialized) appContext else null
 
+    // A flat wiring list rather than branching logic: every line names one facade and
+    // hands it its dependencies, so splitting it would only scatter the one place
+    // somebody looks to find out what is plugged into what.
+    @Suppress("LongMethod")
     fun init(context: Context) {
         appContext = context.applicationContext
+        // Named rather than inlined because two facades share it: `files` is the
+        // facade itself, and `images` borrows its opener so a picture outside the
+        // media collection is still readable through one reading of a path.
+        val routingFiles = RoutingFiles(appContext)
         // Published before anything else touches a workflow: `effectivePorts` and
         // `GraphValidator` resolve a global reference through this, and both run
         // from paths that can neither suspend nor be injected into.
@@ -460,7 +469,9 @@ object ServiceLocator {
             // and for a case that happens more often: somebody grants a folder on the
             // Folder access screen and runs the macro from the next screen along, and
             // a snapshot taken at start-up would make that work only after a restart.
-            files = RoutingFiles(appContext),
+            // Both storage facades take it, for that one reason.
+            files = routingFiles,
+            images = MediaImages(appContext, routingFiles::openStream),
             calendars = calendarsFacade,
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives

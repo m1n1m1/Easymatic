@@ -827,6 +827,135 @@ data class FileInfoItem(
 )
 
 /**
+ * One picture, as `trigger.image_saved`, `value.latest_image` and `action.image_list` all
+ * see it.
+ *
+ * **[uri] and [path] are both here and neither is redundant**, which looks like the
+ * duplication this file argues against everywhere else and is not. A picture genuinely has
+ * two addresses that reach different things: [uri] names the row and is what every image
+ * node can open, while [path] is what `action.ai_describe` and the `action.file_*` nodes
+ * take — and each is missing exactly where the other works. `MediaStore`'s path column is
+ * deprecated and blank on some phones, and even where it is present scoped storage will not
+ * let `java.io.File` open it; a content URI, meanwhile, means nothing to a node built on
+ * `FilePath`. Carrying both is what makes "resize the photo I just took and mail it" a
+ * graph somebody can actually draw. `ImageRef` reads either.
+ *
+ * [path] is blank rather than absent when the collection does not say, so a macro testing
+ * it gets a value rather than a null it cannot compare.
+ *
+ * [width], [height] and [sizeBytes] are **-1 when unknown, never 0**, on [FileInfoItem]'s
+ * rule and for its reason: a zero here is a lie a macro acts on.
+ */
+@Serializable
+data class ImageItem(
+    /** The `content://` row. Always known for a picture that exists. */
+    val uri: String = "",
+    /** Absolute filesystem path, when the collection still reports one. */
+    val path: String = "",
+    val name: String = "",
+    /** The folder as a person recognises it — `DCIM/Camera`, `Pictures/Screenshots`. */
+    val folder: String = "",
+    val mimeType: String = "",
+    val width: Int = -1,
+    val height: Int = -1,
+    val sizeBytes: Long = -1,
+    /** When the shutter fired. Null when the file does not say — a screenshot does not. */
+    val takenAt: DateTime? = null,
+    /** When this phone learned about the picture. Always known. */
+    val addedAt: DateTime? = null,
+)
+
+/**
+ * What `action.image_info` found out about one picture — the collection's columns and the
+ * file's own metadata in one struct, because nobody asking "what camera took this?" is
+ * thinking about which of the two answers it.
+ *
+ * Flat rather than nesting an [ImageItem], deliberately: one `action.break` then reaches
+ * every field. A nested struct would put a second `action.break` between the user and the
+ * width of their photo.
+ *
+ * [exists] is its own field beside [error], on [FileInfoItem]'s rule.
+ *
+ * **[hasLocation] gates the coordinates because `0.0, 0.0` is a real place** — it is in the
+ * Gulf of Guinea — so there is no value of [latitude] that can mean "no location".
+ * [locationHidden] is the third state that pair still cannot express: the picture *has* a
+ * location and Ottomatic is not permitted to read it, which from Android 10 is what a
+ * missing `ACCESS_MEDIA_LOCATION` means. Without it, "this photo was taken nowhere" and "I
+ * may not tell you where" would be the same answer.
+ *
+ * [exposureTime], [fNumber] and [focalLength] stay **text**, because what somebody wants to
+ * read is `1/250` and `f/1.8`. Rendering either as a number picks one spelling and loses the
+ * other, and `transform.convert` bridges it for anybody who wants to compare.
+ */
+@Serializable
+data class ImageDetailsItem(
+    val exists: Boolean,
+    val uri: String = "",
+    val path: String = "",
+    val name: String = "",
+    val folder: String = "",
+    val mimeType: String = "",
+    val width: Int = -1,
+    val height: Int = -1,
+    val sizeBytes: Long = -1,
+    val takenAt: DateTime? = null,
+    val addedAt: DateTime? = null,
+    /** Clockwise rotation a viewer should apply: 0, 90, 180, 270, or -1 when unstated. */
+    val orientationDegrees: Int = -1,
+    val cameraMake: String = "",
+    val cameraModel: String = "",
+    val isoSpeed: Int = -1,
+    val exposureTime: String = "",
+    val fNumber: String = "",
+    val focalLength: String = "",
+    val description: String = "",
+    val hasLocation: Boolean = false,
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
+    /** The picture has a location this app is not permitted to read. */
+    val locationHidden: Boolean = false,
+    val error: String = "",
+)
+
+/**
+ * Receipt from `action.image_edit`, `action.image_move`, `action.image_delete` and
+ * `action.image_metadata`.
+ *
+ * [FileResultItem]'s shape and its reasoning — one struct for four nodes answering the same
+ * question — with one field it has no counterpart for.
+ *
+ * **[needsConfirmation] exists because Android has an outcome `changed`-plus-[error] cannot
+ * express.** From Android 11, changing a picture another app saved needs the person holding
+ * the phone to tap Allow. So "there was nobody to ask" is a state worth **retrying later**,
+ * where "you said no" and "the file is gone" are not — and a macro can branch on the
+ * difference. Folding it into [error] would make a locked screen indistinguishable from a
+ * refusal, which is the collapse [FileInfoItem.exists] exists to prevent, one node along.
+ *
+ * Flat rather than nesting an [ImageItem], on [ImageDetailsItem]'s reasoning: a nested one
+ * would make reading the path of the file you just wrote a *second* `action.break`, which is
+ * the commonest thing anybody does after a write. [width] and [height] are here because an
+ * edit changes them and a macro chaining a second edit needs to know.
+ *
+ * [uri] and [name] both matter after a write and for different reasons: MediaStore
+ * **renames silently** on a collision, producing `photo (1).jpg` and reporting success, so
+ * the name asked for is not necessarily the name that now exists — [FileResultItem.name]'s
+ * lesson, which bites identically here.
+ */
+@Serializable
+data class ImageResultItem(
+    val changed: Boolean,
+    val uri: String = "",
+    val path: String = "",
+    val name: String = "",
+    val width: Int = -1,
+    val height: Int = -1,
+    val sizeBytes: Long = -1,
+    /** Android wanted the user to confirm and there was no way to ask. Worth retrying. */
+    val needsConfirmation: Boolean = false,
+    val error: String = "",
+)
+
+/**
  * Result of the call action on its `state` data port.
  *
  * - [number]: the destination phone number.

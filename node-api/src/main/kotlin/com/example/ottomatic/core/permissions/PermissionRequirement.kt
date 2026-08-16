@@ -68,6 +68,22 @@ enum class PrerequisiteType {
      * this phone. See `AndroidPermissionChecker` for what that answers.
      */
     NFC,
+
+    /**
+     * Managing the phone's photos and videos without being asked each time (API 31+).
+     *
+     * The shape this enum already models: a single system-wide switch with its own
+     * Settings page (`ACTION_REQUEST_MANAGE_MEDIA`), its own read-back API
+     * (`MediaStore.canManageMedia`), and no runtime dialog anywhere.
+     *
+     * **No node declares it, and that is the point.** Every image node works without
+     * it — changing somebody else's photo simply asks the user to confirm — so
+     * declaring it would put a permanent amber badge on a node that is working, which
+     * is the failure `value.nfc` and `usesContacts` both exist to avoid. What it buys
+     * is "stop asking me every time", which is a proposition for the Permissions
+     * screen rather than for a node, so it lives in `PermissionCatalogue.appLevel`.
+     */
+    MANAGE_MEDIA,
 }
 
 /**
@@ -123,6 +139,7 @@ data class PermissionRequirement(
             type == PrerequisiteType.EXACT_ALARM -> "permission to set exact alarms"
             type == PrerequisiteType.WRITE_SETTINGS -> "permission to change system settings"
             type == PrerequisiteType.NFC -> "NFC turned on"
+            type == PrerequisiteType.MANAGE_MEDIA -> "permission to manage photos and videos"
             type != PrerequisiteType.RUNTIME -> "a system permission"
             manifestPermission == Permissions.ACCESS_FINE_LOCATION.manifest -> "location access"
             manifestPermission == Permissions.ACCESS_COARSE_LOCATION.manifest -> "location access"
@@ -137,6 +154,12 @@ data class PermissionRequirement(
                 "permission to change your calendar"
             manifestPermission == Permissions.POST_NOTIFICATIONS.manifest ->
                 "permission to post notifications"
+            manifestPermission == Permissions.READ_MEDIA_IMAGES.manifest -> "access to your photos"
+            manifestPermission == Permissions.READ_EXTERNAL_STORAGE.manifest -> "access to your photos"
+            manifestPermission == Permissions.WRITE_EXTERNAL_STORAGE.manifest ->
+                "permission to change your photos"
+            manifestPermission == Permissions.ACCESS_MEDIA_LOCATION.manifest ->
+                "permission to read where a photo was taken"
             else -> manifestPermission.orEmpty().substringAfterLast('.')
         }
 }

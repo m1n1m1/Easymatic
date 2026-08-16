@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.nfc.NfcAdapter
 import android.os.Build
 import android.os.PowerManager
+import android.provider.MediaStore
 import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
@@ -18,6 +19,7 @@ import com.example.ottomatic.core.permissions.PermissionChecker
 import com.example.ottomatic.core.permissions.PermissionStatus
 import com.example.ottomatic.core.permissions.Permissions
 import com.example.ottomatic.core.permissions.PrerequisiteType
+import com.example.ottomatic.core.permissions.onApi
 
 /**
  * Android implementation of [PermissionChecker]. When constructed with an
@@ -35,22 +37,36 @@ class AndroidPermissionChecker(
     private val activity: Activity? = null,
 ) : PermissionChecker {
 
-    override fun status(permission: Permission): PermissionStatus = when {
-        permission == Permissions.ACCESS_NOTIFICATION_POLICY -> dndPolicyStatus()
-        !permission.existsOnThisApi() -> PermissionStatus.Granted
-        ContextCompat.checkSelfPermission(context, permission.manifest) ==
-            PackageManager.PERMISSION_GRANTED -> PermissionStatus.Granted
-        else -> PermissionStatus.Denied(
-            showRationale = activity?.let {
-                ActivityCompat.shouldShowRequestPermissionRationale(it, permission.manifest)
-            } ?: false,
-        )
+    /**
+     * The resolution through [onApi] on the first line is load-bearing rather than tidy:
+     * a node declares `READ_MEDIA_IMAGES` on every API, and below 33 the platform has
+     * never heard of that name, so checking it directly would report a refusal on a phone
+     * where `READ_EXTERNAL_STORAGE` is held and everything works. That is a *rename*
+     * rather than a permission that does not exist yet, which is why [existsOnThisApi]
+     * cannot answer it — see `Permission.onApi`.
+     */
+    override fun status(permission: Permission): PermissionStatus {
+        val resolved = permission.onApi(Build.VERSION.SDK_INT)
+        return when {
+            resolved == Permissions.ACCESS_NOTIFICATION_POLICY -> dndPolicyStatus()
+            !resolved.existsOnThisApi() -> PermissionStatus.Granted
+            ContextCompat.checkSelfPermission(context, resolved.manifest) ==
+                PackageManager.PERMISSION_GRANTED -> PermissionStatus.Granted
+
+            else -> PermissionStatus.Denied(
+                showRationale = activity?.let {
+                    ActivityCompat.shouldShowRequestPermissionRationale(it, resolved.manifest)
+                } ?: false,
+            )
+        }
     }
 
     /**
      * Each of these has its own system API — there is no `android.permission.*`
      * name to check — so they are answered here rather than through [status].
      */
+    @Suppress("CyclomaticComplexMethod") // One arm per PrerequisiteType, and the
+    // exhaustiveness is the point: a new member must not compile until answered here.
     override fun isPrerequisiteSatisfied(type: PrerequisiteType): Boolean = when (type) {
         PrerequisiteType.RUNTIME -> false
         PrerequisiteType.NOTIFICATION_POLICY -> dndPolicyStatus() is PermissionStatus.Granted
@@ -73,6 +89,13 @@ class AndroidPermissionChecker(
         // The node's question is a different one, and `trigger.nfc` answers that
         // precisely, in its own console, where the person who placed it will see.
         PrerequisiteType.NFC -> !hasNfcHardware() || isNfcEnabled()
+        // Below API 31 there is no such thing to grant, and the *unsatisfied* answer
+        // would be a row that can never go green — `EXACT_ALARM`'s reasoning. Note
+        // this is not the same as saying photo edits are unattended there: below 29
+        // they need no consent at all, and on 29 and 30 they ask the user. See
+        // `MediaConsents` for the ladder this switch sits at the top of.
+        PrerequisiteType.MANAGE_MEDIA ->
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.S || MediaStore.canManageMedia(context)
         // Neither is declared by any node; reporting them unsatisfied keeps the
         // safe default rather than claiming something unverified is working.
         PrerequisiteType.FOREGROUND_SERVICE, PrerequisiteType.DEVICE_ADMIN -> false
@@ -140,6 +163,14 @@ class AndroidPermissionChecker(
     private fun Permission.existsOnThisApi(): Boolean = when (this) {
         Permissions.POST_NOTIFICATIONS -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
         Permissions.BLUETOOTH_CONNECT -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        Permissions.ACCESS_MEDIA_LOCATION -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+        // The most surprising entry here, and the honest one. From API 29 scoped
+        // storage removed this permission's effect entirely: there is no grant that
+        // lets an app change another app's photo, and the platform asks the user per
+        // operation instead (see `MediaConsents`). So above 28 there is genuinely
+        // nothing to grant, and reporting *denied* would badge every image write node
+        // for a switch that does not exist on the phone.
+        Permissions.WRITE_EXTERNAL_STORAGE -> Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
         else -> true
     }
 

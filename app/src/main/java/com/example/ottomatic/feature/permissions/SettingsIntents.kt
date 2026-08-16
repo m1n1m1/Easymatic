@@ -19,6 +19,7 @@ import com.example.ottomatic.core.permissions.PrerequisiteType
  */
 
 /** Sends the user to the page where [type] is granted. */
+@Suppress("ReturnCount") // One early exit per type with no page to open.
 internal fun Context.openSettingsFor(type: PrerequisiteType) {
     val intent = when (type) {
         PrerequisiteType.ACCESSIBILITY_SERVICE ->
@@ -38,6 +39,16 @@ internal fun Context.openSettingsFor(type: PrerequisiteType) {
         // one toggle here that is not about Ottomatic at all. It also toggles both
         // ways, which is why `openRevokeFor` needs no branch for it.
         PrerequisiteType.NFC -> Intent(Settings.ACTION_NFC_SETTINGS)
+        // Nothing to open below API 31, on EXACT_ALARM's reasoning: media management
+        // does not exist there, so there is no page and nothing to grant. Note this
+        // page lists every app that *could* manage media, with no `package:` uri
+        // accepted — unlike the overlay and write-settings pages above.
+        PrerequisiteType.MANAGE_MEDIA ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA, packageUri())
+            } else {
+                return
+            }
         // Nothing to open below API 31: an exact alarm needs no permission there,
         // so there is no page and nothing to grant.
         PrerequisiteType.EXACT_ALARM ->

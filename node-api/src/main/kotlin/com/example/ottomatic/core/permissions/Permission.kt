@@ -70,4 +70,77 @@ object Permissions {
      * `NotificationManager.isNotificationPolicyAccessGranted`.
      */
     val ACCESS_NOTIFICATION_POLICY = Permission("android.permission.ACCESS_NOTIFICATION_POLICY")
+
+    /**
+     * Reading the pictures in the shared media collection.
+     *
+     * **Declared by every image node on every API**, including the ones where the
+     * platform has never heard of the name — see [onApi], which substitutes the name
+     * the platform does know. Declaring the *modern* name rather than branching is
+     * what keeps [PermissionRequirement.key] stable, so `GrantedPrerequisites`, the
+     * Permissions screen and a saved workflow all go on meaning the same thing as the
+     * fleet's API floor rises.
+     */
+    val READ_MEDIA_IMAGES = Permission("android.permission.READ_MEDIA_IMAGES")
+
+    /**
+     * What [READ_MEDIA_IMAGES] is called at or below API 32. **Never declared by a
+     * node** — [onApi] substitutes it, and a node naming it directly would report a
+     * different `key` on old and new phones for one capability.
+     */
+    val READ_EXTERNAL_STORAGE = Permission("android.permission.READ_EXTERNAL_STORAGE")
+
+    /**
+     * Changing or deleting a picture another app saved, at or below API 28 and
+     * nowhere else.
+     *
+     * From API 29 there is no permission for this at all: the platform asks the user
+     * per operation through an `IntentSender`. That is why `existsOnThisApi` reports
+     * this **granted** above 28 rather than denied — there is nothing there to grant,
+     * and a row saying otherwise would be a permanent false alarm. See `MediaConsents`.
+     */
+    val WRITE_EXTERNAL_STORAGE = Permission("android.permission.WRITE_EXTERNAL_STORAGE")
+
+    /**
+     * The GPS tags inside a picture.
+     *
+     * From API 29 MediaStore strips them out of the bytes it hands over unless this is
+     * held *and* the URI has been through `MediaStore.setRequireOriginal` — both, not
+     * either. Declared by `action.image_info` alone, statically rather than derived from
+     * config the way `usesContacts` is, because there is no configuration of that node
+     * in which it does not want the grant: its struct always carries a latitude and a
+     * longitude, so the badge is never a lie.
+     */
+    val ACCESS_MEDIA_LOCATION = Permission("android.permission.ACCESS_MEDIA_LOCATION")
 }
+
+/**
+ * The name this permission goes by on API [sdkInt].
+ *
+ * **The one thing `AndroidPermissionChecker.existsOnThisApi` cannot do.** That answers *is
+ * there anything here to grant*, which is the right question for a permission the platform
+ * has not invented yet. The media read split is a different shape: it is a **rename**, the
+ * same capability under two names, and checking the wrong one reports a refusal on a phone
+ * where everything works.
+ *
+ * Pure and parameterised rather than reading `Build.VERSION`, which is what lets it live here
+ * in `:node-api` beside the constants it maps between — the module compiled without
+ * `android.jar` — and be JVM-tested at every boundary rather than needing a device per API
+ * level.
+ *
+ * **Three callers, and missing one is the bug this exists to make impossible**: the checker,
+ * and the two places that launch the runtime dialog. A grant requested under one name and
+ * checked under the other is a permission that can never be satisfied.
+ */
+fun Permission.onApi(sdkInt: Int): Permission = when {
+    this == Permissions.READ_MEDIA_IMAGES && sdkInt < MEDIA_PERMISSION_SPLIT_API ->
+        Permissions.READ_EXTERNAL_STORAGE
+
+    else -> this
+}
+
+/** API 33, where the single storage read permission split into one per media type. */
+const val MEDIA_PERMISSION_SPLIT_API: Int = 33
+
+/** API 29, where scoped storage removed direct write access to another app's media. */
+const val SCOPED_STORAGE_API: Int = 29

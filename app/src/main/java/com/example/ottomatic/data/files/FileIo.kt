@@ -73,7 +73,9 @@ internal fun readBoundedBase64(stream: InputStream, mediaType: String): FileByte
         filled += read
     }
     if (filled == cap && stream.read() != -1) {
-        return FileBytes(error = "That file is too big to send (over ${'$'}cap bytes)")
+        // The number, not the name of the constant. This read `${'$'}cap` until 2026-08-16,
+        // which told the user nothing and looked like a broken template.
+        return FileBytes(error = "That file is too big to read (over ${cap / BYTES_PER_KB} KB)")
     }
     return FileBytes(
         base64 = Base64.encodeToString(buffer.copyOf(filled), Base64.NO_WRAP),
@@ -118,3 +120,6 @@ internal fun mediaTypeOf(name: String): String = when (name.substringAfterLast('
     "webp" -> "image/webp"
     else -> ""
 }
+
+/** For turning a byte cap into the KB a person reads. */
+private const val BYTES_PER_KB = 1024

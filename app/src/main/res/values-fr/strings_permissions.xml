@@ -9,6 +9,10 @@
     <string name="perm_title_exact_alarm">Alarmes et rappels</string>
     <string name="perm_title_write_settings">Modifier les paramètres système</string>
     <string name="perm_title_nfc">NFC</string>
+    <string name="perm_title_read_media_images">Photos</string>
+    <string name="perm_title_write_media_images">Modification des photos</string>
+    <string name="perm_title_access_media_location">Lieu des photos</string>
+    <string name="perm_title_manage_media">Gestion des médias</string>
     <string name="perm_title_foreground_service">Service au premier plan</string>
     <string name="perm_title_device_admin">Administrateur de l\'appareil</string>
     <string name="perm_title_access_fine_location">Localisation</string>
@@ -30,6 +34,10 @@
     <string name="perm_desc_exact_alarm">Permet à une programmation de se déclencher, et à une attente de finir, à la minute demandée. Sans cette autorisation, Android peut la regrouper avec d\'autres tâches, donc elle peut s\'exécuter en retard.</string>
     <string name="perm_desc_write_settings">Permet à une macro de changer la luminosité, la mise en veille de l\'écran et la rotation automatique.</string>
     <string name="perm_desc_nfc">Permet à une macro de s\'exécuter quand tu approches un tag NFC du dos de ton téléphone. Ottomatic ne peut pas activer le NFC à ta place, et les tags ne sont lus que si l\'écran est allumé et déverrouillé.</string>
+    <string name="perm_desc_read_media_images">Permet à une macro de rechercher et de lire les images de votre téléphone, et de démarrer quand une nouvelle est enregistrée. Sans cela, aucun nœud photo ne fonctionne.</string>
+    <string name="perm_desc_write_media_images">Permet à une macro de modifier, déplacer ou supprimer une photo sur les anciennes versions d\'Android. À partir d\'Android 10, il n\'y a rien à accorder ici : Android vous demande de confirmer chaque modification.</string>
+    <string name="perm_desc_access_media_location">Permet à une macro de lire le lieu où une photo a été prise. Sans cela, Android masque le lieu dans les photos enregistrées par d\'autres applications, et la macro croit que la photo n\'en a pas.</string>
+    <string name="perm_desc_manage_media">Permet à une macro de modifier, déplacer ou supprimer des photos sans vous demander de confirmer à chaque fois. Facultatif : sans cela tout fonctionne encore, mais Android vous demande à chaque fois, ce qui exige que vous ayez le téléphone en main.</string>
     <string name="perm_desc_foreground_service">Permet à Ottomatic de garder son moteur actif tant que tes macros sont actives.</string>
     <string name="perm_desc_device_admin">Permet à Ottomatic d\'utiliser les fonctions d\'administrateur de l\'appareil.</string>
     <string name="perm_desc_access_fine_location">Permet à un géorepérage de savoir quand tu arrives quelque part ou en repars.</string>
@@ -52,5 +60,10 @@
     <string name="perm_rationale_alarm_exact">Ottomatic a besoin de l\'autorisation de programmer des alarmes exactes pour que cette attente se termine à la minute demandée. Sans elle, l\'attente a quand même lieu, mais Android regroupe le réveil avec d\'autres tâches et cela peut prendre plusieurs minutes de plus.</string>
     <string name="perm_rationale_calendar_read">Ottomatic a besoin de l\'accès à l\'agenda pour lire vos rendez-vous. Sans lui, ce nœud ne lit rien du tout et le sélecteur d\'agenda ci-dessus n\'a rien à proposer.</string>
     <string name="perm_rationale_calendar_write">Ottomatic a besoin de l\'autorisation de modifier votre agenda pour que ce nœud puisse créer, modifier ou supprimer un rendez-vous. Lire les rendez-vous est une autorisation distincte.</string>
+    <string name="perm_rationale_media_read">Ottomatic a besoin d\'accéder à vos photos pour que ce nœud puisse les rechercher et les lire. Choisir une image vous-même n\'en a pas besoin ; en rechercher une pendant l\'exécution de la macro, si.</string>
+    <string name="perm_rationale_media_write">Ottomatic a besoin de la permission de modifier vos photos pour que ce nœud puisse en réécrire une. Sur Android 10 et versions ultérieures, cette permission ne fait rien et Android vous demande de confirmer chaque modification.</string>
+    <string name="perm_rationale_media_location">Ottomatic a besoin de la permission de lire le lieu de prise de vue, sinon ce nœud indique qu\'aucune image n\'a de lieu. Les photos que vous avez prises vous-même ne sont pas concernées.</string>
+    <string name="perm_rationale_media_manage">Ottomatic peut modifier des photos sans vous demander à chaque fois. C\'est facultatif : sans cela le nœud fonctionne encore, mais Android affiche une confirmation à l\'écran, donc il ne peut pas s\'exécuter sans surveillance.</string>
+    <string name="perm_rationale_overlay_media">Ottomatic a besoin de la permission de s\'afficher par-dessus les autres applications pour pouvoir montrer la confirmation d\'Android pendant que la macro s\'exécute en arrière-plan. Sans cela, modifier une photo enregistrée par une autre application échoue quand vous n\'êtes pas dans Ottomatic.</string>
     <string name="perm_rationale_overlay_launch">Ottomatic a besoin de l\'autorisation d\'afficher par-dessus les autres applications pour pouvoir en ouvrir une pendant que tu es ailleurs sur ton téléphone. Android empêche une application en arrière-plan d\'en ouvrir une autre et, sans cette autorisation, le nœud ne fait rien et le signale dans la console.</string>
 </resources>

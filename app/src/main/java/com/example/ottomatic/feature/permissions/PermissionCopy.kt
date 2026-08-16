@@ -46,12 +46,14 @@ internal fun titleRes(requirement: PermissionRequirement): Int? =
         PrerequisiteType.EXACT_ALARM -> R.string.perm_title_exact_alarm
         PrerequisiteType.WRITE_SETTINGS -> R.string.perm_title_write_settings
         PrerequisiteType.NFC -> R.string.perm_title_nfc
+        PrerequisiteType.MANAGE_MEDIA -> R.string.perm_title_manage_media
         PrerequisiteType.FOREGROUND_SERVICE -> R.string.perm_title_foreground_service
         PrerequisiteType.DEVICE_ADMIN -> R.string.perm_title_device_admin
         PrerequisiteType.RUNTIME -> runtimeTitleRes(requirement.manifestPermission)
     }
 
 @StringRes
+@Suppress("CyclomaticComplexMethod") // A flat copy table, not branching logic.
 private fun runtimeTitleRes(manifest: String?): Int? = when (manifest) {
     Permissions.ACCESS_FINE_LOCATION.manifest -> R.string.perm_title_access_fine_location
     Permissions.ACCESS_COARSE_LOCATION.manifest -> R.string.perm_title_access_coarse_location
@@ -64,6 +66,13 @@ private fun runtimeTitleRes(manifest: String?): Int? = when (manifest) {
     Permissions.WRITE_CALENDAR.manifest -> R.string.perm_title_write_calendar
     Permissions.POST_NOTIFICATIONS.manifest -> R.string.perm_title_post_notifications
     Permissions.BLUETOOTH_CONNECT.manifest -> R.string.perm_title_bluetooth_connect
+    // One row for the two names the media read goes by: `Permission.onApi` resolves
+    // which applies, but a *declared* requirement always carries the modern one, and
+    // the legacy entry is here for the catalogue's own app-level rows.
+    Permissions.READ_MEDIA_IMAGES.manifest -> R.string.perm_title_read_media_images
+    Permissions.READ_EXTERNAL_STORAGE.manifest -> R.string.perm_title_read_media_images
+    Permissions.WRITE_EXTERNAL_STORAGE.manifest -> R.string.perm_title_write_media_images
+    Permissions.ACCESS_MEDIA_LOCATION.manifest -> R.string.perm_title_access_media_location
     else -> null
 }
 
@@ -86,12 +95,14 @@ internal fun descriptionRes(requirement: PermissionRequirement): Int? =
         PrerequisiteType.EXACT_ALARM -> R.string.perm_desc_exact_alarm
         PrerequisiteType.WRITE_SETTINGS -> R.string.perm_desc_write_settings
         PrerequisiteType.NFC -> R.string.perm_desc_nfc
+        PrerequisiteType.MANAGE_MEDIA -> R.string.perm_desc_manage_media
         PrerequisiteType.FOREGROUND_SERVICE -> R.string.perm_desc_foreground_service
         PrerequisiteType.DEVICE_ADMIN -> R.string.perm_desc_device_admin
         PrerequisiteType.RUNTIME -> runtimeDescriptionRes(requirement.manifestPermission)
     }
 
 @StringRes
+@Suppress("CyclomaticComplexMethod") // A flat copy table, not branching logic.
 private fun runtimeDescriptionRes(manifest: String?): Int = when (manifest) {
     Permissions.ACCESS_FINE_LOCATION.manifest -> R.string.perm_desc_access_fine_location
     Permissions.ACCESS_COARSE_LOCATION.manifest -> R.string.perm_desc_access_coarse_location
@@ -104,6 +115,10 @@ private fun runtimeDescriptionRes(manifest: String?): Int = when (manifest) {
     Permissions.WRITE_CALENDAR.manifest -> R.string.perm_desc_write_calendar
     Permissions.POST_NOTIFICATIONS.manifest -> R.string.perm_desc_post_notifications
     Permissions.BLUETOOTH_CONNECT.manifest -> R.string.perm_desc_bluetooth_connect
+    Permissions.READ_MEDIA_IMAGES.manifest -> R.string.perm_desc_read_media_images
+    Permissions.READ_EXTERNAL_STORAGE.manifest -> R.string.perm_desc_read_media_images
+    Permissions.WRITE_EXTERNAL_STORAGE.manifest -> R.string.perm_desc_write_media_images
+    Permissions.ACCESS_MEDIA_LOCATION.manifest -> R.string.perm_desc_access_media_location
     else -> R.string.perm_desc_unknown
 }
 
@@ -118,6 +133,7 @@ private fun runtimeDescriptionRes(manifest: String?): Int = when (manifest) {
  * — it has [descriptionRes], which is total.
  */
 @StringRes
+@Suppress("CyclomaticComplexMethod") // A flat copy table, not branching logic.
 internal fun rationaleRes(requirement: PermissionRequirement): Int? =
     when (requirement.rationaleKey) {
         "accessibility.keys" -> R.string.perm_rationale_accessibility_keys
@@ -129,6 +145,11 @@ internal fun rationaleRes(requirement: PermissionRequirement): Int? =
         "overlay.launch" -> R.string.perm_rationale_overlay_launch
         "calendar.read" -> R.string.perm_rationale_calendar_read
         "calendar.write" -> R.string.perm_rationale_calendar_write
+        "media.read" -> R.string.perm_rationale_media_read
+        "media.write" -> R.string.perm_rationale_media_write
+        "media.location" -> R.string.perm_rationale_media_location
+        "media.manage" -> R.string.perm_rationale_media_manage
+        "overlay.media" -> R.string.perm_rationale_overlay_media
         else -> null
     }
 

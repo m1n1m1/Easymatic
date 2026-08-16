@@ -76,21 +76,20 @@ class AiDescribeAction : Action<AiDescribeConfig, String> {
             context.log("Ask AI About a Picture: no picture chosen", LogLevel.ERROR)
             return NodeOutput(input.fallback)
         }
-        val bytes = context.files.readBytes(input.image)
-        if (bytes.error.isNotBlank()) {
-            context.log("Ask AI About a Picture: ${bytes.error}", LogLevel.ERROR)
+        val picture = context.images.encodeForModel(input.image)
+        if (picture.error.isNotBlank()) {
+            context.log("Ask AI About a Picture: ${picture.error}", LogLevel.ERROR)
             return NodeOutput(input.fallback)
         }
-        // A file whose name says nothing about its type is refused here rather than
-        // sent: every provider requires the media type, and one guessed wrong comes
-        // back as a generic 400 that names neither the file nor the reason.
-        if (bytes.mediaType.isBlank()) {
+        if (picture.shrunk) {
+            // Said out loud rather than done quietly, on `action.ai_prompt`'s truncation
+            // rule: the model is answering about a smaller picture than the one on the
+            // phone, and somebody debugging "why did it miss the small print" needs to know.
             context.log(
-                "Ask AI About a Picture: '${input.image}' is not a kind of picture this can send " +
-                    "(JPEG, PNG, GIF or WebP)",
-                LogLevel.ERROR,
+                "Shrank the picture from ${picture.sourceWidth}×${picture.sourceHeight} to " +
+                    "${picture.width}×${picture.height} to send it",
+                LogLevel.DEBUG,
             )
-            return NodeOutput(input.fallback)
         }
 
         val reply = context.ai.complete(
@@ -98,7 +97,7 @@ class AiDescribeAction : Action<AiDescribeConfig, String> {
                 modelRef = input.modelRef,
                 prompt = input.prompt.ifBlank { DEFAULT_PROMPT },
                 maxOutputTokens = input.maxOutputTokens,
-                images = listOf(AiImage(base64 = bytes.base64, mediaType = bytes.mediaType)),
+                images = listOf(AiImage(base64 = picture.base64, mediaType = picture.mediaType)),
             ),
         )
         if (reply.error.isNotBlank()) {

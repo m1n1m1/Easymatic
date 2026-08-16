@@ -100,4 +100,25 @@ enum class NodeIcon {
      * tell which is which.
      */
     CALENDAR,
+
+    /**
+     * A picture on the phone.
+     *
+     * Distinct from [FILE] on the same argument that separates [FILE] from [FOLDER]: a
+     * photo and a text file are both files, but the nodes that act on them address
+     * different things — one a path under a granted folder, the other a row in the media
+     * collection — and a canvas mixing them would make "which of these can I wire
+     * together?" a question the card no longer answers.
+     */
+    IMAGE,
+
+    /**
+     * Changing a picture's pixels, as opposed to finding or administering one.
+     *
+     * The second image icon, and it earns its place the way [MUSIC_OFF] does beside
+     * [MUSIC]: six of the seven image nodes read a photo or move it about, and exactly
+     * one rewrites it. That is the difference somebody scanning a graph for "where does
+     * this photo get changed?" is looking for.
+     */
+    IMAGE_EDIT,
 }

@@ -214,6 +214,7 @@ These subsystems each have their own file so they are not resident in every sess
 - **Widgets and shortcuts** (the three Glance widgets, `MacroIcon`/`MacroAccent`, `RunFeedback`, launcher shortcuts) — `widgets-and-shortcuts` skill
 - **NFC tags** (`trigger.nfc`, `value.nfc`, the tag library, the capture chooser, `emitOrHoldBroadcast`) — `nfc-tags` skill
 - **Files and storage** (the six `action.file_*` nodes, the `Files` facade, `@FilePath`, `FilePath`, the SAF stores and the Folder access screen) — `files-and-storage` skill
+- **Images** (`trigger.image_saved`, `value.latest_image`, the six `action.image_*` nodes, the `Images` facade, MediaStore, the write-consent ladder and EXIF) — `images` skill
 - **Plugins** (`:node-api`, `:plugin-sdk`, the wire format, `PluginNodes`, `PluginRegistry`, the Plugins screen) — `plugins` skill; the author-facing guide is `docs/PLUGINS.md`
 - **The process API** (`trigger.api`, `ApiTriggerProvider`, `ApiTriggerReceiver`, `ApiCallers`, the consent and App access screens) — `external-api` skill; the author-facing guide is `docs/EXTERNAL_API.md`
 - **The Permissions screen** (`PermissionCatalogue`, `PrerequisiteType`, `PermissionChecker`, the battery-optimisation prompt) — `permissions-screen` skill

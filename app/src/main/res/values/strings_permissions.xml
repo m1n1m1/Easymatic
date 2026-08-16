@@ -12,6 +12,10 @@
     <string name="perm_title_exact_alarm">Alarms &amp; reminders</string>
     <string name="perm_title_write_settings">Modify system settings</string>
     <string name="perm_title_nfc">NFC</string>
+    <string name="perm_title_read_media_images">Photos</string>
+    <string name="perm_title_write_media_images">Changing photos</string>
+    <string name="perm_title_access_media_location">Photo locations</string>
+    <string name="perm_title_manage_media">Media management</string>
     <string name="perm_title_foreground_service">Foreground service</string>
     <string name="perm_title_device_admin">Device administrator</string>
     <string name="perm_title_access_fine_location">Location</string>
@@ -35,6 +39,10 @@
     <string name="perm_desc_exact_alarm">Lets a schedule fire, and a wait end, at the minute you asked for. Without it Android is free to batch it with other work, so it may run late.</string>
     <string name="perm_desc_write_settings">Lets a macro change screen brightness, screen timeout and auto-rotate.</string>
     <string name="perm_desc_nfc">Lets a macro run when you hold an NFC tag to the back of your phone. Ottomatic cannot switch NFC on for you, and tags are only read while the screen is on and unlocked.</string>
+    <string name="perm_desc_read_media_images">Lets a macro find and read the pictures on your phone, and lets it start when a new one is saved. Without this, every photo node does nothing.</string>
+    <string name="perm_desc_write_media_images">Lets a macro change, move or delete a photo on older versions of Android. From Android 10 onwards there is nothing to grant here: Android asks you to confirm each change instead.</string>
+    <string name="perm_desc_access_media_location">Lets a macro read where a photo was taken. Without it, Android hides the location in photos other apps saved, and a macro is told the photo has none.</string>
+    <string name="perm_desc_manage_media">Lets a macro change, move or delete photos without asking you to confirm each one. Optional: without it everything still works, Android just asks you every time, which needs you to be holding the phone.</string>
     <string name="perm_desc_foreground_service">Lets Ottomatic keep its engine running while your macros are armed.</string>
     <string name="perm_desc_device_admin">Lets Ottomatic use device administrator features.</string>
     <string name="perm_desc_access_fine_location">Lets a geofence know when you arrive somewhere or leave it.</string>
@@ -59,6 +67,11 @@
     <string name="perm_rationale_alarm_exact">Ottomatic needs permission to set exact alarms so this wait ends at the minute you asked for. Without it the wait still happens, but Android batches the wake-up with other work and it can be minutes late.</string>
     <string name="perm_rationale_calendar_read">Ottomatic needs calendar access to read your appointments. Without it this node reads nothing at all, and the calendar chooser above has nothing to offer.</string>
     <string name="perm_rationale_calendar_write">Ottomatic needs permission to change your calendar so this node can create, edit or delete an appointment. Reading appointments is a separate grant.</string>
+    <string name="perm_rationale_media_read">Ottomatic needs access to your photos so this node can find and read them. Choosing a picture yourself does not need it; looking for one while the macro runs does.</string>
+    <string name="perm_rationale_media_write">Ottomatic needs permission to change your photos so this node can rewrite one. On Android 10 and newer this grant does nothing and Android asks you to confirm each change instead.</string>
+    <string name="perm_rationale_media_location">Ottomatic needs permission to read where a photo was taken, or this node reports every picture as having no location. Photos you took yourself are unaffected.</string>
+    <string name="perm_rationale_media_manage">Ottomatic can change photos without asking you each time. This is optional: without it the node still works, but Android puts a confirmation on screen, so it cannot run unattended.</string>
+    <string name="perm_rationale_overlay_media">Ottomatic needs permission to draw over other apps so it can put Android’s confirmation on screen while the macro runs in the background. Without it, changing a photo another app saved fails when you are not in Ottomatic.</string>
     <string name="perm_rationale_overlay_launch">Ottomatic needs permission to draw over other apps so it can open one while you are somewhere else on your phone. Android blocks a background app from opening another, and without this the node does nothing and says so in the console.</string>
 
 </resources>

@@ -683,3 +683,67 @@ Update Calendar Event	Обновить встречу
 Where	Место
 Whether an appointment is on in any calendar right now	Идёт ли сейчас встреча в каком-либо календаре
 Whole series	Всю серию
+Picture Saved	Изображение сохранено
+Starts when a photo, screenshot or downloaded picture is added to this phone	Запускается, когда на телефоне появляется фотография, снимок экрана или загруженное изображение
+Path	Путь
+Only in this folder	Только в этой папке
+Find Pictures	Найти изображения
+Finds photos and screenshots on this phone onto a list you can loop over	Находит фотографии и снимки экрана на этом телефоне и собирает их в список для перебора
+Names matching	Имена по шаблону
+Pictures	Изображения
+Taken after	Снято после
+Taken before	Снято до
+Newest first	Сначала новые
+Oldest first	Сначала старые
+Most to return	Сколько вернуть максимум
+Picture Details	Сведения об изображении
+Reads a picture\'s size, camera, date and location out of the file	Читает из файла размер, камеру, дату и место съёмки изображения
+Edit Picture	Изменить изображение
+Resizes, rotates, mirrors, crops or re-encodes a picture into a new file	Изменяет размер, поворачивает, отражает, обрезает или перекодирует изображение в новый файл
+Longest side (pixels)	Длинная сторона (пиксели)
+Left	Слева
+Top	Сверху
+Width	Ширина
+Height	Высота
+Into folder	В папку
+File name	Имя файла
+Resize	Изменить размер
+Rotate	Повернуть
+Mirror	Отразить
+Crop	Обрезать
+Change format or quality	Изменить формат или качество
+Turn	Поворот
+A quarter turn right	На четверть оборота вправо
+Upside down	Вверх ногами
+A quarter turn left	На четверть оборота влево
+Left to right	Слева направо
+Top to bottom	Сверху вниз
+Save as	Сохранить как
+Same as the original	Как у оригинала
+JPEG	JPEG
+PNG	PNG
+WebP	WebP
+Quality	Качество
+If one is already there	Если такой уже есть
+Change Picture Details	Изменить сведения об изображении
+Writes or removes a picture\'s description, date, location or camera details	Записывает или удаляет описание, дату, место или данные камеры изображения
+New value (blank removes it)	Новое значение (пусто — удалить)
+What to change	Что изменить
+Description	Описание
+Date taken	Дата съёмки
+Location	Место
+Which way up	Ориентация
+Camera maker	Производитель камеры
+Camera model	Модель камеры
+Artist	Автор
+Copyright	Авторские права
+Move or Copy Picture	Переместить или скопировать изображение
+Moves or copies a photo into another folder, keeping it in the gallery	Перемещает или копирует фотографию в другую папку, оставляя её в галерее
+Operation	Действие
+Delete Picture	Удалить изображение
+Moves a photo to the bin, or deletes it for good	Перемещает фотографию в корзину или удаляет её навсегда
+How	Как
+Move to the bin	В корзину
+Delete for good	Удалить навсегда
+Latest picture	Последнее изображение
+The most recent photo, screenshot or picture saved on this phone	Последняя фотография, снимок экрана или изображение, сохранённое на этом телефоне

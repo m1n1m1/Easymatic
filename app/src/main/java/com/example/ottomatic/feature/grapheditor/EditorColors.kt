@@ -28,6 +28,8 @@ import androidx.compose.material.icons.filled.Http
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Crop
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
@@ -275,4 +277,9 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // A month grid rather than SCHEDULE's clock: this is a diary somebody else keeps,
     // not a rule the app follows.
     NodeIcon.CALENDAR -> Icons.Filled.CalendarMonth
+    // A picture frame rather than FILE's document: an image node addresses a row in the
+    // media collection, which is not the same thing a file node can open.
+    NodeIcon.IMAGE -> Icons.Filled.Image
+    // Crop marks rather than the frame, for the one image node that rewrites pixels.
+    NodeIcon.IMAGE_EDIT -> Icons.Filled.Crop
 }

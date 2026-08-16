@@ -38,6 +38,23 @@ enum class TriggerSource {
     SYSTEM,
     PACKAGE,
     MEDIA,
+
+    /**
+     * A picture appearing in the phone's media collection.
+     *
+     * **Not [MEDIA]**, which is media *buttons* and card mounts, and the difference is
+     * the one [HOME_ASSISTANT]'s KDoc draws rather than [MESSAGE]'s. Those are broadcasts
+     * addressed to every armed node, which then filter; this is routed to **one node id**
+     * by a registration table in `data/`, because each node carries its own high-water
+     * mark and one photo is new to some armed triggers and not to others. Sharing a
+     * source would wake every image trigger in the process to run a filter chain over a
+     * picture another node had already claimed.
+     *
+     * A future `trigger.video_saved` shares this source rather than adding another: the
+     * payload carries which kind it is, and the observer, the diff and the mark are the
+     * same machinery.
+     */
+    MEDIA_STORE,
     NFC,
     MAIL,
 

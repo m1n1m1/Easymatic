@@ -80,6 +80,51 @@
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
 
     <!--
+      The image nodes: trigger.image_saved, value.latest_image and the six
+      action.image_* nodes.
+
+      Two names for one capability. The split at API 33 is a *rename* rather than a
+      new grant, so both are declared and `Permission.onApi` decides which one is
+      checked and requested — see the KDoc there, and note that getting this wrong
+      means a grant requested under one name and checked under the other, which can
+      never be satisfied. READ_EXTERNAL_STORAGE is capped at 32 because from 33 the
+      platform ignores it, and an uncapped declaration is a Play warning about a
+      permission the app cannot use.
+
+      READ_MEDIA_VISUAL_USER_SELECTED (API 34) is deliberately NOT declared. "Select
+      photos" hands over a fixed set chosen once, which is no use at all to a trigger
+      whose whole job is noticing a photo that did not exist yet — so partial access
+      reads as denied here and the Permissions screen says why, rather than the app
+      half-working in a way nobody could diagnose.
+    -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <!--
+      Changing or deleting a picture another app saved, at or below API 28 and
+      nowhere else. From 29 there is no permission for this at all: the platform asks
+      the user per operation through an IntentSender, which is why
+      `existsOnThisApi` reports it *granted* above 28 rather than denied. See
+      MediaConsents for the whole ladder.
+    -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <!--
+      The GPS tags inside a picture. From API 29 MediaStore strips them out of the
+      bytes it hands over unless this is held AND the URI has been through
+      MediaStore.setRequireOriginal — both, not either. Declared by
+      action.image_info alone.
+    -->
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+    <!--
+      Changing photos without a confirmation dialog each time (API 31+). A special
+      permission granted on its own Settings page, never requested by a node and
+      never required by one: every image node works without it by asking. It is
+      offered on the Permissions screen as "stop asking me every time".
+    -->
+    <uses-permission android:name="android.permission.MANAGE_MEDIA" />
+
+    <!--
       Plugin discovery.
 
       QUERY_ALL_PACKAGES already makes this work, so the <queries> block below is
@@ -215,6 +260,23 @@
             android:excludeFromRecents="true"
             android:exported="false"
             android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- Where Android's "let this app change this photo?" dialog is shown from.
+             startIntentSenderForResult is an Activity method and the engine is a
+             service, so an image write that needs consent has nowhere else to ask;
+             see MediaConsents for the whole ladder.
+
+             It wears RunTriggerActivity's disguise with **one deliberate exception**:
+             noHistory is absent. That flag finishes an activity as soon as it stops
+             being visible, which here is exactly when the system dialog appears — so
+             the result would never arrive and every consented write would report a
+             refusal. The other three flags are for RunTriggerActivity's reasons. -->
+        <activity
+            android:name=".feature.images.MediaConsentActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
             android:taskAffinity=""
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
