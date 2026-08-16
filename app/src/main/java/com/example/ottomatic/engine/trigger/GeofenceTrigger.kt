@@ -136,6 +136,16 @@ private const val MILLIS_PER_MINUTE = 60_000L
  * substitute the *place's* coordinates — the honest answer to "which fence is
  * this about", and deliberately not an answer to "where are you".
  *
+ * **Not every transition Play Services sends is a crossing.** `armGeofence`
+ * re-registers its fence on every arm, and a re-registration resets the fence's
+ * state inside Play Services, which then re-evaluates and announces the result —
+ * and an announcement of "outside" is delivered as an ordinary EXIT, not as an
+ * initial trigger. Since a re-arm happens on every process start, and the process
+ * is repeatedly reaped and resurrected overnight by alarms and periodic work, a
+ * macro watching for an exit used to fire at three in the morning from wherever it
+ * was sleeping. [GeofenceGate] is what decides which arrivals are real; see it for
+ * the whole argument, including why an accuracy check alone does not cover this.
+ *
  * One limitation of the away half is worth knowing before it surprises anybody:
  * the countdown is started by a real departure, so a macro armed while you are
  * *already* away starts counting only after your next return and departure. The
@@ -213,6 +223,49 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
         }
     }
 
+    /**
+     * Whether this transition is a real crossing, updating what the node believes
+     * about where it is on the way through.
+     *
+     * The judging itself is [GeofenceGate]'s, which is pure and JVM-tested; what
+     * belongs here is the two things it cannot reach — the *place*, which is what
+     * turns a reported fix into a distance, and the macro's console, which is the
+     * only place a discarded transition can be seen from. Logged at INFO rather than
+     * DEBUG deliberately: DEBUG lines stay in memory, and every one of these happens
+     * while the app is closed and the phone is in somebody's pocket.
+     */
+    private fun crossed(
+        place: GeofencePlace,
+        node: WorkflowNode,
+        host: TriggerHost,
+        payload: Map<String, String>,
+        event: String,
+    ): Boolean {
+        val believed = host.geofencePresence(node.id)
+        val latitude = payload[KEY_LATITUDE]?.toDoubleOrNull()
+        val longitude = payload[KEY_LONGITUDE]?.toDoubleOrNull()
+        val verdict = GeofenceGate.judge(
+            event = event,
+            believed = believed,
+            accuracyMeters = payload[KEY_ACCURACY]?.toFloatOrNull(),
+            // Null rather than a substituted centre when the transition carried no
+            // location — the away alarm never does — because a distance of zero is a
+            // claim about where the phone is, and this one knows nothing.
+            distanceMeters = if (latitude != null && longitude != null) {
+                place.distanceTo(latitude, longitude)
+            } else {
+                null
+            },
+            radiusMeters = place.radiusMeters,
+        )
+        if (verdict.presence != believed) host.recordGeofencePresence(node.id, verdict.presence)
+        if (verdict !is GeofenceVerdict.Discard) return true
+        // "an" is always right here: only enter and exit are ever discarded, dwell
+        // and away being waved through by the gate itself.
+        host.report(node, "Ignored an $event at '${place.name}' — ${verdict.reason}")
+        return false
+    }
+
     override fun activate(
         config: GeofenceConfig,
         node: WorkflowNode,
@@ -261,6 +314,10 @@ class GeofenceTrigger : Trigger<GeofenceConfig, GeofenceEvent> {
                     .filter { it.source == TriggerSource.GEOFENCE && it.triggerNodeId == node.id }
                     .collect { bus ->
                         val event = bus.payload[KEY_EVENT].orEmpty()
+                        // Ahead of the countdown as well as of the emit filter: an
+                        // exit that never happened must not start an away period
+                        // either, and there is nowhere later that could undo it.
+                        if (!crossed(place, node, host, bus.payload, event)) return@collect
                         driveAwayCountdown(config, node, host, event)
                         if (event !in emitted) return@collect
                         if (bus.payload[TriggerBus.KEY_HELD] != null) {

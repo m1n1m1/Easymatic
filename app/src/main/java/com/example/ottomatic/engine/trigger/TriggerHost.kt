@@ -226,6 +226,33 @@ interface TriggerHost {
     fun cancelGeofenceAway(nodeId: NodeId) = Unit
 
     /**
+     * Where [nodeId]'s fence last saw the device, for [GeofenceGate] to judge the
+     * next transition against.
+     *
+     * **Persisted rather than held in memory**, and that is the whole point of it
+     * reaching through the host at all. The artefact this exists to suppress —
+     * Play Services re-announcing "you are outside" after [armGeofence]
+     * re-registered the fence — happens *because* the process died and came back,
+     * so a belief that died with it would be gone exactly when it was needed.
+     *
+     * Nothing forgets it, on `MailSeenStore`'s reasoning: a disarm and a re-arm are
+     * indistinguishable from the trigger's `finally`, so clearing on teardown would
+     * reopen the hole after every graph edit. It survives a reboot too, which is
+     * strictly *more* accurate than clearing — switched off at work and back on at
+     * home leaves this at [GeofencePresence.INSIDE], so the exit that follows is a
+     * real state change and correctly fires.
+     *
+     * The default answers [GeofencePresence.UNKNOWN], which is the state that
+     * believes the platform. A host with no store behind it therefore behaves
+     * exactly as everything did before the gate existed, which is what a test
+     * double wants.
+     */
+    fun geofencePresence(nodeId: NodeId): GeofencePresence = GeofencePresence.UNKNOWN
+
+    /** Records where [nodeId] now believes it is. See [geofencePresence]. */
+    fun recordGeofencePresence(nodeId: NodeId, presence: GeofencePresence) = Unit
+
+    /**
      * Stream of engine-internal macro lifecycle events
      * ([TriggerSource.MACRO]). Emits when a macro is enabled (its
      * [com.example.ottomatic.engine.WorkflowRunner.run] starts) and when a

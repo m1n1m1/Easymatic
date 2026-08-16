@@ -10,6 +10,7 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.engine.trigger.BatteryDirection
 import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofenceConfig
+import com.example.ottomatic.engine.trigger.GeofencePresence
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.GeofenceTrigger
 import com.example.ottomatic.engine.trigger.ScheduleHandle
@@ -212,10 +213,102 @@ class GeofenceActivationTest {
         assertTrue("the countdown outlives the arm on purpose", host.awayCancelled.isEmpty())
     }
 
-    private fun geofence(event: String) = TriggerEvent(
+    /**
+     * The reported bug, end to end.
+     *
+     * The phone is at home for the night, so the node already believes it is
+     * outside. A periodic worker resurrects the process, the re-arm re-registers
+     * the fence, and Play Services announces "outside" as an ordinary exit — with
+     * a perfectly good fix, from a phone that really is outside. Nothing in the
+     * accuracy of that fix says it is not a departure; only the memory does.
+     */
+    @Test
+    fun `an exit announced after a re-registration does not run the macro`() = runBlocking {
+        val host = FakeTriggerHost(
+            places = mapOf(home.id to home),
+            bus = flowOf(geofence("exit", latitude = 48.30, longitude = 16.50, accuracy = 25f)),
+            presence = GeofencePresence.OUTSIDE,
+        )
+
+        val emissions = GeofenceTrigger()
+            .activate(GeofenceConfig(placeId = home.id, onEnter = false, onExit = true), node, host)
+            .toList()
+
+        assertTrue("the phone never went anywhere", emissions.isEmpty())
+    }
+
+    /** And says so where somebody chasing it can read it. */
+    @Test
+    fun `a suppressed exit is explained in the console`() = runBlocking {
+        val host = FakeTriggerHost(
+            places = mapOf(home.id to home),
+            bus = flowOf(geofence("exit", latitude = 48.30, longitude = 16.50, accuracy = 25f)),
+            presence = GeofencePresence.OUTSIDE,
+        )
+
+        GeofenceTrigger()
+            .activate(GeofenceConfig(placeId = home.id, onEnter = false, onExit = true), node, host)
+            .toList()
+
+        val line = host.reported.last()
+        assertEquals("it has to survive the app being closed all night", LogLevel.INFO, line.level)
+        assertTrue(line.message.contains("Home"))
+        assertTrue(line.message.contains("already outside"))
+    }
+
+    /** The departure it is named for still runs, which is the point of all this. */
+    @Test
+    fun `leaving the place after arriving at it still runs the macro`() = runBlocking {
+        val host = FakeTriggerHost(
+            places = mapOf(home.id to home),
+            bus = flowOf(
+                geofence("enter", latitude = home.latitude, longitude = home.longitude, accuracy = 25f),
+                geofence("exit", latitude = 48.30, longitude = 16.50, accuracy = 25f),
+            ),
+            presence = GeofencePresence.OUTSIDE,
+        )
+
+        val emissions = GeofenceTrigger()
+            .activate(GeofenceConfig(placeId = home.id, onEnter = false, onExit = true), node, host)
+            .toList()
+
+        assertEquals("exit", emissions.single().value.transition)
+    }
+
+    /**
+     * And an exit that never happened must not start an away period either, which
+     * is why the gate sits ahead of the countdown rather than beside the emit
+     * filter — there is nowhere later that could undo it.
+     */
+    @Test
+    fun `a suppressed exit does not start the away countdown`() = runBlocking {
+        val host = FakeTriggerHost(
+            places = mapOf(home.id to home),
+            bus = flowOf(geofence("exit", latitude = 48.30, longitude = 16.50, accuracy = 25f)),
+            presence = GeofencePresence.OUTSIDE,
+        )
+
+        GeofenceTrigger()
+            .activate(GeofenceConfig(placeId = home.id, onEnter = false, onAway = true), node, host)
+            .toList()
+
+        assertTrue("half an hour away from somewhere you never left", host.awayArmed.isEmpty())
+    }
+
+    private fun geofence(
+        event: String,
+        latitude: Double? = null,
+        longitude: Double? = null,
+        accuracy: Float? = null,
+    ) = TriggerEvent(
         source = TriggerSource.GEOFENCE,
         triggerNodeId = node.id,
-        payload = mapOf("event" to event),
+        payload = buildMap {
+            put("event", event)
+            latitude?.let { put("lat", it.toString()) }
+            longitude?.let { put("lng", it.toString()) }
+            accuracy?.let { put("accuracy", it.toString()) }
+        },
     )
 
     /**
@@ -305,7 +398,16 @@ private class FakeTriggerHost(
      * trigger's flow completes rather than waiting for events forever.
      */
     private val bus: Flow<TriggerEvent> = emptyFlow(),
+    /**
+     * Where the node believed it was before this arm. The real store persists
+     * this, which is the whole reason it exists — so a test that wants to stand
+     * in the shoes of a process that has just been resurrected sets it here.
+     */
+    presence: GeofencePresence = GeofencePresence.UNKNOWN,
 ) : TriggerHost {
+
+    /** Remembered rather than discarded, so the dedupe is genuinely exercised. */
+    private var presence: GeofencePresence = presence
 
     var armed: ArmedGeofence? = null
         private set
@@ -347,6 +449,12 @@ private class FakeTriggerHost(
 
     override fun cancelGeofenceAway(nodeId: NodeId) {
         awayCancelled += nodeId
+    }
+
+    override fun geofencePresence(nodeId: NodeId): GeofencePresence = presence
+
+    override fun recordGeofencePresence(nodeId: NodeId, presence: GeofencePresence) {
+        this.presence = presence
     }
 
     override fun armSchedule(nodeId: NodeId, intervalMinutes: Long) = ScheduleHandle { }

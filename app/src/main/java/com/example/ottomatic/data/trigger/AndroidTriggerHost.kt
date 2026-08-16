@@ -42,6 +42,7 @@ import com.example.ottomatic.engine.trigger.CalendarOccurrence
 import com.example.ottomatic.engine.trigger.CalendarWatchSpec
 import com.example.ottomatic.engine.trigger.planNext
 import com.example.ottomatic.engine.trigger.GeofenceArmResult
+import com.example.ottomatic.engine.trigger.GeofencePresence
 import com.example.ottomatic.engine.trigger.GeofenceTransition
 import com.example.ottomatic.engine.trigger.HaWatchSpec
 import com.example.ottomatic.engine.trigger.MailWatchSpec
@@ -65,6 +66,9 @@ import java.util.concurrent.TimeUnit
 
 private const val MS_PER_MINUTE = 60_000L
 private const val MS_PER_DAY = 24L * 60 * 60 * 1000
+
+/** See the comment on `setNotificationResponsiveness` in `armGeofence`. */
+private const val GEOFENCE_RESPONSIVENESS_MS = 0.5 * MS_PER_MINUTE.toInt()
 
 /**
  * Android implementation of [TriggerHost]. Supplies real system streams and
@@ -136,6 +140,7 @@ class AndroidTriggerHost(
     private val workManager = WorkManager.getInstance(appContext)
     private val alarmManager = appContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     private val geofencingClient = LocationServices.getGeofencingClient(appContext)
+    private val presenceStore = GeofencePresenceStore(appContext)
     private val lifecycleBridge = AppLifecycleBridge(appContext)
 
     @Suppress("UnusedPrivateProperty") // Kept alive so its receiver stays registered.
@@ -331,6 +336,19 @@ class AndroidTriggerHost(
             // an alert that can never be sent — the two are one setting, and the
             // API pairs them.
             .apply { if (GeofenceTransition.DWELL in transitions) setLoiteringDelay(dwellDelayMs) }
+            // How long Play Services may sit on a transition before telling us, and
+            // the default of 0 is not the neutral choice it looks like: it asks to be
+            // told the instant a *single* sample crosses the boundary, which is both
+            // the hungriest setting and the one that reports every wobble of a fix
+            // drifting near the edge. Given a window it can instead wait for the
+            // crossing to still hold, so this is the platform's own half of what
+            // GeofenceGate does in ours.
+            //
+            // Two minutes is a latency nobody automating "when I leave work" can
+            // feel, and it is deliberately well short of the shortest away period
+            // (one minute is clamped, but that countdown starts from the exit rather
+            // than racing it).
+            .setNotificationResponsiveness(GEOFENCE_RESPONSIVENESS_MS)
             .build()
         val request = GeofencingRequest.Builder()
             .addGeofence(geofence)
@@ -376,6 +394,11 @@ class AndroidTriggerHost(
     override fun cancelGeofenceAway(nodeId: NodeId) {
         alarmManager.cancel(awayPendingIntent(nodeId))
     }
+
+    override fun geofencePresence(nodeId: NodeId): GeofencePresence = presenceStore.presence(nodeId.value)
+
+    override fun recordGeofencePresence(nodeId: NodeId, presence: GeofencePresence) =
+        presenceStore.record(nodeId.value, presence)
 
     /**
      * The alarm that says this node's place has been left for long enough.
