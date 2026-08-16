@@ -21,6 +21,7 @@
     <string name="category_smart_home">Casa inteligente</string>
     <string name="category_ai">IA</string>
     <string name="category_files">Ficheiros</string>
+    <string name="category_images">Fotos</string>
     <string name="category_calendar">Calendário</string>
     <string name="calendar_choose_a_calendar">Escolher um calendário</string>
     <string name="calendar_any_calendar">Qualquer calendário</string>
@@ -307,6 +308,7 @@
     <string name="grapheditor_delete">Eliminar</string>
     <string name="grapheditor_delete_selection">Eliminar a seleção</string>
     <string name="grapheditor_delete_workflow">Eliminar fluxo</string>
+    <string name="grapheditor_duplicate_selection">Duplicar a seleção</string>
     <string name="grapheditor_edit">Editar…</string>
     <string name="grapheditor_editor_surface">superfície do editor</string>
     <string name="grapheditor_enabled">Ativado</string>
@@ -537,6 +539,8 @@
     <string name="config_socket_use_typed_free">Usar o valor escrito para %1$s (nada ligado)</string>
     <string name="config_socket_feed">Alimentar %1$s a partir dos dados anteriores</string>
     <string name="grapheditor_delete_confirm">Eliminar «%1$s»? O registo de execução vai com ele. Isto não pode ser anulado.</string>
+    <string name="grapheditor_delete_selection_confirm">Eliminar %1$s? As ligações associadas vão com eles. Isto não pode ser anulado.</string>
+    <string name="grapheditor_delete_selection_confirm_edges">Eliminar %1$s? Isto não pode ser anulado.</string>
     <string name="grapheditor_zoom_percent">%1$d%%</string>
     <string name="grapheditor_connect_from">Ligar a partir de %1$s</string>
     <string name="nfc_tag_says">Esta etiqueta diz: %1$s</string>

@@ -21,6 +21,7 @@
     <string name="category_smart_home">Maison connectée</string>
     <string name="category_ai">IA</string>
     <string name="category_files">Fichiers</string>
+    <string name="category_images">Photos</string>
     <string name="category_calendar">Agenda</string>
     <string name="calendar_choose_a_calendar">Choisir un agenda</string>
     <string name="calendar_any_calendar">N\'importe quel agenda</string>
@@ -307,6 +308,7 @@
     <string name="grapheditor_delete">Supprimer</string>
     <string name="grapheditor_delete_selection">Supprimer la sélection</string>
     <string name="grapheditor_delete_workflow">Supprimer le flux</string>
+    <string name="grapheditor_duplicate_selection">Dupliquer la sélection</string>
     <string name="grapheditor_edit">Modifier…</string>
     <string name="grapheditor_editor_surface">surface de l\'éditeur</string>
     <string name="grapheditor_enabled">Activé</string>
@@ -537,6 +539,8 @@
     <string name="config_socket_use_typed_free">Utiliser la valeur saisie pour %1$s (rien de relié)</string>
     <string name="config_socket_feed">Alimenter %1$s depuis les données en amont</string>
     <string name="grapheditor_delete_confirm">Supprimer « %1$s » ? Son journal d\'exécution part avec. Cette action est irréversible.</string>
+    <string name="grapheditor_delete_selection_confirm">Supprimer %1$s ? Les connexions attachées partent avec. Cette action est irréversible.</string>
+    <string name="grapheditor_delete_selection_confirm_edges">Supprimer %1$s ? Cette action est irréversible.</string>
     <string name="grapheditor_zoom_percent">%1$d%%</string>
     <string name="grapheditor_connect_from">Relier depuis %1$s</string>
     <string name="nfc_tag_says">Ce tag indique : %1$s</string>

@@ -21,6 +21,7 @@
     <string name="category_smart_home">Умный дом</string>
     <string name="category_ai">ИИ</string>
     <string name="category_files">Файлы</string>
+    <string name="category_images">Фото</string>
     <string name="category_calendar">Календарь</string>
     <string name="calendar_choose_a_calendar">Выберите календарь</string>
     <string name="calendar_any_calendar">Любой календарь</string>
@@ -307,6 +308,7 @@
     <string name="grapheditor_delete">Удалить</string>
     <string name="grapheditor_delete_selection">Удалить выделенное</string>
     <string name="grapheditor_delete_workflow">Удалить сценарий</string>
+    <string name="grapheditor_duplicate_selection">Дублировать выделенное</string>
     <string name="grapheditor_edit">Изменить…</string>
     <string name="grapheditor_editor_surface">область редактора</string>
     <string name="grapheditor_enabled">Включён</string>
@@ -537,6 +539,8 @@
     <string name="config_socket_use_typed_free">Использовать введённое значение для «%1$s» (ничего не подключено)</string>
     <string name="config_socket_feed">Подавать в «%1$s» данные сверху по цепочке</string>
     <string name="grapheditor_delete_confirm">Удалить «%1$s»? Журнал его запусков будет удалён вместе с ним. Это действие нельзя отменить.</string>
+    <string name="grapheditor_delete_selection_confirm">Удалить %1$s? Связанные соединения будут удалены вместе с ними. Это действие нельзя отменить.</string>
+    <string name="grapheditor_delete_selection_confirm_edges">Удалить %1$s? Это действие нельзя отменить.</string>
     <string name="grapheditor_zoom_percent">%1$d%%</string>
     <string name="grapheditor_connect_from">Соединить от «%1$s»</string>
     <string name="nfc_tag_says">На этой метке записано: %1$s</string>

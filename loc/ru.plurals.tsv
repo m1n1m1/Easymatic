@@ -4,14 +4,6 @@
 #   few   2-4, 22-24…  (n%10 in 2..4, n%100 not 12..14)  узла  ошибки  макроса
 #   many  0, 5-20, 25… (everything else, integers)  узлов   ошибок   макросов
 #   other fractions ("1,5 узла") — takes the genitive singular, same as few.
-selection_nodes_selected:one	Выбран %1$d узел
-selection_nodes_selected:few	Выбрано %1$d узла
-selection_nodes_selected:many	Выбрано %1$d узлов
-selection_nodes_selected:other	Выбрано %1$d узла
-selection_connections_selected:one	Выбрано %1$d соединение
-selection_connections_selected:few	Выбрано %1$d соединения
-selection_connections_selected:many	Выбрано %1$d соединений
-selection_connections_selected:other	Выбрано %1$d соединения
 selection_nodes:one	%1$d узел
 selection_nodes:few	%1$d узла
 selection_nodes:many	%1$d узлов

@@ -1,7 +1,5 @@
 # Simplified Chinese has one quantity category: "other". Declaring only that is
 # correct, not a partial translation — there is no singular/plural distinction to make.
-selection_nodes_selected:other	已选择 %1$d 个节点
-selection_connections_selected:other	已选择 %1$d 条连接
 selection_nodes:other	%1$d 个节点
 selection_connections:other	%1$d 条连接
 problems_errors:other	%1$d 个错误

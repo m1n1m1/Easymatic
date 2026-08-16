@@ -5,14 +5,6 @@
      moment a language with a "few" or "many" form is added. -->
 <resources>
 
-    <plurals name="selection_nodes_selected">
-        <item quantity="one">%1$d node selected</item>
-        <item quantity="other">%1$d nodes selected</item>
-    </plurals>
-    <plurals name="selection_connections_selected">
-        <item quantity="one">%1$d connection selected</item>
-        <item quantity="other">%1$d connections selected</item>
-    </plurals>
     <plurals name="selection_nodes">
         <item quantity="one">%1$d node</item>
         <item quantity="other">%1$d nodes</item>

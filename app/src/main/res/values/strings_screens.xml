@@ -24,6 +24,7 @@
     <string name="category_smart_home">Smart Home</string>
     <string name="category_ai">AI</string>
     <string name="category_files">Files</string>
+    <string name="category_images">Photos</string>
     <string name="category_calendar">Calendar</string>
     <string name="calendar_choose_a_calendar">Choose a calendar</string>
     <string name="calendar_any_calendar">Any calendar</string>
@@ -350,6 +351,7 @@
     <string name="grapheditor_delete">Delete</string>
     <string name="grapheditor_delete_selection">Delete selection</string>
     <string name="grapheditor_delete_workflow">Delete workflow</string>
+    <string name="grapheditor_duplicate_selection">Duplicate selection</string>
     <string name="grapheditor_edit">Edit…</string>
     <string name="grapheditor_editor_surface">editor surface</string>
     <string name="grapheditor_enabled">Enabled</string>
@@ -602,6 +604,8 @@
     <string name="config_socket_use_typed_free">Use the typed value for %1$s (nothing connected)</string>
     <string name="config_socket_feed">Feed %1$s from upstream data</string>
     <string name="grapheditor_delete_confirm">Delete "%1$s"? Its run log goes with it. This cannot be undone.</string>
+    <string name="grapheditor_delete_selection_confirm">Delete %1$s? Any wires attached go too. This cannot be undone.</string>
+    <string name="grapheditor_delete_selection_confirm_edges">Delete %1$s? This cannot be undone.</string>
     <string name="grapheditor_zoom_percent">%1$d%%</string>
     <string name="grapheditor_connect_from">Connect from %1$s</string>
     <string name="nfc_tag_says">This tag says: %1$s</string>

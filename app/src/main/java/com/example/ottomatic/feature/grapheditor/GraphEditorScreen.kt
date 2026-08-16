@@ -196,6 +196,7 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
                     selectionLabel = state.selection
                         .takeIf { it.isNotEmpty }
                         ?.let { selectionText(selectionSummary(it)) },
+                    selectionHasNodes = state.selection.nodeIds.isNotEmpty(),
                     canConfigure = state.selection.singleNodeId != null,
                     isMacroEnabled = state.isMacroEnabled,
                     icon = state.workflow.icon,
@@ -206,6 +207,7 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
                     onDeleteWorkflow = { viewModel.deleteWorkflow(onDeleted = onBack) },
                     onClearSelection = { viewModel.clearSelection() },
                     onConfigure = { showConfig = true },
+                    onDuplicateSelection = { viewModel.duplicateSelection() },
                     onDeleteSelection = { viewModel.deleteSelection() },
                 )
                 CanvasRegion(

@@ -225,7 +225,10 @@ grapheditor_consequence_reads_nothing	读不到任何内容
 grapheditor_delete	删除
 grapheditor_delete_confirm	删除“%1$s”？它的运行日志也会一并删除。此操作无法撤销。
 grapheditor_delete_selection	删除所选
+grapheditor_delete_selection_confirm	删除%1$s？连接的连线也会一并删除。此操作无法撤销。
+grapheditor_delete_selection_confirm_edges	删除%1$s？此操作无法撤销。
 grapheditor_delete_workflow	删除工作流
+grapheditor_duplicate_selection	复制所选
 grapheditor_edit	编辑…
 grapheditor_editor_surface	编辑器画面
 grapheditor_enabled	已启用
@@ -759,3 +762,17 @@ calendar_no_calendars	这台手机上没有日历。
 calendar_no_writable_calendars	这台手机上的日历都无法写入。订阅的日历（例如节假日日历）只能读取。
 calendar_needs_access	Ottomatic 需要日历访问权限才能列出你的日历。
 calendar_grant_access	授予
+category_images	照片
+perm_title_read_media_images	照片
+perm_title_write_media_images	修改照片
+perm_title_access_media_location	照片位置
+perm_title_manage_media	媒体管理
+perm_desc_read_media_images	允许宏查找和读取手机中的图片，并在保存新图片时启动。没有此权限，所有图片节点都不会执行。
+perm_desc_write_media_images	允许宏在旧版 Android 上修改、移动或删除照片。从 Android 10 起，此处无需授权：Android 会要求你逐次确认。
+perm_desc_access_media_location	允许宏读取照片的拍摄地点。没有此权限，Android 会隐藏其他应用保存的照片中的位置信息，宏会认为照片没有位置。
+perm_desc_manage_media	允许宏修改、移动或删除照片而无需逐次确认。可选：没有它一切仍可运行，只是 Android 每次都会询问，这需要你拿着手机。
+perm_rationale_media_read	Ottomatic 需要访问你的照片，这个节点才能查找和读取它们。你自己选择图片不需要此权限，宏运行时查找才需要。
+perm_rationale_media_write	Ottomatic 需要修改照片的权限，这个节点才能重写照片。在 Android 10 及更高版本上此权限无效，Android 会要求你逐次确认。
+perm_rationale_media_location	Ottomatic 需要读取照片拍摄地点的权限，否则这个节点会报告所有图片都没有位置。你自己拍摄的照片不受影响。
+perm_rationale_media_manage	Ottomatic 可以在不逐次询问的情况下修改照片。这是可选的：没有它节点仍能工作，但 Android 会在屏幕上显示确认，因此无法无人值守运行。
+perm_rationale_overlay_media	Ottomatic 需要显示在其他应用上层的权限，才能在宏于后台运行时显示 Android 的确认对话框。没有它，当你不在 Ottomatic 中时，修改其他应用保存的照片会失败。

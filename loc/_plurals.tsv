@@ -1,7 +1,3 @@
-selection_nodes_selected:one	%1$d node selected
-selection_nodes_selected:other	%1$d nodes selected
-selection_connections_selected:one	%1$d connection selected
-selection_connections_selected:other	%1$d connections selected
 selection_nodes:one	%1$d node
 selection_nodes:other	%1$d nodes
 selection_connections:one	%1$d connection

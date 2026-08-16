@@ -1,8 +1,4 @@
 # Spanish plurals: one / other, the same two categories English uses.
-selection_nodes_selected:one	%1$d nodo seleccionado
-selection_nodes_selected:other	%1$d nodos seleccionados
-selection_connections_selected:one	%1$d conexión seleccionada
-selection_connections_selected:other	%1$d conexiones seleccionadas
 selection_nodes:one	%1$d nodo
 selection_nodes:other	%1$d nodos
 selection_connections:one	%1$d conexión

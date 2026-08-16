@@ -21,6 +21,7 @@
     <string name="category_smart_home">智能家居</string>
     <string name="category_ai">AI</string>
     <string name="category_files">文件</string>
+    <string name="category_images">照片</string>
     <string name="category_calendar">日历</string>
     <string name="calendar_choose_a_calendar">选择日历</string>
     <string name="calendar_any_calendar">任意日历</string>
@@ -307,6 +308,7 @@
     <string name="grapheditor_delete">删除</string>
     <string name="grapheditor_delete_selection">删除所选</string>
     <string name="grapheditor_delete_workflow">删除工作流</string>
+    <string name="grapheditor_duplicate_selection">复制所选</string>
     <string name="grapheditor_edit">编辑…</string>
     <string name="grapheditor_editor_surface">编辑器画面</string>
     <string name="grapheditor_enabled">已启用</string>
@@ -537,6 +539,8 @@
     <string name="config_socket_use_typed_free">对 %1$s 使用输入的值（未连接任何内容）</string>
     <string name="config_socket_feed">从上游数据为 %1$s 供值</string>
     <string name="grapheditor_delete_confirm">删除“%1$s”？它的运行日志也会一并删除。此操作无法撤销。</string>
+    <string name="grapheditor_delete_selection_confirm">删除%1$s？连接的连线也会一并删除。此操作无法撤销。</string>
+    <string name="grapheditor_delete_selection_confirm_edges">删除%1$s？此操作无法撤销。</string>
     <string name="grapheditor_zoom_percent">%1$d%%</string>
     <string name="grapheditor_connect_from">从 %1$s 连接</string>
     <string name="nfc_tag_says">此标签的内容是：%1$s</string>

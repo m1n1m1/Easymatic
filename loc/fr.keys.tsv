@@ -225,7 +225,10 @@ grapheditor_consequence_reads_nothing	ne lira rien
 grapheditor_delete	Supprimer
 grapheditor_delete_confirm	Supprimer « %1$s » ? Son journal d'exécution part avec. Cette action est irréversible.
 grapheditor_delete_selection	Supprimer la sélection
+grapheditor_delete_selection_confirm	Supprimer %1$s ? Les connexions attachées partent avec. Cette action est irréversible.
+grapheditor_delete_selection_confirm_edges	Supprimer %1$s ? Cette action est irréversible.
 grapheditor_delete_workflow	Supprimer le flux
+grapheditor_duplicate_selection	Dupliquer la sélection
 grapheditor_edit	Modifier…
 grapheditor_editor_surface	surface de l'éditeur
 grapheditor_enabled	Activé
@@ -759,3 +762,17 @@ calendar_no_calendars	Il n'y a aucun agenda sur ce téléphone.
 calendar_no_writable_calendars	Aucun des agendas de ce téléphone n'accepte d'ajout. Un agenda auquel on est abonné, comme un calendrier de jours fériés, ne peut être que lu.
 calendar_needs_access	Ottomatic a besoin de l'accès à l'agenda pour lister vos agendas.
 calendar_grant_access	Accorder
+category_images	Photos
+perm_title_read_media_images	Photos
+perm_title_write_media_images	Modification des photos
+perm_title_access_media_location	Lieu des photos
+perm_title_manage_media	Gestion des médias
+perm_desc_read_media_images	Permet à une macro de rechercher et de lire les images de votre téléphone, et de démarrer quand une nouvelle est enregistrée. Sans cela, aucun nœud photo ne fonctionne.
+perm_desc_write_media_images	Permet à une macro de modifier, déplacer ou supprimer une photo sur les anciennes versions d'Android. À partir d'Android 10, il n'y a rien à accorder ici : Android vous demande de confirmer chaque modification.
+perm_desc_access_media_location	Permet à une macro de lire le lieu où une photo a été prise. Sans cela, Android masque le lieu dans les photos enregistrées par d'autres applications, et la macro croit que la photo n'en a pas.
+perm_desc_manage_media	Permet à une macro de modifier, déplacer ou supprimer des photos sans vous demander de confirmer à chaque fois. Facultatif : sans cela tout fonctionne encore, mais Android vous demande à chaque fois, ce qui exige que vous ayez le téléphone en main.
+perm_rationale_media_read	Ottomatic a besoin d'accéder à vos photos pour que ce nœud puisse les rechercher et les lire. Choisir une image vous-même n'en a pas besoin ; en rechercher une pendant l'exécution de la macro, si.
+perm_rationale_media_write	Ottomatic a besoin de la permission de modifier vos photos pour que ce nœud puisse en réécrire une. Sur Android 10 et versions ultérieures, cette permission ne fait rien et Android vous demande de confirmer chaque modification.
+perm_rationale_media_location	Ottomatic a besoin de la permission de lire le lieu de prise de vue, sinon ce nœud indique qu'aucune image n'a de lieu. Les photos que vous avez prises vous-même ne sont pas concernées.
+perm_rationale_media_manage	Ottomatic peut modifier des photos sans vous demander à chaque fois. C'est facultatif : sans cela le nœud fonctionne encore, mais Android affiche une confirmation à l'écran, donc il ne peut pas s'exécuter sans surveillance.
+perm_rationale_overlay_media	Ottomatic a besoin de la permission de s'afficher par-dessus les autres applications pour pouvoir montrer la confirmation d'Android pendant que la macro s'exécute en arrière-plan. Sans cela, modifier une photo enregistrée par une autre application échoue quand vous n'êtes pas dans Ottomatic.

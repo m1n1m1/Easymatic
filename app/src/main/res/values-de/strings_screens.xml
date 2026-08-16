@@ -285,6 +285,7 @@
     <string name="grapheditor_delete">Löschen</string>
     <string name="grapheditor_delete_selection">Auswahl löschen</string>
     <string name="grapheditor_delete_workflow">Workflow löschen</string>
+    <string name="grapheditor_duplicate_selection">Auswahl duplizieren</string>
     <string name="grapheditor_edit">Bearbeiten…</string>
     <string name="grapheditor_editor_surface">Editorfläche</string>
     <string name="grapheditor_enabled">Aktiviert</string>
@@ -559,6 +560,8 @@
     <string name="config_socket_use_typed_free">Für %1$s den eingegebenen Wert verwenden (nichts verbunden)</string>
     <string name="config_socket_feed">%1$s aus vorgelagerten Daten speisen</string>
     <string name="grapheditor_delete_confirm">"%1$s" löschen? Das Ausführungsprotokoll geht mit. Das kann nicht rückgängig gemacht werden.</string>
+    <string name="grapheditor_delete_selection_confirm">%1$s löschen? Die daran hängenden Verbindungen gehen mit. Das kann nicht rückgängig gemacht werden.</string>
+    <string name="grapheditor_delete_selection_confirm_edges">%1$s löschen? Das kann nicht rückgängig gemacht werden.</string>
     <string name="grapheditor_zoom_percent">%1$d%%</string>
     <string name="grapheditor_connect_from">Verbinden von %1$s</string>
     <string name="nfc_tag_says">Auf diesem Tag steht: %1$s</string>
@@ -675,4 +678,5 @@
     <string name="config_tools_must_fix">Wird hier gewählt — die KI kann das nicht benennen</string>
     <string name="config_tools_ai_chooses">Die KI wählt %2$s, aus %1$d erreichbaren</string>
     <string name="config_tools_nothing_to_fix">Dieses Werkzeug hat keine Einstellungen</string>
+    <string name="category_images">Fotos</string>
 </resources>

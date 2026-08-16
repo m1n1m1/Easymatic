@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ottomatic.domain.model.MacroAccent
 import com.example.ottomatic.domain.model.MacroIcon
 import com.example.ottomatic.feature.macro.EditMacroDialog
+import com.example.ottomatic.feature.macro.editorTextButtonColors
 
 /**
  * The editor's chrome, in two mutually exclusive modes.
@@ -89,6 +91,8 @@ fun EditorTopBar(
     nodeCount: Int,
     /** The selection's description, or null when nothing is selected — which is also the mode. */
     selectionLabel: String?,
+    /** Whether the selection contains a node, i.e. whether deleting it takes wires with it. */
+    selectionHasNodes: Boolean,
     canConfigure: Boolean,
     isMacroEnabled: Boolean,
     icon: MacroIcon,
@@ -99,10 +103,15 @@ fun EditorTopBar(
     onDeleteWorkflow: () -> Unit,
     onClearSelection: () -> Unit,
     onConfigure: () -> Unit,
+    onDuplicateSelection: () -> Unit,
     onDeleteSelection: () -> Unit,
 ) {
     var editing by remember { mutableStateOf(false) }
     var deleting by remember { mutableStateOf(false) }
+    // The label as it read when the trash was tapped, rather than a flag read back
+    // from the live one: the selection can empty underneath an open dialog, and a
+    // dialog that asked about "" would be asking about nothing.
+    var deletingSelection by remember { mutableStateOf<String?>(null) }
 
     Surface(color = EditorColors.chrome) {
         Box(
@@ -135,9 +144,11 @@ fun EditorTopBar(
                     SelectionBar(
                         label = label,
                         canConfigure = canConfigure,
+                        canDuplicate = selectionHasNodes,
                         onClearSelection = onClearSelection,
                         onConfigure = onConfigure,
-                        onDeleteSelection = onDeleteSelection,
+                        onDuplicateSelection = onDuplicateSelection,
+                        onDeleteSelection = { deletingSelection = label },
                     )
                 }
             }
@@ -168,6 +179,18 @@ fun EditorTopBar(
                 onDeleteWorkflow()
             },
             onDismiss = { deleting = false },
+        )
+    }
+
+    deletingSelection?.let { what ->
+        DeleteSelectionDialog(
+            what = what,
+            takesWires = selectionHasNodes,
+            onConfirm = {
+                deletingSelection = null
+                onDeleteSelection()
+            },
+            onDismiss = { deletingSelection = null },
         )
     }
 }
@@ -242,8 +265,10 @@ private fun WorkflowBar(
 private fun SelectionBar(
     label: String,
     canConfigure: Boolean,
+    canDuplicate: Boolean,
     onClearSelection: () -> Unit,
     onConfigure: () -> Unit,
+    onDuplicateSelection: () -> Unit,
     onDeleteSelection: () -> Unit,
 ) {
     Row(
@@ -280,7 +305,21 @@ private fun SelectionBar(
                 )
             }
         }
-        // Duplicate belongs here, between configure and delete.
+        // Gated on the selection holding a node, for Configure's reason turned the
+        // other way: an edge has no existence apart from the two nodes it joins, so
+        // there is nothing a copy of one could be. Showing the button for an
+        // edges-only selection would offer an action that silently did nothing.
+        if (canDuplicate) {
+            IconButton(onClick = onDuplicateSelection) {
+                Icon(
+                    imageVector = Icons.Filled.ContentCopy,
+                    contentDescription = stringResource(R.string.grapheditor_duplicate_selection),
+                    tint = EditorColors.textPrimary,
+                )
+            }
+        }
+        // Accent-tinted where Configure and Duplicate are not: one control in the bar
+        // should look destructive, and this is the one that is.
         IconButton(onClick = onDeleteSelection) {
             Icon(
                 imageVector = Icons.Filled.Delete,
@@ -346,6 +385,7 @@ private fun DeleteWorkflowDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = EditorColors.chrome,
         title = { Text(stringResource(R.string.grapheditor_delete_workflow), color = EditorColors.textPrimary) },
         text = {
             Text(
@@ -355,10 +395,70 @@ private fun DeleteWorkflowDialog(
             )
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) { Text(stringResource(R.string.grapheditor_delete)) }
+            TextButton(onClick = onConfirm, colors = editorTextButtonColors()) {
+                Text(stringResource(R.string.grapheditor_delete))
+            }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.grapheditor_cancel)) }
+            TextButton(onClick = onDismiss, colors = editorTextButtonColors()) {
+                Text(stringResource(R.string.grapheditor_cancel))
+            }
+        },
+    )
+}
+
+/**
+ * Confirms a delete of what is on the canvas — the one action in the editor that
+ * cannot be undone, and until now the only destructive one that never asked.
+ *
+ * There is no undo stack anywhere in the app and no snackbar to hang one off, so the
+ * dialog *is* the safety net: a marquee can select twenty nodes and the trash icon is
+ * one tap away from them. It confirms every time rather than only above some count,
+ * because a rule that asks sometimes is a rule the user cannot predict — and the tap
+ * it saves is the cheap half of the trade.
+ *
+ * [what] names the selection by kind ("2 nodes", "1 connection", both), which is the
+ * whole point of confirming: the bar already counts nodes and edges separately so the
+ * user knows exactly what is about to go, and the dialog repeats that rather than
+ * asking about "the selection".
+ *
+ * [takesWires] picks the body, because the sentence is only true of nodes. Deleting a
+ * node silently takes every edge touching it — the loss the user cannot see coming —
+ * while deleting an edge takes exactly the edge, and warning about attached wires
+ * there would describe something that is not happening.
+ */
+@Composable
+private fun DeleteSelectionDialog(
+    what: String,
+    takesWires: Boolean,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val body = if (takesWires) {
+        R.string.grapheditor_delete_selection_confirm
+    } else {
+        R.string.grapheditor_delete_selection_confirm_edges
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = EditorColors.chrome,
+        title = { Text(stringResource(R.string.grapheditor_delete_selection), color = EditorColors.textPrimary) },
+        text = {
+            Text(
+                stringResource(body, what),
+                color = EditorColors.textPrimary,
+                fontSize = 14.sp,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm, colors = editorTextButtonColors()) {
+                Text(stringResource(R.string.grapheditor_delete))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, colors = editorTextButtonColors()) {
+                Text(stringResource(R.string.grapheditor_cancel))
+            }
         },
     )
 }

@@ -1,8 +1,4 @@
 # European Portuguese plurals: one / other.
-selection_nodes_selected:one	%1$d nó selecionado
-selection_nodes_selected:other	%1$d nós selecionados
-selection_connections_selected:one	%1$d ligação selecionada
-selection_connections_selected:other	%1$d ligações selecionadas
 selection_nodes:one	%1$d nó
 selection_nodes:other	%1$d nós
 selection_connections:one	%1$d ligação

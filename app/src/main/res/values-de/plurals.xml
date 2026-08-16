@@ -2,14 +2,6 @@
 <!-- Deutsch. Dieselben Schlüssel wie values/plurals.xml. -->
 <resources>
 
-    <plurals name="selection_nodes_selected">
-        <item quantity="one">%1$d Knoten ausgewählt</item>
-        <item quantity="other">%1$d Knoten ausgewählt</item>
-    </plurals>
-    <plurals name="selection_connections_selected">
-        <item quantity="one">%1$d Verbindung ausgewählt</item>
-        <item quantity="other">%1$d Verbindungen ausgewählt</item>
-    </plurals>
     <plurals name="selection_nodes">
         <item quantity="one">%1$d Knoten</item>
         <item quantity="other">%1$d Knoten</item>

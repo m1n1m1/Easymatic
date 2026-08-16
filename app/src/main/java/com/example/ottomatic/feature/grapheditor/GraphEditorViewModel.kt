@@ -495,6 +495,34 @@ class GraphEditorViewModel(
         _uiState.update { it.copy(revealedLabel = null) }
     }
 
+    /**
+     * Copies the selected nodes and the wires between them, and selects the copies.
+     *
+     * Gated on *nodes* rather than on "anything selected": an edge has nothing to be
+     * copied into on its own, so a selection of only edges is a no-op here — which
+     * is also why the bar hides the button for one.
+     *
+     * Multi-select follows the **count**, which splits the editor's two existing
+     * conventions rather than picking one. Duplicating a single node is the same
+     * deliberate single-node act as every placement path, all of which end in
+     * [selectingOnly] with the mode off; duplicating several produces the multi-node
+     * selection a committed marquee does, where the mode has to be on so the taps
+     * that follow refine the set instead of throwing it away.
+     */
+    fun duplicateSelection() {
+        val state = _uiState.value
+        if (state.selection.nodeIds.isEmpty()) return
+        val duplication = state.workflow.withDuplicated(state.selection)
+        _uiState.update {
+            it.copy(
+                workflow = duplication.workflow,
+                selection = duplication.selection,
+                interaction = it.interaction.copy(isMultiSelect = duplication.selection.nodeIds.size > 1),
+            )
+        }
+        persist()
+    }
+
     fun deleteSelection() {
         if (_uiState.value.selection.isEmpty) return
         _uiState.update { state ->
