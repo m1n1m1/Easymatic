@@ -776,3 +776,20 @@ perm_rationale_media_write	Ottomatic necesita permiso para modificar tus fotos y
 perm_rationale_media_location	Ottomatic necesita permiso para leer dónde se tomó una foto; si no, este nodo informa de que ninguna imagen tiene ubicación. Las fotos que hiciste tú no se ven afectadas.
 perm_rationale_media_manage	Ottomatic puede modificar fotos sin preguntarte cada vez. Es opcional: sin esto el nodo sigue funcionando, pero Android muestra una confirmación en pantalla, así que no puede ejecutarse desatendido.
 perm_rationale_overlay_media	Ottomatic necesita permiso para superponerse a otras aplicaciones y poder mostrar la confirmación de Android mientras la macro se ejecuta en segundo plano. Sin esto, modificar una foto guardada por otra aplicación falla cuando no estás en Ottomatic.
+setup_title	Configuración
+setup_section_connections	Conexiones
+setup_section_system	Sistema
+setup_ai	IA
+setup_smart_home_subtitle	Hue, Home Assistant y MQTT
+setup_ai_subtitle	Cuentas y modelos para los nodos de IA
+setup_mail_subtitle	Buzones desde los que enviar y leer
+setup_variables_subtitle	Valores que todas las macros comparten
+setup_geofences_subtitle	Lugares a los que tus macros pueden reaccionar
+setup_nfc_subtitle	Etiquetas que has guardado
+setup_folders_subtitle	Carpetas y archivos que esta app puede abrir
+setup_permissions_subtitle	Lo que el teléfono permite hacer a tus macros
+setup_plugins_subtitle	Aplicaciones que añaden nodos
+setup_app_access_subtitle	Otras aplicaciones que pueden ejecutar tus macros
+workflowlist_search_placeholder	Buscar macros
+workflowlist_clear_search	Borrar la búsqueda
+workflowlist_no_matches	Ninguna macro coincide.

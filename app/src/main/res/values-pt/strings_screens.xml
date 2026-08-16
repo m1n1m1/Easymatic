@@ -615,4 +615,21 @@
     <string name="ha_any_state_change_hint">Qualquer mudança de estado, sem mais condições</string>
     <string name="ha_sign_in">Ou inicia sessão no Home Assistant</string>
     <string name="ha_no_hub_yet">Ainda não há nenhum Home Assistant. Adiciona um em Casa inteligente.</string>
+    <string name="setup_title">Configuração</string>
+    <string name="setup_section_connections">Ligações</string>
+    <string name="setup_section_system">Sistema</string>
+    <string name="setup_ai">IA</string>
+    <string name="setup_smart_home_subtitle">Hue, Home Assistant e MQTT</string>
+    <string name="setup_ai_subtitle">Contas e modelos para os nós de IA</string>
+    <string name="setup_mail_subtitle">Caixas de correio para enviar e ler</string>
+    <string name="setup_variables_subtitle">Valores que todas as macros partilham</string>
+    <string name="setup_geofences_subtitle">Locais a que as tuas macros podem reagir</string>
+    <string name="setup_nfc_subtitle">Etiquetas que guardaste</string>
+    <string name="setup_folders_subtitle">Pastas e ficheiros que esta app pode abrir</string>
+    <string name="setup_permissions_subtitle">O que o telemóvel permite às tuas macros fazer</string>
+    <string name="setup_plugins_subtitle">Aplicações que adicionam nós</string>
+    <string name="setup_app_access_subtitle">Outras aplicações autorizadas a executar as tuas macros</string>
+    <string name="workflowlist_search_placeholder">Procurar macros</string>
+    <string name="workflowlist_clear_search">Limpar a pesquisa</string>
+    <string name="workflowlist_no_matches">Nenhuma macro corresponde.</string>
 </resources>

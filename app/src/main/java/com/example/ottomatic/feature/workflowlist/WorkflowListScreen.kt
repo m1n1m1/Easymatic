@@ -3,6 +3,7 @@ package com.example.ottomatic.feature.workflowlist
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.example.ottomatic.R
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -11,49 +12,48 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddToHomeScreen
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.Extension
-import androidx.compose.material.icons.filled.Key
-import androidx.compose.material.icons.filled.Mail
-import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Nfc
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Psychology
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExpandedFullScreenSearchBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
+import androidx.compose.material3.SearchBarColors
+import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TopSearchBar
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -71,21 +71,27 @@ import com.example.ottomatic.feature.macro.EditMacroDialog
 import com.example.ottomatic.feature.macro.editorTextButtonColors
 import com.example.ottomatic.feature.macro.MacroIconChip
 import com.example.ottomatic.feature.widget.ManualTriggerRef
+import kotlinx.coroutines.launch
 
+/**
+ * The macro list, and the search over it.
+ *
+ * This screen used to be the app's navigation hub as well: its title row carried a
+ * Global variables icon, a Permissions icon and an eight-item overflow menu, and the
+ * file said in a comment that three targets was the ceiling. Those ten destinations
+ * are rows on the Setup tab now
+ * ([com.example.ottomatic.feature.setup.SetupScreen]), and the row they vacated is
+ * where the search bar sits — so this screen is back to being about macros.
+ *
+ * The query lives here rather than in the ViewModel. Switching tabs drops this
+ * composition and clears it, which is the right default: a filter you cannot see is
+ * worse than one you have to retype, and nothing else on the screen depends on it.
+ */
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun WorkflowListScreen(
     viewModel: WorkflowListViewModel,
     onOpenWorkflow: (String) -> Unit,
-    onOpenGeofences: () -> Unit,
-    onOpenNfcTags: () -> Unit,
-    onOpenMailAccounts: () -> Unit,
-    onOpenSmartHome: () -> Unit,
-    onOpenFolders: () -> Unit,
-    onOpenAi: () -> Unit,
-    onOpenPlugins: () -> Unit,
-    onOpenAppAccess: () -> Unit,
-    onOpenVariables: () -> Unit,
-    onOpenPermissions: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -105,85 +111,53 @@ fun WorkflowListScreen(
     var pinning by remember { mutableStateOf<List<ManualTriggerRef>?>(null) }
     var pinRefused by remember { mutableStateOf(false) }
 
+    val searchBarState = rememberSearchBarState()
+    val textFieldState = rememberTextFieldState()
+    val barColors = searchBarColors()
+    val query = textFieldState.text.toString().trim()
+    val matches = if (query.isEmpty()) {
+        state.workflows
+    } else {
+        state.workflows.filter { it.name.contains(query, ignoreCase = true) }
+    }
+
+    // One input field, handed to both the collapsed bar and the expanded surface.
+    // That is what lets the component move the field between the two rather than
+    // cross-fade two of its own — so it is deliberately a single lambda, not two
+    // call sites that happen to look alike.
+    val inputField: @Composable () -> Unit = {
+        SearchInputField(
+            searchBarState = searchBarState,
+            textFieldState = textFieldState,
+            colors = barColors.inputFieldColors,
+        )
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(EditorColors.canvasBackground),
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Surface(color = EditorColors.chrome) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .height(60.dp)
-                        .padding(horizontal = 18.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(R.string.workflowlist_workflows),
-                        color = EditorColors.textPrimary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.weight(1f),
-                    )
-                    // The libraries are edited independently of any macro, so each
-                    // needs a way in that does not start with "open a workflow that
-                    // happens to use one". A workflow's *own* variables have no
-                    // button here: they live in that workflow's dock, beside the
-                    // graph that uses them.
-                    //
-                    // This bar used to carry four icons and a comment saying four
-                    // was the ceiling. A fourth library arrived, and adding an
-                    // overflow *beside* the four would have made it five 48 dp
-                    // targets — about two thirds of the bar — which is the thing
-                    // that comment was guarding against. So the overflow absorbs
-                    // icons rather than joining them.
-                    //
-                    // Variables stays out because every macro touches it, and
-                    // Permissions stays out because it is not a library at all but
-                    // the standing statement about the phone that the Problems
-                    // panel sends people to. What moved is used by one or two node
-                    // types each, and one of them is meaningless on a phone with no
-                    // NFC chip. A fifth library now costs one DropdownMenuItem.
-                    IconButton(onClick = onOpenVariables) {
-                        Icon(
-                            imageVector = Icons.Filled.Tag,
-                            contentDescription = stringResource(R.string.workflowlist_global_variables),
-                            tint = EditorColors.textPrimary,
-                        )
-                    }
-                    IconButton(onClick = onOpenPermissions) {
-                        Icon(
-                            imageVector = Icons.Filled.Shield,
-                            contentDescription = stringResource(R.string.workflowlist_permissions),
-                            tint = EditorColors.textPrimary,
-                        )
-                    }
-                    LibraryMenu(
-                        onOpenGeofences = onOpenGeofences,
-                        onOpenNfcTags = onOpenNfcTags,
-                        onOpenMailAccounts = onOpenMailAccounts,
-                        onOpenSmartHome = onOpenSmartHome,
-                        onOpenFolders = onOpenFolders,
-                        onOpenAi = onOpenAi,
-                        onOpenPlugins = onOpenPlugins,
-                        onOpenAppAccess = onOpenAppAccess,
-                    )
-                }
-            }
+            // Supplies its own window insets, which already include the status bar —
+            // so this screen no longer pads for it itself.
+            TopSearchBar(
+                state = searchBarState,
+                inputField = inputField,
+                colors = barColors,
+            )
 
-            if (state.workflows.isEmpty() && !state.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = stringResource(R.string.workflowlist_no_workflows_yet_ntap_to),
-                        color = EditorColors.textSecondary,
-                        fontSize = 14.sp,
-                    )
-                }
+            // Three states, not two: a phone with no macros at all and a search that
+            // matched none of them are different facts, and one message for both
+            // would tell a user with twenty macros that they have none.
+            if (state.workflows.isEmpty()) {
+                if (!state.isLoading) EmptyMessage(R.string.workflowlist_no_workflows_yet_ntap_to)
+            } else if (matches.isEmpty()) {
+                EmptyMessage(R.string.workflowlist_no_matches)
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(state.workflows, key = { it.id }) { summary ->
+                    items(matches, key = { it.id }) { summary ->
+                        val triggers = state.triggers[summary.id].orEmpty()
                         WorkflowRow(
                             summary = summary,
                             errors = state.errors[summary.id] ?: 0,
@@ -191,18 +165,14 @@ fun WorkflowListScreen(
                             onToggleEnabled = { viewModel.setEnabled(summary.id, it) },
                             onEdit = { editing = summary },
                             onDelete = { deleting = summary },
-                            manualTriggers = state.triggers[summary.id].orEmpty(),
+                            manualTriggers = triggers,
                             onPin = {
-                                val triggers = state.triggers[summary.id].orEmpty()
-                                // One trigger is not a choice, so it is not a
-                                // dialog: placing goes straight to the launcher's
-                                // own confirmation, which is the only prompt that
-                                // decision actually needs.
-                                if (triggers.size == 1) {
-                                    if (!viewModel.pin(triggers.first())) pinRefused = true
-                                } else {
-                                    pinning = triggers
-                                }
+                                pinOrChoose(
+                                    viewModel = viewModel,
+                                    triggers = triggers,
+                                    onRefused = { pinRefused = true },
+                                    onChoose = { pinning = it },
+                                )
                             },
                         )
                         HorizontalDivider(color = EditorColors.chromeBorder, thickness = 1.dp)
@@ -211,18 +181,28 @@ fun WorkflowListScreen(
             }
         }
 
+        // No navigationBarsPadding(): the navigation bar below this screen pads
+        // itself for the gesture handle, and a second helping here would float the
+        // button an inset above it.
         FloatingActionButton(
             onClick = { viewModel.create(onOpenWorkflow) },
             containerColor = EditorColors.actionAccent,
             contentColor = EditorColors.textPrimary,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .navigationBarsPadding()
                 .padding(end = 18.dp, bottom = 18.dp),
         ) {
             Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.workflowlist_add_workflow))
         }
     }
+
+    MacroSearchResults(
+        searchBarState = searchBarState,
+        inputField = inputField,
+        colors = barColors,
+        matches = matches,
+        onOpenWorkflow = onOpenWorkflow,
+    )
 
     editing?.let { target ->
         EditMacroDialog(
@@ -322,113 +302,171 @@ fun WorkflowListScreen(
 }
 
 /**
- * The libraries that no longer have room for an icon of their own.
+ * What "Add to home screen" does, which depends on how many buttons the macro has.
  *
- * Each item keeps the glyph it used to wear in the bar, now as a leading icon
- * beside a name — which is a small gain rather than a consolation: a place pin and
- * an NFC mark had to be recognised, where "Geofences" and "NFC tags" are read.
+ * One trigger is not a choice, so it is not a dialog: placing goes straight to the
+ * launcher's own confirmation, which is the only prompt that decision actually needs.
+ * Several is a question, and a launcher that refuses to place anything at all is a
+ * third answer that has to be reported rather than waited on.
+ */
+private fun pinOrChoose(
+    viewModel: WorkflowListViewModel,
+    triggers: List<ManualTriggerRef>,
+    onRefused: () -> Unit,
+    onChoose: (List<ManualTriggerRef>) -> Unit,
+) {
+    if (triggers.size == 1) {
+        if (!viewModel.pin(triggers.first())) onRefused()
+    } else {
+        onChoose(triggers)
+    }
+}
+
+/**
+ * The expanded half of the same bar.
+ *
+ * Its rows are names and nothing else: this is a way to *find* a macro, so the armed
+ * switch and the overflow menu `WorkflowRow` carries would be three decisions offered
+ * to somebody who has asked one question — and a mis-tap there disarms a macro
+ * instead of opening it. Picking one collapses the bar and opens it, and the query
+ * survives that, so the list underneath is still filtered when you come back.
  */
 @Composable
-private fun LibraryMenu(
-    onOpenGeofences: () -> Unit,
-    onOpenNfcTags: () -> Unit,
-    onOpenMailAccounts: () -> Unit,
-    onOpenSmartHome: () -> Unit,
-    onOpenFolders: () -> Unit,
-    onOpenAi: () -> Unit,
-    onOpenPlugins: () -> Unit,
-    onOpenAppAccess: () -> Unit,
+@OptIn(ExperimentalMaterial3Api::class)
+private fun MacroSearchResults(
+    searchBarState: SearchBarState,
+    inputField: @Composable () -> Unit,
+    colors: SearchBarColors,
+    matches: List<WorkflowSummary>,
+    onOpenWorkflow: (String) -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        IconButton(onClick = { expanded = true }) {
-            Icon(
-                imageVector = Icons.Filled.MoreVert,
-                contentDescription = stringResource(R.string.workflowlist_libraries),
-                tint = EditorColors.textPrimary,
-            )
+    val scope = rememberCoroutineScope()
+    ExpandedFullScreenSearchBar(
+        state = searchBarState,
+        inputField = inputField,
+        colors = colors,
+    ) {
+        if (matches.isEmpty()) {
+            EmptyMessage(R.string.workflowlist_no_matches)
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(matches, key = { it.id }) { summary ->
+                    MacroSuggestionRow(
+                        summary = summary,
+                        onClick = {
+                            scope.launch { searchBarState.animateToCollapsed() }
+                            onOpenWorkflow(summary.id)
+                        },
+                    )
+                }
+            }
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.workflowlist_geofences)) },
-                leadingIcon = { Icon(Icons.Filled.Place, contentDescription = null) },
-                onClick = {
-                    expanded = false
-                    onOpenGeofences()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.workflowlist_nfc_tags)) },
-                leadingIcon = { Icon(Icons.Filled.Nfc, contentDescription = null) },
-                onClick = {
-                    expanded = false
-                    onOpenNfcTags()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.workflowlist_mail_accounts)) },
-                leadingIcon = { Icon(Icons.Filled.Mail, contentDescription = null) },
-                onClick = {
-                    expanded = false
-                    onOpenMailAccounts()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.workflowlist_smart_home)) },
-                leadingIcon = { Icon(Icons.Filled.Lightbulb, contentDescription = null) },
-                onClick = {
-                    expanded = false
-                    onOpenSmartHome()
-                },
-            )
-            // Not a library of records like the four above but a list of what the
-            // phone has let this app reach. It belongs here anyway, on the same
-            // reading: it is set up once and every macro shares it.
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.files_folder_access)) },
-                leadingIcon = { Icon(Icons.Filled.FolderOpen, contentDescription = null) },
-                onClick = {
-                    expanded = false
-                    onOpenFolders()
-                },
-            )
-            // Last, and the one entry here that is not a library of many things:
-            // it is one key for the phone. It belongs in this menu anyway, because
-            // what the menu really collects is "the things a macro needs that are
-            // set up once and shared by all of them".
-            DropdownMenuItem(
-                text = { Text("AI") },
-                leadingIcon = { Icon(Icons.Filled.Psychology, contentDescription = null) },
-                onClick = {
-                    expanded = false
-                    onOpenAi()
-                },
-            )
-            // Plugins joins this menu rather than becoming a third top-bar icon, on
-            // the ceiling argument above: what this menu collects is "things set up
-            // once and shared by every macro", and a plugin is exactly that. It is
-            // last because it is the only entry whose contents are other people's
-            // apps rather than the user's own records.
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.workflowlist_plugins)) },
-                leadingIcon = { Icon(Icons.Filled.Extension, contentDescription = null) },
-                onClick = {
-                    expanded = false
-                    onOpenPlugins()
-                },
-            )
-            // Beside Plugins because it is the same subject seen from the other side:
-            // both entries are about other people's apps rather than the user's own
-            // records, and somebody looking for one will look here for the other.
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.workflowlist_app_access)) },
-                leadingIcon = { Icon(Icons.Filled.Key, contentDescription = null) },
-                onClick = {
-                    expanded = false
-                    onOpenAppAccess()
-                },
-            )
-        }
+    }
+}
+
+/**
+ * The field itself, shared by the collapsed bar and the expanded surface.
+ *
+ * It reads its own text rather than being handed a query, because the only thing it
+ * needs the text for is whether to draw the clear button — and reading it here keeps
+ * that recomposition off the screen around it.
+ */
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun SearchInputField(
+    searchBarState: SearchBarState,
+    textFieldState: TextFieldState,
+    colors: TextFieldColors,
+) {
+    val scope = rememberCoroutineScope()
+    SearchBarDefaults.InputField(
+        textFieldState = textFieldState,
+        searchBarState = searchBarState,
+        // There is nothing to submit: the list is already filtered as you type, so
+        // the keyboard's search key just puts the keyboard away.
+        onSearch = { scope.launch { searchBarState.animateToCollapsed() } },
+        placeholder = { Text(stringResource(R.string.workflowlist_search_placeholder)) },
+        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+        trailingIcon = {
+            if (textFieldState.text.isNotEmpty()) {
+                IconButton(onClick = { textFieldState.clearText() }) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = stringResource(R.string.workflowlist_clear_search),
+                    )
+                }
+            }
+        },
+        colors = colors,
+    )
+}
+
+/**
+ * The search bar's palette.
+ *
+ * Only the colours are overridden, as everywhere else in this app: the app's palette
+ * is fixed dark and independent of `MaterialTheme`, so a bar taking
+ * `MaterialTheme.colorScheme` would render light under it. Which [EditorColors] token
+ * fills which slot follows `PaletteSearchField` in the node palette, so the two
+ * search fields in the app look like the same control.
+ */
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun searchBarColors(): SearchBarColors = SearchBarDefaults.colors(
+    // A step lighter than the chrome, so the pill reads as a field on the canvas
+    // rather than as another bar across the top of it.
+    containerColor = EditorColors.nodeBackground,
+    dividerColor = EditorColors.chromeBorder,
+    inputFieldColors = SearchBarDefaults.inputFieldColors(
+        focusedTextColor = EditorColors.textPrimary,
+        unfocusedTextColor = EditorColors.textPrimary,
+        cursorColor = EditorColors.portSnap,
+        focusedLeadingIconColor = EditorColors.textSecondary,
+        unfocusedLeadingIconColor = EditorColors.textSecondary,
+        focusedTrailingIconColor = EditorColors.textSecondary,
+        unfocusedTrailingIconColor = EditorColors.textSecondary,
+        focusedPlaceholderColor = EditorColors.textSecondary,
+        unfocusedPlaceholderColor = EditorColors.textSecondary,
+    ),
+)
+
+/** The centred line shown when the list has nothing in it, whatever the reason. */
+@Composable
+private fun EmptyMessage(@StringRes textRes: Int) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(
+            text = stringResource(textRes),
+            color = EditorColors.textSecondary,
+            fontSize = 14.sp,
+        )
+    }
+}
+
+/**
+ * A macro as a search result: the chip it wears everywhere else, and its name.
+ *
+ * Deliberately not [WorkflowRow]. That row carries an armed switch and an overflow
+ * menu, which are the right things to offer somebody browsing their macros and the
+ * wrong ones to put under a cursor in a search field — a mis-tap there disarms a
+ * macro instead of opening it.
+ */
+@Composable
+private fun MacroSuggestionRow(summary: WorkflowSummary, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        MacroIconChip(icon = summary.icon, accent = summary.accent)
+        Spacer(Modifier.width(14.dp))
+        Text(
+            text = summary.name,
+            color = EditorColors.textPrimary,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+        )
     }
 }
 

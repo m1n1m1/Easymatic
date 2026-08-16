@@ -615,4 +615,21 @@
     <string name="ha_any_state_change_hint">Любое изменение состояния, без дополнительных условий</string>
     <string name="ha_sign_in">Или войдите в Home Assistant</string>
     <string name="ha_no_hub_yet">Home Assistant пока нет. Добавьте его в разделе «Умный дом».</string>
+    <string name="setup_title">Настройка</string>
+    <string name="setup_section_connections">Подключения</string>
+    <string name="setup_section_system">Система</string>
+    <string name="setup_ai">ИИ</string>
+    <string name="setup_smart_home_subtitle">Hue, Home Assistant и MQTT</string>
+    <string name="setup_ai_subtitle">Аккаунты и модели для узлов ИИ</string>
+    <string name="setup_mail_subtitle">Ящики для отправки и чтения</string>
+    <string name="setup_variables_subtitle">Значения, общие для всех макросов</string>
+    <string name="setup_geofences_subtitle">Места, на которые могут реагировать ваши макросы</string>
+    <string name="setup_nfc_subtitle">Сохранённые метки</string>
+    <string name="setup_folders_subtitle">Папки и файлы, которые может открывать это приложение</string>
+    <string name="setup_permissions_subtitle">Что телефон разрешает вашим макросам</string>
+    <string name="setup_plugins_subtitle">Приложения, которые добавляют узлы</string>
+    <string name="setup_app_access_subtitle">Другие приложения, которым разрешено запускать ваши макросы</string>
+    <string name="workflowlist_search_placeholder">Поиск макросов</string>
+    <string name="workflowlist_clear_search">Очистить поиск</string>
+    <string name="workflowlist_no_matches">Нет подходящих макросов.</string>
 </resources>

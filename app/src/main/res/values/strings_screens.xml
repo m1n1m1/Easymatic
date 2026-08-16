@@ -689,4 +689,29 @@
     <string name="ha_any_state_change_hint">Every state change, with no further conditions</string>
     <string name="ha_sign_in">Or sign in to Home Assistant</string>
     <string name="ha_no_hub_yet">No Home Assistant yet. Add one in Smart home.</string>
+
+    <!-- The main screen's two tabs and the second one's contents. The first tab's
+         label is workflowlist_workflows and the Libraries heading is
+         workflowlist_libraries, both of which already say exactly this. -->
+    <string name="setup_title">Setup</string>
+    <string name="setup_section_connections">Connections</string>
+    <string name="setup_section_system">System</string>
+    <string name="setup_ai">AI</string>
+    <!-- The line under each Setup row. It says what the screen is for rather than
+         what it contains, since only the screen itself can know the latter. -->
+    <string name="setup_smart_home_subtitle">Hue, Home Assistant and MQTT</string>
+    <string name="setup_ai_subtitle">Accounts and models for the AI nodes</string>
+    <string name="setup_mail_subtitle">Mailboxes to send and read from</string>
+    <string name="setup_variables_subtitle">Values every macro can share</string>
+    <string name="setup_geofences_subtitle">Places your macros can react to</string>
+    <string name="setup_nfc_subtitle">Tags you have saved</string>
+    <string name="setup_folders_subtitle">Folders and files this app may open</string>
+    <string name="setup_permissions_subtitle">What the phone lets your macros do</string>
+    <string name="setup_plugins_subtitle">Apps that add nodes</string>
+    <string name="setup_app_access_subtitle">Other apps allowed to run your macros</string>
+
+    <!-- The workflow list's search bar. -->
+    <string name="workflowlist_search_placeholder">Search macros</string>
+    <string name="workflowlist_clear_search">Clear search</string>
+    <string name="workflowlist_no_matches">No macros match that.</string>
 </resources>

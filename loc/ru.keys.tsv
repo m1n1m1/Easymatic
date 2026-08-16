@@ -776,3 +776,20 @@ perm_rationale_media_write	Ottomatic нужно разрешение измен�
 perm_rationale_media_location	Ottomatic нужно разрешение читать место съёмки, иначе этот узел сообщит, что места нет ни у одного изображения. Ваших собственных снимков это не касается.
 perm_rationale_media_manage	Ottomatic может изменять фото, не спрашивая каждый раз. Необязательно: без этого узел работает, но Android показывает подтверждение на экране, поэтому без участия человека он не выполнится.
 perm_rationale_overlay_media	Ottomatic нужно разрешение поверх других приложений, чтобы показать подтверждение Android, пока макрос работает в фоне. Без него изменение фото, сохранённого другим приложением, не удастся, когда вы не в Ottomatic.
+setup_title	Настройка
+setup_section_connections	Подключения
+setup_section_system	Система
+setup_ai	ИИ
+setup_smart_home_subtitle	Hue, Home Assistant и MQTT
+setup_ai_subtitle	Аккаунты и модели для узлов ИИ
+setup_mail_subtitle	Ящики для отправки и чтения
+setup_variables_subtitle	Значения, общие для всех макросов
+setup_geofences_subtitle	Места, на которые могут реагировать ваши макросы
+setup_nfc_subtitle	Сохранённые метки
+setup_folders_subtitle	Папки и файлы, которые может открывать это приложение
+setup_permissions_subtitle	Что телефон разрешает вашим макросам
+setup_plugins_subtitle	Приложения, которые добавляют узлы
+setup_app_access_subtitle	Другие приложения, которым разрешено запускать ваши макросы
+workflowlist_search_placeholder	Поиск макросов
+workflowlist_clear_search	Очистить поиск
+workflowlist_no_matches	Нет подходящих макросов.

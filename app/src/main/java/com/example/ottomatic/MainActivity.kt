@@ -55,7 +55,7 @@ import com.example.ottomatic.feature.api.ApiAccessScreen
 import com.example.ottomatic.feature.plugins.PluginsScreen
 import com.example.ottomatic.engine.api.listApiTriggers
 import com.example.ottomatic.feature.variables.GlobalVariablesViewModel
-import com.example.ottomatic.feature.workflowlist.WorkflowListScreen
+import com.example.ottomatic.feature.home.HomeScreen
 import com.example.ottomatic.feature.workflowlist.WorkflowListViewModel
 import com.example.ottomatic.ui.theme.OttomaticTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -231,8 +231,8 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * The app's destinations: workflow list, the four libraries (geofence, NFC
-     * tag, mail account, global variable), permissions, graph editor.
+     * The app's destinations: home (the workflow list and the Setup tab), the ten
+     * screens Setup lists, and the graph editor.
      */
     /**
      * "New macro" taps that arrived while the app was already open.
@@ -262,7 +262,7 @@ class MainActivity : ComponentActivity() {
 
         NavHost(
             navController = navController,
-            startDestination = ROUTE_WORKFLOW_LIST,
+            startDestination = ROUTE_HOME,
             // Mid-slide neither screen covers the full width; the gap shows
             // the window background, which Theme.Ottomatic pins to the
             // canvas colour so nothing flashes at the edge.
@@ -271,17 +271,17 @@ class MainActivity : ComponentActivity() {
             popEnterTransition = { slideIntoContainer(SlideDirection.Right) },
             popExitTransition = { slideOutOfContainer(SlideDirection.Right) },
         ) {
-            composable(ROUTE_WORKFLOW_LIST) {
-                WorkflowListScreen(
-                    viewModel = listViewModel,
+            composable(ROUTE_HOME) {
+                HomeScreen(
+                    listViewModel = listViewModel,
                     onOpenWorkflow = { id -> navController.navigate("$ROUTE_GRAPH_EDITOR/$id") },
+                    onOpenSmartHome = { navController.navigate(ROUTE_SMART_HOME) },
+                    onOpenAi = { navController.navigate(ROUTE_AI) },
+                    onOpenMailAccounts = { navController.navigate(ROUTE_MAIL_ACCOUNTS) },
+                    onOpenVariables = { navController.navigate(ROUTE_VARIABLES) },
                     onOpenGeofences = { navController.navigate(ROUTE_GEOFENCES) },
                     onOpenNfcTags = { navController.navigate(ROUTE_NFC_TAGS) },
-                    onOpenMailAccounts = { navController.navigate(ROUTE_MAIL_ACCOUNTS) },
-                    onOpenSmartHome = { navController.navigate(ROUTE_SMART_HOME) },
                     onOpenFolders = { navController.navigate(ROUTE_FOLDER_ACCESS) },
-                    onOpenAi = { navController.navigate(ROUTE_AI) },
-                    onOpenVariables = { navController.navigate(ROUTE_VARIABLES) },
                     onOpenPermissions = { navController.navigate(ROUTE_PERMISSIONS) },
                     onOpenPlugins = { navController.navigate(ROUTE_PLUGINS) },
                     onOpenAppAccess = { navController.navigate(ROUTE_APP_ACCESS) },
@@ -537,7 +537,7 @@ class MainActivity : ComponentActivity() {
          */
         const val ACTION_NEW_MACRO = "com.example.ottomatic.action.NEW_MACRO"
 
-        private const val ROUTE_WORKFLOW_LIST = "workflowList"
+        private const val ROUTE_HOME = "home"
         private const val ROUTE_GRAPH_EDITOR = "graphEditor"
         private const val ROUTE_GEOFENCES = "geofences"
         private const val ROUTE_NFC_TAGS = "nfcTags"

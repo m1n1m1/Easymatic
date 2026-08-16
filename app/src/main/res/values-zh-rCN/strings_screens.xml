@@ -615,4 +615,21 @@
     <string name="ha_any_state_change_hint">任何状态变化，无其他条件</string>
     <string name="ha_sign_in">或登录 Home Assistant</string>
     <string name="ha_no_hub_yet">还没有 Home Assistant。请在智能家居中添加一个。</string>
+    <string name="setup_title">设置</string>
+    <string name="setup_section_connections">连接</string>
+    <string name="setup_section_system">系统</string>
+    <string name="setup_ai">AI</string>
+    <string name="setup_smart_home_subtitle">Hue、Home Assistant 和 MQTT</string>
+    <string name="setup_ai_subtitle">AI 节点使用的账户和模型</string>
+    <string name="setup_mail_subtitle">用于收发邮件的邮箱</string>
+    <string name="setup_variables_subtitle">所有宏都能共享的值</string>
+    <string name="setup_geofences_subtitle">宏可以响应的地点</string>
+    <string name="setup_nfc_subtitle">你保存的标签</string>
+    <string name="setup_folders_subtitle">本应用可以打开的文件夹和文件</string>
+    <string name="setup_permissions_subtitle">手机允许你的宏做什么</string>
+    <string name="setup_plugins_subtitle">添加节点的应用</string>
+    <string name="setup_app_access_subtitle">获准运行你的宏的其他应用</string>
+    <string name="workflowlist_search_placeholder">搜索宏</string>
+    <string name="workflowlist_clear_search">清除搜索</string>
+    <string name="workflowlist_no_matches">没有匹配的宏。</string>
 </resources>

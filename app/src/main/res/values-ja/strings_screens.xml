@@ -615,4 +615,21 @@
     <string name="ha_any_state_change_hint">状態が変わるたび、条件なし</string>
     <string name="ha_sign_in">または Home Assistant にサインイン</string>
     <string name="ha_no_hub_yet">Home Assistant がまだありません。スマートホームで追加してください。</string>
+    <string name="setup_title">設定</string>
+    <string name="setup_section_connections">接続</string>
+    <string name="setup_section_system">システム</string>
+    <string name="setup_ai">AI</string>
+    <string name="setup_smart_home_subtitle">Hue、Home Assistant、MQTT</string>
+    <string name="setup_ai_subtitle">AI ノード用のアカウントとモデル</string>
+    <string name="setup_mail_subtitle">送信と読み取りに使うメールボックス</string>
+    <string name="setup_variables_subtitle">すべてのマクロで共有できる値</string>
+    <string name="setup_geofences_subtitle">マクロが反応できる場所</string>
+    <string name="setup_nfc_subtitle">保存したタグ</string>
+    <string name="setup_folders_subtitle">このアプリが開けるフォルダとファイル</string>
+    <string name="setup_permissions_subtitle">端末がマクロに許可していること</string>
+    <string name="setup_plugins_subtitle">ノードを追加するアプリ</string>
+    <string name="setup_app_access_subtitle">あなたのマクロを実行できる他のアプリ</string>
+    <string name="workflowlist_search_placeholder">マクロを検索</string>
+    <string name="workflowlist_clear_search">検索をクリア</string>
+    <string name="workflowlist_no_matches">一致するマクロはありません。</string>
 </resources>

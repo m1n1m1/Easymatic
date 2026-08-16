@@ -679,4 +679,21 @@
     <string name="config_tools_ai_chooses">Die KI wählt %2$s, aus %1$d erreichbaren</string>
     <string name="config_tools_nothing_to_fix">Dieses Werkzeug hat keine Einstellungen</string>
     <string name="category_images">Fotos</string>
+    <string name="setup_title">Einrichtung</string>
+    <string name="setup_section_connections">Verbindungen</string>
+    <string name="setup_section_system">System</string>
+    <string name="setup_ai">KI</string>
+    <string name="setup_smart_home_subtitle">Hue, Home Assistant und MQTT</string>
+    <string name="setup_ai_subtitle">Konten und Modelle für die KI-Knoten</string>
+    <string name="setup_mail_subtitle">Postfächer zum Senden und Lesen</string>
+    <string name="setup_variables_subtitle">Werte, die sich alle Makros teilen</string>
+    <string name="setup_geofences_subtitle">Orte, auf die deine Makros reagieren können</string>
+    <string name="setup_nfc_subtitle">Tags, die du gespeichert hast</string>
+    <string name="setup_folders_subtitle">Ordner und Dateien, die diese App öffnen darf</string>
+    <string name="setup_permissions_subtitle">Was das Telefon deinen Makros erlaubt</string>
+    <string name="setup_plugins_subtitle">Apps, die Knoten hinzufügen</string>
+    <string name="setup_app_access_subtitle">Andere Apps, die deine Makros ausführen dürfen</string>
+    <string name="workflowlist_search_placeholder">Makros suchen</string>
+    <string name="workflowlist_clear_search">Suche leeren</string>
+    <string name="workflowlist_no_matches">Keine Makros passen dazu.</string>
 </resources>
