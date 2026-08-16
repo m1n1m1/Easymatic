@@ -79,15 +79,17 @@ class RunLogStore : RunLog {
      * Caps one line's length, so the buffer's entry count is a real bound on its
      * size rather than a bound on nothing.
      *
-     * The executor already trims the values it renders, but it is not the only
-     * writer: `action.log`'s message is `@Wired`, so pointing an HTTP response at
-     * it logs the whole body — at INFO, which is persisted. Capping here rather
-     * than at each call site is what makes the limit hold for every writer,
-     * including the next one.
+     * This is the **only** cut. `action.log`'s message is `@Wired`, so pointing an
+     * HTTP response at it logs the whole body — at INFO, which is persisted — and
+     * the executor's `in`/`out` lines carry whatever crossed a wire. Capping here
+     * rather than at each call site is what makes the limit hold for every writer,
+     * including the next one, and it is what lets a writer hand over everything it
+     * has: a value cut short on the way in is cut short in the entry overlay too,
+     * which is the one surface that exists to show a line whole.
      */
     private fun LogEntry.truncated(): LogEntry =
-        if (message.length <= MAX_MESSAGE_CHARS) this
-        else copy(message = message.take(MAX_MESSAGE_CHARS) + "… (${message.length} chars)")
+        if (message.length <= RunLog.MAX_MESSAGE_CHARS) this
+        else copy(message = message.take(RunLog.MAX_MESSAGE_CHARS) + "… (${message.length} chars)")
 
     override fun entries(workflowId: String): StateFlow<List<LogEntry>> {
         val buffer = bufferFor(workflowId)
@@ -237,14 +239,6 @@ class RunLogStore : RunLog {
 
         /** Below this, a line lives and dies in memory. */
         val PERSIST_FROM = LogLevel.INFO
-
-        /**
-         * Generous for a deliberate `action.log` of a JSON payload, and far below
-         * the point where one line matters. With the entry cap this bounds a
-         * workflow's buffer at ~1 MB in the pathological case and ~50 KB in a
-         * realistic one.
-         */
-        const val MAX_MESSAGE_CHARS = 2_000
 
         private const val UNATTRIBUTED = ""
         private const val DIR_NAME = "logs"

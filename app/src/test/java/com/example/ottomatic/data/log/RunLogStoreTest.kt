@@ -3,6 +3,7 @@ package com.example.ottomatic.data.log
 import com.example.ottomatic.core.service.LogEntry
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.LogSource
+import com.example.ottomatic.core.service.RunLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -153,13 +154,13 @@ class RunLogStoreTest {
     @Test
     fun `an overlong line is capped, so the entry count bounds the size`() {
         // action.log's message is @Wired: point an HTTP response at it and the
-        // whole body is logged at INFO, which is persisted. The executor trims
-        // what *it* renders, but it is not the only writer.
+        // whole body is logged at INFO, which is persisted. This is the only cut
+        // in the path, so it has to hold for every writer.
         val store = attached()
         store.record(entry("y".repeat(50_000), level = LogLevel.ERROR))
 
         val kept = store.entries(WORKFLOW).value.single().message
-        assertTrue("${kept.length} chars", kept.length < RunLogStore.MAX_MESSAGE_CHARS + 50)
+        assertTrue("${kept.length} chars", kept.length < RunLog.MAX_MESSAGE_CHARS + 50)
         assertTrue(kept, kept.endsWith("(50000 chars)"))
     }
 

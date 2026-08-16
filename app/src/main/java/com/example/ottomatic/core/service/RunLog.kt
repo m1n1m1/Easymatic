@@ -84,6 +84,26 @@ interface RunLog {
 
     /** Drops [workflowId]'s history, in memory and on disk. */
     fun clear(workflowId: String)
+
+    companion object {
+        /**
+         * The longest a single line may be, enforced at the sink so it holds for
+         * every writer — see `RunLogStore.truncated`.
+         *
+         * It lives here rather than in `data/log/` because it is not only the
+         * sink's business: the executor renders the `in`/`out` lines and has to
+         * know how much room a line has before it decides how much of a value to
+         * show. Two constants that must agree is exactly the pair that drifts, and
+         * the drift is invisible — a value trimmed to 200 characters never reaches
+         * the cap, so nothing ever fails to say so.
+         *
+         * Generous for a deliberate `action.log` of a JSON payload, and far below
+         * the point where one line matters. With the entry cap this bounds a
+         * workflow's buffer at ~1 MB in the pathological case and ~50 KB in a
+         * realistic one.
+         */
+        const val MAX_MESSAGE_CHARS = 2_000
+    }
 }
 
 private val entryIds = AtomicLong()

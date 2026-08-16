@@ -6,6 +6,7 @@ import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.service.LogEntry
 import com.example.ottomatic.core.service.LogLevel
+import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
@@ -173,16 +174,40 @@ class WorkflowExecutorLogTest {
     }
 
     @Test
-    fun `a huge value is cut down before it reaches the buffer`() = runBlocking {
+    fun `a long value is logged whole, because the overlay can only show what was recorded`() = runBlocking {
+        // The console row clamps to three lines and the entry overlay exists to
+        // show the rest — so a value that fits the line's budget must reach the
+        // buffer intact, cut markers and all absent.
+        val long = "x".repeat(900)
+        run(smsWorkflow(), sms(long))
+
+        val outOf = logs.first { it.source?.nodeId == "brk" && it.message.startsWith("out ") }
+        assertTrue(outOf.message.take(200), outOf.message.contains("body = $long"))
+    }
+
+    @Test
+    fun `a huge value is cut to the line's budget, and says by how much`() = runBlocking {
         // An HTTP body runs to megabytes. Held untruncated in a 500-entry buffer
-        // per workflow, one polling macro would exhaust the heap — so the cut has
-        // to happen on the way in, not in the console that displays it.
+        // per workflow, one polling macro would exhaust the heap — so the line is
+        // still bounded, just by what the console can show rather than far under it.
         val long = "x".repeat(5_000)
         run(smsWorkflow(), sms(long))
 
         val outOf = logs.first { it.source?.nodeId == "brk" && it.message.startsWith("out ") }
-        assertTrue("${outOf.message.length} chars", outOf.message.length < 1_000)
+        assertTrue("${outOf.message.length} chars", outOf.message.length <= RunLog.MAX_MESSAGE_CHARS)
         assertTrue(outOf.message, outOf.message.contains("5000 chars"))
+    }
+
+    @Test
+    fun `a short port does not cost a long one its budget`() = runBlocking {
+        // Splitting the line evenly would trim the body to a third for the sake of
+        // a sender and a timestamp that need thirty characters between them.
+        val long = "x".repeat(1_500)
+        run(smsWorkflow(), sms(long))
+
+        val outOf = logs.first { it.source?.nodeId == "brk" && it.message.startsWith("out ") }
+        assertTrue(outOf.message, outOf.message.contains("sender = +1555"))
+        assertTrue(outOf.message.take(200), outOf.message.contains("body = $long"))
     }
 
     // endregion

@@ -4,6 +4,7 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.LogSource
+import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.Workflow
@@ -768,11 +769,18 @@ class WorkflowExecutor(
      *
      * Silent when there is nothing, so an effect node with no data does not pay a
      * line saying so.
+     *
+     * **A value is shown whole whenever the line has room for it.** The cut that
+     * remains is the line's own budget, shared out by [valueBudget] — never a
+     * fixed per-value ceiling, because the entry overlay exists precisely to show
+     * a long value in full, and it can only show what was recorded.
      */
     private fun logData(context: ExecutionContext, label: String, data: Map<PortName, Item>) {
         if (data.isEmpty()) return
-        val rendered = data.entries.joinToString(separator = SEPARATOR) { (port, item) ->
-            "${port.value} = ${preview(item)}"
+        val texts = data.map { (port, item) -> "${port.value} = " to item.asText() }
+        val budget = valueBudget(texts, label)
+        val rendered = texts.joinToString(separator = SEPARATOR) { (prefix, text) ->
+            prefix + preview(text, budget)
         }
         context.log("$label $rendered", LogLevel.DEBUG)
     }
@@ -784,27 +792,64 @@ class WorkflowExecutor(
         const val SEPARATOR = "  ·  "
 
         /**
-         * Enough of a value to recognise it, and never more.
-         *
-         * An `HttpResponseItem` body runs to megabytes. Held untruncated in a
-         * 500-entry buffer per workflow, one polling macro would exhaust the heap
-         * — so the cut happens here, on the way in, rather than in the console
-         * that displays it.
+         * Room reserved for a `… (12345 chars)` marker, so a line that does get
+         * cut still ends inside its budget rather than losing its last port to
+         * the sink's own trim.
          */
-        const val MAX_VALUE_CHARS = 200
+        const val MARKER_CHARS = 24
 
         /**
-         * [Item.asText] is the renderer the rest of the app already agrees on —
-         * primitives plainly, structs as compact JSON — so a value reads in the
-         * console exactly as it would in a notification, and it never throws.
+         * The floor a value keeps however many ports share the line.
+         *
+         * Below this a value is no longer recognisable, which is the whole point
+         * of the line; a node with a dozen wired ports overshoots the sink's cap
+         * instead and the store trims the tail.
          */
-        fun preview(item: Item): String {
-            val text = item.asText()
-            return when {
-                text.isEmpty() -> "(empty)"
-                text.length <= MAX_VALUE_CHARS -> text
-                else -> text.take(MAX_VALUE_CHARS) + "… (${text.length} chars)"
+        const val MIN_VALUE_CHARS = 200
+
+        /**
+         * How much of one value the line can afford.
+         *
+         * `RunLogStore` caps a whole line, so the budget is that cap less what the
+         * port names, separators and markers already spend — and what is left is
+         * shared out by **water-filling**: every value that fits under its share
+         * gives the remainder back to the ones that do not. That is what makes an
+         * SMS struct spend its budget on the body rather than splitting it three
+         * ways with a sender and a timestamp that need thirty characters between
+         * them.
+         *
+         * An `HttpResponseItem` body still runs to megabytes, and this is still
+         * what keeps a 500-entry buffer bounded — but it is bounded by the line
+         * the console shows rather than by a per-value ceiling far under it.
+         */
+        fun valueBudget(texts: List<Pair<String, String>>, label: String): Int {
+            val overhead = label.length + 1 +
+                texts.sumOf { (prefix, _) -> prefix.length + MARKER_CHARS } +
+                (texts.size - 1) * SEPARATOR.length
+            val whole = (RunLog.MAX_MESSAGE_CHARS - overhead).coerceAtLeast(MIN_VALUE_CHARS)
+            var remaining = whole
+            var sharing = texts.size
+            for (length in texts.map { (_, text) -> text.length }.sorted()) {
+                val share = remaining / sharing
+                if (length > share) return share.coerceAtLeast(MIN_VALUE_CHARS)
+                remaining -= length
+                sharing--
             }
+            return whole
+        }
+
+        /**
+         * One rendered value, cut to [budget] only if it has to be.
+         *
+         * The text comes from [Item.asText], the renderer the rest of the app
+         * already agrees on — primitives plainly, structs as compact JSON — so a
+         * value reads in the console exactly as it would in a notification, and it
+         * never throws.
+         */
+        fun preview(text: String, budget: Int): String = when {
+            text.isEmpty() -> "(empty)"
+            text.length <= budget -> text
+            else -> text.take(budget) + "… (${text.length} chars)"
         }
 
         /**
