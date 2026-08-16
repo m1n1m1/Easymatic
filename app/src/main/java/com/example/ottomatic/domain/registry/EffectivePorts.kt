@@ -199,6 +199,59 @@ val DIALOG_CHOICE_OUT = PortName("choice")
 /** The DATA output port on `action.dialog_choice` carrying that option's position. */
 val DIALOG_INDEX_OUT = PortName("index")
 
+/** typeId of the notification poster, whose second branch exists only when it can be answered. */
+val NOTIFY_TYPE_ID = NodeTypeId("action.notify")
+
+/** typeId of the node that takes a posted notification down again. */
+val NOTIFY_CANCEL_TYPE_ID = NodeTypeId("action.notify_cancel")
+
+/** The config key holding `action.notify`'s buttons, one per line. */
+val NOTIFY_BUTTONS_KEY = ConfigKey("buttons")
+
+/** The config key saying `action.notify` offers a reply field. */
+val NOTIFY_REPLY_KEY = ConfigKey("replyField")
+
+/**
+ * The `action.notify` fields that between them decide whether the notification offers
+ * anything to react to — and so whether its deferred branch exists at all.
+ */
+val NOTIFY_ANSWER_KEYS = setOf(NOTIFY_BUTTONS_KEY, NOTIFY_REPLY_KEY)
+
+/**
+ * Whether an `action.notify` holding [config] can be answered.
+ *
+ * One function rather than the same two-line expression in three places: the editor
+ * prunes a stranded branch with it, [effectivePorts] decides whether to draw one with
+ * it, and the two disagreeing would leave a wire on a port that is no longer there.
+ *
+ * It reads the **raw** config rather than a decoded one, so a blank value means blank —
+ * decoding would substitute the property default and report buttons on a node that has
+ * none. `NotifyConfig.answerable` is the decoded counterpart, and it is deliberately
+ * separate: it works on the capped button list, which only matters once the node runs.
+ */
+fun notifyIsAnswerable(config: Map<ConfigKey, String>): Boolean =
+    !config[NOTIFY_BUTTONS_KEY].isNullOrBlank() || config[NOTIFY_REPLY_KEY] == "true"
+
+/**
+ * The DATA output port on `action.notify` carrying the tag it actually posted under.
+ *
+ * Not `tag`, which is the *input* of the same node — a generated string key is
+ * `port_<typeId>_<portName>` with no direction in it, so two same-named ports on one
+ * node collide there however legal the port rules find them. Worth the rename rather
+ * than worth changing the key shape: a direction in every key would rewrite the
+ * generated file and all eight translations to settle one node's naming.
+ */
+val NOTIFY_TAG_OUT = PortName("postedTag")
+
+/** The DATA output port on `action.notify` carrying the button pressed, blank for a tap. */
+val NOTIFY_BUTTON_OUT = PortName("button")
+
+/** The DATA output port on `action.notify` carrying that button's position, -1 for a tap. */
+val NOTIFY_INDEX_OUT = PortName("index")
+
+/** The DATA output port on `action.notify` carrying what was typed into the reply field. */
+val NOTIFY_REPLY_OUT = PortName("reply")
+
 /** typeId of the variable reader, whose output type its declaration states. */
 val VARIABLE_VALUE_TYPE_ID = NodeTypeId("value.variable")
 
@@ -305,6 +358,7 @@ private fun effectivePorts(
         SCRIPT_TYPE_ID -> scriptEffectivePorts(definition, node)
         API_TRIGGER_TYPE_ID -> apiTriggerEffectivePorts(definition, node)
         in DIALOG_TYPE_IDS -> dialogEffectivePorts(definition, workflow, node, deeper)
+        NOTIFY_TYPE_ID -> notifyEffectivePorts(definition, node)
         VARIABLE_VALUE_TYPE_ID -> variableValuePorts(definition, workflow, node, deeper)
         SET_VARIABLE_TYPE_ID -> variableWritePorts(definition, workflow, node)
         FOR_EACH_TYPE_ID -> forEachEffectivePorts(workflow, node, deeper)
@@ -463,6 +517,32 @@ private fun dialogEffectivePorts(
                 port.copy(schema = narrowedToConsumer(type, workflow, node, DIALOG_VALUE_OUT, visiting))
             }
         }
+}
+
+/**
+ * Ports for `action.notify`: the declared ports, minus the deferred branch and the
+ * three ports that ride on it when the notification cannot be answered at all.
+ *
+ * [dialogEffectivePorts]' rule applied to a whole branch rather than to one route,
+ * and for the same reason: an exec port that can never fire is an invitation to wire
+ * something that will never run. A notification with no buttons, no reply field and
+ * no tap to report is fire-and-forget — exactly what this node was before it could do
+ * anything else — and its card says so by having nothing but `out`.
+ *
+ * It reads only the node's **own config**, so it takes neither the workflow nor the
+ * recursion guard. That is what makes it cheap, the same property `action.script` and
+ * `trigger.api` have: nothing here asks the graph a question, so nothing here can ask
+ * one back.
+ *
+ * The dropped ports are read raw rather than through a decoded config because a blank
+ * value has to mean *blank* here — decoding would substitute the property default and
+ * report buttons on a node that has none. It is the trap `@Ports` defaults document,
+ * met from the other side.
+ */
+private fun notifyEffectivePorts(definition: NodeTypeDefinition, node: WorkflowNode): List<Port> {
+    if (notifyIsAnswerable(node.config)) return definition.ports
+    val deferred = setOf(ExecPorts.RESUMED, NOTIFY_BUTTON_OUT, NOTIFY_INDEX_OUT, NOTIFY_REPLY_OUT)
+    return definition.ports.filterNot { it.direction == Direction.OUT && it.name in deferred }
 }
 
 /**

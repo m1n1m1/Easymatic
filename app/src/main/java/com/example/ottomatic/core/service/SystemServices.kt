@@ -9,8 +9,10 @@ import kotlinx.coroutines.flow.StateFlow
 @Suppress("TooManyFunctions") // Facade over many independent Android subsystems.
 interface SystemServices {
 
-    /** Posts a notification with [title] and [text]. Returns true on success. */
-    fun notify(title: String, text: String): Boolean
+    // Posting a notification used to live here, and moved to [Notifications] when it
+    // grew buttons and a reply field: this facade is write-only — every member changes
+    // something and none of them waits for a reply — and waiting is most of what that
+    // node now does. See [Prompts] for the same boundary drawn for the same reason.
 
     /** Toggles Wi-Fi. Returns the new state, or null if it could not be changed. */
     fun setWifi(enabled: Boolean): Boolean?

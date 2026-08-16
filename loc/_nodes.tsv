@@ -25,6 +25,7 @@ All day	All day
 Also fire on messages the broker had stored	Also fire on messages the broker had stored
 Also when the device starts moving	Also when the device starts moving
 Always (high battery use)	Always (high battery use)
+Amber	Amber
 Ambient Light	Ambient Light
 Ambient light	Ambient light
 Answer	Answer
@@ -61,6 +62,7 @@ Battery level	Battery level
 Bcc	Bcc
 Below	Below
 Between two times	Between two times
+Blue	Blue
 Bluetooth Device Connected	Bluetooth Device Connected
 Bluetooth State Change	Bluetooth State Change
 Bluetooth enabled	Bluetooth enabled
@@ -74,6 +76,7 @@ Build text	Build text
 Busy	Busy
 Button	Button
 Button label	Button label
+Buttons — one per line	Buttons — one per line
 C	C
 Calendar	Calendar
 Calendar Changed	Calendar Changed
@@ -155,6 +158,7 @@ Direction	Direction
 Disable Macro	Disable Macro
 Disabled	Disabled
 Disables another macro by id (persists the flag and disarms its triggers)	Disables another macro by id (persists the flag and disarms its triggers)
+Disappear after (seconds)	Disappear after (seconds)
 Disconnected	Disconnected
 Dismiss	Dismiss
 Do Not Disturb	Do Not Disturb
@@ -222,6 +226,7 @@ Get as	Get as
 Give up after (seconds)	Give up after (seconds)
 Greater than	Greater than
 Greater than or equal	Greater than or equal
+Green	Green
 HTTP Request	HTTP Request
 Halts the current execution chain (stops following connected actions)	Halts the current execution chain (stops following connected actions)
 Headers (JSON, optional)	Headers (JSON, optional)
@@ -272,6 +277,7 @@ JPEG	JPEG
 JSON text	JSON text
 Join list	Join list
 Keep both, adding a number	Keep both, adding a number
+Keep until dismissed	Keep until dismissed
 Key	Key
 Landscape left	Landscape left
 Landscape right	Landscape right
@@ -389,6 +395,7 @@ Opens a URL in the default handler (browser or app). Typing google.com is enough
 Operation	Operation
 Operator	Operator
 Options — one per line	Options — one per line
+Orange	Orange
 Order	Order
 Orientation	Orientation
 Outputs	Outputs
@@ -406,6 +413,7 @@ Picture	Picture
 Picture Details	Picture Details
 Picture Saved	Picture Saved
 Pictures	Pictures
+Pink	Pink
 Place	Place
 Planned for	Planned for
 Play	Play
@@ -423,7 +431,8 @@ Position	Position
 Position (0 is the first)	Position (0 is the first)
 Position in list	Position in list
 Post	Post
-Posts a notification on this device	Posts a notification on this device
+Posted as	Posted as
+Posts a notification on this device, optionally with buttons and a reply field	Posts a notification on this device, optionally with buttons and a reply field
 Power Save Mode Changed	Power Save Mode Changed
 Power save mode	Power save mode
 Prefilled	Prefilled
@@ -431,6 +440,7 @@ Pressed	Pressed
 Pressed several times	Pressed several times
 Previous	Previous
 Priority	Priority
+Progress (%, below 0 = busy)	Progress (%, below 0 = busy)
 Prompt	Prompt
 Proximity	Proximity
 Proximity covered	Proximity covered
@@ -449,8 +459,10 @@ Reads messages from a mailbox onto a list you can loop over	Reads messages from 
 Reads one value out of JSON text, such as an HTTP response body	Reads one value out of JSON text, such as an HTTP response body
 Reads whether a light is on, how bright it is and what colour — Philips Hue	Reads whether a light is on, how bright it is and what colour — Philips Hue
 Reason (optional, logged before halting)	Reason (optional, logged before halting)
+Red	Red
 Remembers a value in a variable, readable by later runs	Remembers a value in a variable, readable by later runs
 Remind you (minutes before, -1 for no reminder)	Remind you (minutes before, -1 for no reminder)
+Remove Notification	Remove Notification
 Removed	Removed
 Removes a file from the phone	Removes a file from the phone
 Repeat	Repeat
@@ -462,6 +474,10 @@ Repeat while	Repeat while
 Replace it	Replace it
 Replaced	Replaced
 Replies to a message in WhatsApp, Signal, Telegram or another messenger	Replies to a message in WhatsApp, Signal, Telegram or another messenger
+Reply	Reply
+Reply button	Reply button
+Reply field	Reply field
+Reply hint	Reply hint
 Reply to Message	Reply to Message
 Resize	Resize
 Resizes, rotates, mirrors, crops or re-encodes a picture into a new file	Resizes, rotates, mirrors, crops or re-encodes a picture into a new file
@@ -521,6 +537,7 @@ Sets the screen-off timeout in milliseconds	Sets the screen-off timeout in milli
 Shake	Shake
 Show Message	Show Message
 Show Notification	Show Notification
+Show a progress bar	Show a progress bar
 Shows a popup dialog and waits until the user has acknowledged it	Shows a popup dialog and waits until the user has acknowledged it
 Shows a popup dialog offering a list of options and reports which one was picked	Shows a popup dialog offering a list of options and reports which one was picked
 Shows an AI model a picture from this phone and returns what it says about it	Shows an AI model a picture from this phone and returns what it says about it
@@ -597,10 +614,13 @@ Subject contains	Subject contains
 Sundays	Sundays
 System	System
 Tag	Tag
+Tag — Used for manual deletion	Tag — Used for manual deletion
 Taken after	Taken after
 Taken before	Taken before
+Takes down a notification this app posted under a tag	Takes down a notification this app posted under a tag
 Tap on Device	Tap on Device
 Taps	Taps
+Teal	Teal
 Telegram	Telegram
 Template — use {A}, {B}, {C}	Template — use {A}, {B}, {C}
 Tentative	Tentative
@@ -680,6 +700,7 @@ Variable	Variable
 Variable Change	Variable Change
 Vibrate	Vibrate
 Vibrates the device for a duration or pattern	Vibrates the device for a duration or pattern
+Violet	Violet
 Volume Button	Volume Button
 Volume down	Volume down
 Volume up	Volume up
@@ -694,6 +715,7 @@ What to ask	What to ask
 What to change	What to change
 What to do	What to do
 Whatsapp	Whatsapp
+When answered	When answered
 When cancelled	When cancelled
 When confirmed	When confirmed
 When finished	When finished

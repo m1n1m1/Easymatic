@@ -30,7 +30,17 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 @Suppress("TooManyFunctions") // Mirrors the SystemServices facade.
 class RecordingSystemServices : SystemServices {
-    val notifications = mutableListOf<Pair<String, String>>()
+
+    /**
+     * The notification recorder that goes with this one.
+     *
+     * Posting is [com.example.ottomatic.core.service.Notifications]' job rather than
+     * this facade's, but the tests that watch `action.notify` want one object to reach
+     * for — so it is carried here and passed alongside, rather than every executor test
+     * building and threading a second fake of its own.
+     */
+    val notifier = RecordingNotifications()
+
     val smsSent = mutableListOf<Pair<String, String>>()
     val calls = mutableListOf<String>()
     val launchedApps = mutableListOf<String>()
@@ -63,11 +73,6 @@ class RecordingSystemServices : SystemServices {
     var ringerMode: RingerMode? = null
     var volume: Triple<AudioStream, VolumeMode, Int>? = null
     var dnd: Pair<Boolean, DndLevel>? = null
-
-    override fun notify(title: String, text: String): Boolean {
-        notifications += title to text
-        return true
-    }
 
     override fun setWifi(enabled: Boolean): Boolean? {
         wifiEnabled = enabled

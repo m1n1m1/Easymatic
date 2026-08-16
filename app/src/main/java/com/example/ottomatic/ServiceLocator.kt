@@ -33,6 +33,7 @@ import com.example.ottomatic.data.security.KeystoreSecrets
 import com.example.ottomatic.data.mail.AndroidMail
 import com.example.ottomatic.data.mail.AndroidMailSecrets
 import com.example.ottomatic.data.notification.AndroidMessaging
+import com.example.ottomatic.data.notification.AndroidNotifications
 import com.example.ottomatic.data.mail.MailRuntime
 import com.example.ottomatic.data.mail.MailSeenStore
 import com.example.ottomatic.data.GlobalVariableRepository
@@ -444,6 +445,12 @@ object ServiceLocator {
             // handle is a live notification: one held from when the engine started
             // would be revoked long before a macro got round to using it.
             messaging = AndroidMessaging(appContext),
+            // Posts this app's own notifications, which is the other half of the pair
+            // above and needs none of its permissions. One instance is fine here where
+            // the facades around it are resolved per call: there is nothing to resolve
+            // — the channel and the manager are the same two objects for the life of
+            // the process, and what varies (the tag) arrives with each request.
+            notifications = AndroidNotifications(appContext),
             // Resolves its hub on every call for the same reason, and serialises its
             // commands per hub so a loop over twenty lights does not have half of
             // them dropped by the bridge without anything saying so. Which *vendor*

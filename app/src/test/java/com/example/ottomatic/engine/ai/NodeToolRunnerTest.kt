@@ -78,10 +78,14 @@ class NodeToolRunnerTest {
         val services = RecordingSystemServices()
         val runner = NodeToolRunner(
             NodeToolCatalog.build(listOf(node("action.notify", "text" to "the pinned one"))),
-            DefaultExecutionContext(systemServices = services, logger = { logs += it }),
+            DefaultExecutionContext(
+                systemServices = services,
+                notifications = services.notifier,
+                logger = { logs += it },
+            ),
         )
         runner.invoke(call("action_notify", "text" to "the model's one"))
-        assertEquals("the pinned one", services.notifications.single().second)
+        assertEquals("the pinned one", services.notifier.titlesAndTexts.single().second)
     }
 
     @Test
@@ -89,10 +93,14 @@ class NodeToolRunnerTest {
         val services = RecordingSystemServices()
         val runner = NodeToolRunner(
             NodeToolCatalog.build(listOf(node("action.notify"))),
-            DefaultExecutionContext(systemServices = services, logger = { logs += it }),
+            DefaultExecutionContext(
+                systemServices = services,
+                notifications = services.notifier,
+                logger = { logs += it },
+            ),
         )
         runner.invoke(call("action_notify", "text" to "from the model"))
-        assertEquals("from the model", services.notifications.single().second)
+        assertEquals("from the model", services.notifier.titlesAndTexts.single().second)
     }
 
     // ---- the audit trail --------------------------------------------------------

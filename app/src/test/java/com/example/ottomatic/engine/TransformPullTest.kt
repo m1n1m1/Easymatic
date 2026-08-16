@@ -33,7 +33,9 @@ class TransformPullTest {
     fun `a chain of transforms resolves with no exec edge to any of them`() = runBlocking {
         val services = RecordingSystemServices()
         val battery = CountingBatteryState()
-        val executor = WorkflowExecutor(DefaultExecutionContext(services, deviceState = battery) {})
+        val executor = WorkflowExecutor(
+            DefaultExecutionContext(services, deviceState = battery, notifications = services.notifier) {},
+        )
         // value.battery (Int) -> convert (Text) -> build text -> notify.text (String).
         // Only the trigger and the notification sit on the execution wire.
         val workflow = Workflow(
@@ -56,14 +58,16 @@ class TransformPullTest {
 
         executor.executeFrom(workflow, workflow.node(NodeId("t"))!!, TriggerOutput(emptyMap()))
 
-        assertEquals(listOf("T" to "Battery is 1%"), services.notifications)
+        assertEquals(listOf("T" to "Battery is 1%"), services.notifier.titlesAndTexts)
     }
 
     @Test
     fun `one value reaching a consumer through two transforms is read once`() = runBlocking {
         val services = RecordingSystemServices()
         val battery = CountingBatteryState()
-        val executor = WorkflowExecutor(DefaultExecutionContext(services, deviceState = battery) {})
+        val executor = WorkflowExecutor(
+            DefaultExecutionContext(services, deviceState = battery, notifications = services.notifier) {},
+        )
         // The counter returns a new number per read, so two reads would render
         // "1 and 2" — the assertion below is what proves the memo is shared across
         // the whole pull, not per transform.
@@ -91,13 +95,13 @@ class TransformPullTest {
         executor.executeFrom(workflow, workflow.node(NodeId("t"))!!, TriggerOutput(emptyMap()))
 
         assertEquals("both branches must share one read", 1, battery.reads)
-        assertEquals(listOf("T" to "1 and 1"), services.notifications)
+        assertEquals(listOf("T" to "1 and 1"), services.notifier.titlesAndTexts)
     }
 
     @Test
     fun `an unwired transform falls back to its own form values`() = runBlocking {
         val services = RecordingSystemServices()
-        val executor = WorkflowExecutor(DefaultExecutionContext(services) {})
+        val executor = WorkflowExecutor(DefaultExecutionContext(services, notifications = services.notifier) {})
         val workflow = Workflow(
             nodes = listOf(manualTrigger(), buildText("Hello {A}", a = "world"), notify()),
             execConnections = listOf(
@@ -110,7 +114,7 @@ class TransformPullTest {
 
         executor.executeFrom(workflow, workflow.node(NodeId("t"))!!, TriggerOutput(emptyMap()))
 
-        assertEquals(listOf("T" to "Hello world"), services.notifications)
+        assertEquals(listOf("T" to "Hello world"), services.notifier.titlesAndTexts)
     }
 
     private fun manualTrigger() =

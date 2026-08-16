@@ -564,6 +564,22 @@
             </intent-filter>
         </receiver>
 
+        <!-- Where a tap, a button press or a swipe on one of *our own* notifications
+             lands, so `action.notify` can carry on where it left off. Not exported,
+             and correctly so on RunTilePinnedReceiver's reasoning: it is only ever
+             reached through a PendingIntent this app created, which the system sends
+             with this app's identity however far it travelled through the shade.
+
+             Nothing to do with the listener below it, which reads *other* apps'
+             notifications and needs a system-granted binding to do so. -->
+        <receiver
+            android:name=".data.notification.NotificationResponseReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.ottomatic.action.NOTIFICATION_RESPONSE" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".data.trigger.NotificationListener"
             android:exported="false"

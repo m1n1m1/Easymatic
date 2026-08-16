@@ -18,7 +18,9 @@ import com.example.ottomatic.core.service.Mail
 import com.example.ottomatic.core.service.Messaging
 import com.example.ottomatic.core.service.NoMail
 import com.example.ottomatic.core.service.NoMessaging
+import com.example.ottomatic.core.service.NoNotifications
 import com.example.ottomatic.core.service.NoPrompts
+import com.example.ottomatic.core.service.Notifications
 import com.example.ottomatic.core.service.HomeAssistant
 import com.example.ottomatic.core.service.Mqtt
 import com.example.ottomatic.core.service.NoHomeAssistant
@@ -147,6 +149,24 @@ interface ExecutionContext {
      * reads nothing at all. Every member sends something on another app's behalf.
      */
     val messaging: Messaging get() = NoMessaging
+
+    /**
+     * Posts this app's own notifications, and waits for what is done with them —
+     * `action.notify` and `action.notify_cancel`. Defaults to [NoNotifications], so an
+     * engine-only test sees exactly what a phone with notifications switched off does:
+     * nothing posted, nothing to wait for.
+     *
+     * **The other half of [messaging], not a duplicate of it.** That one reads and
+     * presses notifications *other apps* posted, over notification access; this one
+     * posts Ottomatic's own, over no permission the user has to hunt for. They address
+     * different things too — a tag this app chose, against a
+     * [com.example.ottomatic.domain.model.ConversationRef] somebody else's app minted —
+     * so nothing either facade holds is meaningful to the other.
+     *
+     * An action's, never a value node's, for [prompts]' reason rather than [mail]'s:
+     * posting is cheap, but the member that matters waits for a human.
+     */
+    val notifications: Notifications get() = NoNotifications
 
     /**
      * Controls lights and other smart-home devices — the light nodes. Defaults to

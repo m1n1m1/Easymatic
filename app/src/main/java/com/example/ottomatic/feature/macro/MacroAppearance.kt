@@ -78,6 +78,12 @@ fun MacroIcon.drawableRes(): Int = when (this) {
  * widget it is the wallpaper accent, resolved at render time from a
  * `ColorProvider`, and inside the app it is whatever [inAppColor] decides. A
  * resource id here would be a third answer that agrees with neither.
+ *
+ * `MacroAccent.argb` is a fourth, and the one that is *not* a surface this app draws:
+ * a notification is painted by the system, so there is no configuration to resolve a
+ * day/night qualifier against and it carries the night values as a plain number. Keep
+ * the three tables in step by value; they cannot be one table, because `data/` may not
+ * import `feature/` and `core/` may not import `domain/`.
  */
 @ColorRes
 fun MacroAccent.colorRes(): Int? = when (this) {

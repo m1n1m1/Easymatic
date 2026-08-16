@@ -65,6 +65,7 @@ class WhileLoopTest {
     private val context = DefaultExecutionContext(
         systemServices = services,
         variables = variables,
+        notifications = services.notifier,
         logger = { logs += it.message },
     )
 
@@ -172,9 +173,9 @@ class WhileLoopTest {
         assertTrue(logs.toString(), logs.none { it.contains("problem") })
     }
 
-    private fun bodyTexts() = services.notifications.filter { it.first == "body" }.map { it.second }
+    private fun bodyTexts() = services.notifier.titlesAndTexts.filter { it.first == "body" }.map { it.second }
 
-    private fun completedCount() = services.notifications.count { it.first == "done" }
+    private fun completedCount() = services.notifier.titlesAndTexts.count { it.first == "done" }
 
     @Test
     fun `it repeats while the condition holds and stops once the body changes it`() = runBlocking {

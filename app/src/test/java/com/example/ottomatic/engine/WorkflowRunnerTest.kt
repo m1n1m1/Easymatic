@@ -38,7 +38,7 @@ class WorkflowRunnerTest {
     fun `a trigger that throws while arming does not stop the others arming`() = runBlocking {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
-        val context = DefaultExecutionContext(services) { logs += it.message }
+        val context = DefaultExecutionContext(services, notifications = services.notifier) { logs += it.message }
         // BootTrigger reads busEvents() eagerly, inside activate — so a host that
         // refuses lands in the arming path, not in the collector.
         val host = FakeTriggerHost { error("no bus here") }
@@ -49,7 +49,7 @@ class WorkflowRunnerTest {
         repeat(YIELDS) { yield() }
         job.cancelAndJoin()
 
-        assertEquals(listOf("ran"), services.notifications.map { it.second })
+        assertEquals(listOf("ran"), services.notifier.titlesAndTexts.map { it.second })
         assertTrue(logs.toString(), logs.any { it.contains("Could not arm 'Boot'") })
     }
 
@@ -57,7 +57,7 @@ class WorkflowRunnerTest {
     fun `a trigger source that dies leaves its siblings collecting`() = runBlocking {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
-        val context = DefaultExecutionContext(services) { logs += it.message }
+        val context = DefaultExecutionContext(services, notifications = services.notifier) { logs += it.message }
         // Arms fine, then the flow fails on collection.
         val host = FakeTriggerHost { flow { error("the bus went away") } }
 
@@ -69,14 +69,14 @@ class WorkflowRunnerTest {
 
         // Without the per-flow catch this is empty: the boot collector's failure
         // cancelled the parent, and with it the manual trigger's subscription.
-        assertEquals(listOf("ran"), services.notifications.map { it.second })
+        assertEquals(listOf("ran"), services.notifier.titlesAndTexts.map { it.second })
         assertTrue(logs.toString(), logs.any { it.contains("'Boot' stopped listening") })
     }
 
     @Test
     fun `cancelling the returned job tears every trigger down`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val host = FakeTriggerHost { flow {} }
 
         val job = WorkflowRunner(host, context).run(this, twoTriggerWorkflow("stop"))
@@ -87,7 +87,7 @@ class WorkflowRunnerTest {
 
         // The supervisorScope must not have made the job outlive its children, or
         // MacroEngineService's cancel-then-join would no longer disarm anything.
-        assertTrue(services.notifications.isEmpty())
+        assertTrue(services.notifier.titlesAndTexts.isEmpty())
     }
 
     /**

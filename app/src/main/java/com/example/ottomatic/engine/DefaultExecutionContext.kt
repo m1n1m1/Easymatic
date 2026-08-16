@@ -19,6 +19,8 @@ import com.example.ottomatic.core.service.Mail
 import com.example.ottomatic.core.service.Messaging
 import com.example.ottomatic.core.service.NoMail
 import com.example.ottomatic.core.service.NoMessaging
+import com.example.ottomatic.core.service.NoNotifications
+import com.example.ottomatic.core.service.Notifications
 import com.example.ottomatic.core.service.NoPrompts
 import com.example.ottomatic.core.service.HomeAssistant
 import com.example.ottomatic.core.service.Mqtt
@@ -62,6 +64,7 @@ class DefaultExecutionContext(
     override val waits: Waits = DelayWaits,
     override val mail: Mail = NoMail,
     override val messaging: Messaging = NoMessaging,
+    override val notifications: Notifications = NoNotifications,
     override val smartHome: SmartHome = NoSmartHome,
     override val homeAssistant: HomeAssistant = NoHomeAssistant,
     override val mqtt: Mqtt = NoMqtt,

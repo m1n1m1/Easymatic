@@ -28,7 +28,7 @@ class GeofenceTriggerExecutorTest {
     @Test
     fun `geofence event field is wired into downstream notify text via break struct`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -61,14 +61,14 @@ class GeofenceTriggerExecutorTest {
             workflow.node(NodeId("n1"))!!,
             TriggerOutput(mapOf(PortName("event") to Item.of(event))),
         )
-        assertEquals(1, services.notifications.size)
-        assertEquals("enter", services.notifications.first().second)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
+        assertEquals("enter", services.notifier.titlesAndTexts.first().second)
     }
 
     @Test
     fun `geofence node with no downstream action runs without error`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -88,6 +88,6 @@ class GeofenceTriggerExecutorTest {
             workflow.node(NodeId("n1"))!!,
             TriggerOutput(mapOf(PortName("event") to Item.of(event))),
         )
-        assertTrue(services.notifications.isEmpty())
+        assertTrue(services.notifier.titlesAndTexts.isEmpty())
     }
 }

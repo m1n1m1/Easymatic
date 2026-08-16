@@ -49,6 +49,7 @@ import com.example.ottomatic.engine.action.MailUpdateAction
 import com.example.ottomatic.engine.action.NotificationActionAction
 import com.example.ottomatic.engine.action.MqttPublishAction
 import com.example.ottomatic.engine.action.NotifyAction
+import com.example.ottomatic.engine.action.NotifyCancelAction
 import com.example.ottomatic.engine.action.ReplyMessageAction
 import com.example.ottomatic.engine.action.SendMailAction
 import com.example.ottomatic.engine.action.SendMessageAction
@@ -152,7 +153,10 @@ object ActionRegistry {
         ListAddAction(),
         ListClearAction(),
         LogAction(),
+        // Posting a notification and taking it down again are one pair, in the order
+        // they happen — the second is meaningless without a tag the first handed out.
         NotifyAction(),
+        NotifyCancelAction(),
         // The mail family, kept together the way the loops and the dialogs are:
         // send, read, and act on what was read.
         SendMailAction(),

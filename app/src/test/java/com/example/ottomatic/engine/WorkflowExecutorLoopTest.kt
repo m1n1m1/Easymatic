@@ -38,7 +38,7 @@ class WorkflowExecutorLoopTest {
 
     private val services = RecordingSystemServices()
     private val logs = mutableListOf<String>()
-    private val context = DefaultExecutionContext(services) { logs += it.message }
+    private val context = DefaultExecutionContext(services, notifications = services.notifier) { logs += it.message }
     private val executor = WorkflowExecutor(context)
 
     private val trigger = NodeId("trigger")
@@ -97,9 +97,9 @@ class WorkflowExecutorLoopTest {
         assertTrue(logs.toString(), logs.none { it.contains("problem") })
     }
 
-    private fun bodyTexts() = services.notifications.filter { it.first == "body" }.map { it.second }
+    private fun bodyTexts() = services.notifier.titlesAndTexts.filter { it.first == "body" }.map { it.second }
 
-    private fun completedCount() = services.notifications.count { it.first == "done" }
+    private fun completedCount() = services.notifier.titlesAndTexts.count { it.first == "done" }
 
     @Test
     fun `the body runs once per element, carrying that element`() = runBlocking {
@@ -113,7 +113,7 @@ class WorkflowExecutorLoopTest {
         assertEquals(1, completedCount())
         // Ordering matters as much as the count: "done" has to be the last thing
         // that happened, not something that raced the body.
-        assertEquals("done", services.notifications.last().first)
+        assertEquals("done", services.notifier.titlesAndTexts.last().first)
     }
 
     @Test

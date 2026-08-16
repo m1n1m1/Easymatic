@@ -85,6 +85,19 @@ object ExecPorts {
      */
     const val CONTINUE_LABEL = "Carry on now"
     const val RESUMED_LABEL = "When the time comes"
+
+    /**
+     * What a fork's deferred branch is called when what it waits for is a **person**
+     * rather than a moment — `action.notify`'s second branch.
+     *
+     * The same [RESUMED] port under a second name, which is [CONTINUE_LABEL]'s trick
+     * read from the other end: a port name is persisted in saved graphs and a label is
+     * not, so the two nodes can agree about the wire while disagreeing about the word.
+     * "When the time comes" is a promise a notification cannot make — nobody may ever
+     * touch it — and a branch that says it will fire on schedule when it may never fire
+     * at all is the one thing a fork's labels exist to prevent.
+     */
+    const val ANSWERED_LABEL = "When answered"
 }
 
 /** EXECUTION input port. */

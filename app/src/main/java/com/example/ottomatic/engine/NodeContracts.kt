@@ -44,6 +44,13 @@ enum class ExecutionRoute(val portName: PortName, val label: String) {
 
     /** A fork's deferred branch, pulsed when the awaited moment arrives. */
     RESUMED(ExecPorts.RESUMED, ExecPorts.RESUMED_LABEL),
+
+    /**
+     * A fork's deferred branch when what it waits for is a person — the **same port**
+     * as [RESUMED], differing only in what the card calls it, exactly as [CONTINUE]
+     * differs from [OUT]. See [ExecPorts.ANSWERED_LABEL].
+     */
+    ANSWERED(ExecPorts.RESUMED, ExecPorts.ANSWERED_LABEL),
 }
 
 /** The set of EXECUTION output ports a node exposes. */
@@ -91,6 +98,20 @@ enum class ExecOutputs(val routes: List<ExecutionRoute>) {
      * the port changes. See [ForkAction].
      */
     FORK(listOf(ExecutionRoute.CONTINUE, ExecutionRoute.RESUMED)),
+
+    /**
+     * [FORK]'s ports under [ExecutionRoute.ANSWERED]'s name for the second one: the
+     * node carries on at once and again **if somebody reacts** — `action.notify`.
+     *
+     * A second constant rather than a parameter on [FORK], because the two differ in
+     * exactly one thing a saved graph never sees: the word on the card. The port set
+     * is identical, so
+     * [com.example.ottomatic.engine.validation.GraphValidator]'s `isFork()` finds one
+     * of these by the `resumed` port it already looks for, and
+     * [com.example.ottomatic.engine.WorkflowExecutor] pulses it through the same
+     * route — neither needed a line changing for this to exist.
+     */
+    ANSWERABLE(listOf(ExecutionRoute.CONTINUE, ExecutionRoute.ANSWERED)),
     ;
 
     val ports: List<Port> get() = routes.map { execOut(it.portName, it.label) }
@@ -455,6 +476,21 @@ interface ConditionalLoopAction<C : Any> : ExecutableAction {
  */
 interface ForkAction<C : Any> : ExecutableAction {
     override val definition: ActionNodeDefinition<C, Unit>
+
+    /**
+     * Whether this node still does something worth doing when run **outside the
+     * executor** — which today means an AI tool call, where there is no graph at all.
+     *
+     * False by default, and that default is the honest one: the inherited [run] is a
+     * stub, so a fork offered as a tool would silently do nothing. But the reason is
+     * about the *stub*, not about being a fork, and one of these has a useful half
+     * that needs no graph — `action.notify` posts the notification, which is the whole
+     * job right up until somebody reacts to it. A node answering true here must
+     * override [run] to perform that half; the deferred branch is simply not on offer,
+     * because a tool call has nowhere to pulse it and a model has no way to wait
+     * twenty minutes for an answer.
+     */
+    val runsWithoutAFork: Boolean get() = false
 
     /**
      * What this node produces, and when — decided before either branch is pulsed.

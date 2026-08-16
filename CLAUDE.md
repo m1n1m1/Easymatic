@@ -207,7 +207,8 @@ These subsystems each have their own file so they are not resident in every sess
 - **Smart home** (the three light nodes, `SmartHome`, `SmartHomeRef`, `SmartHomeVendor`, the Hue transport and pairing) — `smart-home` skill
 - **Home Assistant** (`HaSocket`, `HaVendor`, `HaCatalog`, `trigger.ha_state`, `action.ha_service`, `value.ha_state`) — `home-assistant` skill
 - **MQTT** (`action.mqtt_publish`, `trigger.mqtt_message`, `value.mqtt_topic`, `MqttConnections`, `MqttTopics`) — `mqtt` skill
-- **Messengers** (`trigger.message`, `action.reply_message`, `action.send_message`, `ConversationRef`, `MessengerLink`) — `messengers` skill
+- **Notifications this app posts** (`action.notify`, `action.notify_cancel`, `Notifications`, `AndroidNotifications`, `NotificationResponses`, `ForegroundGrant`) — `notifications` skill
+- **Messengers**, i.e. notifications *other* apps post (`trigger.message`, `action.reply_message`, `action.send_message`, `ConversationRef`, `MessengerLink`) — `messengers` skill
 - **AI** (`action.ai_prompt`, `action.ai_describe`, `AiConnection`/`AiModelProfile`, `AiProtocol`, and the tool harness) — `ai-nodes` skill
 - **Calendar** (the three `action.calendar_*` nodes, the two triggers, the two value nodes, `EventTimes`, `CalendarPlan`) — `calendar` skill
 - **The run log** (`ExecutionContext.log`, `RunLogStore`, the editor console) — `run-log` skill

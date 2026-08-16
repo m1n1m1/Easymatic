@@ -32,7 +32,7 @@ class WorkflowExecutorLogTest {
 
     private val logs = mutableListOf<LogEntry>()
     private val services = RecordingSystemServices()
-    private val context = DefaultExecutionContext(services) { logs += it }
+    private val context = DefaultExecutionContext(services, notifications = services.notifier) { logs += it }
 
     @Test
     fun `a run opens with its trigger and every line shares one run id`() = runBlocking {
@@ -113,7 +113,7 @@ class WorkflowExecutorLogTest {
         assertEquals(LogLevel.ERROR, skipped.level)
         assertEquals("n1", skipped.source?.nodeId)
         // …and the node before the bad wire still ran.
-        assertEquals(1, services.notifications.size)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
     }
 
     @Test

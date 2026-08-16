@@ -747,3 +747,26 @@ Move to the bin	移入回收站
 Delete for good	彻底删除
 Latest picture	最新图片
 The most recent photo, screenshot or picture saved on this phone	此手机上最近保存的照片、屏幕截图或图片
+Amber	琥珀色
+Blue	蓝色
+Buttons — one per line	按钮——每行一个
+Disappear after (seconds)	消失时长（秒）
+Green	绿色
+Keep until dismissed	保留直到被清除
+Orange	橙色
+Pink	粉色
+Posted as	使用的标签
+Posts a notification on this device, optionally with buttons and a reply field	在此设备上显示一条通知，可附带按钮和回复框
+Progress (%, below 0 = busy)	进度（%，小于 0 表示不确定）
+Red	红色
+Remove Notification	移除通知
+Reply	回复
+Reply button	回复按钮
+Reply field	回复框
+Reply hint	回复框提示
+Show a progress bar	显示进度条
+Tag — Used for manual deletion	标签——用于手动移除
+Takes down a notification this app posted under a tag	移除本应用以某个标签显示的通知
+Teal	青色
+Violet	紫色
+When answered	有人响应时

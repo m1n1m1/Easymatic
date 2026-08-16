@@ -51,6 +51,9 @@ import com.example.ottomatic.domain.registry.DIALOG_INPUT_TYPE_ID
 import com.example.ottomatic.domain.registry.DIALOG_INPUT_TYPE_KEY
 import com.example.ottomatic.domain.registry.DIALOG_TIMEOUT_KEY
 import com.example.ottomatic.domain.registry.DIALOG_TYPE_IDS
+import com.example.ottomatic.domain.registry.NOTIFY_ANSWER_KEYS
+import com.example.ottomatic.domain.registry.NOTIFY_TYPE_ID
+import com.example.ottomatic.domain.registry.notifyIsAnswerable
 import com.example.ottomatic.domain.registry.JSON_READ_LIST_KEY
 import com.example.ottomatic.domain.registry.JSON_READ_TYPE_ID
 import com.example.ottomatic.domain.registry.JSON_READ_TYPE_KEY
@@ -1208,6 +1211,14 @@ private fun pruneRetypedEdges(workflow: Workflow, nodeId: NodeId, key: ConfigKey
         retypesDataPorts(key, typeId) ->
             workflow.copy(dataConnections = workflow.dataConnections.filter { it.stillValid(workflow, nodeId) })
         key == DIALOG_TIMEOUT_KEY && typeId in DIALOG_TYPE_IDS -> workflow.withoutStrandedTimeoutBranch(nodeId)
+        // `action.notify` loses a whole branch rather than one route when the last
+        // thing that could be reacted to is switched off, so both halves have to go:
+        // the exec wire here, and the three data wires that ride on it below.
+        // NOTIFY_ANSWER_KEYS and the rule behind it live beside `effectivePorts`, so
+        // the branch this prunes and the branch that stops being drawn cannot differ.
+        key in NOTIFY_ANSWER_KEYS && typeId == NOTIFY_TYPE_ID ->
+            workflow.withoutStrandedAnswerBranch(nodeId)
+                .let { it.copy(dataConnections = it.dataConnections.filter { edge -> edge.stillValid(it, nodeId) }) }
         else -> workflow
     }
 }
@@ -1267,6 +1278,24 @@ private fun Workflow.withoutStrandedTimeoutBranch(nodeId: NodeId): Workflow {
     return copy(
         execConnections = execConnections.filterNot {
             it.fromNodeId == nodeId && it.fromPort == ExecPorts.TIMED_OUT
+        },
+    )
+}
+
+/**
+ * Drops the wire leaving [nodeId]'s `resumed` port once `action.notify` has stopped
+ * offering anything to react to.
+ *
+ * [withoutStrandedTimeoutBranch]'s job for [withoutStrandedTimeoutBranch]'s reason,
+ * and the second exec edge any of this prunes. The difference is only in what makes
+ * the port go away: there it is one number, here it is three fields between them
+ * saying the notification can be answered at all.
+ */
+private fun Workflow.withoutStrandedAnswerBranch(nodeId: NodeId): Workflow {
+    if (notifyIsAnswerable(node(nodeId)?.config.orEmpty())) return this
+    return copy(
+        execConnections = execConnections.filterNot {
+            it.fromNodeId == nodeId && it.fromPort == ExecPorts.RESUMED
         },
     )
 }

@@ -1,7 +1,6 @@
 package com.example.ottomatic.data.service
 
 import android.app.ActivityManager
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.bluetooth.BluetoothManager
 import android.content.ClipData
@@ -27,7 +26,6 @@ import android.provider.Settings
 import android.telephony.PhoneNumberUtils
 import android.telephony.SmsManager
 import android.telephony.TelephonyManager
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.os.ConfigurationCompat
@@ -73,6 +71,7 @@ import kotlin.coroutines.resume
 @Suppress("TooManyFunctions") // Implements every SystemServices facade method.
 class AndroidSystemServices(private val context: Context) : SystemServices {
 
+    /** Do-Not-Disturb only. Posting moved to [com.example.ottomatic.data.notification.AndroidNotifications]. */
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -89,31 +88,6 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
 
     /** Carries the play-time cap of a sound nobody is waiting for. */
     private val mainHandler = Handler(Looper.getMainLooper())
-
-    init {
-        ensureChannel()
-    }
-
-    private fun ensureChannel() {
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            "Ottomatic",
-            NotificationManager.IMPORTANCE_DEFAULT,
-        )
-        notificationManager.createNotificationChannel(channel)
-    }
-
-    override fun notify(title: String, text: String): Boolean = runCatching {
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
-            .setAutoCancel(true)
-            .build()
-        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
-        true
-    }.getOrDefault(false)
 
     override fun setWifi(enabled: Boolean): Boolean? = runCatching {
         @Suppress("DEPRECATION")
@@ -604,7 +578,18 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
      * why the message the node writes says Android *would not let* it rather than
      * claiming certainty.
      */
-    private fun canStartActivity(): Boolean = Settings.canDrawOverlays(context) || isVisibleToUser()
+    /**
+     * Whether starting an Activity is worth attempting at all.
+     *
+     * [ForegroundGrant] is the third answer and the newest: the user having just
+     * touched one of this app's notifications is the platform's own reason for
+     * allowing a background start, and without it every `Tap → Launch App` wired to
+     * `action.notify` would be refused *before* the platform got the chance to accept
+     * it. It is a stamp rather than a question because there is nothing to ask — see
+     * [ForegroundGrant].
+     */
+    private fun canStartActivity(): Boolean =
+        Settings.canDrawOverlays(context) || isVisibleToUser() || ForegroundGrant.active()
 
     private fun isVisibleToUser(): Boolean {
         val state = ActivityManager.RunningAppProcessInfo()
@@ -654,7 +639,6 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
     }
 
     companion object {
-        private const val CHANNEL_ID = "ottomatic_default"
         private const val TIMEOUT_MS = 15_000
         private const val MIN_BRIGHTNESS = 0
         private const val MAX_BRIGHTNESS = 255

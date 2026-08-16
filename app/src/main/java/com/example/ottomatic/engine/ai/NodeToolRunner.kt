@@ -172,9 +172,14 @@ class NodeToolRunner(
  * - **Triggers** are not run; they fire.
  * - **Transforms** are pure functions of their *data inputs*, which arrive on wires a
  *   tool call has none of. One would receive nothing and answer accordingly.
- * - **The two loops and the fork** are driven by the executor itself. Their inherited
- *   `run` is a stub returning `completed` with no data, so offering one would produce
- *   a tool that silently did nothing at all — the worst failure available here.
+ * - **The two loops** are driven by the executor itself. Their inherited `run` is a
+ *   stub returning `completed` with no data, so offering one would produce a tool
+ *   that silently did nothing at all — the worst failure available here.
+ * - **A fork**, for the same reason and with one way out of it: the exclusion is
+ *   about the stub rather than about being a fork, so one that overrides `run` and
+ *   says so through [ForkAction.runsWithoutAFork] is offered. `action.notify` is the
+ *   case — posting the notification is the whole job until somebody reacts, and
+ *   reacting is not something a tool call could carry back anyway.
  * - **`action.if` and `action.break`** exist only relative to a placed graph: the
  *   first is exec routing with nothing to return, and the second's output ports are
  *   retyped from whatever is wired above it. A third node of that kind would need
@@ -183,9 +188,10 @@ class NodeToolRunner(
 fun canRunAsTool(typeId: NodeTypeId, kind: NodeKind): Boolean = when (kind) {
     NodeKind.TRIGGER, NodeKind.TRANSFORM -> false
     NodeKind.VALUE -> true
-    NodeKind.ACTION -> when (ActionRegistry.byId(typeId)) {
+    NodeKind.ACTION -> when (val action = ActionRegistry.byId(typeId)) {
         null -> false
-        is LoopAction<*>, is ConditionalLoopAction<*>, is ForkAction<*> -> false
+        is LoopAction<*>, is ConditionalLoopAction<*> -> false
+        is ForkAction<*> -> action.runsWithoutAFork && typeId.value !in GRAPH_SHAPED_ACTIONS
         else -> typeId.value !in GRAPH_SHAPED_ACTIONS
     }
 }

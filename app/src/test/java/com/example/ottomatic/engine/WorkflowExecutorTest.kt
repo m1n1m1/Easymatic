@@ -31,7 +31,7 @@ class WorkflowExecutorTest {
     @Test
     fun `manual trigger to notify action posts a notification`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -46,15 +46,15 @@ class WorkflowExecutorTest {
             ),
         )
         executor.executeFrom(workflow, workflow.node(NodeId("n1"))!!, TriggerOutput(emptyMap()))
-        assertEquals(1, services.notifications.size)
-        assertEquals("T", services.notifications.first().first)
-        assertEquals("Hello", services.notifications.first().second)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
+        assertEquals("T", services.notifier.titlesAndTexts.first().first)
+        assertEquals("Hello", services.notifier.titlesAndTexts.first().second)
     }
 
     @Test
     fun `sms trigger data is wired into downstream notify text via break struct`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -84,14 +84,14 @@ class WorkflowExecutorTest {
                 mapOf(PortName("sms") to com.example.ottomatic.domain.model.schema.Item.of(sms)),
             ),
         )
-        assertEquals(1, services.notifications.size)
-        assertEquals("hello", services.notifications.first().second)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
+        assertEquals("hello", services.notifier.titlesAndTexts.first().second)
     }
 
     @Test
     fun `the comparison true branch routes execution to the connected action only`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -132,14 +132,14 @@ class WorkflowExecutorTest {
             workflow.node(NodeId("n1"))!!,
             TriggerOutput(mapOf(PortName("state") to Item.of(battery))),
         )
-        assertEquals(1, services.notifications.size)
-        assertEquals("yes", services.notifications.first().second)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
+        assertEquals("yes", services.notifier.titlesAndTexts.first().second)
     }
 
     @Test
     fun `the comparison false branch fires when comparison does not match`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -180,8 +180,8 @@ class WorkflowExecutorTest {
             workflow.node(NodeId("n1"))!!,
             TriggerOutput(mapOf(PortName("state") to Item.of(battery))),
         )
-        assertEquals(1, services.notifications.size)
-        assertEquals("no", services.notifications.first().second)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
+        assertEquals("no", services.notifier.titlesAndTexts.first().second)
     }
 
     /**
@@ -197,7 +197,7 @@ class WorkflowExecutorTest {
     fun `a cycle's closing edge is quarantined and the rest still runs`() = runBlocking {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
-        val context = DefaultExecutionContext(services) { logs += it.message }
+        val context = DefaultExecutionContext(services, notifications = services.notifier) { logs += it.message }
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -214,7 +214,7 @@ class WorkflowExecutorTest {
             ),
         )
         executor.executeFrom(workflow, workflow.node(NodeId("n1"))!!, TriggerOutput(emptyMap()))
-        assertEquals(1, services.notifications.size)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
         assertTrue(logs.toString(), logs.any { it.contains("problem(s) in this workflow") })
     }
 
@@ -229,7 +229,7 @@ class WorkflowExecutorTest {
     @Test
     fun `a cycle past the reporting cap stops instead of recursing`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val loops = 10
         val nodes = mutableListOf(
@@ -250,8 +250,8 @@ class WorkflowExecutorTest {
         executor.executeFrom(workflow, workflow.node(NodeId("t"))!!, TriggerOutput(emptyMap()))
 
         // Every node ran, and each of them exactly once.
-        assertEquals(loops * 2, services.notifications.size)
-        assertEquals(loops * 2, services.notifications.map { it.second }.distinct().size)
+        assertEquals(loops * 2, services.notifier.titlesAndTexts.size)
+        assertEquals(loops * 2, services.notifier.titlesAndTexts.map { it.second }.distinct().size)
     }
 
     /**
@@ -262,7 +262,7 @@ class WorkflowExecutorTest {
     @Test
     fun `a diamond runs its join node twice`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -288,7 +288,7 @@ class WorkflowExecutorTest {
             ),
         )
         executor.executeFrom(workflow, workflow.node(NodeId("t"))!!, TriggerOutput(emptyMap()))
-        assertEquals(2, services.notifications.count { it.second == "join" })
+        assertEquals(2, services.notifier.titlesAndTexts.count { it.second == "join" })
     }
 
     /**
@@ -298,7 +298,7 @@ class WorkflowExecutorTest {
     @Test
     fun `a problem under one trigger does not stop a branch under another`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -317,7 +317,7 @@ class WorkflowExecutorTest {
             ),
         )
         executor.executeFrom(workflow, workflow.node(NodeId("good"))!!, TriggerOutput(emptyMap()))
-        assertEquals(listOf("fine"), services.notifications.map { it.second })
+        assertEquals(listOf("fine"), services.notifier.titlesAndTexts.map { it.second })
     }
 
     /**
@@ -328,7 +328,7 @@ class WorkflowExecutorTest {
     @Test
     fun `a broken data wire blocks its consumer and leaves the sibling branch alone`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -357,7 +357,7 @@ class WorkflowExecutorTest {
             workflow.node(NodeId("t"))!!,
             TriggerOutput(mapOf(PortName("sms") to Item.of(sms))),
         )
-        assertEquals(listOf("ok"), services.notifications.map { it.second })
+        assertEquals(listOf("ok"), services.notifier.titlesAndTexts.map { it.second })
     }
 
     /**
@@ -372,7 +372,7 @@ class WorkflowExecutorTest {
     fun `an unrelated broken node is announced without stopping the run`() = runBlocking {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
-        val context = DefaultExecutionContext(services) { logs += it.message }
+        val context = DefaultExecutionContext(services, notifications = services.notifier) { logs += it.message }
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -389,7 +389,7 @@ class WorkflowExecutorTest {
         )
         // The unknown-type node is blocked; the trigger is not, so the run proceeds.
         executor.executeFrom(workflow, workflow.node(NodeId("t"))!!, TriggerOutput(emptyMap()))
-        assertEquals(1, services.notifications.size)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
         assertTrue(logs.toString(), logs.any { it.contains("1 problem(s) in this workflow") })
     }
 
@@ -397,7 +397,7 @@ class WorkflowExecutorTest {
     fun `log action writes wired message and pulses out`() = runBlocking {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
-        val context = DefaultExecutionContext(services) { logs += it.message }
+        val context = DefaultExecutionContext(services, notifications = services.notifier) { logs += it.message }
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -428,14 +428,14 @@ class WorkflowExecutorTest {
             ),
         )
         assertTrue(logs.contains("hi"))
-        assertEquals(1, services.notifications.size)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
     }
 
     @Test
     fun `stop action halts the execution chain so downstream actions do not run`() = runBlocking {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
-        val context = DefaultExecutionContext(services) { logs += it.message }
+        val context = DefaultExecutionContext(services, notifications = services.notifier) { logs += it.message }
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -455,7 +455,7 @@ class WorkflowExecutorTest {
             ),
         )
         executor.executeFrom(workflow, workflow.node(NodeId("n1"))!!, TriggerOutput(emptyMap()))
-        assertTrue(services.notifications.isEmpty())
+        assertTrue(services.notifier.titlesAndTexts.isEmpty())
         assertTrue(logs.any { it.contains("Stop: done") })
         assertTrue(logs.any { it.contains("halted") })
     }
@@ -464,7 +464,7 @@ class WorkflowExecutorTest {
     fun `enable_macro action dispatches via macro control and reports state`() = runBlocking {
         val services = RecordingSystemServices()
         val macroControl = RecordingMacroControl()
-        val context = DefaultExecutionContext(services, macroControl) {}
+        val context = DefaultExecutionContext(services, macroControl, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -486,7 +486,7 @@ class WorkflowExecutorTest {
     @Test
     fun `send_sms action reads to and body from upstream data via break struct`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -520,7 +520,7 @@ class WorkflowExecutorTest {
     @Test
     fun `bluetooth action toggles via system services`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -539,7 +539,7 @@ class WorkflowExecutorTest {
     @Test
     fun `clipboard clear mode clears instead of setting`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(

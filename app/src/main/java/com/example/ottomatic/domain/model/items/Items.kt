@@ -1002,6 +1002,21 @@ data class NotificationActed(
 )
 
 /**
+ * Result of `action.notify_cancel` on its `state` data port.
+ *
+ * [NotificationActed]'s shape without the `op`, since there is only one thing this
+ * node does. [changed] is false both when the tag named nothing and when nothing was
+ * named at all — the two are told apart by [error], not by a second branch, because
+ * "the notification was already gone" is the ordinary case rather than a failure.
+ */
+@Serializable
+data class NotificationRemoved(
+    val tag: String,
+    val changed: Boolean,
+    val error: String = "",
+)
+
+/**
  * Result of `action.send_message` on its `state` data port.
  *
  * [opened] rather than "sent", and the word is the whole point of the node: no

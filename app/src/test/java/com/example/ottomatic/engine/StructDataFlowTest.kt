@@ -40,7 +40,7 @@ class StructDataFlowTest {
     @Test
     fun `break struct splits sms into fields wired into downstream notify text`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -66,14 +66,14 @@ class StructDataFlowTest {
             workflow.node(NodeId("n1"))!!,
             TriggerOutput(mapOf(PortName("sms") to Item.of(sms))),
         )
-        assertEquals(1, services.notifications.size)
-        assertEquals("hello", services.notifications.first().second)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
+        assertEquals("hello", services.notifier.titlesAndTexts.first().second)
     }
 
     @Test
     fun `wired data input overrides the node static config for that field`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -99,15 +99,15 @@ class StructDataFlowTest {
             workflow.node(NodeId("n1"))!!,
             TriggerOutput(mapOf(PortName("sms") to Item.of(sms))),
         )
-        assertEquals(1, services.notifications.size)
-        assertEquals("Form Title", services.notifications.first().first)
-        assertEquals("from data", services.notifications.first().second)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
+        assertEquals("Form Title", services.notifier.titlesAndTexts.first().first)
+        assertEquals("from data", services.notifier.titlesAndTexts.first().second)
     }
 
     @Test
     fun `data input port with no incoming edge falls back to the static form value`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -124,14 +124,14 @@ class StructDataFlowTest {
             dataConnections = emptyList(),
         )
         executor.executeFrom(workflow, workflow.node(NodeId("n1"))!!, TriggerOutput(emptyMap()))
-        assertEquals(1, services.notifications.size)
-        assertEquals("fallback", services.notifications.first().second)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
+        assertEquals("fallback", services.notifier.titlesAndTexts.first().second)
     }
 
     @Test
     fun `the comparison compares a typed field of the connected struct and routes the true branch`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -169,8 +169,8 @@ class StructDataFlowTest {
             workflow.node(NodeId("n1"))!!,
             TriggerOutput(mapOf(PortName("sms") to Item.of(sms))),
         )
-        assertEquals(1, services.notifications.size)
-        assertEquals("matched", services.notifications.first().second)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
+        assertEquals("matched", services.notifier.titlesAndTexts.first().second)
     }
 
     /**
@@ -187,6 +187,7 @@ class StructDataFlowTest {
         val context = DefaultExecutionContext(
             systemServices = services,
             deviceState = BatteryAt(80),
+            notifications = services.notifier,
         ) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
@@ -219,14 +220,14 @@ class StructDataFlowTest {
         )
         executor.executeFrom(workflow, workflow.node(NodeId("n1"))!!, TriggerOutput(emptyMap()))
         // battery 80 > 50 -> true branch.
-        assertEquals(1, services.notifications.size)
-        assertEquals("yes", services.notifications.first().second)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
+        assertEquals("yes", services.notifier.titlesAndTexts.first().second)
     }
 
     @Test
     fun `the comparison with manual string type compares a broken-out struct field`() = runBlocking {
         val services = RecordingSystemServices()
-        val context = DefaultExecutionContext(services) {}
+        val context = DefaultExecutionContext(services, notifications = services.notifier) {}
         val executor = WorkflowExecutor(context)
         val workflow = Workflow(
             nodes = listOf(
@@ -266,8 +267,8 @@ class StructDataFlowTest {
             workflow.node(NodeId("n1"))!!,
             TriggerOutput(mapOf(PortName("sms") to Item.of(sms))),
         )
-        assertEquals(1, services.notifications.size)
-        assertEquals("matched", services.notifications.first().second)
+        assertEquals(1, services.notifier.titlesAndTexts.size)
+        assertEquals("matched", services.notifier.titlesAndTexts.first().second)
     }
 }
 

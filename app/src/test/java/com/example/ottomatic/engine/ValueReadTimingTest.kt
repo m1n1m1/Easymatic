@@ -43,7 +43,9 @@ class ValueReadTimingTest {
     fun `two consumers of one value each read it fresh`() = runBlocking {
         val services = RecordingSystemServices()
         val battery = CountingBattery()
-        val executor = WorkflowExecutor(DefaultExecutionContext(services, deviceState = battery) {})
+        val executor = WorkflowExecutor(
+            DefaultExecutionContext(services, deviceState = battery, notifications = services.notifier) {},
+        )
         // Each comparison expects a *different* number, so this only reaches the
         // notification if the second consumer re-read rather than reusing read #1.
         val workflow = Workflow(
@@ -68,14 +70,16 @@ class ValueReadTimingTest {
         executor.executeFrom(workflow, workflow.node(NodeId("t"))!!, TriggerOutput(emptyMap()))
 
         assertEquals("each consumer must read for itself", 2, battery.reads)
-        assertEquals("both comparisons must see their own fresh read", 1, services.notifications.size)
+        assertEquals("both comparisons must see their own fresh read", 1, services.notifier.titlesAndTexts.size)
     }
 
     @Test
     fun `one consumer reading a value on two ports reads it once`() = runBlocking {
         val services = RecordingSystemServices()
         val battery = CountingBattery()
-        val executor = WorkflowExecutor(DefaultExecutionContext(services, deviceState = battery) {})
+        val executor = WorkflowExecutor(
+            DefaultExecutionContext(services, deviceState = battery, notifications = services.notifier) {},
+        )
         // Both `source` and `value` of one comparison come from the same value node.
         // A per-pull read would compare read #1 against read #2 and never be equal;
         // a per-consumer read compares a number with itself.
@@ -99,7 +103,7 @@ class ValueReadTimingTest {
         executor.executeFrom(workflow, workflow.node(NodeId("t"))!!, TriggerOutput(emptyMap()))
 
         assertEquals("both ports of one node must share a single read", 1, battery.reads)
-        assertEquals("a value must equal itself", 1, services.notifications.size)
+        assertEquals("a value must equal itself", 1, services.notifier.titlesAndTexts.size)
     }
 
     /** A comparison whose `source` is wired and whose literal is [expected]. */

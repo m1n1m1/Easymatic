@@ -747,3 +747,26 @@ Move to the bin	ゴミ箱に移動
 Delete for good	完全に削除
 Latest picture	最新の画像
 The most recent photo, screenshot or picture saved on this phone	この端末に最後に保存された写真・スクリーンショット・画像
+Amber	アンバー
+Blue	青
+Buttons — one per line	ボタン — 1 行に 1 つ
+Disappear after (seconds)	消えるまでの時間（秒）
+Green	緑
+Keep until dismissed	消されるまで残す
+Orange	オレンジ
+Pink	ピンク
+Posted as	使われたタグ
+Posts a notification on this device, optionally with buttons and a reply field	この端末に通知を表示します。ボタンや返信欄を付けることもできます
+Progress (%, below 0 = busy)	進捗（%、0 未満は不確定）
+Red	赤
+Remove Notification	通知を削除
+Reply	返信
+Reply button	返信ボタン
+Reply field	返信欄
+Reply hint	返信欄のヒント
+Show a progress bar	進捗バーを表示
+Tag — Used for manual deletion	タグ — 手動で削除するときに使います
+Takes down a notification this app posted under a tag	このアプリがタグを付けて表示した通知を削除します
+Teal	ティール
+Violet	紫
+When answered	応答があったら
