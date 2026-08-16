@@ -158,13 +158,23 @@ config_show_suggestions	Afficher les suggestions
 config_socket_feed	Alimenter %1$s depuis les données en amont
 config_socket_use_typed_connected	Utiliser la valeur saisie pour %1$s (relié à %2$s)
 config_socket_use_typed_free	Utiliser la valeur saisie pour %1$s (rien de relié)
+console_copy_message	Copier le message
+console_entry_title	Entrée du journal
 console_filter_all	Tout
 console_filter_info	Info
 console_filter_problems	Problèmes
+console_level_debug	Débogage
+console_level_error	Erreur
+console_level_info	Info
+console_level_warn	Avertissement
 console_nothing_at_level	Rien à ce niveau
 console_nothing_logged	Rien n'a encore été journalisé
+console_run_number	Exécution %1$d
 console_run_the_workflow	Exécute le flux. Les erreurs, les messages action.log et le console.log d'un script apparaissent ici.
+console_show_node	Afficher le nœud
+console_today	Aujourd'hui
 console_widen_filter	Élargis le filtre pour voir le reste de l'historique de ce flux.
+console_yesterday	Hier
 contacts_anyone	N'importe qui
 contacts_choose_a_contact	Choisir un contact
 contacts_clear_the_contact_and_type	Retirer le contact et saisir un numéro à la place

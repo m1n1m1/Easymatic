@@ -27,28 +27,34 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.annotation.StringRes
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.service.LogEntry
 import com.example.ottomatic.core.service.LogLevel
 import kotlinx.coroutines.flow.StateFlow
-import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * What one workflow's runs had to say.
@@ -70,7 +76,10 @@ import java.time.format.DateTimeFormatter
  *
  * [onSelectNode] is a parameter rather than baked in because picking a line is a
  * request to go and look at the node it names — so the host both selects it and
- * puts the canvas back.
+ * puts the canvas back. That request is made from [LogEntryOverlay] rather than
+ * from the row: a tap on a row now opens the line, which is the thing every row
+ * can do, and "go to the node" becomes a labelled button instead of an invisible
+ * property of some rows and not others.
  */
 @Composable
 fun ConsoleBody(
@@ -83,14 +92,27 @@ fun ConsoleBody(
     val all by entries.collectAsState()
     val level by minLevel.collectAsState()
     val visible = remember(all, level) { all.filter { it.level >= level } }
+    var opened by remember { mutableStateOf<LogEntry?>(null) }
 
     Column(modifier = modifier.fillMaxSize()) {
         LevelFilter(selected = level, onSelect = onMinLevelChange)
         if (visible.isEmpty()) {
             EmptyConsole(filtered = all.isNotEmpty())
         } else {
-            LogList(entries = visible, onSelectNode = onSelectNode)
+            LogList(entries = visible, onOpen = { opened = it })
         }
+    }
+
+    // A Dialog, so it takes no room in the column it is declared in.
+    opened?.let { entry ->
+        LogEntryOverlay(
+            entry = entry,
+            onClose = { opened = null },
+            onShowNode = { nodeId ->
+                opened = null
+                onSelectNode(nodeId)
+            },
+        )
     }
 }
 
@@ -154,9 +176,19 @@ private fun LevelFilter(selected: LogLevel, onSelect: (LogLevel) -> Unit) {
  * gets that second half wrong: it yanks the list away mid-read, and correcting
  * for it means tracking "is the user at the bottom", which is exactly the state
  * `reverseLayout` already encodes.
+ *
+ * [consoleRows] does the reversing now, because a day separator has to be placed
+ * relative to the *rendered* order rather than the logged one.
  */
 @Composable
-private fun LogList(entries: List<LogEntry>, onSelectNode: (NodeId) -> Unit) {
+private fun LogList(entries: List<LogEntry>, onOpen: (LogEntry) -> Unit) {
+    val zone = remember { ZoneId.systemDefault() }
+    val locale = LocalConfiguration.current.locales[0]
+    val rows = remember(entries, zone) { consoleRows(entries, zone) }
+    // One reading of "today" for the whole list, so two separators cannot disagree
+    // about it if the list happens to recompose across midnight.
+    val today = remember(rows) { LocalDate.now(zone) }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -164,22 +196,33 @@ private fun LogList(entries: List<LogEntry>, onSelectNode: (NodeId) -> Unit) {
         reverseLayout = true,
         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
     ) {
-        items(entries.asReversed(), key = { it.id }) { entry ->
-            LogRow(entry, onSelectNode)
+        items(rows, key = ConsoleRow::key) { row ->
+            when (row) {
+                is ConsoleRow.Line -> LogRow(row.entry, zone, locale, onOpen)
+                is ConsoleRow.Day -> DaySeparator(row.date, today)
+            }
         }
     }
 }
 
+/**
+ * A row is a summary, not the line itself.
+ *
+ * It is clamped to [ROW_MAX_LINES] because the store's bound is two thousand
+ * characters, and one `action.log` of an HTTP body used to push every other line
+ * off the screen — a log you have to scroll past to reach the next entry has
+ * stopped being a list. The ellipsis is the affordance: tapping opens
+ * [LogEntryOverlay], where the whole thing is readable and selectable.
+ *
+ * [zone] and [locale] come down from the list rather than being read here, so a
+ * row's date and the separator above it cannot be resolved against different ones.
+ */
 @Composable
-private fun LogRow(entry: LogEntry, onSelectNode: (NodeId) -> Unit) {
-    val nodeId = entry.source?.nodeId
+private fun LogRow(entry: LogEntry, zone: ZoneId, locale: Locale, onOpen: (LogEntry) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .then(
-                if (nodeId == null) Modifier
-                else Modifier.clickable { onSelectNode(NodeId(nodeId)) },
-            )
+            .clickable { onOpen(entry) }
             .padding(vertical = 5.dp),
     ) {
         Box(
@@ -193,7 +236,7 @@ private fun LogRow(entry: LogEntry, onSelectNode: (NodeId) -> Unit) {
         Column {
             Row {
                 Text(
-                    text = formatLogTime(entry.atMs),
+                    text = formatLogRowStamp(entry.atMs, zone, locale),
                     color = EditorColors.textSecondary,
                     fontSize = 10.sp,
                     fontFamily = FontFamily.Monospace,
@@ -205,6 +248,11 @@ private fun LogRow(entry: LogEntry, onSelectNode: (NodeId) -> Unit) {
                         color = EditorColors.textSecondary,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Medium,
+                        // The stamp is fixed-width and comes first, so the name is
+                        // what has to give on a narrow screen — clipped rather than
+                        // wrapped, which would put a second line above every message.
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
@@ -216,9 +264,45 @@ private fun LogRow(entry: LogEntry, onSelectNode: (NodeId) -> Unit) {
                 // timestamps line up, and most of what lands here is JSON or
                 // script output that is unreadable proportionally spaced.
                 fontFamily = FontFamily.Monospace,
+                maxLines = ROW_MAX_LINES,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
+}
+
+/**
+ * Which day the lines above it happened on.
+ *
+ * Today and yesterday are words rather than dates because that is how the two days
+ * anybody is actually debugging get referred to — and a date the reader has to
+ * compare against the calendar to place is a date they have to think about.
+ * Everything older is a real date, written the way the current locale writes one.
+ */
+@Composable
+private fun DaySeparator(date: LocalDate, today: LocalDate) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 14.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = dayLabel(date, today),
+            color = EditorColors.textSecondary,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Spacer(Modifier.width(10.dp))
+        HorizontalDivider(modifier = Modifier.weight(1f), color = EditorColors.chromeBorder)
+    }
+}
+
+@Composable
+private fun dayLabel(date: LocalDate, today: LocalDate): String = when (date) {
+    today -> stringResource(R.string.console_today)
+    today.minusDays(1) -> stringResource(R.string.console_yesterday)
+    else -> formatLogDate(date, LocalConfiguration.current.locales[0])
 }
 
 @Composable
@@ -248,11 +332,23 @@ private fun EmptyConsole(filtered: Boolean) {
     }
 }
 
-private fun levelColor(level: LogLevel): Color = when (level) {
+internal fun levelColor(level: LogLevel): Color = when (level) {
     LogLevel.DEBUG -> EditorColors.textSecondary
     LogLevel.INFO -> EditorColors.actionAccent
     LogLevel.WARN -> EditorColors.warnAccent
     LogLevel.ERROR -> EditorColors.triggerAccent
+}
+
+/**
+ * The level's own name, for [LogEntryOverlay]. The list says it in colour alone,
+ * which is enough while the four are side by side and nothing at all on its own.
+ */
+@StringRes
+internal fun levelLabelRes(level: LogLevel): Int = when (level) {
+    LogLevel.DEBUG -> R.string.console_level_debug
+    LogLevel.INFO -> R.string.console_level_info
+    LogLevel.WARN -> R.string.console_level_warn
+    LogLevel.ERROR -> R.string.console_level_error
 }
 
 private val FILTERS = listOf(
@@ -261,12 +357,10 @@ private val FILTERS = listOf(
     R.string.console_filter_problems to LogLevel.WARN,
 )
 
-/** Immutable and thread-safe, so one instance is fine. */
-private val LOG_TIME: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS")
-
 /**
- * The millis are kept deliberately: within one run, the question being asked is
- * almost always "which of these two happened first".
+ * How much of a line a row shows before the overlay has to.
+ *
+ * Three is what keeps a short message whole — one line of text plus a wrap — while
+ * a two-thousand-character one costs the same height as its neighbours.
  */
-internal fun formatLogTime(atMs: Long, zone: ZoneId = ZoneId.systemDefault()): String =
-    LOG_TIME.format(Instant.ofEpochMilli(atMs).atZone(zone))
+private const val ROW_MAX_LINES = 3

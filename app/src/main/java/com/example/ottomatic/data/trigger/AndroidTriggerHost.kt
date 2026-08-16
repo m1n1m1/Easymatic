@@ -68,7 +68,7 @@ private const val MS_PER_MINUTE = 60_000L
 private const val MS_PER_DAY = 24L * 60 * 60 * 1000
 
 /** See the comment on `setNotificationResponsiveness` in `armGeofence`. */
-private const val GEOFENCE_RESPONSIVENESS_MS = 0.5 * MS_PER_MINUTE.toInt()
+private const val GEOFENCE_RESPONSIVENESS_MS = 30_000 // half of MS_PER_MINUTE
 
 /**
  * Android implementation of [TriggerHost]. Supplies real system streams and

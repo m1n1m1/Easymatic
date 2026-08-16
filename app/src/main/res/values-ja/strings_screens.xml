@@ -437,6 +437,16 @@
     <string name="console_filter_all">すべて</string>
     <string name="console_filter_info">情報</string>
     <string name="console_filter_problems">問題</string>
+    <string name="console_today">今日</string>
+    <string name="console_yesterday">昨日</string>
+    <string name="console_entry_title">ログエントリ</string>
+    <string name="console_copy_message">メッセージをコピー</string>
+    <string name="console_show_node">ノードを表示</string>
+    <string name="console_run_number">実行 %1$d</string>
+    <string name="console_level_debug">デバッグ</string>
+    <string name="console_level_info">情報</string>
+    <string name="console_level_warn">警告</string>
+    <string name="console_level_error">エラー</string>
     <string name="editor_tab_problems">問題</string>
     <string name="editor_tab_console">コンソール</string>
     <string name="editor_tab_variables">変数</string>

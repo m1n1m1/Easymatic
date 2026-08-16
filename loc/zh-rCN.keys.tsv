@@ -158,13 +158,23 @@ config_show_suggestions	显示建议
 config_socket_feed	从上游数据为 %1$s 供值
 config_socket_use_typed_connected	对 %1$s 使用输入的值（已连接到 %2$s）
 config_socket_use_typed_free	对 %1$s 使用输入的值（未连接任何内容）
+console_copy_message	复制消息
+console_entry_title	日志条目
 console_filter_all	全部
 console_filter_info	信息
 console_filter_problems	问题
+console_level_debug	调试
+console_level_error	错误
+console_level_info	信息
+console_level_warn	警告
 console_nothing_at_level	此级别下没有内容
 console_nothing_logged	还没有日志
+console_run_number	第 %1$d 次运行
 console_run_the_workflow	运行此工作流。错误、action.log 消息以及脚本的 console.log 都会显示在这里。
+console_show_node	显示节点
+console_today	今天
 console_widen_filter	放宽筛选条件，即可看到此工作流其余的历史记录。
+console_yesterday	昨天
 contacts_anyone	任何人
 contacts_choose_a_contact	选择联系人
 contacts_clear_the_contact_and_type	清除联系人，改为输入号码

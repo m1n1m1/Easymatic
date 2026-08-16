@@ -586,6 +586,16 @@ console_run_the_workflow	Run the workflow. Errors, action.log messages and a scr
 console_filter_all	All
 console_filter_info	Info
 console_filter_problems	Problems
+console_today	Today
+console_yesterday	Yesterday
+console_entry_title	Log entry
+console_copy_message	Copy the message
+console_show_node	Show the node
+console_run_number	Run %1$d
+console_level_debug	Debug
+console_level_info	Info
+console_level_warn	Warning
+console_level_error	Error
 editor_tab_problems	Problems
 editor_tab_console	Console
 editor_tab_variables	Variables

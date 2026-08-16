@@ -437,6 +437,16 @@
     <string name="console_filter_all">Tout</string>
     <string name="console_filter_info">Info</string>
     <string name="console_filter_problems">Problèmes</string>
+    <string name="console_today">Aujourd\'hui</string>
+    <string name="console_yesterday">Hier</string>
+    <string name="console_entry_title">Entrée du journal</string>
+    <string name="console_copy_message">Copier le message</string>
+    <string name="console_show_node">Afficher le nœud</string>
+    <string name="console_run_number">Exécution %1$d</string>
+    <string name="console_level_debug">Débogage</string>
+    <string name="console_level_info">Info</string>
+    <string name="console_level_warn">Avertissement</string>
+    <string name="console_level_error">Erreur</string>
     <string name="editor_tab_problems">Problèmes</string>
     <string name="editor_tab_console">Console</string>
     <string name="editor_tab_variables">Variables</string>

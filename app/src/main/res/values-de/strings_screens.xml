@@ -461,6 +461,16 @@
     <string name="console_filter_all">Alle</string>
     <string name="console_filter_info">Info</string>
     <string name="console_filter_problems">Probleme</string>
+    <string name="console_today">Heute</string>
+    <string name="console_yesterday">Gestern</string>
+    <string name="console_entry_title">Protokolleintrag</string>
+    <string name="console_copy_message">Die Meldung kopieren</string>
+    <string name="console_show_node">Den Knoten anzeigen</string>
+    <string name="console_run_number">Lauf %1$d</string>
+    <string name="console_level_debug">Debug</string>
+    <string name="console_level_info">Info</string>
+    <string name="console_level_warn">Warnung</string>
+    <string name="console_level_error">Fehler</string>
     <string name="editor_tab_problems">Probleme</string>
     <string name="editor_tab_console">Konsole</string>
     <string name="editor_tab_variables">Variablen</string>

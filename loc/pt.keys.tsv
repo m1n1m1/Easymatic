@@ -158,13 +158,23 @@ config_show_suggestions	Mostrar sugestões
 config_socket_feed	Alimentar %1$s a partir dos dados anteriores
 config_socket_use_typed_connected	Usar o valor escrito para %1$s (ligado a %2$s)
 config_socket_use_typed_free	Usar o valor escrito para %1$s (nada ligado)
+console_copy_message	Copiar a mensagem
+console_entry_title	Entrada do registo
 console_filter_all	Tudo
 console_filter_info	Info
 console_filter_problems	Problemas
+console_level_debug	Depuração
+console_level_error	Erro
+console_level_info	Info
+console_level_warn	Aviso
 console_nothing_at_level	Nada neste nível
 console_nothing_logged	Ainda não há registos
+console_run_number	Execução %1$d
 console_run_the_workflow	Executa o fluxo. Os erros, as mensagens de action.log e o console.log de um script aparecem aqui.
+console_show_node	Mostrar o nó
+console_today	Hoje
 console_widen_filter	Alarga o filtro para veres o resto do histórico deste fluxo.
+console_yesterday	Ontem
 contacts_anyone	Qualquer pessoa
 contacts_choose_a_contact	Escolher um contacto
 contacts_clear_the_contact_and_type	Remover o contacto e escrever um número em vez disso

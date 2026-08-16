@@ -158,13 +158,23 @@ config_show_suggestions	Показать подсказки
 config_socket_feed	Подавать в «%1$s» данные сверху по цепочке
 config_socket_use_typed_connected	Использовать введённое значение для «%1$s» (подключено к %2$s)
 config_socket_use_typed_free	Использовать введённое значение для «%1$s» (ничего не подключено)
+console_copy_message	Скопировать сообщение
+console_entry_title	Запись журнала
 console_filter_all	Все
 console_filter_info	Инфо
 console_filter_problems	Проблемы
+console_level_debug	Отладка
+console_level_error	Ошибка
+console_level_info	Инфо
+console_level_warn	Предупреждение
 console_nothing_at_level	На этом уровне ничего нет
 console_nothing_logged	Записей пока нет
+console_run_number	Запуск %1$d
 console_run_the_workflow	Запустите сценарий. Ошибки, сообщения action.log и console.log скрипта появятся здесь.
+console_show_node	Показать узел
+console_today	Сегодня
 console_widen_filter	Расширьте фильтр, чтобы увидеть остальную историю этого сценария.
+console_yesterday	Вчера
 contacts_anyone	Любой
 contacts_choose_a_contact	Выберите контакт
 contacts_clear_the_contact_and_type	Убрать контакт и ввести номер вручную

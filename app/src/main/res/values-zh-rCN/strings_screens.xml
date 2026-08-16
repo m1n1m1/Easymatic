@@ -437,6 +437,16 @@
     <string name="console_filter_all">全部</string>
     <string name="console_filter_info">信息</string>
     <string name="console_filter_problems">问题</string>
+    <string name="console_today">今天</string>
+    <string name="console_yesterday">昨天</string>
+    <string name="console_entry_title">日志条目</string>
+    <string name="console_copy_message">复制消息</string>
+    <string name="console_show_node">显示节点</string>
+    <string name="console_run_number">第 %1$d 次运行</string>
+    <string name="console_level_debug">调试</string>
+    <string name="console_level_info">信息</string>
+    <string name="console_level_warn">警告</string>
+    <string name="console_level_error">错误</string>
     <string name="editor_tab_problems">问题</string>
     <string name="editor_tab_console">控制台</string>
     <string name="editor_tab_variables">变量</string>

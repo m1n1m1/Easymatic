@@ -158,13 +158,23 @@ config_show_suggestions	候補を表示
 config_socket_feed	%1$s に上流のデータを流し込む
 config_socket_use_typed_connected	%1$s には入力した値を使う（%2$s に接続中）
 config_socket_use_typed_free	%1$s には入力した値を使う（何も接続されていません）
+console_copy_message	メッセージをコピー
+console_entry_title	ログエントリ
 console_filter_all	すべて
 console_filter_info	情報
 console_filter_problems	問題
+console_level_debug	デバッグ
+console_level_error	エラー
+console_level_info	情報
+console_level_warn	警告
 console_nothing_at_level	このレベルには何もありません
 console_nothing_logged	まだログはありません
+console_run_number	実行 %1$d
 console_run_the_workflow	ワークフローを実行してください。エラー、action.log のメッセージ、スクリプトの console.log がここに表示されます。
+console_show_node	ノードを表示
+console_today	今日
 console_widen_filter	フィルターを広げると、このワークフローの残りの履歴が見られます。
+console_yesterday	昨日
 contacts_anyone	すべての相手
 contacts_choose_a_contact	連絡先を選択
 contacts_clear_the_contact_and_type	連絡先を消して、代わりに番号を入力する

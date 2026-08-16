@@ -437,6 +437,16 @@
     <string name="console_filter_all">Все</string>
     <string name="console_filter_info">Инфо</string>
     <string name="console_filter_problems">Проблемы</string>
+    <string name="console_today">Сегодня</string>
+    <string name="console_yesterday">Вчера</string>
+    <string name="console_entry_title">Запись журнала</string>
+    <string name="console_copy_message">Скопировать сообщение</string>
+    <string name="console_show_node">Показать узел</string>
+    <string name="console_run_number">Запуск %1$d</string>
+    <string name="console_level_debug">Отладка</string>
+    <string name="console_level_info">Инфо</string>
+    <string name="console_level_warn">Предупреждение</string>
+    <string name="console_level_error">Ошибка</string>
     <string name="editor_tab_problems">Проблемы</string>
     <string name="editor_tab_console">Консоль</string>
     <string name="editor_tab_variables">Переменные</string>
