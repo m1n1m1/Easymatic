@@ -48,16 +48,29 @@ sealed interface GeofenceVerdict {
  * exit. An enter artefact needs a re-arm while you are already inside, which is
  * rarer and — when it happens — looks like a plausible arrival.
  *
- * **Two guards, and the order matters.** Remembering where we were is the one that
+ * **Four guards, and the order matters.** Remembering where we were is the one that
  * fixes the re-registration artefact, because there the fix is often perfectly
  * accurate and the device really is outside. The accuracy guard covers the other
  * half: a phone stationary in doze with Wi-Fi scanning throttled falls back to a
  * cell-tower fix hundreds or thousands of metres wide, which lands outside a small
- * circle almost every time and inside it almost never.
+ * circle almost every time and inside it almost never. The two departure guards
+ * ([SETTLING_MS] and the refusal to leave a place we never saw anyone arrive at) are
+ * asymmetric on purpose — see [departureRefusal].
  *
  * Pure, so it is JVM-tested; the belief itself is persisted by the host.
  */
 object GeofenceGate {
+
+    /**
+     * How long after a registration an uncorroborated exit is read as the
+     * registration talking rather than as a departure.
+     *
+     * The same order of magnitude as `GEOFENCE_RESPONSIVENESS_MS`, which is how long
+     * Play Services may sit on a real crossing before reporting it — a window
+     * shorter than that would be a window a genuine exit routinely falls outside of
+     * anyway.
+     */
+    const val SETTLING_MS = 120_000L
 
     /**
      * What to do about [event], given what this node [believed] and what the fix
@@ -66,16 +79,21 @@ object GeofenceGate {
      * [accuracyMeters] and [distanceMeters] are null when the transition carried no
      * location — which the away alarm never does — and a null must never be read as
      * a perfect fix, so each guard sits out rather than failing closed.
+     *
+     * [sinceRegisteredMs] is how long after this fence was last registered the
+     * transition was broadcast, or null when nothing knows.
      */
     // One early return per rule, and folding them into a chain is what would make the
-    // order of the rules stop being visible.
-    @Suppress("ReturnCount")
+    // order of the rules stop being visible. Every parameter is one piece of evidence
+    // about a single transition; bundling them into a holder would only move the list.
+    @Suppress("ReturnCount", "LongParameterList")
     fun judge(
         event: String,
         believed: GeofencePresence,
         accuracyMeters: Float?,
         distanceMeters: Double?,
         radiusMeters: Float,
+        sinceRegisteredMs: Long?,
     ): GeofenceVerdict {
         val reported = when (event) {
             GeofenceTransition.ENTER.payloadValue, GeofenceTransition.DWELL.payloadValue ->
@@ -91,7 +109,7 @@ object GeofenceGate {
 
         // A dwell is a fix that stayed put for the whole loitering delay, and it
         // legitimately arrives while we already believe we are inside — that is what
-        // dwelling *is*. Both guards below would be wrong about it.
+        // dwelling *is*. Every guard below would be wrong about it.
         if (event == GeofenceTransition.DWELL.payloadValue) return GeofenceVerdict.Accept(reported)
 
         untrustworthy(accuracyMeters, radiusMeters)?.let {
@@ -102,6 +120,10 @@ object GeofenceGate {
 
         contradiction(reported, accuracyMeters, distanceMeters, radiusMeters)?.let {
             return GeofenceVerdict.Discard(it, believed)
+        }
+
+        if (reported == GeofencePresence.OUTSIDE) {
+            departureRefusal(believed, distanceMeters, radiusMeters, sinceRegisteredMs)?.let { return it }
         }
 
         if (believed == reported) {
@@ -115,13 +137,76 @@ object GeofenceGate {
             )
         }
 
-        // A genuine crossing, or the first transition this node has ever seen.
+        // A genuine crossing, or the first arrival this node has ever seen.
         //
-        // UNKNOWN accepting is failing open on purpose. The belief is persisted, so
-        // UNKNOWN is a once-per-node state and the choice costs at most one event
-        // ever — and swallowing somebody's first departure minutes after they built
-        // the macro is the worse of the two ways to be wrong.
+        // An arrival from UNKNOWN is failing open on purpose, and it is the half of
+        // that choice worth keeping: refusing an enter costs *every* departure after
+        // it, because departureRefusal only lets one through on the strength of a
+        // remembered arrival. Refusing an exit costs one trip.
         return GeofenceVerdict.Accept(reported)
+    }
+
+    /**
+     * Why this exit is not a departure, or null when it is one.
+     *
+     * Both rules here apply to exits and to nothing else, and that asymmetry is the
+     * design rather than an oversight: the phone sleeps outside the fence it
+     * watches, so a state-reset artefact can only ever be an exit, and the two
+     * mistakes cost wildly different amounts. A refused enter costs every departure
+     * after it — the second rule below will not believe one without an arrival
+     * behind it — where a refused exit costs one trip.
+     *
+     * **The settling window** is the one that survives a re-registration. Since
+     * `armGeofence` no longer re-adds an unchanged fence, a registration is a rare,
+     * deliberate event: the first arm, a moved place, a reboot, or the daily safety
+     * re-register. Play Services answers each one by re-deriving the fence's state
+     * and announcing it, and "outside" is announced as an ordinary EXIT. What tells
+     * that apart from walking out is *when* it arrives — seconds after a
+     * registration, rather than the minutes-to-hours a real departure sits at — and
+     * it is only refused when the fix does not positively put the phone beyond the
+     * radius, so a genuine departure moments after arming still fires. The
+     * transition's own broadcast time is what is measured, not "now": the receiver
+     * stamps it before it asks the engine to re-arm, so the comparison cannot be
+     * poisoned by the re-arm the transition itself causes.
+     *
+     * **The remembered arrival** is the rule that only became affordable once every
+     * fence started watching both directions. Before that, refusing an exit from
+     * UNKNOWN would have stranded a node that was never told about arrivals at all.
+     * Now `setInitialTrigger(INITIAL_TRIGGER_ENTER)` tells a node armed inside its
+     * own place so at once, and a node armed outside has to come back before it can
+     * leave — so the only thing this can swallow is a departure from a place nobody
+     * was ever seen arriving at, which is the artefact's own signature.
+     *
+     * It records OUTSIDE rather than keeping the belief, which is the opposite of
+     * what the accuracy and contradiction guards do, and deliberately: those two
+     * doubt the *fix*, and a fix worth doubting must not teach. This one believes
+     * the fix completely — it has already passed both — and doubts only that a
+     * departure means anything with no arrival behind it. So the next exit is judged
+     * from a true starting point instead of meeting UNKNOWN a second time.
+     */
+    // Two rules and a fall-through, kept as three returns for judge's own reason.
+    @Suppress("ReturnCount")
+    private fun departureRefusal(
+        believed: GeofencePresence,
+        distanceMeters: Double?,
+        radiusMeters: Float,
+        sinceRegisteredMs: Long?,
+    ): GeofenceVerdict.Discard? {
+        val corroborated = distanceMeters != null && distanceMeters > radiusMeters
+        if (!corroborated && sinceRegisteredMs != null && sinceRegisteredMs in 0..SETTLING_MS) {
+            return GeofenceVerdict.Discard(
+                "it arrived ${sinceRegisteredMs / MILLIS_PER_SECOND} s after this fence was registered, " +
+                    "which is the registration saying where the phone is rather than a departure",
+                believed,
+            )
+        }
+        if (believed == GeofencePresence.UNKNOWN) {
+            return GeofenceVerdict.Discard(
+                "nothing has ever seen the phone arrive here, and leaving needs an arrival behind it",
+                GeofencePresence.OUTSIDE,
+            )
+        }
+        return null
     }
 
     /**
@@ -174,3 +259,5 @@ object GeofenceGate {
         }
     }
 }
+
+private const val MILLIS_PER_SECOND = 1_000L

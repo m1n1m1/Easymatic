@@ -81,7 +81,11 @@ class GeofenceActivationTest {
 
     @Test
     fun `an exit starts the away countdown with the configured delay`() = runBlocking {
-        val host = FakeTriggerHost(places = mapOf(home.id to home), bus = flowOf(geofence("exit")))
+        val host = FakeTriggerHost(
+            places = mapOf(home.id to home),
+            bus = flowOf(departure),
+            presence = GeofencePresence.INSIDE,
+        )
 
         GeofenceTrigger()
             .activate(GeofenceConfig(placeId = home.id, onEnter = false, onAway = true, awayMinutes = 45), node, host)
@@ -97,20 +101,26 @@ class GeofenceActivationTest {
      */
     @Test
     fun `an exit that drives the countdown is not emitted`() = runBlocking {
-        val host = FakeTriggerHost(places = mapOf(home.id to home), bus = flowOf(geofence("exit")))
+        val host = FakeTriggerHost(
+            places = mapOf(home.id to home),
+            bus = flowOf(departure),
+            presence = GeofencePresence.INSIDE,
+        )
 
         val emissions = GeofenceTrigger()
             .activate(GeofenceConfig(placeId = home.id, onEnter = false, onAway = true), node, host)
             .toList()
 
         assertTrue(emissions.isEmpty())
+        assertEquals("and it did reach the gate", 1, host.awayArmed.size)
     }
 
     @Test
     fun `coming back cancels the away countdown`() = runBlocking {
         val host = FakeTriggerHost(
             places = mapOf(home.id to home),
-            bus = flowOf(geofence("exit"), geofence("enter")),
+            bus = flowOf(departure, arrival),
+            presence = GeofencePresence.INSIDE,
         )
 
         GeofenceTrigger()
@@ -124,7 +134,8 @@ class GeofenceActivationTest {
     fun `a node with no away countdown never touches one`() = runBlocking {
         val host = FakeTriggerHost(
             places = mapOf(home.id to home),
-            bus = flowOf(geofence("exit"), geofence("enter")),
+            bus = flowOf(departure, arrival),
+            presence = GeofencePresence.INSIDE,
         )
 
         GeofenceTrigger()
@@ -295,11 +306,127 @@ class GeofenceActivationTest {
         assertTrue("half an hour away from somewhere you never left", host.awayArmed.isEmpty())
     }
 
+    /**
+     * The bug the remembered presence introduced, and the reason every fence now
+     * watches both directions.
+     *
+     * A node that publishes only arrivals used to *register* only arrivals, so
+     * nothing could ever tell it the phone had left. It accepted the first enter,
+     * believed INSIDE forever after, and discarded every later arrival as a repeat —
+     * and this is the **default** configuration. Nobody notices for a week.
+     */
+    @Test
+    fun `arriving, leaving and arriving again runs an enter-only macro twice`() = runBlocking {
+        val host = FakeTriggerHost(
+            places = mapOf(home.id to home),
+            bus = flowOf(arrival, departure, arrival),
+        )
+
+        val emissions = GeofenceTrigger()
+            .activate(GeofenceConfig(placeId = home.id), node, host)
+            .toList()
+
+        assertEquals(listOf("enter", "enter"), emissions.map { it.value.transition })
+    }
+
+    /** The mirror image, which latched OUTSIDE instead. */
+    @Test
+    fun `leaving, coming back and leaving again runs an exit-only macro twice`() = runBlocking {
+        val host = FakeTriggerHost(
+            places = mapOf(home.id to home),
+            bus = flowOf(arrival, departure, arrival, departure),
+        )
+
+        val emissions = GeofenceTrigger()
+            .activate(GeofenceConfig(placeId = home.id, onEnter = false, onExit = true), node, host)
+            .toList()
+
+        assertEquals(listOf("exit", "exit"), emissions.map { it.value.transition })
+    }
+
+    @Test
+    fun `an exit-only trigger still asks the platform for arrivals`() = runBlocking {
+        val host = FakeTriggerHost(places = mapOf(home.id to home))
+
+        GeofenceTrigger()
+            .activate(GeofenceConfig(placeId = home.id, onEnter = false, onExit = true), node, host)
+            .toList()
+
+        assertEquals(
+            "it cannot remember an arrival it was never told about",
+            setOf(GeofenceTransition.ENTER, GeofenceTransition.EXIT),
+            requireNotNull(host.armed).transitions,
+        )
+    }
+
+    /**
+     * The user's own rule. A fresh node whose phone is sleeping kilometres from the
+     * place it watches is told "outside" by its very first registration — with a
+     * perfect fix, because the phone really is outside.
+     */
+    @Test
+    fun `a departure from a place we never saw an arrival at does not run the macro`() = runBlocking {
+        val host = FakeTriggerHost(places = mapOf(home.id to home), bus = flowOf(departure))
+
+        val emissions = GeofenceTrigger()
+            .activate(GeofenceConfig(placeId = home.id, onEnter = false, onExit = true), node, host)
+            .toList()
+
+        assertTrue(emissions.isEmpty())
+        assertTrue(host.reported.last().message.contains("arrive here"))
+    }
+
+    /**
+     * And the registrations that must still happen — the first arm, a moved place, a
+     * reboot, the daily safety re-register — are covered by when their announcement
+     * arrives rather than by what it says.
+     */
+    @Test
+    fun `an exit moments after a registration does not run the macro`() = runBlocking {
+        val registeredAt = 1_700_000_000_000L
+        val host = FakeTriggerHost(
+            places = mapOf(home.id to home),
+            bus = flowOf(geofence("exit", broadcastAt = registeredAt + 4_000L)),
+            presence = GeofencePresence.INSIDE,
+            registeredAt = registeredAt,
+        )
+
+        val emissions = GeofenceTrigger()
+            .activate(GeofenceConfig(placeId = home.id, onEnter = false, onExit = true), node, host)
+            .toList()
+
+        assertTrue(emissions.isEmpty())
+        assertTrue(host.reported.last().message.contains("after this fence was registered"))
+    }
+
+    /**
+     * A phone at home is told it has arrived on every registration, and each of
+     * those is correctly discarded — but a persisted console line per process start,
+     * explaining that a macro nobody wrote did not run, is a console nobody reads.
+     */
+    @Test
+    fun `an arrival an exit-only node does not publish is not written at INFO`() = runBlocking {
+        val host = FakeTriggerHost(
+            places = mapOf(home.id to home),
+            bus = flowOf(arrival),
+            presence = GeofencePresence.INSIDE,
+        )
+
+        GeofenceTrigger()
+            .activate(GeofenceConfig(placeId = home.id, onEnter = false, onExit = true), node, host)
+            .toList()
+
+        val discard = host.reported.last()
+        assertEquals(LogLevel.DEBUG, discard.level)
+        assertTrue(discard.message.contains("already inside"))
+    }
+
     private fun geofence(
         event: String,
         latitude: Double? = null,
         longitude: Double? = null,
         accuracy: Float? = null,
+        broadcastAt: Long? = null,
     ) = TriggerEvent(
         source = TriggerSource.GEOFENCE,
         triggerNodeId = node.id,
@@ -308,8 +435,14 @@ class GeofenceActivationTest {
             latitude?.let { put("lat", it.toString()) }
             longitude?.let { put("lng", it.toString()) }
             accuracy?.let { put("accuracy", it.toString()) }
+            broadcastAt?.let { put("timestamp", it.toString()) }
         },
     )
+
+    /** A crossing the gate has no reason to doubt: a good fix, well clear of the fence. */
+    private val departure = geofence("exit", latitude = 48.30, longitude = 16.50, accuracy = 25f)
+
+    private val arrival = geofence("enter", latitude = home.latitude, longitude = home.longitude, accuracy = 25f)
 
     /**
      * The four lines below are the whole point of the arm-time console: before
@@ -404,6 +537,12 @@ private class FakeTriggerHost(
      * in the shoes of a process that has just been resurrected sets it here.
      */
     presence: GeofencePresence = GeofencePresence.UNKNOWN,
+    /**
+     * When this node's fence was last registered. Null is a host that does not
+     * remember, which is what everything was before the fence stopped being
+     * re-registered on every arm.
+     */
+    private val registeredAt: Long? = null,
 ) : TriggerHost {
 
     /** Remembered rather than discarded, so the dedupe is genuinely exercised. */
@@ -456,6 +595,8 @@ private class FakeTriggerHost(
     override fun recordGeofencePresence(nodeId: NodeId, presence: GeofencePresence) {
         this.presence = presence
     }
+
+    override fun geofenceRegisteredAt(nodeId: NodeId): Long? = registeredAt
 
     override fun armSchedule(nodeId: NodeId, intervalMinutes: Long) = ScheduleHandle { }
 

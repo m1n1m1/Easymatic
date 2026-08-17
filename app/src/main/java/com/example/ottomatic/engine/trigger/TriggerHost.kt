@@ -253,6 +253,20 @@ interface TriggerHost {
     fun recordGeofencePresence(nodeId: NodeId, presence: GeofencePresence) = Unit
 
     /**
+     * When [nodeId]'s platform fence was last registered, or null when nothing knows.
+     *
+     * [GeofenceGate] needs it to tell a departure from a registration announcing
+     * where the phone is, which are otherwise the same broadcast. It is read rather
+     * than passed to [armGeofence] because the answer that matters belongs to the
+     * registration *before* this arm — often one made in a process that has since
+     * been killed — which is exactly what [GeofenceRegistration] persists.
+     *
+     * Null by default, on [geofencePresence]'s reasoning: a host with no store
+     * behind it behaves as everything did before, which is what a test double wants.
+     */
+    fun geofenceRegisteredAt(nodeId: NodeId): Long? = null
+
+    /**
      * Stream of engine-internal macro lifecycle events
      * ([TriggerSource.MACRO]). Emits when a macro is enabled (its
      * [com.example.ottomatic.engine.WorkflowRunner.run] starts) and when a

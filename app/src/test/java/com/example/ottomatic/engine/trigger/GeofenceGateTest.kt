@@ -28,6 +28,7 @@ class GeofenceGateTest {
             accuracyMeters = 30f,
             distanceMeters = 5_000.0,
             radiusMeters = radius,
+            sinceRegisteredMs = null,
         )
 
         assertTrue("the re-registration artefact must not reach the macro", verdict is GeofenceVerdict.Discard)
@@ -42,6 +43,7 @@ class GeofenceGateTest {
             accuracyMeters = 30f,
             distanceMeters = 400.0,
             radiusMeters = radius,
+            sinceRegisteredMs = null,
         )
 
         assertTrue(verdict is GeofenceVerdict.Accept)
@@ -49,22 +51,138 @@ class GeofenceGateTest {
     }
 
     /**
-     * The belief is persisted, so this is a once-per-node state — and swallowing
-     * somebody's first departure minutes after they built the macro is the worse
-     * of the two ways to be wrong.
+     * The user's own rule, and the one this used to get backwards.
+     *
+     * The first thing a node ever sees is very often not a crossing at all but the
+     * announcement that follows its very first registration — and for a phone that
+     * is not at the place it watches, that announcement is an exit with a perfect
+     * fix kilometres away, which no other rule here can tell from a departure.
      */
     @Test
-    fun `the first transition a node ever sees is believed`() {
+    fun `a departure from a place we never saw the phone arrive at is refused`() {
         val verdict = GeofenceGate.judge(
             event = "exit",
             believed = GeofencePresence.UNKNOWN,
             accuracyMeters = 30f,
             distanceMeters = 400.0,
             radiusMeters = radius,
+            sinceRegisteredMs = null,
+        )
+
+        assertTrue(verdict is GeofenceVerdict.Discard)
+    }
+
+    /**
+     * It records what the fix said rather than keeping UNKNOWN, which is the
+     * opposite of what the two evidence guards do. Those doubt the fix; this one
+     * believes it completely and doubts only that a departure means anything with no
+     * arrival behind it — so the next exit is judged from a true starting point
+     * instead of meeting UNKNOWN a second time.
+     */
+    @Test
+    fun `a refused first departure still records where the fix said we were`() {
+        val verdict = GeofenceGate.judge(
+            event = "exit",
+            believed = GeofencePresence.UNKNOWN,
+            accuracyMeters = 30f,
+            distanceMeters = 400.0,
+            radiusMeters = radius,
+            sinceRegisteredMs = null,
+        )
+
+        assertEquals(GeofencePresence.OUTSIDE, verdict.presence)
+    }
+
+    /**
+     * The asymmetry is the design: refusing an enter costs *every* departure after
+     * it, because a departure is only believed on the strength of a remembered
+     * arrival. Refusing an exit costs one trip.
+     */
+    @Test
+    fun `the first arrival a node ever sees is believed`() {
+        val verdict = GeofenceGate.judge(
+            event = "enter",
+            believed = GeofencePresence.UNKNOWN,
+            accuracyMeters = 30f,
+            distanceMeters = 20.0,
+            radiusMeters = radius,
+            sinceRegisteredMs = null,
+        )
+
+        assertTrue(verdict is GeofenceVerdict.Accept)
+        assertEquals(GeofencePresence.INSIDE, verdict.presence)
+    }
+
+    // ── The settling window ──────────────────────────────────────────────────
+
+    /**
+     * A registration resets the fence's state inside Play Services, which
+     * re-evaluates and announces the result — and "outside" is announced as an
+     * ordinary EXIT. What tells that apart from walking out is when it arrives.
+     */
+    @Test
+    fun `an exit seconds after a registration is the registration talking`() {
+        val verdict = GeofenceGate.judge(
+            event = "exit",
+            believed = GeofencePresence.INSIDE,
+            accuracyMeters = null,
+            distanceMeters = null,
+            radiusMeters = radius,
+            sinceRegisteredMs = 3_000L,
+        )
+
+        assertTrue(verdict is GeofenceVerdict.Discard)
+        assertEquals("a fix we would not act on teaches nothing", GeofencePresence.INSIDE, verdict.presence)
+    }
+
+    /**
+     * Narrow on purpose. A real departure moments after arming has to keep working,
+     * and Play Services attaches the fix that made it decide you had left — so a
+     * fix past the radius outranks the window.
+     */
+    @Test
+    fun `an exit inside the window with a fix past the radius is still a departure`() {
+        val verdict = GeofenceGate.judge(
+            event = "exit",
+            believed = GeofencePresence.INSIDE,
+            accuracyMeters = 40f,
+            distanceMeters = 130.0,
+            radiusMeters = radius,
+            sinceRegisteredMs = 3_000L,
         )
 
         assertTrue(verdict is GeofenceVerdict.Accept)
         assertEquals(GeofencePresence.OUTSIDE, verdict.presence)
+    }
+
+    @Test
+    fun `an exit long after the last registration is judged on memory alone`() {
+        val verdict = GeofenceGate.judge(
+            event = "exit",
+            believed = GeofencePresence.INSIDE,
+            accuracyMeters = null,
+            distanceMeters = null,
+            radiusMeters = radius,
+            sinceRegisteredMs = 6 * 60 * 60 * 1_000L,
+        )
+
+        assertTrue("the user chose to keep believing these", verdict is GeofenceVerdict.Accept)
+    }
+
+    /** An arrival is never the thing a state reset produces on a sleeping phone. */
+    @Test
+    fun `an enter seconds after a registration is left alone`() {
+        val verdict = GeofenceGate.judge(
+            event = "enter",
+            believed = GeofencePresence.OUTSIDE,
+            accuracyMeters = null,
+            distanceMeters = null,
+            radiusMeters = radius,
+            sinceRegisteredMs = 3_000L,
+        )
+
+        assertTrue(verdict is GeofenceVerdict.Accept)
+        assertEquals(GeofencePresence.INSIDE, verdict.presence)
     }
 
     @Test
@@ -75,6 +193,7 @@ class GeofenceGateTest {
             accuracyMeters = 30f,
             distanceMeters = 20.0,
             radiusMeters = radius,
+            sinceRegisteredMs = null,
         )
 
         assertTrue(verdict is GeofenceVerdict.Discard)
@@ -96,6 +215,7 @@ class GeofenceGateTest {
             accuracyMeters = 1_800f,
             distanceMeters = 900.0,
             radiusMeters = radius,
+            sinceRegisteredMs = null,
         )
 
         assertTrue(verdict is GeofenceVerdict.Discard)
@@ -111,6 +231,7 @@ class GeofenceGateTest {
             accuracyMeters = 1_800f,
             distanceMeters = 900.0,
             radiusMeters = radius,
+            sinceRegisteredMs = null,
         )
 
         assertEquals("the next good fix must be judged against the truth", GeofencePresence.INSIDE, verdict.presence)
@@ -129,6 +250,7 @@ class GeofenceGateTest {
             accuracyMeters = 90f,
             distanceMeters = 300.0,
             radiusMeters = 50f,
+            sinceRegisteredMs = null,
         )
 
         assertTrue(verdict is GeofenceVerdict.Accept)
@@ -142,6 +264,7 @@ class GeofenceGateTest {
             accuracyMeters = 300f,
             distanceMeters = 2_000.0,
             radiusMeters = 500f,
+            sinceRegisteredMs = null,
         )
 
         assertTrue("the threshold scales with the circle being judged", verdict is GeofenceVerdict.Accept)
@@ -162,6 +285,7 @@ class GeofenceGateTest {
             accuracyMeters = 20f,
             distanceMeters = 10.0,
             radiusMeters = radius,
+            sinceRegisteredMs = null,
         )
 
         assertTrue(verdict is GeofenceVerdict.Discard)
@@ -176,6 +300,7 @@ class GeofenceGateTest {
             accuracyMeters = 20f,
             distanceMeters = 4_000.0,
             radiusMeters = radius,
+            sinceRegisteredMs = null,
         )
 
         assertTrue(verdict is GeofenceVerdict.Discard)
@@ -190,6 +315,7 @@ class GeofenceGateTest {
             accuracyMeters = 60f,
             distanceMeters = 120.0,
             radiusMeters = radius,
+            sinceRegisteredMs = null,
         )
 
         assertTrue(verdict is GeofenceVerdict.Accept)
@@ -211,6 +337,7 @@ class GeofenceGateTest {
             accuracyMeters = null,
             distanceMeters = null,
             radiusMeters = radius,
+            sinceRegisteredMs = null,
         )
 
         assertTrue(verdict is GeofenceVerdict.Accept)
@@ -226,6 +353,7 @@ class GeofenceGateTest {
             accuracyMeters = 2_000f,
             distanceMeters = 40.0,
             radiusMeters = radius,
+            sinceRegisteredMs = null,
         )
 
         assertTrue("a dwell waited out the whole loitering delay to say this", verdict is GeofenceVerdict.Accept)
@@ -240,6 +368,7 @@ class GeofenceGateTest {
             accuracyMeters = null,
             distanceMeters = null,
             radiusMeters = radius,
+            sinceRegisteredMs = null,
         )
 
         assertTrue("a missing fix is not a perfect one", verdict is GeofenceVerdict.Discard)

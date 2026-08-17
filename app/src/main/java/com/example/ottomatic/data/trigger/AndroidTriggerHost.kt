@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.annotation.SuppressLint
 import android.os.Build
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -45,7 +46,9 @@ import com.example.ottomatic.engine.trigger.ImageWatchSpec
 import com.example.ottomatic.engine.trigger.planNext
 import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofencePresence
+import com.example.ottomatic.engine.trigger.GeofenceRegistration
 import com.example.ottomatic.engine.trigger.GeofenceTransition
+import com.example.ottomatic.engine.trigger.RegisteredFence
 import com.example.ottomatic.engine.trigger.HaWatchSpec
 import com.example.ottomatic.engine.trigger.MailWatchSpec
 import com.example.ottomatic.engine.trigger.MqttWatchSpec
@@ -143,6 +146,7 @@ class AndroidTriggerHost(
     private val alarmManager = appContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     private val geofencingClient = LocationServices.getGeofencingClient(appContext)
     private val presenceStore = GeofencePresenceStore(appContext)
+    private val registrationStore = GeofenceRegistrationStore(appContext)
     private val lifecycleBridge = AppLifecycleBridge(appContext)
 
     @Suppress("UnusedPrivateProperty") // Kept alive so its receiver stays registered.
@@ -319,6 +323,9 @@ class AndroidTriggerHost(
     override fun contactNumber(lookupKey: String): String? = contacts.phoneNumber(lookupKey)
 
     @SuppressLint("MissingPermission")
+    // Three ways out, and each is a different answer: refused for want of a grant,
+    // nothing to do because the fence is already there, and the registration itself.
+    @Suppress("ReturnCount")
     override fun armGeofence(
         nodeId: NodeId,
         latitude: Double,
@@ -337,6 +344,20 @@ class AndroidTriggerHost(
             Log.w(TAG, "not arming geofence for node $nodeId: $reason")
             onResult(GeofenceArmResult.Refused(GeofenceStatusCodes.GEOFENCE_INSUFFICIENT_LOCATION_PERMISSION, reason))
             return ScheduleHandle { }
+        }
+        val spec = GeofenceRegistration.fingerprint(latitude, longitude, radiusMeters, transitions, dwellDelayMs)
+        val pendingIntent = geofencePendingIntent(nodeId)
+        // The fence this node wants is the fence already registered, and the process
+        // has merely restarted. Re-adding it would reset its state inside Play
+        // Services, which re-evaluates and announces the result — and "outside" is
+        // announced as an ordinary EXIT. Since a re-arm happens on every process
+        // start and the process is reaped and resurrected all night, that
+        // announcement *is* the three-in-the-morning bug, generated on a timer by
+        // this app. Platform fences outlive the process, so there is nothing to do.
+        if (GeofenceRegistration.stillStands(registrationStore.remembered(nodeId.value), spec, bootedAt(), now())) {
+            Log.i(TAG, "geofence for node $nodeId is already registered; not re-adding")
+            onResult(GeofenceArmResult.Registered)
+            return ScheduleHandle { releaseGeofence(nodeId, pendingIntent) }
         }
         val transitionTypes = transitions.fold(0) { acc, t -> acc or t.toGmsConstant() }
         val geofence = Geofence.Builder()
@@ -367,7 +388,6 @@ class AndroidTriggerHost(
             .addGeofence(geofence)
             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
             .build()
-        val pendingIntent = geofencePendingIntent(nodeId)
         // Replace any existing geofence for this node, then add the new one —
         // *chained*, not fired side by side. Both act on the same PendingIntent
         // key, so a remove that resolves after the add deletes the fence the add
@@ -381,17 +401,56 @@ class AndroidTriggerHost(
         // Logcat line under a macro that looked perfectly armed.
         geofencingClient.removeGeofences(pendingIntent)
             .continueWithTask { geofencingClient.addGeofences(request, pendingIntent) }
-            .addOnSuccessListener { onResult(GeofenceArmResult.Registered) }
+            .addOnSuccessListener {
+                // Recorded only on success, so a refusal cannot leave a fingerprint
+                // claiming a fence that was never registered — which would then be
+                // believed for a day and leave the macro silently unwatched.
+                registrationStore.record(nodeId.value, RegisteredFence(spec, now(), bootedAt()))
+                onResult(GeofenceArmResult.Registered)
+            }
             .addOnFailureListener { e ->
                 Log.w(TAG, "addGeofences failed for node $nodeId: $e")
                 val code = (e as? ApiException)?.statusCode ?: GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE
                 onResult(GeofenceArmResult.Refused(code, refusalReason(code)))
             }
-        return ScheduleHandle {
-            geofencingClient.removeGeofences(pendingIntent)
-                .addOnFailureListener { e -> Log.w(TAG, "removeGeofences failed for node $nodeId: $e") }
-        }
+        return ScheduleHandle { releaseGeofence(nodeId, pendingIntent) }
     }
+
+    /**
+     * Takes the fence down and stops claiming it is there.
+     *
+     * One method for both ways out of [armGeofence], because the two must not
+     * diverge: the skip path returns without having registered anything, but the
+     * fence it declined to re-add is still very much registered, so its teardown has
+     * exactly the same work to do.
+     *
+     * The order is deliberate. `forget` is a synchronous SharedPreferences write and
+     * `removeGeofences` is a Task, so forgetting first means the worst case of a
+     * remove that resolves late stays what it has always been — a fence briefly
+     * missing until the next arm — rather than becoming a fingerprint that outlives
+     * the fence it describes.
+     */
+    private fun releaseGeofence(nodeId: NodeId, pendingIntent: PendingIntent) {
+        registrationStore.forget(nodeId.value)
+        geofencingClient.removeGeofences(pendingIntent)
+            .addOnFailureListener { e -> Log.w(TAG, "removeGeofences failed for node $nodeId: $e") }
+    }
+
+    override fun geofenceRegisteredAt(nodeId: NodeId): Long? =
+        registrationStore.remembered(nodeId.value)?.registeredAtMillis
+
+    private fun now(): Long = System.currentTimeMillis()
+
+    /**
+     * When the device booted, as a wall-clock instant.
+     *
+     * Wall clock minus uptime. Derived rather than observed because there is nothing
+     * to observe: `BOOT_COMPLETED` may never be delivered on a restricted OEM build,
+     * and Play Services drops every geofence across a reboot whether or not we were
+     * told about it. See [GeofenceRegistration.SAME_BOOT_TOLERANCE_MS] for the drift
+     * this carries.
+     */
+    private fun bootedAt(): Long = System.currentTimeMillis() - SystemClock.elapsedRealtime()
 
     // An ordinary alarm rather than anything geofence-shaped, because Play
     // Services has no "outside for a while" transition to ask for. setWakeup is

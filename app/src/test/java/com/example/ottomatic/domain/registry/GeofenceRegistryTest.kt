@@ -101,31 +101,45 @@ class GeofenceRegistryTest {
         assertEquals(VisibilityRule(ConfigKey("onAway"), setOf("true")), rule)
     }
 
+    /**
+     * The switches do **not** derive the armed transition set, and that is the fix
+     * for "fires once, then never again": `GeofenceGate` judges a transition against
+     * a remembered presence, and a node only ever told about arrivals latches INSIDE
+     * and discards every arrival after the first as a repeat. The mirror image
+     * latches OUTSIDE. What the user is *told* is `emittedEvents`' job, and the
+     * assertions below it are deliberately untouched.
+     */
     @Test
-    fun `transition switches derive the armed transition set`() {
-        assertEquals(setOf(GeofenceTransition.ENTER), GeofenceConfig().platformTransitions)
+    fun `every fence watches both directions whatever the switches say`() {
+        val both = setOf(GeofenceTransition.ENTER, GeofenceTransition.EXIT)
+        assertEquals("the default configuration", both, GeofenceConfig().platformTransitions)
+        assertEquals(both, GeofenceConfig(onEnter = false, onExit = true).platformTransitions)
+        assertEquals(both, GeofenceConfig(onEnter = true, onExit = false).platformTransitions)
         assertEquals(
-            setOf(GeofenceTransition.ENTER, GeofenceTransition.EXIT),
-            GeofenceConfig(onEnter = true, onExit = true).platformTransitions,
-        )
-        assertEquals(
-            setOf(GeofenceTransition.ENTER, GeofenceTransition.EXIT, GeofenceTransition.DWELL),
-            GeofenceConfig(onEnter = true, onExit = true, onDwell = true).platformTransitions,
-        )
-    }
-
-    @Test
-    fun `an empty transition selection still arms enter`() {
-        assertEquals(
-            setOf(GeofenceTransition.ENTER),
+            "nothing chosen at all",
+            both,
             GeofenceConfig(onEnter = false, onExit = false, onDwell = false).platformTransitions,
         )
     }
 
     /**
-     * The away half is not a platform transition, so the two sets diverge: the
-     * fence has to report enter and exit — one starts the countdown, the other
-     * cancels it — while the node publishes neither.
+     * Dwell stays optional because it is not a *direction*: it says nothing about
+     * which side of the line we are on that the enter before it did not, and it
+     * costs the platform a loitering delay to keep counting.
+     */
+    @Test
+    fun `dwell is the one transition the switches still decide`() {
+        assertEquals(
+            setOf(GeofenceTransition.ENTER, GeofenceTransition.EXIT, GeofenceTransition.DWELL),
+            GeofenceConfig(onDwell = true).platformTransitions,
+        )
+    }
+
+    /**
+     * The away half is not a platform transition, so the sets diverge: the fence
+     * reports enter and exit — one starts the countdown, the other cancels it —
+     * while the node publishes neither. Once the rule above, this is now one case of
+     * it rather than the exception that made it necessary.
      */
     @Test
     fun `arming only the away countdown still watches enter and exit`() {
@@ -137,6 +151,22 @@ class GeofenceRegistryTest {
         assertEquals(setOf("away"), awayOnly.emittedEvents)
     }
 
+    /**
+     * What the console writes at INFO rather than DEBUG. A fence now reports
+     * arrivals a node may never publish, purely so its belief can learn from them,
+     * and a persisted line per process start explaining that a macro nobody wrote
+     * did not run is a console nobody reads.
+     */
+    @Test
+    fun `the away countdown's own transitions count as acted on`() {
+        assertEquals(setOf("enter"), GeofenceConfig().actedOnEvents)
+        assertEquals(setOf("exit"), GeofenceConfig(onEnter = false, onExit = true).actedOnEvents)
+        assertEquals(
+            setOf("away", "enter", "exit"),
+            GeofenceConfig(onEnter = false, onAway = true).actedOnEvents,
+        )
+    }
+
     @Test
     fun `emitted events name exactly the switches that are on`() {
         assertEquals(setOf("enter"), GeofenceConfig().emittedEvents)
@@ -144,7 +174,8 @@ class GeofenceRegistryTest {
             setOf("enter", "exit", "dwell", "away"),
             GeofenceConfig(onEnter = true, onExit = true, onDwell = true, onAway = true).emittedEvents,
         )
-        // Same fallback as the transition set: nothing chosen means enter.
+        // The one fallback left, now that the transition set has none: a node with
+        // every switch off publishes arrivals rather than nothing at all.
         assertEquals(
             setOf("enter"),
             GeofenceConfig(onEnter = false, onExit = false, onDwell = false, onAway = false).emittedEvents,
