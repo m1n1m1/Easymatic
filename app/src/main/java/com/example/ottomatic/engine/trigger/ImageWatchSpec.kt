@@ -19,7 +19,27 @@ data class ImageWatchSpec(
     val folder: String = "",
     /** A `FileGlob` pattern over the file name. Blank matches everything. */
     val pattern: String = "",
+    /** Which pictures count at all — see [ImageWatchKind]. */
+    val kind: ImageWatchKind = ImageWatchKind.ANY,
 )
+
+/**
+ * Which pictures a watch reports.
+ *
+ * **A kind rather than a folder**, which is the whole reason `trigger.screenshot` exists
+ * as a node instead of being advice to type a path into `trigger.image_saved`. A screenshot
+ * lives in `Pictures/Screenshots` on some phones and `DCIM/Screenshots` on others, and
+ * [ImageWatchSpec.folder] can carry exactly one path — so the choice is between asking the
+ * user for something they cannot reliably know and letting the watcher resolve it. This is
+ * the second.
+ */
+enum class ImageWatchKind {
+    /** Every picture added to the collection. */
+    ANY,
+
+    /** Only the ones the phone filed as screenshots. */
+    SCREENSHOT,
+}
 
 /**
  * How an [ImageRecord] crosses `TriggerBus` and comes back.
@@ -37,6 +57,21 @@ object ImageEventCodec {
     /** What [TRIGGER_TYPE] holds for a picture, leaving room for video on the same source. */
     const val TYPE_IMAGE: String = "image_saved"
 
+    /**
+     * What [TRIGGER_TYPE] holds for a screenshot.
+     *
+     * The first use of the room [TRIGGER_TYPE] was declared to leave. It keeps the two
+     * triggers' streams apart on a bus they share, so a screenshot never arrives at a node
+     * that asked for any picture and did its own narrowing.
+     */
+    const val TYPE_SCREENSHOT: String = "screenshot"
+
+    /** The [TRIGGER_TYPE] a watch of this [kind] emits. */
+    fun typeFor(kind: ImageWatchKind): String = when (kind) {
+        ImageWatchKind.ANY -> TYPE_IMAGE
+        ImageWatchKind.SCREENSHOT -> TYPE_SCREENSHOT
+    }
+
     private const val URI = "uri"
     private const val PATH = "path"
     private const val NAME = "name"
@@ -48,8 +83,8 @@ object ImageEventCodec {
     private const val TAKEN = "takenAt"
     private const val ADDED = "addedAt"
 
-    fun encode(record: ImageRecord): Map<String, String> = mapOf(
-        TRIGGER_TYPE to TYPE_IMAGE,
+    fun encode(record: ImageRecord, kind: ImageWatchKind = ImageWatchKind.ANY): Map<String, String> = mapOf(
+        TRIGGER_TYPE to typeFor(kind),
         URI to record.uri,
         PATH to record.path,
         NAME to record.name,

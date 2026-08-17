@@ -3,8 +3,8 @@
          Die fünf widget_preview_* sind translatable="false" und fehlen deshalb auch. -->
 
     <string name="accessibility_service_label">Ottomatic Tasten-Auslöser</string>
-    <string name="accessibility_service_summary">Lässt Makros starten, wenn du die Lautstärketasten drückst.</string>
-    <string name="accessibility_service_description">Ottomatic verwendet dies ausschließlich, um Druck auf die Lautstärketasten zu erkennen, damit deine Makros dadurch starten können. Bildschirminhalte werden nie gelesen, und die Funktion der Tasten wird nie verändert — die Lautstärketasten funktionieren weiterhin normal.</string>
+    <string name="accessibility_service_summary">Lässt Makros starten, wenn du die Lautstärketasten drückst, und ermöglicht der Aktion „Screenshot aufnehmen“ die Bildschirmaufnahme.</string>
+    <string name="accessibility_service_description">Ottomatic verwendet dies für zwei Dinge: um Druck auf die Lautstärketasten zu erkennen, damit deine Makros dadurch starten können, und um den Bildschirm aufzunehmen, wenn ein Makro die Aktion „Screenshot aufnehmen“ ausführt. Der Bildschirm wird nie beobachtet — aufgenommen wird nur, wenn ein Makro es verlangt — und die Funktion der Tasten wird nie verändert: die Lautstärketasten funktionieren weiterhin normal.</string>
 
     <string name="shortcut_new_macro_short">Neues Makro</string>
     <string name="shortcut_new_macro_long">Neues Makro erstellen</string>

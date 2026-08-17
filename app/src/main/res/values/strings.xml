@@ -5,8 +5,8 @@
          prominent disclosure: it has to say what the service does and, just as
          importantly, what it does not do. -->
     <string name="accessibility_service_label">Ottomatic button triggers</string>
-    <string name="accessibility_service_summary">Lets macros start when you press the volume buttons.</string>
-    <string name="accessibility_service_description">Ottomatic uses this only to notice volume button presses, so your macros can start when you press them. It never reads screen content, and it never changes what the buttons do — the volume keys keep working normally.</string>
+    <string name="accessibility_service_summary">Lets macros start when you press the volume buttons, and lets the Take Screenshot action capture the screen.</string>
+    <string name="accessibility_service_description">Ottomatic uses this for two things: to notice volume button presses, so your macros can start when you press them, and to capture the screen when a macro runs the Take Screenshot action. It never watches what is on screen — it only captures when a macro asks it to — and it never changes what the buttons do: the volume keys keep working normally.</string>
 
     <!-- The static launcher shortcut. Short label is what fits under an icon;
          long label is what a launcher with room shows instead. -->

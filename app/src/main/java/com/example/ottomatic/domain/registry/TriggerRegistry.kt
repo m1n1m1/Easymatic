@@ -58,6 +58,11 @@ object TriggerRegistry {
         // triggers, rather than down with `trigger.media_mount` — the two share a word
         // and nothing else.
         add(com.example.ottomatic.engine.trigger.ImageSavedTrigger())
+        // The same observer, narrowed — so it belongs here rather than in Tier 3 with the
+        // other accessibility trigger, even though `action.screenshot` is accessibility's.
+        // What arms this is a ContentObserver; taking a screenshot and hearing about one
+        // are unrelated mechanisms that happen to share a subject.
+        add(com.example.ottomatic.engine.trigger.ScreenshotTrigger())
         // Tier 0 — engine-internal triggers.
         add(com.example.ottomatic.engine.trigger.EmptyTrigger())
         add(com.example.ottomatic.engine.trigger.AppInitTrigger())

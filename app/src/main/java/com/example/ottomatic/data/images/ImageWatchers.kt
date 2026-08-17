@@ -14,6 +14,7 @@ import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.FileGlob
 import com.example.ottomatic.engine.trigger.ImageEventCodec
+import com.example.ottomatic.engine.trigger.ImageWatchKind
 import com.example.ottomatic.engine.trigger.ImageWatchSpec
 import com.example.ottomatic.engine.trigger.ScheduleHandle
 import kotlinx.coroutines.CoroutineScope
@@ -179,7 +180,7 @@ class ImageWatchers(
                     TriggerEvent(
                         source = TriggerSource.MEDIA_STORE,
                         triggerNodeId = nodeId,
-                        payload = ImageEventCodec.encode(record),
+                        payload = ImageEventCodec.encode(record, watch.spec.kind),
                     ),
                 )
             }
@@ -196,11 +197,18 @@ class ImageWatchers(
      * The folder test is a prefix rather than equality, so watching `DCIM` catches
      * `DCIM/Camera` — which is what somebody naming a folder means, and what the
      * observer's own `notifyForDescendants` already promises.
+     *
+     * **The screenshot test is here rather than in the query** for the reason the whole
+     * spec is per node: this observer serves every image trigger at once, so a filter
+     * applied to the scan would be wrong for all the other nodes sharing it. Applied here
+     * it runs *after* the high-water mark has advanced, which is harmless — the mark is
+     * about what this node has already considered, not about what it reported.
      */
     @Suppress("ReturnCount") // One exit per filter; a combined expression would be
     // unreadable and would evaluate the folder lookup even when the glob already failed.
     private fun matches(folder: String, name: String, spec: ImageWatchSpec): Boolean {
         if (spec.pattern.isNotBlank() && !FileGlob.matches(name, spec.pattern)) return false
+        if (spec.kind == ImageWatchKind.SCREENSHOT && !Screenshots.isScreenshotFolder(folder)) return false
         if (spec.folder.isBlank()) return true
         val wanted = MediaStoreQueries.relativePathOf(appContext, spec.folder)
             ?: spec.folder.trim('/')

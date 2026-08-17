@@ -1,6 +1,6 @@
 ---
 name: images
-description: Read before touching the picture nodes — `trigger.image_saved`, `value.latest_image`, the six `action.image_*` nodes, the `Images` facade, `MediaImages`/`MediaStoreQueries`/`MediaWrites`/`MediaConsents`/`ImageEditor`/`ImageExif`/`ImageWatchers`/`ImageDiff`/`ImageSeenStore`, `ImageRef` and `MediaConsentActivity`. Covers why MediaStore is right here and wrong for files, the four-rung write-consent ladder, the pending-row race that silently loses camera photos, the bitmap memory ceiling, and the MediaStore behaviours that fail without saying so.
+description: Read before touching the picture nodes — `trigger.image_saved`, `value.latest_image`, the six `action.image_*` nodes, the three screenshot nodes (`action.screenshot`, `trigger.screenshot`, `value.latest_screenshot`), the `Images` facade, `MediaImages`/`MediaStoreQueries`/`MediaWrites`/`MediaConsents`/`ImageEditor`/`ImageExif`/`ImageWatchers`/`ImageDiff`/`ImageSeenStore`/`Screenshots`/`ScreenCapture`, `ImageRef` and `MediaConsentActivity`. Covers why MediaStore is right here and wrong for files, the four-rung write-consent ladder, the pending-row race that silently loses camera photos, the bitmap memory ceiling, why screen capture rides the accessibility service rather than MediaProjection, and the MediaStore behaviours that fail without saying so.
 ---
 
 # Images
@@ -120,6 +120,22 @@ Nodes declare the *modern* name on every API, which keeps `PermissionRequirement
 `MANAGE_MEDIA` is a new `PrerequisiteType` and is declared by **no node** — it lives in `PermissionCatalogue.appLevel`. Every image node works without it by asking, so declaring it would put a permanent amber badge on a working node, which is what `value.nfc` and `usesContacts` both exist to avoid. What it buys is "stop asking me every time", which is a Permissions-screen proposition.
 
 `READ_MEDIA_VISUAL_USER_SELECTED` is deliberately not declared: "Select photos" hands over a fixed set chosen once, which is no use to a trigger whose job is noticing a photo that did not exist yet.
+
+## Screenshots are three nodes over one rule
+
+`action.screenshot`, `trigger.screenshot` and `value.latest_screenshot` all resolve "is this a screenshot?" through one place — `Screenshots` (`data/images/Screenshots.kt`) — and that sharing is the entire justification for them existing rather than being advice to configure `trigger.image_saved`. **The folder differs between phones**: `Pictures/Screenshots` on AOSP and most OEMs, `DCIM/Screenshots` on others. `ImageSavedTrigger`'s KDoc rejects a "Camera / Screenshots / Anywhere" *enum* because an enum invents vocabulary the platform lacks — which is right, and is not an argument against a node whose whole subject is screenshots. `isScreenshotFolder` matches any path **segment** starting with `screenshot`, and reads the folder and **never the file name**: a `Screenshot_….png` sitting in `Download` arrived through a messenger and was never taken here.
+
+**Capture runs on the accessibility service, not MediaProjection.** `AccessibilityService.takeScreenshot` (API 30+) is the only route to the phone's own screen with no per-run consent dialog. MediaProjection needs a second foreground service — the engine's `specialUse` type cannot carry `mediaProjection` — plus a consent Activity started from the background, which `AndroidSystemServices.canStartActivity` documents as blocked for exactly that kind of service. `performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)` answers with a boolean and no picture, so a node on it could not say what it produced. The cost, paid knowingly: `accessibility_service_config.xml` now carries `android:canTakeScreenshot="true"`, so the service's old "it cannot see screen content" contract is narrower than it was — it never *watches*, and captures only while an `action.screenshot` node runs. `canRetrieveWindowContent` stays `false`; a frame is not a view tree. The user-facing description strings say so, in all eight locales, because Android lists the capability on the enable screen.
+
+`ScreenCapture` (`data/accessibility/`) reaches the service through `OttomaticAccessibilityService.instance`, a `@Volatile` handle set in `onServiceConnected` and cleared in **both** `onUnbind` and `onDestroy` — a service can be unbound and rebound without being destroyed. It returns a **software** bitmap and closes the `HardwareBuffer` in a `finally`, and it is serialised process-wide because the platform refuses a second screenshot within about a second (`ERROR_TAKE_SCREENSHOT_INTERVAL_TIME_SHORT`).
+
+Three consequences worth keeping straight:
+
+- **`action.screenshot` declares accessibility and nothing else** — no `READ_MEDIA_IMAGES`. It writes a row this app creates, which needs no media grant on any version, and the folder lookup falls back without one. Declaring it would badge a working node.
+- **A capture is a row Ottomatic owns**, so the whole consent ladder is bypassed — `action.image_edit`'s property, for the same reason.
+- **The trigger fires on Ottomatic's own captures.** The action saves where the phone saves screenshots, and an owner filter would invent a distinction nobody asked for. Wiring `trigger.screenshot` into `action.screenshot` loops, bounded by the debounce and `MAX_NEW_PER_SCAN`, and visibly so on the canvas.
+
+`ImageWatchSpec.kind` (`ANY` / `SCREENSHOT`) is how the trigger narrows the shared observer, applied in `ImageWatchers.matches` **after** the high-water mark advances — the per-node property that lets one observer serve differently-configured nodes. `ImageEventCodec.TYPE_SCREENSHOT` is the first use of the room `TRIGGER_TYPE` was declared to leave.
 
 ## Deferred, and why
 

@@ -58,6 +58,7 @@ import com.example.ottomatic.engine.action.PlaySoundAction
 import com.example.ottomatic.engine.action.RepeatAction
 import com.example.ottomatic.engine.action.RingerModeAction
 import com.example.ottomatic.engine.action.ScreenTimeoutAction
+import com.example.ottomatic.engine.action.ScreenshotAction
 import com.example.ottomatic.engine.action.ScriptAction
 import com.example.ottomatic.engine.action.SetVariableAction
 import com.example.ottomatic.engine.action.ShowMessageAction
@@ -144,6 +145,11 @@ object ActionRegistry {
         // The picture family, after the file family and grouped the same way: the
         // order somebody meets them is find one, look at it, then change it — read
         // before write, and the destructive one last.
+        //
+        // Screenshot leads it, ahead of even the read: it is the one node here that
+        // *makes* a picture rather than addressing one that already existed, so it is
+        // where a macro with no picture yet starts. Everything below it needs one.
+        ScreenshotAction(),
         ImageListAction(),
         ImageInfoAction(),
         ImageEditAction(),

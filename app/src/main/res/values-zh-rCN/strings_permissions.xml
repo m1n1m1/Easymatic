@@ -29,7 +29,7 @@
     <string name="perm_desc_overlay">允许宏在你正看着别处时把对话框显示到屏幕上，以及打开其他应用。没有它，Android 会阻止后台应用做这两件事。</string>
     <string name="perm_desc_notification_listener">允许 Ottomatic 看到其他应用的通知，好让宏能对通知作出反应。</string>
     <string name="perm_desc_notification_policy">允许宏开启和关闭勿扰模式，并把铃声切到静音。</string>
-    <string name="perm_desc_accessibility_service">允许 Ottomatic 检测音量键和电源键的按下。它从不读取屏幕内容。</string>
+    <string name="perm_desc_accessibility_service">允许 Ottomatic 检测音量键和电源键的按下，并为“截屏”动作捕获屏幕。它从不监视屏幕上的内容。</string>
     <string name="perm_desc_battery_optimisation">防止 Android 在后台停止引擎。没有它，宏在重启后可能不会重新启用，基于时间的触发器也可能被延迟。</string>
     <string name="perm_desc_exact_alarm">让定时计划在你指定的那一分钟触发，让等待在那一刻结束。没有它，Android 可以把它和其他工作合并处理，因此可能会晚一些运行。</string>
     <string name="perm_desc_write_settings">允许宏更改屏幕亮度、屏幕超时和自动旋转。</string>
@@ -52,7 +52,8 @@
     <string name="perm_desc_post_notifications">允许 Ottomatic 显示通知：既包括宏发出的通知，也包括告诉你引擎在重启后未能启动的那一条。</string>
     <string name="perm_desc_bluetooth_connect">允许宏开启和关闭蓝牙。</string>
     <string name="perm_desc_unknown">被你某个宏中的节点使用。</string>
-    <string name="perm_rationale_accessibility_keys">Ottomatic 需要无障碍使用权来检测按键。它从不读取屏幕内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。</string>
+    <string name="perm_rationale_accessibility_keys">Ottomatic 需要无障碍使用权来检测按键。它从不监视屏幕上的内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。</string>
+    <string name="perm_rationale_screen_capture">Ottomatic 需要无障碍使用权来捕获屏幕。只在此动作运行期间捕获，从不监视屏幕上的内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。</string>
     <string name="perm_rationale_notification_listener">Ottomatic 需要通知使用权才能看到其他应用的通知。</string>
     <string name="perm_rationale_dnd_policy">Ottomatic 需要勿扰模式使用权才能更改你的响铃模式。</string>
     <string name="perm_rationale_overlay_dialog">Ottomatic 需要显示在其他应用上层的权限，这样在你正忙于手机上别的事情时，这个对话框才能出现在你面前。没有它，该节点会直接取消而不是发问。</string>

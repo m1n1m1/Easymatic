@@ -5,8 +5,19 @@
     all.
 
     accessibilityEventTypes is deliberately omitted (it defaults to none) and
-    canRetrieveWindowContent is false, so key events are the entire surface this
-    service has. It cannot see screen content.
+    canRetrieveWindowContent is false, so this service observes nothing but key
+    events: no window titles, no text on screen, no notion of which app is in
+    front.
+
+    canTakeScreenshot is the one capability beyond that, and it is what
+    action.screenshot runs on. It does not imply canRetrieveWindowContent — a
+    frame is not a view tree — so that stays false. Android lists this capability
+    on the enable screen, which is why accessibility_service_description names it:
+    a person turning this on for the volume-button trigger deserves to read that
+    the same switch lets a macro capture the screen.
+
+    Nothing captures unprompted. takeScreenshot is called from exactly one place
+    (ScreenCapture) and only while an action.screenshot node is executing.
 
     isAccessibilityTool is false because this is an automation feature, not an
     assistive one. Claiming otherwise is what gets apps removed from Play.
@@ -16,6 +27,7 @@
     android:accessibilityFlags="flagRequestFilterKeyEvents"
     android:canRequestFilterKeyEvents="true"
     android:canRetrieveWindowContent="false"
+    android:canTakeScreenshot="true"
     android:description="@string/accessibility_service_description"
     android:isAccessibilityTool="false"
     android:notificationTimeout="0"

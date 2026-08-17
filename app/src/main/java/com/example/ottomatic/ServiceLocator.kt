@@ -12,6 +12,7 @@ import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.data.ai.AiModelCatalog
 import com.example.ottomatic.data.ai.RoutingAi
 import com.example.ottomatic.data.files.RoutingFiles
+import com.example.ottomatic.data.accessibility.ScreenCapture
 import com.example.ottomatic.data.images.MediaImages
 import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.data.GeofencePlaceRepository
@@ -478,7 +479,7 @@ object ServiceLocator {
             // a snapshot taken at start-up would make that work only after a restart.
             // Both storage facades take it, for that one reason.
             files = routingFiles,
-            images = MediaImages(appContext, routingFiles::openStream),
+            images = MediaImages(appContext, routingFiles::openStream, ScreenCapture::grab),
             calendars = calendarsFacade,
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives

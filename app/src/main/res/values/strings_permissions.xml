@@ -34,7 +34,7 @@
     <string name="perm_desc_overlay">Lets a macro put a dialog on screen, and open other apps, while you are looking at something else. Android blocks both from a background app without it.</string>
     <string name="perm_desc_notification_listener">Lets Ottomatic see notifications from other apps, so a macro can react to one.</string>
     <string name="perm_desc_notification_policy">Lets a macro turn Do Not Disturb on and off, and switch the ringer to silent.</string>
-    <string name="perm_desc_accessibility_service">Lets Ottomatic see volume and power button presses. It never reads screen content.</string>
+    <string name="perm_desc_accessibility_service">Lets Ottomatic see volume and power button presses, and capture the screen for the Take Screenshot action. It never watches what is on screen.</string>
     <string name="perm_desc_battery_optimisation">Keeps Android from stopping the engine in the background. Without it, macros may not re-arm after a reboot and time-based triggers can be delayed.</string>
     <string name="perm_desc_exact_alarm">Lets a schedule fire, and a wait end, at the minute you asked for. Without it Android is free to batch it with other work, so it may run late.</string>
     <string name="perm_desc_write_settings">Lets a macro change screen brightness, screen timeout and auto-rotate.</string>
@@ -59,7 +59,8 @@
     <string name="perm_desc_unknown">Used by a node on one of your macros.</string>
 
     <!-- Node-card rationales: why *this node* is asking. -->
-    <string name="perm_rationale_accessibility_keys">Ottomatic needs accessibility access to see button presses. It never reads screen content. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.</string>
+    <string name="perm_rationale_accessibility_keys">Ottomatic needs accessibility access to see button presses. It never watches what is on screen. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.</string>
+    <string name="perm_rationale_screen_capture">Ottomatic needs accessibility access to capture the screen. It captures only while this action runs — it never watches what is on screen. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.</string>
     <string name="perm_rationale_notification_listener">Ottomatic needs notification access to see notifications from other apps.</string>
     <string name="perm_rationale_dnd_policy">Ottomatic needs Do Not Disturb access to change your ringer mode.</string>
     <string name="perm_rationale_overlay_dialog">Ottomatic needs permission to draw over other apps so this dialog can reach you while you are somewhere else on your phone. Without it the node cancels instead of asking.</string>

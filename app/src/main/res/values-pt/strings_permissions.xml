@@ -29,7 +29,7 @@
     <string name="perm_desc_overlay">Permite que uma macro mostre uma caixa de diálogo no ecrã e abra outras aplicações enquanto estás a fazer outra coisa. Sem esta permissão, o Android bloqueia ambas as coisas a partir de uma aplicação em segundo plano.</string>
     <string name="perm_desc_notification_listener">Permite que o Ottomatic veja as notificações de outras aplicações, para que uma macro possa reagir a elas.</string>
     <string name="perm_desc_notification_policy">Permite que uma macro ligue e desligue o Não incomodar, e ponha a campainha em silêncio.</string>
-    <string name="perm_desc_accessibility_service">Permite que o Ottomatic detete pressões nos botões de volume e de energia. Nunca lê o conteúdo do ecrã.</string>
+    <string name="perm_desc_accessibility_service">Permite que o Ottomatic detete pressões nos botões de volume e de energia e que capture o ecrã para a ação Tirar captura de ecrã. Nunca observa o que está no ecrã.</string>
     <string name="perm_desc_battery_optimisation">Impede o Android de parar o motor em segundo plano. Sem esta permissão, as macros podem não voltar a ficar ativas depois de um reinício e os acionadores por tempo podem atrasar-se.</string>
     <string name="perm_desc_exact_alarm">Faz com que um agendamento dispare, e uma espera termine, ao minuto que pediste. Sem esta permissão o Android pode agrupá-lo com outras tarefas, por isso pode correr mais tarde.</string>
     <string name="perm_desc_write_settings">Permite que uma macro altere o brilho do ecrã, o tempo até desligar e a rotação automática.</string>
@@ -52,7 +52,8 @@
     <string name="perm_desc_post_notifications">Permite que o Ottomatic mostre uma notificação: tanto as que uma macro envia como a que te avisa de que o motor não conseguiu arrancar depois de um reinício.</string>
     <string name="perm_desc_bluetooth_connect">Permite que uma macro ligue e desligue o Bluetooth.</string>
     <string name="perm_desc_unknown">Usada por um nó de uma das tuas macros.</string>
-    <string name="perm_rationale_accessibility_keys">O Ottomatic precisa de acesso de acessibilidade para detetar pressões nos botões. Nunca lê o conteúdo do ecrã. Se o interruptor estiver esbatido, abre primeiro Informações da app → ⋮ → Permitir definições restritas.</string>
+    <string name="perm_rationale_accessibility_keys">O Ottomatic precisa de acesso de acessibilidade para detetar pressões nos botões. Nunca observa o que está no ecrã. Se o interruptor estiver esbatido, abre primeiro Informações da app → ⋮ → Permitir definições restritas.</string>
+    <string name="perm_rationale_screen_capture">O Ottomatic precisa de acesso de acessibilidade para capturar o ecrã. Só captura enquanto esta ação corre — nunca observa o que está no ecrã. Se o interruptor estiver esbatido, abre primeiro Informações da app → ⋮ → Permitir definições restritas.</string>
     <string name="perm_rationale_notification_listener">O Ottomatic precisa de acesso às notificações para ver as de outras aplicações.</string>
     <string name="perm_rationale_dnd_policy">O Ottomatic precisa de acesso ao Não incomodar para alterar o teu modo de som.</string>
     <string name="perm_rationale_overlay_dialog">O Ottomatic precisa de permissão para se sobrepor a outras aplicações, para que esta caixa de diálogo te alcance quando estiveres noutro sítio do telemóvel. Sem ela, o nó cancela em vez de perguntar.</string>

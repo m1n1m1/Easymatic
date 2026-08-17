@@ -27,8 +27,20 @@ import com.example.ottomatic.core.trigger.TriggerSource
  * in the graph, where it is visible.
  *
  * The service declares no accessibility event types and cannot retrieve window
- * content, so key events are the entire surface it has. It sees no screen
- * content at any point.
+ * content, so it never *observes* anything but key events: no window titles, no
+ * text on screen, no notion of which app is in front. What it can additionally
+ * do since `action.screenshot` is **capture a single frame when a macro asks it
+ * to** — `android:canTakeScreenshot`, which the config XML grants and
+ * [ScreenCapture] is the only caller of. That is a deliberate widening and worth
+ * naming as one: an on-demand screenshot is screen content. The distinction the
+ * service still keeps is between watching and being asked — nothing here reads
+ * the screen unprompted, on a timer, or in the background.
+ *
+ * [instance] is how a macro reaches it. A bound service cannot be constructed or
+ * looked up, and the volume path only ever emits *outwards* onto [TriggerBus], so
+ * a call going the other way needs the live binding the system holds. It is null
+ * whenever the user has not enabled the service, which is exactly the state
+ * `action.screenshot` reports as a missing grant.
  *
  * Nothing here runs until the user enables the service in Settings; until then
  * it is simply never bound, and `trigger.volume_button` stays silent. That is
@@ -49,6 +61,24 @@ class OttomaticAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) = Unit
 
     override fun onInterrupt() = Unit
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        instance = this
+    }
+
+    // Both, and not only onDestroy: a service can be unbound and rebound without
+    // being destroyed, and a stale reference here would have a macro calling
+    // through to a service the system no longer considers connected.
+    override fun onUnbind(intent: android.content.Intent?): Boolean {
+        instance = null
+        return super.onUnbind(intent)
+    }
+
+    override fun onDestroy() {
+        instance = null
+        super.onDestroy()
+    }
 
     @Suppress("ReturnCount") // A guard chain, and every exit is the same `false`.
     override fun onKeyEvent(event: KeyEvent?): Boolean {
@@ -86,6 +116,16 @@ class OttomaticAccessibilityService : AccessibilityService() {
     }
 
     companion object {
+        /**
+         * The connected service, or null when the user has not enabled it.
+         *
+         * `@Volatile` because it is written on the main thread by the system and read
+         * from whichever coroutine a macro happens to be running on.
+         */
+        @Volatile
+        var instance: OttomaticAccessibilityService? = null
+            private set
+
         const val TRIGGER_TYPE = "key"
 
         const val KEY_VOLUME_UP = "volume_up"

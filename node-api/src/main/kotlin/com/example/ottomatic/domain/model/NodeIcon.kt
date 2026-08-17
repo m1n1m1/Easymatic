@@ -123,6 +123,20 @@ enum class NodeIcon {
     IMAGE_EDIT,
 
     /**
+     * A picture *of this phone*, as opposed to one somebody's camera made.
+     *
+     * The third image icon, and it separates the thing [IMAGE] cannot: every other node in
+     * that family addresses a photo that arrived from outside — a camera, a download, a
+     * messenger — where these three are about the screen itself. Somebody scanning a graph
+     * for "where does this capture the screen?" is looking for a phone outline, and a
+     * picture frame answers a different question.
+     *
+     * Not [CAMERA]'s either, which is the other near miss: a camera icon promises the
+     * *outside world*, and a screenshot is the one picture that is emphatically not of it.
+     */
+    SCREENSHOT,
+
+    /**
      * A camera taking a picture, as opposed to a picture that already exists.
      *
      * The distinction [IMAGE] cannot make, and the one an `@IntentChoice` chooser button

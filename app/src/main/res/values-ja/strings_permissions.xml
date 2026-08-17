@@ -29,7 +29,7 @@
     <string name="perm_desc_overlay">他のことをしている最中でも、マクロがダイアログを表示したり他のアプリを開いたりできるようにします。これがないと、Android はバックグラウンドのアプリに対してどちらも許可しません。</string>
     <string name="perm_desc_notification_listener">他のアプリの通知を Ottomatic が見られるようにし、マクロがそれに反応できるようにします。</string>
     <string name="perm_desc_notification_policy">マクロがサイレントモードのオン・オフを切り替えたり、着信音をサイレントにしたりできるようにします。</string>
-    <string name="perm_desc_accessibility_service">音量ボタンと電源ボタンの押下を Ottomatic が検知できるようにします。画面の内容を読み取ることはありません。</string>
+    <string name="perm_desc_accessibility_service">音量ボタンと電源ボタンの押下を Ottomatic が検知し、「スクリーンショットを撮る」アクションのために画面を取り込めるようにします。画面を監視することはありません。</string>
     <string name="perm_desc_battery_optimisation">Android がバックグラウンドでエンジンを停止するのを防ぎます。これがないと、再起動後にマクロが再び有効にならなかったり、時刻ベースのトリガーが遅れたりすることがあります。</string>
     <string name="perm_desc_exact_alarm">スケジュールの発火と待機の終了を、指定した分ちょうどに行えるようにします。これがないと Android は他の処理とまとめてよいことになり、遅れて実行される場合があります。</string>
     <string name="perm_desc_write_settings">マクロが画面の明るさ、画面消灯までの時間、自動回転を変更できるようにします。</string>
@@ -52,7 +52,8 @@
     <string name="perm_desc_post_notifications">Ottomatic が通知を表示できるようにします。マクロが出す通知だけでなく、再起動後にエンジンが起動できなかったことを知らせる通知も含みます。</string>
     <string name="perm_desc_bluetooth_connect">マクロが Bluetooth のオン・オフを切り替えられるようにします。</string>
     <string name="perm_desc_unknown">あなたのいずれかのマクロのノードが使用しています。</string>
-    <string name="perm_rationale_accessibility_keys">ボタンの押下を検知するために、Ottomatic はユーザー補助へのアクセスを必要とします。画面の内容を読み取ることはありません。スイッチがグレー表示の場合は、先に アプリ情報 → ⋮ → 制限された設定を許可 を開いてください。</string>
+    <string name="perm_rationale_accessibility_keys">ボタンの押下を検知するために、Ottomatic はユーザー補助へのアクセスを必要とします。画面を監視することはありません。スイッチがグレー表示の場合は、先に アプリ情報 → ⋮ → 制限された設定を許可 を開いてください。</string>
+    <string name="perm_rationale_screen_capture">画面を取り込むために、Ottomatic はユーザー補助へのアクセスを必要とします。取り込むのはこのアクションの実行中だけで、画面を監視することはありません。スイッチがグレー表示の場合は、先に アプリ情報 → ⋮ → 制限された設定を許可 を開いてください。</string>
     <string name="perm_rationale_notification_listener">他のアプリの通知を見るために、Ottomatic は通知へのアクセスを必要とします。</string>
     <string name="perm_rationale_dnd_policy">着信音モードを変更するために、Ottomatic はサイレントモードへのアクセスを必要とします。</string>
     <string name="perm_rationale_overlay_dialog">端末で他のことをしている最中でもこのダイアログが届くように、Ottomatic は他のアプリの上に表示する権限を必要とします。これがないと、このノードは尋ねる代わりにキャンセルします。</string>

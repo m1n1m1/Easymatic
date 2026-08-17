@@ -137,6 +137,9 @@ private fun runtimeDescriptionRes(manifest: String?): Int = when (manifest) {
 internal fun rationaleRes(requirement: PermissionRequirement): Int? =
     when (requirement.rationaleKey) {
         "accessibility.keys" -> R.string.perm_rationale_accessibility_keys
+        // One switch, two rationales: what the volume trigger cannot do without it and
+        // what this cannot are different sentences, and the card is on the node.
+        "screen.capture" -> R.string.perm_rationale_screen_capture
         "notification.listener" -> R.string.perm_rationale_notification_listener
         "dnd.policy" -> R.string.perm_rationale_dnd_policy
         "overlay.dialog" -> R.string.perm_rationale_overlay_dialog

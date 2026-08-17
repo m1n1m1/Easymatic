@@ -117,6 +117,41 @@ interface Images {
     suspend fun encodeForModel(ref: String): ImageEncoded
 
     /**
+     * Captures the screen and saves it as a new picture.
+     *
+     * **The one member that creates a picture out of nothing**, where every other one
+     * finds or changes one that already existed. It lives here rather than behind a
+     * facade of its own on this interface's own stated rule — *"named for images and
+     * shaped for media"* — and on a harder constraint: what comes back is a row in this
+     * collection, and the write path that makes one is `internal` to the media layer, so
+     * the capture-and-save pair cannot be composed anywhere else without opening that up.
+     *
+     * Blank [toFolder] means the folder this phone already keeps screenshots in, which
+     * differs between phones and is the implementation's business to know. Blank [name]
+     * generates one in Android's own `Screenshot_<date>_<time>.png` shape.
+     *
+     * **The result is always a row Ottomatic owns**, so no consent ladder applies on any
+     * version — the property that also keeps `action.image_edit` clear of it.
+     *
+     * Never throws. No accessibility access, an Android older than 11, an app that
+     * forbids screenshots, the platform's one-a-second rate limit and a failed write all
+     * come back as [ImageWrite.error] with `changed = false`.
+     */
+    suspend fun capture(toFolder: String, name: String, whenExists: WhenExists): ImageWrite
+
+    /**
+     * The most recent screenshot on this phone, or null when there is none or it cannot
+     * be read.
+     *
+     * The **second** member the pull side may call, and it qualifies on exactly [latest]'s
+     * reasoning: a bounded cursor read is cheap, repeatable and answers a bare null, which
+     * is the whole contract of a value node. It is a separate member rather than a [query]
+     * with a folder because *which* folder is not something a caller can be asked to know
+     * — see the note on [capture].
+     */
+    suspend fun latestScreenshot(): ImageRecord?
+
+    /**
      * Whether this phone has a recoverable bin for pictures at all (Android 11+).
      *
      * A **capability rather than an outcome**, and it is on the facade rather than being
@@ -430,6 +465,11 @@ object NoImages : Images {
 
     override suspend fun delete(ref: String, toTrash: Boolean) = ImageWrite(error = UNAVAILABLE)
     override suspend fun encodeForModel(ref: String) = ImageEncoded(error = UNAVAILABLE)
+
+    override suspend fun capture(toFolder: String, name: String, whenExists: WhenExists) =
+        ImageWrite(error = UNAVAILABLE)
+
+    override suspend fun latestScreenshot(): ImageRecord? = null
 
     private const val UNAVAILABLE = "Picture access is not available on this phone"
 }

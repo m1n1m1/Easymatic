@@ -29,7 +29,7 @@
     <string name="perm_desc_overlay">Erlaubt einem Makro, einen Dialog anzuzeigen und andere Apps zu öffnen, während du gerade etwas anderes machst. Ohne diese Berechtigung blockiert Android beides aus dem Hintergrund.</string>
     <string name="perm_desc_notification_listener">Erlaubt Ottomatic, Benachrichtigungen anderer Apps zu sehen, damit ein Makro darauf reagieren kann.</string>
     <string name="perm_desc_notification_policy">Erlaubt einem Makro, „Bitte nicht stören“ ein- und auszuschalten und das Klingeln stummzuschalten.</string>
-    <string name="perm_desc_accessibility_service">Erlaubt Ottomatic, Lautstärke- und Ein-/Aus-Tastendrücke zu erkennen. Bildschirminhalte werden nie gelesen.</string>
+    <string name="perm_desc_accessibility_service">Erlaubt Ottomatic, Lautstärke- und Ein-/Aus-Tastendrücke zu erkennen und für die Aktion „Screenshot aufnehmen“ den Bildschirm aufzunehmen. Der Bildschirm wird nie beobachtet.</string>
     <string name="perm_desc_battery_optimisation">Verhindert, dass Android die Engine im Hintergrund stoppt. Ohne diese Berechtigung werden Makros nach einem Neustart eventuell nicht wieder scharfgeschaltet und zeitbasierte Auslöser können sich verzögern.</string>
     <string name="perm_desc_exact_alarm">Sorgt dafür, dass ein Zeitplan auslöst und eine Wartezeit endet, wenn du es willst — auf die Minute. Ohne diese Berechtigung darf Android das mit anderen Aufgaben bündeln, es kann also später passieren.</string>
     <string name="perm_desc_write_settings">Erlaubt einem Makro, Bildschirmhelligkeit, Bildschirm-Timeout und automatisches Drehen zu ändern.</string>
@@ -50,7 +50,8 @@
     <string name="perm_desc_unknown">Wird von einem Knoten in einem deiner Makros verwendet.</string>
 
     <!-- Begründungen auf der Knotenkarte: warum *dieser Knoten* fragt. -->
-    <string name="perm_rationale_accessibility_keys">Ottomatic braucht Bedienungshilfen-Zugriff, um Tastendrücke zu erkennen. Bildschirminhalte werden nie gelesen. Falls der Schalter ausgegraut ist, öffne zuerst App-Info → ⋮ → Eingeschränkte Einstellungen zulassen.</string>
+    <string name="perm_rationale_accessibility_keys">Ottomatic braucht Bedienungshilfen-Zugriff, um Tastendrücke zu erkennen. Der Bildschirm wird nie beobachtet. Falls der Schalter ausgegraut ist, öffne zuerst App-Info → ⋮ → Eingeschränkte Einstellungen zulassen.</string>
+    <string name="perm_rationale_screen_capture">Ottomatic braucht Bedienungshilfen-Zugriff, um den Bildschirm aufzunehmen. Aufgenommen wird nur, während diese Aktion läuft — der Bildschirm wird nie beobachtet. Falls der Schalter ausgegraut ist, öffne zuerst App-Info → ⋮ → Eingeschränkte Einstellungen zulassen.</string>
     <string name="perm_rationale_notification_listener">Ottomatic braucht Benachrichtigungszugriff, um Benachrichtigungen anderer Apps zu sehen.</string>
     <string name="perm_rationale_dnd_policy">Ottomatic braucht Zugriff auf „Bitte nicht stören“, um deinen Klingelmodus zu ändern.</string>
     <string name="perm_rationale_overlay_dialog">Ottomatic braucht die Berechtigung, über anderen Apps anzuzeigen, damit dieser Dialog dich auch erreicht, wenn du gerade woanders auf deinem Telefon bist. Ohne sie bricht der Knoten ab, statt zu fragen.</string>

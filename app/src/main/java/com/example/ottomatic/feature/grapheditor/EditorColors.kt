@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Screenshot
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Psychology
@@ -285,6 +286,9 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // Crop marks rather than the frame, for the one image node that rewrites pixels.
     NodeIcon.IMAGE_EDIT -> Icons.Filled.Crop
     // A lens rather than a frame: this marks "take one", where IMAGE marks "one that exists".
+    // A phone with a frame around it rather than IMAGE's picture: these nodes are about
+    // this screen, not about a photograph of somewhere else.
+    NodeIcon.SCREENSHOT -> Icons.Filled.Screenshot
     NodeIcon.CAMERA -> Icons.Filled.PhotoCamera
     // The code itself rather than the camera that reads it — what the button promises is a
     // value, and which sensor another app uses to get it is not the user's question.

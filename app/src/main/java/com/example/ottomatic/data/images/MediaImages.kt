@@ -1,9 +1,11 @@
 package com.example.ottomatic.data.images
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.Base64
 import android.net.Uri
 import android.provider.MediaStore
+import com.example.ottomatic.data.accessibility.ScreenGrab
 import com.example.ottomatic.core.service.ImageEdit
 import com.example.ottomatic.core.service.ImageEncoded
 import com.example.ottomatic.core.service.ImageFacts
@@ -38,7 +40,7 @@ import kotlinx.coroutines.withContext
  * Everything runs on [Dispatchers.IO]: a cursor is a binder round trip, an edit is a decode,
  * and both are called from the engine's coroutines.
  */
-@Suppress("TooManyFunctions") // Seven facade members plus the private helpers that
+@Suppress("TooManyFunctions") // Nine facade members plus the private helpers that
 // keep each of them short; splitting would separate a member from its own mapping.
 class MediaImages(
     context: Context,
@@ -52,6 +54,16 @@ class MediaImages(
      * Null leaves the fallback out, which is what an engine-only test wants.
      */
     private val openOutsideCollection: (suspend (String) -> InputStream?)? = null,
+    /**
+     * How to capture one frame of the screen.
+     *
+     * Handed in for [openOutsideCollection]'s reason and a second one: capturing runs
+     * through the accessibility service, which is a different corner of `data/` entirely,
+     * and this class has no business knowing that is where a screenshot comes from. Null
+     * leaves `capture` reporting that it is unavailable, which is what an engine-only test
+     * wants.
+     */
+    private val screenGrab: (suspend () -> ScreenGrab)? = null,
 ) : Images {
 
     private val appContext = context.applicationContext
@@ -92,6 +104,86 @@ class MediaImages(
             sortOrder = "${MediaStore.MediaColumns.DATE_ADDED} DESC, ${MediaStore.MediaColumns._ID} DESC",
             limit = 1,
         ) { MediaStoreQueries.recordOf(appContext, it) }?.firstOrNull()
+    }
+
+    override suspend fun latestScreenshot(): ImageRecord? = withContext(Dispatchers.IO) {
+        val (selection, args) = Screenshots.selection()
+        // `LIKE` narrows the cursor; `isScreenshotFolder` decides. The same split the
+        // glob gets in `query` above, and for the same reason: `LIKE` cannot tell a
+        // folder segment from a file name, so it would report a picture *called*
+        // "screenshot" that arrived through a messenger.
+        MediaStoreQueries.map(
+            context = appContext,
+            selection = selection,
+            args = args,
+            sortOrder = Screenshots.sortOrder(),
+            limit = SCREENSHOT_SCAN_LIMIT,
+        ) { MediaStoreQueries.recordOf(appContext, it) }
+            ?.firstOrNull { Screenshots.isScreenshotFolder(it.folder) }
+    }
+
+    override suspend fun capture(
+        toFolder: String,
+        name: String,
+        whenExists: WhenExists,
+    ): ImageWrite = withContext(Dispatchers.IO) {
+        val grab = screenGrab?.invoke() ?: return@withContext ImageWrite(error = NO_CAPTURE)
+        val bitmap = when (grab) {
+            is ScreenGrab.Failed -> return@withContext ImageWrite(error = grab.reason)
+            is ScreenGrab.Captured -> grab.bitmap
+        }
+
+        try {
+            val target = MediaWrites.create(
+                context = appContext,
+                folder = toFolder.ifBlank { Screenshots.writeFolder(appContext) },
+                name = name.ifBlank { generatedName() },
+                mimeType = SCREENSHOT_MIME,
+                whenExists = whenExists,
+            ) ?: return@withContext ImageWrite(error = "The screenshot could not be created")
+
+            if (target.skipped) {
+                return@withContext ImageWrite(
+                    changed = false,
+                    image = ImageRecord(name = target.name, folder = target.relativeFolder),
+                )
+            }
+
+            val written = runCatching {
+                MediaWrites.open(appContext, target)?.use { stream ->
+                    // PNG at full quality: a screenshot is mostly text and flat colour,
+                    // which is what PNG is for and what JPEG ruins. Anybody wanting a
+                    // smaller file has `action.image_edit`, where the trade is visible.
+                    bitmap.compress(Bitmap.CompressFormat.PNG, PNG_QUALITY, stream)
+                } ?: false
+            }.getOrDefault(false)
+
+            if (!written) {
+                // Never leave a half-written row behind: an empty picture in the gallery
+                // is worse than none, because nothing about it says it failed.
+                MediaWrites.abandon(appContext, target)
+                return@withContext ImageWrite(error = "The screenshot could not be saved")
+            }
+            MediaWrites.publish(appContext, target)
+
+            ImageWrite(
+                changed = true,
+                image = rowAt(target.uri) ?: ImageRecord(
+                    uri = target.uri.toString(),
+                    name = target.name,
+                    folder = target.relativeFolder,
+                    mimeType = SCREENSHOT_MIME,
+                    width = bitmap.width,
+                    height = bitmap.height,
+                ),
+            )
+        } finally {
+            // The frame is a full-resolution ARGB_8888 copy — on a modern phone some tens
+            // of megabytes — and the caller has no handle to it. Releasing it here rather
+            // than waiting for the collector is what keeps a macro that screenshots on a
+            // loop from walking into the heap ceiling.
+            bitmap.recycle()
+        }
     }
 
     override suspend fun details(ref: String): ImageFacts = withContext(Dispatchers.IO) {
@@ -433,11 +525,33 @@ class MediaImages(
     private fun unreadable(ref: String) =
         "\"$ref\" is not a picture Ottomatic can name — check for .. or a stray backslash"
 
+    /** Android's own shape, so a capture sorts and reads beside the ones taken by hand. */
+    private fun generatedName(): String {
+        val stamp = java.text.SimpleDateFormat(NAME_STAMP, java.util.Locale.US)
+            .format(java.util.Date())
+        return "Screenshot_$stamp.png"
+    }
+
     private companion object {
         const val NO_ACCESS = "Ottomatic does not have access to your photos"
         const val NO_SUCH_PICTURE = "There is no picture there"
         const val FALLBACK_MIME = "image/jpeg"
         const val EDITED_SUFFIX = "-edited"
         const val MILLIS_PER_SECOND = 1000L
+        const val NO_CAPTURE = "Taking screenshots is not available on this phone"
+        const val SCREENSHOT_MIME = "image/png"
+        const val NAME_STAMP = "yyyyMMdd_HHmmss"
+
+        /** PNG ignores it, but `compress` demands one. */
+        const val PNG_QUALITY = 100
+
+        /**
+         * How far down the newest-first list `latestScreenshot` looks.
+         *
+         * The `LIKE` has already narrowed to rows mentioning "screenshot", so the answer
+         * is nearly always the first row; the rest of the budget covers a phone where that
+         * word turns up in a file name outside any screenshot folder.
+         */
+        const val SCREENSHOT_SCAN_LIMIT = 50
     }
 }
