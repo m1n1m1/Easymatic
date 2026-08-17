@@ -793,3 +793,7 @@ setup_app_access_subtitle	あなたのマクロを実行できる他のアプリ
 workflowlist_search_placeholder	マクロを検索
 workflowlist_clear_search	検索をクリア
 workflowlist_no_matches	一致するマクロはありません。
+intent_choice_placeholder	入力するか、アプリに任せる
+intent_choice_ask_an_app	アプリに任せる
+intent_choice_no_app	この端末には対応できるアプリがありません。値を直接入力することはできます。
+intent_choice_needs_camera	別のアプリが撮影する前に、Ottomatic にカメラへのアクセスが必要です。タップして許可し、もう一度タップしてください。

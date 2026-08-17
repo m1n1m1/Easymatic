@@ -10,6 +10,7 @@ import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.config.ApiToken
 import com.example.ottomatic.domain.model.config.ContactName
 import com.example.ottomatic.domain.model.config.FilePath
+import com.example.ottomatic.domain.model.config.IntentChoice
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.PhoneNumber
@@ -147,6 +148,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                         suggested = annotations.filterIsInstance<Suggested>().firstOrNull(),
                         apiToken = annotations.any { it is ApiToken },
                         pluginChoice = annotations.filterIsInstance<PluginChoice>().firstOrNull(),
+                        intentChoice = annotations.filterIsInstance<IntentChoice>().firstOrNull(),
                         key = key,
                     ),
                     defaultValue = formDefault(element, defaultValues[key].orEmpty()),
@@ -199,6 +201,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         suggested: Suggested?,
         apiToken: Boolean,
         pluginChoice: PluginChoice?,
+        intentChoice: IntentChoice?,
         key: String,
     ): ConfigFieldType<*> {
         // A DateTime reports `STRING`, so it has to be recognised by name before the
@@ -210,7 +213,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             val widgets =
                 widgetFlags(
                     picker, ports, tools, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken,
-                    pluginChoice,
+                    pluginChoice, intentChoice,
                 )
             check(widgets.none { it }) {
                 "Config property '${descriptor.serialName}.$key' is annotated with a widget but is a date; " +
@@ -220,13 +223,13 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         }
         checkWidgetAnnotations(
             element, picker, ports, tools, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken,
-            pluginChoice, key,
+            pluginChoice, intentChoice, key,
         )
         return when (element.kind) {
             SerialKind.ENUM -> ConfigFieldType.ENUM(enumOptions(element))
             PrimitiveKind.STRING, PrimitiveKind.CHAR -> stringFormType(
                 multiline, picker, ports, tools, phone, timeOfDay, wifi, contactName, filePath, suggested,
-                apiToken, pluginChoice,
+                apiToken, pluginChoice, intentChoice,
             )
             PrimitiveKind.INT, PrimitiveKind.LONG, PrimitiveKind.SHORT, PrimitiveKind.BYTE -> ConfigFieldType.INT
             PrimitiveKind.BOOLEAN -> ConfigFieldType.BOOL
@@ -246,7 +249,10 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
      * Split from [formTypeOf] so the Kotlin-type table and the annotation table can
      * each be read on their own.
      */
-    @Suppress("LongParameterList") // One parameter per widget annotation; they are independent.
+    // Inherent: one parameter and one branch per widget annotation, which is what this
+    // function is. The same suppression [formTypeOf] and `PickerField` carry, for the same
+    // reason — the complexity is the size of the widget set, not of the logic.
+    @Suppress("LongParameterList", "CyclomaticComplexMethod")
     private fun stringFormType(
         multiline: Boolean,
         picker: Picker?,
@@ -260,6 +266,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         suggested: Suggested?,
         apiToken: Boolean,
         pluginChoice: PluginChoice?,
+        intentChoice: IntentChoice?,
     ): ConfigFieldType<String> = when {
         ports -> ConfigFieldType.PORT_LIST
         tools != null -> ConfigFieldType.TOOL_LIST(tools.scopedBy.toList())
@@ -271,6 +278,17 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             source = pluginChoice.source,
             scopedBy = pluginChoice.scopedBy.toList(),
             chooser = pluginChoice.chooser,
+        )
+        // Copied across whole, with nothing stamped on: unlike a plugin choice there is no
+        // provider to name, because what answers this is whatever app the phone resolves.
+        intentChoice != null -> ConfigFieldType.INTENT_CHOICE(
+            action = intentChoice.action,
+            mimeType = intentChoice.mimeType,
+            category = intentChoice.category,
+            inputExtras = intentChoice.inputExtras.toList(),
+            resultExtra = intentChoice.resultExtra,
+            outputExtra = intentChoice.outputExtra,
+            icon = intentChoice.icon,
         )
         phone -> ConfigFieldType.PHONE
         timeOfDay -> ConfigFieldType.TIME_OF_DAY
@@ -302,6 +320,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         suggested: Suggested?,
         apiToken: Boolean,
         pluginChoice: PluginChoice?,
+        intentChoice: IntentChoice?,
         key: String,
     ) {
         check(picker == null || element.kind == PrimitiveKind.STRING) {
@@ -345,15 +364,16 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                 "${element.kind}; a path field stores the path itself, so it must be a String"
         }
         checkPluginChoice(element, pluginChoice, key)
+        checkIntentChoice(element, intentChoice, key)
         val widgets = widgetFlags(
             picker, ports, tools, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken,
-            pluginChoice,
+            pluginChoice, intentChoice,
         ).count { it }
         check(widgets <= 1) {
             "Config property '${descriptor.serialName}.$key' is annotated with $widgets widgets " +
                 "(@Picker, @Ports, @Tools, @PhoneNumber, @TimeOfDay, @WifiNetwork, @ContactName, " +
                 "@FilePath, " +
-                "@Suggested, @ApiToken, @PluginChoice); a property has one editor"
+                "@Suggested, @ApiToken, @PluginChoice, @IntentChoice); a property has one editor"
         }
     }
 
@@ -380,6 +400,36 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
     }
 
     /**
+     * The three things `@IntentChoice` needs beyond being one widget among many.
+     *
+     * Its own function on [checkPluginChoice]'s reasoning: the rest of the list only has to
+     * be on a `String`, while this one carries values the host turns into a launch. Each
+     * failure is one nobody could diagnose from the phone — a blank action resolves to
+     * nothing and reads as a dead button; an extra with no `=` in it is a key that silently
+     * never arrives at the app being asked.
+     *
+     * The [IntentChoice.action] is deliberately **not** checked against a list of known
+     * actions. That is the open shape the annotation documents, and a list here would be a
+     * closed set wearing an open set's clothes.
+     */
+    private fun checkIntentChoice(element: SerialDescriptor, intentChoice: IntentChoice?, key: String) {
+        if (intentChoice == null) return
+        check(element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @IntentChoice but is a " +
+                "${element.kind}; what another app answers with is text, so it must be a String"
+        }
+        check(intentChoice.action.isNotBlank()) {
+            "Config property '${descriptor.serialName}.$key' is annotated @IntentChoice with a blank " +
+                "action; the action is what decides which app is asked, so it has to name one"
+        }
+        val malformed = intentChoice.inputExtras.firstOrNull { !it.contains('=') }
+        check(malformed == null) {
+            "Config property '${descriptor.serialName}.$key' is annotated @IntentChoice with the input " +
+                "extra '$malformed', which has no '='; each entry is one 'key=value' pair"
+        }
+    }
+
+    /**
      * Which widget annotations are present, as a flat list of flags.
      *
      * One list read by both callers, so "the set of things that claim a field's
@@ -400,9 +450,10 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         suggested: Suggested?,
         apiToken: Boolean,
         pluginChoice: PluginChoice?,
+        intentChoice: IntentChoice?,
     ): List<Boolean> = listOf(
         picker != null, ports, tools != null, phone, timeOfDay, wifi, contactName, filePath,
-        suggested != null, apiToken, pluginChoice != null,
+        suggested != null, apiToken, pluginChoice != null, intentChoice != null,
     )
 
     private fun enumOptions(element: SerialDescriptor): List<ConfigOption> {

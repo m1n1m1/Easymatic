@@ -98,6 +98,7 @@ import com.example.ottomatic.feature.apps.AppPickerField
 import com.example.ottomatic.feature.calendar.CalendarPickerField
 import com.example.ottomatic.feature.contacts.ContactNameField
 import com.example.ottomatic.feature.files.FilePathField
+import com.example.ottomatic.feature.intent.IntentChoiceField
 import com.example.ottomatic.feature.contacts.PhoneNumberField
 import com.example.ottomatic.feature.geofence.GeofencePlacePickerOverlay
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
@@ -311,6 +312,19 @@ internal fun ConfigFieldEditor(
                 // access grant *and* fills the path in. Typing works afterwards for
                 // anything the grant covers.
                 FilePathField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    labelSlot = labelSlot,
+                    colors = colors,
+                )
+            }
+            is ConfigFieldType.INTENT_CHOICE -> {
+                // The one chooser this file does not draw and does not know the shape of:
+                // what opens is whatever the declaration named and PackageManager resolved.
+                // It is also the only widget here a plugin may declare, because it reaches
+                // nothing of the host's — see `ConfigFieldTypeWire`.
+                IntentChoiceField(
+                    type = type,
                     value = value,
                     onValueChange = onValueChange,
                     labelSlot = labelSlot,

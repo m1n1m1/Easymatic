@@ -23,6 +23,7 @@ import com.example.ottomatic.nodeapi.wire.ExecOutputsWire
 import com.example.ottomatic.nodeapi.wire.NodeDeclarationWire
 import com.example.ottomatic.nodeapi.wire.PortWire
 import com.example.ottomatic.nodeapi.wire.resolvedIcon
+import com.example.ottomatic.nodeapi.wire.resolvedIntentIcon
 import com.example.ottomatic.nodeapi.wire.toItemSchema
 
 /**
@@ -129,6 +130,18 @@ internal object PluginNodeMapping {
             scopedBy = scopedBy,
             providerTypeId = typeId,
             chooser = chooser,
+        )
+        // Copied whole, with nothing stamped on. A plugin choice has to learn who answers
+        // it; this one has no provider to name — what answers it is whichever app the phone
+        // resolves the action to, which is not a fact the host holds either.
+        is ConfigFieldTypeWire.IntentChoiceOf -> ConfigFieldType.INTENT_CHOICE(
+            action = action,
+            mimeType = mimeType,
+            category = category,
+            inputExtras = inputExtras,
+            resultExtra = resultExtra,
+            outputExtra = outputExtra,
+            icon = resolvedIntentIcon(),
         )
     }
 }

@@ -2,6 +2,7 @@ package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.ChoiceChooser
 import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.SuggestionSource
@@ -21,9 +22,11 @@ import com.example.ottomatic.domain.model.config.SuggestionSource
  * *not offered to plugin nodes* — [PICKER], [SUGGESTED], [PORT_LIST], [PHONE],
  * [WIFI_NETWORK], [CONTACT_NAME], [FILE_PATH], [TOOL_LIST] and [API_TOKEN] each reach a
  * host library, a host `CompositionLocal` or a host trust boundary the plugin boundary
- * deliberately does not cross. [PLUGIN_CHOICE] is the one that runs the other way: it
- * exists *only* for plugin nodes, because it is the shape that lets one offer a list of
- * its own without being handed any of the user's. See `ConfigFieldTypeWire`.
+ * deliberately does not cross. Two run the other way. [PLUGIN_CHOICE] exists *only* for
+ * plugin nodes, because it is the shape that lets one offer a list of its own without being
+ * handed any of the user's. [INTENT_CHOICE] is offered to **both**, and it is the only
+ * chooser that is: what it reaches is another app on the phone, which is not the host's to
+ * withhold. See `ConfigFieldTypeWire`.
  */
 sealed interface ConfigFieldType<out T> {
     /** Single-line string. */
@@ -111,6 +114,36 @@ sealed interface ConfigFieldType<out T> {
      * [com.example.ottomatic.domain.model.FilePath].
      */
     data object FILE_PATH : ConfigFieldType<String>
+
+    /**
+     * An **editable** field whose chooser is another app on the phone, reached by an
+     * implicit `Intent` (declared with `@IntentChoice`).
+     *
+     * The generalisation of what [FILE_PATH] and `PickerKind.SOUND` each do by hand: a
+     * launcher, an intent and a result-to-string conversion, declared instead of written.
+     * What separates it from [PICKER] and [PLUGIN_CHOICE] is where the answer comes from —
+     * a library of the user's, a list of the plugin's, or **whatever app answers the
+     * question** — and it is that third source which makes it the one chooser a plugin may
+     * declare: it reaches nothing of the host's.
+     *
+     * Editable on [FILE_PATH]'s argument: a chooser can only offer what exists now, so a
+     * picture a later run will write is unreachable through one, and the field has to stay
+     * `@Wired` so a path can be built upstream.
+     *
+     * Every member here is inert declaration data — an action, a type, a category and some
+     * string extras. There is deliberately **no component or package**, so the launch is
+     * always implicit and always resolved by `PackageManager`. See `@IntentChoice` for what
+     * the open [action] costs and why it is stated rather than guarded.
+     */
+    data class INTENT_CHOICE(
+        val action: String,
+        val mimeType: String = "",
+        val category: String = "",
+        val inputExtras: List<String> = emptyList(),
+        val resultExtra: String = "",
+        val outputExtra: String = "",
+        val icon: NodeIcon = NodeIcon.BOLT,
+    ) : ConfigFieldType<String>
 
     /** One of [options], stored as the option's [ConfigOption.value]. */
     data class ENUM(val options: List<ConfigOption>) : ConfigFieldType<String>

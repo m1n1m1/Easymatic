@@ -793,3 +793,7 @@ setup_app_access_subtitle	Другие приложения, которым ра
 workflowlist_search_placeholder	Поиск макросов
 workflowlist_clear_search	Очистить поиск
 workflowlist_no_matches	Нет подходящих макросов.
+intent_choice_placeholder	Введите или спросите приложение
+intent_choice_ask_an_app	Спросить приложение
+intent_choice_no_app	Ни одно приложение на этом телефоне не может это сделать. Значение всё равно можно ввести вручную.
+intent_choice_needs_camera	Ottomatic нужен доступ к камере, прежде чем другое приложение сможет сделать снимок. Нажмите, чтобы разрешить, затем нажмите ещё раз.

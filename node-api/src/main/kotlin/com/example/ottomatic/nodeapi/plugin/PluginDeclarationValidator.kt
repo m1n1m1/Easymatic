@@ -113,6 +113,7 @@ object PluginDeclarationValidator {
             ?: sizeProblem(declaration)
             ?: routeProblem(declaration)
             ?: choiceProblem(declaration)
+            ?: intentChoiceProblem(declaration)
             ?: declaration.dataPorts.firstNotNullOfOrNull { port ->
                 portProblem(port)?.let { "port '${port.name}' $it" }
             }
@@ -211,6 +212,46 @@ object PluginDeclarationValidator {
             }
         }
     }
+
+    /**
+     * What makes a chooser served by another app unusable.
+     *
+     * The mirror of [choiceProblem] for [ConfigFieldTypeWire.IntentChoiceOf], and every entry
+     * is a failure that would otherwise reach the phone as a button that does nothing:
+     *
+     *  - a **blank action** resolves to no app at all, so the field reports "nothing can do
+     *    that" for a declaration that simply forgot to say what it wanted;
+     *  - an **input extra with no `=`** is a key the asked-for app never receives, which for
+     *    a scanner means the wrong scan mode and for a camera means no destination;
+     *  - **too many extras**, which is [PluginLimits]' usual per-node bound rather than a
+     *    judgement about any particular declaration.
+     *
+     * What is deliberately **not** checked is the action itself, against any list of known
+     * or permitted ones. The annotation's shape is open by decision, and a denylist here
+     * would be a closed set wearing an open one's clothes: it would fail honest declarations
+     * for actions nobody thought of while stopping nothing, since the two bounds that
+     * actually hold are structural — there is no component field, and the host only ever
+     * launches this through `startActivityForResult`.
+     */
+    private fun intentChoiceProblem(declaration: NodeDeclarationWire): String? =
+        declaration.config.firstNotNullOfOrNull { field ->
+            val type = field.type as? ConfigFieldTypeWire.IntentChoiceOf ?: return@firstNotNullOfOrNull null
+            val malformed = type.inputExtras.firstOrNull { !it.contains('=') }
+            when {
+                type.action.isBlank() ->
+                    "config field '${field.key}' asks another app for a value under a blank action"
+                type.action.length > PluginLimits.MAX_STRING_LENGTH ->
+                    "config field '${field.key}' has an intent action longer than " +
+                        "${PluginLimits.MAX_STRING_LENGTH} characters"
+                type.inputExtras.size > PluginLimits.MAX_INTENT_EXTRAS ->
+                    "config field '${field.key}' puts ${type.inputExtras.size} extras on its intent; " +
+                        "the most one field may have is ${PluginLimits.MAX_INTENT_EXTRAS}"
+                malformed != null ->
+                    "config field '${field.key}' has the intent extra '$malformed', which has no '='; " +
+                        "each entry is one 'key=value' pair"
+                else -> null
+            }
+        }
 
     private fun portProblem(port: PortWire): String? = when {
         port.name.isBlank() -> "has a blank name"

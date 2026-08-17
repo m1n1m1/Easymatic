@@ -6,6 +6,7 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.Item
 import com.example.ottomatic.domain.registry.PluginNodeEntry
 import com.example.ottomatic.domain.registry.PluginNodes
+import com.example.ottomatic.domain.registry.intentChoiceUris
 import com.example.ottomatic.engine.EncodedNodeOutput
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.nodeapi.plugin.routesFor
@@ -145,6 +146,19 @@ object PluginNodeRunner {
      * cost was silent and total: an action forgot to pass them, so every plugin action
      * ran with its form completely unset and simply looked broken. Required parameters
      * make the same mistake a compile error.
+     *
+     * ## The lend, and why it is bounded to exactly this
+     *
+     * A config value chosen through an `@IntentChoice` chooser may be a `content://` URI
+     * this app holds a grant on and the plugin's process holds nothing on. The string goes
+     * over like every other config value; the *grant* is lent beside it, by package, for the
+     * length of this call, and taken back in the `finally` — so a plugin that stores the URI
+     * away finds it dead when it comes back to it. Nothing about the wire changes: see
+     * `PluginChannel.lend`.
+     *
+     * It wraps the timeout rather than sitting inside it, because the plugin may still be
+     * reading when the host gives up waiting, and revoking a grant out from under a read in
+     * progress would turn a slow plugin into a failing one.
      */
     @Suppress("LongParameterList")
     private suspend fun call(
@@ -165,12 +179,18 @@ object PluginNodeRunner {
                 data = data.mapNotNull { (name, item) -> item.toWire()?.let { name.value to it } }.toMap(),
             ),
         )
-        val answer = withTimeoutOrNull(timeoutMs) {
-            runCatching { send(entry.channel, request) }.getOrElse { cause ->
-                if (cause is kotlinx.coroutines.CancellationException) throw cause
-                context.log("${entry.pluginName} failed: ${cause.message}", LogLevel.ERROR)
-                null
+        val lent = intentChoiceUris(entry.configSchema, node.config)
+        if (lent.isNotEmpty()) entry.channel.lend(lent)
+        val answer = try {
+            withTimeoutOrNull(timeoutMs) {
+                runCatching { send(entry.channel, request) }.getOrElse { cause ->
+                    if (cause is kotlinx.coroutines.CancellationException) throw cause
+                    context.log("${entry.pluginName} failed: ${cause.message}", LogLevel.ERROR)
+                    null
+                }
             }
+        } finally {
+            if (lent.isNotEmpty()) entry.channel.withdraw(lent)
         }
         if (answer == null) {
             context.log(

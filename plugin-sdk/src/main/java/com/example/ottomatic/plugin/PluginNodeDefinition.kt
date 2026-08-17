@@ -102,7 +102,7 @@ private fun ConfigField<*>.toWire(typeId: String): ConfigFieldWire = ConfigField
 private fun ConfigFieldType<*>.toWire(typeId: String, key: String): ConfigFieldTypeWire =
     offered() ?: refused(typeId, key)
 
-/** The nine a plugin may have, or null for one of the ones it may not. */
+/** The ten a plugin may have, or null for one of the ones it may not. */
 private fun ConfigFieldType<*>.offered(): ConfigFieldTypeWire? = when (this) {
     ConfigFieldType.STR -> ConfigFieldTypeWire.Str
     ConfigFieldType.MULTILINE -> ConfigFieldTypeWire.Multiline
@@ -116,6 +116,19 @@ private fun ConfigFieldType<*>.offered(): ConfigFieldTypeWire? = when (this) {
     // not sent: the host stamps it from the typeId it resolved, so this node cannot
     // point the chooser at anybody else's.
     is ConfigFieldType.PLUGIN_CHOICE -> ConfigFieldTypeWire.ChoiceOf(source, scopedBy, chooser)
+    // The chooser whose answers are neither the plugin's nor the host's, but another app's.
+    // Offered because withholding it would have protected nothing: a plugin can already
+    // launch any of these itself from a `chooser = SCREEN` Activity, under its own uid. All
+    // this does is save it from shipping one to ask for a scanned code.
+    is ConfigFieldType.INTENT_CHOICE -> ConfigFieldTypeWire.IntentChoiceOf(
+        action = action,
+        mimeType = mimeType,
+        category = category,
+        inputExtras = inputExtras,
+        resultExtra = resultExtra,
+        outputExtra = outputExtra,
+        icon = icon.name,
+    )
     else -> null
 }
 

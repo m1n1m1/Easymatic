@@ -49,6 +49,7 @@ class SampleDeclarationTest {
     private val nodes = listOf(
         ShoutAction(),
         PostAction(),
+        AttachAction(),
         DeviceNameValue(),
         InitialsTransform(),
         TemperatureTrigger(),
@@ -59,6 +60,7 @@ class SampleDeclarationTest {
         nodes = listOf(
             ShoutAction().definition.declaration(packageName),
             PostAction().definition.declaration(packageName),
+            AttachAction().definition.declaration(packageName),
             DeviceNameValue().definition.declaration(packageName),
             InitialsTransform().definition.declaration(packageName),
             TemperatureTrigger().definition.declaration(packageName),
@@ -71,7 +73,76 @@ class SampleDeclarationTest {
     fun `every node this plugin declares is one Ottomatic will accept`() {
         assertNull(validated.fatal)
         assertEquals(emptyList<String>(), validated.rejected.map { "${it.typeId}: ${it.reason}" })
-        assertEquals(5, validated.accepted.size)
+        assertEquals(6, validated.accepted.size)
+    }
+
+    /**
+     * The two `@IntentChoice` fields survive the round trip with everything the host needs
+     * to build a launch.
+     *
+     * Every value here travels as inert data and there is **no component and no package**
+     * among them, which is the whole reason a plugin may declare this widget at all — so
+     * the assertion is as much about what a declaration cannot carry as about what it does.
+     *
+     * What no test can check is the half that matters most: whether the picked file is
+     * actually reachable from this process. That needs a real grant across a real binder, so
+     * `AttachAction.execute` names the document it opened and the device pass reads that off
+     * the run log — a **name** rather than a size, because only a name can say that the run
+     * opened the document somebody meant.
+     */
+    @Test
+    fun `the intent choice fields keep their action, type and result extra`() {
+        val attach = validated.accepted.single { it.definition.typeId.value.endsWith("/attach") }
+        val fields = requireNotNull(attach.configSchema).fields
+
+        val document = fields.single { it.key.value == "document" }.type as ConfigFieldType.INTENT_CHOICE
+        // OPEN_DOCUMENT rather than GET_CONTENT: only the first conveys a grant the host can
+        // persist, so only the first survives the editor being closed.
+        assertEquals("android.intent.action.OPEN_DOCUMENT", document.action)
+        assertEquals("*/*", document.mimeType)
+        assertEquals("android.intent.category.OPENABLE", document.category)
+        // Blank: a document chooser answers with the result Intent's own data URI, not an
+        // extra, and that is what a blank resultExtra means.
+        assertEquals("", document.resultExtra)
+        assertEquals("", document.outputExtra)
+
+        val chime = fields.single { it.key.value == "chime" }.type as ConfigFieldType.INTENT_CHOICE
+        // The other half of the pair: an answer that lives in an extra rather than in the
+        // result's data, which is the only reason `resultExtra` exists.
+        assertEquals("android.intent.action.RINGTONE_PICKER", chime.action)
+        assertEquals("android.intent.extra.ringtone.PICKED_URI", chime.resultExtra)
+        assertEquals(NodeIcon.MUSIC, chime.icon)
+    }
+
+    /**
+     * Both requests are answered by Android itself, and the sample is where that has to
+     * stay true.
+     *
+     * A sample is what gets copied, so an example depending on a particular app being
+     * installed teaches a chooser that is dead on most phones. Asserting the action strings
+     * rather than merely the shape is what stops somebody swapping in a scanner or a camera
+     * here without noticing they have changed what the example claims.
+     */
+    @Test
+    fun `both requests are ones every phone can answer`() {
+        val attach = validated.accepted.single { it.definition.typeId.value.endsWith("/attach") }
+        val actions = requireNotNull(attach.configSchema).fields
+            .mapNotNull { (it.type as? ConfigFieldType.INTENT_CHOICE)?.action }
+
+        assertEquals(
+            listOf("android.intent.action.OPEN_DOCUMENT", "android.intent.action.RINGTONE_PICKER"),
+            actions,
+        )
+    }
+
+    /** `@Wired` and `@IntentChoice` compose: the document can also arrive down an edge. */
+    @Test
+    fun `the document is wirable as well as choosable`() {
+        val attach = validated.accepted.single { it.definition.typeId.value.endsWith("/attach") }
+        assertEquals(
+            listOf("document"),
+            attach.definition.inputs(PortKind.DATA).map { it.name.value },
+        )
     }
 
     /**

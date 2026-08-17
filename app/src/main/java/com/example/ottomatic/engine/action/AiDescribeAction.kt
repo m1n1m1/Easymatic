@@ -24,6 +24,17 @@ import kotlinx.serialization.Serializable
  * [image] is `@FilePath` and `@Wired` for the reason every file node's path is: the
  * picture worth asking about is usually the one a macro just found, so the commonest
  * shape is `action.file_list` → `transform.text` → here.
+ *
+ * **`@IntentChoice(OPEN_DOCUMENT, "image/&#42;")` was tried here and reverted**, and the
+ * reason is worth keeping because it will be proposed again. It works for *this* node —
+ * `Images.encodeForModel` opens a URI through the resolver directly, so a document picked
+ * out of SAF reads fine with no permission at all. It does not work for the rest of the
+ * family: `action.image_info`, `image_edit`, `image_move` and `image_delete` all resolve
+ * through `MediaImages.resolve`, which asks MediaStore for a *row*, and a SAF document URI
+ * is not one — so the identical-looking Picture field would answer "no such picture" on
+ * four nodes out of five. A picture chooser has to arrive for the whole family or not at
+ * all, and the shape that reaches every one of them is the media collection rather than a
+ * document provider.
  */
 @Serializable
 data class AiDescribeConfig(

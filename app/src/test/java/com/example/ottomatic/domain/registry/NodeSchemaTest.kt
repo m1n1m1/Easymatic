@@ -7,6 +7,8 @@ import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.FilePath
+import com.example.ottomatic.domain.model.config.IntentChoice
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.NoConfig
@@ -336,6 +338,55 @@ class NodeSchemaTest {
         assertTrue(
             "should say a property has one editor, got: ${error.message}",
             error.message.orEmpty().contains("one editor"),
+        )
+    }
+
+    @Serializable
+    data class NumericIntent(@IntentChoice(action = "some.ACTION") val value: Int = 0)
+
+    @Serializable
+    data class BlankIntentAction(@IntentChoice(action = "") val value: String = "")
+
+    @Serializable
+    data class MalformedIntentExtra(
+        @IntentChoice(action = "some.ACTION", inputExtras = ["android.intent.extra.TITLE"]) val value: String = "",
+    )
+
+    @Serializable
+    data class IntentBesideFilePath(
+        @FilePath @IntentChoice(action = "some.ACTION") val value: String = "",
+    )
+
+    /**
+     * `@IntentChoice`'s own three rules, each failing at declaration time rather than as a
+     * dead button on somebody's phone.
+     *
+     * The action is deliberately **not** checked against a list of known actions — the
+     * annotation's shape is open by decision — so what is checkable is only that it names
+     * *something*, and that each extra is a pair.
+     */
+    @Test
+    fun `an intent choice that could never launch is rejected at declaration time`() {
+        assertTrue(
+            assertThrows(IllegalStateException::class.java) { nodeSchema<NumericIntent>() }
+                .message.orEmpty().contains("@IntentChoice"),
+        )
+        assertTrue(
+            assertThrows(IllegalStateException::class.java) { nodeSchema<BlankIntentAction>() }
+                .message.orEmpty().contains("blank action"),
+        )
+        assertTrue(
+            assertThrows(IllegalStateException::class.java) { nodeSchema<MalformedIntentExtra>() }
+                .message.orEmpty().contains("android.intent.extra.TITLE"),
+        )
+    }
+
+    /** It claims the whole field, so it is one of the widgets no other may sit beside. */
+    @Test
+    fun `an intent choice beside another widget is rejected at declaration time`() {
+        assertTrue(
+            assertThrows(IllegalStateException::class.java) { nodeSchema<IntentBesideFilePath>() }
+                .message.orEmpty().contains("one editor"),
         )
     }
 

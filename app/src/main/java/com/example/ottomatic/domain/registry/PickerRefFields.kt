@@ -118,3 +118,28 @@ fun phoneRefKeys(typeId: NodeTypeId): List<ConfigKey> =
  */
 fun usesContacts(node: WorkflowNode): Boolean =
     phoneRefKeys(node.typeId).any { PhoneRef.parse(node.config[it].orEmpty()) is PhoneRef.Contact }
+
+/**
+ * The `content://` values an `@IntentChoice` field of [node] currently holds, given the
+ * [schema] that node was declared with.
+ *
+ * The one member of this file that takes its schema as a parameter rather than looking it
+ * up, and that is forced rather than stylistic: every other reader here asks
+ * [ConfigSchemaRegistry], which answers for the app's own nodes and for plugin nodes alike —
+ * but the only caller of this one already holds the `PluginNodeEntry` whose schema it is,
+ * and going back through a registry to re-find it would be a lookup that can fail for a
+ * node that is demonstrably right there.
+ *
+ * **Only `@IntentChoice` keys.** This is the list `PluginChannel.lend` grants against, so
+ * widening it is widening what a plugin can obtain access to — a scan of every config value
+ * for something URI-shaped would let a plugin get a grant by putting a URI in a text box.
+ * A path, a scanned code and a URL are all skipped: none of them is a grant to lend, and a
+ * path a plugin cannot open is a failure that belongs to the file system rather than here.
+ */
+fun intentChoiceUris(schema: NodeConfigSchema?, config: Map<ConfigKey, String>): List<String> =
+    schema?.fields.orEmpty()
+        .filter { it.type is ConfigFieldType.INTENT_CHOICE }
+        .mapNotNull { field -> config[field.key]?.takeIf { it.startsWith(CONTENT_SCHEME) } }
+
+/** What a URI this app can lend a grant on begins with. Anything else is not one. */
+private const val CONTENT_SCHEME = "content://"

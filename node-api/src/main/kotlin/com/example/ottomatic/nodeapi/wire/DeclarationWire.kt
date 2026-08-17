@@ -25,8 +25,19 @@ import kotlinx.serialization.Serializable
  * blacked out. Four additions make up the version: [ExecOutputsWire] became a sealed
  * interface with a [ExecOutputsWire.Named] member, [ConfigFieldTypeWire.ChoiceOf] gave a
  * plugin a chooser over its *own* answer set, and the AIDL grew `choices` and `status`.
+ *
+ * ## 3 — choosers served by another app
+ *
+ * One addition: [ConfigFieldTypeWire.IntentChoiceOf], which lets a plugin declare a field
+ * filled in by an implicit `Intent` — a picture, a file, a photograph, a scanned code.
+ *
+ * Bumped rather than accepted silently, and the reason is specific to this addition. The
+ * manifest is parsed with `ignoreUnknownKeys`, so a v2 host reading a v3 declaration would
+ * not fail — it would drop the field's *type* and be left with a `ConfigFieldWire` it cannot
+ * make sense of. A plugin author would see a field they declared simply not appear, with
+ * nothing anywhere saying why. A refusal naming both numbers is the better sentence.
  */
-const val PLUGIN_PROTOCOL_VERSION: Int = 2
+const val PLUGIN_PROTOCOL_VERSION: Int = 3
 
 /**
  * One DATA port, as declared by a plugin.
@@ -59,7 +70,7 @@ data class OptionWire(
 )
 
 /**
- * The config widgets a plugin may ask for — nine of the host's eighteen.
+ * The config widgets a plugin may ask for — ten of the host's nineteen.
  *
  * The ones that are missing are missing on purpose, and for one reason each rather
  * than a blanket one: `PICKER`, `SUGGESTED`, `PORT_LIST`, `PHONE`, `WIFI_NETWORK`,
@@ -85,9 +96,31 @@ data class OptionWire(
  * answer is something it already had. No host library is reached and no capability
  * crosses.
  *
- * The consequence worth stating: every other member here maps onto a `ConfigFieldType`
- * that already existed, so the config form's exhaustive `when` grew exactly one branch
- * for plugins — [ChoiceOf]'s — and no others.
+ * ## [IntentChoiceOf] is the one widget that is not the host's to withhold
+ *
+ * Every refusal above has the same shape: the field would reach something *Ottomatic keeps*
+ * on the user's behalf. `@IntentChoice` reaches none of it. It asks another app on the phone
+ * — the gallery, the camera, a document provider, a barcode scanner — which is a thing the
+ * plugin's own process could have asked for itself, with its own Activity, under its own
+ * uid. Withholding it would not have protected anything; it would only have meant that a
+ * plugin wanting a scanned pairing code shipped a text box, which is exactly the failure
+ * [ChoiceOf] exists to close, at a second boundary.
+ *
+ * What crosses is inert to the last field: an action string, a MIME type, a category, some
+ * `key=value` extras. There is deliberately **no component and no package**, so what a
+ * plugin sends can never be a thing the host starts *at the plugin's choosing* — the launch
+ * is implicit and `PackageManager` decides who answers, which is the same rule that keeps
+ * the settings and chooser Activities off the wire.
+ *
+ * The result of that launch is a different matter, and it is handled outside this file:
+ * when a value is a `content://` URI the host holds a grant for, `PluginUriGrants` lends it
+ * to the plugin for the duration of one call. That is the only capability in the system that
+ * travels toward a plugin, it is bounded to a single transaction, and it travels by
+ * `grantUriPermission` rather than by anything here.
+ *
+ * The consequence worth stating: [ChoiceOf] and [IntentChoiceOf] are the only two members
+ * that grew the config form's exhaustive `when` a branch. Every other one maps onto a
+ * `ConfigFieldType` that already existed.
  */
 @Serializable
 sealed interface ConfigFieldTypeWire {
@@ -127,6 +160,29 @@ sealed interface ConfigFieldTypeWire {
         val source: String,
         val scopedBy: List<String> = emptyList(),
         val chooser: ChoiceChooser = ChoiceChooser.LIST,
+    ) : ConfigFieldTypeWire
+
+    /**
+     * An editable field whose chooser is another app on the phone, declared with
+     * `@IntentChoice`.
+     *
+     * Every field is inert declaration data and there is no component or package among them,
+     * which is what makes this safe to accept from a plugin at all — see the header above.
+     *
+     * [icon] is a *name* rather than the enum, on [NodeDeclarationWire.icon]'s reasoning and
+     * with a sharper consequence: a `NodeIcon` here would make a glyph added in a later
+     * version fail this member's decode, and because the manifest is one document that would
+     * reject **every node the plugin declares** over a picture. [resolvedIntentIcon] falls
+     * back to [NodeIcon.BOLT] instead.
+     */
+    @Serializable @SerialName("intent") data class IntentChoiceOf(
+        val action: String,
+        val mimeType: String = "",
+        val category: String = "",
+        val inputExtras: List<String> = emptyList(),
+        val resultExtra: String = "",
+        val outputExtra: String = "",
+        val icon: String = NodeIcon.BOLT.name,
     ) : ConfigFieldTypeWire
 }
 
@@ -245,4 +301,8 @@ data class PluginManifestWire(
 
 /** The [NodeIcon] this declaration names, or [NodeIcon.BOLT] when it names nothing known. */
 fun NodeDeclarationWire.resolvedIcon(): NodeIcon =
+    NodeIcon.entries.firstOrNull { it.name == icon } ?: NodeIcon.BOLT
+
+/** [resolvedIcon]'s twin for a chooser button, and the same fallback for the same reason. */
+fun ConfigFieldTypeWire.IntentChoiceOf.resolvedIntentIcon(): NodeIcon =
     NodeIcon.entries.firstOrNull { it.name == icon } ?: NodeIcon.BOLT

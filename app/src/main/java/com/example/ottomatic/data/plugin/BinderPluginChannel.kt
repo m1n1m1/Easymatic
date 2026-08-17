@@ -26,6 +26,9 @@ import kotlinx.coroutines.withContext
  * gone away is an expected condition the callers already degrade on. And nothing else:
  * the timeouts live in `PluginNodeRunner` so a test can provoke them.
  */
+// Inherent: this is a 1:1 mirror of `PluginChannel`, so its function count *is* the
+// interface's. Splitting it would put half of one transport in another file.
+@Suppress("TooManyFunctions")
 class BinderPluginChannel(
     override val packageName: String,
     private val connections: PluginConnections,
@@ -75,6 +78,18 @@ class BinderPluginChannel(
             true
         } ?: false
     }
+
+    /**
+     * Lends this plugin read access to the files its `@IntentChoice` fields point at.
+     *
+     * Not a binder call and deliberately not on [io]: `grantUriPermission` is local
+     * `ActivityManager` bookkeeping, and the caller runs it immediately before a call it is
+     * about to await anyway. Putting it on a dispatcher would only open a window in which
+     * the call could reach the plugin before its grant did.
+     */
+    override fun lend(uris: List<String>) = PluginUriGrants.grant(connections.context, packageName, uris)
+
+    override fun withdraw(uris: List<String>) = PluginUriGrants.revoke(connections.context, packageName, uris)
 
     override fun disarmTrigger(armId: String) {
         // Launched rather than awaited: the caller is a `callbackFlow`'s `awaitClose`,

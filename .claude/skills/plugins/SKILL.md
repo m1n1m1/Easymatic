@@ -57,6 +57,19 @@ rather than a consequence of it: a binder call already runs under the plugin's u
 the host's grants are not borrowable — right up until something helpfully hands back a
 `Uri` with `FLAG_GRANT_READ_URI_PERMISSION`.
 
+**That rule is untouched by the one capability that now travels toward a plugin, and the
+distinction is the whole of why it is allowed.** An `@IntentChoice` field may hold a
+`content://` URI; the *string* crosses like any other config value and the wire is exactly as
+inert as before. What is lent is the grant, out of band, by `grantUriPermission` on the
+plugin's package — `PluginChannel.lend` / `PluginUriGrants`, called from
+`PluginNodeRunner.call` and revoked in its `finally`. The forbidden direction is a plugin
+handing the host a capability *the host then exercises*; this is the host lending, by name,
+for one transaction. Three bounds carry it and none is optional: only keys the node's own
+`NodeConfigSchema` says are `INTENT_CHOICE` (`intentChoiceUris`), so a URI in a text box buys
+nothing; only for the length of the call, so a stored URI is dead when the plugin returns to
+it; and only what the host itself holds, since `grantUriPermission` cannot manufacture
+access.
+
 `ExecOutputsWire` is a sealed interface of three. A plugin declares **only data ports**;
 the execution topology is *derived* from kind + `execOutputs`, which makes a value with a
 pulse on it unrepresentable rather than merely invalid — the same move as deriving the
@@ -141,6 +154,63 @@ is one string per property — and one shown until the field was next opened wou
 one never shown. The real fix for the raw-id display, in both modes, is `SmartHomeRef`'s trick:
 cache the name inside the stored spec. It is not done, and it is the obvious next move.
 
+## `@IntentChoice`: the one widget that was never the host's to withhold
+
+`ConfigFieldTypeWire` refuses nine of the host's widgets, and every refusal has the same
+shape — the field would reach something *Ottomatic keeps on the user's behalf*. `@IntentChoice`
+(protocol 3) reaches none of it. It asks another app on the phone: a document provider, the
+ringtone chooser, a camera, a scanner. A plugin could already have asked the same app itself,
+from a `chooser = SCREEN` Activity, under its own uid — so withholding it protected nothing
+and only meant a plugin wanting a chosen document shipped a text box asking for a URI, which
+is `ChoiceOf`'s failure at a second boundary.
+
+It is also the generalisation of four things the host had already written four times:
+`SoundPickerField` launches `ACTION_RINGTONE_PICKER` and reads `EXTRA_RINGTONE_PICKED_URI`,
+`@PhoneNumber` and `@ContactName` launch `ACTION_PICK`, `@FilePath` launches `OPEN_DOCUMENT`
+— each a hand-written launcher, intent and result-to-string. A fifth would have burned a
+`PickerKind`.
+
+**The examples are all system-answered, and that is a rule rather than a coincidence.**
+`OPEN_DOCUMENT`, `CREATE_DOCUMENT`, `OPEN_DOCUMENT_TREE` and `RINGTONE_PICKER` are handled by
+components that ship with Android — every phone, no permission at either end, nothing to
+uninstall — and they are what the KDoc, `docs/PLUGINS.md` and `AttachAction` demonstrate.
+The first draft used a QR scanner and a gallery image, and both were wrong for reasons worth
+keeping: **scanning is not a platform capability at all** (no system action exists;
+`com.google.zxing.client.android.SCAN` is one app's contract, so the field is a text box on
+a phone without it), and **a picture drags in a second subject** — `READ_MEDIA_IMAGES`, the
+photo picker's process-lifetime grant, and a MediaStore row that is a different kind of
+handle from a SAF document. An example is what gets copied, so it has to be the case that
+always works. `SampleDeclarationTest` asserts the two action strings so a later edit cannot
+quietly reintroduce either.
+
+Five things to keep straight:
+
+- **The action is an open string**, by decision. There is no closed set to check against, so
+  the host launches what it is told. What still holds is structural and cannot be declared
+  away: no component or package field, so the launch is always implicit and `PackageManager`
+  dispatches it; and always `startActivityForResult`, so never a broadcast or a service. A
+  denylist of actions was considered and refused — it would fail honest declarations for
+  actions nobody thought of while stopping nothing.
+- **`inputExtras` carries strings and fails quietly.** `@SerialInfo` reaches an
+  `Array<String>` and nothing richer, so `EXTRA_TITLE` is settable and `EXTRA_RINGTONE_TYPE`
+  (an `int`) is not — the app reads its default and behaves as though nothing was sent, with
+  the launch succeeding. That is what decides which requests are expressible at all, and it
+  is why the ringtone example sets a `resultExtra` and no input extras.
+- **Durability belongs to the declaration.** `ACTION_GET_CONTENT`'s grant dies with the
+  editor's task and `ACTION_OPEN_DOCUMENT`'s is persistable. `IntentRequests.persist` takes
+  what it can and swallows the failure, because "already durable (a media row)" and
+  "transient and unfixable" are indistinguishable from there.
+- **`icon` is a `String` on the wire**, `NodeDeclarationWire.icon`'s trade with a sharper
+  consequence: a `NodeIcon` would make a glyph added later fail *this member's* decode, and
+  the manifest is one document, so every node a plugin declares would be rejected over a
+  picture on one button.
+- **`ACTION_IMAGE_CAPTURE` needs the host's CAMERA grant**, because the app declares `CAMERA`
+  for the torch and Android then requires it even though another app takes the photograph.
+  `IntentChoiceField` asks for it, keyed on that one action. It is the single place the field
+  is not generic over its declaration, and the platform forces it.
+
+The grant that goes with it is under **The wire** above.
+
 ## Readiness, and why it needed a second field
 
 `PluginNodeEntry.missingPermissions` cannot see the commonest way a plugin does nothing: it
@@ -178,8 +248,16 @@ in `:app` ever called. It was deleted in protocol 2 rather than wired up: two an
 same question, able to disagree, are worse than one, and the manifest is already
 size-bounded and parsed with `ignoreUnknownKeys`.
 
-The bump to 2 is a plain `!=` with no compatibility range. Nothing is published, so nothing
-is blacked out; a v1 plugin is refused with a sentence naming both numbers.
+The bump to 2, and to 3, is a plain `!=` with no compatibility range. Nothing is published, so
+nothing is blacked out; an older plugin is refused with a sentence naming both numbers.
+
+**3 is the version worth understanding, because it did not have to be one.** `@IntentChoice`
+adds a `ConfigFieldTypeWire` member and nothing else, and `PluginJson` is lenient — so a v2
+host reading a v3 declaration would not fail, it would drop the *field's type* and be left
+with a `ConfigFieldWire` it cannot render. The author sees a field they declared quietly
+missing, which is the worst available outcome and precisely the class of silent failure the
+version check exists for. Leniency protects against unknown **keys**, not against an unknown
+member of a sealed type.
 
 ## `PluginNodeContracts` is the half a declaration cannot express
 

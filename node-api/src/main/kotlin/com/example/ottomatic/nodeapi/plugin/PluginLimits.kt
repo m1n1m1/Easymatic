@@ -50,6 +50,16 @@ object PluginLimits {
     const val MAX_CHOICES = 500
 
     /**
+     * Input extras one `@IntentChoice` field may put on its launch.
+     *
+     * Small, because the ones that exist in the wild are one or two — a scan mode, a
+     * ringtone type, a title. What this actually bounds is the size of a bundle the host
+     * assembles on a plugin's word and hands to a third app, which is the one place in this
+     * feature where an unbounded declaration would reach past both of them.
+     */
+    const val MAX_INTENT_EXTRAS = 8
+
+    /**
      * How deeply a port schema may nest.
      *
      * `SchemaWire` is recursive, so without this a few hundred bytes of JSON

@@ -101,4 +101,46 @@ interface PluginChannel {
      * duplicated.
      */
     fun disarmTrigger(armId: String)
+
+    /**
+     * Lends the plugin read access to [uris] until [withdraw] takes it back.
+     *
+     * ## Why the transport rather than the wire
+     *
+     * An `@IntentChoice` field may hold a `content://` URI the user picked — a photograph,
+     * a document. The string crosses like any other config value, but a string is all it is:
+     * the plugin's process holds no grant on it, so `openInputStream` answers
+     * `SecurityException` and a correctly-configured node simply never works, with nothing
+     * anywhere saying why.
+     *
+     * The grant therefore travels **beside** the call rather than in it, which is what keeps
+     * `nodeapi/wire`'s rule exactly as strict as it was: nothing carrying a capability is
+     * serialized, and a URI arriving *from* a plugin still borrows nothing. What happens
+     * here is the host lending, by name and out of band, access to one file the user chose
+     * for one field.
+     *
+     * ## Why it is on this interface
+     *
+     * Because this is the only thing in the system that knows *which process* is being
+     * talked to, and a grant is per package. It is also the seam a fake stands in for, so
+     * the lend/withdraw pairing is exercised by a JVM test rather than only on a device.
+     *
+     * Defaulted to a no-op so a channel that is not a real binding — a fake, a recording
+     * one — needs no implementation and lends nothing, which is the correct behaviour for
+     * every one of them.
+     *
+     * Non-suspending on [disarmTrigger]'s reasoning: one caller is a `finally`, and the
+     * calls themselves are local `ActivityManager` bookkeeping rather than IPC to the
+     * plugin.
+     */
+    fun lend(uris: List<String>) = Unit
+
+    /**
+     * Takes back what [lend] gave.
+     *
+     * **Always from a `finally`, never conditionally.** The lend is bounded to the call that
+     * needed it — the quarantine doctrine one level down — and a withdraw that is skipped
+     * leaves a standing grant on somebody's photograph until the phone is restarted.
+     */
+    fun withdraw(uris: List<String>) = Unit
 }

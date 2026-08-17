@@ -69,7 +69,15 @@ const val PLUGIN_SETTINGS_ACTION = "com.example.ottomatic.action.PLUGIN_SETTINGS
  * degrade on null — an action reports and pulses on, a read answers null and its
  * consumer falls back — which is the existing contract reached by a new route.
  */
-class PluginConnections(private val context: Context) {
+class PluginConnections(
+    /**
+     * `internal` rather than private so [BinderPluginChannel] can lend a URI grant through
+     * it. The two are already one seam — this class owns which process a channel talks to,
+     * and a grant is per process — so a second `Context` threaded down beside it would be
+     * two answers to "which app am I dealing with?", able to disagree.
+     */
+    internal val context: Context,
+) {
 
     private val mutex = Mutex()
     private val connections = mutableMapOf<String, Connection>()

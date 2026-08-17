@@ -793,3 +793,7 @@ setup_app_access_subtitle	Outras aplicações autorizadas a executar as tuas mac
 workflowlist_search_placeholder	Procurar macros
 workflowlist_clear_search	Limpar a pesquisa
 workflowlist_no_matches	Nenhuma macro corresponde.
+intent_choice_placeholder	Escreva ou peça a uma app
+intent_choice_ask_an_app	Pedir a uma app
+intent_choice_no_app	Nenhuma app neste telemóvel consegue responder a isso. Ainda assim pode escrever um valor.
+intent_choice_needs_camera	O Ottomatic precisa de acesso à câmara antes de outra app poder tirar a fotografia. Toque para permitir e toque novamente.

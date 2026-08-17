@@ -264,6 +264,161 @@ class PluginDeclarationValidatorTest {
         assertTrue(validate(node).rejected.isEmpty())
     }
 
+    // ---- choosers another app draws -----------------------------------------
+
+    /**
+     * The declaration crosses whole, because the host builds the launch from it and nothing
+     * else. A field silently losing its `resultExtra` would open a scanner, read the wrong
+     * place and store nothing — which reads as the scanner having failed.
+     */
+    @Test
+    fun `an intent choice field becomes an INTENT_CHOICE carrying the whole request`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire(
+                    "report",
+                    "Report",
+                    ConfigFieldTypeWire.IntentChoiceOf(
+                        action = "android.intent.action.CREATE_DOCUMENT",
+                        mimeType = "text/csv",
+                        category = "android.intent.category.OPENABLE",
+                        inputExtras = listOf("android.intent.extra.TITLE=report.csv"),
+                        icon = NodeIcon.FILE.name,
+                    ),
+                ),
+            ),
+        )
+
+        val field = requireNotNull(validate(node).accepted.single().configSchema).fields.single()
+        val type = field.type as ConfigFieldType.INTENT_CHOICE
+
+        assertEquals("android.intent.action.CREATE_DOCUMENT", type.action)
+        assertEquals("text/csv", type.mimeType)
+        assertEquals("android.intent.category.OPENABLE", type.category)
+        assertEquals(listOf("android.intent.extra.TITLE=report.csv"), type.inputExtras)
+        assertEquals(NodeIcon.FILE, type.icon)
+    }
+
+    /**
+     * The other half of the pair: an answer that lives in an extra rather than in the
+     * result's own data, which is the only reason `resultExtra` exists.
+     */
+    @Test
+    fun `an intent choice may name the extra its answer arrives in`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire(
+                    "chime",
+                    "Chime",
+                    ConfigFieldTypeWire.IntentChoiceOf(
+                        action = "android.intent.action.RINGTONE_PICKER",
+                        resultExtra = "android.intent.extra.ringtone.PICKED_URI",
+                        icon = NodeIcon.MUSIC.name,
+                    ),
+                ),
+            ),
+        )
+
+        val field = requireNotNull(validate(node).accepted.single().configSchema).fields.single()
+        val type = field.type as ConfigFieldType.INTENT_CHOICE
+
+        assertEquals("android.intent.extra.ringtone.PICKED_URI", type.resultExtra)
+        // Blank rather than absent: an untyped action is ordinary, not a declaration that
+        // forgot something, so nothing here defaults it to a wildcard.
+        assertEquals("", type.mimeType)
+        assertEquals(emptyList<String>(), type.inputExtras)
+    }
+
+    /**
+     * An unknown icon is cosmetic and must never cost the node — still less the manifest.
+     *
+     * The reason this is sharper than `NodeDeclarationWire.icon`'s: a `NodeIcon` on the wire
+     * would make a glyph added in a later version fail *this member's* decode, and the
+     * manifest is one document, so every node the plugin declares would be rejected over a
+     * picture on one chooser button.
+     */
+    @Test
+    fun `an intent choice naming an icon this version has never heard of falls back`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire(
+                    "code",
+                    "Code",
+                    ConfigFieldTypeWire.IntentChoiceOf(action = "some.ACTION", icon = "HOLOGRAM"),
+                ),
+            ),
+        )
+
+        val field = requireNotNull(validate(node).accepted.single().configSchema).fields.single()
+        assertEquals(NodeIcon.BOLT, (field.type as ConfigFieldType.INTENT_CHOICE).icon)
+    }
+
+    /** A blank action resolves to no app at all, so the button reads as dead. */
+    @Test
+    fun `an intent choice with a blank action is refused`() {
+        val node = action(
+            config = listOf(ConfigFieldWire("code", "Code", ConfigFieldTypeWire.IntentChoiceOf(action = ""))),
+        )
+
+        assertTrue(rejectionFor(node).contains("blank action"))
+    }
+
+    /**
+     * An extra with no `=` is a key the asked-for app never receives — a scanner left in the
+     * wrong mode, a camera left with no destination — and nothing anywhere would say so.
+     */
+    @Test
+    fun `an intent choice with a malformed input extra is refused`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire(
+                    "code",
+                    "Code",
+                    ConfigFieldTypeWire.IntentChoiceOf(action = "some.ACTION", inputExtras = listOf("SCAN_MODE")),
+                ),
+            ),
+        )
+
+        assertTrue(rejectionFor(node).contains("SCAN_MODE"))
+    }
+
+    @Test
+    fun `an intent choice with more extras than the limit is refused`() {
+        val tooMany = (0..PluginLimits.MAX_INTENT_EXTRAS).map { "k$it=v$it" }
+        val node = action(
+            config = listOf(
+                ConfigFieldWire(
+                    "code",
+                    "Code",
+                    ConfigFieldTypeWire.IntentChoiceOf(action = "some.ACTION", inputExtras = tooMany),
+                ),
+            ),
+        )
+
+        assertTrue(rejectionFor(node).contains("extras on its intent"))
+    }
+
+    /**
+     * A value that *may legitimately contain* `=` is not malformed.
+     *
+     * Base64 padding and query strings both do, and only the first `=` separates — so a
+     * stricter split-on-every-`=` rule would refuse honest declarations.
+     */
+    @Test
+    fun `an intent extra whose value contains an equals sign is accepted`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire(
+                    "code",
+                    "Code",
+                    ConfigFieldTypeWire.IntentChoiceOf(action = "some.ACTION", inputExtras = listOf("q=a=b")),
+                ),
+            ),
+        )
+
+        assertTrue(validate(node).rejected.isEmpty())
+    }
+
     @Test
     fun `a value gets no execution ports at all`() {
         val node = action(typeId = "${prefix}reading", kind = NodeKind.VALUE)

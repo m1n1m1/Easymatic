@@ -793,3 +793,7 @@ setup_app_access_subtitle	获准运行你的宏的其他应用
 workflowlist_search_placeholder	搜索宏
 workflowlist_clear_search	清除搜索
 workflowlist_no_matches	没有匹配的宏。
+intent_choice_placeholder	自行输入，或让应用代劳
+intent_choice_ask_an_app	让应用代劳
+intent_choice_no_app	此手机上没有应用能完成该操作。你仍然可以直接输入内容。
+intent_choice_needs_camera	在其他应用拍照前，Ottomatic 需要相机权限。点按以允许，然后再次点按。

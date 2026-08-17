@@ -793,3 +793,7 @@ setup_app_access_subtitle	Autres applications autorisées à lancer tes macros
 workflowlist_search_placeholder	Rechercher des macros
 workflowlist_clear_search	Effacer la recherche
 workflowlist_no_matches	Aucune macro ne correspond.
+intent_choice_placeholder	Saisissez-le, ou demandez à une application
+intent_choice_ask_an_app	Demander à une application
+intent_choice_no_app	Aucune application de ce téléphone ne peut répondre à cela. Vous pouvez tout de même saisir une valeur.
+intent_choice_needs_camera	Ottomatic a besoin de l’accès à l’appareil photo avant qu’une autre application puisse prendre la photo. Touchez pour l’autoriser, puis touchez à nouveau.

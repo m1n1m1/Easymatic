@@ -19,6 +19,7 @@ class SamplePluginService : BaseOttomaticPluginService() {
     override val nodes = listOf(
         ShoutAction(),
         PostAction(),
+        AttachAction(),
         DeviceNameValue(),
         InitialsTransform(),
         TemperatureTrigger(),

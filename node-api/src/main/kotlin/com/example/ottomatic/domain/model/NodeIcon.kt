@@ -121,4 +121,31 @@ enum class NodeIcon {
      * this photo get changed?" is looking for.
      */
     IMAGE_EDIT,
+
+    /**
+     * A camera taking a picture, as opposed to a picture that already exists.
+     *
+     * The distinction [IMAGE] cannot make, and the one an `@IntentChoice` chooser button
+     * needs to make: "choose a photo" and "take a photo" are different questions, and a
+     * picture frame on the second reads as the first.
+     *
+     * **Declared by nothing today, on purpose.** `ACTION_IMAGE_CAPTURE` needs both a camera
+     * app and this app's `CAMERA` grant, so it is not a request an example should teach —
+     * see `@IntentChoice`. The icon exists because the request is legal and somebody's node
+     * will want it, and a button that opens a camera must not wear a lightning bolt.
+     */
+    CAMERA,
+
+    /**
+     * A QR or barcode, i.e. a value that is read off something in the world.
+     *
+     * Its own entry rather than [CAMERA]'s, even though a scanner uses a camera: what the
+     * button promises is a *code*, and the camera is how another app happens to get it.
+     *
+     * [CAMERA]'s caveat and a sharper one — scanning is not a platform capability at all,
+     * so an `@IntentChoice` naming a scanner is answered only where somebody has installed
+     * one. Same reasoning for keeping the icon: the request is legal, and the button has to
+     * be able to say what it opens.
+     */
+    QR_CODE,
 }

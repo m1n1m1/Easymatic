@@ -87,6 +87,11 @@ and AI connections — so a plugin asking for one would be handed the user's dat
 field it merely asked to render. Using one fails loudly the first time your service
 starts.
 
+Two run the other way. `@PluginChoice` exists **only** for plugins, and `@IntentChoice` is
+offered to you and to Ottomatic's own nodes alike — the one chooser that is not the host's
+to withhold, because what it reaches is another app on the phone rather than anything of
+the user's that Ottomatic keeps.
+
 ### `@PluginChoice` — a chooser over **your** lists
 
 What you almost certainly wanted `@Picker` for. Ottomatic's rule is that an identifier a
@@ -199,6 +204,103 @@ What changes and what does not:
 - **Declare a `SCREEN` field and ship no Activity** and the chooser says so, naming you.
   `PluginNodeContracts` cannot catch this one — an Activity is a manifest fact, and no
   reflection over your node class can see it.
+
+### `@IntentChoice` — a chooser some **other** app draws
+
+The third place an answer can come from. `@Picker` reaches the user's own libraries and is
+refused you; `@PluginChoice` reaches your lists. This reaches whatever app on the phone
+answers the question — the gallery for a picture, the camera for a photograph, a document
+provider for a file, a barcode app for what a QR code says.
+
+You get it for the same reason you are refused `@Picker`: because of what it reaches. It
+touches nothing of Ottomatic's, and everything it can obtain is something your own Activity
+could have asked for under your own uid. All it saves you is having to ship that Activity.
+
+```kotlin
+@Serializable
+data class AttachConfig(
+    @Label("Document")
+    @Wired
+    @IntentChoice(
+        action = "android.intent.action.OPEN_DOCUMENT",
+        mimeType = "*/*",
+        category = "android.intent.category.OPENABLE",
+        icon = NodeIcon.FILE,
+    )
+    val document: String = "",
+
+    @Label("Sound when done")
+    @IntentChoice(
+        action = "android.intent.action.RINGTONE_PICKER",
+        resultExtra = "android.intent.extra.ringtone.PICKED_URI",
+        icon = NodeIcon.MUSIC,
+    )
+    val chime: String = "",
+)
+```
+
+You write no Activity, no `startActivityForResult`, no result parsing, no `<queries>` entry
+and no grant handling. Ottomatic builds the launch from what you declared, reads the answer
+and stores it. `AttachAction` in the sample plugin is the whole worked example.
+
+Both of those are answered by **Android itself** — the documents UI and the ringtone
+chooser are system components, on every phone, needing no permission at either end. Start
+there; see *What can actually be answered* below before reaching for anything else.
+
+What to know before you use it:
+
+- **The field is editable**, unlike `@PluginChoice`'s. A chooser can only offer what exists
+  *now*, so a file a previous run wrote is unreachable through one — which is also why it
+  composes with `@Wired`.
+- **Reach for `OPEN_DOCUMENT`, not `GET_CONTENT`.** `GET_CONTENT`'s grant dies with the
+  editor's task, so the macro works once and then fails silently forever. `OPEN_DOCUMENT`'s
+  is persistable and Ottomatic takes it.
+- **Where the answer is depends on the action.** `resultExtra` names the extra to read; leave
+  it blank for the result `Intent`'s own `data` URI, which is what every document and pick
+  action answers with. Set `outputExtra` when the app needs somewhere to *write* — that is
+  what makes `ACTION_IMAGE_CAPTURE` work at all, since without an `EXTRA_OUTPUT` it answers
+  a postage-stamp thumbnail.
+- **`inputExtras` carries strings and nothing else**, and it fails quietly. `@SerialInfo`
+  can carry an `Array<String>` and nothing richer, so `EXTRA_TITLE` (a `String`) can be set
+  while `EXTRA_RINGTONE_TYPE` (an `int`) cannot — the app you asked reads it with
+  `getIntExtra`, sees the default, and behaves as though you had said nothing. A request
+  that needs a typed extra to be correct is one this cannot express.
+- **A `content://` value is readable in your process, for the length of the call and no
+  longer.** Ottomatic lends the grant by package immediately before your `execute` and takes
+  it back in a `finally`, so open the stream inside the call — a URI you keep for later is
+  dead. Everything else is a plain string and needs nothing.
+- **Nothing you declare is a component or a package.** The launch is always implicit and
+  `PackageManager` decides who answers; that is what makes the whole annotation safe to
+  offer you, so there is no field to name an app with and there will not be one.
+- **If nothing on the phone answers your action**, the field says so and stays typeable,
+  rather than presenting a button that does nothing.
+
+#### What can actually be answered
+
+Anything the phone has an app for, which is a much shorter list than it sounds. These are
+answered by Android itself and are the ones to build on:
+
+| Request | Action | Answer is |
+|---|---|---|
+| A file to read | `ACTION_OPEN_DOCUMENT` | the result's `data`, with a persistable grant |
+| A file to write | `ACTION_CREATE_DOCUMENT` | the result's `data` |
+| A whole folder | `ACTION_OPEN_DOCUMENT_TREE` | the result's `data` |
+| A sound | `ACTION_RINGTONE_PICKER` | `android.intent.extra.ringtone.PICKED_URI` |
+| A contact | `ACTION_PICK` on the contacts URI | the result's `data`, under a **transient** grant |
+
+Two that people reach for first and neither of which is guaranteed:
+
+- **Scanning a QR or barcode is not a platform capability.** There is no system action for
+  it. The de-facto one, `com.google.zxing.client.android.SCAN`, is answered only by Barcode
+  Scanner and the apps that copied its contract, so on a phone without one your field is a
+  text box — which, for a code somebody is holding under a camera, is close to useless.
+- **Taking a photograph** needs a camera app (near-universal) *and* Ottomatic's CAMERA grant,
+  which is not automatic: Ottomatic declares `CAMERA` for its torch node, and Android then
+  requires it even though another app takes the picture. The chooser asks for the grant, so
+  nothing is required of you — but the field does nothing until it is given.
+
+Neither is forbidden. This is the difference between a request that always works and one
+that works where it happens to be supported, and it is worth deciding knowingly.
 
 ## The four node kinds
 
@@ -406,5 +508,11 @@ system: there is no check of your `versionCode`, because a downgrade is as legit
 upgrade and neither says anything about the wire.
 
 **2** — named execution routes, `@PluginChoice` (both `LIST` and `SCREEN`), `status()`, and
-the settings- and chooser-Activity conventions. Rebuild against the current `:plugin-sdk` and
-you are on it.
+the settings- and chooser-Activity conventions.
+
+**3** — `@IntentChoice`, and the URI grant that goes with it. Bumped rather than accepted
+silently, because the manifest is parsed leniently: a version-2 host reading a version-3
+declaration would not fail, it would drop the field's *type* and simply not show the row —
+so you would see a field you declared quietly missing, with nothing saying why. A refusal
+naming both numbers is the better sentence. Rebuild against the current `:plugin-sdk` and you
+are on it.

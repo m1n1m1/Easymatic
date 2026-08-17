@@ -208,18 +208,32 @@ configure.
 
 The annotations, all in `domain/model/config/ConfigAnnotations.kt`: `@Label` names the
 row, `@Multiline` makes it a text area, `@Wired` gives it a socket, and `@VisibleWhen`
-hides it until a sibling holds a given value. Then the nine widget annotations —
+hides it until a sibling holds a given value. Then the ten widget annotations —
 `@Picker`, `@Ports`, `@PhoneNumber`, `@TimeOfDay`, `@WifiNetwork`, `@ContactName`,
-`@FilePath`, `@Suggested` and `@ApiToken` — of which **at most one may claim a
-property**, and each requires a `String`. A second is a registry-initialisation failure,
-not something the form renders around.
+`@FilePath`, `@IntentChoice`, `@Suggested` and `@ApiToken` — of which **at most one may
+claim a property**, and each requires a `String`. A second is a registry-initialisation
+failure, not something the form renders around.
 
 `@Picker` is for an identifier chosen from a chooser, never typed: a mistyped identifier
 does not fail loudly, it names something else or nothing, and the node just looks broken.
-The five editable-with-a-chooser widgets exist because a phone number, a time of day, a
-network name, a person's name and a file path are things people genuinely type, and
-because the answer set is wider than any chooser can offer — the office Wi-Fi cannot be
-scanned from home, and the file a macro is about to write does not exist yet. Adding a
+The six editable-with-a-chooser widgets exist because a phone number, a time of day, a
+network name, a person's name, a file path and whatever another app hands back are things
+people genuinely type, and because the answer set is wider than any chooser can offer — the
+office Wi-Fi cannot be scanned from home, and the file a macro is about to write does not
+exist yet.
+
+`@IntentChoice` is the one whose chooser this app does not draw: it names an implicit
+`Intent` and whatever app the phone resolves it to fills the field in. **Reach first for the
+requests Android itself answers** — `ACTION_OPEN_DOCUMENT`, `ACTION_CREATE_DOCUMENT`,
+`ACTION_OPEN_DOCUMENT_TREE`, `ACTION_RINGTONE_PICKER` — which work on every phone and cost
+no permission at either end; a barcode scanner or a camera is expressible but is answered
+only where the app or the grant happens to be there. Prefer `ACTION_OPEN_DOCUMENT` to
+`ACTION_GET_CONTENT`, because only the first conveys a grant that can be persisted, and the
+second gives a value that works until the editor closes and then fails silently forever.
+Note that `inputExtras` carries **strings only** and does so quietly, so a request needing a
+typed extra to be correct is one it cannot express. It is also the **only** widget a plugin
+may declare besides `@PluginChoice`, since it reaches nothing of the user's that Ottomatic
+keeps. Adding a
 widget annotation costs one entry in `NodeSchema.widgetFlags` as well as its branch in
 `stringFormType` — miss that one and two widgets on a property are silently allowed.
 Adding a `PickerKind` or a `ConfigFieldType` requires a matching branch in

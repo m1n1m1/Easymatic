@@ -1,5 +1,6 @@
 package com.example.ottomatic.domain.model.config
 
+import com.example.ottomatic.domain.model.NodeIcon
 import kotlinx.serialization.SerialInfo
 import kotlinx.serialization.Serializable
 
@@ -191,6 +192,161 @@ enum class ChoiceChooser {
      */
     SCREEN,
 }
+
+/**
+ * Renders the `String` property as an **editable field with a chooser that another app on
+ * the phone draws**, reached by an implicit `Intent`.
+ *
+ * The third source an answer can come from, and the one nothing here could express. [Picker]
+ * reaches a library of the *user's* — their places, their macros, their mailboxes.
+ * [PluginChoice] reaches a list of the *plugin's*. This reaches **whatever app on this phone
+ * answers the question**: the gallery for a picture, the camera for a photograph, a document
+ * provider for a file, a barcode app for what a QR code says.
+ *
+ * It generalises what four fields already do one at a time. `PickerKind.SOUND` launches
+ * `ACTION_RINGTONE_PICKER` and reads `EXTRA_RINGTONE_PICKED_URI`; `@PhoneNumber` and
+ * `@ContactName` launch `ACTION_PICK`; `@FilePath` launches `OPEN_DOCUMENT`. Each is a
+ * hand-written launcher, a hand-written intent and a hand-written result-to-string
+ * conversion, and a fifth of them would have burned a [PickerKind] on it. This is those
+ * three steps written once and *declared* instead.
+ *
+ * **Unlike every other chooser, a plugin may declare this one**, and it is the only widget
+ * besides [PluginChoice] that crosses the boundary. The reason is what it does *not* reach:
+ * no host library, no `CompositionLocal`, nothing of the user's that Ottomatic keeps. It
+ * asks the phone, which the plugin's own process could equally have asked.
+ *
+ * ## Four worked examples
+ *
+ * All four are answered by components that are **part of Android itself** — the documents
+ * UI and the ringtone chooser — so they work on every phone, need no permission at either
+ * end, and cannot be uninstalled. That is the bar an example here has to clear, because an
+ * example is what people copy: one that depends on a particular app being installed
+ * teaches a chooser that is dead on most phones. What is *permitted* is much wider; see
+ * **Not every request can be answered** below for the ones to reach for knowingly.
+ *
+ * A Kotlin block comment nests, so the MIME wildcards below are written `&#42;` — read them
+ * as a plain asterisk. `AttachAction` in the sample plugin has them spelled out for real.
+ *
+ * ```kotlin
+ * // A file to read. The grant OPEN_DOCUMENT conveys is persistable, which is what lets the
+ * // engine open the file days later from the service.
+ * @IntentChoice(action = "android.intent.action.OPEN_DOCUMENT", mimeType = "&#42;/&#42;",
+ *               category = "android.intent.category.OPENABLE", icon = NodeIcon.FILE)
+ *
+ * // A file to write, with a name suggested. EXTRA_TITLE is a *String* extra, which is the
+ * // only kind [inputExtras] can carry — see the note below.
+ * @IntentChoice(action = "android.intent.action.CREATE_DOCUMENT", mimeType = "text/csv",
+ *               category = "android.intent.category.OPENABLE",
+ *               inputExtras = ["android.intent.extra.TITLE=report.csv"], icon = NodeIcon.FILE)
+ *
+ * // A whole folder, and an action that takes no type at all.
+ * @IntentChoice(action = "android.intent.action.OPEN_DOCUMENT_TREE", icon = NodeIcon.FOLDER)
+ *
+ * // A sound. The one of the four whose answer is in an *extra* rather than in the result's
+ * // own data, which is what [resultExtra] exists for.
+ * @IntentChoice(action = "android.intent.action.RINGTONE_PICKER",
+ *               resultExtra = "android.intent.extra.ringtone.PICKED_URI", icon = NodeIcon.MUSIC)
+ * ```
+ *
+ * ## [inputExtras] carries strings and nothing else
+ *
+ * A limitation rather than an oversight, and it decides which requests are expressible.
+ * `@SerialInfo` can carry an `Array<String>` through a descriptor and nothing richer, so
+ * `EXTRA_TITLE` (a `String`) can be set while `EXTRA_RINGTONE_TYPE` (an `int`) and
+ * `EXTRA_RINGTONE_SHOW_SILENT` (a `boolean`) cannot — an app reading those with
+ * `getIntExtra`/`getBooleanExtra` sees the default, not the string that was put on.
+ *
+ * It fails **quietly**, which is the part to know: the launch succeeds and the app being
+ * asked simply behaves as though the extra were absent. So a request that needs a typed
+ * extra to be correct is one this annotation cannot express, and reaching for it anyway
+ * gives a chooser that opens and answers the wrong thing.
+ *
+ * ## The field stays editable
+ *
+ * The sixth of the editable-with-a-chooser family, after [PhoneNumber], [TimeOfDay],
+ * [WifiNetwork], [ContactName] and [FilePath] — and it earns the shape on [FilePath]'s
+ * argument rather than by analogy. A chooser can only offer what exists **now**, so a
+ * picture a previous run will write is unreachable through one; the field must be [Wired]
+ * so a path can be built with `transform.text`; and what is stored is legible enough to
+ * read back and see is wrong. A read-only version would delete the commonest case.
+ *
+ * ## What the open shape costs, stated rather than hidden
+ *
+ * [action] is a raw string rather than a member of a closed set, which buys every question
+ * another app can answer and costs three things worth knowing:
+ *
+ * - **Durability is the declaration's problem.** `ACTION_GET_CONTENT` conveys a grant that
+ *   dies with the task; `ACTION_OPEN_DOCUMENT`'s is persistable, and the host takes it. The
+ *   host cannot *make* a transient grant durable, so reach for `OPEN_DOCUMENT`. A value
+ *   picked through `GET_CONTENT` will work while the editor is open and fail silently
+ *   afterwards — the exact failure `SoundPickerField`'s `persistAccess` exists to prevent.
+ * - **The host launches what it is told.** There is no set to check an action against, so an
+ *   action that *does* something rather than *answers* something will do it when the user
+ *   taps the chooser. Two bounds hold structurally and neither can be declared away: there
+ *   is no component or package field here, so the launch is always implicit and always goes
+ *   through `PackageManager`'s dispatch; and it always goes through
+ *   `startActivityForResult`, so it can never be a broadcast or a service start.
+ * - **`ACTION_IMAGE_CAPTURE` needs this app's CAMERA grant.** Android refuses it outright
+ *   when an app *declares* `CAMERA` without holding it, and Ottomatic declares it for the
+ *   torch. The form asks for the grant before launching that one action; it is the single
+ *   place this widget is not generic, and the platform rather than the design forces it.
+ *
+ * ## Not every request can be answered, and that is a declaration decision
+ *
+ * The four examples above are answered by Android itself. Most other requests are not, and
+ * an action nothing on the phone handles gives a field that says so and stays typeable —
+ * which is honest, and is still a worse field than one that works. Two worth naming because
+ * they are the ones people reach for first:
+ *
+ * - **Scanning a QR or barcode is not a platform capability.** There is no system action for
+ *   it; the de-facto one, `com.google.zxing.client.android.SCAN`, is answered only by
+ *   Barcode Scanner and the apps that copied its contract. On a phone without one the field
+ *   is a text box, which for a code somebody is holding under a camera is close to useless.
+ * - **Taking a photograph needs a camera app and this app's CAMERA grant.** The first is
+ *   near-universal and the second is not automatic — see above. `outputExtra` exists for it,
+ *   and is otherwise unused.
+ *
+ * Neither is forbidden and both are expressible; this is only the difference between a
+ * request that always works and one that works where it happens to be supported. A node
+ * declaring the second kind should have something sensible to fall back on, which for a
+ * field that stays typeable it usually does.
+ *
+ * @param action the implicit `Intent` action to launch. Never a component.
+ * @param mimeType `Intent.setType`, and `EXTRA_MIME_TYPES` for the document actions. Blank
+ *   leaves the intent untyped.
+ * @param category one extra `Intent` category — `android.intent.category.OPENABLE` for the
+ *   document actions. Blank adds none.
+ * @param inputExtras string extras to put on the launch, one `key=value` per entry, split at
+ *   the **first** `=` so a value may contain more. An `Array<String>` for [VisibleWhen]'s
+ *   reason: `@SerialInfo` carries one through the descriptor where a `Map` cannot go — which
+ *   is also why these are strings and nothing else, a limitation with real consequences that
+ *   are set out above.
+ * @param resultExtra which string extra of the result holds the answer. Blank means the
+ *   result `Intent`'s own `data` URI, which is what the document and pick actions answer
+ *   with.
+ * @param outputExtra asks for a **destination** rather than a source: the host creates a
+ *   writable URI, passes it under this extra, and stores it when the app reports success.
+ *   Blank means no output. This is what makes `ACTION_IMAGE_CAPTURE` expressible at all —
+ *   without `EXTRA_OUTPUT` it answers a postage-stamp thumbnail rather than the photograph.
+ * @param icon what the chooser button shows. A camera and a QR code are different questions
+ *   and a single generic glyph would say neither.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+// One parameter per independent part of an Intent, all but the first defaulted. Grouping any
+// of them into a wrapper would need a second annotation class to carry it, since @SerialInfo
+// reads only what the descriptor holds.
+@Suppress("LongParameterList")
+annotation class IntentChoice(
+    val action: String,
+    val mimeType: String = "",
+    val category: String = "",
+    val inputExtras: Array<String> = [],
+    val resultExtra: String = "",
+    val outputExtra: String = "",
+    val icon: NodeIcon = NodeIcon.BOLT,
+)
 
 /**
  * Where a [Suggested] property's suggestions come from.

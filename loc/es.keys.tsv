@@ -793,3 +793,7 @@ setup_app_access_subtitle	Otras aplicaciones que pueden ejecutar tus macros
 workflowlist_search_placeholder	Buscar macros
 workflowlist_clear_search	Borrar la búsqueda
 workflowlist_no_matches	Ninguna macro coincide.
+intent_choice_placeholder	Escríbelo o pregunta a una app
+intent_choice_ask_an_app	Preguntar a una app
+intent_choice_no_app	Ninguna app de este teléfono puede responder a eso. Aun así puedes escribir un valor.
+intent_choice_needs_camera	Ottomatic necesita acceso a la cámara antes de que otra app pueda tomar la foto. Toca para permitirlo y vuelve a tocar.

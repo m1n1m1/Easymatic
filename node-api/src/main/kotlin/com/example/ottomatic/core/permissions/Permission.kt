@@ -84,6 +84,25 @@ object Permissions {
     val READ_MEDIA_IMAGES = Permission("android.permission.READ_MEDIA_IMAGES")
 
     /**
+     * The camera, and the one permission here that is needed for something this app does
+     * **not** do.
+     *
+     * Ottomatic declares `CAMERA` in its manifest for the torch, and never opens a camera
+     * itself. That declaration alone is what makes this constant necessary: Android refuses
+     * `ACTION_IMAGE_CAPTURE` outright when an app has declared `CAMERA` without holding it,
+     * even though the photograph is taken by *another* app under its own grant. So an
+     * `@IntentChoice` whose action is the capture one has to ask for a permission it will
+     * not use, and the alternative — dropping the manifest declaration — would take the
+     * torch node with it.
+     *
+     * **Declared by no node**, on `MANAGE_MEDIA`'s reasoning: nothing this app does needs
+     * it, so a node declaring it would carry a permanent amber badge for a capability it
+     * never exercises. It is asked for at the moment a capture chooser is tapped and
+     * nowhere else.
+     */
+    val CAMERA = Permission("android.permission.CAMERA")
+
+    /**
      * What [READ_MEDIA_IMAGES] is called at or below API 32. **Never declared by a
      * node** — [onApi] substitutes it, and a node naming it directly would report a
      * different `key` on old and new phones for one capability.
