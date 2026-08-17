@@ -15,6 +15,7 @@ import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.PhoneNumber
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
+import com.example.ottomatic.domain.model.config.PluginChoice
 import com.example.ottomatic.domain.model.config.Suggested
 import com.example.ottomatic.domain.model.config.Ports
 import com.example.ottomatic.domain.model.config.TimeOfDay
@@ -62,6 +63,7 @@ import kotlinx.serialization.serializer
  *   initialisation) if [T] has a property without a default value or with a
  *   type that cannot be rendered in a form.
  */
+@Suppress("TooManyFunctions") // The derivation is a chain of small named steps, not one function.
 class NodeSchema<T : Any> @PublishedApi internal constructor(
     @PublishedApi internal val serializer: KSerializer<T>,
 ) {
@@ -144,6 +146,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                         filePath = annotations.any { it is FilePath },
                         suggested = annotations.filterIsInstance<Suggested>().firstOrNull(),
                         apiToken = annotations.any { it is ApiToken },
+                        pluginChoice = annotations.filterIsInstance<PluginChoice>().firstOrNull(),
                         key = key,
                     ),
                     defaultValue = formDefault(element, defaultValues[key].orEmpty()),
@@ -195,6 +198,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         filePath: Boolean,
         suggested: Suggested?,
         apiToken: Boolean,
+        pluginChoice: PluginChoice?,
         key: String,
     ): ConfigFieldType<*> {
         // A DateTime reports `STRING`, so it has to be recognised by name before the
@@ -206,6 +210,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             val widgets =
                 widgetFlags(
                     picker, ports, tools, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken,
+                    pluginChoice,
                 )
             check(widgets.none { it }) {
                 "Config property '${descriptor.serialName}.$key' is annotated with a widget but is a date; " +
@@ -215,13 +220,13 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         }
         checkWidgetAnnotations(
             element, picker, ports, tools, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken,
-            key,
+            pluginChoice, key,
         )
         return when (element.kind) {
             SerialKind.ENUM -> ConfigFieldType.ENUM(enumOptions(element))
             PrimitiveKind.STRING, PrimitiveKind.CHAR -> stringFormType(
                 multiline, picker, ports, tools, phone, timeOfDay, wifi, contactName, filePath, suggested,
-                apiToken,
+                apiToken, pluginChoice,
             )
             PrimitiveKind.INT, PrimitiveKind.LONG, PrimitiveKind.SHORT, PrimitiveKind.BYTE -> ConfigFieldType.INT
             PrimitiveKind.BOOLEAN -> ConfigFieldType.BOOL
@@ -254,11 +259,19 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         filePath: Boolean,
         suggested: Suggested?,
         apiToken: Boolean,
+        pluginChoice: PluginChoice?,
     ): ConfigFieldType<String> = when {
         ports -> ConfigFieldType.PORT_LIST
         tools != null -> ConfigFieldType.TOOL_LIST(tools.scopedBy.toList())
         apiToken -> ConfigFieldType.API_TOKEN
         picker != null -> ConfigFieldType.PICKER(picker.kind, picker.scopedBy.toList(), picker.optional)
+        // `providerTypeId` stays blank here and is stamped host-side from the resolved
+        // typeId — a plugin declaring one would be naming somebody else's chooser.
+        pluginChoice != null -> ConfigFieldType.PLUGIN_CHOICE(
+            source = pluginChoice.source,
+            scopedBy = pluginChoice.scopedBy.toList(),
+            chooser = pluginChoice.chooser,
+        )
         phone -> ConfigFieldType.PHONE
         timeOfDay -> ConfigFieldType.TIME_OF_DAY
         wifi -> ConfigFieldType.WIFI_NETWORK
@@ -288,6 +301,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         filePath: Boolean,
         suggested: Suggested?,
         apiToken: Boolean,
+        pluginChoice: PluginChoice?,
         key: String,
     ) {
         check(picker == null || element.kind == PrimitiveKind.STRING) {
@@ -330,14 +344,38 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
             "Config property '${descriptor.serialName}.$key' is annotated @FilePath but is a " +
                 "${element.kind}; a path field stores the path itself, so it must be a String"
         }
+        checkPluginChoice(element, pluginChoice, key)
         val widgets = widgetFlags(
             picker, ports, tools, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken,
+            pluginChoice,
         ).count { it }
         check(widgets <= 1) {
             "Config property '${descriptor.serialName}.$key' is annotated with $widgets widgets " +
                 "(@Picker, @Ports, @Tools, @PhoneNumber, @TimeOfDay, @WifiNetwork, @ContactName, " +
                 "@FilePath, " +
-                "@Suggested, @ApiToken); a property has one editor"
+                "@Suggested, @ApiToken, @PluginChoice); a property has one editor"
+        }
+    }
+
+    /**
+     * The two things `@PluginChoice` needs beyond being one widget among many.
+     *
+     * Its own function rather than two more `check`s in the list above, because the second
+     * is not the check every other widget gets: the rest only have to be on a `String`,
+     * while this one additionally carries a value the host will hand straight back to the
+     * plugin. A blank source is a chooser that asks its own node an unanswerable question,
+     * and it fails here — at declaration time, the first time the plugin's service starts
+     * or its own test runs — rather than as an empty list on somebody's phone.
+     */
+    private fun checkPluginChoice(element: SerialDescriptor, pluginChoice: PluginChoice?, key: String) {
+        if (pluginChoice == null) return
+        check(element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @PluginChoice but is a " +
+                "${element.kind}; a choice stores the chosen thing's identifier, so it must be a String"
+        }
+        check(pluginChoice.source.isNotBlank()) {
+            "Config property '${descriptor.serialName}.$key' is annotated @PluginChoice with a blank " +
+                "source; the source is the key your node is asked for, so it has to name something"
         }
     }
 
@@ -361,9 +399,10 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
         filePath: Boolean,
         suggested: Suggested?,
         apiToken: Boolean,
+        pluginChoice: PluginChoice?,
     ): List<Boolean> = listOf(
         picker != null, ports, tools != null, phone, timeOfDay, wifi, contactName, filePath,
-        suggested != null, apiToken,
+        suggested != null, apiToken, pluginChoice != null,
     )
 
     private fun enumOptions(element: SerialDescriptor): List<ConfigOption> {

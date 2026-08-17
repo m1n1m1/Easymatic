@@ -6,6 +6,8 @@
 
     <string name="problem_permission_missing">\'%1$s\' needs %2$s, which has not been granted — it may do nothing when it runs</string>
     <string name="problem_plugin_permission_missing">\'%1$s\' needs %2$s, which %3$s has not been granted — it may do nothing when it runs</string>
+    <!-- %3$s is the plugin's own sentence and arrives untranslated; see GraphValidator.validatePluginReadiness. -->
+    <string name="problem_plugin_not_ready">\'%1$s\' will do nothing until %2$s is ready: %3$s</string>
 
     <string name="problem_macro_unset">\'%1$s\' has no macro chosen, so it will do nothing</string>
     <string name="problem_macro_missing">\'%1$s\' points at a macro that no longer exists</string>

@@ -4,12 +4,15 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import com.example.ottomatic.nodeapi.plugin.PluginLimits
+import com.example.ottomatic.nodeapi.wire.ChoiceListWire
 import com.example.ottomatic.nodeapi.wire.LogLevelWire
 import com.example.ottomatic.nodeapi.wire.LogLineWire
 import com.example.ottomatic.nodeapi.wire.NodeCallWire
 import com.example.ottomatic.nodeapi.wire.PLUGIN_PROTOCOL_VERSION
 import com.example.ottomatic.nodeapi.wire.PluginJson
 import com.example.ottomatic.nodeapi.wire.PluginManifestWire
+import com.example.ottomatic.nodeapi.wire.PluginStatusWire
 import com.example.ottomatic.nodeapi.wire.TriggerEventWire
 import com.example.ottomatic.nodeapi.wire.ValueResultWire
 import kotlinx.coroutines.runBlocking
@@ -58,6 +61,7 @@ import java.util.concurrent.ConcurrentHashMap
  * `DeadObjectException` or a `RuntimeException` with no plugin name in it, and the
  * one thing the host most needs to be able to say is *which plugin* went wrong.
  */
+@Suppress("TooManyFunctions") // One per binder transaction, plus the marshalling either side.
 abstract class BaseOttomaticPluginService : Service() {
 
     /**
@@ -70,11 +74,36 @@ abstract class BaseOttomaticPluginService : Service() {
      */
     abstract val nodes: List<Any>
 
+    /**
+     * Whether this plugin can currently do its work — override when it needs an account.
+     *
+     * The question no permission check reaches. A plugin holds every permission it asked
+     * for, so Ottomatic's Problems panel is silent and correct while every node of a
+     * signed-out plugin does nothing: "configured perfectly, does nothing", with nothing
+     * anywhere saying why.
+     *
+     * Answer `PluginStatusWire(ready = false, message = "…")` and Ottomatic raises that
+     * sentence — **your words, untranslated, exactly as your node names are** — as a
+     * warning on every placed node of yours. It blocks nothing: the graph is fine, and
+     * signing in somewhere else starts it working with no edit to the macro at all.
+     *
+     * Called off any binder thread, on every refresh, under a two-second bound. Keep it
+     * local: read a token out of your own preferences rather than validating it over the
+     * network. A plugin that does not answer in time leaves Ottomatic saying nothing,
+     * which is the deliberate choice over badging every node on a guess.
+     */
+    open fun status(): PluginStatusWire = PluginStatusWire()
+
     private val armed = ConcurrentHashMap<String, PluginArm>()
 
     private val byLocalId: Map<String, Any> by lazy { nodes.associateBy { it.localTypeId() } }
 
     private val manifestJson: String by lazy {
+        // Reported here rather than only in an author's test, because a contract problem
+        // is otherwise invisible from this side: the node loads, its field renders, and
+        // its chooser is empty forever. Logged rather than thrown — a throw would reach
+        // Ottomatic as a dead transaction it can only report as "could not be reached".
+        PluginNodeContracts.problems(nodes).forEach { Log.e(TAG, it) }
         PluginJson.encodeToString(
             PluginManifestWire.serializer(),
             PluginManifestWire(
@@ -98,9 +127,38 @@ abstract class BaseOttomaticPluginService : Service() {
 
     private val binder = object : IOttomaticPlugin.Stub() {
 
-        override fun protocolVersion(): Int = PLUGIN_PROTOCOL_VERSION
-
         override fun declarations(): String = manifestJson
+
+        override fun status(): String = runCatching {
+            PluginJson.encodeToString(PluginStatusWire.serializer(), this@BaseOttomaticPluginService.status())
+        }.getOrElse { cause ->
+            // A status check that throws is not evidence the plugin is broken — it is
+            // evidence this one call went wrong — so it degrades to saying nothing rather
+            // than to claiming not-ready, which would badge every node the plugin has.
+            Log.e(TAG, "status() failed", cause)
+            PluginJson.encodeToString(PluginStatusWire.serializer(), PluginStatusWire())
+        }
+
+        @Suppress("UNCHECKED_CAST", "ReturnCount") // Not-a-chooser, not-a-node, and answered.
+        override fun choices(typeId: String, source: String, requestJson: String): String {
+            val node = byLocalId[typeId.localPart()]
+            val chooser = node as? PluginChoiceSource<Any>
+                ?: return failedChoices("'$typeId' offers no choices")
+            val definition = node.definitionOrNull() as? PluginNodeDefinition<Any, Any>
+                ?: return failedChoices("'$typeId' is not a node this plugin declares")
+            return runCatching {
+                val context = RecordingPluginContext(applicationContext)
+                val config = definition.decodeConfig(decodeCall(requestJson))
+                val options = runBlocking { chooser.choices(source, config, context) }
+                PluginJson.encodeToString(
+                    ChoiceListWire.serializer(),
+                    ChoiceListWire(options = options.take(PluginLimits.MAX_CHOICES)),
+                )
+            }.getOrElse { cause ->
+                Log.e(TAG, "Choices for $typeId/$source failed", cause)
+                failedChoices("could not be listed: ${cause.message ?: cause.javaClass.simpleName}")
+            }
+        }
 
         override fun runAction(typeId: String, requestJson: String): String {
             val node = byLocalId[typeId.localPart()]
@@ -194,24 +252,32 @@ abstract class BaseOttomaticPluginService : Service() {
         ValueResultWire(log = listOf(LogLineWire(LogLevelWire.ERROR, reason))),
     )
 
-    private fun Any.localTypeId(): String = when (this) {
-        is PluginAction<*, *> -> definition.typeId
-        is PluginTrigger<*, *> -> definition.typeId
-        is PluginValue<*, *> -> definition.typeId
-        is PluginTransform<*, *> -> definition.typeId
-        else -> ""
+    /**
+     * An empty chooser, saying why.
+     *
+     * The reason travels *in the reply* rather than as a log line, because this is the one
+     * transaction answered while somebody is looking at a dialog waiting for it. A run-log
+     * entry would be the right shape for a failure nobody is watching and the wrong one
+     * here.
+     */
+    private fun failedChoices(reason: String): String =
+        PluginJson.encodeToString(ChoiceListWire.serializer(), ChoiceListWire(problem = reason))
+
+    private fun Any.localTypeId(): String = definitionOrNull()?.typeId ?: ""
+
+    private fun Any.definitionOrNull(): PluginNodeDefinition<*, *>? = when (this) {
+        is PluginAction<*, *> -> definition
+        is PluginTrigger<*, *> -> definition
+        is PluginValue<*, *> -> definition
+        is PluginTransform<*, *> -> definition
+        else -> null
     }
 
-    private fun Any.declarationOrNull() = when (this) {
-        is PluginAction<*, *> -> definition.declaration(packageName)
-        is PluginTrigger<*, *> -> definition.declaration(packageName)
-        is PluginValue<*, *> -> definition.declaration(packageName)
-        is PluginTransform<*, *> -> definition.declaration(packageName)
-        else -> {
+    private fun Any.declarationOrNull() = definitionOrNull()?.declaration(packageName)
+        ?: run {
             Log.w(TAG, "${javaClass.name} is in `nodes` but is not a plugin node; ignoring it")
             null
         }
-    }
 
     /** `plugin:com.acme.tools/shout` -> `shout`; anything unprefixed is passed through. */
     private fun String.localPart(): String = substringAfterLast('/')

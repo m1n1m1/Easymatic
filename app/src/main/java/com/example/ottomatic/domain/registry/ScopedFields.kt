@@ -52,14 +52,17 @@ fun keysScopedBy(typeId: NodeTypeId, changed: ConfigKey): Set<ConfigKey> {
     val changedAt = fields.indexOfFirst { it.key == changed }
     if (changedAt < 0) return emptySet()
 
-    // Only a picker is cleared; a @Suggested field keeps whatever was typed into it. Only a
-    // field below the edited one is a candidate — see the KDoc.
+    // Only a read-only chooser is cleared; a @Suggested field keeps whatever was typed into it.
+    // A plugin's own chooser is one of these for exactly the host's reason — a page id is only
+    // meaningful inside the workspace it was chosen from — and the fact that the list lives in
+    // another process changes nothing about that. Only a field below the edited one is a
+    // candidate; see the KDoc.
     val scopesOf = fields
         .filterIndexed { index, _ -> index > changedAt }
         .mapNotNull { field ->
-            (field.type as? ConfigFieldType.PICKER)
-                ?.takeIf { it.scopedBy.isNotEmpty() }
-                ?.let { field.key to it.scopedBy.map(::ConfigKey).toSet() }
+            field.scopedByKeys()
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { field.key to it.map(::ConfigKey).toSet() }
         }
         .toMap()
 
@@ -76,4 +79,19 @@ fun keysScopedBy(typeId: NodeTypeId, changed: ConfigKey): Set<ConfigKey> {
         frontier = next
     }
     return invalidated
+}
+
+/**
+ * The siblings that narrow this field, or null when it is not a read-only chooser.
+ *
+ * The two kinds are separated by *who owns the list* rather than by how they behave: a
+ * [ConfigFieldType.PICKER] chooses from one of the host's libraries and a
+ * [ConfigFieldType.PLUGIN_CHOICE] from a plugin's own, and neither may be typed into. Null
+ * rather than an empty list, so "not a chooser" and "a chooser nothing scopes" stay
+ * distinguishable at the call site.
+ */
+private fun ConfigField<*>.scopedByKeys(): List<String>? = when (val fieldType = type) {
+    is ConfigFieldType.PICKER -> fieldType.scopedBy
+    is ConfigFieldType.PLUGIN_CHOICE -> fieldType.scopedBy
+    else -> null
 }

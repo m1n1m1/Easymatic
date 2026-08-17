@@ -77,6 +77,8 @@ class PluginTriggerBridgeTest {
         val armIds = mutableListOf<String>()
 
         override suspend fun declarations(): String? = null
+        override suspend fun status(): String? = null
+        override suspend fun choices(typeId: String, source: String, request: String): String? = null
         override suspend fun runAction(typeId: String, request: String): String? = null
         override suspend fun readValue(typeId: String, request: String): String? = null
         override suspend fun runTransform(typeId: String, request: String): String? = null

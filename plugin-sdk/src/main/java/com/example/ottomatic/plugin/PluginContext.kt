@@ -44,17 +44,39 @@ interface PluginContext {
  * What an action answers with.
  *
  * [route] must name one of the node's declared execution outputs: `out` for a plain
- * action, or `true`/`false` for a branching one. A route the declaration does not
- * contain is refused rather than pulsed — the host `require`s the same of its own
- * nodes, and a plugin is not a reason to relax it.
+ * action, `true`/`false` for a branching one, or whichever names it gave
+ * [com.example.ottomatic.nodeapi.wire.ExecOutputsWire.Named]. A route the declaration
+ * does not contain is refused rather than pulsed — the host `require`s the same of its
+ * own nodes, and a plugin is not a reason to relax it.
  *
- * [halt] stops the branch, exactly as a first-party action's does.
+ * [value] is **nullable, and null is the honest answer on a route that failed.** Every
+ * plugin action is a call to somebody else's server, so *it failed* is the second
+ * ordinary outcome rather than an exception — and while this was non-null, an action that
+ * could not publish still had to fabricate a payload, which arrived downstream as a
+ * struct of blanks reading exactly like a success. A null emits nothing on the data port,
+ * and a port with nothing on it degrades the way an unwired one already does.
+ *
+ * [halt] stops the branch, exactly as a first-party action's does. Note that routing to a
+ * failure port is usually better than halting: it lets the macro *handle* the failure,
+ * where a halt only ends it.
  */
 class PluginOutput<out O : Any>(
-    val value: O,
+    val value: O? = null,
     val route: String = "out",
     val halt: Boolean = false,
-)
+) {
+    companion object {
+        /**
+         * A failure, on [route], carrying nothing.
+         *
+         * Named rather than left to `PluginOutput(route = "error")` because the argument
+         * that matters is the one that is *absent*, and a factory says so where a
+         * defaulted parameter is easy to read past.
+         */
+        fun <O : Any> failed(route: String, halt: Boolean = false): PluginOutput<O> =
+            PluginOutput(value = null, route = route, halt = halt)
+    }
+}
 
 /** A trigger's registration, released when the host disarms or the binding drops. */
 fun interface PluginArm {

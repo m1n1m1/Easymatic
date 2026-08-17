@@ -32,5 +32,46 @@
                 <action android:name="com.example.ottomatic.action.PLUGIN" />
             </intent-filter>
         </service>
+
+        <!--
+          The optional second half: a screen where the user signs in to whatever this
+          plugin talks to.
+
+          Ottomatic offers a button to it from the Plugins screen. It resolves this
+          filter against *this package* through PackageManager and launches the result by
+          component — never from anything the plugin sent over the binder, which is why
+          this is a manifest convention rather than a wire field.
+
+          `exported="true"` because the launcher is a different app. No permission on it:
+          the screen holds the user's own credentials for the user's own service, and
+          gating it behind BIND_PLUGIN would only stop the user reaching it themselves.
+        -->
+        <activity
+            android:name=".SampleSettingsActivity"
+            android:exported="true"
+            android:label="Sample Tools">
+            <intent-filter>
+                <action android:name="com.example.ottomatic.action.PLUGIN_SETTINGS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!--
+          The plugin's own chooser, opened by a @PluginChoice(chooser = SCREEN) field.
+
+          One Activity serves every such field this plugin declares; it dispatches on the
+          `source` extra. Found the same way the settings screen is — resolved against this
+          package through PackageManager and started by component — and it answers with one
+          string, which is the whole of what crosses back.
+        -->
+        <activity
+            android:name=".SampleChoiceActivity"
+            android:exported="true"
+            android:label="Choose a card">
+            <intent-filter>
+                <action android:name="com.example.ottomatic.action.PLUGIN_CHOICE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 </manifest>

@@ -2,6 +2,7 @@ package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.domain.model.config.ChoiceChooser
 import com.example.ottomatic.domain.model.config.PickerKind
 import com.example.ottomatic.domain.model.config.SuggestionSource
 
@@ -16,11 +17,13 @@ import com.example.ottomatic.domain.model.config.SuggestionSource
  * with the Kotlin type the node actually reads.
  *
  * The set is closed, and the renderer's `when` over it is exhaustive, so a new
- * member cannot be added without also being drawn. Seven of them are additionally
+ * member cannot be added without also being drawn. Most of them are additionally
  * *not offered to plugin nodes* — [PICKER], [SUGGESTED], [PORT_LIST], [PHONE],
- * [WIFI_NETWORK], [CONTACT_NAME] and [API_TOKEN] each reach a host library, a host
- * `CompositionLocal` or a host trust boundary the plugin boundary deliberately does
- * not cross. See `ConfigFieldTypeWire`.
+ * [WIFI_NETWORK], [CONTACT_NAME], [FILE_PATH], [TOOL_LIST] and [API_TOKEN] each reach a
+ * host library, a host `CompositionLocal` or a host trust boundary the plugin boundary
+ * deliberately does not cross. [PLUGIN_CHOICE] is the one that runs the other way: it
+ * exists *only* for plugin nodes, because it is the shape that lets one offer a list of
+ * its own without being handed any of the user's. See `ConfigFieldTypeWire`.
  */
 sealed interface ConfigFieldType<out T> {
     /** Single-line string. */
@@ -197,6 +200,39 @@ sealed interface ConfigFieldType<out T> {
      * rather than a laxer one, which is why nothing warns about it.
      */
     data object API_TOKEN : ConfigFieldType<String>
+
+    /**
+     * An identifier chosen from a list a **plugin** answers, declared with
+     * `@PluginChoice`. Stored as a plain string, like [STR] and [PICKER].
+     *
+     * [PICKER]'s shape with the authority moved. Every [PickerKind] names something of
+     * the *user's* — their places, their macros, their mailboxes — which is why a plugin
+     * may not declare one, and which for a while also meant a plugin could offer no list
+     * at all: "which of your Pages?" was a text field asking for a sixteen-digit id, the
+     * exact failure the read-only chooser exists to prevent. Here the host asks the
+     * plugin and hands over nothing; everything the plugin can answer is something it
+     * already had.
+     *
+     * [source] is the plugin's own key for which list this is, opaque to the host and
+     * passed back untouched. [scopedBy] narrows it from sibling fields, as [PICKER]'s
+     * does. [providerTypeId] is the node that answers, and it is **stamped by the host**
+     * from the typeId it already resolved rather than sent — so one plugin cannot name
+     * another's chooser.
+     *
+     * [chooser] says who *draws* it, which is a rendering choice and not an authority one:
+     * both ways ask the same plugin and hand it the same nothing. See
+     * [com.example.ottomatic.domain.model.config.ChoiceChooser].
+     *
+     * The list is fetched live each time the chooser opens and never cached: it is the
+     * user's own data, and a stale page list is worse than a slow one. What is stored
+     * survives an unreachable plugin, so a configured macro is never silently emptied.
+     */
+    data class PLUGIN_CHOICE(
+        val source: String,
+        val scopedBy: List<String> = emptyList(),
+        val providerTypeId: String = "",
+        val chooser: ChoiceChooser = ChoiceChooser.LIST,
+    ) : ConfigFieldType<String>
 }
 
 /**

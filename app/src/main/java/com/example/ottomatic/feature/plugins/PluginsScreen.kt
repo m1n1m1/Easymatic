@@ -22,12 +22,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,9 +69,15 @@ fun PluginsScreen(
     val plugins by registry.installed.collectAsState()
     val scope = rememberCoroutineScope()
 
-    // Re-read on entry: apps are installed and permissions granted by leaving this
-    // app, exactly as on the Permissions screen.
-    LaunchedEffect(Unit) { registry.refreshNow() }
+    // Re-read on every resume rather than only on entry: apps are installed, permissions
+    // granted and plugins signed into by *leaving* this app — exactly as on the
+    // Permissions screen, and the reason `MainActivity.onResume` re-reads its grants. It
+    // is also what closes the loop on the Set up button below, which sends the user into
+    // another app and has no way to know when they are done.
+    LifecycleResumeEffect(registry) {
+        val job = scope.launch { registry.refreshNow() }
+        onPauseOrDispose { job.cancel() }
+    }
 
     Column(
         modifier = Modifier
@@ -112,6 +119,11 @@ fun PluginsScreen(
                             if (enable) registry.enable(plugin.packageName) else registry.disable(plugin.packageName)
                         }
                     },
+                    // Nothing to do on the way back: the resume effect above re-reads when
+                    // the user returns, which is what turns this button and the readiness
+                    // line into one loop — sign in over there, come back, and the "not
+                    // ready" sentence and the warning on every placed node clear together.
+                    onOpenSettings = { registry.openSettings(plugin.packageName) },
                 )
             }
         }
@@ -132,7 +144,11 @@ private fun PluginsPreamble(anyInstalled: Boolean) {
 }
 
 @Composable
-private fun PluginRow(plugin: InstalledPlugin, onToggle: (Boolean) -> Unit) {
+private fun PluginRow(
+    plugin: InstalledPlugin,
+    onToggle: (Boolean) -> Unit,
+    onOpenSettings: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -155,6 +171,36 @@ private fun PluginRow(plugin: InstalledPlugin, onToggle: (Boolean) -> Unit) {
                 )
             }
             Switch(checked = plugin.enabled, onCheckedChange = onToggle)
+        }
+
+        // Offered whether or not the plugin is enabled, because signing in before
+        // switching it on is the natural order — and because withholding `@ApiToken` and
+        // the credential libraries from plugins, which is right, is exactly what makes
+        // this the *only* way in for an account.
+        if (plugin.hasSettings) {
+            TextButton(
+                onClick = onOpenSettings,
+                contentPadding = PaddingValues(horizontal = 0.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.plugins_open_settings),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = EditorColors.actionAccent,
+                )
+            }
+        }
+
+        // The plugin's own sentence about itself, and the counterpart of the warning the
+        // Problems panel raises on every placed node. Here it reaches somebody who has
+        // not opened a macro yet; there it reaches somebody who has and cannot see why
+        // nothing happens.
+        plugin.notReady?.let { why ->
+            Text(
+                text = why,
+                style = MaterialTheme.typography.bodySmall,
+                color = EditorColors.warnAccent,
+                modifier = Modifier.padding(top = 8.dp),
+            )
         }
 
         if (plugin.enabled) {

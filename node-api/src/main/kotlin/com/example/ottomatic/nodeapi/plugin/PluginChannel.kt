@@ -39,6 +39,26 @@ interface PluginChannel {
     /** The plugin's `PluginManifestWire` JSON, or null when it cannot be reached. */
     suspend fun declarations(): String?
 
+    /**
+     * The plugin's `PluginStatusWire` JSON, or null when it cannot be reached.
+     *
+     * A null here means **say nothing**, not "not ready". The only consumer is a warning
+     * in the Problems panel, and a panel that badges every node of a plugin it merely
+     * failed to ask is worse than one that waits until it knows — the same inversion
+     * `GrantedPrerequisites` makes for the same reason.
+     */
+    suspend fun status(): String?
+
+    /**
+     * What a `@PluginChoice` field may be set to, as a `ChoiceListWire`.
+     *
+     * [source] is the plugin's own key, passed back untouched; [request] is a
+     * `NodeCallWire` carrying the node's config so a scoped list can narrow on it. Null
+     * when the plugin cannot be reached, which the chooser reports where somebody is
+     * looking rather than logging.
+     */
+    suspend fun choices(typeId: String, source: String, request: String): String?
+
     /** Runs an action. [request] is a `NodeCallWire`; the answer is an `ActionResultWire`. */
     suspend fun runAction(typeId: String, request: String): String?
 

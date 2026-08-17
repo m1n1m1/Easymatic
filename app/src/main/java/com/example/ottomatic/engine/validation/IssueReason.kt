@@ -26,6 +26,14 @@ enum class IssueReason {
     /** node, needs, plugin */
     PLUGIN_PERMISSION_MISSING,
 
+    /**
+     * node, plugin, why
+     *
+     * `why` is the plugin's own sentence and is **not translated** — see
+     * `GraphValidator.validatePluginReadiness`.
+     */
+    PLUGIN_NOT_READY,
+
     /** node */
     MACRO_UNSET,
 

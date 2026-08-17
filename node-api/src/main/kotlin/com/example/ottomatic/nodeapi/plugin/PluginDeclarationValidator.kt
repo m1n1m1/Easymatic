@@ -1,9 +1,11 @@
 package com.example.ottomatic.nodeapi.plugin
 
+import com.example.ottomatic.domain.model.ExecPorts
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.registry.NodeConfigSchema
 import com.example.ottomatic.domain.registry.NodeDeclarationRules
 import com.example.ottomatic.nodeapi.wire.ConfigFieldTypeWire
+import com.example.ottomatic.nodeapi.wire.ExecOutputsWire
 import com.example.ottomatic.nodeapi.wire.NodeDeclarationWire
 import com.example.ottomatic.nodeapi.wire.PLUGIN_PROTOCOL_VERSION
 import com.example.ottomatic.nodeapi.wire.PluginManifestWire
@@ -48,6 +50,7 @@ data class PluginValidation(
  * that only makes sense for a *foreign* declaration — the mandatory typeId prefix,
  * the bounds, and the shapes plugins are not offered at all.
  */
+@Suppress("TooManyFunctions") // One small, separately-named function per class of rejection.
 object PluginDeclarationValidator {
 
     /**
@@ -108,6 +111,8 @@ object PluginDeclarationValidator {
         namingProblem(declaration, packageName)
             ?: overlongText(declaration)
             ?: sizeProblem(declaration)
+            ?: routeProblem(declaration)
+            ?: choiceProblem(declaration)
             ?: declaration.dataPorts.firstNotNullOfOrNull { port ->
                 portProblem(port)?.let { "port '${port.name}' $it" }
             }
@@ -152,6 +157,58 @@ object PluginDeclarationValidator {
                 "config field '${tooManyOptions.key}' offers more than " +
                     "${PluginLimits.MAX_ENUM_OPTIONS} choices"
             else -> null
+        }
+    }
+
+    /**
+     * What makes a set of named execution routes unusable.
+     *
+     * Checked here rather than in [NodeDeclarationRules] because that object reads a
+     * `NodeTypeDefinition` whose ports have already been derived, by which point a route
+     * called `in` has quietly become a *second* port named `in` — one execution input and
+     * one execution output — which reads as a duplicate rather than as the thing that
+     * went wrong. The declaration is where the sentence can name the route.
+     */
+    private fun routeProblem(declaration: NodeDeclarationWire): String? {
+        val routes = (declaration.execOutputs as? ExecOutputsWire.Named)?.routes ?: return null
+        val names = routes.map { it.name }
+        return when {
+            routes.isEmpty() -> "names no execution routes; an action has to have somewhere to continue from"
+            routes.size > PluginLimits.MAX_ROUTES_PER_NODE ->
+                "names ${routes.size} execution routes; the most one node may have is " +
+                    "${PluginLimits.MAX_ROUTES_PER_NODE}"
+            names.any { it.isBlank() } -> "has an execution route with a blank name"
+            names.distinct().size != names.size -> "names the same execution route more than once"
+            names.any { it == ExecPorts.IN.value } ->
+                "names an execution route '${ExecPorts.IN.value}', which is what the way *into* an " +
+                    "action is called"
+            routes.any { it.label.length > PluginLimits.MAX_STRING_LENGTH } ->
+                "has an execution route label longer than ${PluginLimits.MAX_STRING_LENGTH} characters"
+            else -> null
+        }
+    }
+
+    /**
+     * What makes a plugin-owned chooser unusable.
+     *
+     * A `scopedBy` naming a field that does not exist is the one worth the check: the
+     * chooser would narrow on a value nothing can ever set, so it would answer the same
+     * empty list forever and look like a plugin that simply has no pages. The same
+     * failure `NodeDeclarationRules` already guards `visibleWhen` against.
+     */
+    private fun choiceProblem(declaration: NodeDeclarationWire): String? {
+        val keys = declaration.config.mapTo(mutableSetOf()) { it.key }
+        return declaration.config.firstNotNullOfOrNull { field ->
+            val type = field.type as? ConfigFieldTypeWire.ChoiceOf ?: return@firstNotNullOfOrNull null
+            when {
+                type.source.isBlank() -> "config field '${field.key}' offers choices under a blank source"
+                type.source.length > PluginLimits.MAX_STRING_LENGTH ->
+                    "config field '${field.key}' has a choice source longer than " +
+                        "${PluginLimits.MAX_STRING_LENGTH} characters"
+                else -> type.scopedBy.firstOrNull { it !in keys }?.let {
+                    "config field '${field.key}' is scoped by '$it', which it does not declare"
+                }
+            }
         }
     }
 

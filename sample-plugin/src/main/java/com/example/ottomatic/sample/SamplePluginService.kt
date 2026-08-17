@@ -1,5 +1,6 @@
 package com.example.ottomatic.sample
 
+import com.example.ottomatic.nodeapi.wire.PluginStatusWire
 import com.example.ottomatic.plugin.BaseOttomaticPluginService
 
 /**
@@ -17,8 +18,31 @@ class SamplePluginService : BaseOttomaticPluginService() {
 
     override val nodes = listOf(
         ShoutAction(),
+        PostAction(),
         DeviceNameValue(),
         InitialsTransform(),
         TemperatureTrigger(),
     )
+
+    /**
+     * Whether this plugin is ready to work — here, whether anybody has "signed in".
+     *
+     * The one override most real plugins will want, and the reason it exists: a plugin
+     * talking to a third-party service holds every permission it declared and still does
+     * nothing at all until somebody has an account. Ottomatic's Problems panel cannot see
+     * that from outside — the graph is perfect and the node is silent — so the plugin has
+     * to say it, and this sentence lands on every placed node of this plugin as a warning
+     * that blocks nothing.
+     *
+     * Kept local, as the contract asks: a preference read, not a network call. It is asked
+     * on every refresh under a two-second bound, and a plugin that overruns leaves the
+     * host saying nothing rather than guessing.
+     */
+    override fun status(): PluginStatusWire = when {
+        SampleAccount.isSignedIn(applicationContext) -> PluginStatusWire()
+        else -> PluginStatusWire(
+            ready = false,
+            message = "Nobody is signed in. Open Sample Tools' settings to sign in.",
+        )
+    }
 }

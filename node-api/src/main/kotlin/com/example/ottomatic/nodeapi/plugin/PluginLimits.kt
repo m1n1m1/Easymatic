@@ -31,6 +31,25 @@ object PluginLimits {
     const val MAX_ENUM_OPTIONS = 64
 
     /**
+     * Execution output routes one action may name.
+     *
+     * Small on purpose. Routes are *outcomes*, and a node with more than a handful of
+     * them is describing data rather than control flow — that belongs on the data port,
+     * where `action.if` can compare it, rather than as five more edges on the card.
+     */
+    const val MAX_ROUTES_PER_NODE = 4
+
+    /**
+     * Options one `choices` call may answer with.
+     *
+     * Larger than [MAX_ENUM_OPTIONS] by an order of magnitude because these are the
+     * user's own rows — pages, boards, playlists — rather than a declaration's fixed
+     * modes, and a workspace with three hundred pages is ordinary. Beyond this the list
+     * is truncated and the truncation is announced, never silent.
+     */
+    const val MAX_CHOICES = 500
+
+    /**
      * How deeply a port schema may nest.
      *
      * `SchemaWire` is recursive, so without this a few hundred bytes of JSON

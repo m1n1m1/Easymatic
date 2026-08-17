@@ -137,6 +137,24 @@
         <intent>
             <action android:name="com.example.ottomatic.action.PLUGIN" />
         </intent>
+        <!--
+          A plugin's own settings screen, where it signs in to whatever it talks to.
+          Optional, and resolved separately from the service: a plugin may have one
+          without exporting an Activity under it, and without this the query returns
+          nothing on API 30+ and the button never appears.
+        -->
+        <intent>
+            <action android:name="com.example.ottomatic.action.PLUGIN_SETTINGS" />
+        </intent>
+        <!--
+          A plugin's own chooser screen, opened by a @PluginChoice(chooser = SCREEN) field.
+          Also optional, also resolved separately: a plugin may declare such a field and
+          ship no Activity for it, which is a mistake the host reports in the chooser
+          rather than one it can prevent.
+        -->
+        <intent>
+            <action android:name="com.example.ottomatic.action.PLUGIN_CHOICE" />
+        </intent>
     </queries>
 
     <!--

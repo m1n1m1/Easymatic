@@ -102,7 +102,7 @@ private fun ConfigField<*>.toWire(typeId: String): ConfigFieldWire = ConfigField
 private fun ConfigFieldType<*>.toWire(typeId: String, key: String): ConfigFieldTypeWire =
     offered() ?: refused(typeId, key)
 
-/** The eight a plugin may have, or null for one of the six it may not. */
+/** The nine a plugin may have, or null for one of the ones it may not. */
 private fun ConfigFieldType<*>.offered(): ConfigFieldTypeWire? = when (this) {
     ConfigFieldType.STR -> ConfigFieldTypeWire.Str
     ConfigFieldType.MULTILINE -> ConfigFieldTypeWire.Multiline
@@ -112,16 +112,25 @@ private fun ConfigFieldType<*>.offered(): ConfigFieldTypeWire? = when (this) {
     ConfigFieldType.DATE_TIME -> ConfigFieldTypeWire.DateTime
     ConfigFieldType.TIME_OF_DAY -> ConfigFieldTypeWire.TimeOfDay
     is ConfigFieldType.ENUM -> ConfigFieldTypeWire.EnumOf(options.map { OptionWire(it.value, it.label) })
+    // The chooser whose answers are the plugin's own. `providerTypeId` is deliberately
+    // not sent: the host stamps it from the typeId it resolved, so this node cannot
+    // point the chooser at anybody else's.
+    is ConfigFieldType.PLUGIN_CHOICE -> ConfigFieldTypeWire.ChoiceOf(source, scopedBy, chooser)
     else -> null
 }
 
 /**
- * Fails, naming the widget and saying why a plugin may not have it.
+ * Fails, naming the widget, saying why a plugin may not have it, and — for the one people
+ * actually want — naming what to use instead.
  *
- * Every one of the six reaches a host library or a host `CompositionLocal`. `@Picker`
- * alone spans geofence places, variables, macros, mail accounts, smart-home hubs and
- * AI connections — a plugin asking for one would be handed the user's own data by a
- * field it merely asked to render.
+ * Every one of these reaches a host library, a host `CompositionLocal` or a host trust
+ * boundary. `@Picker` alone spans geofence places, variables, macros, mail accounts,
+ * smart-home hubs and AI connections — a plugin asking for one would be handed the user's
+ * own data by a field it merely asked to render.
+ *
+ * `@Picker` is also the one with a real answer behind it rather than a flat refusal, and
+ * saying so here is the difference between an author reaching for a text field (the
+ * failure this whole rule exists to prevent) and reaching for `@PluginChoice`.
  */
 private fun ConfigFieldType<*>.refused(typeId: String, key: String): Nothing {
     val (annotation, why) = when (this) {
@@ -130,11 +139,19 @@ private fun ConfigFieldType<*>.refused(typeId: String, key: String): Nothing {
         ConfigFieldType.PHONE -> "@PhoneNumber" to "it resolves a contact through the host"
         ConfigFieldType.WIFI_NETWORK -> "@WifiNetwork" to "it scans through the host"
         ConfigFieldType.CONTACT_NAME -> "@ContactName" to "it reads the host's address book"
-        else -> "@MailFolder" to "it lists the user's own mailboxes"
+        ConfigFieldType.FILE_PATH -> "@FilePath" to "it takes a storage grant through the host"
+        ConfigFieldType.API_TOKEN -> "@ApiToken" to "it mints a key the host is the authority on"
+        is ConfigFieldType.TOOL_LIST -> "@Tools" to "it adjusts what the host's AI nodes may call"
+        else -> "@Suggested" to "it lists the user's own mailboxes and entities"
+    }
+    val instead = when (this) {
+        is ConfigFieldType.PICKER ->
+            "Use @PluginChoice to offer a list of your own instead, or a plain text field."
+        else -> "Use a plain text field instead."
     }
     error(
         "Config property '$key' of plugin node '$typeId' uses $annotation, which a plugin " +
-            "node may not: $why. Use a plain text field instead.",
+            "node may not: $why. $instead",
     )
 }
 

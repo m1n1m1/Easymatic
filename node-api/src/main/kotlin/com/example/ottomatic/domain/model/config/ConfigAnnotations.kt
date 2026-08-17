@@ -113,6 +113,86 @@ annotation class Suggested(
 )
 
 /**
+ * Renders the `String` property as a **read-only field with a chooser the plugin fills in**.
+ *
+ * For plugin nodes only, and it is what [Picker]'s refusal was accidentally also refusing.
+ * Every [PickerKind] names something of the *user's* — their places, their macros, their
+ * mailboxes — so a plugin declaring one would be handed the user's own data by a field it
+ * merely asked to render, and refusing that is right. What went unnoticed is that it also left
+ * a plugin no way to offer a list of its **own**: "which of your Pages?" became a text field
+ * asking for a sixteen-digit id, which is the failure *Identifiers are chosen, not typed*
+ * exists to prevent, reintroduced at the one boundary where nobody was looking.
+ *
+ * This moves the **authority**, not the shape. The host asks the plugin over the `choices`
+ * transaction and hands it nothing; everything the plugin can answer is something it already
+ * had, under its own permissions, in its own process.
+ *
+ * [source] is the plugin's own key for which list this is — `"pages"`, `"boards"` — and never
+ * reaches anything of the host's: it is passed back to the plugin untouched. [scopedBy] names
+ * sibling properties that narrow the list, exactly as [Picker]'s does, and carries the same
+ * consequence — a scoped list is not complete, so a chooser honouring one must offer a way
+ * back.
+ *
+ * [chooser] decides **who draws the chooser**, and it is the one thing here that changes what
+ * the plugin has to provide — see [ChoiceChooser].
+ *
+ * A node carrying a [ChoiceChooser.LIST] field must also implement `PluginChoiceSource`, which
+ * the SDK cannot make a compile error without contorting the builders; `PluginNodeContracts.problems`
+ * reports it instead, at the plugin's own first bind and in the plugin author's own test.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class PluginChoice(
+    val source: String,
+    val scopedBy: Array<String> = [],
+    val chooser: ChoiceChooser = ChoiceChooser.LIST,
+)
+
+/**
+ * Who draws a [PluginChoice] field's chooser.
+ *
+ * The axis is **rendering, not authority**. Both members ask the same plugin about the same
+ * lists and hand it exactly the same nothing; what differs is whether the answer is a list
+ * Ottomatic can draw or a screen only the plugin can.
+ *
+ * The split exists because [LIST] has a real ceiling and it is reached sooner than it looks. A
+ * `List<OptionWire>` is a flat, unsearchable, unpaginated column of text, which is right for
+ * two workspaces and hopeless for four thousand pages in a tree — and a plugin facing that
+ * ceiling had only one way out, which was a text field asking for an id. That is the failure
+ * this whole annotation exists to close, so closing it for small answer sets and reopening it
+ * for large ones would have been no fix at all.
+ */
+enum class ChoiceChooser {
+    /**
+     * Ottomatic draws it, from the options the node answers on the `choices` transaction.
+     *
+     * The default, and the right answer whenever it fits. It costs the plugin one method and
+     * no UI at all; it looks and behaves like every other picker in the app, including under
+     * the editor's own theme; and it works on a device where the plugin has no Activity to
+     * show. Reach for [SCREEN] only when the list genuinely cannot be a list.
+     */
+    LIST,
+
+    /**
+     * The plugin opens its own screen, and answers with the chosen id.
+     *
+     * For an answer set no column of text can present: a searchable tree, a paginated
+     * thousand, thumbnails, a map, a colour wheel. The plugin exports an Activity under
+     * `com.example.ottomatic.action.PLUGIN_CHOICE`; Ottomatic resolves it **against that
+     * plugin's own package through `PackageManager`** and launches it by component, never from
+     * anything the plugin sent — the same rule the settings screen follows, and the reason
+     * neither is a wire field.
+     *
+     * What comes back is read as **one string and nothing else**. The result `Intent` is never
+     * started, never granted from, and never held: the host takes the chosen id out of it and
+     * drops it. A plugin choosing this gives up the host's rendering and gains its own; it
+     * gains no reach into Ottomatic whatsoever.
+     */
+    SCREEN,
+}
+
+/**
  * Where a [Suggested] property's suggestions come from.
  *
  * Each member needs a branch in `Suggestions`' exhaustive `when`, and **that is the only place

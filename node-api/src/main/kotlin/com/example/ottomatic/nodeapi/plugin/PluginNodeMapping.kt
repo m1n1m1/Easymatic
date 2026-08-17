@@ -63,7 +63,10 @@ internal object PluginNodeMapping {
         declaration.config
             .takeIf { it.isNotEmpty() }
             ?.let { fields ->
-                NodeConfigSchema(NodeTypeId(declaration.typeId), fields.map { it.toConfigField() })
+                NodeConfigSchema(
+                    NodeTypeId(declaration.typeId),
+                    fields.map { it.toConfigField(declaration.typeId) },
+                )
             }
 
     /**
@@ -73,12 +76,18 @@ internal object PluginNodeMapping {
      * transform sit on the pull side and have none at all; an action has one input and
      * whichever outputs its [ExecOutputsWire] names. There is no fourth possibility,
      * so there is nothing here for a plugin to get wrong.
+     *
+     * **Order is load-bearing** for [ExecOutputsWire.Named]: `routesFor` collects into a
+     * `LinkedHashSet` and `PluginNodeRunner` falls back to the first entry, so the route
+     * a plugin declares first is the one an unroutable answer lands on.
      */
     fun execPortsFor(declaration: NodeDeclarationWire): List<Port> = when (declaration.kind) {
         NodeKind.TRIGGER -> listOf(execOut())
-        NodeKind.ACTION -> when (declaration.execOutputs) {
-            ExecOutputsWire.SINGLE -> listOf(execIn(), execOut())
-            ExecOutputsWire.BRANCH -> listOf(execIn(), execOut(ExecPorts.TRUE), execOut(ExecPorts.FALSE))
+        NodeKind.ACTION -> when (val outputs = declaration.execOutputs) {
+            ExecOutputsWire.Single -> listOf(execIn(), execOut())
+            ExecOutputsWire.Branch -> listOf(execIn(), execOut(ExecPorts.TRUE), execOut(ExecPorts.FALSE))
+            is ExecOutputsWire.Named ->
+                listOf(execIn()) + outputs.routes.map { execOut(PortName(it.name), it.label.ifBlank { it.name }) }
         }
         NodeKind.VALUE, NodeKind.TRANSFORM -> emptyList()
     }
@@ -91,15 +100,21 @@ internal object PluginNodeMapping {
         label = label.ifBlank { name },
     )
 
-    private fun ConfigFieldWire.toConfigField(): ConfigField<*> = ConfigField(
+    private fun ConfigFieldWire.toConfigField(typeId: String): ConfigField<*> = ConfigField(
         key = ConfigKey(key),
         label = label.ifBlank { key },
-        type = type.toConfigFieldType(),
+        type = type.toConfigFieldType(typeId),
         defaultValue = defaultValue,
         visibleWhen = visibleWhen?.let { VisibilityRule(ConfigKey(it.key), it.values) },
     )
 
-    private fun ConfigFieldTypeWire.toConfigFieldType(): ConfigFieldType<*> = when (this) {
+    /**
+     * [typeId] is the node the host already resolved and namespaced, and it is the only
+     * way a [ConfigFieldType.PLUGIN_CHOICE] learns who answers it. Stamped here rather
+     * than read off the wire, so a plugin cannot point a chooser at somebody else's node
+     * — the same reason the typeId prefix comes from `PackageManager`.
+     */
+    private fun ConfigFieldTypeWire.toConfigFieldType(typeId: String): ConfigFieldType<*> = when (this) {
         ConfigFieldTypeWire.Str -> ConfigFieldType.STR
         ConfigFieldTypeWire.Multiline -> ConfigFieldType.MULTILINE
         ConfigFieldTypeWire.Int -> ConfigFieldType.INT
@@ -109,6 +124,12 @@ internal object PluginNodeMapping {
         ConfigFieldTypeWire.TimeOfDay -> ConfigFieldType.TIME_OF_DAY
         is ConfigFieldTypeWire.EnumOf ->
             ConfigFieldType.ENUM(options.map { ConfigOption(it.value, it.label.ifBlank { it.value }) })
+        is ConfigFieldTypeWire.ChoiceOf -> ConfigFieldType.PLUGIN_CHOICE(
+            source = source,
+            scopedBy = scopedBy,
+            providerTypeId = typeId,
+            chooser = chooser,
+        )
     }
 }
 

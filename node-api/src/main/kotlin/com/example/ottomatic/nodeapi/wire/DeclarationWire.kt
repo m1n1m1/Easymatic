@@ -3,19 +3,30 @@ package com.example.ottomatic.nodeapi.wire
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.NodeKind
+import com.example.ottomatic.domain.model.config.ChoiceChooser
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
  * The protocol version this build of the API speaks.
  *
- * A plugin reports its own from `IOttomaticPlugin.protocolVersion()` and the host
- * refuses anything it does not know, before reading a single declaration. This is
- * the *only* version comparison in the whole plugin system: there is deliberately
- * no check of a plugin's `versionCode`, because a downgrade is as legitimate as an
- * upgrade and neither says anything about the wire.
+ * A plugin stamps its own onto [PluginManifestWire.protocolVersion] and the host refuses
+ * a document that does not match, before reading a single node out of it. That field is
+ * the *only* version comparison in the whole plugin system, and it is deliberately one
+ * rather than two: an `IOttomaticPlugin.protocolVersion()` transaction existed until
+ * protocol 2, was never called by the host, and would have been a second answer able to
+ * disagree with this one. There is likewise no check of a plugin's `versionCode`, because
+ * a downgrade is as legitimate as an upgrade and neither says anything about the wire.
+ *
+ * ## 2 — named execution routes, plugin-owned choices, readiness
+ *
+ * Bumped rather than ranged. A v1 plugin is refused with a sentence naming both numbers,
+ * which is the behaviour that already existed; nothing is published, so nothing is
+ * blacked out. Four additions make up the version: [ExecOutputsWire] became a sealed
+ * interface with a [ExecOutputsWire.Named] member, [ConfigFieldTypeWire.ChoiceOf] gave a
+ * plugin a chooser over its *own* answer set, and the AIDL grew `choices` and `status`.
  */
-const val PLUGIN_PROTOCOL_VERSION: Int = 1
+const val PLUGIN_PROTOCOL_VERSION: Int = 2
 
 /**
  * One DATA port, as declared by a plugin.
@@ -48,12 +59,12 @@ data class OptionWire(
 )
 
 /**
- * The config widgets a plugin may ask for — eight of the host's fifteen.
+ * The config widgets a plugin may ask for — nine of the host's eighteen.
  *
- * The seven that are missing are missing on purpose, and for one reason each rather
+ * The ones that are missing are missing on purpose, and for one reason each rather
  * than a blanket one: `PICKER`, `SUGGESTED`, `PORT_LIST`, `PHONE`, `WIFI_NETWORK`,
- * `CONTACT_NAME` and `API_TOKEN` all reach a host library, a host
- * `CompositionLocal` or a host trust boundary. `PickerKind` alone spans geofence
+ * `CONTACT_NAME`, `FILE_PATH`, `TOOL_LIST` and `API_TOKEN` all reach a host library, a
+ * host `CompositionLocal` or a host trust boundary. `PickerKind` alone spans geofence
  * places, variables, macros, mail accounts, smart-home hubs and AI connections — so
  * a plugin declaring `@Picker(PickerKind.MACRO)` would be handed one of the user's
  * macro ids by a field it merely asked to render, which is precisely the capability
@@ -64,9 +75,19 @@ data class OptionWire(
  * `DateTime` and `TimeOfDay` stay, because both are pure parsers in `domain` with
  * no library behind them and nothing of the user's to leak.
  *
- * The consequence worth stating: because the host maps every member here onto a
- * `ConfigFieldType` that already exists, the config form's exhaustive `when` needs
- * no new branch for plugins at all.
+ * ## [ChoiceOf] is what that refusal was accidentally also refusing
+ *
+ * Every `PickerKind` names something of the *user's*, so refusing `@Picker` was right —
+ * and it left a plugin no way to offer a list of its **own**, which is why "which of your
+ * Pages?" was a text box asking for a sixteen-digit id, the one failure
+ * *Identifiers are chosen, not typed* exists to prevent. [ChoiceOf] moves the authority
+ * rather than the boundary: the host asks the plugin, and everything the plugin can
+ * answer is something it already had. No host library is reached and no capability
+ * crosses.
+ *
+ * The consequence worth stating: every other member here maps onto a `ConfigFieldType`
+ * that already existed, so the config form's exhaustive `when` grew exactly one branch
+ * for plugins — [ChoiceOf]'s — and no others.
  */
 @Serializable
 sealed interface ConfigFieldTypeWire {
@@ -85,6 +106,28 @@ sealed interface ConfigFieldTypeWire {
     @Serializable @SerialName("timeofday") data object TimeOfDay : ConfigFieldTypeWire
 
     @Serializable @SerialName("enum") data class EnumOf(val options: List<OptionWire>) : ConfigFieldTypeWire
+
+    /**
+     * An identifier chosen from a list the **plugin** answers, declared with
+     * `@PluginChoice`.
+     *
+     * [source] is the plugin's own key for which list this is — `"pages"`, `"boards"` —
+     * and is opaque to the host, which hands it straight back on the `choices`
+     * transaction. [scopedBy] names sibling config keys that narrow it, exactly as
+     * `@Picker(scopedBy)` does. [chooser] says whether the host draws the list itself or
+     * opens the plugin's own screen — a rendering choice, not an authority one.
+     *
+     * What is *not* here is which node answers: the host stamps that on from the typeId
+     * it already resolved and validated, so a plugin cannot name another plugin's
+     * chooser. Nor is the chooser Activity's component name, for the same reason and a
+     * sharper one — a component name is a thing to *launch*, and the host resolves it
+     * against this plugin's package through `PackageManager` instead.
+     */
+    @Serializable @SerialName("choice") data class ChoiceOf(
+        val source: String,
+        val scopedBy: List<String> = emptyList(),
+        val chooser: ChoiceChooser = ChoiceChooser.LIST,
+    ) : ConfigFieldTypeWire
 }
 
 /** Condition under which a config field appears: sibling [key] holds one of [values]. */
@@ -104,23 +147,61 @@ data class ConfigFieldWire(
     val visibleWhen: VisibilityWire? = null,
 )
 
+/** One execution output port a plugin node routes to, in [ExecOutputsWire.Named]. */
+@Serializable
+data class RouteWire(
+    val name: String,
+    val label: String = name,
+)
+
 /**
  * The execution outputs a plugin node may declare.
  *
- * Two members, not six. The host's `LOOP`, `ACKNOWLEDGED`, `DECISION` and `FORK`
- * each belong to a node shape the executor drives itself — a loop returning a
- * thousand iteration maps in one binder call is a `TransactionTooLargeException`,
- * and a fork's deferred branch runs hours later on the arm's job, which is a
- * cross-process lifetime problem rather than a marshalling one. A plugin that
- * wants to repeat wires an `action.repeat` around itself.
+ * ## Why [Named] exists
+ *
+ * Every plugin action is a call to somebody else's server, so *it failed* is the second
+ * ordinary outcome rather than an exception. Until protocol 2 there were two members and
+ * neither could say it: [Single] made a rejected post indistinguishable from a published
+ * one, and [Branch] said it with ports labelled **true** and **false**, which is a
+ * comparison's vocabulary and not an outcome's.
+ *
+ * [Single] and [Branch] are kept rather than folded into [Named] because they are not
+ * merely two-route shorthands — they carry the host's own `out` / `true` / `false` port
+ * names and labels, and a plugin spelling those out by hand could get them subtly wrong.
+ *
+ * ## The first route is the one the host falls back to
+ *
+ * Load-bearing, and the reason declaration order is preserved all the way to
+ * `routesFor`. Two things land on it: a reply naming a route the declaration does not
+ * contain, and a plugin the host could not reach at all. The second is why the first
+ * route must be the **normal** one rather than the failure — an unreachable call may well
+ * have done its work and failed only on the way back, so the host cannot claim it did
+ * not. Failure routing is for what the *plugin* knows.
+ *
+ * ## Still not six
+ *
+ * The host's `LOOP`, `ACKNOWLEDGED`, `DECISION` and `FORK` each belong to a node shape
+ * the executor drives itself — a loop returning a thousand iteration maps in one binder
+ * call is a `TransactionTooLargeException`, and a fork's deferred branch runs hours later
+ * on the arm's job, which is a cross-process lifetime problem rather than a marshalling
+ * one. A plugin that wants to repeat wires an `action.repeat` around itself.
  */
 @Serializable
-enum class ExecOutputsWire {
-    /** One `out`. */
-    SINGLE,
+sealed interface ExecOutputsWire {
 
-    /** `true` and `false`. */
-    BRANCH,
+    /** One `out`. */
+    @Serializable @SerialName("single") data object Single : ExecOutputsWire
+
+    /** `true` and `false`, with the host's own labels. */
+    @Serializable @SerialName("branch") data object Branch : ExecOutputsWire
+
+    /**
+     * Routes the plugin names and labels itself — `out` and `error`, say.
+     *
+     * The first is where the host lands anything it cannot route honestly, so it must be
+     * the outcome that means *carried on*.
+     */
+    @Serializable @SerialName("named") data class Named(val routes: List<RouteWire>) : ExecOutputsWire
 }
 
 /** One node, as a plugin declares it. */
@@ -142,7 +223,7 @@ data class NodeDeclarationWire(
     val dataPorts: List<PortWire> = emptyList(),
     val config: List<ConfigFieldWire> = emptyList(),
     /** Read for an [NodeKind.ACTION]; every other kind's execution topology is fixed. */
-    val execOutputs: ExecOutputsWire = ExecOutputsWire.SINGLE,
+    val execOutputs: ExecOutputsWire = ExecOutputsWire.Single,
     /**
      * Android manifest permissions **the plugin's own package** needs. Checked with
      * `PackageManager.checkPermission(perm, pluginPackage)` — against the plugin,

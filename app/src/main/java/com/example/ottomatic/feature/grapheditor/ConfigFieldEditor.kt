@@ -6,7 +6,26 @@ package com.example.ottomatic.feature.grapheditor
 
 import androidx.compose.ui.res.stringResource
 import com.example.ottomatic.R
+import android.app.Activity
+import android.content.ComponentName
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import com.example.ottomatic.core.model.ConfigKey
+import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.domain.model.config.ChoiceChooser
+import com.example.ottomatic.domain.registry.PluginNodeEntry
+import com.example.ottomatic.domain.registry.PluginNodes
+import com.example.ottomatic.engine.plugin.ChoiceList
+import com.example.ottomatic.feature.plugins.PluginChoiceOverlay
+import com.example.ottomatic.nodeapi.plugin.PluginLimits
+import com.example.ottomatic.nodeapi.wire.NodeCallWire
+import com.example.ottomatic.nodeapi.wire.PluginJson
+import com.example.ottomatic.plugin.EXTRA_CONFIG
+import com.example.ottomatic.plugin.EXTRA_SOURCE
+import com.example.ottomatic.plugin.EXTRA_TYPE_ID
+import com.example.ottomatic.plugin.EXTRA_VALUE
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +40,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Nfc
@@ -304,6 +324,21 @@ internal fun ConfigFieldEditor(
                     // Read off the siblings the property named. Blank everywhere means "do
                     // not narrow", never "narrow to nothing" — see HaScope.
                     scope = haScopeOf(type.scopedBy.map { siblingValue(ConfigKey(it)) }),
+                    onValueChange = onValueChange,
+                    labelSlot = labelSlot,
+                    colors = colors,
+                )
+            }
+            is ConfigFieldType.PLUGIN_CHOICE -> {
+                PluginChoiceField(
+                    type = type,
+                    value = value,
+                    label = label,
+                    // The whole config, not just the scoping siblings: the plugin decodes
+                    // it into its own config class to narrow on, and handing it a map with
+                    // holes in it would mean properties silently falling back to defaults
+                    // on the far side.
+                    config = type.scopedBy.associate { ConfigKey(it) to siblingValue(ConfigKey(it)) },
                     onValueChange = onValueChange,
                     labelSlot = labelSlot,
                     colors = colors,
@@ -1222,6 +1257,134 @@ private fun GeofencePickerField(
             onDismiss = { picking = false },
         )
     }
+}
+
+/**
+ * A chooser whose list comes from a plugin rather than from one of the app's libraries.
+ *
+ * Every other picker field in this file resolves its stored id to a **name** through a
+ * `CompositionLocal` — `places?.placeById(value)?.name` — and falls back to the raw id
+ * when the library is absent. This one is that fallback all the time, and deliberately:
+ * there is no library to consult, because the names live in another process and are
+ * fetched only while the chooser is open. Caching them to render this field would be a
+ * cache of the user's data with no moment at which it is known to be current, which is
+ * exactly what the no-cache decision refused.
+ *
+ * So the closed field shows the stored value, and the overlay shows the id under each
+ * label so the two read as the same thing.
+ */
+@Composable
+private fun PluginChoiceField(
+    type: ConfigFieldType.PLUGIN_CHOICE,
+    value: String,
+    label: String,
+    config: Map<ConfigKey, String>,
+    onValueChange: (String) -> Unit,
+    labelSlot: @Composable () -> Unit,
+    colors: TextFieldColors,
+) {
+    var picking by remember { mutableStateOf(false) }
+    // Blank only before the host has stamped it, which cannot happen for a placed node —
+    // but a preview or a test can build the type by hand, and opening a chooser at nobody
+    // is worse than a field that simply does not open.
+    val providerTypeId = type.providerTypeId.takeIf { it.isNotBlank() }
+    val entry = providerTypeId?.let { PluginNodes.byId(NodeTypeId(it)) }
+
+    // The one thing SCREEN mode needs that LIST mode does not: a component to start, and
+    // somewhere for its answer to land. Registered unconditionally because a launcher is
+    // not conditionally rememberable, and simply never used in LIST mode.
+    val screenLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        result -> chosenValueFrom(result)?.let(onValueChange)
+    }
+
+    PickerFieldChrome(
+        display = value,
+        icon = Icons.Filled.Extension,
+        enabled = providerTypeId != null,
+        onTap = {
+            val component = entry.chooserComponentOrNull()
+            when {
+                // A screen the plugin never exported: report it in the chooser, which is
+                // where every other chooser failure is reported and where somebody is
+                // already looking.
+                type.chooser == ChoiceChooser.SCREEN && component != null ->
+                    screenLauncher.launch(pluginChoiceIntent(component, providerTypeId.orEmpty(), type, config))
+                else -> picking = true
+            }
+        },
+        labelSlot = labelSlot,
+        colors = colors,
+    )
+
+    if (picking && providerTypeId != null) {
+        PluginChoiceOverlay(
+            typeId = NodeTypeId(providerTypeId),
+            source = type.source,
+            title = label,
+            config = config,
+            selected = value.takeIf { it.isNotBlank() },
+            onPick = { chosen ->
+                onValueChange(chosen)
+                picking = false
+            },
+            onDismiss = { picking = false },
+            preloaded = when (type.chooser) {
+                ChoiceChooser.LIST -> null
+                ChoiceChooser.SCREEN -> ChoiceList(
+                    problem = stringResource(
+                        R.string.plugin_choice_no_screen,
+                        entry?.pluginName.orEmpty(),
+                    ),
+                )
+            },
+        )
+    }
+}
+
+/** The plugin's chooser Activity, assembled from the two strings the entry carries. */
+private fun PluginNodeEntry?.chooserComponentOrNull(): ComponentName? =
+    this?.chooserActivity?.let { ComponentName(packageName, it) }
+
+/**
+ * The launch, built **here** from a component the host resolved.
+ *
+ * Explicit rather than by action, so what opens is the plugin the field belongs to and not
+ * whichever app happens to answer. The extras are three strings and nothing else — the
+ * same three a `PluginChoiceSource` is given, in the same meanings.
+ */
+private fun pluginChoiceIntent(
+    component: ComponentName,
+    typeId: String,
+    type: ConfigFieldType.PLUGIN_CHOICE,
+    config: Map<ConfigKey, String>,
+): Intent = Intent()
+    .setComponent(component)
+    .putExtra(EXTRA_TYPE_ID, typeId)
+    .putExtra(EXTRA_SOURCE, type.source)
+    .putExtra(
+        EXTRA_CONFIG,
+        PluginJson.encodeToString(
+            NodeCallWire.serializer(),
+            NodeCallWire(config = config.mapKeys { (key, _) -> key.value }),
+        ),
+    )
+
+/**
+ * The chosen id, or null when nothing was chosen.
+ *
+ * **One string is taken out of the result and the `Intent` is then dropped.** It is never
+ * started, never used to grant anything and never held — which is what keeps a plugin's
+ * own screen from being a way back into Ottomatic. The `runCatching` is not defensive
+ * padding: reading any extra unparcels the *whole* bundle, so a plugin returning a
+ * Parcelable of its own throws `BadParcelableException` here, in the host's process, for a
+ * class the host has never heard of.
+ */
+private fun chosenValueFrom(result: ActivityResult): String? {
+    if (result.resultCode != Activity.RESULT_OK) return null
+    return runCatching { result.data?.getStringExtra(EXTRA_VALUE) }
+        .getOrNull()
+        ?.take(PluginLimits.MAX_STRING_LENGTH)
+        ?.takeIf { it.isNotBlank() }
 }
 
 /**

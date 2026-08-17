@@ -8,12 +8,14 @@ import com.example.ottomatic.nodeapi.plugin.PluginLimits
 import com.example.ottomatic.nodeapi.plugin.RejectedPluginNode
 import com.example.ottomatic.nodeapi.wire.PluginJson
 import com.example.ottomatic.nodeapi.wire.PluginManifestWire
+import com.example.ottomatic.nodeapi.wire.PluginStatusWire
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
 
 /** One plugin app on the device, as the Plugins screen shows it. */
 data class InstalledPlugin(
@@ -29,6 +31,16 @@ data class InstalledPlugin(
     val rejected: List<RejectedPluginNode> = emptyList(),
     /** Why none of it could be read at all, when that is the case. */
     val problem: String? = null,
+    /**
+     * Why the plugin says it cannot work yet — usually that nobody has signed in.
+     *
+     * Distinct from [problem], which is Ottomatic's own sentence about a plugin it could
+     * not read. This one is the plugin's, about itself, and everything here *did* read
+     * correctly: the nodes are in the palette and the macro looks armed.
+     */
+    val notReady: String? = null,
+    /** Whether it exports its own settings screen — see `PLUGIN_SETTINGS_ACTION`. */
+    val hasSettings: Boolean = false,
 )
 
 /**
@@ -115,7 +127,13 @@ class PluginRegistry(
     private val rearms = java.util.concurrent.ConcurrentHashMap<String, Int>()
 
     suspend fun refreshNow() = mutex.withLock {
-        val discovered = packages.discover().map { it.toInstalled() }
+        // Whether a plugin exports a settings screen is read at discovery, beside the
+        // signer, because both are facts about the installed package rather than
+        // anything it said over the binder — and because an unenabled plugin still needs
+        // the button: signing in before switching it on is the natural order.
+        val discovered = packages.discover().map {
+            it.toInstalled(hasSettings = packages.settingsComponentOf(it.packageName) != null)
+        }
         val enabledSigners = repository.enabled.value.associate { it.packageName to it.signerSha256 }
         val entries = mutableListOf<PluginNodeEntry>()
         val summaries = mutableListOf<InstalledPlugin>()
@@ -161,6 +179,15 @@ class PluginRegistry(
         refreshNow()
     }
 
+    /**
+     * Opens [packageName]'s own settings screen, answering false when it has none.
+     *
+     * Here rather than reached through `PluginPackages` from the screen, so that `feature/`
+     * keeps talking to one object about plugins, and so the component resolution stays on
+     * the side of the boundary that owns `PackageManager`.
+     */
+    fun openSettings(packageName: String): Boolean = packages.openSettings(packageName)
+
     /** Disables [packageName] and drops its binding. */
     suspend fun disable(packageName: String) {
         repository.disable(packageName)
@@ -181,6 +208,10 @@ class PluginRegistry(
         val validation = PluginDeclarationValidator.validate(manifest, candidate.packageName)
         validation.fatal?.let { return candidate.copy(problem = it) }
 
+        val notReady = readStatus(channel)
+        // Resolved once per plugin rather than per node: one Activity serves every
+        // SCREEN-mode field the plugin declares, dispatching on the source it is given.
+        val chooserActivity = packages.chooserActivityOf(candidate.packageName)
         into += validation.accepted.map { node ->
             PluginNodeEntry(
                 packageName = candidate.packageName,
@@ -192,10 +223,39 @@ class PluginRegistry(
                 missingPermissions = node.declaration.permissions.filterNot {
                     packages.isGranted(it, candidate.packageName)
                 },
+                notReady = notReady,
+                chooserActivity = chooserActivity,
             )
         }
-        return candidate.copy(nodeCount = validation.accepted.size, rejected = validation.rejected)
+        return candidate.copy(
+            nodeCount = validation.accepted.size,
+            rejected = validation.rejected,
+            notReady = notReady,
+        )
     }
+
+    /**
+     * Why the plugin says it cannot work, or null when it says nothing.
+     *
+     * Asked once per refresh and stamped onto every one of the plugin's entries, rather
+     * than asked per node: "nobody is signed in" is a fact about the app, and one
+     * transaction beats sixty-four.
+     *
+     * **Every way of not knowing answers null**, which is the deliberate opposite of
+     * failing closed. A timeout, a dead process or a reply that will not parse leaves the
+     * Problems panel silent, because the only consumer is a warning and badging every
+     * node of a plugin the host merely failed to ask is worse than saying nothing — the
+     * inversion `GrantedPrerequisites` makes for the same reason.
+     */
+    private suspend fun readStatus(channel: BinderPluginChannel): String? =
+        withTimeoutOrNull(STATUS_TIMEOUT_MS) { channel.status() }
+            ?.let { json ->
+                runCatching { PluginJson.decodeFromString(PluginStatusWire.serializer(), json) }.getOrNull()
+            }
+            ?.takeIf { !it.ready }
+            ?.message
+            ?.take(PluginLimits.MAX_STRING_LENGTH)
+            ?.ifBlank { null }
 
     /**
      * The plugin's manifest, or the sentence to show instead.
@@ -230,17 +290,26 @@ class PluginRegistry(
         const val TAG = "PluginRegistry"
         const val BYTES_PER_KIB = 1024
 
+        /**
+         * A read's bound, not an action's. `status()` is documented as a local check —
+         * read a token out of your own preferences, do not validate it over the network —
+         * so it gets the same two seconds a value node does, and an overrun degrades the
+         * same way: the host says nothing rather than guessing.
+         */
+        const val STATUS_TIMEOUT_MS = 2_000L
+
         /** See [onReconnected]. A plugin that crashes on arm must not spin forever. */
         const val MAX_REARMS_PER_PACKAGE = 6
     }
 }
 
 /** A discovered package as the Plugins screen first sees it: found, not yet read. */
-private fun DiscoveredPackage.toInstalled(): InstalledPlugin = InstalledPlugin(
+private fun DiscoveredPackage.toInstalled(hasSettings: Boolean): InstalledPlugin = InstalledPlugin(
     packageName = packageName,
     label = label,
     signerSha256 = signerSha256,
     // Filled in by the caller, which is the only place that knows what was enabled.
     enabled = false,
     permissions = permissions,
+    hasSettings = hasSettings,
 )

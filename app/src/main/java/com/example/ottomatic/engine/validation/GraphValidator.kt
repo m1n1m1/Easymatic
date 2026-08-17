@@ -113,6 +113,7 @@ class GraphValidator(private val workflow: Workflow) {
         validateAiModelRefs(issues)
         validatePrerequisites(issues)
         validatePluginPermissions(issues)
+        validatePluginReadiness(issues)
         return GraphValidation(issues)
     }
 
@@ -186,6 +187,47 @@ class GraphValidator(private val workflow: Workflow) {
                     "it may do nothing when it runs",
                 reason = IssueReason.PLUGIN_PERMISSION_MISSING,
                 args = listOf(node.name, needs, entry.pluginName),
+                nodes = setOf(node.id),
+            )
+        }
+    }
+
+    /**
+     * A plugin node whose plugin says it cannot work yet — usually, nobody has signed in.
+     *
+     * The fourth of the family, and the one that exists because the other three could not
+     * see it. [validatePluginPermissions] asks whether the plugin's package holds the
+     * permissions it declared, and a plugin talking to a third-party service holds every
+     * one of them: it needs `INTERNET` and has it. So that check is silent, and correct,
+     * while every node of a signed-out plugin does nothing at all — "configured perfectly,
+     * does nothing", which is the shape a macro takes when it is indistinguishable from
+     * one that is simply waiting for its trigger.
+     *
+     * A WARNING that blocks nothing, on [validatePrerequisites]' reasoning in its sharpest
+     * form: the graph is not merely valid, it is *finished*. Signing in somewhere else —
+     * in an app Ottomatic does not control and cannot check on the user's behalf — starts
+     * it working with no edit here at all.
+     *
+     * The sentence is **the plugin's own, untranslated**, and quoted rather than
+     * paraphrased. Only the plugin knows what is missing, and a host-written "this plugin
+     * is not ready" would drop the one part that is actionable. That it does not follow
+     * the app's locale is the same price every plugin string pays: the declaration crosses
+     * the binder pre-rendered, so there is no key for `NodeText` to resolve.
+     *
+     * Guarded by [PluginNodes.isHydrated] like its sibling — and the null in
+     * [PluginNodeEntry.notReady] is doing the same work one level down, because a plugin
+     * the host merely failed to *ask* must read as silence rather than as not-ready.
+     */
+    private fun validatePluginReadiness(out: MutableList<ValidationIssue>) {
+        if (!PluginNodes.isHydrated) return
+        for (node in workflow.nodes) {
+            val entry = PluginNodes.byId(node.typeId)?.takeIf { it.notReady != null } ?: continue
+            val why = entry.notReady.orEmpty()
+            out += ValidationIssue(
+                Severity.WARNING,
+                "'${node.name}' will do nothing until ${entry.pluginName} is ready: $why",
+                reason = IssueReason.PLUGIN_NOT_READY,
+                args = listOf(node.name, entry.pluginName, why),
                 nodes = setOf(node.id),
             )
         }

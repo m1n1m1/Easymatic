@@ -8,6 +8,8 @@ import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.registry.nodeSchema
 import com.example.ottomatic.nodeapi.wire.ExecOutputsWire
+import com.example.ottomatic.nodeapi.wire.OptionWire
+import com.example.ottomatic.nodeapi.wire.RouteWire
 
 // The six shapes a plugin node may be, and the six builders that declare them.
 //
@@ -88,6 +90,47 @@ interface PluginTransform<C : Any, O : Any> {
 }
 
 /**
+ * Answers what a `@PluginChoice` field on this node may be set to.
+ *
+ * Implemented **in addition** to one of the four node contracts, never instead of one —
+ * a chooser belongs to a node's config, so there is no such thing as a node that is only
+ * a choice source.
+ *
+ * This is the boundary read from the other side. A plugin may not declare `@Picker`,
+ * because every kind of picker names something of the *user's*; here the plugin is asked
+ * about its **own** lists and is handed nothing at all — no host library, no context
+ * beyond the one every node body already gets, and no capability. [source] is the key the
+ * field declared, echoed back untouched, so one node can offer several lists.
+ *
+ * [config] carries **the siblings the field named in `scopedBy`, and nothing else** —
+ * every other property holds its default. That is what makes
+ * `@PluginChoice(scopedBy = ["workspace"])` work, and the restriction is deliberate
+ * rather than stingy: the host clears a chosen value when a field it is *declared* to
+ * depend on changes, so a chooser narrowing on an undeclared sibling would go on holding
+ * an answer that had stopped being valid.
+ *
+ * Called while somebody waits, under a six-second bound, and **never during a run**.
+ * Answer an empty list rather than throwing; the host shows a failure in the chooser
+ * itself, where the person who can act on it is looking.
+ */
+interface PluginChoiceSource<C : Any> {
+
+    suspend fun choices(source: String, config: C, context: PluginContext): List<OptionWire>
+}
+
+/**
+ * Execution outputs this action names itself — `routes("out" to "Posted", "error" to "Couldn't post")`.
+ *
+ * **The first pair is the one that means *carried on*, and that is not a style rule.**
+ * The host lands two things on it: a reply naming a route the declaration does not have,
+ * and a call it could not make at all. The second is why it cannot be the failure route —
+ * an unreachable plugin may well have done its work and failed only on the way back, so
+ * the host must not claim it did not.
+ */
+fun routes(vararg routes: Pair<String, String>): ExecOutputsWire.Named =
+    ExecOutputsWire.Named(routes.map { (name, label) -> RouteWire(name, label) })
+
+/**
  * Declares an action with a typed data output.
  *
  * [typeId] is the short id — `"shout"`, not `"plugin:com.acme.tools/shout"`. The
@@ -104,7 +147,7 @@ inline fun <reified C : Any, O : Any> pluginActionNode(
     description: String,
     icon: NodeIcon,
     output: DataOut<O>,
-    execOutputs: ExecOutputsWire = ExecOutputsWire.SINGLE,
+    execOutputs: ExecOutputsWire = ExecOutputsWire.Single,
     permissions: List<String> = emptyList(),
 ): PluginNodeDefinition<C, O> = PluginNodeDefinition(
     typeId = typeId,
@@ -126,7 +169,7 @@ inline fun <reified C : Any> pluginEffectNode(
     displayName: String,
     description: String,
     icon: NodeIcon,
-    execOutputs: ExecOutputsWire = ExecOutputsWire.SINGLE,
+    execOutputs: ExecOutputsWire = ExecOutputsWire.Single,
     permissions: List<String> = emptyList(),
 ): PluginNodeDefinition<C, Unit> = PluginNodeDefinition(
     typeId = typeId,
@@ -158,7 +201,7 @@ inline fun <reified C : Any, O : Any> pluginTriggerNode(
     kind = NodeKind.TRIGGER,
     schema = nodeSchema<C>(),
     output = output,
-    execOutputs = ExecOutputsWire.SINGLE,
+    execOutputs = ExecOutputsWire.Single,
     permissions = permissions,
     extraInputs = emptyList(),
 )
@@ -178,7 +221,7 @@ inline fun <reified C : Any> pluginPulseTriggerNode(
     kind = NodeKind.TRIGGER,
     schema = nodeSchema<C>(),
     output = null,
-    execOutputs = ExecOutputsWire.SINGLE,
+    execOutputs = ExecOutputsWire.Single,
     permissions = permissions,
     extraInputs = emptyList(),
 )
@@ -200,7 +243,7 @@ inline fun <reified C : Any, O : Any> pluginValueNode(
     kind = NodeKind.VALUE,
     schema = nodeSchema<C>(),
     output = output,
-    execOutputs = ExecOutputsWire.SINGLE,
+    execOutputs = ExecOutputsWire.Single,
     permissions = permissions,
     extraInputs = emptyList(),
 )
@@ -229,7 +272,7 @@ inline fun <reified C : Any, O : Any> pluginTransformNode(
     kind = NodeKind.TRANSFORM,
     schema = nodeSchema<C>(),
     output = output,
-    execOutputs = ExecOutputsWire.SINGLE,
+    execOutputs = ExecOutputsWire.Single,
     // A transform may not require a permission — the host's own contract, enforced by
     // NodeDeclarationRules — so this builder does not offer the parameter.
     permissions = emptyList(),

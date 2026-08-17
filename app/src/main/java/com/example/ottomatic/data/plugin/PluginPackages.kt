@@ -1,9 +1,11 @@
 package com.example.ottomatic.data.plugin
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import com.example.ottomatic.plugin.PLUGIN_CHOICE_ACTION
 import java.security.MessageDigest
 
 /**
@@ -98,6 +100,69 @@ class PluginPackages(private val context: Context) {
      */
     fun isGranted(permission: String, packageName: String): Boolean =
         context.packageManager.checkPermission(permission, packageName) == PackageManager.PERMISSION_GRANTED
+
+    /**
+     * [packageName]'s own settings screen, or null when it exports none.
+     *
+     * The way in for an account. Withholding `@ApiToken` and the credential libraries
+     * from plugins is right — those are a host trust boundary — and it left a plugin's
+     * own sign-in unreachable from Ottomatic, which is not the same thing as refusing it.
+     * A plugin that needs a login declares an Activity under [PLUGIN_SETTINGS_ACTION] and
+     * Ottomatic offers a button to it.
+     *
+     * **Resolved here, from `PackageManager`, and never from anything the plugin sent.**
+     * That is the same rule that keeps `Uri`, `PendingIntent` and `IBinder` out of
+     * `nodeapi/wire` entirely: a component name arriving over the wire would be a
+     * capability the host would then exercise on the plugin's behalf. Constrained to
+     * [packageName] as well as to the action, so a second app answering the same action
+     * cannot be launched in this one's name.
+     */
+    fun settingsComponentOf(packageName: String): ComponentName? = runCatching {
+        context.packageManager
+            .queryIntentActivities(Intent(PLUGIN_SETTINGS_ACTION).setPackage(packageName), 0)
+            .firstNotNullOfOrNull { info ->
+                info.activityInfo
+                    ?.takeIf { it.exported && it.packageName == packageName }
+                    ?.let { ComponentName(it.packageName, it.name) }
+            }
+    }.getOrNull()
+
+    /**
+     * The class name of [packageName]'s own chooser Activity, or null when it exports none.
+     *
+     * What a `@PluginChoice(chooser = SCREEN)` field opens. Resolved here, from
+     * `PackageManager`, and constrained to [packageName] as well as to the action — the
+     * same rule [settingsComponentOf] follows, for the same reason: a component name is a
+     * thing to launch, so it may never come from anything the plugin sent.
+     *
+     * A **class name rather than a `ComponentName`** because the answer is stored on
+     * `PluginNodeEntry`, which lives in `domain/` and may hold nothing of Android's. The
+     * package is already on the entry, so `feature/` assembles the two.
+     */
+    fun chooserActivityOf(packageName: String): String? = runCatching {
+        context.packageManager
+            .queryIntentActivities(Intent(PLUGIN_CHOICE_ACTION).setPackage(packageName), 0)
+            .firstNotNullOfOrNull { info ->
+                info.activityInfo
+                    ?.takeIf { it.exported && it.packageName == packageName }
+                    ?.name
+            }
+    }.getOrNull()
+
+    /**
+     * Opens [packageName]'s settings screen, answering false when there is none to open.
+     *
+     * Started **by component** rather than by action, so the app that gets launched is
+     * the one the row the user tapped is about — resolving an action at launch time could
+     * pick a different answerer than the one [settingsComponentOf] reported.
+     */
+    fun openSettings(packageName: String): Boolean {
+        val component = settingsComponentOf(packageName) ?: return false
+        val intent = Intent()
+            .setComponent(component)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return runCatching { context.startActivity(intent) }.isSuccess
+    }
 
     private fun permissionsOf(packageName: String): List<String> = runCatching {
         context.packageManager

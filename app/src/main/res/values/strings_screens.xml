@@ -67,6 +67,9 @@
     <string name="plugins_back">Back</string>
     <string name="plugins_plugins">Plugins</string>
     <string name="plugins_this_app_asks_for">This app asks for: %1$s</string>
+    <string name="plugins_open_settings">Set up</string>
+    <string name="plugin_choice_nothing_to_choose">This plugin has nothing to choose from here.</string>
+    <string name="plugin_choice_no_screen">%1$s asks for its own chooser screen but does not provide one, so there is nothing to open.</string>
 
     <!-- feature/contacts -->
     <string name="contacts_anyone">Anyone</string>

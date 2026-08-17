@@ -16,6 +16,23 @@ import kotlinx.coroutines.withTimeoutOrNull
 const val PLUGIN_SERVICE_ACTION = "com.example.ottomatic.action.PLUGIN"
 
 /**
+ * The action a plugin app's **own settings Activity** advertises, if it has one.
+ *
+ * The second and last thing Ottomatic reads out of a plugin's Android manifest, and the
+ * only one that is optional. A plugin talking to a third-party service needs somewhere to
+ * sign in, and it may not have `@ApiToken` or any of the host's credential libraries —
+ * correctly, since those are a host trust boundary — so the login has to live in the
+ * plugin's own app. Before this there was no way to reach it: the Plugins screen had a
+ * switch and nothing else.
+ *
+ * A manifest convention rather than a wire field on purpose. Everything on the wire is
+ * inert data by construction; a component name *is* a thing to launch, and one arriving
+ * over a binder would be a capability the host then exercises. Resolved against
+ * `PackageManager` in `PluginPackages.settingsComponentOf`.
+ */
+const val PLUGIN_SETTINGS_ACTION = "com.example.ottomatic.action.PLUGIN_SETTINGS"
+
+/**
  * One live binding per plugin package.
  *
  * ## Never `BIND_IMPORTANT`

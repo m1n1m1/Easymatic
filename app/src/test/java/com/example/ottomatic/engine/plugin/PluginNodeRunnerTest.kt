@@ -26,6 +26,7 @@ import com.example.ottomatic.nodeapi.wire.PluginJson
 import com.example.ottomatic.nodeapi.wire.PluginManifestWire
 import com.example.ottomatic.nodeapi.wire.PortWire
 import com.example.ottomatic.nodeapi.wire.PrimitiveWire
+import com.example.ottomatic.nodeapi.wire.RouteWire
 import com.example.ottomatic.nodeapi.wire.SchemaWire
 import com.example.ottomatic.nodeapi.wire.ValueResultWire
 import com.example.ottomatic.nodeapi.wire.toWire
@@ -69,7 +70,7 @@ class PluginNodeRunnerTest {
     private fun declaration(
         typeId: String,
         kind: NodeKind,
-        execOutputs: ExecOutputsWire = ExecOutputsWire.SINGLE,
+        execOutputs: ExecOutputsWire = ExecOutputsWire.Single,
     ) = NodeDeclarationWire(
         typeId = typeId,
         displayName = "Shout",
@@ -119,6 +120,11 @@ class PluginNodeRunnerTest {
     )
 
     private val logMessages get() = logged.map { it.first }
+
+    /** `out` first, as the contract requires: the host falls back to whatever is first. */
+    private val namedRoutes = ExecOutputsWire.Named(
+        listOf(RouteWire("out", "When posted"), RouteWire("error", "When it fails")),
+    )
 
     // ---- the happy path -----------------------------------------------------
 
@@ -228,13 +234,87 @@ class PluginNodeRunnerTest {
     @Test
     fun `a branching action may route to a port it did declare`() = runBlocking {
         publish(
-            declaration(actionTypeId, NodeKind.ACTION, ExecOutputsWire.BRANCH),
+            declaration(actionTypeId, NodeKind.ACTION, ExecOutputsWire.Branch),
             FakePluginChannel().answersAction(actionJson(route = "false")),
         )
 
         val result = requireNotNull(PluginNodeRunner.runAction(node(actionTypeId), emptyMap(), context))
 
         assertEquals(listOf(PortName("false")), result.execOut)
+    }
+
+    // ---- named routes -------------------------------------------------------
+
+    @Test
+    fun `an action may route to a name it chose itself`() = runBlocking {
+        publish(
+            declaration(actionTypeId, NodeKind.ACTION, namedRoutes),
+            FakePluginChannel().answersAction(actionJson(route = "error")),
+        )
+
+        val result = requireNotNull(PluginNodeRunner.runAction(node(actionTypeId), emptyMap(), context))
+
+        assertEquals(listOf(PortName("error")), result.execOut)
+    }
+
+    /**
+     * The regression this pair exists for.
+     *
+     * The unreachable-plugin path pulsed a hard-coded `"out"` until protocol 2, which a
+     * `BRANCH` node does not have at all — so a branching plugin that could not be reached
+     * pulsed a port nothing could be wired to and execution stopped dead, with only a log
+     * line to say so. It now lands on the first *declared* route, which is why the first
+     * one is required to mean "carried on".
+     */
+    @Test
+    fun `an unreachable branching plugin lands on a port the node actually has`() = runBlocking {
+        publish(declaration(actionTypeId, NodeKind.ACTION, ExecOutputsWire.Branch), FakePluginChannel())
+
+        val result = requireNotNull(PluginNodeRunner.runAction(node(actionTypeId), emptyMap(), context))
+
+        assertEquals(listOf(PortName("true")), result.execOut)
+    }
+
+    @Test
+    fun `an unreachable plugin lands on the first route it named`() = runBlocking {
+        publish(declaration(actionTypeId, NodeKind.ACTION, namedRoutes), FakePluginChannel())
+
+        val result = requireNotNull(PluginNodeRunner.runAction(node(actionTypeId), emptyMap(), context))
+
+        // Not "error", even though this node has one: the call may have succeeded and
+        // failed only on the way back, so claiming the work did not happen is a stronger
+        // statement than the host can make.
+        assertEquals(listOf(PortName("out")), result.execOut)
+    }
+
+    @Test
+    fun `an undeclared route on a named-route node falls back to the first one`() = runBlocking {
+        publish(
+            declaration(actionTypeId, NodeKind.ACTION, namedRoutes),
+            FakePluginChannel().answersAction(actionJson(route = "sideways")),
+        )
+
+        val result = requireNotNull(PluginNodeRunner.runAction(node(actionTypeId), emptyMap(), context))
+
+        assertEquals(listOf(PortName("out")), result.execOut)
+        assertTrue(logMessages.any { it.contains("sideways") })
+    }
+
+    /**
+     * A failure carries no data, which is the whole reason `PluginOutput.value` became
+     * nullable: a `Posted("", "")` in its place reads downstream exactly like a success.
+     */
+    @Test
+    fun `a failed route may carry no data at all`() = runBlocking {
+        publish(
+            declaration(actionTypeId, NodeKind.ACTION, namedRoutes),
+            FakePluginChannel().answersAction(actionJson(route = "error", data = emptyMap())),
+        )
+
+        val result = requireNotNull(PluginNodeRunner.runAction(node(actionTypeId), emptyMap(), context))
+
+        assertEquals(listOf(PortName("error")), result.execOut)
+        assertTrue(result.dataOut.isEmpty())
     }
 
     @Test

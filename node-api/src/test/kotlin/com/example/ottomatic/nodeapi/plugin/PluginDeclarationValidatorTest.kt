@@ -5,6 +5,8 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.config.ChoiceChooser
+import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.nodeapi.wire.ConfigFieldTypeWire
 import com.example.ottomatic.nodeapi.wire.ConfigFieldWire
 import com.example.ottomatic.nodeapi.wire.ExecOutputsWire
@@ -14,6 +16,7 @@ import com.example.ottomatic.nodeapi.wire.PLUGIN_PROTOCOL_VERSION
 import com.example.ottomatic.nodeapi.wire.PluginManifestWire
 import com.example.ottomatic.nodeapi.wire.PortWire
 import com.example.ottomatic.nodeapi.wire.PrimitiveWire
+import com.example.ottomatic.nodeapi.wire.RouteWire
 import com.example.ottomatic.nodeapi.wire.SchemaWire
 import com.example.ottomatic.nodeapi.wire.VisibilityWire
 import org.junit.Assert.assertEquals
@@ -86,12 +89,179 @@ class PluginDeclarationValidatorTest {
 
     @Test
     fun `a branching action gets a true and a false`() {
-        val ports = validate(action().copy(execOutputs = ExecOutputsWire.BRANCH)).accepted.single().definition.ports
+        val ports = validate(action().copy(execOutputs = ExecOutputsWire.Branch)).accepted.single().definition.ports
 
         assertEquals(
             listOf("in", "true", "false"),
             ports.filter { it.kind == PortKind.EXECUTION }.map { it.name.value },
         )
+    }
+
+    // ---- named execution routes ---------------------------------------------
+
+    @Test
+    fun `named routes become execution ports in declaration order, with their labels`() {
+        val node = action().copy(
+            execOutputs = ExecOutputsWire.Named(
+                listOf(RouteWire("out", "When posted"), RouteWire("error", "When it fails")),
+            ),
+        )
+
+        val exec = validate(node).accepted.single().definition.ports.filter { it.kind == PortKind.EXECUTION }
+
+        assertEquals(listOf("in", "out", "error"), exec.map { it.name.value })
+        assertEquals(listOf("in", "When posted", "When it fails"), exec.map { it.label })
+    }
+
+    /**
+     * Order is not cosmetic here.
+     *
+     * `PluginNodeRunner` lands both an undeclared route and an *unreachable plugin* on the
+     * first entry of `routesFor`, so if the derivation reordered them a failed binder call
+     * would pulse whichever port happened to come first.
+     */
+    @Test
+    fun `the first named route is the first route the host will fall back to`() {
+        val node = action().copy(
+            execOutputs = ExecOutputsWire.Named(
+                listOf(RouteWire("published"), RouteWire("rejected")),
+            ),
+        )
+
+        assertEquals("published", routesFor(validate(node).accepted.single().declaration).first())
+    }
+
+    @Test
+    fun `a route with a blank name is refused`() {
+        val node = action().copy(execOutputs = ExecOutputsWire.Named(listOf(RouteWire(""))))
+
+        assertTrue(rejectionFor(node).contains("blank name"))
+    }
+
+    @Test
+    fun `two routes with the same name are refused`() {
+        val node = action().copy(
+            execOutputs = ExecOutputsWire.Named(listOf(RouteWire("out"), RouteWire("out"))),
+        )
+
+        assertTrue(rejectionFor(node).contains("more than once"))
+    }
+
+    /**
+     * `in` is what the way *into* an action is called, so a route by that name would
+     * derive a second port with the same name and read as a duplicate — a sentence that
+     * points at the wrong thing entirely.
+     */
+    @Test
+    fun `a route named in is refused, naming the collision`() {
+        val node = action().copy(
+            execOutputs = ExecOutputsWire.Named(listOf(RouteWire("out"), RouteWire("in"))),
+        )
+
+        assertTrue(rejectionFor(node).contains("way *into* an action"))
+    }
+
+    @Test
+    fun `more routes than the cap are refused`() {
+        val node = action().copy(
+            execOutputs = ExecOutputsWire.Named(
+                (0..PluginLimits.MAX_ROUTES_PER_NODE).map { RouteWire("r$it") },
+            ),
+        )
+
+        assertTrue(rejectionFor(node).contains("${PluginLimits.MAX_ROUTES_PER_NODE}"))
+    }
+
+    @Test
+    fun `naming no routes at all is refused`() {
+        val node = action().copy(execOutputs = ExecOutputsWire.Named(emptyList()))
+
+        assertTrue(rejectionFor(node).contains("somewhere to continue from"))
+    }
+
+    // ---- plugin-owned choices -----------------------------------------------
+
+    @Test
+    fun `a choice field becomes a PLUGIN_CHOICE with its provider stamped on`() {
+        val node = action(
+            config = listOf(ConfigFieldWire("board", "Board", ConfigFieldTypeWire.ChoiceOf("boards"))),
+        )
+
+        val accepted = validate(node).accepted.single()
+        val field = requireNotNull(accepted.configSchema).fields.single()
+        val type = field.type as ConfigFieldType.PLUGIN_CHOICE
+
+        assertEquals("boards", type.source)
+        // Never read off the wire: the host stamps the typeId it already resolved and
+        // namespaced, so a plugin cannot point a chooser at somebody else's node.
+        assertEquals("${prefix}shout", type.providerTypeId)
+    }
+
+    /**
+     * The rendering choice has to survive the crossing, because it is the only thing that
+     * tells the editor whether to draw a list or open somebody else's Activity — and a
+     * `SCREEN` field silently read back as `LIST` would open an empty overlay instead.
+     */
+    @Test
+    fun `a choice field carries which chooser draws it`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire("board", "Board", ConfigFieldTypeWire.ChoiceOf("boards")),
+                ConfigFieldWire(
+                    "card",
+                    "Card",
+                    ConfigFieldTypeWire.ChoiceOf("cards", listOf("board"), ChoiceChooser.SCREEN),
+                ),
+            ),
+        )
+
+        val fields = requireNotNull(validate(node).accepted.single().configSchema).fields
+        val board = fields.single { it.key.value == "board" }.type as ConfigFieldType.PLUGIN_CHOICE
+        val card = fields.single { it.key.value == "card" }.type as ConfigFieldType.PLUGIN_CHOICE
+
+        // The default, so an existing declaration keeps behaving as it did.
+        assertEquals(ChoiceChooser.LIST, board.chooser)
+        assertEquals(ChoiceChooser.SCREEN, card.chooser)
+        // Everything else about the field is unchanged by the rendering choice.
+        assertEquals(listOf("board"), card.scopedBy)
+        assertEquals("${prefix}shout", card.providerTypeId)
+    }
+
+    @Test
+    fun `a choice field with a blank source is refused`() {
+        val node = action(
+            config = listOf(ConfigFieldWire("board", "Board", ConfigFieldTypeWire.ChoiceOf(""))),
+        )
+
+        assertTrue(rejectionFor(node).contains("blank source"))
+    }
+
+    /**
+     * A scope naming nothing narrows on a value nothing can set, so the chooser answers
+     * the same empty list forever — indistinguishable from a plugin that genuinely has
+     * nothing to offer.
+     */
+    @Test
+    fun `a choice scoped by a field the node does not declare is refused`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire("board", "Board", ConfigFieldTypeWire.ChoiceOf("boards", listOf("space"))),
+            ),
+        )
+
+        assertTrue(rejectionFor(node).contains("scoped by 'space'"))
+    }
+
+    @Test
+    fun `a choice scoped by a sibling it does declare is accepted`() {
+        val node = action(
+            config = listOf(
+                ConfigFieldWire("space", "Space", ConfigFieldTypeWire.ChoiceOf("spaces")),
+                ConfigFieldWire("board", "Board", ConfigFieldTypeWire.ChoiceOf("boards", listOf("space"))),
+            ),
+        )
+
+        assertTrue(validate(node).rejected.isEmpty())
     }
 
     @Test

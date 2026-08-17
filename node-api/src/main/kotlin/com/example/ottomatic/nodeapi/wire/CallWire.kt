@@ -75,6 +75,12 @@ data class LogLineWire(
  * declaration does not contain is refused at call time rather than pulsed — the
  * host's own `routePort` already `require`s the same thing of first-party nodes,
  * and a plugin is not a reason to relax it.
+ *
+ * [data] may be **empty on a route that failed**, and that is the point of it being a
+ * map rather than a required value: an action that could not publish has no post to
+ * describe, and a struct of blanks in its place reads downstream exactly like a success.
+ * A port with no entry degrades the way an unwired port already does — the consumer
+ * falls back to its form value.
  */
 @Serializable
 data class ActionResultWire(
@@ -103,6 +109,47 @@ data class ValueResultWire(
 data class TriggerEventWire(
     val data: Map<String, ItemWire> = emptyMap(),
     val log: List<LogLineWire> = emptyList(),
+)
+
+/**
+ * Whether a plugin can currently do its work.
+ *
+ * The gap no permission check reaches. A plugin holds every permission it asked for, so
+ * `validatePluginPermissions` is silent and correct, and the macro still does nothing
+ * because nobody has signed in — "configured perfectly, does nothing", with nothing
+ * anywhere saying why.
+ *
+ * [message] is read only when [ready] is false, and it is the plugin's own sentence,
+ * untranslated, exactly as its node names and descriptions are: the declaration crosses
+ * the binder pre-rendered, so there is no resource key for the host to look up. Bounded
+ * by `PluginLimits.MAX_STRING_LENGTH` on read.
+ *
+ * Both defaults say **ready**, which is the same inversion `GrantedPrerequisites` makes:
+ * the only consumer is a warning, and a panel that badges everything it has not managed
+ * to ask is worse than one that waits until it knows.
+ */
+@Serializable
+data class PluginStatusWire(
+    val ready: Boolean = true,
+    val message: String = "",
+)
+
+/**
+ * What a `@PluginChoice` field may be set to.
+ *
+ * [options] reuses [OptionWire] — the same pair a [ConfigFieldTypeWire.EnumOf] carries,
+ * because a choice list is an enum whose members are known later rather than a new kind
+ * of thing. Bounded by `PluginLimits.MAX_CHOICES`.
+ *
+ * [problem] is the plugin's own sentence for why it could not answer — not signed in, no
+ * network, the workspace has no pages. It is shown *in the chooser*, where somebody is
+ * looking, rather than logged: this transaction is the one place a plugin is asked
+ * something while a person waits for the reply.
+ */
+@Serializable
+data class ChoiceListWire(
+    val options: List<OptionWire> = emptyList(),
+    val problem: String? = null,
 )
 
 /**

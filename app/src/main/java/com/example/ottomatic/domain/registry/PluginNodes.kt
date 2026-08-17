@@ -40,6 +40,36 @@ data class PluginNodeEntry(
      * somebody installed a plugin.
      */
     val missingPermissions: List<String> = emptyList(),
+    /**
+     * Why the plugin says it cannot currently do its work, or null when it says nothing.
+     *
+     * The gap [missingPermissions] cannot reach, and the reason it needs a second field
+     * rather than a longer first one: a plugin holds every permission it asked for, so
+     * that list is empty and correct while every node of a signed-out plugin does
+     * nothing. "Configured perfectly, does nothing", with nothing anywhere saying why.
+     *
+     * The sentence is the plugin's own and untranslated, exactly as its node names and
+     * descriptions are — the declaration crosses the binder pre-rendered, so there is no
+     * resource key to look up.
+     *
+     * **Null is "say nothing", not "ready".** A plugin that could not be reached, timed
+     * out or answered nonsense leaves this null, because the only consumer is a warning
+     * and a panel that badges every node of a plugin it merely failed to ask is worse
+     * than one that waits until it knows — `GrantedPrerequisites`' own inversion.
+     */
+    val notReady: String? = null,
+    /**
+     * The class name of the plugin's own chooser Activity, or null when it exports none.
+     *
+     * What a `@PluginChoice(chooser = SCREEN)` field opens. A **class name and not a
+     * `ComponentName`** because this is `domain/`, which holds nothing of Android's;
+     * [packageName] is right here, so `feature/` puts the two together.
+     *
+     * Resolved from `PackageManager` at refresh time, never read off the wire. A component
+     * name is a thing to *launch*, so it is the one piece of a plugin's chooser that could
+     * not have travelled with the declaration — see `PluginPackages.chooserActivityOf`.
+     */
+    val chooserActivity: String? = null,
 )
 
 /**

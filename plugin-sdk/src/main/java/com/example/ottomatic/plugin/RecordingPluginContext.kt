@@ -69,8 +69,11 @@ suspend fun <C : Any, O : Any> PluginAction<C, O>.dispatch(call: NodeCallWire, a
     val context = RecordingPluginContext(android)
     val output = execute(definition.decodeConfig(call), context)
     val port = definition.output
-    val encoded = port?.encode(output.value)?.toWire()
-        ?.let { mapOf(port.name.value to it) }
+    // A null value emits *no entry* rather than an encoded blank: an action that failed
+    // has nothing to describe, and a struct of zeroes on the port reads downstream
+    // exactly like a success. See `PluginOutput.value`.
+    val encoded = output.value
+        ?.let { value -> port?.encode(value)?.toWire()?.let { mapOf(port.name.value to it) } }
         .orEmpty()
     return ActionResultWire(
         data = encoded,

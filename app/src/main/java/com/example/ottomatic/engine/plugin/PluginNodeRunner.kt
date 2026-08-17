@@ -48,6 +48,7 @@ import kotlinx.coroutines.withTimeoutOrNull
  * that a read answers null. So each failure is reported here, in words, naming the
  * plugin, and then degrades exactly as the equivalent first-party failure does.
  */
+@Suppress("TooManyFunctions") // Three node kinds, one transport, and the encode/decode either side.
 object PluginNodeRunner {
 
     /** An action is on the execution wire, where latency is visible but tolerable. */
@@ -70,9 +71,16 @@ object PluginNodeRunner {
      * Runs a plugin action, or null when this typeId is not one.
      *
      * A null answer from the plugin — an unreachable process, a timeout, a malformed
-     * reply — still pulses `out` with no data, because halting the branch would be a
-     * stronger claim than the host can make: the node may well have done its work and
-     * failed only on the way back.
+     * reply — still pulses, with no data, because halting the branch would be a stronger
+     * claim than the host can make: the node may well have done its work and failed only
+     * on the way back.
+     *
+     * **Which port it pulses is the node's first declared route**, not a literal `out`.
+     * That was a hard-coded `"out"` until protocol 2, which a `BRANCH` node does not
+     * have at all — so an unreachable branching plugin pulsed a port nothing could be
+     * wired to, and execution stopped dead with only a log line to say so. The same
+     * ordering rule that makes `routeOf` safe covers this: the first route a declaration
+     * names is the one that means *carried on*.
      */
     @Suppress("ReturnCount") // Not-ours, could-not-run, and ran — three genuinely different outcomes.
     suspend fun runAction(
@@ -87,7 +95,7 @@ object PluginNodeRunner {
         val result = reply?.let { decode(it, ActionResultWire.serializer()) }
         if (result == null) {
             context.log("${entry.pluginName} did not answer; carrying on", LogLevel.ERROR)
-            return EncodedNodeOutput(listOf(PortName("out")), emptyMap(), halt = false)
+            return EncodedNodeOutput(listOf(PortName(fallbackRoute(entry))), emptyMap(), halt = false)
         }
         result.log.replayInto(context)
         return EncodedNodeOutput(
@@ -185,11 +193,24 @@ object PluginNodeRunner {
         if (result.route in declared) return result.route
         context.log(
             "${entry.pluginName} asked to continue from '${result.route}', which this node " +
-                "does not have; using '${declared.firstOrNull() ?: "out"}' instead",
+                "does not have; using '${fallbackRoute(entry)}' instead",
             LogLevel.WARN,
         )
-        return declared.firstOrNull() ?: "out"
+        return fallbackRoute(entry)
     }
+
+    /**
+     * The route the host takes when it cannot honour the one it was given.
+     *
+     * The **first** a declaration names, because that is where a plugin is required to
+     * put the outcome meaning *carried on* — and both callers need it to mean that. An
+     * unroutable reply is at least evidence the node ran; an unreachable plugin is not
+     * even that, and the host still may not claim the work did not happen, because the
+     * call may have failed on the way back. `"out"` is the last resort for a declaration
+     * with no execution outputs at all, which the validator already rejects.
+     */
+    private fun fallbackRoute(entry: PluginNodeEntry): String =
+        routesFor(entry.declaration).firstOrNull() ?: "out"
 
     private fun <T> decode(json: String, serializer: kotlinx.serialization.KSerializer<T>): T? =
         runCatching { PluginJson.decodeFromString(serializer, json) }.getOrNull()

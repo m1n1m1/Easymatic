@@ -33,6 +33,7 @@ internal fun ValidationIssue.text(): String {
 private fun IssueReason.messageRes(): Int = when (this) {
     IssueReason.PERMISSION_MISSING -> R.string.problem_permission_missing
     IssueReason.PLUGIN_PERMISSION_MISSING -> R.string.problem_plugin_permission_missing
+    IssueReason.PLUGIN_NOT_READY -> R.string.problem_plugin_not_ready
     IssueReason.MACRO_UNSET -> R.string.problem_macro_unset
     IssueReason.MACRO_MISSING -> R.string.problem_macro_missing
     IssueReason.HUB_UNSET -> R.string.problem_hub_unset

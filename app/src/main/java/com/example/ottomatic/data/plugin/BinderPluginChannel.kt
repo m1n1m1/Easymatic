@@ -36,6 +36,11 @@ class BinderPluginChannel(
 
     override suspend fun declarations(): String? = call { it.declarations() }
 
+    override suspend fun status(): String? = call { it.status() }
+
+    override suspend fun choices(typeId: String, source: String, request: String): String? =
+        call { it.choices(typeId, source, request) }
+
     override suspend fun runAction(typeId: String, request: String): String? =
         call { it.runAction(typeId, request) }
 
