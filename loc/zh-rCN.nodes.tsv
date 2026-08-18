@@ -65,6 +65,7 @@ Balanced	均衡
 Battery Level	电量
 Battery level	电量
 Bcc	密送
+Begins recording sound from the microphone and carries on, until Stop Recording or the time limit ends it	开始用麦克风录音并继续进行，直到“停止录音”或达到时间上限
 Below	低于
 Between two times	两个时间点之间
 Blue	蓝色
@@ -187,6 +188,7 @@ Empty Trigger	空触发器
 Enable Macro	启用宏
 Enabled	已启用
 Enables another macro by id (persists the flag and arms its triggers)	按 id 启用另一个宏（保存状态并激活它的触发器）
+Ends the recording that is running and saves it as a file	结束正在进行的录音并保存为文件
 Entity	实体
 Equals	等于
 Event	事件
@@ -249,6 +251,7 @@ Height	高度
 Held down	长按
 Held for (seconds)	持续时间（秒）
 High — fires easily	高——很容易触发
+High — music and detail	高音质 — 音乐与细节
 Hint	提示
 Hold for at least (ms)	至少按住（毫秒）
 Home Assistant	Home Assistant
@@ -258,6 +261,7 @@ Home Assistant Event	Home Assistant 事件
 Hours	小时
 How	方式
 How long (minutes)	时长（分钟）
+How long (seconds)	时长（秒）
 How many	多少个
 How many at most	最多多少个
 How many items are in a list	列表中有多少个元素
@@ -472,6 +476,10 @@ Reads messages from a mailbox onto a list you can loop over	从邮箱读取邮�
 Reads one value out of JSON text, such as an HTTP response body	从 JSON 文本中读出一个值，例如 HTTP 响应的正文
 Reads whether a light is on, how bright it is and what colour — Philips Hue	读取某个灯是否亮着、亮度多少、什么颜色 — Philips Hue
 Reason (optional, logged before halting)	原因（可选，中止前会记录到日志）
+Record Audio	录制音频
+Recording	录音
+Recording Finished	录音完成
+Records sound from the microphone for a set time and saves it as a file	按设定的时长用麦克风录音并保存为文件
 Red	红色
 Remembers a value in a variable, readable by later runs	把一个值记在变量里，供之后的运行读取
 Remind you (minutes before, -1 for no reminder)	提醒你（提前几分钟，-1 表示不提醒）
@@ -567,6 +575,7 @@ Split text into a list	把文本拆成列表
 Splits a struct into its individual fields (auto-detects the struct from the input)	把结构体拆成各个字段（根据输入自动识别结构）
 Splits text into a list — one item per line, or on a separator you choose	把文本拆成列表——每行一个元素，或按你选择的分隔符拆分
 Standing instruction	常驻指令
+Start Recording	开始录音
 Start at (seconds into the sound)	起播位置（声音的第几秒）
 Started moving — low power, works with the screen off	开始移动——低功耗，屏幕熄灭时也有效
 Starts a named list over, ready to collect into	把指定列表清空重来，准备重新收集
@@ -585,6 +594,7 @@ Starts when a media button is pressed (play, pause, next, etc.)	当媒体键被�
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	当 WhatsApp、Signal、Telegram 或其他即时通讯应用收到消息时启动
 Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	当 MQTT 主题收到消息时启动 — Zigbee 按钮、传感器，以及任何会发布消息的设备
 Starts when a photo, screenshot or downloaded picture is added to this phone	当手机中新增照片、屏幕截图或下载的图片时启动
+Starts when a recording made by this app has been saved	当本应用创建的录音被保存时启动
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	当音量键被按下、长按或连按多次时启动。需要无障碍使用权；按键本身仍照常工作
 Starts when a wired headset is plugged or unplugged	当有线耳机被插入或拔出时启动
 Starts when airplane mode is toggled	当飞行模式被切换时启动
@@ -618,8 +628,10 @@ Starts when the user unlocks the device	当用户解锁设备时启动
 State	状态
 Stop	停止
 Stop Macro	停止宏
+Stop Recording	停止录音
 Stop Sound	停止声音
 Stop after (seconds, 0 = play to the end)	停止时间（秒，0 = 播放到结束）
+Stop by itself after (seconds)	自动停止时间（秒）
 Stops every sound started by Play Sound	停止所有由“播放声音”启动的声音
 Stream	音频通道
 String	文本
@@ -719,6 +731,7 @@ Variable Change	变量改变
 Vibrate	振动
 Vibrates the device for a duration or pattern	让设备按时长或指定模式振动
 Violet	紫色
+Voice — small file	语音 — 文件较小
 Volume Button	音量键
 Volume down	音量减
 Volume up	音量加
@@ -756,6 +769,7 @@ Whether something is covering the sensor above the screen — a pocket, a hand o
 Whether the device is currently charging	设备当前是否正在充电
 Whether the device is currently in dark theme (night mode)	设备当前是否处于深色主题（夜间模式）
 Whether the device is currently sitting in a dock	设备当前是否放在底座上
+Whether the microphone is recording right now	麦克风当前是否正在录音
 Whether the screen is currently on and interactive	屏幕当前是否点亮且可操作
 Which way up	方向
 While the screen is off	屏幕熄灭时

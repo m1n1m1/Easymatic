@@ -154,6 +154,7 @@ calendar_needs_access	Ottomatic 需要日历访问权限才能列出你的日历
 calendar_no_calendars	这台手机上没有日历。
 calendar_no_writable_calendars	这台手机上的日历都无法写入。订阅的日历（例如节假日日历）只能读取。
 category_ai	AI
+category_audio	音频
 category_automation	自动化
 category_calendar	日历
 category_connectivity	连接
@@ -501,6 +502,7 @@ perm_desc_read_calendar	允许宏读取你的日程，并让你在设置时选�
 perm_desc_read_contacts	允许宏查找你所选联系人的号码。选择联系人不需要任何权限；之后拨号才需要。
 perm_desc_read_media_images	允许宏查找和读取手机中的图片，并在保存新图片时启动。没有此权限，所有图片节点都不会执行。
 perm_desc_receive_sms	允许宏在短信到达时运行，并读取发件人和内容。
+perm_desc_record_audio	允许宏通过麦克风录音并保存为文件。Ottomatic 仅在录音动作运行期间打开麦克风，其间手机会一直显示自带的录音指示标志。
 perm_desc_send_sms	允许宏以你的名义发送短信。
 perm_desc_unknown	被你某个宏中的节点使用。
 perm_desc_write_calendar	允许宏创建、修改和删除日程。读取日程是上面那个单独的开关。
@@ -508,6 +510,7 @@ perm_desc_write_media_images	允许宏在旧版 Android 上修改、移动或删
 perm_desc_write_settings	允许宏更改屏幕亮度、屏幕超时和自动旋转。
 perm_rationale_accessibility_keys	Ottomatic 需要无障碍使用权来检测按键。它从不监视屏幕上的内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。
 perm_rationale_alarm_exact	Ottomatic 需要设置精确闹钟的权限，才能让这次等待在你指定的那一分钟结束。没有它，等待照样会发生，但 Android 会把唤醒和其他工作合并，可能会晚上几分钟。
+perm_rationale_audio_record	Ottomatic 需要麦克风权限才能录音。它仅在录音进行期间打开麦克风，录音一结束就立即关闭。没有此权限，录音会失败或被保存为静音。
 perm_rationale_calendar_read	Ottomatic 需要日历访问权限才能读取你的日程。没有它，此节点什么也读不到，上面的日历选择器也没有内容可选。
 perm_rationale_calendar_write	Ottomatic 需要修改日历的权限，此节点才能创建、编辑或删除日程。读取日程是单独的一项权限。
 perm_rationale_camera_photo	Ottomatic 需要摄像头权限才能拍照。它仅在此操作运行期间打开摄像头，随后立即关闭。当手机长时间在后台闲置时，Android 仍可能拒绝拍照。
@@ -544,6 +547,7 @@ perm_title_read_calendar	日历
 perm_title_read_contacts	通讯录
 perm_title_read_media_images	照片
 perm_title_receive_sms	接收短信
+perm_title_record_audio	麦克风
 perm_title_send_sms	发送短信
 perm_title_write_calendar	修改你的日历
 perm_title_write_media_images	修改照片

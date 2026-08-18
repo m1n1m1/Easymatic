@@ -154,6 +154,7 @@ calendar_needs_access	Ottomatic necesita acceso al calendario para listar tus ca
 calendar_no_calendars	No hay calendarios en este teléfono.
 calendar_no_writable_calendars	No se puede añadir nada a ninguno de los calendarios de este teléfono. Un calendario suscrito, como uno de festivos, solo se puede leer.
 category_ai	IA
+category_audio	Audio
 category_automation	Automatización
 category_calendar	Calendario
 category_connectivity	Conectividad
@@ -501,6 +502,7 @@ perm_desc_read_calendar	Permite que una macro lea tus citas y que elijas un cale
 perm_desc_read_contacts	Permite que una macro busque el número de un contacto que elegiste. Elegirlo no requiere nada; marcarlo después sí.
 perm_desc_read_media_images	Permite que una macro busque y lea las imágenes de tu teléfono, y que se inicie cuando se guarde una nueva. Sin esto, ningún nodo de fotos hace nada.
 perm_desc_receive_sms	Permite que una macro se ejecute cuando llega un mensaje, y que lea de quién es y qué dice.
+perm_desc_record_audio	Permite que una macro grabe sonido del micrófono y lo guarde como archivo. Ottomatic abre el micrófono solo mientras se ejecuta una acción de grabación, y el teléfono muestra su propio indicador de grabación todo ese tiempo.
 perm_desc_send_sms	Permite que una macro envíe un mensaje en tu nombre.
 perm_desc_unknown	Lo usa un nodo de alguna de tus macros.
 perm_desc_write_calendar	Permite que una macro cree, cambie y elimine citas. Leerlas es un permiso aparte, el de arriba.
@@ -508,6 +510,7 @@ perm_desc_write_media_images	Permite que una macro modifique, mueva o elimine un
 perm_desc_write_settings	Permite que una macro cambie el brillo de pantalla, el tiempo de espera y la rotación automática.
 perm_rationale_accessibility_keys	Ottomatic necesita acceso de accesibilidad para detectar pulsaciones de botones. Nunca observa lo que hay en pantalla. Si el interruptor está atenuado, abre primero Información de la app → ⋮ → Permitir ajustes restringidos.
 perm_rationale_alarm_exact	Ottomatic necesita permiso para poner alarmas exactas, de modo que esta espera termine en el minuto que pediste. Sin él la espera ocurre igual, pero Android agrupa el despertar con otras tareas y puede retrasarse minutos.
+perm_rationale_audio_record	Ottomatic necesita acceso al micrófono para grabar sonido. Abre el micrófono solo mientras se graba y lo cierra en cuanto la grabación termina. Sin esto, una grabación falla o se guarda como silencio.
 perm_rationale_calendar_read	Ottomatic necesita acceso al calendario para leer tus citas. Sin él, este nodo no lee nada en absoluto y el selector de calendario de arriba no tiene nada que ofrecer.
 perm_rationale_calendar_write	Ottomatic necesita permiso para cambiar tu calendario y que este nodo pueda crear, editar o eliminar una cita. Leer citas es un permiso aparte.
 perm_rationale_camera_photo	Ottomatic necesita acceso a la cámara para hacer una foto. Abre la cámara solo mientras se ejecuta esta acción y la cierra justo después. Android puede rechazar una foto si el teléfono lleva mucho tiempo inactivo en segundo plano.
@@ -544,6 +547,7 @@ perm_title_read_calendar	Calendario
 perm_title_read_contacts	Contactos
 perm_title_read_media_images	Fotos
 perm_title_receive_sms	Recibir mensajes
+perm_title_record_audio	Micrófono
 perm_title_send_sms	Enviar mensajes
 perm_title_write_calendar	Cambiar tu calendario
 perm_title_write_media_images	Modificar fotos

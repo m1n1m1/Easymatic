@@ -63,6 +63,11 @@ object TriggerRegistry {
         // What arms this is a ContentObserver; taking a screenshot and hearing about one
         // are unrelated mechanisms that happen to share a subject.
         add(com.example.ottomatic.engine.trigger.ScreenshotTrigger())
+        // Beside them by subject and unlike them by mechanism, which is why it sits at the
+        // end of this group rather than inside it: there is no observer, no registration
+        // table and no high-water mark here. The recorder in `data/` ended the recording
+        // itself, so the event is broadcast and this node filters on the source alone.
+        add(com.example.ottomatic.engine.trigger.RecordingSavedTrigger())
         // Tier 0 — engine-internal triggers.
         add(com.example.ottomatic.engine.trigger.EmptyTrigger())
         add(com.example.ottomatic.engine.trigger.AppInitTrigger())

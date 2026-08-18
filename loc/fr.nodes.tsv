@@ -65,6 +65,7 @@ Balanced	Équilibré
 Battery Level	Niveau de batterie
 Battery level	Niveau de batterie
 Bcc	Cci
+Begins recording sound from the microphone and carries on, until Stop Recording or the time limit ends it	Commence à enregistrer le son du micro et continue jusqu'à ce que Arrêter l'enregistrement ou la limite de temps y mette fin
 Below	En dessous
 Between two times	Entre deux moments
 Blue	Bleu
@@ -187,6 +188,7 @@ Empty Trigger	Déclencheur vide
 Enable Macro	Activer une macro
 Enabled	Activé
 Enables another macro by id (persists the flag and arms its triggers)	Active une autre macro par son identifiant (enregistre l'état et arme ses déclencheurs)
+Ends the recording that is running and saves it as a file	Termine l'enregistrement en cours et le sauvegarde dans un fichier
 Entity	Entité
 Equals	Égal à
 Event	Événement
@@ -249,6 +251,7 @@ Height	Hauteur
 Held down	Maintenu
 Held for (seconds)	Maintenu pendant (secondes)
 High — fires easily	Élevée : se déclenche facilement
+High — music and detail	Élevée — musique et détails
 Hint	Indice
 Hold for at least (ms)	Maintenir au moins (ms)
 Home Assistant	Home Assistant
@@ -258,6 +261,7 @@ Home Assistant Event	Événement Home Assistant
 Hours	Heures
 How	Comment
 How long (minutes)	Durée (minutes)
+How long (seconds)	Durée (secondes)
 How many	Combien
 How many at most	Combien au maximum
 How many items are in a list	Combien d'éléments contient une liste
@@ -472,6 +476,10 @@ Reads messages from a mailbox onto a list you can loop over	Lit les messages d'u
 Reads one value out of JSON text, such as an HTTP response body	Lit une valeur dans un texte JSON, par exemple le corps d'une réponse HTTP
 Reads whether a light is on, how bright it is and what colour — Philips Hue	Lit si une lumière est allumée, son intensité et sa couleur — Philips Hue
 Reason (optional, logged before halting)	Raison (facultatif, journalisée avant l'arrêt)
+Record Audio	Enregistrer un son
+Recording	Enregistrement
+Recording Finished	Enregistrement terminé
+Records sound from the microphone for a set time and saves it as a file	Enregistre le son du micro pendant une durée fixée et le sauvegarde dans un fichier
 Red	Rouge
 Remembers a value in a variable, readable by later runs	Mémorise une valeur dans une variable, lisible par les exécutions suivantes
 Remind you (minutes before, -1 for no reminder)	Vous rappeler (minutes avant, -1 pour aucun rappel)
@@ -567,6 +575,7 @@ Split text into a list	Découper un texte en liste
 Splits a struct into its individual fields (auto-detects the struct from the input)	Décompose une structure en ses champs (détecte la structure depuis l'entrée)
 Splits text into a list — one item per line, or on a separator you choose	Découpe un texte en liste : un élément par ligne, ou selon un séparateur de ton choix
 Standing instruction	Instruction permanente
+Start Recording	Démarrer l'enregistrement
 Start at (seconds into the sound)	Démarrer à (secondes dans le son)
 Started moving — low power, works with the screen off	Commence à bouger : basse consommation, fonctionne écran éteint
 Starts a named list over, ready to collect into	Réinitialise une liste nommée, prête à être remplie
@@ -585,6 +594,7 @@ Starts when a media button is pressed (play, pause, next, etc.)	Démarre quand u
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	Démarre à l'arrivée d'un message dans WhatsApp, Signal, Telegram ou une autre messagerie
 Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	Démarre à l’arrivée d’un message sur un topic MQTT – un bouton Zigbee, un capteur, tout appareil qui publie
 Starts when a photo, screenshot or downloaded picture is added to this phone	Démarre quand une photo, une capture d'écran ou une image téléchargée est ajoutée à ce téléphone
+Starts when a recording made by this app has been saved	Démarre lorsqu'un enregistrement réalisé par cette application a été sauvegardé
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	Démarre quand un bouton de volume est pressé, maintenu ou pressé plusieurs fois. Nécessite l'accès à l'accessibilité ; les boutons continuent de fonctionner normalement
 Starts when a wired headset is plugged or unplugged	Démarre quand un casque filaire est branché ou débranché
 Starts when airplane mode is toggled	Démarre quand le mode avion est activé ou désactivé
@@ -618,8 +628,10 @@ Starts when the user unlocks the device	Démarre quand l'utilisateur déverrouil
 State	État
 Stop	Arrêter
 Stop Macro	Arrêter la macro
+Stop Recording	Arrêter l'enregistrement
 Stop Sound	Arrêter le son
 Stop after (seconds, 0 = play to the end)	Arrêter après (secondes, 0 = jouer jusqu'au bout)
+Stop by itself after (seconds)	S'arrêter tout seul après (secondes)
 Stops every sound started by Play Sound	Arrête tous les sons lancés par Jouer un son
 Stream	Canal
 String	Texte
@@ -719,6 +731,7 @@ Variable Change	Changement de variable
 Vibrate	Vibrer
 Vibrates the device for a duration or pattern	Fait vibrer l'appareil pendant une durée ou selon un motif
 Violet	Violet
+Voice — small file	Voix — petit fichier
 Volume Button	Bouton de volume
 Volume down	Volume bas
 Volume up	Volume haut
@@ -756,6 +769,7 @@ Whether something is covering the sensor above the screen — a pocket, a hand o
 Whether the device is currently charging	Si l'appareil est actuellement en charge
 Whether the device is currently in dark theme (night mode)	Si l'appareil est actuellement en thème sombre (mode nuit)
 Whether the device is currently sitting in a dock	Si l'appareil est actuellement sur une station
+Whether the microphone is recording right now	Si le micro est en train d'enregistrer
 Whether the screen is currently on and interactive	Si l'écran est actuellement allumé et utilisable
 Which way up	Orientation
 While the screen is off	Quand l'écran est éteint

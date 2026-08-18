@@ -63,6 +63,26 @@ class AppFileStoreTest {
         assertFalse(File(temp.root, "notes.txt").exists())
     }
 
+    /**
+     * The other direction of the same fact, and the one a caller gets wrong.
+     *
+     * A file sitting in `filesDir` beside `macrofiles/` has **no name in this address
+     * space at all**: a relative path that looks like it names it resolves under the root
+     * instead and finds nothing. That is what makes the folder safe to keep a
+     * half-written recording in — no `action.file_list` shows it and no `action.file_delete`
+     * reaches it — and it is why `AndroidMicrophone` hands `RoutingFiles.place` a real
+     * `java.io.File` rather than a path. Reading one back by path answered "there is no
+     * file at recordings-part/…" for a file that was plainly there.
+     */
+    @Test
+    fun `a file beside the root cannot be named by a relative path`() = runBlocking {
+        File(temp.root, "recordings-part").mkdirs()
+        File(File(temp.root, "recordings-part"), "part-1.m4a").writeText("audio")
+
+        assertNull(store().openRead(path("recordings-part/part-1.m4a")))
+        assertFalse(store().info(path("recordings-part/part-1.m4a")).exists)
+    }
+
     @Test
     fun `the folders above a file are created`() = runBlocking {
         val result = store()

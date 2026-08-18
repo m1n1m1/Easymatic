@@ -61,6 +61,7 @@ Back camera	Back camera
 Battery Level	Battery Level
 Battery level	Battery level
 Bcc	Bcc
+Begins recording sound from the microphone and carries on, until Stop Recording or the time limit ends it	Begins recording sound from the microphone and carries on, until Stop Recording or the time limit ends it
 Below	Below
 Between two times	Between two times
 Blue	Blue
@@ -181,6 +182,7 @@ Empty Trigger	Empty Trigger
 Enable Macro	Enable Macro
 Enabled	Enabled
 Enables another macro by id (persists the flag and arms its triggers)	Enables another macro by id (persists the flag and arms its triggers)
+Ends the recording that is running and saves it as a file	Ends the recording that is running and saves it as a file
 Entity	Entity
 Equals	Equals
 Event	Event
@@ -242,6 +244,7 @@ Height	Height
 Held down	Held down
 Held for (seconds)	Held for (seconds)
 High — fires easily	High — fires easily
+High — music and detail	High — music and detail
 Hint	Hint
 Hold for at least (ms)	Hold for at least (ms)
 Home Assistant	Home Assistant
@@ -251,6 +254,7 @@ Home Assistant Event	Home Assistant Event
 Hours	Hours
 How	How
 How long (minutes)	How long (minutes)
+How long (seconds)	How long (seconds)
 How many	How many
 How many at most	How many at most
 How many items are in a list	How many items are in a list
@@ -465,6 +469,10 @@ Reads messages from a mailbox onto a list you can loop over	Reads messages from 
 Reads one value out of JSON text, such as an HTTP response body	Reads one value out of JSON text, such as an HTTP response body
 Reads whether a light is on, how bright it is and what colour — Philips Hue	Reads whether a light is on, how bright it is and what colour — Philips Hue
 Reason (optional, logged before halting)	Reason (optional, logged before halting)
+Record Audio	Record Audio
+Recording	Recording
+Recording Finished	Recording Finished
+Records sound from the microphone for a set time and saves it as a file	Records sound from the microphone for a set time and saves it as a file
 Red	Red
 Remembers a value in a variable, readable by later runs	Remembers a value in a variable, readable by later runs
 Remind you (minutes before, -1 for no reminder)	Remind you (minutes before, -1 for no reminder)
@@ -560,6 +568,7 @@ Split text into a list	Split text into a list
 Splits a struct into its individual fields (auto-detects the struct from the input)	Splits a struct into its individual fields (auto-detects the struct from the input)
 Splits text into a list — one item per line, or on a separator you choose	Splits text into a list — one item per line, or on a separator you choose
 Standing instruction	Standing instruction
+Start Recording	Start Recording
 Start at (seconds into the sound)	Start at (seconds into the sound)
 Started moving — low power, works with the screen off	Started moving — low power, works with the screen off
 Starts a named list over, ready to collect into	Starts a named list over, ready to collect into
@@ -578,6 +587,7 @@ Starts when a media button is pressed (play, pause, next, etc.)	Starts when a me
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger
 Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes
 Starts when a photo, screenshot or downloaded picture is added to this phone	Starts when a photo, screenshot or downloaded picture is added to this phone
+Starts when a recording made by this app has been saved	Starts when a recording made by this app has been saved
 Starts when a screenshot is captured on this phone	Starts when a screenshot is captured on this phone
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally
 Starts when a wired headset is plugged or unplugged	Starts when a wired headset is plugged or unplugged
@@ -612,8 +622,10 @@ Starts when the user unlocks the device	Starts when the user unlocks the device
 State	State
 Stop	Stop
 Stop Macro	Stop Macro
+Stop Recording	Stop Recording
 Stop Sound	Stop Sound
 Stop after (seconds, 0 = play to the end)	Stop after (seconds, 0 = play to the end)
+Stop by itself after (seconds)	Stop by itself after (seconds)
 Stops every sound started by Play Sound	Stops every sound started by Play Sound
 Stream	Stream
 String	String
@@ -714,6 +726,7 @@ Variable Change	Variable Change
 Vibrate	Vibrate
 Vibrates the device for a duration or pattern	Vibrates the device for a duration or pattern
 Violet	Violet
+Voice — small file	Voice — small file
 Volume Button	Volume Button
 Volume down	Volume down
 Volume up	Volume up
@@ -751,6 +764,7 @@ Whether something is covering the sensor above the screen — a pocket, a hand o
 Whether the device is currently charging	Whether the device is currently charging
 Whether the device is currently in dark theme (night mode)	Whether the device is currently in dark theme (night mode)
 Whether the device is currently sitting in a dock	Whether the device is currently sitting in a dock
+Whether the microphone is recording right now	Whether the microphone is recording right now
 Whether the screen is currently on and interactive	Whether the screen is currently on and interactive
 Which way up	Which way up
 While the screen is off	While the screen is off

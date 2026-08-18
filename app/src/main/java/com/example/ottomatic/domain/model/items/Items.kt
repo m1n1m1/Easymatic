@@ -956,6 +956,60 @@ data class ImageResultItem(
 )
 
 /**
+ * A recording that exists, as `trigger.recording_saved` reports it.
+ *
+ * A path and no `uri`, which is the one field [ImageItem] has that this deliberately does
+ * not. A photo is a row in a collection every gallery reads, so its `content://` handle is
+ * the durable way to name it; a recording is a file, made by this app, in a folder somebody
+ * chose — so the path is not merely enough, it is the thing the six `action.file_*` nodes
+ * and every mail attachment already speak.
+ *
+ * [durationMs] and [sizeBytes] are **-1 when unknown, never 0**, on [FileInfoItem]'s rule:
+ * a zero here reads as "it recorded nothing", which is a different and much more alarming
+ * answer than "the file does not say".
+ */
+@Serializable
+data class RecordingItem(
+    val path: String = "",
+    val name: String = "",
+    /** The folder as a person recognises it, or blank for the app's own storage. */
+    val folder: String = "",
+    val mimeType: String = "",
+    val durationMs: Long = -1,
+    val sizeBytes: Long = -1,
+    /** When the recording finished. */
+    val recordedAt: DateTime? = null,
+)
+
+/**
+ * Receipt from `action.record_audio` and `action.record_stop`.
+ *
+ * [FileResultItem]'s shape with the two facts only a recording has, and flat rather than
+ * nesting a [RecordingItem] on [ImageResultItem]'s reasoning: reading the path of the file
+ * you just made is the commonest thing anybody does next, and a nested struct would put a
+ * second `action.break` in front of it.
+ *
+ * **[changed] `false` with a blank [error] cannot happen here**, which is where it parts
+ * company with [FileResultItem]. There, a false-with-no-error is `SKIP` declining to
+ * overwrite — a real outcome. A recording that produced no file always has something to
+ * say: nothing was running, the microphone was held by another app, the grant is gone.
+ *
+ * `action.record_start` returns none of this on purpose. It has no file yet and no length,
+ * so a receipt from it could only be a `changed` that meant "began" while the same field on
+ * these two means "finished" — see that node.
+ */
+@Serializable
+data class RecordingResultItem(
+    val changed: Boolean,
+    /** Where it ended up, which is not where it was asked for if the name changed. */
+    val path: String = "",
+    val name: String = "",
+    val durationMs: Long = -1,
+    val sizeBytes: Long = -1,
+    val error: String = "",
+)
+
+/**
  * Result of the call action on its `state` data port.
  *
  * - [number]: the destination phone number.

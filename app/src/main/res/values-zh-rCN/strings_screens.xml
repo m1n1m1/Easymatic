@@ -22,6 +22,7 @@
     <string name="category_ai">AI</string>
     <string name="category_files">文件</string>
     <string name="category_images">照片</string>
+    <string name="category_audio">音频</string>
     <string name="category_calendar">日历</string>
     <string name="calendar_choose_a_calendar">选择日历</string>
     <string name="calendar_any_calendar">任意日历</string>

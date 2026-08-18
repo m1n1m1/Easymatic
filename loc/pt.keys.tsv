@@ -154,6 +154,7 @@ calendar_needs_access	O Ottomatic precisa de acesso ao calendário para listar o
 calendar_no_calendars	Não há calendários neste telemóvel.
 calendar_no_writable_calendars	Não é possível adicionar nada a nenhum dos calendários deste telemóvel. Um calendário subscrito, como um de feriados, só pode ser lido.
 category_ai	IA
+category_audio	Áudio
 category_automation	Automatização
 category_calendar	Calendário
 category_connectivity	Conectividade
@@ -501,6 +502,7 @@ perm_desc_read_calendar	Permite que uma macro leia os seus compromissos e que es
 perm_desc_read_contacts	Permite que uma macro procure o número de um contacto que escolheste. Escolhê-lo não exige nada; marcá-lo mais tarde exige.
 perm_desc_read_media_images	Permite que uma macro encontre e leia as imagens do seu telemóvel e que inicie quando uma nova for guardada. Sem isto, nenhum nó de fotos faz nada.
 perm_desc_receive_sms	Permite que uma macro corra quando chega uma mensagem, e que leia de quem é e o que diz.
+perm_desc_record_audio	Permite que uma macro grave som do microfone e o guarde como ficheiro. O Ottomatic abre o microfone apenas enquanto uma ação de gravação está a decorrer, e o telefone mostra o seu próprio indicador de gravação todo esse tempo.
 perm_desc_send_sms	Permite que uma macro envie uma mensagem em teu nome.
 perm_desc_unknown	Usada por um nó de uma das tuas macros.
 perm_desc_write_calendar	Permite que uma macro crie, altere e elimine compromissos. Lê-los é uma permissão separada, a de cima.
@@ -508,6 +510,7 @@ perm_desc_write_media_images	Permite que uma macro altere, mova ou elimine uma f
 perm_desc_write_settings	Permite que uma macro altere o brilho do ecrã, o tempo até desligar e a rotação automática.
 perm_rationale_accessibility_keys	O Ottomatic precisa de acesso de acessibilidade para detetar pressões nos botões. Nunca observa o que está no ecrã. Se o interruptor estiver esbatido, abre primeiro Informações da app → ⋮ → Permitir definições restritas.
 perm_rationale_alarm_exact	O Ottomatic precisa de permissão para definir alarmes exatos, para que esta espera termine ao minuto que pediste. Sem ela a espera acontece na mesma, mas o Android agrupa o despertar com outras tarefas e pode atrasar-se minutos.
+perm_rationale_audio_record	O Ottomatic precisa de acesso ao microfone para gravar som. Abre o microfone apenas enquanto uma gravação decorre e fecha-o assim que ela termina. Sem isto, uma gravação falha ou é guardada em silêncio.
 perm_rationale_calendar_read	O Ottomatic precisa de acesso ao calendário para ler os seus compromissos. Sem ele, este nó não lê nada e o seletor de calendário acima não tem nada para oferecer.
 perm_rationale_calendar_write	O Ottomatic precisa de permissão para alterar o seu calendário, para que este nó possa criar, editar ou eliminar um compromisso. Ler compromissos é uma permissão separada.
 perm_rationale_camera_photo	O Ottomatic precisa de acesso à câmara para tirar uma fotografia. Abre a câmara apenas enquanto esta ação decorre e fecha-a logo a seguir. O Android pode ainda assim recusar uma fotografia quando o telemóvel esteve muito tempo inativo em segundo plano.
@@ -544,6 +547,7 @@ perm_title_read_calendar	Calendário
 perm_title_read_contacts	Contactos
 perm_title_read_media_images	Fotos
 perm_title_receive_sms	Receber mensagens
+perm_title_record_audio	Microfone
 perm_title_send_sms	Enviar mensagens
 perm_title_write_calendar	Alterar o seu calendário
 perm_title_write_media_images	Alterar fotos

@@ -22,6 +22,7 @@
     <string name="category_ai">ИИ</string>
     <string name="category_files">Файлы</string>
     <string name="category_images">Фото</string>
+    <string name="category_audio">Аудио</string>
     <string name="category_calendar">Календарь</string>
     <string name="calendar_choose_a_calendar">Выберите календарь</string>
     <string name="calendar_any_calendar">Любой календарь</string>

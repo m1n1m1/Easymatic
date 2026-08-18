@@ -65,6 +65,7 @@ Balanced	Сбалансированная
 Battery Level	Уровень заряда
 Battery level	Уровень заряда
 Bcc	Скрытая копия
+Begins recording sound from the microphone and carries on, until Stop Recording or the time limit ends it	Начинает запись звука с микрофона и продолжает, пока её не завершит «Остановить запись» или лимит времени
 Below	Ниже
 Between two times	Между двумя моментами
 Blue	Синий
@@ -187,6 +188,7 @@ Empty Trigger	Пустой триггер
 Enable Macro	Включить макрос
 Enabled	Включено
 Enables another macro by id (persists the flag and arms its triggers)	Включает другой макрос по идентификатору (сохраняет флаг и активирует его триггеры)
+Ends the recording that is running and saves it as a file	Завершает идущую запись и сохраняет её в файл
 Entity	Сущность
 Equals	Равно
 Event	Событие
@@ -249,6 +251,7 @@ Height	Высота
 Held down	Удержание
 Held for (seconds)	Удерживается (секунд)
 High — fires easily	Высокая — срабатывает легко
+High — music and detail	Высокое — музыка и детали
 Hint	Подсказка
 Hold for at least (ms)	Удерживать не менее (мс)
 Home Assistant	Home Assistant
@@ -258,6 +261,7 @@ Home Assistant Event	Событие Home Assistant
 Hours	Часы
 How	Как
 How long (minutes)	Длительность (минуты)
+How long (seconds)	Как долго (секунды)
 How many	Сколько
 How many at most	Сколько максимум
 How many items are in a list	Сколько элементов в списке
@@ -472,6 +476,10 @@ Reads messages from a mailbox onto a list you can loop over	Читает пис�
 Reads one value out of JSON text, such as an HTTP response body	Читает одно значение из текста JSON, например из тела HTTP-ответа
 Reads whether a light is on, how bright it is and what colour — Philips Hue	Сообщает, включён ли светильник, насколько он ярок и какого цвета — Philips Hue
 Reason (optional, logged before halting)	Причина (необязательно, записывается перед остановкой)
+Record Audio	Записать звук
+Recording	Запись
+Recording Finished	Запись завершена
+Records sound from the microphone for a set time and saves it as a file	Записывает звук с микрофона заданное время и сохраняет его в файл
 Red	Красный
 Remembers a value in a variable, readable by later runs	Сохраняет значение в переменной, доступной последующим запускам
 Remind you (minutes before, -1 for no reminder)	Напомнить (за сколько минут, -1 — без напоминания)
@@ -567,6 +575,7 @@ Split text into a list	Разбить текст в список
 Splits a struct into its individual fields (auto-detects the struct from the input)	Разбирает структуру на отдельные поля (определяет структуру по входу)
 Splits text into a list — one item per line, or on a separator you choose	Разбивает текст в список — по одному элементу на строку или по выбранному разделителю
 Standing instruction	Постоянная инструкция
+Start Recording	Начать запись
 Start at (seconds into the sound)	Начать с (секунда внутри звука)
 Started moving — low power, works with the screen off	Начало движения — экономно, работает при выключенном экране
 Starts a named list over, ready to collect into	Очищает именованный список, чтобы начать собирать в него заново
@@ -585,6 +594,7 @@ Starts when a media button is pressed (play, pause, next, etc.)	Срабатыв
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	Срабатывает, когда приходит сообщение в WhatsApp, Signal, Telegram или другом мессенджере
 Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	Запускается, когда в тему MQTT приходит сообщение — кнопка Zigbee, датчик, любое устройство, которое публикует
 Starts when a photo, screenshot or downloaded picture is added to this phone	Запускается, когда на телефоне появляется фотография, снимок экрана или загруженное изображение
+Starts when a recording made by this app has been saved	Запускается, когда сохранена запись, сделанная этим приложением
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	Срабатывает при нажатии, удержании или многократном нажатии кнопки громкости. Нужен доступ к спецвозможностям; сами кнопки продолжают работать как обычно
 Starts when a wired headset is plugged or unplugged	Срабатывает при подключении или отключении проводной гарнитуры
 Starts when airplane mode is toggled	Срабатывает при переключении режима полёта
@@ -618,8 +628,10 @@ Starts when the user unlocks the device	Срабатывает, когда по�
 State	Состояние
 Stop	Стоп
 Stop Macro	Остановить макрос
+Stop Recording	Остановить запись
 Stop Sound	Остановить звук
 Stop after (seconds, 0 = play to the end)	Остановить через (секунд, 0 — до конца)
+Stop by itself after (seconds)	Остановиться самому через (секунды)
 Stops every sound started by Play Sound	Останавливает все звуки, запущенные узлом «Воспроизвести звук»
 Stream	Поток
 String	Текст
@@ -719,6 +731,7 @@ Variable Change	Изменение переменной
 Vibrate	Вибрация
 Vibrates the device for a duration or pattern	Включает вибрацию на заданное время или по шаблону
 Violet	Фиолетовый
+Voice — small file	Речь — небольшой файл
 Volume Button	Кнопка громкости
 Volume down	Громкость вниз
 Volume up	Громкость вверх
@@ -756,6 +769,7 @@ Whether something is covering the sensor above the screen — a pocket, a hand o
 Whether the device is currently charging	Заряжается ли устройство сейчас
 Whether the device is currently in dark theme (night mode)	Включена ли сейчас на устройстве тёмная тема (ночной режим)
 Whether the device is currently sitting in a dock	Стоит ли устройство сейчас в док-станции
+Whether the microphone is recording right now	Идёт ли сейчас запись с микрофона
 Whether the screen is currently on and interactive	Включён ли сейчас экран и доступен ли он для взаимодействия
 Which way up	Ориентация
 While the screen is off	При выключенном экране

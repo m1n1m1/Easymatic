@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.OpenWith
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Screenshot
 import androidx.compose.material.icons.filled.PlayArrow
@@ -293,4 +294,7 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // The code itself rather than the camera that reads it — what the button promises is a
     // value, and which sensor another app uses to get it is not the user's question.
     NodeIcon.QR_CODE -> Icons.Filled.QrCodeScanner
+    // A microphone rather than VOLUME's speaker: these nodes take sound off the room, and a
+    // speaker is what a phone shows while it is making sound at you.
+    NodeIcon.MICROPHONE -> Icons.Filled.Mic
 }

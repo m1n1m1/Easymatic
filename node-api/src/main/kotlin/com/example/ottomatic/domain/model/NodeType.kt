@@ -63,6 +63,11 @@ enum class NodeCategory(
     // would bury the six file nodes, and the two families cannot be wired to each
     // other freely anyway — one addresses a path, the other a media row.
     IMAGES(NodeKind.ACTION, "Photos"),
+    // Separate from both, on [IMAGES]'s own argument read once more: these are not file
+    // operations — nothing here addresses a file that already exists — and three of them
+    // under "Files" would only push the six file nodes further down. What they have in
+    // common is the microphone, which is neither storage nor a picture.
+    AUDIO(NodeKind.ACTION, "Audio"),
     CALENDAR(NodeKind.ACTION, "Calendar"),
     DATA(NodeKind.ACTION, "Data"),
     VALUE_POWER(NodeKind.VALUE, "Power & Battery"),

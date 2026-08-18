@@ -56,6 +56,7 @@ import com.example.ottomatic.data.plugin.PluginRegistry
 import com.example.ottomatic.data.plugin.PluginRepository
 import com.example.ottomatic.data.prompt.OverlayPrompts
 import com.example.ottomatic.data.script.WebViewScriptEngine
+import com.example.ottomatic.data.audio.AndroidMicrophone
 import com.example.ottomatic.data.sensor.SensorBridge
 import com.example.ottomatic.data.calendar.AndroidCalendars
 import com.example.ottomatic.data.service.AndroidContacts
@@ -405,6 +406,12 @@ object ServiceLocator {
         // to them through the host, and the value nodes that read one sample
         // through the context. Two would mean two platform registrations.
         val sensorBridge = SensorBridge(appContext)
+        // One recorder for the process, and that is the whole of "there is one microphone":
+        // an `action.record_stop` in one macro ends the recording an `action.record_start`
+        // in another began, and `value.recording` reads the same flag both of them set. It
+        // takes the routing files for `MediaImages`' reason and `appScope` because a
+        // recording started by one run outlives that run.
+        val microphoneFacade = AndroidMicrophone(appContext, routingFiles::place, appScope)
         val log = RunLogStore().apply { attach(appContext.filesDir, appScope) }
         runLog = log
         // One address book for the process, so an action resolving a contact and a
@@ -490,6 +497,7 @@ object ServiceLocator {
                 { shot -> CameraCapture.take(appContext, shot) },
             ),
             calendars = calendarsFacade,
+            microphone = microphoneFacade,
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.

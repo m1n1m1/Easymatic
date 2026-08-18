@@ -22,6 +22,7 @@ import com.example.ottomatic.engine.value.NfcValue
 import com.example.ottomatic.engine.value.NowValue
 import com.example.ottomatic.engine.value.PowerSaveValue
 import com.example.ottomatic.engine.value.ProximityValue
+import com.example.ottomatic.engine.value.RecordingValue
 import com.example.ottomatic.engine.value.RingerModeValue
 import com.example.ottomatic.engine.value.ScreenOnValue
 import com.example.ottomatic.engine.value.VariableValue
@@ -69,6 +70,7 @@ object ValueRegistry {
         NowValue(),
         PowerSaveValue(),
         ProximityValue(),
+        RecordingValue(),
         RingerModeValue(),
         ScreenOnValue(),
         VariableValue(),

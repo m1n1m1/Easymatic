@@ -162,4 +162,15 @@ enum class NodeIcon {
      * be able to say what it opens.
      */
     QR_CODE,
+
+    /**
+     * A microphone, i.e. sound going *in*.
+     *
+     * Neither [VOLUME] nor [MUSIC] would do, and the reason is the same one [CAMERA] gives
+     * against [IMAGE]: both of those promise playback — a speaker and a note are what a
+     * phone shows while it is making sound at you — where every node wearing this one is
+     * taking sound off the room. A macro's author scanning a graph for "where does this
+     * listen?" is looking for a microphone, and a speaker answers the opposite question.
+     */
+    MICROPHONE,
 }

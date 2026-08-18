@@ -67,6 +67,7 @@ private fun runtimeTitleRes(manifest: String?): Int? = when (manifest) {
     Permissions.POST_NOTIFICATIONS.manifest -> R.string.perm_title_post_notifications
     Permissions.BLUETOOTH_CONNECT.manifest -> R.string.perm_title_bluetooth_connect
     Permissions.CAMERA.manifest -> R.string.perm_title_camera
+    Permissions.RECORD_AUDIO.manifest -> R.string.perm_title_record_audio
     // One row for the two names the media read goes by: `Permission.onApi` resolves
     // which applies, but a *declared* requirement always carries the modern one, and
     // the legacy entry is here for the catalogue's own app-level rows.
@@ -117,6 +118,7 @@ private fun runtimeDescriptionRes(manifest: String?): Int = when (manifest) {
     Permissions.POST_NOTIFICATIONS.manifest -> R.string.perm_desc_post_notifications
     Permissions.BLUETOOTH_CONNECT.manifest -> R.string.perm_desc_bluetooth_connect
     Permissions.CAMERA.manifest -> R.string.perm_desc_camera
+    Permissions.RECORD_AUDIO.manifest -> R.string.perm_desc_record_audio
     Permissions.READ_MEDIA_IMAGES.manifest -> R.string.perm_desc_read_media_images
     Permissions.READ_EXTERNAL_STORAGE.manifest -> R.string.perm_desc_read_media_images
     Permissions.WRITE_EXTERNAL_STORAGE.manifest -> R.string.perm_desc_write_media_images
@@ -143,6 +145,7 @@ internal fun rationaleRes(requirement: PermissionRequirement): Int? =
         // what this cannot are different sentences, and the card is on the node.
         "screen.capture" -> R.string.perm_rationale_screen_capture
         "camera.photo" -> R.string.perm_rationale_camera_photo
+        "audio.record" -> R.string.perm_rationale_audio_record
         "notification.listener" -> R.string.perm_rationale_notification_listener
         "dnd.policy" -> R.string.perm_rationale_dnd_policy
         "overlay.dialog" -> R.string.perm_rationale_overlay_dialog

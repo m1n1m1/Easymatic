@@ -21,7 +21,7 @@ import android.util.Size
 import android.view.Surface
 import androidx.core.content.ContextCompat
 import com.example.ottomatic.core.service.FlashMode
-import com.example.ottomatic.data.service.CameraForeground
+import com.example.ottomatic.data.service.ServiceForeground
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
@@ -130,8 +130,8 @@ internal object CameraCapture {
         }
         // Promoted for exactly as long as the camera is open, and no longer: from Android 11
         // a foreground service's camera access follows its service *type*, and from API 34
-        // claiming that type without the grant throws. See CameraForeground.
-        CameraForeground.withCamera { shoot(context, shot) }
+        // claiming that type without the grant throws. See ServiceForeground.
+        ServiceForeground.withCamera { shoot(context, shot) }
     }
 
     @SuppressLint("MissingPermission") // Checked in `take`, which is the only caller.

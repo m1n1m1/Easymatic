@@ -124,7 +124,7 @@ data class CameraPhotoConfig(
  * **The engine is a foreground service, which Android does not simply let use a camera.**
  * From Android 11 the sensor follows the service's foreground-service *type*, so the type is
  * promoted to `specialUse|camera` for the seconds a photo takes and dropped again — see
- * `CameraForeground` for why it cannot be claimed permanently. When the promotion is
+ * `ServiceForeground` for why it cannot be claimed permanently. When the promotion is
  * refused the photo is still attempted and Android's own refusal is what gets reported; a
  * capture from a phone that has been idle in a pocket for hours is the case most likely to
  * be turned down, and that is a fact about Android rather than about the graph.

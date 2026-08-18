@@ -93,6 +93,7 @@ perm_title_write_calendar	Change your calendar
 perm_title_post_notifications	Notifications
 perm_title_bluetooth_connect	Bluetooth
 perm_title_camera	Camera
+perm_title_record_audio	Microphone
 perm_desc_overlay	Lets a macro put a dialog on screen, and open other apps, while you are looking at something else. Android blocks both from a background app without it.
 perm_desc_notification_listener	Lets Ottomatic see notifications from other apps, so a macro can react to one.
 perm_desc_notification_policy	Lets a macro turn Do Not Disturb on and off, and switch the ringer to silent.
@@ -118,10 +119,12 @@ perm_desc_read_calendar	Lets a macro read your appointments, and lets you pick a
 perm_desc_write_calendar	Lets a macro create, change and delete appointments. Reading them is a separate switch above.
 perm_desc_post_notifications	Lets Ottomatic show a notification — both the ones a macro posts and the one that tells you the engine failed to start after a reboot.
 perm_desc_bluetooth_connect	Lets a macro turn Bluetooth on and off.
+perm_desc_record_audio	Lets a macro record sound from the microphone and save it as a file. Ottomatic opens the microphone only while a recording action is running, and the phone shows its own recording indicator the whole time.
 perm_desc_camera	Lets a macro take a photo with the phone\'s own camera — no camera app, and nobody pressing a button. Ottomatic opens the camera only while a Take Photo action is running.
 perm_desc_unknown	Used by a node on one of your macros.
 perm_rationale_accessibility_keys	Ottomatic needs accessibility access to see button presses. It never watches what is on screen. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.
 perm_rationale_screen_capture	Ottomatic needs accessibility access to capture the screen. It captures only while this action runs — it never watches what is on screen. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.
+perm_rationale_audio_record	Ottomatic needs microphone access to record sound. It opens the microphone only while a recording is running and closes it as soon as the recording ends. Without this, a recording either fails or is saved as silence.
 perm_rationale_camera_photo	Ottomatic needs camera access to take a photo. It opens the camera only while this action runs, and closes it straight afterwards. Android may still refuse a photo when the phone has been idle in the background for a long time.
 perm_rationale_notification_listener	Ottomatic needs notification access to see notifications from other apps.
 perm_rationale_dnd_policy	Ottomatic needs Do Not Disturb access to change your ringer mode.
@@ -189,6 +192,7 @@ category_smart_home	Smart Home
 category_ai	AI
 category_files	Files
 category_images	Photos
+category_audio	Audio
 category_calendar	Calendar
 calendar_choose_a_calendar	Choose a calendar
 calendar_any_calendar	Any calendar

@@ -683,6 +683,7 @@
     <string name="config_tools_ai_chooses">Die KI wählt %2$s, aus %1$d erreichbaren</string>
     <string name="config_tools_nothing_to_fix">Dieses Werkzeug hat keine Einstellungen</string>
     <string name="category_images">Fotos</string>
+    <string name="category_audio">Audio</string>
     <string name="setup_title">Einrichtung</string>
     <string name="setup_section_connections">Verbindungen</string>
     <string name="setup_section_system">System</string>

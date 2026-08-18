@@ -27,6 +27,7 @@
     <string name="perm_title_post_notifications">通知</string>
     <string name="perm_title_bluetooth_connect">Bluetooth</string>
     <string name="perm_title_camera">カメラ</string>
+    <string name="perm_title_record_audio">マイク</string>
     <string name="perm_desc_overlay">他のことをしている最中でも、マクロがダイアログを表示したり他のアプリを開いたりできるようにします。これがないと、Android はバックグラウンドのアプリに対してどちらも許可しません。</string>
     <string name="perm_desc_notification_listener">他のアプリの通知を Ottomatic が見られるようにし、マクロがそれに反応できるようにします。</string>
     <string name="perm_desc_notification_policy">マクロがサイレントモードのオン・オフを切り替えたり、着信音をサイレントにしたりできるようにします。</string>
@@ -52,10 +53,12 @@
     <string name="perm_desc_write_calendar">マクロが予定を作成・変更・削除できるようになります。読み取りは上にある別のスイッチです。</string>
     <string name="perm_desc_post_notifications">Ottomatic が通知を表示できるようにします。マクロが出す通知だけでなく、再起動後にエンジンが起動できなかったことを知らせる通知も含みます。</string>
     <string name="perm_desc_bluetooth_connect">マクロが Bluetooth のオン・オフを切り替えられるようにします。</string>
+    <string name="perm_desc_record_audio">マクロがマイクから音を録音し、ファイルとして保存できるようにします。Ottomatic は録音アクションの実行中だけマイクを開き、その間ずっと端末自身の録音インジケーターが表示されます。</string>
     <string name="perm_desc_camera">マクロがスマートフォン本体のカメラで写真を撮れるようになります。カメラアプリも、シャッターを押す人も必要ありません。Ottomatic は「写真を撮る」アクションの実行中だけカメラを開きます。</string>
     <string name="perm_desc_unknown">あなたのいずれかのマクロのノードが使用しています。</string>
     <string name="perm_rationale_accessibility_keys">ボタンの押下を検知するために、Ottomatic はユーザー補助へのアクセスを必要とします。画面を監視することはありません。スイッチがグレー表示の場合は、先に アプリ情報 → ⋮ → 制限された設定を許可 を開いてください。</string>
     <string name="perm_rationale_screen_capture">画面を取り込むために、Ottomatic はユーザー補助へのアクセスを必要とします。取り込むのはこのアクションの実行中だけで、画面を監視することはありません。スイッチがグレー表示の場合は、先に アプリ情報 → ⋮ → 制限された設定を許可 を開いてください。</string>
+    <string name="perm_rationale_audio_record">音を録音するために Ottomatic はマイクへのアクセスを必要とします。録音中だけマイクを開き、録音が終わるとすぐに閉じます。これがないと、録音は失敗するか無音として保存されます。</string>
     <string name="perm_rationale_camera_photo">写真を撮るには Ottomatic にカメラへのアクセスが必要です。カメラを開くのはこのアクションの実行中だけで、終わればすぐに閉じます。スマートフォンが長時間バックグラウンドで待機していた場合、Android が撮影を拒否することがあります。</string>
     <string name="perm_rationale_notification_listener">他のアプリの通知を見るために、Ottomatic は通知へのアクセスを必要とします。</string>
     <string name="perm_rationale_dnd_policy">着信音モードを変更するために、Ottomatic はサイレントモードへのアクセスを必要とします。</string>

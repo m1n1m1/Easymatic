@@ -22,6 +22,7 @@
     <string name="category_ai">AI</string>
     <string name="category_files">ファイル</string>
     <string name="category_images">写真</string>
+    <string name="category_audio">オーディオ</string>
     <string name="category_calendar">カレンダー</string>
     <string name="calendar_choose_a_calendar">カレンダーを選択</string>
     <string name="calendar_any_calendar">すべてのカレンダー</string>

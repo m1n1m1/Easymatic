@@ -65,6 +65,7 @@ Balanced	バランス
 Battery Level	電池残量
 Battery level	電池残量
 Bcc	Bcc
+Begins recording sound from the microphone and carries on, until Stop Recording or the time limit ends it	マイクからの録音を開始してそのまま進み、「録音を停止」または制限時間で終わるまで続けます
 Below	下回る
 Between two times	2つの時刻の間
 Blue	青
@@ -187,6 +188,7 @@ Empty Trigger	空のトリガー
 Enable Macro	マクロを有効化
 Enabled	有効
 Enables another macro by id (persists the flag and arms its triggers)	別のマクロを id で有効化します（状態を保存し、そのトリガーを起動します）
+Ends the recording that is running and saves it as a file	実行中の録音を終了し、ファイルとして保存します
 Entity	エンティティ
 Equals	等しい
 Event	イベント
@@ -249,6 +251,7 @@ Height	高さ
 Held down	長押し
 Held for (seconds)	継続時間（秒）
 High — fires easily	高 — 発火しやすい
+High — music and detail	高音質 — 音楽と細部
 Hint	ヒント
 Hold for at least (ms)	最低限の長押し時間（ミリ秒）
 Home Assistant	Home Assistant
@@ -258,6 +261,7 @@ Home Assistant Event	Home Assistant のイベント
 Hours	時間
 How	方法
 How long (minutes)	長さ（分）
+How long (seconds)	長さ（秒）
 How many	いくつ
 How many at most	最大でいくつ
 How many items are in a list	リストに要素がいくつあるか
@@ -472,6 +476,10 @@ Reads messages from a mailbox onto a list you can loop over	メールボック�
 Reads one value out of JSON text, such as an HTTP response body	JSON テキスト（HTTP レスポンスの本文など）から値を 1 つ読み取ります
 Reads whether a light is on, how bright it is and what colour — Philips Hue	照明が点いているか、明るさ、色を読み取ります — Philips Hue
 Reason (optional, logged before halting)	理由（任意。中止前にログに記録されます）
+Record Audio	音声を録音
+Recording	録音
+Recording Finished	録音が完了
+Records sound from the microphone for a set time and saves it as a file	指定した時間だけマイクから音を録音し、ファイルとして保存します
 Red	赤
 Remembers a value in a variable, readable by later runs	値を変数に記憶し、以降の実行から読めるようにします
 Remind you (minutes before, -1 for no reminder)	通知する（何分前、-1 なら通知なし）
@@ -567,6 +575,7 @@ Split text into a list	テキストをリストに分割
 Splits a struct into its individual fields (auto-detects the struct from the input)	構造体を個々のフィールドに分解します（入力から構造を自動判別します）
 Splits text into a list — one item per line, or on a separator you choose	テキストをリストに分割します（1 行 1 要素、または指定した区切り文字で）
 Standing instruction	常設指示
+Start Recording	録音を開始
 Start at (seconds into the sound)	再生開始位置（サウンドの何秒目か）
 Started moving — low power, works with the screen off	動き始めた — 低消費電力で、画面がオフでも動作します
 Starts a named list over, ready to collect into	指定したリストを空にして、集め直せる状態にします
@@ -585,6 +594,7 @@ Starts when a media button is pressed (play, pause, next, etc.)	メディアボ�
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	WhatsApp、Signal、Telegram などでメッセージが届いたときに開始します
 Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	MQTT トピックにメッセージが届いたときに開始します — Zigbee ボタン、センサー、publish するあらゆる機器
 Starts when a photo, screenshot or downloaded picture is added to this phone	写真・スクリーンショット・ダウンロードした画像がこの端末に追加されたときに開始します
+Starts when a recording made by this app has been saved	このアプリが作成した録音が保存されたときに開始します
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	音量ボタンが押された、長押しされた、複数回押されたときに開始します。ユーザー補助へのアクセスが必要ですが、ボタン自体はこれまでどおり機能します
 Starts when a wired headset is plugged or unplugged	有線ヘッドセットが接続または取り外されたときに開始します
 Starts when airplane mode is toggled	機内モードが切り替わったときに開始します
@@ -618,8 +628,10 @@ Starts when the user unlocks the device	ユーザーが端末のロックを解�
 State	状態
 Stop	停止
 Stop Macro	マクロを停止
+Stop Recording	録音を停止
 Stop Sound	サウンドを停止
 Stop after (seconds, 0 = play to the end)	停止までの時間（秒、0 = 最後まで再生）
+Stop by itself after (seconds)	自動で停止するまで（秒）
 Stops every sound started by Play Sound	「サウンドを再生」で開始したすべての音を停止します
 Stream	ストリーム
 String	テキスト
@@ -719,6 +731,7 @@ Variable Change	変数の変更
 Vibrate	バイブレーション
 Vibrates the device for a duration or pattern	指定した時間またはパターンで端末を振動させます
 Violet	紫
+Voice — small file	音声 — 小さいファイル
 Volume Button	音量ボタン
 Volume down	音量を下げる
 Volume up	音量を上げる
@@ -756,6 +769,7 @@ Whether something is covering the sensor above the screen — a pocket, a hand o
 Whether the device is currently charging	端末が現在充電中かどうか
 Whether the device is currently in dark theme (night mode)	端末が現在ダークテーマ（ナイトモード）かどうか
 Whether the device is currently sitting in a dock	端末が現在ドックに置かれているかどうか
+Whether the microphone is recording right now	現在マイクが録音中かどうか
 Whether the screen is currently on and interactive	画面が現在オンで操作できる状態かどうか
 Which way up	向き
 While the screen is off	画面がオフの間

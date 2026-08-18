@@ -130,6 +130,23 @@ object Permissions {
      * longitude, so the badge is never a lie.
      */
     val ACCESS_MEDIA_LOCATION = Permission("android.permission.ACCESS_MEDIA_LOCATION")
+
+    /**
+     * The microphone. Declared by the three recording actions and by nothing else.
+     *
+     * The trigger and the value of that family deliberately do not declare it, which is
+     * the same split [READ_MEDIA_IMAGES] does not get to make: `trigger.recording_saved`
+     * is told that a recording finished rather than listening to anything, and
+     * `value.recording` reads a flag this process already holds. Badging either of them
+     * would put an amber warning on a node that works perfectly without the grant.
+     *
+     * Holding it is not on its own enough to record from the background. From API 30 a
+     * foreground service reaches the microphone only while its declared *type* says so,
+     * and from API 34 naming that type additionally needs `FOREGROUND_SERVICE_MICROPHONE`
+     * and this grant held at the moment `startForeground` runs — see `ServiceForeground`,
+     * which claims the type for the length of one recording and drops it again.
+     */
+    val RECORD_AUDIO = Permission("android.permission.RECORD_AUDIO")
 }
 
 /**

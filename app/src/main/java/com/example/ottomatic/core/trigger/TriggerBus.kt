@@ -109,6 +109,25 @@ enum class TriggerSource {
      * on this one is only "the diary changed, re-plan" — see `CalendarEventTrigger`.
      */
     CALENDAR,
+
+    /**
+     * A recording this app made finished and was saved.
+     *
+     * **Broadcast rather than addressed to a node id**, which is the opposite of
+     * [MEDIA_STORE] despite the two sounding alike. That one is a ContentObserver whose
+     * events are routed by a registration table because each node carries its own
+     * high-water mark, so one photo is new to some armed triggers and not to others. There
+     * is no observer here and no mark: the recorder in `data/` knows exactly when a
+     * recording ended because it ended it, and that fact is equally new to every armed
+     * node. The node id on the event is therefore unset and `trigger.recording_saved`
+     * filters on the source alone.
+     *
+     * It also carries the one thing the actions cannot always deliver themselves. A
+     * recording started by `action.record_start` ends asynchronously — by its own limit,
+     * or by an `action.record_stop` in a different macro — so without this the finished
+     * file would have nowhere to arrive.
+     */
+    RECORDING,
 }
 
 /**

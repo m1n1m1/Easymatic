@@ -11,6 +11,7 @@ import com.example.ottomatic.core.service.ListFilter
 import com.example.ottomatic.core.service.TextEncoding
 import com.example.ottomatic.core.service.WhenExists
 import com.example.ottomatic.domain.model.FilePath
+import java.io.File
 import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -142,6 +143,45 @@ class RoutingFiles(context: Context) : Files {
         val parsed = FilePath.parse(path) ?: return@withContext null
         runCatching { storeFor(parsed).openRead(parsed) }.getOrNull()
     }
+
+    /**
+     * Copies the real file [source] to [to], whichever backend holds it.
+     *
+     * The write-side counterpart of [openStream], and it exists for the same kind of caller:
+     * `MediaRecorder` writes to a descriptor it owns for the length of a recording, which no
+     * SAF document can safely be, so the recording lands in a private file and is placed
+     * afterwards. [transfer] cannot serve that, because its source is a path *in this
+     * address space* — the app's own storage is rooted at `macrofiles/`, so a private file
+     * beside it has no name here at all.
+     *
+     * Reusing [FileStore.openWrite] is the whole point: creating the folders above the
+     * target, the `KEEP_BOTH` numbering and the name a provider actually used are answered
+     * once, here, rather than a second time by whoever is holding a file.
+     *
+     * Copies rather than moves: [source] belongs to the caller, which knows whether it is a
+     * temporary file to discard or something to keep.
+     *
+     * `internal`, on [openStream]'s reasoning — it takes a `java.io.File`, which is not
+     * something the facade's "every path is a string" rule can cover.
+     */
+    internal suspend fun place(source: File, to: String, whenExists: WhenExists): FileResult =
+        withContext(Dispatchers.IO) {
+            if (!source.isFile) return@withContext FileResult(error = "There is no file to save")
+            val destination = FilePath.parse(to) ?: return@withContext FileResult(error = unreadable(to))
+            val opened = storeFor(destination).openWrite(destination, whenExists)
+                ?: return@withContext FileResult(error = "Could not write $destination")
+            if (opened.skipped) {
+                return@withContext FileResult(changed = false, path = to, name = opened.name)
+            }
+            runCatching {
+                source.inputStream().use { input -> opened.stream.use { copyStream(input, it) } }
+            }.getOrElse {
+                return@withContext FileResult(
+                    error = it.message.orEmpty().ifBlank { "Could not save $destination" },
+                )
+            }
+            FileResult(changed = true, path = to, name = opened.name)
+        }
 
     /** Parses [path] and hands it to whichever backend can open it. */
     private suspend fun <T> route(

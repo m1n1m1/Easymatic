@@ -2,11 +2,11 @@ package com.example.ottomatic.domain.registry
 
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.engine.ExecutableAction
+import com.example.ottomatic.engine.action.AiDescribeAction
+import com.example.ottomatic.engine.action.AiPromptAction
 import com.example.ottomatic.engine.action.AskChoiceAction
 import com.example.ottomatic.engine.action.AskConfirmAction
 import com.example.ottomatic.engine.action.AskInputAction
-import com.example.ottomatic.engine.action.AiDescribeAction
-import com.example.ottomatic.engine.action.AiPromptAction
 import com.example.ottomatic.engine.action.AutoRotateAction
 import com.example.ottomatic.engine.action.BluetoothAction
 import com.example.ottomatic.engine.action.BreakStructAction
@@ -15,29 +15,30 @@ import com.example.ottomatic.engine.action.CalendarAddAction
 import com.example.ottomatic.engine.action.CalendarQueryAction
 import com.example.ottomatic.engine.action.CalendarUpdateAction
 import com.example.ottomatic.engine.action.CallAction
+import com.example.ottomatic.engine.action.CameraPhotoAction
 import com.example.ottomatic.engine.action.ClipboardAction
 import com.example.ottomatic.engine.action.DelayAction
 import com.example.ottomatic.engine.action.DisableMacroAction
 import com.example.ottomatic.engine.action.DndAction
 import com.example.ottomatic.engine.action.EnableMacroAction
+import com.example.ottomatic.engine.action.FetchMailAction
 import com.example.ottomatic.engine.action.FileDeleteAction
 import com.example.ottomatic.engine.action.FileInfoAction
 import com.example.ottomatic.engine.action.FileListAction
 import com.example.ottomatic.engine.action.FileReadAction
 import com.example.ottomatic.engine.action.FileTransferAction
 import com.example.ottomatic.engine.action.FileWriteAction
-import com.example.ottomatic.engine.action.CameraPhotoAction
+import com.example.ottomatic.engine.action.FlashlightAction
+import com.example.ottomatic.engine.action.ForEachAction
+import com.example.ottomatic.engine.action.HaServiceAction
+import com.example.ottomatic.engine.action.HttpAction
+import com.example.ottomatic.engine.action.IfAction
 import com.example.ottomatic.engine.action.ImageDeleteAction
 import com.example.ottomatic.engine.action.ImageEditAction
 import com.example.ottomatic.engine.action.ImageInfoAction
 import com.example.ottomatic.engine.action.ImageListAction
 import com.example.ottomatic.engine.action.ImageMetadataAction
 import com.example.ottomatic.engine.action.ImageMoveAction
-import com.example.ottomatic.engine.action.FlashlightAction
-import com.example.ottomatic.engine.action.ForEachAction
-import com.example.ottomatic.engine.action.HaServiceAction
-import com.example.ottomatic.engine.action.HttpAction
-import com.example.ottomatic.engine.action.IfAction
 import com.example.ottomatic.engine.action.LaunchAppAction
 import com.example.ottomatic.engine.action.LightControlAction
 import com.example.ottomatic.engine.action.LightSceneAction
@@ -45,25 +46,27 @@ import com.example.ottomatic.engine.action.LightStateAction
 import com.example.ottomatic.engine.action.ListAddAction
 import com.example.ottomatic.engine.action.ListClearAction
 import com.example.ottomatic.engine.action.LogAction
-import com.example.ottomatic.engine.action.FetchMailAction
 import com.example.ottomatic.engine.action.MailUpdateAction
-import com.example.ottomatic.engine.action.NotificationActionAction
 import com.example.ottomatic.engine.action.MqttPublishAction
+import com.example.ottomatic.engine.action.NotificationActionAction
 import com.example.ottomatic.engine.action.NotifyAction
 import com.example.ottomatic.engine.action.NotifyCancelAction
-import com.example.ottomatic.engine.action.ReplyMessageAction
-import com.example.ottomatic.engine.action.SendMailAction
-import com.example.ottomatic.engine.action.SendMessageAction
 import com.example.ottomatic.engine.action.OpenUrlAction
 import com.example.ottomatic.engine.action.PlaySoundAction
+import com.example.ottomatic.engine.action.RecordAudioAction
+import com.example.ottomatic.engine.action.RecordStartAction
+import com.example.ottomatic.engine.action.RecordStopAction
 import com.example.ottomatic.engine.action.RepeatAction
+import com.example.ottomatic.engine.action.ReplyMessageAction
 import com.example.ottomatic.engine.action.RingerModeAction
 import com.example.ottomatic.engine.action.ScreenTimeoutAction
 import com.example.ottomatic.engine.action.ScreenshotAction
 import com.example.ottomatic.engine.action.ScriptAction
+import com.example.ottomatic.engine.action.SendMailAction
+import com.example.ottomatic.engine.action.SendMessageAction
+import com.example.ottomatic.engine.action.SendSmsAction
 import com.example.ottomatic.engine.action.SetVariableAction
 import com.example.ottomatic.engine.action.ShowMessageAction
-import com.example.ottomatic.engine.action.SendSmsAction
 import com.example.ottomatic.engine.action.StopAction
 import com.example.ottomatic.engine.action.StopSoundAction
 import com.example.ottomatic.engine.action.VibrateAction
@@ -164,6 +167,17 @@ object ActionRegistry {
         ImageMetadataAction(),
         ImageMoveAction(),
         ImageDeleteAction(),
+
+        // The recording family, after the pictures and on their placement rule read once
+        // more: the makers come first, and within them the one that needs the least graph
+        // around it. `record_audio` is a whole recording in one node, where the start/stop
+        // pair only means anything as a pair — so somebody meeting these in order meets the
+        // simple case first and the mechanism second. `record_stop` follows `record_start`
+        // because neither node is any use without the other and the order is the order they
+        // are placed in.
+        RecordAudioAction(),
+        RecordStartAction(),
+        RecordStopAction(),
         ListAddAction(),
         ListClearAction(),
         LogAction(),

@@ -16,8 +16,10 @@ import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.Mail
 import com.example.ottomatic.core.service.Messaging
+import com.example.ottomatic.core.service.Microphone
 import com.example.ottomatic.core.service.NoMail
 import com.example.ottomatic.core.service.NoMessaging
+import com.example.ottomatic.core.service.NoMicrophone
 import com.example.ottomatic.core.service.NoNotifications
 import com.example.ottomatic.core.service.NoPrompts
 import com.example.ottomatic.core.service.Notifications
@@ -273,6 +275,19 @@ interface ExecutionContext {
      * alike there. Keeping those apart is the action side's job, on the exec wire.
      */
     val calendars: Calendars get() = NoCalendars
+
+    /**
+     * Records sound from the microphone — the three `action.record_*` nodes. Defaults to
+     * [NoMicrophone], so engine-only tests see exactly what a phone with no microphone does.
+     *
+     * **The fourth facade both sides of the graph may touch, and the cheapest of them.**
+     * [calendars] cleared the pull side with local IPC to a provider; the one member
+     * `value.recording` reads does not even leave the process — [Microphone.isRecording] is
+     * a flag this app set itself, so it is not merely cheap and unfailing but incapable of
+     * being otherwise. Nothing else here qualifies: the other three members hold hardware
+     * for seconds at a time, which is squarely an action's job.
+     */
+    val microphone: Microphone get() = NoMicrophone
 
     /** Optional handle to enable/disable other macros at runtime, or null. */
     val macroControl: MacroControl? get() = null

@@ -27,6 +27,7 @@
     <string name="perm_title_post_notifications">Notificações</string>
     <string name="perm_title_bluetooth_connect">Bluetooth</string>
     <string name="perm_title_camera">Câmara</string>
+    <string name="perm_title_record_audio">Microfone</string>
     <string name="perm_desc_overlay">Permite que uma macro mostre uma caixa de diálogo no ecrã e abra outras aplicações enquanto estás a fazer outra coisa. Sem esta permissão, o Android bloqueia ambas as coisas a partir de uma aplicação em segundo plano.</string>
     <string name="perm_desc_notification_listener">Permite que o Ottomatic veja as notificações de outras aplicações, para que uma macro possa reagir a elas.</string>
     <string name="perm_desc_notification_policy">Permite que uma macro ligue e desligue o Não incomodar, e ponha a campainha em silêncio.</string>
@@ -52,10 +53,12 @@
     <string name="perm_desc_write_calendar">Permite que uma macro crie, altere e elimine compromissos. Lê-los é uma permissão separada, a de cima.</string>
     <string name="perm_desc_post_notifications">Permite que o Ottomatic mostre uma notificação: tanto as que uma macro envia como a que te avisa de que o motor não conseguiu arrancar depois de um reinício.</string>
     <string name="perm_desc_bluetooth_connect">Permite que uma macro ligue e desligue o Bluetooth.</string>
+    <string name="perm_desc_record_audio">Permite que uma macro grave som do microfone e o guarde como ficheiro. O Ottomatic abre o microfone apenas enquanto uma ação de gravação está a decorrer, e o telefone mostra o seu próprio indicador de gravação todo esse tempo.</string>
     <string name="perm_desc_camera">Permite que uma macro tire uma fotografia com a câmara do próprio telemóvel, sem aplicação de câmara e sem ninguém carregar num botão. O Ottomatic abre a câmara apenas enquanto uma ação Tirar fotografia está a decorrer.</string>
     <string name="perm_desc_unknown">Usada por um nó de uma das tuas macros.</string>
     <string name="perm_rationale_accessibility_keys">O Ottomatic precisa de acesso de acessibilidade para detetar pressões nos botões. Nunca observa o que está no ecrã. Se o interruptor estiver esbatido, abre primeiro Informações da app → ⋮ → Permitir definições restritas.</string>
     <string name="perm_rationale_screen_capture">O Ottomatic precisa de acesso de acessibilidade para capturar o ecrã. Só captura enquanto esta ação corre — nunca observa o que está no ecrã. Se o interruptor estiver esbatido, abre primeiro Informações da app → ⋮ → Permitir definições restritas.</string>
+    <string name="perm_rationale_audio_record">O Ottomatic precisa de acesso ao microfone para gravar som. Abre o microfone apenas enquanto uma gravação decorre e fecha-o assim que ela termina. Sem isto, uma gravação falha ou é guardada em silêncio.</string>
     <string name="perm_rationale_camera_photo">O Ottomatic precisa de acesso à câmara para tirar uma fotografia. Abre a câmara apenas enquanto esta ação decorre e fecha-a logo a seguir. O Android pode ainda assim recusar uma fotografia quando o telemóvel esteve muito tempo inativo em segundo plano.</string>
     <string name="perm_rationale_notification_listener">O Ottomatic precisa de acesso às notificações para ver as de outras aplicações.</string>
     <string name="perm_rationale_dnd_policy">O Ottomatic precisa de acesso ao Não incomodar para alterar o teu modo de som.</string>
