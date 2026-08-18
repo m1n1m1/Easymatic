@@ -26,6 +26,7 @@
     <string name="perm_title_write_calendar">修改你的日历</string>
     <string name="perm_title_post_notifications">通知</string>
     <string name="perm_title_bluetooth_connect">蓝牙</string>
+    <string name="perm_title_camera">摄像头</string>
     <string name="perm_desc_overlay">允许宏在你正看着别处时把对话框显示到屏幕上，以及打开其他应用。没有它，Android 会阻止后台应用做这两件事。</string>
     <string name="perm_desc_notification_listener">允许 Ottomatic 看到其他应用的通知，好让宏能对通知作出反应。</string>
     <string name="perm_desc_notification_policy">允许宏开启和关闭勿扰模式，并把铃声切到静音。</string>
@@ -51,9 +52,11 @@
     <string name="perm_desc_write_calendar">允许宏创建、修改和删除日程。读取日程是上面那个单独的开关。</string>
     <string name="perm_desc_post_notifications">允许 Ottomatic 显示通知：既包括宏发出的通知，也包括告诉你引擎在重启后未能启动的那一条。</string>
     <string name="perm_desc_bluetooth_connect">允许宏开启和关闭蓝牙。</string>
+    <string name="perm_desc_camera">允许宏使用手机自带的摄像头拍照，无需相机应用，也无需有人按下快门。Ottomatic 仅在“拍照”操作运行期间打开摄像头。</string>
     <string name="perm_desc_unknown">被你某个宏中的节点使用。</string>
     <string name="perm_rationale_accessibility_keys">Ottomatic 需要无障碍使用权来检测按键。它从不监视屏幕上的内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。</string>
     <string name="perm_rationale_screen_capture">Ottomatic 需要无障碍使用权来捕获屏幕。只在此动作运行期间捕获，从不监视屏幕上的内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。</string>
+    <string name="perm_rationale_camera_photo">Ottomatic 需要摄像头权限才能拍照。它仅在此操作运行期间打开摄像头，随后立即关闭。当手机长时间在后台闲置时，Android 仍可能拒绝拍照。</string>
     <string name="perm_rationale_notification_listener">Ottomatic 需要通知使用权才能看到其他应用的通知。</string>
     <string name="perm_rationale_dnd_policy">Ottomatic 需要勿扰模式使用权才能更改你的响铃模式。</string>
     <string name="perm_rationale_overlay_dialog">Ottomatic 需要显示在其他应用上层的权限，这样在你正忙于手机上别的事情时，这个对话框才能出现在你面前。没有它，该节点会直接取消而不是发问。</string>

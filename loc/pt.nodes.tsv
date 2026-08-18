@@ -1,4 +1,6 @@
 A	A
+A quarter turn left	Um quarto de volta à esquerda
+A quarter turn right	Um quarto de volta à direita
 A run of items out of a list	Um troço de elementos de uma lista
 A to Z / smallest first	De A a Z / menor primeiro
 Above	Acima
@@ -10,20 +12,26 @@ Activates a lighting scene you set up in the Hue app, or turns its room off — 
 Active	Ativo
 Active from	Ativo a partir de
 Active until (earlier than \'from\' runs past midnight)	Ativo até (mais cedo do que «a partir de» passa da meia-noite)
+Add Calendar Event	Adicionar compromisso
 Add to List	Adicionar à lista
+Add to the end instead of replacing	Acrescentar ao fim em vez de substituir
 Adjusts an audio stream\'s volume (up, down, set, mute or unmute)	Ajusta o volume de um canal de áudio (subir, baixar, definir, silenciar ou retirar o silêncio)
 Airplane Mode Changed	Modo de avião alterado
 Airplane mode	Modo de avião
 Alarm	Alarme
 Alarms	Alarmes
 All	Tudo
+All day	Todo o dia
+Also fire on messages the broker had stored	Disparar também com mensagens que o broker tinha guardadas
 Also when only its details change	Também quando só mudam os detalhes
 Also when the device starts moving	Também quando o dispositivo começa a mexer-se
 Always (high battery use)	Sempre (muito consumo de bateria)
+Amber	Âmbar
 Ambient Light	Luz ambiente
 Ambient light	Luz ambiente
 Answer	Resposta
 Answer type	Tipo de resposta
+Answers whether a file exists, how big it is and when it changed	Indica se um ficheiro existe, que tamanho tem e quando mudou
 Any	Qualquer
 Anything	Qualquer
 App	Aplicação
@@ -31,10 +39,17 @@ App (optional)	Aplicação (opcional)
 App Initialised	Aplicação inicializada
 App Installed / Removed	Aplicação instalada / removida
 Appends an item to a named list, usually from inside a loop	Acrescenta um elemento a uma lista com nome, normalmente a partir de um ciclo
+Applies to	Aplica-se a
+Appointment	Compromisso
+Artist	Autor
 Ask AI	Perguntar à IA
+Ask AI (with tools)	Perguntar à IA (com ferramentas)
+Ask AI About a Picture	Perguntar à IA sobre uma imagem
 Ask Yes or No	Perguntar sim ou não
 Ask for Input	Pedir uma entrada
+Ask the broker to keep this message	Pedir ao broker que guarde esta mensagem
 Ask to Choose	Pedir para escolher
+Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer	Pede a um modelo de IA que faça algo, deixando-o ler o telemóvel e executar os nós e macros que escolher até ter uma resposta
 Asks the user a yes/no question in a popup dialog and branches on the answer	Faz ao utilizador uma pergunta de sim/não numa caixa de diálogo e ramifica conforme a resposta
 Asks the user to type a value in a popup dialog and puts it on a port	Pede ao utilizador que escreva um valor numa caixa de diálogo e coloca-o numa porta
 At	Às
@@ -45,31 +60,48 @@ Auto brightness	Brilho automático
 Automatic	Automático
 Away for (minutes)	Fora há (minutos)
 B	B
+Back camera	Câmara traseira
 Balanced	Equilibrado
 Battery Level	Nível de bateria
 Battery level	Nível de bateria
 Bcc	Bcc
 Below	Abaixo
+Between two times	Entre dois momentos
+Blue	Azul
 Bluetooth Device Connected	Dispositivo Bluetooth ligado
 Bluetooth State Change	Alteração do estado do Bluetooth
 Bluetooth enabled	Bluetooth ativado
 Body	Corpo
 Boolean	Sim/não
+Both	Ambos
 Break Struct	Decompor estrutura
 Brightness %	Brilho %
+Broker	Broker
 Build text	Construir texto
+Busy	Ocupado
 Button	Botão
 Button label	Texto do botão
+Buttons — one per line	Botões: um por linha
 C	C
+Calendar	Calendário
+Calendar Changed	Calendário alterado
+Calendar Event	Compromisso do calendário
 Call Home Assistant Service	Chamar um serviço do Home Assistant
 Called by Another App	Chamada por outra aplicação
 Calls a web API and exposes the typed response	Chama uma API web e expõe a resposta tipificada
+Camera	Câmara
+Camera maker	Fabricante da câmara
+Camera model	Modelo da câmara
 Cancel button	Botão Cancelar
 Carries on at once and continues again at a chosen moment	Segue de imediato e continua outra vez num momento escolhido
 Carry on now	Continuar agora
 Cc	Cc
 Change	Alteração
+Change Picture Details	Alterar detalhes da imagem
+Change format or quality	Mudar formato ou qualidade
+Change how it shows you	Alterar como o mostra
 Changes from	Muda de
+Changes or deletes an appointment, either one occurrence of it or the whole series	Altera ou elimina um compromisso, seja uma única ocorrência, seja toda a série
 Changes to	Muda para
 Charging	A carregar
 Charging started	Começou a carregar
@@ -85,6 +117,8 @@ Combines words and values into one piece of text	Junta palavras e valores num s�
 Compare against	Comparar com
 Compare as	Comparar como
 Confirm button	Botão Confirmar
+Confirmed by the broker	Confirmada pelo broker
+Confirmed exactly once	Confirmada exatamente uma vez
 Connected	Ligado
 Connection	Ligação
 Contains	Contém
@@ -93,9 +127,15 @@ Control Scene	Controlar cena
 Conversation ID	ID da conversa
 Convert	Converter
 Convert to	Converter para
+Copies, moves or renames a file on the phone	Copia, move ou muda o nome de um ficheiro do telemóvel
+Copy it	Copiá-lo
+Copy or Move File	Copiar ou mover um ficheiro
+Copyright	Direitos de autor
 Count	Quantidade
 Count items	Contar elementos
 Covered	Coberto
+Creates an appointment in one of the calendars on this phone	Cria um compromisso num dos calendários deste telemóvel
+Crop	Recortar
 Current time	Hora atual
 Custom	Personalizado
 Custom sound	Som personalizado
@@ -104,10 +144,18 @@ Dark theme	Tema escuro
 Data contains	Os dados contêm
 Date &amp; time	Data e hora
 Date rolled over	Mudança de data
+Date taken	Data da captura
 Date time	Data e hora
 Days	Dias
+Days ahead	Dias à frente
 Days of month (e.g. 1,15, empty = every day)	Dias do mês (p. ex. 1,15; vazio = todos os dias)
 Delete	Eliminar
+Delete File	Eliminar um ficheiro
+Delete Picture	Eliminar imagem
+Delete for good	Eliminar definitivamente
+Delivery	Entrega
+Description	Descrição
+Details	Detalhes
 Device Boot	Arranque do dispositivo
 Device Docked	Dispositivo na base
 Device Movement	Movimento do dispositivo
@@ -119,6 +167,7 @@ Direction	Direção
 Disable Macro	Desativar macro
 Disabled	Desativado
 Disables another macro by id (persists the flag and disarms its triggers)	Desativa outra macro pelo id (guarda o estado e desarma os acionadores dela)
+Disappear after (seconds)	Desaparecer após (segundos)
 Disconnected	Desligado
 Dismiss	Dispensar
 Do Not Disturb	Não incomodar
@@ -130,6 +179,7 @@ Down	Baixar
 Duration	Duração
 Duration (ms, used when pattern is empty)	Duração (ms, usada quando não há padrão)
 Dwell delay (ms)	Atraso de permanência (ms)
+Edit Picture	Editar imagem
 Ejected	Ejetado
 Email Received	E-mail recebido
 Empty List	Esvaziar lista
@@ -141,6 +191,7 @@ Entity	Entidade
 Equals	Igual a
 Event	Evento
 Event type	Tipo de evento
+Events	Compromissos
 Extra data (JSON)	Dados adicionais (JSON)
 Face down	Virado para baixo
 Face up	Virado para cima
@@ -149,22 +200,36 @@ Falls below	Desce abaixo de
 Fast	Rápido
 Fetch Email	Obter e-mail
 Field	Campo
+File	Ficheiro
+File Details	Detalhes do ficheiro
+File name	Nome do ficheiro
+File or folder	Ficheiro ou pasta
+Files	Ficheiros
+Find Calendar Events	Procurar compromissos
+Find Pictures	Localizar imagens
+Finds photos and screenshots on this phone onto a list you can loop over	Procura fotos e capturas de ecrã neste telemóvel e coloca-as numa lista que pode percorrer
 Fire time	Hora de disparo
+Fire when	Disparar quando
 Fires immediately when the workflow starts (no external event)	Dispara assim que o fluxo arranca (sem evento externo)
 Fires when a macro finishes executing after being triggered	Dispara quando uma macro acaba de correr depois de ser acionada
 Fires when a named variable changes value	Dispara quando uma variável com nome muda de valor
 Fires when the app is initialised and running	Dispara quando a aplicação está inicializada e a correr
 Fires when the device\'s UI / night mode changes	Dispara quando o modo de interface ou noturno do dispositivo muda
 Fires when this macro is enabled (its triggers are armed)	Dispara quando esta macro é ativada (os acionadores dela ficam armados)
+Flash	Flash
 Float	Decimal
 Folder	Pasta
+Folders	Pastas
 For a length of time	Durante um tempo
 Found	Encontrado
+Free	Livre
 Fridays	Sextas-feiras
+From	De
 From (optional)	De (opcional)
 From app (optional)	Da aplicação (opcional)
 From contains	O remetente contém
 From position (0 is the first)	A partir da posição (0 é a primeira)
+Front camera	Câmara frontal
 Geofence	Geocerca
 Gesture	Gesto
 Get	Obter
@@ -173,12 +238,14 @@ Get as	Obter como
 Give up after (seconds)	Desistir após (segundos)
 Greater than	Maior que
 Greater than or equal	Maior ou igual a
+Green	Verde
 HTTP Request	Pedido HTTP
 Halts the current execution chain (stops following connected actions)	Para a cadeia de execução atual (deixa de seguir as ações ligadas)
 Headers (JSON, optional)	Cabeçalhos (JSON, opcional)
 Headset Plugged	Auscultadores ligados
 Headset hook	Botão dos auscultadores
 Headset plugged in	Auscultadores ligados
+Height	Altura
 Held down	Mantido premido
 Held for (seconds)	Mantido durante (segundos)
 High — fires easily	Alta: dispara com facilidade
@@ -189,6 +256,8 @@ Home Assistant Entity	Entidade do Home Assistant
 Home Assistant Entity Changed	Entidade do Home Assistant alterada
 Home Assistant Event	Evento do Home Assistant
 Hours	Horas
+How	Como
+How long (minutes)	Duração (minutos)
 How many	Quantos
 How many at most	Quantos no máximo
 How many items are in a list	Quantos elementos tem uma lista
@@ -197,41 +266,65 @@ How the device is currently resting — face up or down, portrait or landscape (
 How to watch	Como vigiar
 Idle	Livre
 If	Se
+If a file is already there	Se já existir um ficheiro
 If it fails	Se falhar
 If missing	Se faltar
+If one is already there	Se já existir um
+In an appointment	Num compromisso
+Include cancelled and declined ones	Incluir os cancelados e recusados
 Incoming Call State	Estado de chamada recebida
 Index	Índice
 Initiates a phone call to a number	Inicia uma chamada para um número
 Inputs	Entradas
 Installed	Instalada
 Int	Inteiro
+Into folder	Para a pasta
+It ends	Termina
+It starts	Começa
 Item	Elemento
 Item at position	Elemento na posição
 Item to find	Elemento a encontrar
+Its reminder falls due	O seu lembrete fica devido
+JPEG	JPEG
 JSON text	Texto JSON
 Join list	Juntar lista
+Keep both, adding a number	Manter ambos, acrescentando um número
+Keep until dismissed	Manter até ser dispensada
 Key	Chave
 Landscape left	Horizontal esquerda
 Landscape right	Horizontal direita
+Latest picture	Última imagem
+Latin-1 (ISO 8859-1)	Latin-1 (ISO 8859-1)
 Launch App	Abrir aplicação
 Launches another app by package name	Abre outra aplicação pelo nome do pacote
+Leave the old one alone	Deixar o antigo como está
+Left	Esquerda
+Left to right	Da esquerda para a direita
 Less than	Menor que
 Less than or equal	Menor ou igual a
+Let it use tools	Deixar usar ferramentas
 Level (%)	Nível (%)
 Level (when on)	Nível (quando ligada)
 Light or room	Luz ou divisão
 List	Lista
+List Files	Listar ficheiros
 List contains	A lista contém
 List variable	Variável de lista
+Lists the files in a folder, as paths you can loop over	Lista os ficheiros de uma pasta, como caminhos que podes percorrer
 Locale Changed	Idioma alterado
+Location	Localização
 Log Message	Registar mensagem
 Long	Longo
 Longest reply (tokens)	Resposta mais longa (tokens)
+Longest side (pixels)	Lado mais comprido (píxeis)
+Look at	Ver
 Loops over a list, running the following steps once for every item in it	Percorre uma lista e executa os passos seguintes uma vez por cada elemento
 Loops the following steps a set number of times — repeat 10 times, and so on	Repete os passos seguintes um número fixo de vezes: repetir 10 vezes, por exemplo
 Loops the following steps for as long as a comparison holds	Repete os passos seguintes enquanto uma comparação for verdadeira
 Low — needs a deliberate gesture	Baixa: exige um gesto deliberado
 Lux	Lux
+MQTT Message	Mensagem MQTT
+MQTT Topic	Tópico MQTT
 Macro	Macro
 Macro Enabled	Macro ativada
 Macro Finished	Macro terminada
@@ -249,23 +342,42 @@ Media Mounted / Unmounted	Suporte montado / desmontado
 Medium	Médio
 Message	Mensagem
 Message Received	Mensagem recebida
+Message contains	A mensagem contém
 Messages	Mensagens
 Method	Método
 Minutes	Minutos
+Minutes before (negative fires afterwards)	Minutos antes (negativo dispara depois)
+Mirror	Espelhar
 Mode	Modo
 Model	Modelo
 Mondays	Segundas-feiras
+Most to return	Máximo a devolver
+Most turns	Máximo de voltas
 Mounted	Montado
 Move	Mover
+Move it	Movê-lo
+Move or Copy Picture	Mover ou copiar imagem
 Move to folder	Mover para a pasta
+Move to the bin	Mover para a reciclagem
+Moves a photo to the bin, or deletes it for good	Move uma foto para a reciclagem ou elimina-a definitivamente
+Moves or copies a photo into another folder, keeping it in the gallery	Move ou copia uma foto para outra pasta, mantendo-a na galeria
 Multiple lines	Várias linhas
 Must hold for (ms)	Tem de ser mantido (ms)
 Mute	Silenciar
 NFC Tag	Etiqueta NFC
 NFC enabled	NFC ativado
 Name other apps see	Nome que as outras aplicações veem
+Names matching	Nomes correspondentes a
 Network	Rede
+New details (leave empty to keep them)	Novos detalhes (deixe vazio para os manter)
+New length in minutes (-1 to keep it)	Nova duração em minutos (-1 para a manter)
+New place (leave empty to keep it)	Novo local (deixe vazio para o manter)
+New start (leave empty to keep it)	Novo início (deixe vazio para o manter)
+New title (leave empty to keep it)	Novo título (deixe vazio para o manter)
+New value (blank removes it)	Novo valor (em branco remove-o)
+Newest first	Mais recentes primeiro
 Next	Seguinte
+Next appointment	Próximo compromisso
 Normal	Normal
 Not equals	Diferente de
 Notification	Notificação
@@ -275,6 +387,7 @@ Number	Número
 Number of presses	Número de pressões
 Off	Desligado
 Offhook	Em chamada
+Oldest first	Mais antigas primeiro
 On	Ligado
 On dwell	Ao permanecer
 On enter	À entrada
@@ -282,25 +395,37 @@ On exit	À saída
 On staying away	Ao continuar fora
 One item out of a list, by its position	Um elemento de uma lista, pela posição
 Only during a time window	Apenas dentro de uma janela horária
+Only in this folder	Apenas nesta pasta
 Only lights already on	Apenas as luzes já acesas
+Only names matching	Só nomes que correspondam a
 Only unread	Apenas os não lidos
 Only when it ends up lying flat	Apenas quando acaba deitado
 Only while the screen is on	Apenas com o ecrã ligado
 Open URL	Abrir URL
 Opens WhatsApp, Signal or Telegram with a message ready to send	Abre o WhatsApp, o Signal ou o Telegram com uma mensagem pronta a enviar
 Opens a URL in the default handler (browser or app). Typing google.com is enough	Abre um URL na aplicação predefinida (navegador ou app). Basta escrever google.com
+Operation	Operação
 Operator	Operador
 Options — one per line	Opções: uma por linha
+Orange	Laranja
 Order	Ordem
 Orientation	Orientação
 Outputs	Saídas
+PNG	PNG
 Package	Pacote
 Part of list	Parte da lista
+Path	Caminho
 Path (e.g. main.temp) — blank for the whole document	Caminho (p. ex. main.temp): vazio para o documento inteiro
+Paths	Caminhos
 Pattern (comma-separated ms, e.g. 0,200,500,200)	Padrão (ms separados por vírgulas, p. ex. 0,200,500,200)
 Pause	Pausa
 Pauses the workflow for a while	Põe o fluxo em pausa durante um tempo
 Picked up	Levantado
+Picture	Imagem
+Picture Details	Detalhes da imagem
+Picture Saved	Imagem guardada
+Pictures	Imagens
+Pink	Rosa
 Place	Local
 Planned for	Previsto para
 Play	Reproduzir
@@ -318,7 +443,9 @@ Position	Posição
 Position (0 is the first)	Posição (0 é a primeira)
 Position in list	Posição na lista
 Post	Publicar
+Posted as	Publicada como
 Posts a notification on this device	Mostra uma notificação neste dispositivo
+Posts a notification on this device, optionally with buttons and a reply field	Mostra uma notificação neste dispositivo, opcionalmente com botões e um campo de resposta
 Power Save Mode Changed	Modo de poupança de energia alterado
 Power save mode	Modo de poupança de energia
 Prefilled	Pré-preenchido
@@ -326,29 +453,48 @@ Pressed	Premido
 Pressed several times	Premido várias vezes
 Previous	Anterior
 Priority	Prioridade
+Progress (%, below 0 = busy)	Progresso (%, abaixo de 0 = indeterminado)
 Prompt	Pedido
 Proximity	Proximidade
 Proximity covered	Sensor de proximidade coberto
+Publish to MQTT	Publicar em MQTT
 Put	Colocar
 Put down	Pousado
+Quality	Qualidade
 Question	Pergunta
+Read File	Ler um ficheiro
 Read from JSON	Ler de JSON
 Reading	Leitura
+Reads a picture\'s size, camera, date and location out of the file	Lê do ficheiro o tamanho, a câmara, a data e a localização de uma imagem
+Reads a text file from the phone and passes its contents on	Lê um ficheiro de texto do telemóvel e passa o seu conteúdo
+Reads appointments out of a calendar onto a list you can loop over	Lê os compromissos de um calendário para uma lista que pode percorrer
 Reads messages from a mailbox onto a list you can loop over	Lê mensagens de uma caixa de correio para uma lista que podes percorrer
 Reads one value out of JSON text, such as an HTTP response body	Lê um valor de um texto JSON, como o corpo de uma resposta HTTP
 Reads whether a light is on, how bright it is and what colour — Philips Hue	Lê se uma luz está acesa, com que brilho e de que cor — Philips Hue
 Reason (optional, logged before halting)	Motivo (opcional, registado antes de parar)
+Red	Vermelho
 Remembers a value in a variable, readable by later runs	Guarda um valor numa variável, legível por execuções posteriores
+Remind you (minutes before, -1 for no reminder)	Lembrá-lo (minutos antes, -1 para nenhum lembrete)
+Remove Notification	Remover notificação
 Removed	Removida
+Removes a file from the phone	Elimina um ficheiro do telemóvel
 Repeat	Repetir
 Repeat every (under 15 only fires while the device is awake)	Repetir a cada (abaixo de 15 só dispara com o dispositivo acordado)
 Repeat for each item	Repetir por cada elemento
 Repeat on an interval	Repetir num intervalo
 Repeat this	Repetir isto
 Repeat while	Repetir enquanto
+Replace it	Substituí-lo
 Replaced	Substituída
 Replies to a message in WhatsApp, Signal, Telegram or another messenger	Responde a uma mensagem no WhatsApp, Signal, Telegram ou noutra app de mensagens
+Reply	Resposta
+Reply button	Botão de resposta
+Reply field	Campo de resposta
+Reply hint	Sugestão do campo
 Reply to Message	Responder à mensagem
+Resize	Redimensionar
+Resizes, rotates, mirrors, crops or re-encodes a picture into a new file	Redimensiona, roda, espelha, recorta ou volta a codificar uma imagem num ficheiro novo
+Result	Resultado
 Resumed at	Retomado às
 Ring	Tocar
 Ringer Mode Changed	Modo de som alterado
@@ -356,6 +502,7 @@ Ringer mode	Modo de som
 Ringing	A tocar
 Ringtone	Toque
 Rises above	Sobe acima de
+Rotate	Rodar
 Routes execution by comparing a value against another	Encaminha a execução comparando um valor com outro
 Run Script	Executar script
 Run action	Executar ação
@@ -363,7 +510,11 @@ Runs JavaScript over inputs you name and returns values on ports you name	Execut
 Runs any Home Assistant service — a thermostat, a media player, a lock, a vacuum, a script	Executa qualquer serviço do Home Assistant: um termostato, um leitor multimédia, uma fechadura, um aspirador, um script
 SMS	SMS
 SMS Received	SMS recebida
+Same as the original	Igual ao original
 Saturdays	Sábados
+Save as	Guardar como
+Save in this folder	Guardar nesta pasta
+Saves text to a file on the phone, replacing it or adding to the end	Guarda texto num ficheiro do telemóvel, substituindo-o ou acrescentando ao fim
 Scene	Cena
 Schedule	Agendamento
 Screen On / Off	Ecrã ligado / desligado
@@ -373,9 +524,12 @@ Seconds	Segundos
 Send Email	Enviar e-mail
 Send Message	Enviar mensagem
 Send SMS	Enviar SMS
+Send and forget	Enviar e esquecer
 Send as HTML	Enviar como HTML
 Sender (optional — any sender when empty)	Remetente (opcional: vazio significa qualquer um)
+Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome	Envia uma mensagem para um tópico de um broker MQTT – Mosquitto, Zigbee2MQTT, Tasmota, ESPHome
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text	Envia um pedido a um modelo de IA (Gemini, Claude, ChatGPT, OpenRouter ou um modelo autoalojado) e devolve a resposta como texto
+Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	Envia um pedido a um modelo de IA (Gemini, Claude, ChatGPT, OpenRouter ou um modelo alojado por si) e devolve a resposta como texto, deixando-o executar nós e macros como ferramentas quando o permitir
 Sends an SMS to a number with a body	Envia uma SMS com um texto para um número
 Sends an email through one of your mail accounts	Envia um e-mail através de uma das tuas contas
 Sensitivity	Sensibilidade
@@ -398,8 +552,11 @@ Sets the screen-off timeout in milliseconds	Define em milissegundos o tempo até
 Shake	Abanar
 Show Message	Mostrar mensagem
 Show Notification	Mostrar notificação
+Show a progress bar	Mostrar uma barra de progresso
 Shows a popup dialog and waits until the user has acknowledged it	Mostra uma caixa de diálogo e espera que o utilizador a confirme
 Shows a popup dialog offering a list of options and reports which one was picked	Mostra uma caixa de diálogo com uma lista de opções e indica qual foi escolhida
+Shows an AI model a picture from this phone and returns what it says about it	Mostra a um modelo de IA uma imagem deste telemóvel e devolve o que ele diz sobre ela
+Shows you as	Mostra-o como
 Signal	Signal
 Silence	Silêncio
 Silent	Silencioso
@@ -413,6 +570,7 @@ Standing instruction	Instrução permanente
 Start at (seconds into the sound)	Começar em (segundos dentro do som)
 Started moving — low power, works with the screen off	Começa a mexer-se: pouca energia, funciona com o ecrã desligado
 Starts a named list over, ready to collect into	Reinicia uma lista com nome, pronta a ser preenchida
+Starts at	Começa às
 Starts once after the device finishes booting	Corre uma vez depois de o dispositivo acabar de arrancar
 Starts the workflow on an interval or at a time of day	Inicia o fluxo num intervalo ou a uma hora do dia
 Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it	Inicia o fluxo quando outra aplicação, um script ou um atalho pede ao Ottomatic que o execute
@@ -425,12 +583,16 @@ Starts when a USB device is connected or disconnected	Inicia quando um dispositi
 Starts when a matching notification arrives	Inicia quando chega uma notificação correspondente
 Starts when a media button is pressed (play, pause, next, etc.)	Inicia quando é premido um botão multimédia (reproduzir, pausa, seguinte, etc.)
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	Inicia quando chega uma mensagem no WhatsApp, Signal, Telegram ou noutra app de mensagens
+Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	Inicia quando chega uma mensagem a um tópico MQTT – um botão Zigbee, um sensor, qualquer dispositivo que publique
+Starts when a photo, screenshot or downloaded picture is added to this phone	Inicia quando é adicionada a este telemóvel uma foto, captura de ecrã ou imagem transferida
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	Inicia quando um botão de volume é premido, mantido ou premido várias vezes. Precisa de acesso de acessibilidade; os botões continuam a funcionar normalmente
 Starts when a wired headset is plugged or unplugged	Inicia quando uns auscultadores com fio são ligados ou desligados
 Starts when airplane mode is toggled	Inicia quando o modo de avião é ligado ou desligado
 Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	Inicia quando uma etiqueta NFC é aproximada do telemóvel. Só funciona com o ecrã ligado e desbloqueado
 Starts when an SMS arrives	Inicia quando chega uma SMS
 Starts when an app is installed, removed or replaced	Inicia quando uma aplicação é instalada, removida ou substituída
+Starts when an appointment begins, ends, or its reminder falls due	Inicia quando um compromisso começa, termina ou o seu lembrete fica devido
+Starts when an appointment is added, changed or removed in any calendar	Inicia quando um compromisso é adicionado, alterado ou removido em qualquer calendário
 Starts when an email arrives in a mailbox you are watching	Inicia quando chega um e-mail a uma caixa de correio que estás a vigiar
 Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	Inicia quando é emitido um evento no barramento de eventos do Home Assistant: um botão Zigbee, uma etiqueta, um evento personalizado
 Starts when external media is mounted, unmounted or ejected	Inicia quando um suporte externo é montado, desmontado ou ejetado
@@ -467,22 +629,37 @@ Subject contains	O assunto contém
 Sundays	Domingos
 System	Sistema
 Tag	Etiqueta
+Tag — Used for manual deletion	Etiqueta: para a remover manualmente
+Take Photo	Tirar fotografia
+Taken after	Tirada depois de
+Taken before	Tirada antes de
+Takes a picture with the phone\'s front or back camera, with flash and a delay before the shot	Tira uma fotografia com a câmara frontal ou traseira do telemóvel, com flash e um atraso antes do disparo
+Takes down a notification this app posted under a tag	Remove uma notificação que esta aplicação publicou com uma etiqueta
 Tap on Device	Toque no dispositivo
 Taps	Toques
+Teal	Verde-azulado
 Telegram	Telegram
 Template — use {A}, {B}, {C}	Modelo: usa {A}, {B}, {C}
+Tentative	Provisório
 Text	Texto
 Text contains (optional)	O texto contém (opcional)
+Text encoding	Codificação do texto
 Text — one item per line, or wire something in	Texto: um elemento por linha, ou liga alguma coisa
 The current battery charge as a percentage in 0..100	A carga atual da bateria em percentagem, de 0 a 100
 The current date and time	A data e a hora atuais
 The current state of a Home Assistant entity — a sensor, a switch, a thermostat	O estado atual de uma entidade do Home Assistant: um sensor, um interruptor, um termostato
 The current value of a variable	O valor atual de uma variável
 The device\'s current ringer mode	O modo de som atual do dispositivo
+The last message published to a topic on an MQTT broker	A última mensagem publicada num tópico de um broker MQTT
 The light level around the device in lux — a dim room is around 30, an office a few hundred	O nível de luz à volta do dispositivo em lux: uma divisão com pouca luz ronda os 30, um escritório umas centenas
+The most recent photo, screenshot or picture saved on this phone	A foto, captura de ecrã ou imagem mais recente guardada neste telemóvel
 The name of the Wi-Fi network the device is currently connected to	O nome da rede Wi-Fi a que o dispositivo está ligado
+The next appointment due to start in any calendar	O próximo compromisso que vai começar em qualquer calendário
+The next few days	Os próximos dias
+The rest of today	O resto de hoje
 The same list, in order	A mesma lista, ordenada
 This is a list	Isto é uma lista
+This occurrence	Apenas este compromisso
 Thorough	Minucioso
 Threshold (0-100)	Limiar (0-100)
 Threshold (lux)	Limiar (lux)
@@ -490,6 +667,7 @@ Thursdays	Quintas-feiras
 Timeout (ms)	Tempo limite (ms)
 Timezone changed	Fuso horário alterado
 Title	Título
+Title contains	O título contém
 To	Para
 Toggle	Alternar
 Toggle Auto-Rotate	Alternar rotação automática
@@ -497,8 +675,13 @@ Toggle Bluetooth	Alternar Bluetooth
 Toggle Flashlight	Alternar lanterna
 Toggle Wi-Fi	Alternar Wi-Fi
 Toggles Do-Not-Disturb on or off with a chosen policy level	Liga ou desliga o Não incomodar com o nível escolhido
+Tools	Ferramentas
+Top	Cima
+Top to bottom	De cima para baixo
+Topic	Tópico
 Triple tap	Toque triplo
 Tuesdays	Terças-feiras
+Turn	Rotação
 Turn off	Desligar
 Turn on	Ligar
 Turns Bluetooth on or off and reports the resulting state	Liga ou desliga o Bluetooth e comunica o estado resultante
@@ -511,6 +694,8 @@ Turns the camera torch (flashlight) on or off	Liga ou desliga a lanterna da câm
 Type	Tipo
 URL	URL
 USB Device Connected	Dispositivo USB ligado
+UTF-16	UTF-16
+UTF-8	UTF-8
 Uncovered	Descoberto
 Undocked	Retirado da base
 Unit	Unidade
@@ -521,7 +706,10 @@ Until	Até
 Until a date and time	Até uma data e hora
 Until a time of day	Até uma hora do dia
 Up	Subir
+Update	Alterá-lo
+Update Calendar Event	Atualizar compromisso
 Update Email	Atualizar e-mail
+Upside down	De cabeça para baixo
 Value	Valor
 Value (0-100, only when mode is set)	Valor (0-100, apenas quando o modo é Definir)
 Value (0-255, only when auto is off)	Valor (0-255, apenas com o automático desligado)
@@ -530,23 +718,30 @@ Variable	Variável
 Variable Change	Alteração de variável
 Vibrate	Vibrar
 Vibrates the device for a duration or pattern	Faz o dispositivo vibrar durante um tempo ou segundo um padrão
+Violet	Violeta
 Volume Button	Botão de volume
 Volume down	Baixar volume
 Volume up	Subir volume
 Wait	Esperar
 Wait Until	Esperar até
+Wait before the shot (seconds)	Esperar antes do disparo (segundos)
 Wait until finished	Esperar até terminar
 Warmth (K)	Temperatura de cor (K)
+WebP	WebP
 Wednesdays	Quartas-feiras
 What starts it	O que o inicia
+What to ask	O que perguntar
+What to change	O que alterar
 What to do	O que fazer
 Whatsapp	WhatsApp
+When answered	Quando responder
 When cancelled	Se for cancelado
 When confirmed	Se for confirmado
 When finished	Ao terminar
 When the light level	Quando o nível de luz
 When the time comes	Quando chegar a altura
 When time runs out	Quando o tempo acabar
+Where	Onde
 Where an item sits in a list, counting from 0, or -1 when it is not there	Em que posição está um elemento numa lista, a contar de 0, ou -1 se não estiver lá
 Whether Bluetooth is currently enabled	Se o Bluetooth está ativado neste momento
 Whether Do-Not-Disturb is currently active	Se o Não incomodar está ativo neste momento
@@ -555,20 +750,26 @@ Whether Wi-Fi is currently enabled	Se o Wi-Fi está ativado neste momento
 Whether a list holds a given item	Se uma lista contém um determinado elemento
 Whether a wired or USB headset is currently plugged in	Se estão ligados auscultadores com fio ou USB neste momento
 Whether airplane mode is currently on	Se o modo de avião está ligado neste momento
+Whether an appointment is on in any calendar right now	Se há neste momento um compromisso a decorrer em algum calendário
 Whether battery saver is currently on	Se a poupança de bateria está ligada neste momento
 Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	Se algo está a cobrir o sensor por cima do ecrã: um bolso, uma mão no vidro, o dispositivo virado para baixo
 Whether the device is currently charging	Se o dispositivo está a carregar neste momento
 Whether the device is currently in dark theme (night mode)	Se o dispositivo está em tema escuro (modo noturno) neste momento
 Whether the device is currently sitting in a dock	Se o dispositivo está numa base neste momento
 Whether the screen is currently on and interactive	Se o ecrã está ligado e utilizável neste momento
+Which way up	Orientação
 While the screen is off	Com o ecrã desligado
 Whole number	Número inteiro
+Whole series	Toda a série
 Wi-Fi Network	Rede Wi-Fi
 Wi-Fi State Change	Alteração do estado do Wi-Fi
 Wi-Fi enabled	Wi-Fi ativado
 Wi-Fi network	Rede Wi-Fi
+Width	Largura
 Within (ms)	Dentro de (ms)
+Write to File	Escrever num ficheiro
 Writes a message to this workflow\'s console	Escreve uma mensagem na consola deste fluxo
+Writes or removes a picture\'s description, date, location or camera details	Escreve ou remove a descrição, a data, a localização ou os dados da câmara de uma imagem
 Yes or no	Sim ou não
 Z to A / largest first	De Z a A / maior primeiro
 false	falso
@@ -577,196 +778,3 @@ out	Saída
 response	resposta
 state	estado
 true	verdadeiro
-MQTT Message	Mensagem MQTT
-Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	Inicia quando chega uma mensagem a um tópico MQTT – um botão Zigbee, um sensor, qualquer dispositivo que publique
-Broker	Broker
-Topic	Tópico
-Message contains	A mensagem contém
-Also fire on messages the broker had stored	Disparar também com mensagens que o broker tinha guardadas
-Publish to MQTT	Publicar em MQTT
-Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome	Envia uma mensagem para um tópico de um broker MQTT – Mosquitto, Zigbee2MQTT, Tasmota, ESPHome
-Delivery	Entrega
-Confirmed by the broker	Confirmada pelo broker
-Send and forget	Enviar e esquecer
-Confirmed exactly once	Confirmada exatamente uma vez
-Ask the broker to keep this message	Pedir ao broker que guarde esta mensagem
-MQTT Topic	Tópico MQTT
-The last message published to a topic on an MQTT broker	A última mensagem publicada num tópico de um broker MQTT
-Write to File	Escrever num ficheiro
-Saves text to a file on the phone, replacing it or adding to the end	Guarda texto num ficheiro do telemóvel, substituindo-o ou acrescentando ao fim
-File	Ficheiro
-Result	Resultado
-Add to the end instead of replacing	Acrescentar ao fim em vez de substituir
-If a file is already there	Se já existir um ficheiro
-Replace it	Substituí-lo
-Keep both, adding a number	Manter ambos, acrescentando um número
-Leave the old one alone	Deixar o antigo como está
-Text encoding	Codificação do texto
-UTF-8	UTF-8
-UTF-16	UTF-16
-Latin-1 (ISO 8859-1)	Latin-1 (ISO 8859-1)
-Read File	Ler um ficheiro
-Reads a text file from the phone and passes its contents on	Lê um ficheiro de texto do telemóvel e passa o seu conteúdo
-List Files	Listar ficheiros
-Lists the files in a folder, as paths you can loop over	Lista os ficheiros de uma pasta, como caminhos que podes percorrer
-Only names matching	Só nomes que correspondam a
-Paths	Caminhos
-Files	Ficheiros
-Folders	Pastas
-Both	Ambos
-File Details	Detalhes do ficheiro
-Answers whether a file exists, how big it is and when it changed	Indica se um ficheiro existe, que tamanho tem e quando mudou
-File or folder	Ficheiro ou pasta
-Copy or Move File	Copiar ou mover um ficheiro
-Copies, moves or renames a file on the phone	Copia, move ou muda o nome de um ficheiro do telemóvel
-From	De
-Copy it	Copiá-lo
-Move it	Movê-lo
-Delete File	Eliminar um ficheiro
-Removes a file from the phone	Elimina um ficheiro do telemóvel
-Ask AI (with tools)	Perguntar à IA (com ferramentas)
-Ask AI About a Picture	Perguntar à IA sobre uma imagem
-Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer	Pede a um modelo de IA que faça algo, deixando-o ler o telemóvel e executar os nós e macros que escolher até ter uma resposta
-Most turns	Máximo de voltas
-Picture	Imagem
-Shows an AI model a picture from this phone and returns what it says about it	Mostra a um modelo de IA uma imagem deste telemóvel e devolve o que ele diz sobre ela
-Tools	Ferramentas
-What to ask	O que perguntar
-Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	Envia um pedido a um modelo de IA (Gemini, Claude, ChatGPT, OpenRouter ou um modelo alojado por si) e devolve a resposta como texto, deixando-o executar nós e macros como ferramentas quando o permitir
-Let it use tools	Deixar usar ferramentas
-Add Calendar Event	Adicionar compromisso
-All day	Todo o dia
-Applies to	Aplica-se a
-Appointment	Compromisso
-Between two times	Entre dois momentos
-Busy	Ocupado
-Calendar	Calendário
-Calendar Changed	Calendário alterado
-Calendar Event	Compromisso do calendário
-Change how it shows you	Alterar como o mostra
-Changes or deletes an appointment, either one occurrence of it or the whole series	Altera ou elimina um compromisso, seja uma única ocorrência, seja toda a série
-Creates an appointment in one of the calendars on this phone	Cria um compromisso num dos calendários deste telemóvel
-Days ahead	Dias à frente
-Details	Detalhes
-Events	Compromissos
-Find Calendar Events	Procurar compromissos
-Fire when	Disparar quando
-Free	Livre
-How long (minutes)	Duração (minutos)
-In an appointment	Num compromisso
-Include cancelled and declined ones	Incluir os cancelados e recusados
-It ends	Termina
-It starts	Começa
-Its reminder falls due	O seu lembrete fica devido
-Look at	Ver
-Minutes before (negative fires afterwards)	Minutos antes (negativo dispara depois)
-New details (leave empty to keep them)	Novos detalhes (deixe vazio para os manter)
-New length in minutes (-1 to keep it)	Nova duração em minutos (-1 para a manter)
-New place (leave empty to keep it)	Novo local (deixe vazio para o manter)
-New start (leave empty to keep it)	Novo início (deixe vazio para o manter)
-New title (leave empty to keep it)	Novo título (deixe vazio para o manter)
-Next appointment	Próximo compromisso
-Reads appointments out of a calendar onto a list you can loop over	Lê os compromissos de um calendário para uma lista que pode percorrer
-Remind you (minutes before, -1 for no reminder)	Lembrá-lo (minutos antes, -1 para nenhum lembrete)
-Shows you as	Mostra-o como
-Starts at	Começa às
-Starts when an appointment begins, ends, or its reminder falls due	Inicia quando um compromisso começa, termina ou o seu lembrete fica devido
-Starts when an appointment is added, changed or removed in any calendar	Inicia quando um compromisso é adicionado, alterado ou removido em qualquer calendário
-Tentative	Provisório
-The next appointment due to start in any calendar	O próximo compromisso que vai começar em qualquer calendário
-The next few days	Os próximos dias
-The rest of today	O resto de hoje
-This occurrence	Apenas este compromisso
-Title contains	O título contém
-Update	Alterá-lo
-Update Calendar Event	Atualizar compromisso
-Where	Onde
-Whether an appointment is on in any calendar right now	Se há neste momento um compromisso a decorrer em algum calendário
-Whole series	Toda a série
-Picture Saved	Imagem guardada
-Starts when a photo, screenshot or downloaded picture is added to this phone	Inicia quando é adicionada a este telemóvel uma foto, captura de ecrã ou imagem transferida
-Path	Caminho
-Only in this folder	Apenas nesta pasta
-Find Pictures	Localizar imagens
-Finds photos and screenshots on this phone onto a list you can loop over	Procura fotos e capturas de ecrã neste telemóvel e coloca-as numa lista que pode percorrer
-Names matching	Nomes correspondentes a
-Pictures	Imagens
-Taken after	Tirada depois de
-Taken before	Tirada antes de
-Newest first	Mais recentes primeiro
-Oldest first	Mais antigas primeiro
-Most to return	Máximo a devolver
-Picture Details	Detalhes da imagem
-Reads a picture\'s size, camera, date and location out of the file	Lê do ficheiro o tamanho, a câmara, a data e a localização de uma imagem
-Edit Picture	Editar imagem
-Resizes, rotates, mirrors, crops or re-encodes a picture into a new file	Redimensiona, roda, espelha, recorta ou volta a codificar uma imagem num ficheiro novo
-Longest side (pixels)	Lado mais comprido (píxeis)
-Left	Esquerda
-Top	Cima
-Width	Largura
-Height	Altura
-Into folder	Para a pasta
-File name	Nome do ficheiro
-Resize	Redimensionar
-Rotate	Rodar
-Mirror	Espelhar
-Crop	Recortar
-Change format or quality	Mudar formato ou qualidade
-Turn	Rotação
-A quarter turn right	Um quarto de volta à direita
-Upside down	De cabeça para baixo
-A quarter turn left	Um quarto de volta à esquerda
-Left to right	Da esquerda para a direita
-Top to bottom	De cima para baixo
-Save as	Guardar como
-Same as the original	Igual ao original
-JPEG	JPEG
-PNG	PNG
-WebP	WebP
-Quality	Qualidade
-If one is already there	Se já existir um
-Change Picture Details	Alterar detalhes da imagem
-Writes or removes a picture\'s description, date, location or camera details	Escreve ou remove a descrição, a data, a localização ou os dados da câmara de uma imagem
-New value (blank removes it)	Novo valor (em branco remove-o)
-What to change	O que alterar
-Description	Descrição
-Date taken	Data da captura
-Location	Localização
-Which way up	Orientação
-Camera maker	Fabricante da câmara
-Camera model	Modelo da câmara
-Artist	Autor
-Copyright	Direitos de autor
-Move or Copy Picture	Mover ou copiar imagem
-Moves or copies a photo into another folder, keeping it in the gallery	Move ou copia uma foto para outra pasta, mantendo-a na galeria
-Operation	Operação
-Delete Picture	Eliminar imagem
-Moves a photo to the bin, or deletes it for good	Move uma foto para a reciclagem ou elimina-a definitivamente
-How	Como
-Move to the bin	Mover para a reciclagem
-Delete for good	Eliminar definitivamente
-Latest picture	Última imagem
-The most recent photo, screenshot or picture saved on this phone	A foto, captura de ecrã ou imagem mais recente guardada neste telemóvel
-Amber	Âmbar
-Blue	Azul
-Buttons — one per line	Botões: um por linha
-Disappear after (seconds)	Desaparecer após (segundos)
-Green	Verde
-Keep until dismissed	Manter até ser dispensada
-Orange	Laranja
-Pink	Rosa
-Posted as	Publicada como
-Posts a notification on this device, optionally with buttons and a reply field	Mostra uma notificação neste dispositivo, opcionalmente com botões e um campo de resposta
-Progress (%, below 0 = busy)	Progresso (%, abaixo de 0 = indeterminado)
-Red	Vermelho
-Remove Notification	Remover notificação
-Reply	Resposta
-Reply button	Botão de resposta
-Reply field	Campo de resposta
-Reply hint	Sugestão do campo
-Show a progress bar	Mostrar uma barra de progresso
-Tag — Used for manual deletion	Etiqueta: para a remover manualmente
-Takes down a notification this app posted under a tag	Remove uma notificação que esta aplicação publicou com uma etiqueta
-Teal	Verde-azulado
-Violet	Violeta
-When answered	Quando responder

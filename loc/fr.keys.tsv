@@ -1,8 +1,9 @@
-accessibility_service_description	Ottomatic ne s'en sert que pour détecter les appuis sur les boutons de volume, afin que tes macros puissent démarrer ainsi. Il ne lit jamais le contenu de l'écran et ne change jamais ce que font les boutons : les touches de volume continuent de fonctionner normalement.
+accessibility_service_description	Ottomatic s'en sert pour deux choses : détecter les appuis sur les boutons de volume, afin que tes macros puissent démarrer ainsi, et capturer l'écran quand une macro exécute l'action Faire une capture d'écran. Il n'observe jamais ce qui est à l'écran — il ne capture que lorsqu'une macro le demande — et ne change jamais ce que font les boutons : les touches de volume continuent de fonctionner normalement.
 accessibility_service_label	Déclencheurs par bouton Ottomatic
-accessibility_service_summary	Permet aux macros de démarrer quand tu appuies sur les boutons de volume.
+accessibility_service_summary	Permet aux macros de démarrer quand tu appuies sur les boutons de volume, et à l'action Faire une capture d'écran de capturer l'écran.
 ai_add_ai_connection	Ajouter une connexion IA
 ai_add_connection	Ajouter une connexion
+ai_add_model	Ajouter un modèle
 ai_ai_connections	Connexions IA
 ai_answer_briefly_and_in_plain	Réponds brièvement et en langage simple.
 ai_api_key	Clé d'API
@@ -10,6 +11,7 @@ ai_api_key_paste_it_in	Clé d'API : colle-la à nouveau
 ai_asking_the_model	Interrogation du modèle…
 ai_back	Retour
 ai_choose_a_connection	Choisir une connexion
+ai_choose_a_model	Choisir un modèle
 ai_console_anthropic	la console Anthropic
 ai_console_gemini	Google AI Studio
 ai_console_openai	la plateforme OpenAI
@@ -25,6 +27,7 @@ ai_default_name_openai	ChatGPT
 ai_default_name_openrouter	OpenRouter
 ai_default_name_self_hosted	Auto-hébergé
 ai_delete	Supprimer
+ai_delete_model	Supprimer ce modèle
 ai_edit	Modifier
 ai_edit_connection	Modifier la connexion
 ai_getting_a_key	Obtenir une clé
@@ -35,13 +38,25 @@ ai_list_models	Lister les modèles
 ai_loading_models	Chargement des modèles…
 ai_model_answered	Le modèle a répondu : %1$s
 ai_model_balanced	Équilibré
+ai_model_effort	Effort
+ai_model_effort_help	À quel point le modèle doit réfléchir avant de répondre. Détermine aussi quel modèle le fournisseur utilise quand l'identifiant ci-dessus est vide.
 ai_model_fast	Rapide
+ai_model_id	Identifiant du modèle
+ai_model_id_required	obligatoire
+ai_model_name	Nom
+ai_model_name_help	Le nom que les macros verront. Nommez la tâche plutôt que le modèle : « Maison », « Résumer un e-mail ».
+ai_model_name_placeholder	Maison
+ai_model_not_finished	Incomplet : donnez-lui un nom et un modèle
+ai_model_provider_default	%1$s · le modèle du fournisseur
 ai_model_thorough	Approfondi
 ai_models	Modèles
 ai_name	Nom
 ai_name_the_model_your_server	Indique le modèle servi par ton serveur ou ton compte. Si tu ne renseignes que Rapide, les deux autres l'utiliseront aussi.
 ai_new_api_key_leave_empty	Nouvelle clé d'API (laisse vide pour conserver l'actuelle)
 ai_no_connections_yet_add_one	Aucune connexion pour l'instant. Ajoutes-en une pour utiliser le nœud Demander à l'IA. Il suffit d'une clé d'API gratuite de Google AI Studio : le formulaire t'accompagne pour l'obtenir et t'ouvre la page.
+ai_no_model_to_test	Ajoutez un modèle et enregistrez d'abord, puis testez.
+ai_no_models_on_this_account	Aucun modèle sur ce compte pour l'instant.
+ai_no_models_yet	Aucun modèle pour l'instant. Ajoutez-en un pour que les macros aient quelque chose à viser.
 ai_open_console	Ouvrir %1$s
 ai_paste_key	Coller la clé
 ai_pointing_at_own_server	Pointer vers ton propre serveur
@@ -89,6 +104,25 @@ ai_steps_self_hosted:3	Charge la liste des modèles, ou saisis le nom du modèle
 ai_test	Tester
 ai_the_key_is_stored_encrypted	La clé est stockée chiffrée sur ce téléphone et n'est plus jamais affichée. %1$s Rien n'est envoyé tant qu'une macro n'atteint pas un nœud Demander à l'IA.
 ai_this_address_is_unencrypted_that	Cette adresse n'est pas chiffrée. C'est normal pour un serveur de ton propre réseau, mais ne l'utilise pas pour quoi que ce soit qui traverse internet, car la clé circulerait en clair.
+ai_tools_adjusted	Ajusté ici
+ai_tools_adjusted_count	%1$d ajustés pour ce nœud
+ai_tools_adjusted_off	Désactivé ici
+ai_tools_adjusting	Ceux-ci appartiennent au modèle. En changer un ici ne vaut que pour ce nœud.
+ai_tools_allow_everything	Tout autoriser
+ai_tools_allowed_count	%1$d sur %2$d autorisés
+ai_tools_as_the_model_says	Ce que le modèle autorise
+ai_tools_choose_a_model_first	Choisissez d'abord un modèle
+ai_tools_macros	Macros
+ai_tools_many_warning	Chaque outil est décrit au modèle à chaque tour. Une longue liste encombre la requête et le fait mal choisir.
+ai_tools_n_allowed	%1$d autorisés
+ai_tools_need_a_choice	%1$d attendent encore un choix avant de pouvoir faire quoi que ce soit.
+ai_tools_needs	Demande %1$s
+ai_tools_none_allowed	Rien d'autorisé : ce modèle peut seulement répondre
+ai_tools_over_the_cap	Au-delà de la limite de %1$d. Ceux en trop sont ignorés ; décochez-en.
+ai_tools_reset	Suivre à nouveau le modèle
+ai_tools_reset_all	Tout réinitialiser
+ai_tools_title	Outils
+ai_unnamed_model	Modèle sans nom
 api_allow	Autoriser
 api_allow_app_to_run	Autoriser %1$s à exécuter tes macros ?
 api_allowed_on	Autorisée le %1$s
@@ -113,13 +147,22 @@ apps_choose_an_app	Choisir une application
 apps_no_apps_match_that	Aucune application ne correspond.
 apps_other_apps	Autres applications
 apps_search	Rechercher
+calendar_any_calendar	N'importe quel agenda
+calendar_choose_a_calendar	Choisir un agenda
+calendar_grant_access	Accorder
+calendar_needs_access	Ottomatic a besoin de l'accès à l'agenda pour lister vos agendas.
+calendar_no_calendars	Il n'y a aucun agenda sur ce téléphone.
+calendar_no_writable_calendars	Aucun des agendas de ce téléphone n'accepte d'ajout. Un agenda auquel on est abonné, comme un calendrier de jours fériés, ne peut être que lu.
 category_ai	IA
 category_automation	Automatisation
+category_calendar	Agenda
 category_connectivity	Connectivité
 category_data	Données
 category_device_settings	Paramètres de l'appareil
 category_device_state	État de l'appareil
+category_files	Fichiers
 category_flow_control	Contrôle du flux
+category_images	Photos
 category_interaction	Demander à l'utilisateur
 category_location	Localisation
 category_manual	Manuel
@@ -158,6 +201,16 @@ config_show_suggestions	Afficher les suggestions
 config_socket_feed	Alimenter %1$s depuis les données en amont
 config_socket_use_typed_connected	Utiliser la valeur saisie pour %1$s (relié à %2$s)
 config_socket_use_typed_free	Utiliser la valeur saisie pour %1$s (rien de relié)
+config_tools_add	Ajouter un outil
+config_tools_ai_chooses	L'IA choisit %2$s, parmi les %1$d qu'elle peut atteindre
+config_tools_choose	Que peut utiliser l'IA ?
+config_tools_fixed	Fixé ici plutôt que laissé à l'IA
+config_tools_fixed_count	%1$d valeur(s) fixée(s) ici
+config_tools_missing	N'est plus disponible
+config_tools_must_fix	Choisi ici : l'IA ne peut pas le nommer
+config_tools_none	Rien pour l'instant : l'IA répondra seulement, sans agir
+config_tools_nothing_to_fix	Cet outil n'a aucun réglage
+config_tools_remove	Retirer cet outil
 console_copy_message	Copier le message
 console_entry_title	Entrée du journal
 console_filter_all	Tout
@@ -185,6 +238,26 @@ editor_back_to_variables	Retour aux variables de ce flux
 editor_tab_console	Console
 editor_tab_problems	Problèmes
 editor_tab_variables	Variables
+files_add_file	Ajouter un fichier
+files_choose	Choisir un fichier ou un dossier
+files_choose_file	Choisir un fichier…
+files_choose_folder	Choisir un dossier…
+files_download_note	Android n'autorise pas à accorder le dossier Download lui-même. Pour utiliser quelque chose qui s'y trouve déjà, ajoute ce fichier ici avec Ajouter un fichier — ou garde tes téléchargements dans un dossier à l'intérieur, qui peut être accordé en entier.
+files_files_heading	Fichiers isolés
+files_folder_access	Accès aux dossiers
+files_grant	Choisir un dossier
+files_missing	Ce dossier n'existe plus. Accordez-le à nouveau ou révoquez-le.
+files_no_folders	Ottomatic n'a encore accès à aucun de tes dossiers.
+files_no_folders_hint	Choisis un dossier pour que les macros puissent lire et écrire les fichiers qu'il contient. Android n'autorise pas à accorder tout le stockage interne ni le dossier Download lui-même : crée ou choisis un dossier à l'intérieur, comme Download/Ottomatic.
+files_no_path	Ce fichier n'a pas d'emplacement sur ce téléphone, donc une macro ne peut pas le nommer. Les fichiers stockés en ligne, et certains téléchargements, ne peuvent pas être utilisés ainsi : copie-le d'abord dans un dossier du téléphone.
+files_own_storage	Stockage propre d'Ottomatic
+files_own_storage_hint	Un chemin sans aucun dossier, comme report.csv, est conservé ici. Il ne demande aucune autorisation et aucune macro ne peut accéder aux fichiers d'une autre application.
+files_path_placeholder	Un chemin, ou un nom pour le stockage propre d'Ottomatic
+files_read_only	Lecture seule
+files_read_only_file	Peut lire ce seul fichier
+files_read_write	Lecture et écriture
+files_regrant	Accorder à nouveau
+files_revoke	Révoquer
 geofence_back	Retour
 geofence_centre_on_my_location	Centrer sur ma position
 geofence_choose_a_place	Choisir un lieu
@@ -301,6 +374,10 @@ hue_hue_bridge	Pont Hue
 hue_name_your_bridge	Nomme ton pont
 hue_press_the_link_button	Appuie sur le bouton de liaison
 hue_text	 ·
+intent_choice_ask_an_app	Demander à une application
+intent_choice_needs_camera	Ottomatic a besoin de l’accès à l’appareil photo avant qu’une autre application puisse prendre la photo. Touchez pour l’autoriser, puis touchez à nouveau.
+intent_choice_no_app	Aucune application de ce téléphone ne peut répondre à cela. Vous pouvez tout de même saisir une valeur.
+intent_choice_placeholder	Saisissez-le, ou demandez à une application
 kind_action	Action
 kind_actions	Actions
 kind_transform	Transformation
@@ -354,6 +431,22 @@ mail_this_provider_cannot_be_added	Ce fournisseur ne peut pas être ajouté
 mail_unchanged	Inchangé
 mail_username_only_if_it_differs	Nom d'utilisateur (seulement s'il diffère de l'adresse)
 mail_work_personal_alarm_system	Travail, Personnel, Alarme…
+mqtt_address	Adresse du broker
+mqtt_anonymous	Anonyme
+mqtt_broker_reached	Contacté. Le broker a accepté ces identifiants.
+mqtt_broker_subtitle	%1$s · %2$s
+mqtt_choose_a_broker	Choisir un broker
+mqtt_cleartext_warning	Cette connexion n’est pas chiffrée. C’est normal pour un broker sur ton propre réseau ; par Internet, ton mot de passe circulerait en clair.
+mqtt_connect_a_broker	Connecter un broker MQTT
+mqtt_connected_this_is_the_name	Connecté. C’est le nom qu’afficheront tes macros.
+mqtt_listen_for_topics	Écouter les topics
+mqtt_login_optional	Laisse ces champs vides si ton broker accepte tout le monde sur le réseau, ce qui est le cas de la plupart des brokers domestiques.
+mqtt_name_your_broker	Nomme ton broker
+mqtt_no_broker_yet	Aucun broker MQTT pour l’instant. Ajoutes-en un dans Maison connectée.
+mqtt_password	Mot de passe
+mqtt_setup_intro	Ottomatic se connecte à un broker que tu utilises déjà. Il n’en est jamais un lui-même.
+mqtt_topics_heard	Topics entendus
+mqtt_username	Nom d’utilisateur
 nfc_a_link_makes_the_tag	Un lien fait que le tag s'ouvre dans un navigateur quand on le touche, et une macro qui surveille ce tag cessera alors de s'exécuter, car Android confie le tag à l'application qui revendique le lien avant même qu'Ottomatic le voie. Avec du texte, cela n'arrive pas.
 nfc_already_in_your_library	Déjà dans ta bibliothèque.
 nfc_any_tag	N'importe quel tag
@@ -389,48 +482,71 @@ nfc_written	Écrit.
 perm_desc_access_background_location	Permet à un géorepérage de continuer à fonctionner quand Ottomatic est fermé, ce qui est le seul moment où il sert à quelque chose. Accordée en choisissant « Toujours autoriser ».
 perm_desc_access_coarse_location	Une localisation plus grossière, utilisée quand la position précise n'est pas disponible.
 perm_desc_access_fine_location	Permet à un géorepérage de savoir quand tu arrives quelque part ou en repars.
-perm_desc_accessibility_service	Permet à Ottomatic de détecter les appuis sur les boutons de volume et d'alimentation. Il ne lit jamais le contenu de l'écran.
+perm_desc_access_media_location	Permet à une macro de lire le lieu où une photo a été prise. Sans cela, Android masque le lieu dans les photos enregistrées par d'autres applications, et la macro croit que la photo n'en a pas.
+perm_desc_accessibility_service	Permet à Ottomatic de détecter les appuis sur les boutons de volume et d'alimentation, et de capturer l'écran pour l'action Faire une capture d'écran. Il n'observe jamais ce qui est à l'écran.
 perm_desc_battery_optimisation	Empêche Android d'arrêter le moteur en arrière-plan. Sans cette autorisation, les macros risquent de ne pas se réarmer après un redémarrage et les déclencheurs temporels peuvent être retardés.
 perm_desc_bluetooth_connect	Permet à une macro d'activer et désactiver le Bluetooth.
 perm_desc_call_phone	Permet à une macro de passer un appel sans que tu le confirmes.
+perm_desc_camera	Permet à une macro de prendre une photo avec l'appareil photo du téléphone, sans application appareil photo et sans que personne appuie sur un bouton. Ottomatic n'ouvre l'appareil photo que pendant l'exécution d'une action Prendre une photo.
 perm_desc_device_admin	Permet à Ottomatic d'utiliser les fonctions d'administrateur de l'appareil.
 perm_desc_exact_alarm	Permet à une programmation de se déclencher, et à une attente de finir, à la minute demandée. Sans cette autorisation, Android peut la regrouper avec d'autres tâches, donc elle peut s'exécuter en retard.
 perm_desc_foreground_service	Permet à Ottomatic de garder son moteur actif tant que tes macros sont actives.
+perm_desc_manage_media	Permet à une macro de modifier, déplacer ou supprimer des photos sans vous demander de confirmer à chaque fois. Facultatif : sans cela tout fonctionne encore, mais Android vous demande à chaque fois, ce qui exige que vous ayez le téléphone en main.
 perm_desc_nfc	Permet à une macro de s'exécuter quand tu approches un tag NFC du dos de ton téléphone. Ottomatic ne peut pas activer le NFC à ta place, et les tags ne sont lus que si l'écran est allumé et déverrouillé.
 perm_desc_notification_listener	Permet à Ottomatic de voir les notifications des autres applications, pour qu'une macro puisse y réagir.
 perm_desc_notification_policy	Permet à une macro d'activer et désactiver Ne pas déranger, et de mettre la sonnerie en silencieux.
 perm_desc_overlay	Permet à une macro d'afficher une boîte de dialogue et d'ouvrir d'autres applications pendant que tu fais autre chose. Sans cette autorisation, Android bloque les deux depuis une application en arrière-plan.
 perm_desc_post_notifications	Permet à Ottomatic d'afficher une notification : celles qu'une macro envoie comme celle qui t'avertit que le moteur n'a pas pu démarrer après un redémarrage.
+perm_desc_read_calendar	Permet à une macro de lire vos rendez-vous, et vous permet de choisir un agenda lors de la configuration. Contrairement aux contacts, il n'existe pas de sélecteur système sur lequel s'appuyer : c'est donc nécessaire avant qu'un nœud d'agenda puisse vous montrer quoi que ce soit.
 perm_desc_read_contacts	Permet à une macro de retrouver le numéro d'un contact que tu as choisi. Le choisir ne demande rien ; le composer plus tard, si.
+perm_desc_read_media_images	Permet à une macro de rechercher et de lire les images de votre téléphone, et de démarrer quand une nouvelle est enregistrée. Sans cela, aucun nœud photo ne fonctionne.
 perm_desc_receive_sms	Permet à une macro de s'exécuter à l'arrivée d'un SMS, et de lire son expéditeur et son contenu.
 perm_desc_send_sms	Permet à une macro d'envoyer un SMS en ton nom.
 perm_desc_unknown	Utilisée par un nœud de l'une de tes macros.
+perm_desc_write_calendar	Permet à une macro de créer, modifier et supprimer des rendez-vous. Les lire est une autorisation distincte, celle du dessus.
+perm_desc_write_media_images	Permet à une macro de modifier, déplacer ou supprimer une photo sur les anciennes versions d'Android. À partir d'Android 10, il n'y a rien à accorder ici : Android vous demande de confirmer chaque modification.
 perm_desc_write_settings	Permet à une macro de changer la luminosité, la mise en veille de l'écran et la rotation automatique.
-perm_rationale_accessibility_keys	Ottomatic a besoin de l'accès à l'accessibilité pour détecter les appuis sur les boutons. Il ne lit jamais le contenu de l'écran. Si l'interrupteur est grisé, ouvre d'abord Infos sur l'appli → ⋮ → Autoriser les paramètres restreints.
+perm_rationale_accessibility_keys	Ottomatic a besoin de l'accès à l'accessibilité pour détecter les appuis sur les boutons. Il n'observe jamais ce qui est à l'écran. Si l'interrupteur est grisé, ouvre d'abord Infos sur l'appli → ⋮ → Autoriser les paramètres restreints.
 perm_rationale_alarm_exact	Ottomatic a besoin de l'autorisation de programmer des alarmes exactes pour que cette attente se termine à la minute demandée. Sans elle, l'attente a quand même lieu, mais Android regroupe le réveil avec d'autres tâches et cela peut prendre plusieurs minutes de plus.
+perm_rationale_calendar_read	Ottomatic a besoin de l'accès à l'agenda pour lire vos rendez-vous. Sans lui, ce nœud ne lit rien du tout et le sélecteur d'agenda ci-dessus n'a rien à proposer.
+perm_rationale_calendar_write	Ottomatic a besoin de l'autorisation de modifier votre agenda pour que ce nœud puisse créer, modifier ou supprimer un rendez-vous. Lire les rendez-vous est une autorisation distincte.
+perm_rationale_camera_photo	Ottomatic a besoin de l'accès à l'appareil photo pour prendre une photo. Il ne l'ouvre que pendant l'exécution de cette action et le referme aussitôt après. Android peut malgré tout refuser une photo lorsque le téléphone est resté longtemps inactif en arrière-plan.
 perm_rationale_dnd_policy	Ottomatic a besoin de l'accès à Ne pas déranger pour changer ton mode sonnerie.
+perm_rationale_media_location	Ottomatic a besoin de la permission de lire le lieu de prise de vue, sinon ce nœud indique qu'aucune image n'a de lieu. Les photos que vous avez prises vous-même ne sont pas concernées.
+perm_rationale_media_manage	Ottomatic peut modifier des photos sans vous demander à chaque fois. C'est facultatif : sans cela le nœud fonctionne encore, mais Android affiche une confirmation à l'écran, donc il ne peut pas s'exécuter sans surveillance.
+perm_rationale_media_read	Ottomatic a besoin d'accéder à vos photos pour que ce nœud puisse les rechercher et les lire. Choisir une image vous-même n'en a pas besoin ; en rechercher une pendant l'exécution de la macro, si.
+perm_rationale_media_write	Ottomatic a besoin de la permission de modifier vos photos pour que ce nœud puisse en réécrire une. Sur Android 10 et versions ultérieures, cette permission ne fait rien et Android vous demande de confirmer chaque modification.
 perm_rationale_nfc_radio	Ce déclencheur a besoin que le NFC soit activé, ce qui est un réglage système et non quelque chose qu'Ottomatic peut s'accorder. De plus, les tags ne sont lus que si l'écran est allumé et déverrouillé : un contact n'atteindra pas un téléphone endormi dans une poche.
 perm_rationale_notification_listener	Ottomatic a besoin de l'accès aux notifications pour voir celles des autres applications.
 perm_rationale_overlay_dialog	Ottomatic a besoin de l'autorisation d'afficher par-dessus les autres applications pour que cette boîte de dialogue puisse t'atteindre quand tu es ailleurs sur ton téléphone. Sans elle, le nœud annule au lieu de demander.
 perm_rationale_overlay_launch	Ottomatic a besoin de l'autorisation d'afficher par-dessus les autres applications pour pouvoir en ouvrir une pendant que tu es ailleurs sur ton téléphone. Android empêche une application en arrière-plan d'en ouvrir une autre et, sans cette autorisation, le nœud ne fait rien et le signale dans la console.
+perm_rationale_overlay_media	Ottomatic a besoin de la permission de s'afficher par-dessus les autres applications pour pouvoir montrer la confirmation d'Android pendant que la macro s'exécute en arrière-plan. Sans cela, modifier une photo enregistrée par une autre application échoue quand vous n'êtes pas dans Ottomatic.
+perm_rationale_screen_capture	Ottomatic a besoin de l'accès à l'accessibilité pour capturer l'écran. Il ne capture que pendant l'exécution de cette action — il n'observe jamais ce qui est à l'écran. Si l'interrupteur est grisé, ouvre d'abord Infos sur l'appli → ⋮ → Autoriser les paramètres restreints.
 perm_title_access_background_location	Localisation en arrière-plan
 perm_title_access_coarse_location	Localisation approximative
 perm_title_access_fine_location	Localisation
+perm_title_access_media_location	Lieu des photos
 perm_title_accessibility_service	Accès à l'accessibilité
 perm_title_battery_optimisation	Utilisation de la batterie sans restriction
 perm_title_bluetooth_connect	Bluetooth
 perm_title_call_phone	Passer des appels
+perm_title_camera	Appareil photo
 perm_title_device_admin	Administrateur de l'appareil
 perm_title_exact_alarm	Alarmes et rappels
 perm_title_foreground_service	Service au premier plan
+perm_title_manage_media	Gestion des médias
 perm_title_nfc	NFC
 perm_title_notification_listener	Accès aux notifications
 perm_title_notification_policy	Accès au mode Ne pas déranger
 perm_title_overlay	Afficher par-dessus les autres applications
 perm_title_post_notifications	Notifications
+perm_title_read_calendar	Agenda
 perm_title_read_contacts	Contacts
+perm_title_read_media_images	Photos
 perm_title_receive_sms	Recevoir des SMS
 perm_title_send_sms	Envoyer des SMS
+perm_title_write_calendar	Modifier votre agenda
+perm_title_write_media_images	Modification des photos
 perm_title_write_settings	Modifier les paramètres système
 permission_bind_plugin_description	Permet à Ottomatic d'utiliser les nœuds de déclencheur et d'action supplémentaires fournis par cette application. L'application exécute son propre code avec ses propres autorisations ; Ottomatic ne partage pas les siennes avec elle.
 permission_bind_plugin_label	Fournir des nœuds Ottomatic
@@ -459,6 +575,8 @@ plugins_plugins	Extensions
 plugins_provides_no_nodes	Ne fournit aucun nœud
 plugins_this_app_asks_for	Cette application demande : %1$s
 problem_ai_missing	« %1$s » pointe vers une connexion IA qui n'existe plus
+problem_ai_tool_missing	« %1$s » propose à l'IA « %2$s », qui n'est plus disponible
+problem_ai_tool_unpinned	« %1$s » propose « %2$s » sans choisir son %3$s, que l'IA ne peut pas remplir
 problem_ai_unfinished	« %1$s » pointe vers une connexion IA dont la configuration n'est pas terminée
 problem_ai_unset	Aucune connexion IA n'est choisie pour « %1$s », il ne fera donc rien
 problem_data_cycle	Cycle de données détecté : %1$s
@@ -492,6 +610,20 @@ problems_skipped_nodes	ignoré : %1$s
 problems_summary_separator	 ·
 problems_where_separator	  ·
 problems_wire_skipped	ce fil est ignoré
+setup_ai	IA
+setup_ai_subtitle	Comptes et modèles pour les nœuds IA
+setup_app_access_subtitle	Autres applications autorisées à lancer tes macros
+setup_folders_subtitle	Dossiers et fichiers que cette app peut ouvrir
+setup_geofences_subtitle	Lieux auxquels tes macros peuvent réagir
+setup_mail_subtitle	Boîtes mail pour envoyer et lire
+setup_nfc_subtitle	Tags que tu as enregistrés
+setup_permissions_subtitle	Ce que le téléphone autorise tes macros à faire
+setup_plugins_subtitle	Applications qui ajoutent des nœuds
+setup_section_connections	Connexions
+setup_section_system	Système
+setup_smart_home_subtitle	Hue, Home Assistant et MQTT
+setup_title	Configuration
+setup_variables_subtitle	Valeurs que toutes les macros partagent
 shortcut_macro_and_trigger	%1$s · %2$s
 shortcut_macro_gone	Cette macro n'existe plus
 shortcut_new_macro_long	Créer une nouvelle macro
@@ -517,6 +649,8 @@ smarthome_hub_subtitle	%1$s · %2$d lumières · %3$d scènes
 smarthome_it_is_the_large_button	C'est le grand bouton au centre du disque, entre les trois petites lumières. Connexion à %1$s.
 smarthome_lights	Lumières
 smarthome_looking_for_bridges_on_your	Recherche de ponts sur ton Wi-Fi…
+smarthome_mqtt_broker	Broker MQTT
+smarthome_mqtt_broker_subtitle	Un broker que tu utilises déjà – Mosquitto, Zigbee2MQTT, EMQX
 smarthome_name	Nom
 smarthome_no_hub_yet	Aucun hub pour l'instant. Ajoutes-en un pour piloter tes lumières depuis une macro.
 smarthome_no_hubs_yet_add_one	Aucun hub pour l'instant. Ajoutes-en un pour piloter tes lumières depuis une macro, et pour lancer des macros quand quelque chose change chez toi.
@@ -642,6 +776,7 @@ workflowlist_armed_with_problems	Actif · %1$s
 workflowlist_can_t_add_it_from	Impossible de l'ajouter d'ici
 workflowlist_cancel	Annuler
 workflowlist_choose_a_macro	Choisir une macro
+workflowlist_clear_search	Effacer la recherche
 workflowlist_delete	Supprimer
 workflowlist_delete_confirm	Supprimer « %1$s » ? Cette action est irréversible.
 workflowlist_delete_workflow	Supprimer le flux
@@ -654,146 +789,15 @@ workflowlist_mail_accounts	Comptes e-mail
 workflowlist_more	Plus
 workflowlist_new_workflow	Nouveau flux
 workflowlist_nfc_tags	Tags NFC
+workflowlist_no_matches	Aucune macro ne correspond.
 workflowlist_no_other_macros_yet	Aucune autre macro pour l'instant.
 workflowlist_no_workflows_yet_ntap_to	Aucun flux pour l'instant.\nAppuie sur + pour en créer un.
 workflowlist_off	Arrêté
 workflowlist_permissions	Autorisations
 workflowlist_plugins	Extensions
+workflowlist_search_placeholder	Rechercher des macros
 workflowlist_smart_home	Maison connectée
 workflowlist_text	 ·
 workflowlist_this_macro	cette macro
 workflowlist_which_trigger	Quel déclencheur ?
 workflowlist_workflows	Flux
-smarthome_mqtt_broker	Broker MQTT
-smarthome_mqtt_broker_subtitle	Un broker que tu utilises déjà – Mosquitto, Zigbee2MQTT, EMQX
-mqtt_connect_a_broker	Connecter un broker MQTT
-mqtt_name_your_broker	Nomme ton broker
-mqtt_setup_intro	Ottomatic se connecte à un broker que tu utilises déjà. Il n’en est jamais un lui-même.
-mqtt_address	Adresse du broker
-mqtt_login_optional	Laisse ces champs vides si ton broker accepte tout le monde sur le réseau, ce qui est le cas de la plupart des brokers domestiques.
-mqtt_username	Nom d’utilisateur
-mqtt_password	Mot de passe
-mqtt_anonymous	Anonyme
-mqtt_broker_reached	Contacté. Le broker a accepté ces identifiants.
-mqtt_cleartext_warning	Cette connexion n’est pas chiffrée. C’est normal pour un broker sur ton propre réseau ; par Internet, ton mot de passe circulerait en clair.
-mqtt_connected_this_is_the_name	Connecté. C’est le nom qu’afficheront tes macros.
-mqtt_choose_a_broker	Choisir un broker
-mqtt_no_broker_yet	Aucun broker MQTT pour l’instant. Ajoutes-en un dans Maison connectée.
-mqtt_listen_for_topics	Écouter les topics
-mqtt_topics_heard	Topics entendus
-mqtt_broker_subtitle	%1$s · %2$s
-category_files	Fichiers
-files_path_placeholder	Un chemin, ou un nom pour le stockage propre d'Ottomatic
-files_choose	Choisir un fichier ou un dossier
-files_choose_folder	Choisir un dossier…
-files_choose_file	Choisir un fichier…
-files_folder_access	Accès aux dossiers
-files_no_folders	Ottomatic n'a encore accès à aucun de tes dossiers.
-files_no_folders_hint	Choisis un dossier pour que les macros puissent lire et écrire les fichiers qu'il contient. Android n'autorise pas à accorder tout le stockage interne ni le dossier Download lui-même : crée ou choisis un dossier à l'intérieur, comme Download/Ottomatic.
-files_grant	Choisir un dossier
-files_regrant	Accorder à nouveau
-files_revoke	Révoquer
-files_read_only	Lecture seule
-files_read_write	Lecture et écriture
-files_missing	Ce dossier n'existe plus. Accordez-le à nouveau ou révoquez-le.
-files_own_storage	Stockage propre d'Ottomatic
-files_own_storage_hint	Un chemin sans aucun dossier, comme report.csv, est conservé ici. Il ne demande aucune autorisation et aucune macro ne peut accéder aux fichiers d'une autre application.
-files_no_path	Ce fichier n'a pas d'emplacement sur ce téléphone, donc une macro ne peut pas le nommer. Les fichiers stockés en ligne, et certains téléchargements, ne peuvent pas être utilisés ainsi : copie-le d'abord dans un dossier du téléphone.
-files_add_file	Ajouter un fichier
-files_files_heading	Fichiers isolés
-files_download_note	Android n'autorise pas à accorder le dossier Download lui-même. Pour utiliser quelque chose qui s'y trouve déjà, ajoute ce fichier ici avec Ajouter un fichier — ou garde tes téléchargements dans un dossier à l'intérieur, qui peut être accordé en entier.
-files_read_only_file	Peut lire ce seul fichier
-problem_ai_tool_missing	« %1$s » propose à l'IA « %2$s », qui n'est plus disponible
-problem_ai_tool_unpinned	« %1$s » propose « %2$s » sans choisir son %3$s, que l'IA ne peut pas remplir
-config_tools_choose	Que peut utiliser l'IA ?
-config_tools_none	Rien pour l'instant : l'IA répondra seulement, sans agir
-config_tools_fixed_count	%1$d valeur(s) fixée(s) ici
-config_tools_remove	Retirer cet outil
-config_tools_missing	N'est plus disponible
-config_tools_fixed	Fixé ici plutôt que laissé à l'IA
-config_tools_must_fix	Choisi ici : l'IA ne peut pas le nommer
-config_tools_nothing_to_fix	Cet outil n'a aucun réglage
-config_tools_add	Ajouter un outil
-ai_add_model	Ajouter un modèle
-ai_choose_a_model	Choisir un modèle
-ai_delete_model	Supprimer ce modèle
-ai_model_effort	Effort
-ai_model_effort_help	À quel point le modèle doit réfléchir avant de répondre. Détermine aussi quel modèle le fournisseur utilise quand l'identifiant ci-dessus est vide.
-ai_model_id	Identifiant du modèle
-ai_model_id_required	obligatoire
-ai_model_name	Nom
-ai_model_name_help	Le nom que les macros verront. Nommez la tâche plutôt que le modèle : « Maison », « Résumer un e-mail ».
-ai_model_name_placeholder	Maison
-ai_model_not_finished	Incomplet : donnez-lui un nom et un modèle
-ai_model_provider_default	%1$s · le modèle du fournisseur
-ai_no_model_to_test	Ajoutez un modèle et enregistrez d'abord, puis testez.
-ai_no_models_on_this_account	Aucun modèle sur ce compte pour l'instant.
-ai_no_models_yet	Aucun modèle pour l'instant. Ajoutez-en un pour que les macros aient quelque chose à viser.
-ai_tools_allow_everything	Tout autoriser
-ai_tools_allowed_count	%1$d sur %2$d autorisés
-ai_tools_macros	Macros
-ai_tools_many_warning	Chaque outil est décrit au modèle à chaque tour. Une longue liste encombre la requête et le fait mal choisir.
-ai_tools_n_allowed	%1$d autorisés
-ai_tools_need_a_choice	%1$d attendent encore un choix avant de pouvoir faire quoi que ce soit.
-ai_tools_needs	Demande %1$s
-ai_tools_none_allowed	Rien d'autorisé : ce modèle peut seulement répondre
-ai_tools_over_the_cap	Au-delà de la limite de %1$d. Ceux en trop sont ignorés ; décochez-en.
-ai_tools_title	Outils
-ai_unnamed_model	Modèle sans nom
-ai_tools_adjusted	Ajusté ici
-ai_tools_adjusted_count	%1$d ajustés pour ce nœud
-ai_tools_adjusted_off	Désactivé ici
-ai_tools_adjusting	Ceux-ci appartiennent au modèle. En changer un ici ne vaut que pour ce nœud.
-ai_tools_as_the_model_says	Ce que le modèle autorise
-ai_tools_choose_a_model_first	Choisissez d'abord un modèle
-ai_tools_reset	Suivre à nouveau le modèle
-ai_tools_reset_all	Tout réinitialiser
-config_tools_ai_chooses	L'IA choisit %2$s, parmi les %1$d qu'elle peut atteindre
-perm_title_read_calendar	Agenda
-perm_title_write_calendar	Modifier votre agenda
-perm_desc_read_calendar	Permet à une macro de lire vos rendez-vous, et vous permet de choisir un agenda lors de la configuration. Contrairement aux contacts, il n'existe pas de sélecteur système sur lequel s'appuyer : c'est donc nécessaire avant qu'un nœud d'agenda puisse vous montrer quoi que ce soit.
-perm_desc_write_calendar	Permet à une macro de créer, modifier et supprimer des rendez-vous. Les lire est une autorisation distincte, celle du dessus.
-perm_rationale_calendar_read	Ottomatic a besoin de l'accès à l'agenda pour lire vos rendez-vous. Sans lui, ce nœud ne lit rien du tout et le sélecteur d'agenda ci-dessus n'a rien à proposer.
-perm_rationale_calendar_write	Ottomatic a besoin de l'autorisation de modifier votre agenda pour que ce nœud puisse créer, modifier ou supprimer un rendez-vous. Lire les rendez-vous est une autorisation distincte.
-category_calendar	Agenda
-calendar_choose_a_calendar	Choisir un agenda
-calendar_any_calendar	N'importe quel agenda
-calendar_no_calendars	Il n'y a aucun agenda sur ce téléphone.
-calendar_no_writable_calendars	Aucun des agendas de ce téléphone n'accepte d'ajout. Un agenda auquel on est abonné, comme un calendrier de jours fériés, ne peut être que lu.
-calendar_needs_access	Ottomatic a besoin de l'accès à l'agenda pour lister vos agendas.
-calendar_grant_access	Accorder
-category_images	Photos
-perm_title_read_media_images	Photos
-perm_title_write_media_images	Modification des photos
-perm_title_access_media_location	Lieu des photos
-perm_title_manage_media	Gestion des médias
-perm_desc_read_media_images	Permet à une macro de rechercher et de lire les images de votre téléphone, et de démarrer quand une nouvelle est enregistrée. Sans cela, aucun nœud photo ne fonctionne.
-perm_desc_write_media_images	Permet à une macro de modifier, déplacer ou supprimer une photo sur les anciennes versions d'Android. À partir d'Android 10, il n'y a rien à accorder ici : Android vous demande de confirmer chaque modification.
-perm_desc_access_media_location	Permet à une macro de lire le lieu où une photo a été prise. Sans cela, Android masque le lieu dans les photos enregistrées par d'autres applications, et la macro croit que la photo n'en a pas.
-perm_desc_manage_media	Permet à une macro de modifier, déplacer ou supprimer des photos sans vous demander de confirmer à chaque fois. Facultatif : sans cela tout fonctionne encore, mais Android vous demande à chaque fois, ce qui exige que vous ayez le téléphone en main.
-perm_rationale_media_read	Ottomatic a besoin d'accéder à vos photos pour que ce nœud puisse les rechercher et les lire. Choisir une image vous-même n'en a pas besoin ; en rechercher une pendant l'exécution de la macro, si.
-perm_rationale_media_write	Ottomatic a besoin de la permission de modifier vos photos pour que ce nœud puisse en réécrire une. Sur Android 10 et versions ultérieures, cette permission ne fait rien et Android vous demande de confirmer chaque modification.
-perm_rationale_media_location	Ottomatic a besoin de la permission de lire le lieu de prise de vue, sinon ce nœud indique qu'aucune image n'a de lieu. Les photos que vous avez prises vous-même ne sont pas concernées.
-perm_rationale_media_manage	Ottomatic peut modifier des photos sans vous demander à chaque fois. C'est facultatif : sans cela le nœud fonctionne encore, mais Android affiche une confirmation à l'écran, donc il ne peut pas s'exécuter sans surveillance.
-perm_rationale_overlay_media	Ottomatic a besoin de la permission de s'afficher par-dessus les autres applications pour pouvoir montrer la confirmation d'Android pendant que la macro s'exécute en arrière-plan. Sans cela, modifier une photo enregistrée par une autre application échoue quand vous n'êtes pas dans Ottomatic.
-setup_title	Configuration
-setup_section_connections	Connexions
-setup_section_system	Système
-setup_ai	IA
-setup_smart_home_subtitle	Hue, Home Assistant et MQTT
-setup_ai_subtitle	Comptes et modèles pour les nœuds IA
-setup_mail_subtitle	Boîtes mail pour envoyer et lire
-setup_variables_subtitle	Valeurs que toutes les macros partagent
-setup_geofences_subtitle	Lieux auxquels tes macros peuvent réagir
-setup_nfc_subtitle	Tags que tu as enregistrés
-setup_folders_subtitle	Dossiers et fichiers que cette app peut ouvrir
-setup_permissions_subtitle	Ce que le téléphone autorise tes macros à faire
-setup_plugins_subtitle	Applications qui ajoutent des nœuds
-setup_app_access_subtitle	Autres applications autorisées à lancer tes macros
-workflowlist_search_placeholder	Rechercher des macros
-workflowlist_clear_search	Effacer la recherche
-workflowlist_no_matches	Aucune macro ne correspond.
-intent_choice_placeholder	Saisissez-le, ou demandez à une application
-intent_choice_ask_an_app	Demander à une application
-intent_choice_no_app	Aucune application de ce téléphone ne peut répondre à cela. Vous pouvez tout de même saisir une valeur.
-intent_choice_needs_camera	Ottomatic a besoin de l’accès à l’appareil photo avant qu’une autre application puisse prendre la photo. Touchez pour l’autoriser, puis touchez à nouveau.

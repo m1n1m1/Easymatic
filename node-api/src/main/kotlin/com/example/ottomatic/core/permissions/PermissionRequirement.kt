@@ -148,6 +148,7 @@ data class PermissionRequirement(
             manifestPermission == Permissions.CALL_PHONE.manifest -> "permission to make calls"
             manifestPermission == Permissions.SEND_SMS.manifest -> "permission to send texts"
             manifestPermission == Permissions.RECEIVE_SMS.manifest -> "permission to receive texts"
+            manifestPermission == Permissions.CAMERA.manifest -> "camera access"
             manifestPermission == Permissions.READ_CONTACTS.manifest -> "contacts access"
             manifestPermission == Permissions.READ_CALENDAR.manifest -> "calendar access"
             manifestPermission == Permissions.WRITE_CALENDAR.manifest ->

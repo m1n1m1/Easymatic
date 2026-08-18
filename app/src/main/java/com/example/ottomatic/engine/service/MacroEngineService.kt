@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
@@ -23,6 +24,7 @@ import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.data.BootFailureStore
 import com.example.ottomatic.data.WorkflowRepository
+import com.example.ottomatic.data.service.CameraForeground
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.PendingWaits
 import com.example.ottomatic.engine.api.ApiRun
@@ -101,6 +103,15 @@ class MacroEngineService : Service() {
      */
     private val armMutex = Mutex()
 
+    /**
+     * How `action.camera_photo` borrows the camera foreground-service type.
+     *
+     * A property rather than a lambda passed inline so [onDestroy] can hand the *same*
+     * instance back: a service that has already been recreated must not have its
+     * successor's registration cleared by the teardown of the one it replaced.
+     */
+    private val cameraTypes = CameraForeground.Types { wanted -> setCameraType(wanted) }
+
     private lateinit var host: TriggerHost
     private lateinit var executionContext: ExecutionContext
     private lateinit var repository: WorkflowRepository
@@ -125,6 +136,9 @@ class MacroEngineService : Service() {
         ServiceLocator.hubLink.start()
         _engineRunning.value = true
         startForegroundCompat(buildNotification(activeJobs.size))
+        // Published last, so nothing can promote the type before there is a foreground
+        // notification to re-post it with.
+        CameraForeground.attach(cameraTypes)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -218,6 +232,9 @@ class MacroEngineService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
+        // Cleared first: a capture that promotes the type after this point would re-post a
+        // foreground notification for a service on its way out.
+        CameraForeground.detach(cameraTypes)
         // A detached sound is held by this process, not by the run that started
         // it, so it would outlive the engine itself.
         systemServices.stopSounds()
@@ -446,18 +463,58 @@ class MacroEngineService : Service() {
         return Notification.Action.Builder(null, "Stop sound", pending).build()
     }
 
-    @Suppress("CallApiLevelMismatch") // FOREGROUND_SERVICE_TYPE_SPECIAL_USE is API 34; guarded at runtime.
-    private fun startForegroundCompat(notification: Notification) {
+    /**
+     * Promotes the service to the foreground, optionally borrowing the camera type.
+     *
+     * Three branches rather than two, and the middle one is the whole addition. **Below API
+     * 34 the two-argument call is kept for the ordinary case**, because that is what confers
+     * the *manifest-declared* types — replacing it with an explicit mask would hand the
+     * platform a zero on API 29–33 and quietly drop what the manifest says. The explicit
+     * form is used there only while a capture is running, which is the one moment this
+     * service has something to name.
+     */
+    @Suppress("CallApiLevelMismatch") // The type constants are API 29/34; guarded at runtime.
+    private fun startForegroundCompat(notification: Notification, withCamera: Boolean = false) {
         ensureChannel()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(
-                NOTIFICATION_ID,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
+        val camera = if (withCamera) ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA else 0
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE ->
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE or camera,
+                )
+
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && withCamera ->
+                startForeground(NOTIFICATION_ID, notification, camera)
+
+            else -> startForeground(NOTIFICATION_ID, notification)
         }
+    }
+
+    /**
+     * Adds or drops the camera foreground-service type, answering whether it is now held.
+     *
+     * From Android 11 a foreground service's access to the camera follows its declared
+     * *type* rather than the app's grant, so `action.camera_photo` borrows this for the
+     * seconds it has the camera open. It cannot be claimed permanently — see
+     * [CameraForeground] — and the borrowing is what keeps the claim honest.
+     *
+     * **The permission check is not defensive, it is the crash guard.** From API 34
+     * `startForeground` throws when a named type's permission is not held, and this runs
+     * inside the service that owns every armed macro: promoting unconditionally would kill
+     * the engine on every phone whose owner never granted camera access, for the sake of one
+     * node. Refusing here instead lets the capture report a sentence and the node pulse
+     * `out`.
+     */
+    @Suppress("CallApiLevelMismatch") // The type is only ever named from API 29 up.
+    private fun setCameraType(wanted: Boolean): Boolean {
+        val granted = checkSelfPermission(android.Manifest.permission.CAMERA) ==
+            PackageManager.PERMISSION_GRANTED
+        val allowed = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && (!wanted || granted)
+        if (!allowed) return false
+        startForegroundCompat(buildNotification(activeJobs.size), withCamera = wanted)
+        return wanted
     }
 
     private fun ensureChannel() {

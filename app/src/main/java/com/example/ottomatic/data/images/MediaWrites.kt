@@ -42,6 +42,17 @@ internal object MediaWrites {
     const val DEFAULT_FOLDER: String = "Pictures/Ottomatic"
 
     /**
+     * Where a **photograph** goes when the node did not say.
+     *
+     * `DCIM` rather than [DEFAULT_FOLDER]'s `Pictures` because that is where a phone puts
+     * the pictures its camera took, and a gallery groups by it — a photo turning up under
+     * "Pictures" would sit beside downloads and edits rather than beside the camera roll it
+     * belongs with. Its own sub-folder rather than `DCIM/Camera` so that what a macro took
+     * stays tellable from what somebody took by hand.
+     */
+    const val CAMERA_FOLDER: String = "DCIM/Ottomatic"
+
+    /**
      * Creates a row for a new picture and answers where to write it.
      *
      * **On API 29+ the row is created *pending*.** A row is visible to every other app the

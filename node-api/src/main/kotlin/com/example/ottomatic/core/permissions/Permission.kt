@@ -84,21 +84,20 @@ object Permissions {
     val READ_MEDIA_IMAGES = Permission("android.permission.READ_MEDIA_IMAGES")
 
     /**
-     * The camera, and the one permission here that is needed for something this app does
-     * **not** do.
+     * The camera, wanted for two different things, only one of which uses it.
      *
-     * Ottomatic declares `CAMERA` in its manifest for the torch, and never opens a camera
-     * itself. That declaration alone is what makes this constant necessary: Android refuses
-     * `ACTION_IMAGE_CAPTURE` outright when an app has declared `CAMERA` without holding it,
-     * even though the photograph is taken by *another* app under its own grant. So an
-     * `@IntentChoice` whose action is the capture one has to ask for a permission it will
-     * not use, and the alternative — dropping the manifest declaration — would take the
-     * torch node with it.
+     * **Declared by `action.camera_photo`**, which opens the camera in-process through
+     * camera2 and photographs with no camera app and nobody pressing a button. That is the
+     * ordinary reading: a node that genuinely exercises a capability declares it, and the
+     * Permissions screen, the Problems panel and the node's own card all follow from the
+     * declaration.
      *
-     * **Declared by no node**, on `MANAGE_MEDIA`'s reasoning: nothing this app does needs
-     * it, so a node declaring it would carry a permanent amber badge for a capability it
-     * never exercises. It is asked for at the moment a capture chooser is tapped and
-     * nowhere else.
+     * The second reason is stranger and outlives the first. Ottomatic also declares `CAMERA`
+     * in its manifest for the torch, and Android refuses `ACTION_IMAGE_CAPTURE` **outright**
+     * when an app has declared `CAMERA` without holding it — even though the photograph
+     * would be taken by *another* app under its own grant. So an `@IntentChoice` naming the
+     * capture action has to ask for this too, and dropping the manifest declaration to avoid
+     * that would take the torch node with it.
      */
     val CAMERA = Permission("android.permission.CAMERA")
 

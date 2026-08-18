@@ -1,11 +1,14 @@
 package com.example.ottomatic.data.images
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.util.Base64
 import android.net.Uri
 import android.provider.MediaStore
 import com.example.ottomatic.data.accessibility.ScreenGrab
+import com.example.ottomatic.data.camera.CameraGrab
+import com.example.ottomatic.data.camera.CameraShot
 import com.example.ottomatic.core.service.ImageEdit
 import com.example.ottomatic.core.service.ImageEncoded
 import com.example.ottomatic.core.service.ImageFacts
@@ -16,6 +19,7 @@ import com.example.ottomatic.core.service.ImageRecord
 import com.example.ottomatic.core.service.ImageWrite
 import com.example.ottomatic.core.service.Images
 import com.example.ottomatic.core.service.MetadataDetail
+import com.example.ottomatic.core.service.PhotoRequest
 import com.example.ottomatic.core.service.WhenExists
 import com.example.ottomatic.domain.model.FileGlob
 import com.example.ottomatic.domain.model.ImageRef
@@ -40,8 +44,9 @@ import kotlinx.coroutines.withContext
  * Everything runs on [Dispatchers.IO]: a cursor is a binder round trip, an edit is a decode,
  * and both are called from the engine's coroutines.
  */
-@Suppress("TooManyFunctions") // Nine facade members plus the private helpers that
-// keep each of them short; splitting would separate a member from its own mapping.
+@Suppress("TooManyFunctions", "LongParameterList") // Ten facade members plus the private
+// helpers that keep each of them short; splitting would separate a member from its own
+// mapping. The constructor is the class plus its three injected collaborators.
 class MediaImages(
     context: Context,
     /**
@@ -64,11 +69,23 @@ class MediaImages(
      * wants.
      */
     private val screenGrab: (suspend () -> ScreenGrab)? = null,
+    /**
+     * How to take one photograph with the phone's own camera.
+     *
+     * Handed in for [screenGrab]'s two reasons: camera2 lives in a different corner of
+     * `data/` entirely, and this class has no business knowing where a photograph comes
+     * from — only how a picture is written. Null leaves `takePhoto` reporting that it is
+     * unavailable, which is what an engine-only test wants.
+     */
+    private val cameraShot: (suspend (CameraShot) -> CameraGrab)? = null,
 ) : Images {
 
     private val appContext = context.applicationContext
 
     override val hasRecoverableBin: Boolean get() = MediaWrites.hasTrash()
+
+    override val hasCameraFlash: Boolean
+        get() = appContext.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)
 
     override suspend fun query(spec: ImageQuery): ImageListing = withContext(Dispatchers.IO) {
         val limit = spec.limit.coerceIn(1, ImageLimits.MAX_LISTED)
@@ -184,6 +201,70 @@ class MediaImages(
             // loop from walking into the heap ceiling.
             bitmap.recycle()
         }
+    }
+
+    @Suppress("ReturnCount") // One exit per way a capture or a write can decline, each
+    // carrying its own sentence; merging them would lose which step failed.
+    override suspend fun takePhoto(request: PhotoRequest): ImageWrite = withContext(Dispatchers.IO) {
+        val shoot = cameraShot ?: return@withContext ImageWrite(error = NO_PHOTO)
+        val grab = shoot(
+            CameraShot(
+                front = request.front,
+                flash = request.flash,
+                // Clamped here rather than in the node: the reason for the bound is that the
+                // camera is exclusive while it runs, which is this side's fact.
+                delayMs = request.delaySeconds
+                    .coerceIn(0, ImageLimits.MAX_PHOTO_DELAY_SECONDS) * MILLIS_PER_SECOND,
+            ),
+        )
+        val photo = when (grab) {
+            is CameraGrab.Failed -> return@withContext ImageWrite(error = grab.reason)
+            is CameraGrab.Captured -> grab
+        }
+
+        val target = MediaWrites.create(
+            context = appContext,
+            folder = request.toFolder.ifBlank { MediaWrites.CAMERA_FOLDER },
+            name = request.name.ifBlank { generatedPhotoName() },
+            mimeType = PHOTO_MIME,
+            whenExists = request.whenExists,
+        ) ?: return@withContext ImageWrite(error = "The photo could not be created")
+
+        if (target.skipped) {
+            return@withContext ImageWrite(
+                changed = false,
+                image = ImageRecord(name = target.name, folder = target.relativeFolder),
+            )
+        }
+
+        // The bytes are already encoded, so they go straight to the stream — there is no
+        // bitmap on this path at all, which is why a fifty-megapixel photo costs four
+        // megabytes here rather than the two hundred `ImageLimits.MAX_DECODE_PIXELS` bounds.
+        val written = runCatching {
+            MediaWrites.open(appContext, target)?.use { stream ->
+                stream.write(photo.jpeg)
+                true
+            } ?: false
+        }.getOrDefault(false)
+
+        if (!written) {
+            // Never leave a half-written row behind — `capture`'s rule, for its reason.
+            MediaWrites.abandon(appContext, target)
+            return@withContext ImageWrite(error = "The photo could not be saved")
+        }
+        MediaWrites.publish(appContext, target)
+
+        ImageWrite(
+            changed = true,
+            image = rowAt(target.uri) ?: ImageRecord(
+                uri = target.uri.toString(),
+                name = target.name,
+                folder = target.relativeFolder,
+                mimeType = PHOTO_MIME,
+                width = photo.width,
+                height = photo.height,
+            ),
+        )
     }
 
     override suspend fun details(ref: String): ImageFacts = withContext(Dispatchers.IO) {
@@ -532,6 +613,22 @@ class MediaImages(
         return "Screenshot_$stamp.png"
     }
 
+    /**
+     * `Photo_20260817_101500.jpg`.
+     *
+     * **Deliberately not Android's own `IMG_` shape**, which is the rule [generatedName]
+     * follows for a screenshot. A screenshot lands in the folder the phone already keeps
+     * screenshots in and has neighbours to sort beside; a photo lands in
+     * [MediaWrites.CAMERA_FOLDER], where there is nothing to match — and a distinct stem is
+     * what makes "the photo my macro took" tellable from "the photo I took", which is a
+     * distinction a macro searching a folder actually needs.
+     */
+    private fun generatedPhotoName(): String {
+        val stamp = java.text.SimpleDateFormat(NAME_STAMP, java.util.Locale.US)
+            .format(java.util.Date())
+        return "Photo_$stamp.jpg"
+    }
+
     private companion object {
         const val NO_ACCESS = "Ottomatic does not have access to your photos"
         const val NO_SUCH_PICTURE = "There is no picture there"
@@ -539,7 +636,9 @@ class MediaImages(
         const val EDITED_SUFFIX = "-edited"
         const val MILLIS_PER_SECOND = 1000L
         const val NO_CAPTURE = "Taking screenshots is not available on this phone"
+        const val NO_PHOTO = "Taking photos is not available on this phone"
         const val SCREENSHOT_MIME = "image/png"
+        const val PHOTO_MIME = "image/jpeg"
         const val NAME_STAMP = "yyyyMMdd_HHmmss"
 
         /** PNG ignores it, but `compress` demands one. */

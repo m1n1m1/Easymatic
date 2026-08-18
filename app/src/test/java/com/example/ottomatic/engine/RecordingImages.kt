@@ -9,6 +9,7 @@ import com.example.ottomatic.core.service.ImageRecord
 import com.example.ottomatic.core.service.ImageWrite
 import com.example.ottomatic.core.service.Images
 import com.example.ottomatic.core.service.MetadataDetail
+import com.example.ottomatic.core.service.PhotoRequest
 import com.example.ottomatic.core.service.WhenExists
 
 /**
@@ -29,6 +30,7 @@ class RecordingImages(
     var newestScreenshot: ImageRecord? = null,
     var encoded: ImageEncoded = ImageEncoded(base64 = "AAAA", mediaType = "image/jpeg"),
     override var hasRecoverableBin: Boolean = true,
+    override var hasCameraFlash: Boolean = true,
 ) : Images {
 
     val queries = mutableListOf<ImageQuery>()
@@ -39,6 +41,7 @@ class RecordingImages(
     val deletes = mutableListOf<Pair<String, Boolean>>()
     val encodedFor = mutableListOf<String>()
     val captures = mutableListOf<Capture>()
+    val photos = mutableListOf<PhotoRequest>()
 
     data class Transfer(val ref: String, val toFolder: String, val move: Boolean, val whenExists: WhenExists)
 
@@ -47,7 +50,7 @@ class RecordingImages(
     /** Every call that reached the facade, in order, for "it did nothing" assertions. */
     val calls: Int
         get() = queries.size + detailed.size + edits.size + metadata.size + transfers.size +
-            deletes.size + encodedFor.size + captures.size
+            deletes.size + encodedFor.size + captures.size + photos.size
 
     override suspend fun query(spec: ImageQuery): ImageListing {
         queries += spec
@@ -93,6 +96,11 @@ class RecordingImages(
 
     override suspend fun capture(toFolder: String, name: String, whenExists: WhenExists): ImageWrite {
         captures += Capture(toFolder, name, whenExists)
+        return write
+    }
+
+    override suspend fun takePhoto(request: PhotoRequest): ImageWrite {
+        photos += request
         return write
     }
 

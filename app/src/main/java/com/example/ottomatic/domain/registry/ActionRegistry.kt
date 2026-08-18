@@ -26,6 +26,7 @@ import com.example.ottomatic.engine.action.FileListAction
 import com.example.ottomatic.engine.action.FileReadAction
 import com.example.ottomatic.engine.action.FileTransferAction
 import com.example.ottomatic.engine.action.FileWriteAction
+import com.example.ottomatic.engine.action.CameraPhotoAction
 import com.example.ottomatic.engine.action.ImageDeleteAction
 import com.example.ottomatic.engine.action.ImageEditAction
 import com.example.ottomatic.engine.action.ImageInfoAction
@@ -149,7 +150,14 @@ object ActionRegistry {
         // Screenshot leads it, ahead of even the read: it is the one node here that
         // *makes* a picture rather than addressing one that already existed, so it is
         // where a macro with no picture yet starts. Everything below it needs one.
+        //
+        // There are two makers now, and the screen leads the pair: it needs no hardware, no
+        // runtime grant and no light, so it is the one that works on every phone. The camera
+        // follows it immediately rather than joining the readers below, because what those
+        // two have in common — producing a picture out of nothing — is what somebody
+        // scanning this list is looking for.
         ScreenshotAction(),
+        CameraPhotoAction(),
         ImageListAction(),
         ImageInfoAction(),
         ImageEditAction(),

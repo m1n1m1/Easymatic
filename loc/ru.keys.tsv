@@ -1,8 +1,9 @@
-accessibility_service_description	Ottomatic использует это только для того, чтобы замечать нажатия кнопок громкости и запускать по ним ваши макросы. Содержимое экрана никогда не считывается, и работа самих кнопок не меняется: клавиши громкости продолжают работать как обычно.
+accessibility_service_description	Ottomatic использует это для двух вещей: чтобы замечать нажатия кнопок громкости и запускать по ним ваши макросы, и чтобы снять экран, когда макрос выполняет действие «Сделать снимок экрана». Экран никогда не отслеживается — снимок делается только по запросу макроса, — и работа самих кнопок не меняется: клавиши громкости продолжают работать как обычно.
 accessibility_service_label	Кнопочные триггеры Ottomatic
-accessibility_service_summary	Позволяет запускать макросы нажатием кнопок громкости.
+accessibility_service_summary	Позволяет запускать макросы нажатием кнопок громкости, а действию «Сделать снимок экрана» — снимать экран.
 ai_add_ai_connection	Добавить подключение к ИИ
 ai_add_connection	Добавить подключение
+ai_add_model	Добавить модель
 ai_ai_connections	Подключения к ИИ
 ai_answer_briefly_and_in_plain	Отвечай кратко и простым языком.
 ai_api_key	Ключ API
@@ -10,6 +11,7 @@ ai_api_key_paste_it_in	Ключ API — вставьте его заново
 ai_asking_the_model	Запрос к модели…
 ai_back	Назад
 ai_choose_a_connection	Выберите подключение
+ai_choose_a_model	Выберите модель
 ai_console_anthropic	консоль Anthropic
 ai_console_gemini	Google AI Studio
 ai_console_openai	платформу OpenAI
@@ -25,6 +27,7 @@ ai_default_name_openai	ChatGPT
 ai_default_name_openrouter	OpenRouter
 ai_default_name_self_hosted	Свой сервер
 ai_delete	Удалить
+ai_delete_model	Удалить эту модель
 ai_edit	Изменить
 ai_edit_connection	Изменить подключение
 ai_getting_a_key	Получение ключа
@@ -35,13 +38,25 @@ ai_list_models	Показать модели
 ai_loading_models	Загрузка моделей…
 ai_model_answered	Модель ответила: %1$s
 ai_model_balanced	Сбалансированная
+ai_model_effort	Глубина размышлений
+ai_model_effort_help	Насколько долго модель думает перед ответом. Это же решает, какую модель возьмёт провайдер, если идентификатор выше пуст.
 ai_model_fast	Быстрая
+ai_model_id	Идентификатор модели
+ai_model_id_required	обязательно
+ai_model_name	Название
+ai_model_name_help	Как это будут видеть макросы. Назовите по задаче, а не по модели: «Дом», «Кратко о письме».
+ai_model_name_placeholder	Дом
+ai_model_not_finished	Не завершено: укажите название и модель
+ai_model_provider_default	%1$s · собственная модель провайдера
 ai_model_thorough	Тщательная
 ai_models	Модели
 ai_name	Название
 ai_name_the_model_your_server	Укажите модель, которую предоставляет ваш сервер или аккаунт. Если заполнить только «Быструю», остальные две тоже будут использовать её.
 ai_new_api_key_leave_empty	Новый ключ API (оставьте пустым, чтобы сохранить текущий)
 ai_no_connections_yet_add_one	Подключений пока нет. Добавьте одно, чтобы пользоваться узлом «Спросить ИИ». Достаточно бесплатного ключа API из Google AI Studio — форма проведёт вас по шагам и сама откроет нужную страницу.
+ai_no_model_to_test	Сначала добавьте модель и сохраните, затем проверяйте.
+ai_no_models_on_this_account	В этой учётной записи пока нет моделей.
+ai_no_models_yet	Моделей пока нет. Добавьте одну, чтобы макросам было на что ссылаться.
 ai_open_console	Открыть %1$s
 ai_paste_key	Вставить ключ
 ai_pointing_at_own_server	Подключение к своему серверу
@@ -89,6 +104,25 @@ ai_steps_self_hosted:3	Загрузите список моделей или в�
 ai_test	Проверить
 ai_the_key_is_stored_encrypted	Ключ хранится на этом телефоне в зашифрованном виде и больше не показывается. %1$s Ничего не отправляется, пока макрос не дойдёт до узла «Спросить ИИ».
 ai_this_address_is_unencrypted_that	Этот адрес не зашифрован. Для сервера в вашей собственной сети это нормально, но не используйте его для чего-либо через интернет: ключ уйдёт открытым текстом.
+ai_tools_adjusted	Изменено здесь
+ai_tools_adjusted_count	Изменено для этого узла: %1$d
+ai_tools_adjusted_off	Здесь отключено
+ai_tools_adjusting	Это настройки модели. Изменение здесь подействует только на этот узел.
+ai_tools_allow_everything	Разрешить всё
+ai_tools_allowed_count	Разрешено %1$d из %2$d
+ai_tools_as_the_model_says	Всё, что разрешает модель
+ai_tools_choose_a_model_first	Сначала выберите модель
+ai_tools_macros	Макросы
+ai_tools_many_warning	Каждый инструмент описывается модели на каждом шаге. Длинный список забивает запрос и ухудшает выбор.
+ai_tools_n_allowed	Разрешено: %1$d
+ai_tools_need_a_choice	Для %1$d ещё нужно что-то выбрать, иначе они ничего не сделают.
+ai_tools_needs	Нужно: %1$s
+ai_tools_none_allowed	Ничего не разрешено — эта модель может только отвечать
+ai_tools_over_the_cap	Превышен предел в %1$d. Лишние не попадут в запрос — снимите несколько галочек.
+ai_tools_reset	Снова следовать модели
+ai_tools_reset_all	Сбросить всё
+ai_tools_title	Инструменты
+ai_unnamed_model	Модель без названия
 api_allow	Разрешить
 api_allow_app_to_run	Разрешить приложению %1$s запускать ваши макросы?
 api_allowed_on	Разрешено %1$s
@@ -113,13 +147,22 @@ apps_choose_an_app	Выберите приложение
 apps_no_apps_match_that	Подходящих приложений нет.
 apps_other_apps	Другие приложения
 apps_search	Поиск
+calendar_any_calendar	Любой календарь
+calendar_choose_a_calendar	Выберите календарь
+calendar_grant_access	Разрешить
+calendar_needs_access	Ottomatic нужен доступ к календарю, чтобы показать список ваших календарей.
+calendar_no_calendars	На этом телефоне нет календарей.
+calendar_no_writable_calendars	Ни в один календарь на этом телефоне нельзя добавлять записи. Подписной календарь, например с праздниками, доступен только для чтения.
 category_ai	ИИ
 category_automation	Автоматизация
+category_calendar	Календарь
 category_connectivity	Подключения
 category_data	Данные
 category_device_settings	Настройки устройства
 category_device_state	Состояние устройства
+category_files	Файлы
 category_flow_control	Управление потоком
+category_images	Фото
 category_interaction	Спросить пользователя
 category_location	Местоположение
 category_manual	Вручную
@@ -158,6 +201,16 @@ config_show_suggestions	Показать подсказки
 config_socket_feed	Подавать в «%1$s» данные сверху по цепочке
 config_socket_use_typed_connected	Использовать введённое значение для «%1$s» (подключено к %2$s)
 config_socket_use_typed_free	Использовать введённое значение для «%1$s» (ничего не подключено)
+config_tools_add	Добавить инструмент
+config_tools_ai_chooses	ИИ выбирает %2$s из %1$d доступных
+config_tools_choose	Чем может пользоваться ИИ?
+config_tools_fixed	Задано здесь, а не оставлено на усмотрение ИИ
+config_tools_fixed_count	Здесь задано значений: %1$d
+config_tools_missing	Больше недоступно
+config_tools_must_fix	Выбирается здесь: ИИ не может это указать
+config_tools_none	Пока ничего: ИИ только ответит, но ничего не сделает
+config_tools_nothing_to_fix	У этого инструмента нет настроек
+config_tools_remove	Убрать этот инструмент
 console_copy_message	Скопировать сообщение
 console_entry_title	Запись журнала
 console_filter_all	Все
@@ -185,6 +238,26 @@ editor_back_to_variables	Назад к переменным этого сцен�
 editor_tab_console	Консоль
 editor_tab_problems	Проблемы
 editor_tab_variables	Переменные
+files_add_file	Добавить файл
+files_choose	Выбрать файл или папку
+files_choose_file	Выбрать файл…
+files_choose_folder	Выбрать папку…
+files_download_note	Android не разрешает выдать доступ к самой папке Download. Чтобы использовать то, что уже в ней лежит, добавьте этот файл сюда через «Добавить файл» — или храните загрузки в папке внутри неё, её можно выдать целиком.
+files_files_heading	Отдельные файлы
+files_folder_access	Доступ к папкам
+files_grant	Выбрать папку
+files_missing	Этой папки больше нет. Выдайте доступ заново или отозовите его.
+files_no_folders	Ottomatic пока не может обратиться ни к одной из ваших папок.
+files_no_folders_hint	Выберите папку, чтобы макросы могли читать и записывать файлы внутри неё. Android не разрешает выдать доступ ко всему внутреннему хранилищу или к самой папке Download — создайте или выберите папку внутри, например Download/Ottomatic.
+files_no_path	У этого файла нет места на телефоне, поэтому макрос не может его назвать. Файлы, хранящиеся в облаке, и некоторые загрузки так использовать нельзя — сначала скопируйте файл в папку на телефоне.
+files_own_storage	Собственное хранилище Ottomatic
+files_own_storage_hint	Путь без папки, например report.csv, хранится здесь. Он не требует разрешений, и ни один макрос не получит доступ к файлам другого приложения.
+files_path_placeholder	Путь или имя в собственном хранилище Ottomatic
+files_read_only	Только чтение
+files_read_only_file	Может читать только этот файл
+files_read_write	Чтение и запись
+files_regrant	Выдать заново
+files_revoke	Отозвать
 geofence_back	Назад
 geofence_centre_on_my_location	Центрировать по моему местоположению
 geofence_choose_a_place	Выберите место
@@ -301,6 +374,10 @@ hue_hue_bridge	Мост Hue
 hue_name_your_bridge	Назовите свой мост
 hue_press_the_link_button	Нажмите кнопку связи
 hue_text	 ·
+intent_choice_ask_an_app	Спросить приложение
+intent_choice_needs_camera	Ottomatic нужен доступ к камере, прежде чем другое приложение сможет сделать снимок. Нажмите, чтобы разрешить, затем нажмите ещё раз.
+intent_choice_no_app	Ни одно приложение на этом телефоне не может это сделать. Значение всё равно можно ввести вручную.
+intent_choice_placeholder	Введите или спросите приложение
 kind_action	Действие
 kind_actions	Действия
 kind_transform	Преобразование
@@ -354,6 +431,22 @@ mail_this_provider_cannot_be_added	Этого провайдера нельзя 
 mail_unchanged	Без изменений
 mail_username_only_if_it_differs	Имя пользователя (только если отличается от адреса)
 mail_work_personal_alarm_system	Работа, Личное, Сигнализация…
+mqtt_address	Адрес брокера
+mqtt_anonymous	Анонимно
+mqtt_broker_reached	Есть связь. Брокер принял этот вход.
+mqtt_broker_subtitle	%1$s · %2$s
+mqtt_choose_a_broker	Выберите брокер
+mqtt_cleartext_warning	Это соединение не шифруется. Для брокера в вашей собственной сети это нормально; через интернет пароль ушёл бы открытым текстом.
+mqtt_connect_a_broker	Подключить MQTT-брокер
+mqtt_connected_this_is_the_name	Подключено. Это имя будут показывать ваши макросы.
+mqtt_listen_for_topics	Прослушать темы
+mqtt_login_optional	Оставьте эти поля пустыми, если ваш брокер пускает всех в сети — так настроено большинство домашних брокеров.
+mqtt_name_your_broker	Назовите брокер
+mqtt_no_broker_yet	MQTT-брокера пока нет. Добавьте его в разделе «Умный дом».
+mqtt_password	Пароль
+mqtt_setup_intro	Ottomatic подключается к брокеру, который у вас уже работает. Сам он брокером никогда не становится.
+mqtt_topics_heard	Услышано тем
+mqtt_username	Имя пользователя
 nfc_a_link_makes_the_tag	Ссылка заставит метку открываться в браузере при касании — и макрос, следящий за этой меткой, перестанет работать, потому что Android отдаёт метку тому приложению, которое заявляет права на ссылку, ещё до того, как её увидит Ottomatic. С текстом такого не происходит.
 nfc_already_in_your_library	Уже есть в вашей библиотеке.
 nfc_any_tag	Любая метка
@@ -389,48 +482,71 @@ nfc_written	Записано.
 perm_desc_access_background_location	Позволяет геозоне работать, когда Ottomatic закрыт, — а только тогда от неё и есть польза. Выдаётся выбором «Разрешать всегда».
 perm_desc_access_coarse_location	Более грубое определение, используется, когда точное местоположение недоступно.
 perm_desc_access_fine_location	Позволяет геозоне узнавать, когда вы куда-то приходите или уходите.
-perm_desc_accessibility_service	Позволяет Ottomatic замечать нажатия кнопок громкости и питания. Содержимое экрана никогда не считывается.
+perm_desc_access_media_location	Позволяет макросу читать место съёмки фотографии. Без этого Android скрывает место в фото, сохранённых другими приложениями, и макрос считает, что его нет.
+perm_desc_accessibility_service	Позволяет Ottomatic замечать нажатия кнопок громкости и питания и снимать экран для действия «Сделать снимок экрана». Экран никогда не отслеживается.
 perm_desc_battery_optimisation	Не даёт Android останавливать движок в фоне. Без этого макросы могут не активироваться после перезагрузки, а триггеры по времени — срабатывать с задержкой.
 perm_desc_bluetooth_connect	Позволяет макросу включать и выключать Bluetooth.
 perm_desc_call_phone	Позволяет макросу совершить звонок без вашего подтверждения.
+perm_desc_camera	Позволяет макросу сделать фото собственной камерой телефона — без приложения камеры и без нажатия кнопки. Ottomatic открывает камеру только на время выполнения действия «Сделать фото».
 perm_desc_device_admin	Позволяет Ottomatic использовать функции администратора устройства.
 perm_desc_exact_alarm	Позволяет расписанию сработать, а ожиданию завершиться ровно в ту минуту, которую вы указали. Без этого Android вправе объединить задачу с другими, и она может выполниться позже.
 perm_desc_foreground_service	Позволяет Ottomatic держать движок запущенным, пока ваши макросы активны.
+perm_desc_manage_media	Позволяет макросу изменять, перемещать и удалять фото, не спрашивая подтверждения каждый раз. Необязательно: без этого всё работает, но Android спрашивает каждый раз, а значит телефон должен быть в руках.
 perm_desc_nfc	Позволяет макросу запускаться, когда вы подносите NFC-метку к задней стороне телефона. Ottomatic не может включить NFC за вас, а метки считываются только при включённом и разблокированном экране.
 perm_desc_notification_listener	Позволяет Ottomatic видеть уведомления других приложений, чтобы макрос мог на них реагировать.
 perm_desc_notification_policy	Позволяет макросу включать и выключать режим «Не беспокоить» и переводить звонок в беззвучный режим.
 perm_desc_overlay	Позволяет макросу показать диалог на экране и открывать другие приложения, пока вы заняты чем-то ещё. Без этого Android запрещает и то и другое фоновому приложению.
 perm_desc_post_notifications	Позволяет Ottomatic показывать уведомления — как те, что отправляет макрос, так и то, которое сообщает, что движок не смог запуститься после перезагрузки.
+perm_desc_read_calendar	Позволяет макросу читать ваши встречи, а вам — выбрать календарь при настройке. В отличие от контактов, системного выбора здесь нет, поэтому без этого разрешения узел календаря ничего не покажет.
 perm_desc_read_contacts	Позволяет макросу найти номер выбранного вами контакта. Выбрать контакт можно без разрешений; чтобы потом набрать номер, оно нужно.
+perm_desc_read_media_images	Позволяет макросу находить и читать изображения на телефоне и запускаться при сохранении нового. Без этого ни один узел фото не работает.
 perm_desc_receive_sms	Позволяет макросу запускаться при получении SMS и читать, от кого оно и что в нём.
 perm_desc_send_sms	Позволяет макросу отправлять SMS от вашего имени.
 perm_desc_unknown	Используется узлом в одном из ваших макросов.
+perm_desc_write_calendar	Позволяет макросу создавать, изменять и удалять встречи. Чтение — отдельный переключатель выше.
+perm_desc_write_media_images	Позволяет макросу изменять, перемещать или удалять фото на старых версиях Android. Начиная с Android 10 здесь нечего предоставлять: Android сам запрашивает подтверждение каждого изменения.
 perm_desc_write_settings	Позволяет макросу менять яркость экрана, время до отключения экрана и автоповорот.
-perm_rationale_accessibility_keys	Ottomatic нужен доступ к спецвозможностям, чтобы замечать нажатия кнопок. Содержимое экрана никогда не считывается. Если переключатель неактивен, сначала откройте Сведения о приложении → ⋮ → Разрешить ограниченные настройки.
+perm_rationale_accessibility_keys	Ottomatic нужен доступ к спецвозможностям, чтобы замечать нажатия кнопок. Экран никогда не отслеживается. Если переключатель неактивен, сначала откройте Сведения о приложении → ⋮ → Разрешить ограниченные настройки.
 perm_rationale_alarm_exact	Ottomatic нужно разрешение на точные будильники, чтобы это ожидание завершилось ровно в указанную минуту. Без него ожидание всё равно произойдёт, но Android объединит пробуждение с другими задачами, и оно может опоздать на несколько минут.
+perm_rationale_calendar_read	Ottomatic нужен доступ к календарю, чтобы читать ваши встречи. Без него этот узел не прочитает ничего, а выбор календаря выше останется пустым.
+perm_rationale_calendar_write	Ottomatic нужно разрешение на изменение календаря, чтобы этот узел мог создать, изменить или удалить встречу. Чтение встреч — отдельное разрешение.
+perm_rationale_camera_photo	Ottomatic нужен доступ к камере, чтобы сделать фото. Камера открывается только на время выполнения этого действия и сразу закрывается. Android всё равно может отказать в съёмке, если телефон долго бездействовал в фоне.
 perm_rationale_dnd_policy	Ottomatic нужен доступ к режиму «Не беспокоить», чтобы менять режим звука.
+perm_rationale_media_location	Ottomatic нужно разрешение читать место съёмки, иначе этот узел сообщит, что места нет ни у одного изображения. Ваших собственных снимков это не касается.
+perm_rationale_media_manage	Ottomatic может изменять фото, не спрашивая каждый раз. Необязательно: без этого узел работает, но Android показывает подтверждение на экране, поэтому без участия человека он не выполнится.
+perm_rationale_media_read	Ottomatic нужен доступ к вашим фото, чтобы этот узел мог находить и читать их. Выбрать изображение вручную можно и без него; искать во время работы макроса — нет.
+perm_rationale_media_write	Ottomatic нужно разрешение изменять ваши фото, чтобы этот узел мог перезаписать одно из них. В Android 10 и новее это разрешение ничего не даёт: Android запрашивает подтверждение каждого изменения.
 perm_rationale_nfc_radio	Этому триггеру нужен включённый NFC — это общесистемная настройка, которую Ottomatic не может выдать себе сам. Кроме того, метки считываются только при включённом и разблокированном экране: касание не разбудит телефон, спящий в кармане.
 perm_rationale_notification_listener	Ottomatic нужен доступ к уведомлениям, чтобы видеть уведомления других приложений.
 perm_rationale_overlay_dialog	Ottomatic нужно разрешение показываться поверх других приложений, чтобы этот диалог дошёл до вас, когда вы заняты чем-то другим на телефоне. Без него узел отменяется вместо того, чтобы спросить.
 perm_rationale_overlay_launch	Ottomatic нужно разрешение показываться поверх других приложений, чтобы открыть одно из них, пока вы заняты чем-то другим на телефоне. Android запрещает фоновому приложению открывать другое, и без этого разрешения узел ничего не делает и сообщает об этом в консоли.
+perm_rationale_overlay_media	Ottomatic нужно разрешение поверх других приложений, чтобы показать подтверждение Android, пока макрос работает в фоне. Без него изменение фото, сохранённого другим приложением, не удастся, когда вы не в Ottomatic.
+perm_rationale_screen_capture	Ottomatic нужен доступ к спецвозможностям, чтобы снять экран. Снимок делается только во время выполнения этого действия — экран никогда не отслеживается. Если переключатель неактивен, сначала откройте Сведения о приложении → ⋮ → Разрешить ограниченные настройки.
 perm_title_access_background_location	Местоположение в фоне
 perm_title_access_coarse_location	Приблизительное местоположение
 perm_title_access_fine_location	Местоположение
+perm_title_access_media_location	Места съёмки
 perm_title_accessibility_service	Доступ к спецвозможностям
 perm_title_battery_optimisation	Работа без ограничений батареи
 perm_title_bluetooth_connect	Bluetooth
 perm_title_call_phone	Совершение звонков
+perm_title_camera	Камера
 perm_title_device_admin	Администратор устройства
 perm_title_exact_alarm	Будильники и напоминания
 perm_title_foreground_service	Служба переднего плана
+perm_title_manage_media	Управление медиафайлами
 perm_title_nfc	NFC
 perm_title_notification_listener	Доступ к уведомлениям
 perm_title_notification_policy	Доступ к режиму «Не беспокоить»
 perm_title_overlay	Поверх других приложений
 perm_title_post_notifications	Уведомления
+perm_title_read_calendar	Календарь
 perm_title_read_contacts	Контакты
+perm_title_read_media_images	Фото
 perm_title_receive_sms	Приём SMS
 perm_title_send_sms	Отправка SMS
+perm_title_write_calendar	Изменение календаря
+perm_title_write_media_images	Изменение фото
 perm_title_write_settings	Изменение системных настроек
 permission_bind_plugin_description	Позволяет Ottomatic использовать дополнительные узлы-триггеры и узлы-действия из этого приложения. Приложение выполняет собственный код со своими разрешениями; Ottomatic не делится с ним своими.
 permission_bind_plugin_label	Предоставлять узлы Ottomatic
@@ -459,6 +575,8 @@ plugins_plugins	Плагины
 plugins_provides_no_nodes	Не предоставляет ни одного узла
 plugins_this_app_asks_for	Это приложение запрашивает: %1$s
 problem_ai_missing	«%1$s» указывает на подключение к ИИ, которого больше нет
+problem_ai_tool_missing	«%1$s» предлагает ИИ «%2$s», но это больше недоступно
+problem_ai_tool_unpinned	«%1$s» предлагает «%2$s», но не выбрано %3$s, а ИИ не может это заполнить
 problem_ai_unfinished	«%1$s» указывает на подключение к ИИ, настройка которого не завершена
 problem_ai_unset	Для «%1$s» не выбрано подключение к ИИ, поэтому ничего не произойдёт
 problem_data_cycle	Обнаружен цикл данных: %1$s
@@ -492,6 +610,20 @@ problems_skipped_nodes	пропущено: %1$s
 problems_summary_separator	 ·
 problems_where_separator	  ·
 problems_wire_skipped	эта связь пропускается
+setup_ai	ИИ
+setup_ai_subtitle	Аккаунты и модели для узлов ИИ
+setup_app_access_subtitle	Другие приложения, которым разрешено запускать ваши макросы
+setup_folders_subtitle	Папки и файлы, которые может открывать это приложение
+setup_geofences_subtitle	Места, на которые могут реагировать ваши макросы
+setup_mail_subtitle	Ящики для отправки и чтения
+setup_nfc_subtitle	Сохранённые метки
+setup_permissions_subtitle	Что телефон разрешает вашим макросам
+setup_plugins_subtitle	Приложения, которые добавляют узлы
+setup_section_connections	Подключения
+setup_section_system	Система
+setup_smart_home_subtitle	Hue, Home Assistant и MQTT
+setup_title	Настройка
+setup_variables_subtitle	Значения, общие для всех макросов
 shortcut_macro_and_trigger	%1$s · %2$s
 shortcut_macro_gone	Этого макроса больше нет
 shortcut_new_macro_long	Создать новый макрос
@@ -517,6 +649,8 @@ smarthome_hub_subtitle	%1$s · светильников: %2$d · сцен: %3$d
 smarthome_it_is_the_large_button	Это большая кнопка в центре диска, между тремя маленькими индикаторами. Подключение к %1$s.
 smarthome_lights	Светильники
 smarthome_looking_for_bridges_on_your	Поиск мостов в вашей сети Wi-Fi…
+smarthome_mqtt_broker	MQTT-брокер
+smarthome_mqtt_broker_subtitle	Брокер, который у вас уже работает — Mosquitto, Zigbee2MQTT, EMQX
 smarthome_name	Название
 smarthome_no_hub_yet	Хабов пока нет. Добавьте хаб, чтобы управлять светом из макроса.
 smarthome_no_hubs_yet_add_one	Хабов пока нет. Добавьте хаб, чтобы управлять светом из макроса и запускать макросы, когда что-то меняется у вас дома.
@@ -642,6 +776,7 @@ workflowlist_armed_with_problems	Активен · %1$s
 workflowlist_can_t_add_it_from	Отсюда добавить нельзя
 workflowlist_cancel	Отмена
 workflowlist_choose_a_macro	Выберите макрос
+workflowlist_clear_search	Очистить поиск
 workflowlist_delete	Удалить
 workflowlist_delete_confirm	Удалить «%1$s»? Это действие нельзя отменить.
 workflowlist_delete_workflow	Удалить сценарий
@@ -654,146 +789,15 @@ workflowlist_mail_accounts	Почтовые аккаунты
 workflowlist_more	Ещё
 workflowlist_new_workflow	Новый сценарий
 workflowlist_nfc_tags	NFC-метки
+workflowlist_no_matches	Нет подходящих макросов.
 workflowlist_no_other_macros_yet	Других макросов пока нет.
 workflowlist_no_workflows_yet_ntap_to	Сценариев пока нет.\nНажмите +, чтобы создать.
 workflowlist_off	Выключен
 workflowlist_permissions	Разрешения
 workflowlist_plugins	Плагины
+workflowlist_search_placeholder	Поиск макросов
 workflowlist_smart_home	Умный дом
 workflowlist_text	 ·
 workflowlist_this_macro	этот макрос
 workflowlist_which_trigger	Какой триггер?
 workflowlist_workflows	Сценарии
-smarthome_mqtt_broker	MQTT-брокер
-smarthome_mqtt_broker_subtitle	Брокер, который у вас уже работает — Mosquitto, Zigbee2MQTT, EMQX
-mqtt_connect_a_broker	Подключить MQTT-брокер
-mqtt_name_your_broker	Назовите брокер
-mqtt_setup_intro	Ottomatic подключается к брокеру, который у вас уже работает. Сам он брокером никогда не становится.
-mqtt_address	Адрес брокера
-mqtt_login_optional	Оставьте эти поля пустыми, если ваш брокер пускает всех в сети — так настроено большинство домашних брокеров.
-mqtt_username	Имя пользователя
-mqtt_password	Пароль
-mqtt_anonymous	Анонимно
-mqtt_broker_reached	Есть связь. Брокер принял этот вход.
-mqtt_cleartext_warning	Это соединение не шифруется. Для брокера в вашей собственной сети это нормально; через интернет пароль ушёл бы открытым текстом.
-mqtt_connected_this_is_the_name	Подключено. Это имя будут показывать ваши макросы.
-mqtt_choose_a_broker	Выберите брокер
-mqtt_no_broker_yet	MQTT-брокера пока нет. Добавьте его в разделе «Умный дом».
-mqtt_listen_for_topics	Прослушать темы
-mqtt_topics_heard	Услышано тем
-mqtt_broker_subtitle	%1$s · %2$s
-category_files	Файлы
-files_path_placeholder	Путь или имя в собственном хранилище Ottomatic
-files_choose	Выбрать файл или папку
-files_choose_folder	Выбрать папку…
-files_choose_file	Выбрать файл…
-files_folder_access	Доступ к папкам
-files_no_folders	Ottomatic пока не может обратиться ни к одной из ваших папок.
-files_no_folders_hint	Выберите папку, чтобы макросы могли читать и записывать файлы внутри неё. Android не разрешает выдать доступ ко всему внутреннему хранилищу или к самой папке Download — создайте или выберите папку внутри, например Download/Ottomatic.
-files_grant	Выбрать папку
-files_regrant	Выдать заново
-files_revoke	Отозвать
-files_read_only	Только чтение
-files_read_write	Чтение и запись
-files_missing	Этой папки больше нет. Выдайте доступ заново или отозовите его.
-files_own_storage	Собственное хранилище Ottomatic
-files_own_storage_hint	Путь без папки, например report.csv, хранится здесь. Он не требует разрешений, и ни один макрос не получит доступ к файлам другого приложения.
-files_no_path	У этого файла нет места на телефоне, поэтому макрос не может его назвать. Файлы, хранящиеся в облаке, и некоторые загрузки так использовать нельзя — сначала скопируйте файл в папку на телефоне.
-files_add_file	Добавить файл
-files_files_heading	Отдельные файлы
-files_download_note	Android не разрешает выдать доступ к самой папке Download. Чтобы использовать то, что уже в ней лежит, добавьте этот файл сюда через «Добавить файл» — или храните загрузки в папке внутри неё, её можно выдать целиком.
-files_read_only_file	Может читать только этот файл
-problem_ai_tool_missing	«%1$s» предлагает ИИ «%2$s», но это больше недоступно
-problem_ai_tool_unpinned	«%1$s» предлагает «%2$s», но не выбрано %3$s, а ИИ не может это заполнить
-config_tools_choose	Чем может пользоваться ИИ?
-config_tools_none	Пока ничего: ИИ только ответит, но ничего не сделает
-config_tools_fixed_count	Здесь задано значений: %1$d
-config_tools_remove	Убрать этот инструмент
-config_tools_missing	Больше недоступно
-config_tools_fixed	Задано здесь, а не оставлено на усмотрение ИИ
-config_tools_must_fix	Выбирается здесь: ИИ не может это указать
-config_tools_nothing_to_fix	У этого инструмента нет настроек
-config_tools_add	Добавить инструмент
-ai_add_model	Добавить модель
-ai_choose_a_model	Выберите модель
-ai_delete_model	Удалить эту модель
-ai_model_effort	Глубина размышлений
-ai_model_effort_help	Насколько долго модель думает перед ответом. Это же решает, какую модель возьмёт провайдер, если идентификатор выше пуст.
-ai_model_id	Идентификатор модели
-ai_model_id_required	обязательно
-ai_model_name	Название
-ai_model_name_help	Как это будут видеть макросы. Назовите по задаче, а не по модели: «Дом», «Кратко о письме».
-ai_model_name_placeholder	Дом
-ai_model_not_finished	Не завершено: укажите название и модель
-ai_model_provider_default	%1$s · собственная модель провайдера
-ai_no_model_to_test	Сначала добавьте модель и сохраните, затем проверяйте.
-ai_no_models_on_this_account	В этой учётной записи пока нет моделей.
-ai_no_models_yet	Моделей пока нет. Добавьте одну, чтобы макросам было на что ссылаться.
-ai_tools_allow_everything	Разрешить всё
-ai_tools_allowed_count	Разрешено %1$d из %2$d
-ai_tools_macros	Макросы
-ai_tools_many_warning	Каждый инструмент описывается модели на каждом шаге. Длинный список забивает запрос и ухудшает выбор.
-ai_tools_n_allowed	Разрешено: %1$d
-ai_tools_need_a_choice	Для %1$d ещё нужно что-то выбрать, иначе они ничего не сделают.
-ai_tools_needs	Нужно: %1$s
-ai_tools_none_allowed	Ничего не разрешено — эта модель может только отвечать
-ai_tools_over_the_cap	Превышен предел в %1$d. Лишние не попадут в запрос — снимите несколько галочек.
-ai_tools_title	Инструменты
-ai_unnamed_model	Модель без названия
-ai_tools_adjusted	Изменено здесь
-ai_tools_adjusted_count	Изменено для этого узла: %1$d
-ai_tools_adjusted_off	Здесь отключено
-ai_tools_adjusting	Это настройки модели. Изменение здесь подействует только на этот узел.
-ai_tools_as_the_model_says	Всё, что разрешает модель
-ai_tools_choose_a_model_first	Сначала выберите модель
-ai_tools_reset	Снова следовать модели
-ai_tools_reset_all	Сбросить всё
-config_tools_ai_chooses	ИИ выбирает %2$s из %1$d доступных
-perm_title_read_calendar	Календарь
-perm_title_write_calendar	Изменение календаря
-perm_desc_read_calendar	Позволяет макросу читать ваши встречи, а вам — выбрать календарь при настройке. В отличие от контактов, системного выбора здесь нет, поэтому без этого разрешения узел календаря ничего не покажет.
-perm_desc_write_calendar	Позволяет макросу создавать, изменять и удалять встречи. Чтение — отдельный переключатель выше.
-perm_rationale_calendar_read	Ottomatic нужен доступ к календарю, чтобы читать ваши встречи. Без него этот узел не прочитает ничего, а выбор календаря выше останется пустым.
-perm_rationale_calendar_write	Ottomatic нужно разрешение на изменение календаря, чтобы этот узел мог создать, изменить или удалить встречу. Чтение встреч — отдельное разрешение.
-category_calendar	Календарь
-calendar_choose_a_calendar	Выберите календарь
-calendar_any_calendar	Любой календарь
-calendar_no_calendars	На этом телефоне нет календарей.
-calendar_no_writable_calendars	Ни в один календарь на этом телефоне нельзя добавлять записи. Подписной календарь, например с праздниками, доступен только для чтения.
-calendar_needs_access	Ottomatic нужен доступ к календарю, чтобы показать список ваших календарей.
-calendar_grant_access	Разрешить
-category_images	Фото
-perm_title_read_media_images	Фото
-perm_title_write_media_images	Изменение фото
-perm_title_access_media_location	Места съёмки
-perm_title_manage_media	Управление медиафайлами
-perm_desc_read_media_images	Позволяет макросу находить и читать изображения на телефоне и запускаться при сохранении нового. Без этого ни один узел фото не работает.
-perm_desc_write_media_images	Позволяет макросу изменять, перемещать или удалять фото на старых версиях Android. Начиная с Android 10 здесь нечего предоставлять: Android сам запрашивает подтверждение каждого изменения.
-perm_desc_access_media_location	Позволяет макросу читать место съёмки фотографии. Без этого Android скрывает место в фото, сохранённых другими приложениями, и макрос считает, что его нет.
-perm_desc_manage_media	Позволяет макросу изменять, перемещать и удалять фото, не спрашивая подтверждения каждый раз. Необязательно: без этого всё работает, но Android спрашивает каждый раз, а значит телефон должен быть в руках.
-perm_rationale_media_read	Ottomatic нужен доступ к вашим фото, чтобы этот узел мог находить и читать их. Выбрать изображение вручную можно и без него; искать во время работы макроса — нет.
-perm_rationale_media_write	Ottomatic нужно разрешение изменять ваши фото, чтобы этот узел мог перезаписать одно из них. В Android 10 и новее это разрешение ничего не даёт: Android запрашивает подтверждение каждого изменения.
-perm_rationale_media_location	Ottomatic нужно разрешение читать место съёмки, иначе этот узел сообщит, что места нет ни у одного изображения. Ваших собственных снимков это не касается.
-perm_rationale_media_manage	Ottomatic может изменять фото, не спрашивая каждый раз. Необязательно: без этого узел работает, но Android показывает подтверждение на экране, поэтому без участия человека он не выполнится.
-perm_rationale_overlay_media	Ottomatic нужно разрешение поверх других приложений, чтобы показать подтверждение Android, пока макрос работает в фоне. Без него изменение фото, сохранённого другим приложением, не удастся, когда вы не в Ottomatic.
-setup_title	Настройка
-setup_section_connections	Подключения
-setup_section_system	Система
-setup_ai	ИИ
-setup_smart_home_subtitle	Hue, Home Assistant и MQTT
-setup_ai_subtitle	Аккаунты и модели для узлов ИИ
-setup_mail_subtitle	Ящики для отправки и чтения
-setup_variables_subtitle	Значения, общие для всех макросов
-setup_geofences_subtitle	Места, на которые могут реагировать ваши макросы
-setup_nfc_subtitle	Сохранённые метки
-setup_folders_subtitle	Папки и файлы, которые может открывать это приложение
-setup_permissions_subtitle	Что телефон разрешает вашим макросам
-setup_plugins_subtitle	Приложения, которые добавляют узлы
-setup_app_access_subtitle	Другие приложения, которым разрешено запускать ваши макросы
-workflowlist_search_placeholder	Поиск макросов
-workflowlist_clear_search	Очистить поиск
-workflowlist_no_matches	Нет подходящих макросов.
-intent_choice_placeholder	Введите или спросите приложение
-intent_choice_ask_an_app	Спросить приложение
-intent_choice_no_app	Ни одно приложение на этом телефоне не может это сделать. Значение всё равно можно ввести вручную.
-intent_choice_needs_camera	Ottomatic нужен доступ к камере, прежде чем другое приложение сможет сделать снимок. Нажмите, чтобы разрешить, затем нажмите ещё раз.

@@ -57,6 +57,7 @@ Auto brightness	Auto brightness
 Automatic	Automatic
 Away for (minutes)	Away for (minutes)
 B	B
+Back camera	Back camera
 Battery Level	Battery Level
 Battery level	Battery level
 Bcc	Bcc
@@ -84,9 +85,11 @@ Calendar Event	Calendar Event
 Call Home Assistant Service	Call Home Assistant Service
 Called by Another App	Called by Another App
 Calls a web API and exposes the typed response	Calls a web API and exposes the typed response
+Camera	Camera
 Camera maker	Camera maker
 Camera model	Camera model
 Cancel button	Cancel button
+Captures what is on the screen right now and saves it as a picture	Captures what is on the screen right now and saves it as a picture
 Carries on at once and continues again at a chosen moment	Carries on at once and continues again at a chosen moment
 Carry on now	Carry on now
 Cc	Cc
@@ -206,6 +209,7 @@ Fires when a named variable changes value	Fires when a named variable changes va
 Fires when the app is initialised and running	Fires when the app is initialised and running
 Fires when the device\'s UI / night mode changes	Fires when the device\'s UI / night mode changes
 Fires when this macro is enabled (its triggers are armed)	Fires when this macro is enabled (its triggers are armed)
+Flash	Flash
 Float	Float
 Folder	Folder
 Folders	Folders
@@ -218,6 +222,7 @@ From (optional)	From (optional)
 From app (optional)	From app (optional)
 From contains	From contains
 From position (0 is the first)	From position (0 is the first)
+Front camera	Front camera
 Geofence	Geofence
 Gesture	Gesture
 Get	Get
@@ -282,6 +287,7 @@ Key	Key
 Landscape left	Landscape left
 Landscape right	Landscape right
 Latest picture	Latest picture
+Latest screenshot	Latest screenshot
 Latin-1 (ISO 8859-1)	Latin-1 (ISO 8859-1)
 Launch App	Launch App
 Launches another app by package name	Launches another app by package name
@@ -500,11 +506,13 @@ SMS Received	SMS Received
 Same as the original	Same as the original
 Saturdays	Saturdays
 Save as	Save as
+Save in this folder	Save in this folder
 Saves text to a file on the phone, replacing it or adding to the end	Saves text to a file on the phone, replacing it or adding to the end
 Scene	Scene
 Schedule	Schedule
 Screen On / Off	Screen On / Off
 Screen on	Screen on
+Screenshot Taken	Screenshot Taken
 Script — each input is a variable of its own name	Script — each input is a variable of its own name
 Seconds	Seconds
 Send Email	Send Email
@@ -570,6 +578,7 @@ Starts when a media button is pressed (play, pause, next, etc.)	Starts when a me
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger
 Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes
 Starts when a photo, screenshot or downloaded picture is added to this phone	Starts when a photo, screenshot or downloaded picture is added to this phone
+Starts when a screenshot is captured on this phone	Starts when a screenshot is captured on this phone
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally
 Starts when a wired headset is plugged or unplugged	Starts when a wired headset is plugged or unplugged
 Starts when airplane mode is toggled	Starts when airplane mode is toggled
@@ -615,8 +624,11 @@ Sundays	Sundays
 System	System
 Tag	Tag
 Tag — Used for manual deletion	Tag — Used for manual deletion
+Take Photo	Take Photo
+Take Screenshot	Take Screenshot
 Taken after	Taken after
 Taken before	Taken before
+Takes a picture with the phone\'s front or back camera, with flash and a delay before the shot	Takes a picture with the phone\'s front or back camera, with flash and a delay before the shot
 Takes down a notification this app posted under a tag	Takes down a notification this app posted under a tag
 Tap on Device	Tap on Device
 Taps	Taps
@@ -636,6 +648,7 @@ The device\'s current ringer mode	The device\'s current ringer mode
 The last message published to a topic on an MQTT broker	The last message published to a topic on an MQTT broker
 The light level around the device in lux — a dim room is around 30, an office a few hundred	The light level around the device in lux — a dim room is around 30, an office a few hundred
 The most recent photo, screenshot or picture saved on this phone	The most recent photo, screenshot or picture saved on this phone
+The most recent screenshot saved on this phone	The most recent screenshot saved on this phone
 The name of the Wi-Fi network the device is currently connected to	The name of the Wi-Fi network the device is currently connected to
 The next appointment due to start in any calendar	The next appointment due to start in any calendar
 The next few days	The next few days
@@ -706,6 +719,7 @@ Volume down	Volume down
 Volume up	Volume up
 Wait	Wait
 Wait Until	Wait Until
+Wait before the shot (seconds)	Wait before the shot (seconds)
 Wait until finished	Wait until finished
 Warmth (K)	Warmth (K)
 WebP	WebP

@@ -29,6 +29,7 @@
     <string name="perm_title_write_calendar">Change your calendar</string>
     <string name="perm_title_post_notifications">Notifications</string>
     <string name="perm_title_bluetooth_connect">Bluetooth</string>
+    <string name="perm_title_camera">Camera</string>
 
     <!-- Row bodies: what Ottomatic does with the grant. -->
     <string name="perm_desc_overlay">Lets a macro put a dialog on screen, and open other apps, while you are looking at something else. Android blocks both from a background app without it.</string>
@@ -56,11 +57,13 @@
     <string name="perm_desc_write_calendar">Lets a macro create, change and delete appointments. Reading them is a separate switch above.</string>
     <string name="perm_desc_post_notifications">Lets Ottomatic show a notification — both the ones a macro posts and the one that tells you the engine failed to start after a reboot.</string>
     <string name="perm_desc_bluetooth_connect">Lets a macro turn Bluetooth on and off.</string>
+    <string name="perm_desc_camera">Lets a macro take a photo with the phone\'s own camera — no camera app, and nobody pressing a button. Ottomatic opens the camera only while a Take Photo action is running.</string>
     <string name="perm_desc_unknown">Used by a node on one of your macros.</string>
 
     <!-- Node-card rationales: why *this node* is asking. -->
     <string name="perm_rationale_accessibility_keys">Ottomatic needs accessibility access to see button presses. It never watches what is on screen. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.</string>
     <string name="perm_rationale_screen_capture">Ottomatic needs accessibility access to capture the screen. It captures only while this action runs — it never watches what is on screen. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.</string>
+    <string name="perm_rationale_camera_photo">Ottomatic needs camera access to take a photo. It opens the camera only while this action runs, and closes it straight afterwards. Android may still refuse a photo when the phone has been idle in the background for a long time.</string>
     <string name="perm_rationale_notification_listener">Ottomatic needs notification access to see notifications from other apps.</string>
     <string name="perm_rationale_dnd_policy">Ottomatic needs Do Not Disturb access to change your ringer mode.</string>
     <string name="perm_rationale_overlay_dialog">Ottomatic needs permission to draw over other apps so this dialog can reach you while you are somewhere else on your phone. Without it the node cancels instead of asking.</string>

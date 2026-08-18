@@ -1,4 +1,6 @@
 A	A
+A quarter turn left	На четверть оборота влево
+A quarter turn right	На четверть оборота вправо
 A run of items out of a list	Часть списка подряд идущих элементов
 A to Z / smallest first	От А до Я / сначала меньшие
 Above	Выше
@@ -10,20 +12,26 @@ Activates a lighting scene you set up in the Hue app, or turns its room off — 
 Active	Активно
 Active from	Активно с
 Active until (earlier than \'from\' runs past midnight)	Активно до (если раньше, чем «с», интервал переходит через полночь)
+Add Calendar Event	Добавить встречу
 Add to List	Добавить в список
+Add to the end instead of replacing	Дописывать в конец, а не заменять
 Adjusts an audio stream\'s volume (up, down, set, mute or unmute)	Меняет громкость аудиопотока (громче, тише, задать, выключить или включить звук)
 Airplane Mode Changed	Изменение режима полёта
 Airplane mode	Режим полёта
 Alarm	Будильник
 Alarms	Будильники
 All	Все
+All day	Весь день
+Also fire on messages the broker had stored	Срабатывать и на сообщения, которые брокер хранил
 Also when only its details change	Также когда меняются только детали
 Also when the device starts moving	Также когда устройство начинает двигаться
 Always (high battery use)	Всегда (высокий расход батареи)
+Amber	Янтарный
 Ambient Light	Освещённость
 Ambient light	Освещённость
 Answer	Ответ
 Answer type	Тип ответа
+Answers whether a file exists, how big it is and when it changed	Сообщает, есть ли файл, какого он размера и когда изменялся
 Any	Любой
 Anything	Любое
 App	Приложение
@@ -31,10 +39,17 @@ App (optional)	Приложение (необязательно)
 App Initialised	Приложение запущено
 App Installed / Removed	Установка / удаление приложения
 Appends an item to a named list, usually from inside a loop	Добавляет элемент в именованный список, обычно изнутри цикла
+Applies to	Применить к
+Appointment	Встреча
+Artist	Автор
 Ask AI	Спросить ИИ
+Ask AI (with tools)	Запрос к ИИ (с инструментами)
+Ask AI About a Picture	Спросить ИИ об изображении
 Ask Yes or No	Спросить «да или нет»
 Ask for Input	Запросить ввод
+Ask the broker to keep this message	Попросить брокер сохранить это сообщение
 Ask to Choose	Предложить выбор
+Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer	Просит модель ИИ выполнить задачу, позволяя ей читать данные телефона и запускать выбранные вами узлы и макросы, пока не будет получен ответ
 Asks the user a yes/no question in a popup dialog and branches on the answer	Задаёт пользователю вопрос «да/нет» во всплывающем окне и ветвится по ответу
 Asks the user to type a value in a popup dialog and puts it on a port	Просит пользователя ввести значение во всплывающем окне и выдаёт его на порт
 At	В
@@ -45,31 +60,48 @@ Auto brightness	Автояркость
 Automatic	Автоматически
 Away for (minutes)	Отсутствие в течение (минут)
 B	B
+Back camera	Основная камера
 Balanced	Сбалансированная
 Battery Level	Уровень заряда
 Battery level	Уровень заряда
 Bcc	Скрытая копия
 Below	Ниже
+Between two times	Между двумя моментами
+Blue	Синий
 Bluetooth Device Connected	Подключение Bluetooth-устройства
 Bluetooth State Change	Изменение состояния Bluetooth
 Bluetooth enabled	Bluetooth включён
 Body	Текст
 Boolean	Логическое
+Both	И то, и другое
 Break Struct	Разобрать структуру
 Brightness %	Яркость, %
+Broker	Брокер
 Build text	Собрать текст
+Busy	Занят
 Button	Кнопка
 Button label	Надпись на кнопке
+Buttons — one per line	Кнопки — по одной в строке
 C	C
+Calendar	Календарь
+Calendar Changed	Календарь изменён
+Calendar Event	Встреча в календаре
 Call Home Assistant Service	Вызвать службу Home Assistant
 Called by Another App	Вызов из другого приложения
 Calls a web API and exposes the typed response	Обращается к веб-API и выдаёт типизированный ответ
+Camera	Камера
+Camera maker	Производитель камеры
+Camera model	Модель камеры
 Cancel button	Кнопка отмены
 Carries on at once and continues again at a chosen moment	Продолжает выполнение сразу и ещё раз — в выбранный момент
 Carry on now	Продолжить сейчас
 Cc	Копия
 Change	Изменение
+Change Picture Details	Изменить сведения об изображении
+Change format or quality	Изменить формат или качество
+Change how it shows you	Изменить показ занятости
 Changes from	Меняется с
+Changes or deletes an appointment, either one occurrence of it or the whole series	Изменяет или удаляет встречу — либо одно повторение, либо всю серию
 Changes to	Меняется на
 Charging	Зарядка
 Charging started	Зарядка началась
@@ -85,6 +117,8 @@ Combines words and values into one piece of text	Соединяет слова �
 Compare against	Сравнить с
 Compare as	Сравнивать как
 Confirm button	Кнопка подтверждения
+Confirmed by the broker	Подтверждена брокером
+Confirmed exactly once	Подтверждена ровно один раз
 Connected	Подключено
 Connection	Подключение
 Contains	Содержит
@@ -93,9 +127,15 @@ Control Scene	Управление сценой
 Conversation ID	Идентификатор беседы
 Convert	Преобразовать
 Convert to	Преобразовать в
+Copies, moves or renames a file on the phone	Копирует, перемещает или переименовывает файл на телефоне
+Copy it	Копировать
+Copy or Move File	Копировать или переместить файл
+Copyright	Авторские права
 Count	Количество
 Count items	Посчитать элементы
 Covered	Закрыт
+Creates an appointment in one of the calendars on this phone	Создаёт встречу в одном из календарей на этом телефоне
+Crop	Обрезать
 Current time	Текущее время
 Custom	Свой
 Custom sound	Свой звук
@@ -104,10 +144,18 @@ Dark theme	Тёмная тема
 Data contains	Данные содержат
 Date &amp; time	Дата и время
 Date rolled over	Наступил новый день
+Date taken	Дата съёмки
 Date time	Дата и время
 Days	Дни
+Days ahead	На сколько дней вперёд
 Days of month (e.g. 1,15, empty = every day)	Дни месяца (например, 1,15; пусто — каждый день)
 Delete	Удалить
+Delete File	Удалить файл
+Delete Picture	Удалить изображение
+Delete for good	Удалить навсегда
+Delivery	Доставка
+Description	Описание
+Details	Описание
 Device Boot	Загрузка устройства
 Device Docked	Устройство в док-станции
 Device Movement	Движение устройства
@@ -119,6 +167,7 @@ Direction	Направление
 Disable Macro	Выключить макрос
 Disabled	Выключено
 Disables another macro by id (persists the flag and disarms its triggers)	Выключает другой макрос по идентификатору (сохраняет флаг и снимает его триггеры)
+Disappear after (seconds)	Исчезнет через (секунд)
 Disconnected	Отключено
 Dismiss	Закрыть
 Do Not Disturb	Не беспокоить
@@ -130,6 +179,7 @@ Down	Вниз
 Duration	Длительность
 Duration (ms, used when pattern is empty)	Длительность (мс, используется, когда шаблон пуст)
 Dwell delay (ms)	Задержка пребывания (мс)
+Edit Picture	Изменить изображение
 Ejected	Извлечён
 Email Received	Получено письмо
 Empty List	Очистить список
@@ -141,6 +191,7 @@ Entity	Сущность
 Equals	Равно
 Event	Событие
 Event type	Тип события
+Events	Встречи
 Extra data (JSON)	Дополнительные данные (JSON)
 Face down	Экраном вниз
 Face up	Экраном вверх
@@ -149,22 +200,36 @@ Falls below	Опускается ниже
 Fast	Быстрая
 Fetch Email	Получить письма
 Field	Поле
+File	Файл
+File Details	Сведения о файле
+File name	Имя файла
+File or folder	Файл или папка
+Files	Файлы
+Find Calendar Events	Найти встречи
+Find Pictures	Найти изображения
+Finds photos and screenshots on this phone onto a list you can loop over	Находит фотографии и снимки экрана на этом телефоне и собирает их в список для перебора
 Fire time	Время срабатывания
+Fire when	Срабатывать когда
 Fires immediately when the workflow starts (no external event)	Срабатывает сразу при запуске сценария (без внешнего события)
 Fires when a macro finishes executing after being triggered	Срабатывает, когда макрос завершает выполнение после срабатывания триггера
 Fires when a named variable changes value	Срабатывает, когда именованная переменная меняет значение
 Fires when the app is initialised and running	Срабатывает, когда приложение запущено и готово к работе
 Fires when the device\'s UI / night mode changes	Срабатывает при смене оформления интерфейса / ночного режима
 Fires when this macro is enabled (its triggers are armed)	Срабатывает, когда этот макрос включают (его триггеры становятся активными)
+Flash	Вспышка
 Float	Дробное (float)
 Folder	Папка
+Folders	Папки
 For a length of time	На заданное время
 Found	Найдено
+Free	Свободен
 Fridays	Пятницы
+From	Откуда
 From (optional)	От (необязательно)
 From app (optional)	От приложения (необязательно)
 From contains	Отправитель содержит
 From position (0 is the first)	С позиции (0 — первая)
+Front camera	Фронтальная камера
 Geofence	Геозона
 Gesture	Жест
 Get	Получить
@@ -173,12 +238,14 @@ Get as	Получить как
 Give up after (seconds)	Сдаться через (секунд)
 Greater than	Больше
 Greater than or equal	Больше или равно
+Green	Зелёный
 HTTP Request	HTTP-запрос
 Halts the current execution chain (stops following connected actions)	Останавливает текущую цепочку выполнения (дальше по связям не идёт)
 Headers (JSON, optional)	Заголовки (JSON, необязательно)
 Headset Plugged	Гарнитура подключена
 Headset hook	Кнопка гарнитуры
 Headset plugged in	Гарнитура подключена
+Height	Высота
 Held down	Удержание
 Held for (seconds)	Удерживается (секунд)
 High — fires easily	Высокая — срабатывает легко
@@ -189,6 +256,8 @@ Home Assistant Entity	Сущность Home Assistant
 Home Assistant Entity Changed	Сущность Home Assistant изменилась
 Home Assistant Event	Событие Home Assistant
 Hours	Часы
+How	Как
+How long (minutes)	Длительность (минуты)
 How many	Сколько
 How many at most	Сколько максимум
 How many items are in a list	Сколько элементов в списке
@@ -197,41 +266,65 @@ How the device is currently resting — face up or down, portrait or landscape (
 How to watch	Как отслеживать
 Idle	Свободна
 If	Если
+If a file is already there	Если файл уже есть
 If it fails	При ошибке
 If missing	Если отсутствует
+If one is already there	Если такой уже есть
+In an appointment	Идёт встреча
+Include cancelled and declined ones	Включая отменённые и отклонённые
 Incoming Call State	Состояние входящего звонка
 Index	Позиция
 Initiates a phone call to a number	Начинает телефонный звонок на номер
 Inputs	Входы
 Installed	Установлено
 Int	Целое
+Into folder	В папку
+It ends	Заканчивается
+It starts	Начинается
 Item	Элемент
 Item at position	Элемент по позиции
 Item to find	Что искать
+Its reminder falls due	Наступает её напоминание
+JPEG	JPEG
 JSON text	Текст JSON
 Join list	Объединить список
+Keep both, adding a number	Оставить оба, добавив номер
+Keep until dismissed	Не убирать автоматически
 Key	Ключ
 Landscape left	Горизонтально влево
 Landscape right	Горизонтально вправо
+Latest picture	Последнее изображение
+Latin-1 (ISO 8859-1)	Latin-1 (ISO 8859-1)
 Launch App	Открыть приложение
 Launches another app by package name	Открывает другое приложение по имени пакета
+Leave the old one alone	Оставить старый как есть
+Left	Слева
+Left to right	Слева направо
 Less than	Меньше
 Less than or equal	Меньше или равно
+Let it use tools	Разрешить ей пользоваться инструментами
 Level (%)	Уровень (%)
 Level (when on)	Уровень (когда включено)
 Light or room	Светильник или комната
 List	Список
+List Files	Список файлов
 List contains	Список содержит
 List variable	Переменная-список
+Lists the files in a folder, as paths you can loop over	Перечисляет файлы в папке в виде путей, которые можно перебрать
 Locale Changed	Изменение языка
+Location	Место
 Log Message	Записать в журнал
 Long	Целое (long)
 Longest reply (tokens)	Максимальная длина ответа (токенов)
+Longest side (pixels)	Длинная сторона (пиксели)
+Look at	Период
 Loops over a list, running the following steps once for every item in it	Проходит по списку, выполняя следующие шаги по одному разу для каждого элемента
 Loops the following steps a set number of times — repeat 10 times, and so on	Повторяет следующие шаги заданное число раз — например, 10 раз
 Loops the following steps for as long as a comparison holds	Повторяет следующие шаги, пока выполняется условие
 Low — needs a deliberate gesture	Низкая — нужен явный жест
 Lux	Люкс
+MQTT Message	Сообщение MQTT
+MQTT Topic	Тема MQTT
 Macro	Макрос
 Macro Enabled	Макрос включён
 Macro Finished	Макрос завершён
@@ -249,23 +342,42 @@ Media Mounted / Unmounted	Подключение / отключение носи
 Medium	Средняя
 Message	Сообщение
 Message Received	Получено сообщение
+Message contains	Сообщение содержит
 Messages	Сообщения
 Method	Метод
 Minutes	Минуты
+Minutes before (negative fires afterwards)	За сколько минут (отрицательное — после)
+Mirror	Отразить
 Mode	Режим
 Model	Модель
 Mondays	Понедельники
+Most to return	Сколько вернуть максимум
+Most turns	Максимум ходов
 Mounted	Подключён
 Move	Переместить
+Move it	Переместить
+Move or Copy Picture	Переместить или скопировать изображение
 Move to folder	Переместить в папку
+Move to the bin	В корзину
+Moves a photo to the bin, or deletes it for good	Перемещает фотографию в корзину или удаляет её навсегда
+Moves or copies a photo into another folder, keeping it in the gallery	Перемещает или копирует фотографию в другую папку, оставляя её в галерее
 Multiple lines	Несколько строк
 Must hold for (ms)	Удерживать (мс)
 Mute	Выключить звук
 NFC Tag	NFC-метка
 NFC enabled	NFC включён
 Name other apps see	Название, видимое другим приложениям
+Names matching	Имена по шаблону
 Network	Сеть
+New details (leave empty to keep them)	Новое описание (пусто — оставить как есть)
+New length in minutes (-1 to keep it)	Новая длительность в минутах (-1 — оставить)
+New place (leave empty to keep it)	Новое место (пусто — оставить как есть)
+New start (leave empty to keep it)	Новое начало (пусто — оставить как есть)
+New title (leave empty to keep it)	Новое название (пусто — оставить как есть)
+New value (blank removes it)	Новое значение (пусто — удалить)
+Newest first	Сначала новые
 Next	Далее
+Next appointment	Следующая встреча
 Normal	Обычный
 Not equals	Не равно
 Notification	Уведомление
@@ -275,6 +387,7 @@ Number	Число
 Number of presses	Количество нажатий
 Off	Выключено
 Offhook	Разговор
+Oldest first	Сначала старые
 On	Включено
 On dwell	При пребывании
 On enter	При входе
@@ -282,25 +395,37 @@ On exit	При выходе
 On staying away	При длительном отсутствии
 One item out of a list, by its position	Один элемент из списка по его позиции
 Only during a time window	Только в заданный интервал
+Only in this folder	Только в этой папке
 Only lights already on	Только уже включённые светильники
+Only names matching	Только имена, подходящие под
 Only unread	Только непрочитанные
 Only when it ends up lying flat	Только если оказалось лежать плашмя
 Only while the screen is on	Только при включённом экране
 Open URL	Открыть ссылку
 Opens WhatsApp, Signal or Telegram with a message ready to send	Открывает WhatsApp, Signal или Telegram с готовым к отправке сообщением
 Opens a URL in the default handler (browser or app). Typing google.com is enough	Открывает ссылку в приложении по умолчанию (браузере или другом). Достаточно ввести google.com
+Operation	Действие
 Operator	Оператор
 Options — one per line	Варианты — по одному в строке
+Orange	Оранжевый
 Order	Порядок
 Orientation	Ориентация
 Outputs	Выходы
+PNG	PNG
 Package	Пакет
 Part of list	Часть списка
+Path	Путь
 Path (e.g. main.temp) — blank for the whole document	Путь (например, main.temp) — пусто, чтобы взять весь документ
+Paths	Пути
 Pattern (comma-separated ms, e.g. 0,200,500,200)	Шаблон (мс через запятую, например 0,200,500,200)
 Pause	Пауза
 Pauses the workflow for a while	Приостанавливает сценарий на некоторое время
 Picked up	Поднято
+Picture	Изображение
+Picture Details	Сведения об изображении
+Picture Saved	Изображение сохранено
+Pictures	Изображения
+Pink	Розовый
 Place	Место
 Planned for	Запланировано на
 Play	Воспроизвести
@@ -318,7 +443,9 @@ Position	Позиция
 Position (0 is the first)	Позиция (0 — первая)
 Position in list	Позиция в списке
 Post	Показать
+Posted as	Опубликовано как
 Posts a notification on this device	Показывает уведомление на этом устройстве
+Posts a notification on this device, optionally with buttons and a reply field	Показывает уведомление на этом устройстве, при желании с кнопками и полем ответа
 Power Save Mode Changed	Изменение режима энергосбережения
 Power save mode	Режим энергосбережения
 Prefilled	Заполнено заранее
@@ -326,29 +453,48 @@ Pressed	Нажатие
 Pressed several times	Несколько нажатий
 Previous	Назад
 Priority	Приоритет
+Progress (%, below 0 = busy)	Прогресс (%, меньше 0 — неопределённый)
 Prompt	Запрос
 Proximity	Датчик приближения
 Proximity covered	Датчик приближения закрыт
+Publish to MQTT	Опубликовать в MQTT
 Put	Положить
 Put down	Положено
+Quality	Качество
 Question	Вопрос
+Read File	Прочитать файл
 Read from JSON	Прочитать из JSON
 Reading	Показание
+Reads a picture\'s size, camera, date and location out of the file	Читает из файла размер, камеру, дату и место съёмки изображения
+Reads a text file from the phone and passes its contents on	Читает текстовый файл на телефоне и передаёт его содержимое дальше
+Reads appointments out of a calendar onto a list you can loop over	Читает встречи из календаря в список, который можно перебрать
 Reads messages from a mailbox onto a list you can loop over	Читает письма из почтового ящика в список, по которому можно пройти циклом
 Reads one value out of JSON text, such as an HTTP response body	Читает одно значение из текста JSON, например из тела HTTP-ответа
 Reads whether a light is on, how bright it is and what colour — Philips Hue	Сообщает, включён ли светильник, насколько он ярок и какого цвета — Philips Hue
 Reason (optional, logged before halting)	Причина (необязательно, записывается перед остановкой)
+Red	Красный
 Remembers a value in a variable, readable by later runs	Сохраняет значение в переменной, доступной последующим запускам
+Remind you (minutes before, -1 for no reminder)	Напомнить (за сколько минут, -1 — без напоминания)
+Remove Notification	Убрать уведомление
 Removed	Удалено
+Removes a file from the phone	Удаляет файл с телефона
 Repeat	Повторить
 Repeat every (under 15 only fires while the device is awake)	Повторять каждые (меньше 15 срабатывает только при бодрствующем устройстве)
 Repeat for each item	Повторить для каждого элемента
 Repeat on an interval	Повторять с интервалом
 Repeat this	Повторять это
 Repeat while	Повторять пока
+Replace it	Заменить его
 Replaced	Заменено
 Replies to a message in WhatsApp, Signal, Telegram or another messenger	Отвечает на сообщение в WhatsApp, Signal, Telegram или другом мессенджере
+Reply	Ответ
+Reply button	Кнопка ответа
+Reply field	Поле ответа
+Reply hint	Подсказка в поле
 Reply to Message	Ответить на сообщение
+Resize	Изменить размер
+Resizes, rotates, mirrors, crops or re-encodes a picture into a new file	Изменяет размер, поворачивает, отражает, обрезает или перекодирует изображение в новый файл
+Result	Результат
 Resumed at	Возобновлено в
 Ring	Звонок
 Ringer Mode Changed	Изменение режима звонка
@@ -356,6 +502,7 @@ Ringer mode	Режим звонка
 Ringing	Звонит
 Ringtone	Мелодия звонка
 Rises above	Поднимается выше
+Rotate	Повернуть
 Routes execution by comparing a value against another	Направляет выполнение, сравнивая одно значение с другим
 Run Script	Запустить скрипт
 Run action	Выполнить действие
@@ -363,7 +510,11 @@ Runs JavaScript over inputs you name and returns values on ports you name	Вып
 Runs any Home Assistant service — a thermostat, a media player, a lock, a vacuum, a script	Вызывает любую службу Home Assistant — термостат, медиаплеер, замок, пылесос, скрипт
 SMS	SMS
 SMS Received	Получено SMS
+Same as the original	Как у оригинала
 Saturdays	Субботы
+Save as	Сохранить как
+Save in this folder	Сохранить в эту папку
+Saves text to a file on the phone, replacing it or adding to the end	Сохраняет текст в файл на телефоне, заменяя его или дописывая в конец
 Scene	Сцена
 Schedule	Расписание
 Screen On / Off	Экран включён / выключен
@@ -373,9 +524,12 @@ Seconds	Секунды
 Send Email	Отправить письмо
 Send Message	Отправить сообщение
 Send SMS	Отправить SMS
+Send and forget	Отправить и забыть
 Send as HTML	Отправить как HTML
 Sender (optional — any sender when empty)	Отправитель (необязательно — пусто означает любого)
+Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome	Отправляет сообщение в тему на MQTT-брокере — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text	Отправляет запрос модели ИИ — Gemini, Claude, ChatGPT, OpenRouter или своей собственной — и возвращает ответ текстом
+Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	Отправляет запрос модели ИИ (Gemini, Claude, ChatGPT, OpenRouter или собственной модели) и возвращает ответ текстом, а при разрешении позволяет ей запускать узлы и макросы как инструменты
 Sends an SMS to a number with a body	Отправляет SMS с текстом на указанный номер
 Sends an email through one of your mail accounts	Отправляет письмо через один из ваших почтовых аккаунтов
 Sensitivity	Чувствительность
@@ -398,8 +552,11 @@ Sets the screen-off timeout in milliseconds	Задаёт время до отк�
 Shake	Встряхивание
 Show Message	Показать сообщение
 Show Notification	Показать уведомление
+Show a progress bar	Показать индикатор прогресса
 Shows a popup dialog and waits until the user has acknowledged it	Показывает всплывающее окно и ждёт, пока пользователь его не подтвердит
 Shows a popup dialog offering a list of options and reports which one was picked	Показывает всплывающее окно со списком вариантов и сообщает, какой из них выбран
+Shows an AI model a picture from this phone and returns what it says about it	Показывает модели ИИ изображение с этого телефона и возвращает её описание
+Shows you as	Показывать вас как
 Signal	Signal
 Silence	Тишина
 Silent	Беззвучный
@@ -413,6 +570,7 @@ Standing instruction	Постоянная инструкция
 Start at (seconds into the sound)	Начать с (секунда внутри звука)
 Started moving — low power, works with the screen off	Начало движения — экономно, работает при выключенном экране
 Starts a named list over, ready to collect into	Очищает именованный список, чтобы начать собирать в него заново
+Starts at	Начало
 Starts once after the device finishes booting	Срабатывает один раз после завершения загрузки устройства
 Starts the workflow on an interval or at a time of day	Запускает сценарий с интервалом или в определённое время суток
 Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it	Запускает сценарий, когда другое приложение, скрипт или ярлык просит Ottomatic его выполнить
@@ -425,12 +583,16 @@ Starts when a USB device is connected or disconnected	Срабатывает п�
 Starts when a matching notification arrives	Срабатывает, когда приходит подходящее уведомление
 Starts when a media button is pressed (play, pause, next, etc.)	Срабатывает при нажатии медиакнопки (воспроизведение, пауза, далее и т. д.)
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	Срабатывает, когда приходит сообщение в WhatsApp, Signal, Telegram или другом мессенджере
+Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	Запускается, когда в тему MQTT приходит сообщение — кнопка Zigbee, датчик, любое устройство, которое публикует
+Starts when a photo, screenshot or downloaded picture is added to this phone	Запускается, когда на телефоне появляется фотография, снимок экрана или загруженное изображение
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	Срабатывает при нажатии, удержании или многократном нажатии кнопки громкости. Нужен доступ к спецвозможностям; сами кнопки продолжают работать как обычно
 Starts when a wired headset is plugged or unplugged	Срабатывает при подключении или отключении проводной гарнитуры
 Starts when airplane mode is toggled	Срабатывает при переключении режима полёта
 Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	Срабатывает, когда к телефону подносят NFC-метку. Работает только при включённом и разблокированном экране
 Starts when an SMS arrives	Срабатывает при получении SMS
 Starts when an app is installed, removed or replaced	Срабатывает при установке, удалении или замене приложения
+Starts when an appointment begins, ends, or its reminder falls due	Запускается, когда встреча начинается, заканчивается или наступает её напоминание
+Starts when an appointment is added, changed or removed in any calendar	Запускается, когда в любом календаре встречу добавили, изменили или удалили
 Starts when an email arrives in a mailbox you are watching	Срабатывает, когда в отслеживаемый почтовый ящик приходит письмо
 Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	Запускается, когда на шине событий Home Assistant возникает событие — кнопка Zigbee, метка, своё событие
 Starts when external media is mounted, unmounted or ejected	Срабатывает при подключении, отключении или извлечении внешнего носителя
@@ -467,22 +629,37 @@ Subject contains	Тема содержит
 Sundays	Воскресенья
 System	Система
 Tag	Метка
+Tag — Used for manual deletion	Метка — для ручного удаления
+Take Photo	Сделать фото
+Taken after	Снято после
+Taken before	Снято до
+Takes a picture with the phone\'s front or back camera, with flash and a delay before the shot	Делает снимок основной или фронтальной камерой телефона, со вспышкой и задержкой перед съёмкой
+Takes down a notification this app posted under a tag	Убирает уведомление, которое это приложение показало с меткой
 Tap on Device	Касание корпуса
 Taps	Касания
+Teal	Бирюзовый
 Telegram	Telegram
 Template — use {A}, {B}, {C}	Шаблон — используйте {A}, {B}, {C}
+Tentative	Под вопросом
 Text	Текст
 Text contains (optional)	Текст содержит (необязательно)
+Text encoding	Кодировка текста
 Text — one item per line, or wire something in	Текст — по одному элементу на строку, или подключите что-нибудь
 The current battery charge as a percentage in 0..100	Текущий заряд батареи в процентах от 0 до 100
 The current date and time	Текущие дата и время
 The current state of a Home Assistant entity — a sensor, a switch, a thermostat	Текущее состояние сущности Home Assistant — датчика, выключателя, термостата
 The current value of a variable	Текущее значение переменной
 The device\'s current ringer mode	Текущий режим звонка устройства
+The last message published to a topic on an MQTT broker	Последнее сообщение, опубликованное в теме на MQTT-брокере
 The light level around the device in lux — a dim room is around 30, an office a few hundred	Освещённость вокруг устройства в люксах — полутёмная комната около 30, офис — несколько сотен
+The most recent photo, screenshot or picture saved on this phone	Последняя фотография, снимок экрана или изображение, сохранённое на этом телефоне
 The name of the Wi-Fi network the device is currently connected to	Название сети Wi-Fi, к которой устройство подключено сейчас
+The next appointment due to start in any calendar	Ближайшая встреча, которая начнётся в любом календаре
+The next few days	Ближайшие дни
+The rest of today	Остаток сегодняшнего дня
 The same list, in order	Тот же список, по порядку
 This is a list	Это список
+This occurrence	Только эту встречу
 Thorough	Тщательная
 Threshold (0-100)	Порог (0–100)
 Threshold (lux)	Порог (люкс)
@@ -490,6 +667,7 @@ Thursdays	Четверги
 Timeout (ms)	Таймаут (мс)
 Timezone changed	Часовой пояс изменён
 Title	Заголовок
+Title contains	Название содержит
 To	Кому
 Toggle	Переключить
 Toggle Auto-Rotate	Переключить автоповорот
@@ -497,8 +675,13 @@ Toggle Bluetooth	Переключить Bluetooth
 Toggle Flashlight	Переключить фонарик
 Toggle Wi-Fi	Переключить Wi-Fi
 Toggles Do-Not-Disturb on or off with a chosen policy level	Включает или выключает режим «Не беспокоить» с выбранным уровнем строгости
+Tools	Инструменты
+Top	Сверху
+Top to bottom	Сверху вниз
+Topic	Тема
 Triple tap	Тройное касание
 Tuesdays	Вторники
+Turn	Поворот
 Turn off	Выключить
 Turn on	Включить
 Turns Bluetooth on or off and reports the resulting state	Включает или выключает Bluetooth и сообщает получившееся состояние
@@ -511,6 +694,8 @@ Turns the camera torch (flashlight) on or off	Включает или выклю
 Type	Тип
 URL	Ссылка
 USB Device Connected	Подключено USB-устройство
+UTF-16	UTF-16
+UTF-8	UTF-8
 Uncovered	Открыт
 Undocked	Извлечено из док-станции
 Unit	Единица
@@ -521,7 +706,10 @@ Until	До
 Until a date and time	До даты и времени
 Until a time of day	До времени суток
 Up	Вверх
+Update	Изменить
+Update Calendar Event	Обновить встречу
 Update Email	Изменить письмо
+Upside down	Вверх ногами
 Value	Значение
 Value (0-100, only when mode is set)	Значение (0–100, только в режиме «Задать»)
 Value (0-255, only when auto is off)	Значение (0–255, только когда автояркость выключена)
@@ -530,23 +718,30 @@ Variable	Переменная
 Variable Change	Изменение переменной
 Vibrate	Вибрация
 Vibrates the device for a duration or pattern	Включает вибрацию на заданное время или по шаблону
+Violet	Фиолетовый
 Volume Button	Кнопка громкости
 Volume down	Громкость вниз
 Volume up	Громкость вверх
 Wait	Ждать
 Wait Until	Ждать до
+Wait before the shot (seconds)	Подождать перед съёмкой (секунды)
 Wait until finished	Ждать завершения
 Warmth (K)	Теплота (K)
+WebP	WebP
 Wednesdays	Среды
 What starts it	Что запускает
+What to ask	О чём спросить
+What to change	Что изменить
 What to do	Что сделать
 Whatsapp	WhatsApp
+When answered	Когда ответят
 When cancelled	При отмене
 When confirmed	При подтверждении
 When finished	По завершении
 When the light level	Когда освещённость
 When the time comes	Когда наступит время
 When time runs out	Когда время истечёт
+Where	Место
 Where an item sits in a list, counting from 0, or -1 when it is not there	На каком месте элемент стоит в списке, считая от 0, или -1, если его там нет
 Whether Bluetooth is currently enabled	Включён ли Bluetooth сейчас
 Whether Do-Not-Disturb is currently active	Активен ли сейчас режим «Не беспокоить»
@@ -555,20 +750,26 @@ Whether Wi-Fi is currently enabled	Включён ли Wi-Fi сейчас
 Whether a list holds a given item	Содержит ли список заданный элемент
 Whether a wired or USB headset is currently plugged in	Подключена ли сейчас проводная или USB-гарнитура
 Whether airplane mode is currently on	Включён ли сейчас режим полёта
+Whether an appointment is on in any calendar right now	Идёт ли сейчас встреча в каком-либо календаре
 Whether battery saver is currently on	Включено ли сейчас энергосбережение
 Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	Закрыто ли что-нибудь датчик над экраном — карман, рука на стекле, устройство экраном вниз
 Whether the device is currently charging	Заряжается ли устройство сейчас
 Whether the device is currently in dark theme (night mode)	Включена ли сейчас на устройстве тёмная тема (ночной режим)
 Whether the device is currently sitting in a dock	Стоит ли устройство сейчас в док-станции
 Whether the screen is currently on and interactive	Включён ли сейчас экран и доступен ли он для взаимодействия
+Which way up	Ориентация
 While the screen is off	При выключенном экране
 Whole number	Целое число
+Whole series	Всю серию
 Wi-Fi Network	Сеть Wi-Fi
 Wi-Fi State Change	Изменение состояния Wi-Fi
 Wi-Fi enabled	Wi-Fi включён
 Wi-Fi network	Сеть Wi-Fi
+Width	Ширина
 Within (ms)	В пределах (мс)
+Write to File	Записать в файл
 Writes a message to this workflow\'s console	Записывает сообщение в консоль этого сценария
+Writes or removes a picture\'s description, date, location or camera details	Записывает или удаляет описание, дату, место или данные камеры изображения
 Yes or no	Да или нет
 Z to A / largest first	От Я до А / сначала большие
 false	нет
@@ -577,196 +778,3 @@ out	Выход
 response	ответ
 state	состояние
 true	да
-MQTT Message	Сообщение MQTT
-Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	Запускается, когда в тему MQTT приходит сообщение — кнопка Zigbee, датчик, любое устройство, которое публикует
-Broker	Брокер
-Topic	Тема
-Message contains	Сообщение содержит
-Also fire on messages the broker had stored	Срабатывать и на сообщения, которые брокер хранил
-Publish to MQTT	Опубликовать в MQTT
-Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome	Отправляет сообщение в тему на MQTT-брокере — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome
-Delivery	Доставка
-Confirmed by the broker	Подтверждена брокером
-Send and forget	Отправить и забыть
-Confirmed exactly once	Подтверждена ровно один раз
-Ask the broker to keep this message	Попросить брокер сохранить это сообщение
-MQTT Topic	Тема MQTT
-The last message published to a topic on an MQTT broker	Последнее сообщение, опубликованное в теме на MQTT-брокере
-Write to File	Записать в файл
-Saves text to a file on the phone, replacing it or adding to the end	Сохраняет текст в файл на телефоне, заменяя его или дописывая в конец
-File	Файл
-Result	Результат
-Add to the end instead of replacing	Дописывать в конец, а не заменять
-If a file is already there	Если файл уже есть
-Replace it	Заменить его
-Keep both, adding a number	Оставить оба, добавив номер
-Leave the old one alone	Оставить старый как есть
-Text encoding	Кодировка текста
-UTF-8	UTF-8
-UTF-16	UTF-16
-Latin-1 (ISO 8859-1)	Latin-1 (ISO 8859-1)
-Read File	Прочитать файл
-Reads a text file from the phone and passes its contents on	Читает текстовый файл на телефоне и передаёт его содержимое дальше
-List Files	Список файлов
-Lists the files in a folder, as paths you can loop over	Перечисляет файлы в папке в виде путей, которые можно перебрать
-Only names matching	Только имена, подходящие под
-Paths	Пути
-Files	Файлы
-Folders	Папки
-Both	И то, и другое
-File Details	Сведения о файле
-Answers whether a file exists, how big it is and when it changed	Сообщает, есть ли файл, какого он размера и когда изменялся
-File or folder	Файл или папка
-Copy or Move File	Копировать или переместить файл
-Copies, moves or renames a file on the phone	Копирует, перемещает или переименовывает файл на телефоне
-From	Откуда
-Copy it	Копировать
-Move it	Переместить
-Delete File	Удалить файл
-Removes a file from the phone	Удаляет файл с телефона
-Ask AI (with tools)	Запрос к ИИ (с инструментами)
-Ask AI About a Picture	Спросить ИИ об изображении
-Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer	Просит модель ИИ выполнить задачу, позволяя ей читать данные телефона и запускать выбранные вами узлы и макросы, пока не будет получен ответ
-Most turns	Максимум ходов
-Picture	Изображение
-Shows an AI model a picture from this phone and returns what it says about it	Показывает модели ИИ изображение с этого телефона и возвращает её описание
-Tools	Инструменты
-What to ask	О чём спросить
-Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	Отправляет запрос модели ИИ (Gemini, Claude, ChatGPT, OpenRouter или собственной модели) и возвращает ответ текстом, а при разрешении позволяет ей запускать узлы и макросы как инструменты
-Let it use tools	Разрешить ей пользоваться инструментами
-Add Calendar Event	Добавить встречу
-All day	Весь день
-Applies to	Применить к
-Appointment	Встреча
-Between two times	Между двумя моментами
-Busy	Занят
-Calendar	Календарь
-Calendar Changed	Календарь изменён
-Calendar Event	Встреча в календаре
-Change how it shows you	Изменить показ занятости
-Changes or deletes an appointment, either one occurrence of it or the whole series	Изменяет или удаляет встречу — либо одно повторение, либо всю серию
-Creates an appointment in one of the calendars on this phone	Создаёт встречу в одном из календарей на этом телефоне
-Days ahead	На сколько дней вперёд
-Details	Описание
-Events	Встречи
-Find Calendar Events	Найти встречи
-Fire when	Срабатывать когда
-Free	Свободен
-How long (minutes)	Длительность (минуты)
-In an appointment	Идёт встреча
-Include cancelled and declined ones	Включая отменённые и отклонённые
-It ends	Заканчивается
-It starts	Начинается
-Its reminder falls due	Наступает её напоминание
-Look at	Период
-Minutes before (negative fires afterwards)	За сколько минут (отрицательное — после)
-New details (leave empty to keep them)	Новое описание (пусто — оставить как есть)
-New length in minutes (-1 to keep it)	Новая длительность в минутах (-1 — оставить)
-New place (leave empty to keep it)	Новое место (пусто — оставить как есть)
-New start (leave empty to keep it)	Новое начало (пусто — оставить как есть)
-New title (leave empty to keep it)	Новое название (пусто — оставить как есть)
-Next appointment	Следующая встреча
-Reads appointments out of a calendar onto a list you can loop over	Читает встречи из календаря в список, который можно перебрать
-Remind you (minutes before, -1 for no reminder)	Напомнить (за сколько минут, -1 — без напоминания)
-Shows you as	Показывать вас как
-Starts at	Начало
-Starts when an appointment begins, ends, or its reminder falls due	Запускается, когда встреча начинается, заканчивается или наступает её напоминание
-Starts when an appointment is added, changed or removed in any calendar	Запускается, когда в любом календаре встречу добавили, изменили или удалили
-Tentative	Под вопросом
-The next appointment due to start in any calendar	Ближайшая встреча, которая начнётся в любом календаре
-The next few days	Ближайшие дни
-The rest of today	Остаток сегодняшнего дня
-This occurrence	Только эту встречу
-Title contains	Название содержит
-Update	Изменить
-Update Calendar Event	Обновить встречу
-Where	Место
-Whether an appointment is on in any calendar right now	Идёт ли сейчас встреча в каком-либо календаре
-Whole series	Всю серию
-Picture Saved	Изображение сохранено
-Starts when a photo, screenshot or downloaded picture is added to this phone	Запускается, когда на телефоне появляется фотография, снимок экрана или загруженное изображение
-Path	Путь
-Only in this folder	Только в этой папке
-Find Pictures	Найти изображения
-Finds photos and screenshots on this phone onto a list you can loop over	Находит фотографии и снимки экрана на этом телефоне и собирает их в список для перебора
-Names matching	Имена по шаблону
-Pictures	Изображения
-Taken after	Снято после
-Taken before	Снято до
-Newest first	Сначала новые
-Oldest first	Сначала старые
-Most to return	Сколько вернуть максимум
-Picture Details	Сведения об изображении
-Reads a picture\'s size, camera, date and location out of the file	Читает из файла размер, камеру, дату и место съёмки изображения
-Edit Picture	Изменить изображение
-Resizes, rotates, mirrors, crops or re-encodes a picture into a new file	Изменяет размер, поворачивает, отражает, обрезает или перекодирует изображение в новый файл
-Longest side (pixels)	Длинная сторона (пиксели)
-Left	Слева
-Top	Сверху
-Width	Ширина
-Height	Высота
-Into folder	В папку
-File name	Имя файла
-Resize	Изменить размер
-Rotate	Повернуть
-Mirror	Отразить
-Crop	Обрезать
-Change format or quality	Изменить формат или качество
-Turn	Поворот
-A quarter turn right	На четверть оборота вправо
-Upside down	Вверх ногами
-A quarter turn left	На четверть оборота влево
-Left to right	Слева направо
-Top to bottom	Сверху вниз
-Save as	Сохранить как
-Same as the original	Как у оригинала
-JPEG	JPEG
-PNG	PNG
-WebP	WebP
-Quality	Качество
-If one is already there	Если такой уже есть
-Change Picture Details	Изменить сведения об изображении
-Writes or removes a picture\'s description, date, location or camera details	Записывает или удаляет описание, дату, место или данные камеры изображения
-New value (blank removes it)	Новое значение (пусто — удалить)
-What to change	Что изменить
-Description	Описание
-Date taken	Дата съёмки
-Location	Место
-Which way up	Ориентация
-Camera maker	Производитель камеры
-Camera model	Модель камеры
-Artist	Автор
-Copyright	Авторские права
-Move or Copy Picture	Переместить или скопировать изображение
-Moves or copies a photo into another folder, keeping it in the gallery	Перемещает или копирует фотографию в другую папку, оставляя её в галерее
-Operation	Действие
-Delete Picture	Удалить изображение
-Moves a photo to the bin, or deletes it for good	Перемещает фотографию в корзину или удаляет её навсегда
-How	Как
-Move to the bin	В корзину
-Delete for good	Удалить навсегда
-Latest picture	Последнее изображение
-The most recent photo, screenshot or picture saved on this phone	Последняя фотография, снимок экрана или изображение, сохранённое на этом телефоне
-Amber	Янтарный
-Blue	Синий
-Buttons — one per line	Кнопки — по одной в строке
-Disappear after (seconds)	Исчезнет через (секунд)
-Green	Зелёный
-Keep until dismissed	Не убирать автоматически
-Orange	Оранжевый
-Pink	Розовый
-Posted as	Опубликовано как
-Posts a notification on this device, optionally with buttons and a reply field	Показывает уведомление на этом устройстве, при желании с кнопками и полем ответа
-Progress (%, below 0 = busy)	Прогресс (%, меньше 0 — неопределённый)
-Red	Красный
-Remove Notification	Убрать уведомление
-Reply	Ответ
-Reply button	Кнопка ответа
-Reply field	Поле ответа
-Reply hint	Подсказка в поле
-Show a progress bar	Показать индикатор прогресса
-Tag — Used for manual deletion	Метка — для ручного удаления
-Takes down a notification this app posted under a tag	Убирает уведомление, которое это приложение показало с меткой
-Teal	Бирюзовый
-Violet	Фиолетовый
-When answered	Когда ответят

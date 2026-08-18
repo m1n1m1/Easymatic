@@ -1,7 +1,7 @@
 app_name	Ottomatic
 accessibility_service_label	Ottomatic button triggers
-accessibility_service_summary	Lets macros start when you press the volume buttons.
-accessibility_service_description	Ottomatic uses this only to notice volume button presses, so your macros can start when you press them. It never reads screen content, and it never changes what the buttons do — the volume keys keep working normally.
+accessibility_service_summary	Lets macros start when you press the volume buttons, and lets the Take Screenshot action capture the screen.
+accessibility_service_description	Ottomatic uses this for two things: to notice volume button presses, so your macros can start when you press them, and to capture the screen when a macro runs the Take Screenshot action. It never watches what is on screen — it only captures when a macro asks it to — and it never changes what the buttons do: the volume keys keep working normally.
 shortcut_new_macro_short	New macro
 shortcut_new_macro_long	Create a new macro
 widget_run_tile_label	Run tile
@@ -92,10 +92,11 @@ perm_title_read_calendar	Calendar
 perm_title_write_calendar	Change your calendar
 perm_title_post_notifications	Notifications
 perm_title_bluetooth_connect	Bluetooth
+perm_title_camera	Camera
 perm_desc_overlay	Lets a macro put a dialog on screen, and open other apps, while you are looking at something else. Android blocks both from a background app without it.
 perm_desc_notification_listener	Lets Ottomatic see notifications from other apps, so a macro can react to one.
 perm_desc_notification_policy	Lets a macro turn Do Not Disturb on and off, and switch the ringer to silent.
-perm_desc_accessibility_service	Lets Ottomatic see volume and power button presses. It never reads screen content.
+perm_desc_accessibility_service	Lets Ottomatic see volume and power button presses, and capture the screen for the Take Screenshot action. It never watches what is on screen.
 perm_desc_battery_optimisation	Keeps Android from stopping the engine in the background. Without it, macros may not re-arm after a reboot and time-based triggers can be delayed.
 perm_desc_exact_alarm	Lets a schedule fire, and a wait end, at the minute you asked for. Without it Android is free to batch it with other work, so it may run late.
 perm_desc_write_settings	Lets a macro change screen brightness, screen timeout and auto-rotate.
@@ -117,8 +118,11 @@ perm_desc_read_calendar	Lets a macro read your appointments, and lets you pick a
 perm_desc_write_calendar	Lets a macro create, change and delete appointments. Reading them is a separate switch above.
 perm_desc_post_notifications	Lets Ottomatic show a notification — both the ones a macro posts and the one that tells you the engine failed to start after a reboot.
 perm_desc_bluetooth_connect	Lets a macro turn Bluetooth on and off.
+perm_desc_camera	Lets a macro take a photo with the phone\'s own camera — no camera app, and nobody pressing a button. Ottomatic opens the camera only while a Take Photo action is running.
 perm_desc_unknown	Used by a node on one of your macros.
-perm_rationale_accessibility_keys	Ottomatic needs accessibility access to see button presses. It never reads screen content. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.
+perm_rationale_accessibility_keys	Ottomatic needs accessibility access to see button presses. It never watches what is on screen. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.
+perm_rationale_screen_capture	Ottomatic needs accessibility access to capture the screen. It captures only while this action runs — it never watches what is on screen. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.
+perm_rationale_camera_photo	Ottomatic needs camera access to take a photo. It opens the camera only while this action runs, and closes it straight afterwards. Android may still refuse a photo when the phone has been idle in the background for a long time.
 perm_rationale_notification_listener	Ottomatic needs notification access to see notifications from other apps.
 perm_rationale_dnd_policy	Ottomatic needs Do Not Disturb access to change your ringer mode.
 perm_rationale_overlay_dialog	Ottomatic needs permission to draw over other apps so this dialog can reach you while you are somewhere else on your phone. Without it the node cancels instead of asking.
@@ -134,6 +138,7 @@ perm_rationale_overlay_media	Ottomatic needs permission to draw over other apps 
 perm_rationale_overlay_launch	Ottomatic needs permission to draw over other apps so it can open one while you are somewhere else on your phone. Android blocks a background app from opening another, and without this the node does nothing and says so in the console.
 problem_permission_missing	\'%1$s\' needs %2$s, which has not been granted — it may do nothing when it runs
 problem_plugin_permission_missing	\'%1$s\' needs %2$s, which %3$s has not been granted — it may do nothing when it runs
+problem_plugin_not_ready	\'%1$s\' will do nothing until %2$s is ready: %3$s
 problem_macro_unset	\'%1$s\' has no macro chosen, so it will do nothing
 problem_macro_missing	\'%1$s\' points at a macro that no longer exists
 problem_hub_unset	\'%1$s\' has nothing chosen, so it will do nothing
@@ -216,6 +221,9 @@ sound_pick_one_of_the_device	Pick one of the device\'s own sounds, or any audio 
 plugins_back	Back
 plugins_plugins	Plugins
 plugins_this_app_asks_for	This app asks for: %1$s
+plugins_open_settings	Set up
+plugin_choice_nothing_to_choose	This plugin has nothing to choose from here.
+plugin_choice_no_screen	%1$s asks for its own chooser screen but does not provide one, so there is nothing to open.
 contacts_anyone	Anyone
 contacts_choose_a_contact	Choose a contact
 contacts_clear_the_contact_and_type	Clear the contact and type a number instead
@@ -684,6 +692,10 @@ config_deleted_account	Deleted account
 config_deleted_connection	Deleted connection
 config_global_variable	Global · %1$s
 config_none_selected	None selected
+intent_choice_placeholder	Type it, or ask an app
+intent_choice_ask_an_app	Ask an app
+intent_choice_no_app	No app on this phone can answer that. You can still type a value in.
+intent_choice_needs_camera	Ottomatic needs camera access before another app can take the picture. Tap to allow it, then tap again.
 variables_edit_variable	Edit variable
 variables_every_workflow	Every workflow
 variables_empty_local	Nothing yet. A variable here belongs to this macro alone.
@@ -777,3 +789,20 @@ ha_any_state_change	Whenever it changes
 ha_any_state_change_hint	Every state change, with no further conditions
 ha_sign_in	Or sign in to Home Assistant
 ha_no_hub_yet	No Home Assistant yet. Add one in Smart home.
+setup_title	Setup
+setup_section_connections	Connections
+setup_section_system	System
+setup_ai	AI
+setup_smart_home_subtitle	Hue, Home Assistant and MQTT
+setup_ai_subtitle	Accounts and models for the AI nodes
+setup_mail_subtitle	Mailboxes to send and read from
+setup_variables_subtitle	Values every macro can share
+setup_geofences_subtitle	Places your macros can react to
+setup_nfc_subtitle	Tags you have saved
+setup_folders_subtitle	Folders and files this app may open
+setup_permissions_subtitle	What the phone lets your macros do
+setup_plugins_subtitle	Apps that add nodes
+setup_app_access_subtitle	Other apps allowed to run your macros
+workflowlist_search_placeholder	Search macros
+workflowlist_clear_search	Clear search
+workflowlist_no_matches	No macros match that.

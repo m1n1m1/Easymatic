@@ -180,7 +180,19 @@
     <uses-permission android:name="com.example.ottomatic.permission.BIND_PLUGIN" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!--
+      Claimed only for the seconds `action.camera_photo` has the camera open. The engine is
+      a `specialUse` foreground service, and from Android 11 a service's access to the
+      camera follows its foreground service *type* rather than the app's grant — so the type
+      is promoted to `specialUse|camera` for the duration of one capture and dropped again.
+      From API 34, naming that type additionally needs this declaration AND the CAMERA
+      runtime grant to be held at the moment `startForeground` runs, or it throws. See
+      `CameraForeground` for why the claim cannot simply be permanent.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- The torch (`action.flashlight`), and `action.camera_photo`, which opens the camera
+         itself through camera2 rather than handing the job to a camera app. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
     <uses-permission android:name="android.permission.SEND_SMS" />
@@ -627,7 +639,7 @@
         <service
             android:name=".engine.service.MacroEngineService"
             android:exported="false"
-            android:foregroundServiceType="specialUse">
+            android:foregroundServiceType="specialUse|camera">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Runs user-armed automation macros in the background in response to system triggers (SMS, schedule, geofence, etc.)." />

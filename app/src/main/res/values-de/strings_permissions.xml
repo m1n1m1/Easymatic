@@ -24,6 +24,7 @@
     <string name="perm_title_write_calendar">Kalender ändern</string>
     <string name="perm_title_post_notifications">Benachrichtigungen</string>
     <string name="perm_title_bluetooth_connect">Bluetooth</string>
+    <string name="perm_title_camera">Kamera</string>
 
     <!-- Zeilentext: was Ottomatic mit der Berechtigung macht. -->
     <string name="perm_desc_overlay">Erlaubt einem Makro, einen Dialog anzuzeigen und andere Apps zu öffnen, während du gerade etwas anderes machst. Ohne diese Berechtigung blockiert Android beides aus dem Hintergrund.</string>
@@ -47,11 +48,13 @@
     <string name="perm_desc_write_calendar">Erlaubt einem Makro, Termine anzulegen, zu ändern und zu löschen. Das Lesen ist der eigene Schalter darüber.</string>
     <string name="perm_desc_post_notifications">Erlaubt Ottomatic, eine Benachrichtigung anzuzeigen — sowohl die, die ein Makro sendet, als auch die, die dir sagt, dass die Engine nach einem Neustart nicht starten konnte.</string>
     <string name="perm_desc_bluetooth_connect">Erlaubt einem Makro, Bluetooth ein- und auszuschalten.</string>
+    <string name="perm_desc_camera">Erlaubt einem Makro, mit der Kamera des Telefons ein Foto aufzunehmen — ohne Kamera-App und ohne dass jemand auf einen Auslöser drückt. Ottomatic öffnet die Kamera nur, solange eine Aktion „Foto aufnehmen“ läuft.</string>
     <string name="perm_desc_unknown">Wird von einem Knoten in einem deiner Makros verwendet.</string>
 
     <!-- Begründungen auf der Knotenkarte: warum *dieser Knoten* fragt. -->
     <string name="perm_rationale_accessibility_keys">Ottomatic braucht Bedienungshilfen-Zugriff, um Tastendrücke zu erkennen. Der Bildschirm wird nie beobachtet. Falls der Schalter ausgegraut ist, öffne zuerst App-Info → ⋮ → Eingeschränkte Einstellungen zulassen.</string>
     <string name="perm_rationale_screen_capture">Ottomatic braucht Bedienungshilfen-Zugriff, um den Bildschirm aufzunehmen. Aufgenommen wird nur, während diese Aktion läuft — der Bildschirm wird nie beobachtet. Falls der Schalter ausgegraut ist, öffne zuerst App-Info → ⋮ → Eingeschränkte Einstellungen zulassen.</string>
+    <string name="perm_rationale_camera_photo">Ottomatic braucht Kamerazugriff, um ein Foto aufzunehmen. Die Kamera wird nur geöffnet, solange diese Aktion läuft, und danach sofort wieder geschlossen. Android kann eine Aufnahme trotzdem ablehnen, wenn das Telefon lange im Hintergrund untätig war.</string>
     <string name="perm_rationale_notification_listener">Ottomatic braucht Benachrichtigungszugriff, um Benachrichtigungen anderer Apps zu sehen.</string>
     <string name="perm_rationale_dnd_policy">Ottomatic braucht Zugriff auf „Bitte nicht stören“, um deinen Klingelmodus zu ändern.</string>
     <string name="perm_rationale_overlay_dialog">Ottomatic braucht die Berechtigung, über anderen Apps anzuzeigen, damit dieser Dialog dich auch erreicht, wenn du gerade woanders auf deinem Telefon bist. Ohne sie bricht der Knoten ab, statt zu fragen.</string>

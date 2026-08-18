@@ -1,8 +1,9 @@
-accessibility_service_description	Ottomatic 仅用它来检测音量键的按下，好让你的宏可以借此启动。它从不读取屏幕内容，也从不改变按键原本的功能：音量键仍照常工作。
+accessibility_service_description	Ottomatic 用它做两件事：检测音量键的按下，好让你的宏可以借此启动；以及在宏执行“截屏”动作时捕获屏幕。它从不监视屏幕上的内容——只有宏提出要求时才捕获——也从不改变按键原本的功能：音量键仍照常工作。
 accessibility_service_label	Ottomatic 按键触发器
-accessibility_service_summary	让宏在你按下音量键时启动。
+accessibility_service_summary	让宏在你按下音量键时启动，并让“截屏”动作可以捕获屏幕。
 ai_add_ai_connection	添加 AI 连接
 ai_add_connection	添加连接
+ai_add_model	添加模型
 ai_ai_connections	AI 连接
 ai_answer_briefly_and_in_plain	请简短作答，用平实的语言。
 ai_api_key	API 密钥
@@ -10,6 +11,7 @@ ai_api_key_paste_it_in	API 密钥——请重新粘贴
 ai_asking_the_model	正在询问模型…
 ai_back	返回
 ai_choose_a_connection	选择连接
+ai_choose_a_model	选择模型
 ai_console_anthropic	Anthropic 控制台
 ai_console_gemini	Google AI Studio
 ai_console_openai	OpenAI 平台
@@ -25,6 +27,7 @@ ai_default_name_openai	ChatGPT
 ai_default_name_openrouter	OpenRouter
 ai_default_name_self_hosted	自建
 ai_delete	删除
+ai_delete_model	删除此模型
 ai_edit	编辑
 ai_edit_connection	编辑连接
 ai_getting_a_key	获取密钥
@@ -35,13 +38,25 @@ ai_list_models	列出模型
 ai_loading_models	正在加载模型…
 ai_model_answered	模型回答：%1$s
 ai_model_balanced	均衡
+ai_model_effort	思考程度
+ai_model_effort_help	模型回答前要思考多久。上方标识符为空时，也由它决定供应商使用哪个模型。
 ai_model_fast	快速
+ai_model_id	模型标识符
+ai_model_id_required	必填
+ai_model_name	名称
+ai_model_name_help	宏将看到的名称。请按用途而不是按模型命名：“家居”、“总结邮件”。
+ai_model_name_placeholder	家居
+ai_model_not_finished	尚未完成：请填写名称和模型
+ai_model_provider_default	%1$s · 供应商自带的模型
 ai_model_thorough	深入
 ai_models	模型
 ai_name	名称
 ai_name_the_model_your_server	填写你的服务器或账户所提供的模型。如果只填“快速”，另外两档也会使用它。
 ai_new_api_key_leave_empty	新的 API 密钥（留空则保留当前密钥）
 ai_no_connections_yet_add_one	还没有连接。添加一个即可使用“询问 AI”节点。只需一个来自 Google AI Studio 的免费 API 密钥——表单会一步步带你获取，并替你打开页面。
+ai_no_model_to_test	请先添加模型并保存，然后再测试。
+ai_no_models_on_this_account	此帐户下还没有模型。
+ai_no_models_yet	还没有模型。添加一个，宏才有可指向的对象。
 ai_open_console	打开 %1$s
 ai_paste_key	粘贴密钥
 ai_pointing_at_own_server	指向你自己的服务器
@@ -89,6 +104,25 @@ ai_steps_self_hosted:3	加载模型列表，或直接输入启动服务器时所
 ai_test	测试
 ai_the_key_is_stored_encrypted	密钥以加密方式保存在此手机上，之后不会再显示。%1$s 除非宏运行到“询问 AI”节点，否则不会发送任何内容。
 ai_this_address_is_unencrypted_that	此地址未加密。对于你自己网络里的服务器这很正常，但不要用它做任何跨越互联网的事，因为密钥会以明文传输。
+ai_tools_adjusted	已在此调整
+ai_tools_adjusted_count	已为此节点调整 %1$d 项
+ai_tools_adjusted_off	已在此关闭
+ai_tools_adjusting	这些属于模型。在此修改只对本节点生效。
+ai_tools_allow_everything	全部允许
+ai_tools_allowed_count	已允许 %1$d / %2$d
+ai_tools_as_the_model_says	模型允许的全部
+ai_tools_choose_a_model_first	请先选择模型
+ai_tools_macros	宏
+ai_tools_many_warning	每一轮都会向模型描述每个工具。列表过长会挤占提示，导致选择变差。
+ai_tools_n_allowed	已允许 %1$d 个
+ai_tools_need_a_choice	还有 %1$d 个需要先选定内容才能生效。
+ai_tools_needs	需要 %1$s
+ai_tools_none_allowed	未允许任何工具：此模型只能回答
+ai_tools_over_the_cap	超出 %1$d 的上限，超出部分将被忽略；请取消勾选一些。
+ai_tools_reset	恢复跟随模型
+ai_tools_reset_all	全部重置
+ai_tools_title	工具
+ai_unnamed_model	未命名的模型
 api_allow	允许
 api_allow_app_to_run	允许 %1$s 运行你的宏吗？
 api_allowed_on	授权于 %1$s
@@ -113,13 +147,22 @@ apps_choose_an_app	选择应用
 apps_no_apps_match_that	没有匹配的应用。
 apps_other_apps	其他应用
 apps_search	搜索
+calendar_any_calendar	任意日历
+calendar_choose_a_calendar	选择日历
+calendar_grant_access	授予
+calendar_needs_access	Ottomatic 需要日历访问权限才能列出你的日历。
+calendar_no_calendars	这台手机上没有日历。
+calendar_no_writable_calendars	这台手机上的日历都无法写入。订阅的日历（例如节假日日历）只能读取。
 category_ai	AI
 category_automation	自动化
+category_calendar	日历
 category_connectivity	连接
 category_data	数据
 category_device_settings	设备设置
 category_device_state	设备状态
+category_files	文件
 category_flow_control	流程控制
+category_images	照片
 category_interaction	询问用户
 category_location	位置
 category_manual	手动
@@ -158,6 +201,16 @@ config_show_suggestions	显示建议
 config_socket_feed	从上游数据为 %1$s 供值
 config_socket_use_typed_connected	对 %1$s 使用输入的值（已连接到 %2$s）
 config_socket_use_typed_free	对 %1$s 使用输入的值（未连接任何内容）
+config_tools_add	添加工具
+config_tools_ai_chooses	由 AI 从可访问的 %1$d 项中选择%2$s
+config_tools_choose	AI 可以使用什么？
+config_tools_fixed	在此固定，而不是交给 AI 决定
+config_tools_fixed_count	已在此固定 %1$d 个值
+config_tools_missing	已不可用
+config_tools_must_fix	在此选定：AI 无法指明它
+config_tools_none	暂无：AI 只会回答，不会执行任何操作
+config_tools_nothing_to_fix	此工具没有可设置的项
+config_tools_remove	移除此工具
 console_copy_message	复制消息
 console_entry_title	日志条目
 console_filter_all	全部
@@ -185,6 +238,26 @@ editor_back_to_variables	返回此工作流的变量
 editor_tab_console	控制台
 editor_tab_problems	问题
 editor_tab_variables	变量
+files_add_file	添加文件
+files_choose	选择文件或文件夹
+files_choose_file	选择文件…
+files_choose_folder	选择文件夹…
+files_download_note	Android 不允许授予 Download 文件夹本身。要使用其中已有的文件，请用“添加文件”把该文件加到这里；或者把下载内容放在其中的子文件夹里，子文件夹可以整个授予。
+files_files_heading	单个文件
+files_folder_access	文件夹访问权限
+files_grant	选择文件夹
+files_missing	该文件夹已不存在。请重新授予，或将其撤销。
+files_no_folders	Ottomatic 还无法访问你的任何文件夹。
+files_no_folders_hint	选择一个文件夹，让宏可以读写其中的文件。Android 不允许授予整个内部存储或 Download 文件夹本身：请在其中新建或选择一个子文件夹，例如 Download/Ottomatic。
+files_no_path	该文件在这台手机上没有位置，宏无法指定它。存放在云端的文件，以及部分下载内容，无法这样使用——请先把它复制到手机上的某个文件夹。
+files_own_storage	Ottomatic 自有存储
+files_own_storage_hint	不含任何文件夹的路径（例如 report.csv）保存在这里。它不需要任何权限，任何宏也无法访问其他应用的文件。
+files_path_placeholder	一个路径，或用于 Ottomatic 自有存储的文件名
+files_read_only	只能读取
+files_read_only_file	只能读取这一个文件
+files_read_write	可以读取和写入
+files_regrant	重新授予
+files_revoke	撤销
 geofence_back	返回
 geofence_centre_on_my_location	以我的位置为中心
 geofence_choose_a_place	选择地点
@@ -301,6 +374,10 @@ hue_hue_bridge	Hue 网桥
 hue_name_your_bridge	为网桥命名
 hue_press_the_link_button	按下配对按钮
 hue_text	 ·
+intent_choice_ask_an_app	让应用代劳
+intent_choice_needs_camera	在其他应用拍照前，Ottomatic 需要相机权限。点按以允许，然后再次点按。
+intent_choice_no_app	此手机上没有应用能完成该操作。你仍然可以直接输入内容。
+intent_choice_placeholder	自行输入，或让应用代劳
 kind_action	动作
 kind_actions	动作
 kind_transform	转换
@@ -354,6 +431,22 @@ mail_this_provider_cannot_be_added	无法添加此服务商
 mail_unchanged	未更改
 mail_username_only_if_it_differs	用户名（仅当与地址不同时填写）
 mail_work_personal_alarm_system	工作、私人、报警系统…
+mqtt_address	代理地址
+mqtt_anonymous	匿名
+mqtt_broker_reached	已联系上。代理接受了此登录信息。
+mqtt_broker_subtitle	%1$s · %2$s
+mqtt_choose_a_broker	选择代理
+mqtt_cleartext_warning	此连接未加密。对于自己网络中的代理这很正常；但通过互联网会以明文发送你的密码。
+mqtt_connect_a_broker	连接 MQTT 代理
+mqtt_connected_this_is_the_name	已连接。你的宏将显示这个名称。
+mqtt_listen_for_topics	监听主题
+mqtt_login_optional	如果你的代理允许网络上的任何人连接，就把这两项留空——家用代理大多如此。
+mqtt_name_your_broker	为代理命名
+mqtt_no_broker_yet	还没有 MQTT 代理。请在智能家居中添加一个。
+mqtt_password	密码
+mqtt_setup_intro	Ottomatic 会连接到你已经在运行的代理，它自己永远不会充当代理。
+mqtt_topics_heard	已听到的主题
+mqtt_username	用户名
 nfc_a_link_makes_the_tag	链接会让标签在被贴近时用浏览器打开——而监视此标签的宏将不再运行，因为 Android 会在 Ottomatic 看到标签之前，就把它交给声明了该链接的应用。文本则不会这样。
 nfc_already_in_your_library	已在你的库中。
 nfc_any_tag	任意标签
@@ -389,48 +482,71 @@ nfc_written	已写入。
 perm_desc_access_background_location	让地理围栏在 Ottomatic 关闭时仍然工作——而那正是它唯一有用的时候。选择“始终允许”即可授予。
 perm_desc_access_coarse_location	较粗略的定位，在无法获得精确位置时使用。
 perm_desc_access_fine_location	让地理围栏知道你何时到达或离开某个地点。
-perm_desc_accessibility_service	允许 Ottomatic 检测音量键和电源键的按下。它从不读取屏幕内容。
+perm_desc_access_media_location	允许宏读取照片的拍摄地点。没有此权限，Android 会隐藏其他应用保存的照片中的位置信息，宏会认为照片没有位置。
+perm_desc_accessibility_service	允许 Ottomatic 检测音量键和电源键的按下，并为“截屏”动作捕获屏幕。它从不监视屏幕上的内容。
 perm_desc_battery_optimisation	防止 Android 在后台停止引擎。没有它，宏在重启后可能不会重新启用，基于时间的触发器也可能被延迟。
 perm_desc_bluetooth_connect	允许宏开启和关闭蓝牙。
 perm_desc_call_phone	允许宏在无需你确认的情况下拨打电话。
+perm_desc_camera	允许宏使用手机自带的摄像头拍照，无需相机应用，也无需有人按下快门。Ottomatic 仅在“拍照”操作运行期间打开摄像头。
 perm_desc_device_admin	允许 Ottomatic 使用设备管理员功能。
 perm_desc_exact_alarm	让定时计划在你指定的那一分钟触发，让等待在那一刻结束。没有它，Android 可以把它和其他工作合并处理，因此可能会晚一些运行。
 perm_desc_foreground_service	允许 Ottomatic 在你的宏处于启用状态时保持引擎运行。
+perm_desc_manage_media	允许宏修改、移动或删除照片而无需逐次确认。可选：没有它一切仍可运行，只是 Android 每次都会询问，这需要你拿着手机。
 perm_desc_nfc	允许宏在你把 NFC 标签贴近手机背面时运行。Ottomatic 无法替你打开 NFC，而且只有在屏幕点亮并解锁时才会读取标签。
 perm_desc_notification_listener	允许 Ottomatic 看到其他应用的通知，好让宏能对通知作出反应。
 perm_desc_notification_policy	允许宏开启和关闭勿扰模式，并把铃声切到静音。
 perm_desc_overlay	允许宏在你正看着别处时把对话框显示到屏幕上，以及打开其他应用。没有它，Android 会阻止后台应用做这两件事。
 perm_desc_post_notifications	允许 Ottomatic 显示通知：既包括宏发出的通知，也包括告诉你引擎在重启后未能启动的那一条。
+perm_desc_read_calendar	允许宏读取你的日程，并让你在设置时选择日历。与通讯录不同，系统没有可供依赖的选择器，所以日历节点必须先获得此权限才能显示任何内容。
 perm_desc_read_contacts	允许宏查找你所选联系人的号码。选择联系人不需要任何权限；之后拨号才需要。
+perm_desc_read_media_images	允许宏查找和读取手机中的图片，并在保存新图片时启动。没有此权限，所有图片节点都不会执行。
 perm_desc_receive_sms	允许宏在短信到达时运行，并读取发件人和内容。
 perm_desc_send_sms	允许宏以你的名义发送短信。
 perm_desc_unknown	被你某个宏中的节点使用。
+perm_desc_write_calendar	允许宏创建、修改和删除日程。读取日程是上面那个单独的开关。
+perm_desc_write_media_images	允许宏在旧版 Android 上修改、移动或删除照片。从 Android 10 起，此处无需授权：Android 会要求你逐次确认。
 perm_desc_write_settings	允许宏更改屏幕亮度、屏幕超时和自动旋转。
-perm_rationale_accessibility_keys	Ottomatic 需要无障碍使用权来检测按键。它从不读取屏幕内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。
+perm_rationale_accessibility_keys	Ottomatic 需要无障碍使用权来检测按键。它从不监视屏幕上的内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。
 perm_rationale_alarm_exact	Ottomatic 需要设置精确闹钟的权限，才能让这次等待在你指定的那一分钟结束。没有它，等待照样会发生，但 Android 会把唤醒和其他工作合并，可能会晚上几分钟。
+perm_rationale_calendar_read	Ottomatic 需要日历访问权限才能读取你的日程。没有它，此节点什么也读不到，上面的日历选择器也没有内容可选。
+perm_rationale_calendar_write	Ottomatic 需要修改日历的权限，此节点才能创建、编辑或删除日程。读取日程是单独的一项权限。
+perm_rationale_camera_photo	Ottomatic 需要摄像头权限才能拍照。它仅在此操作运行期间打开摄像头，随后立即关闭。当手机长时间在后台闲置时，Android 仍可能拒绝拍照。
 perm_rationale_dnd_policy	Ottomatic 需要勿扰模式使用权才能更改你的响铃模式。
+perm_rationale_media_location	Ottomatic 需要读取照片拍摄地点的权限，否则这个节点会报告所有图片都没有位置。你自己拍摄的照片不受影响。
+perm_rationale_media_manage	Ottomatic 可以在不逐次询问的情况下修改照片。这是可选的：没有它节点仍能工作，但 Android 会在屏幕上显示确认，因此无法无人值守运行。
+perm_rationale_media_read	Ottomatic 需要访问你的照片，这个节点才能查找和读取它们。你自己选择图片不需要此权限，宏运行时查找才需要。
+perm_rationale_media_write	Ottomatic 需要修改照片的权限，这个节点才能重写照片。在 Android 10 及更高版本上此权限无效，Android 会要求你逐次确认。
 perm_rationale_nfc_radio	此触发器需要开启 NFC，那是一项系统级设置，Ottomatic 无法自行授予。此外，只有在屏幕点亮并解锁时才会读取标签：贴一下无法唤醒口袋里休眠的手机。
 perm_rationale_notification_listener	Ottomatic 需要通知使用权才能看到其他应用的通知。
 perm_rationale_overlay_dialog	Ottomatic 需要显示在其他应用上层的权限，这样在你正忙于手机上别的事情时，这个对话框才能出现在你面前。没有它，该节点会直接取消而不是发问。
 perm_rationale_overlay_launch	Ottomatic 需要显示在其他应用上层的权限，才能在你正忙于手机上别的事情时打开另一个应用。Android 会阻止后台应用打开其他应用；没有这项权限，该节点什么也不做，并会在控制台里说明。
+perm_rationale_overlay_media	Ottomatic 需要显示在其他应用上层的权限，才能在宏于后台运行时显示 Android 的确认对话框。没有它，当你不在 Ottomatic 中时，修改其他应用保存的照片会失败。
+perm_rationale_screen_capture	Ottomatic 需要无障碍使用权来捕获屏幕。只在此动作运行期间捕获，从不监视屏幕上的内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。
 perm_title_access_background_location	后台位置信息
 perm_title_access_coarse_location	大致位置
 perm_title_access_fine_location	位置信息
+perm_title_access_media_location	照片位置
 perm_title_accessibility_service	无障碍使用权
 perm_title_battery_optimisation	不受限制的电池用量
 perm_title_bluetooth_connect	蓝牙
 perm_title_call_phone	拨打电话
+perm_title_camera	摄像头
 perm_title_device_admin	设备管理员
 perm_title_exact_alarm	闹钟与提醒
 perm_title_foreground_service	前台服务
+perm_title_manage_media	媒体管理
 perm_title_nfc	NFC
 perm_title_notification_listener	通知使用权
 perm_title_notification_policy	勿扰模式使用权
 perm_title_overlay	显示在其他应用上层
 perm_title_post_notifications	通知
+perm_title_read_calendar	日历
 perm_title_read_contacts	通讯录
+perm_title_read_media_images	照片
 perm_title_receive_sms	接收短信
 perm_title_send_sms	发送短信
+perm_title_write_calendar	修改你的日历
+perm_title_write_media_images	修改照片
 perm_title_write_settings	修改系统设置
 permission_bind_plugin_description	允许 Ottomatic 使用此应用提供的额外触发器和动作节点。该应用以自己的权限运行自己的代码；Ottomatic 不会把自己的权限分享给它。
 permission_bind_plugin_label	提供 Ottomatic 节点
@@ -459,6 +575,8 @@ plugins_plugins	插件
 plugins_provides_no_nodes	未提供任何节点
 plugins_this_app_asks_for	此应用申请：%1$s
 problem_ai_missing	“%1$s”指向一个已不存在的 AI 连接
+problem_ai_tool_missing	“%1$s”向 AI 提供了“%2$s”，但它已不可用
+problem_ai_tool_unpinned	“%1$s”提供了“%2$s”，却没有选定其%3$s，AI 无法自行填写
 problem_ai_unfinished	“%1$s”指向一个尚未设置完成的 AI 连接
 problem_ai_unset	“%1$s”没有选择 AI 连接，因此什么也不会做
 problem_data_cycle	检测到数据循环：%1$s
@@ -492,6 +610,20 @@ problems_skipped_nodes	已跳过：%1$s
 problems_summary_separator	 ·
 problems_where_separator	  ·
 problems_wire_skipped	此连线被跳过
+setup_ai	AI
+setup_ai_subtitle	AI 节点使用的账户和模型
+setup_app_access_subtitle	获准运行你的宏的其他应用
+setup_folders_subtitle	本应用可以打开的文件夹和文件
+setup_geofences_subtitle	宏可以响应的地点
+setup_mail_subtitle	用于收发邮件的邮箱
+setup_nfc_subtitle	你保存的标签
+setup_permissions_subtitle	手机允许你的宏做什么
+setup_plugins_subtitle	添加节点的应用
+setup_section_connections	连接
+setup_section_system	系统
+setup_smart_home_subtitle	Hue、Home Assistant 和 MQTT
+setup_title	设置
+setup_variables_subtitle	所有宏都能共享的值
 shortcut_macro_and_trigger	%1$s · %2$s
 shortcut_macro_gone	该宏已不存在
 shortcut_new_macro_long	新建一个宏
@@ -517,6 +649,8 @@ smarthome_hub_subtitle	%1$s · %2$d 个灯 · %3$d 个场景
 smarthome_it_is_the_large_button	就是圆盘中央、三个小灯之间的那个大按钮。正在连接 %1$s。
 smarthome_lights	灯
 smarthome_looking_for_bridges_on_your	正在你的 Wi-Fi 上查找网桥…
+smarthome_mqtt_broker	MQTT 代理
+smarthome_mqtt_broker_subtitle	你已经在运行的代理 — Mosquitto、Zigbee2MQTT、EMQX
 smarthome_name	名称
 smarthome_no_hub_yet	还没有中枢。添加一个，即可从宏控制你的灯。
 smarthome_no_hubs_yet_add_one	还没有中枢。添加一个，就能从宏里控制灯光，也能在家里有变化时启动宏。
@@ -642,6 +776,7 @@ workflowlist_armed_with_problems	已启用 · %1$s
 workflowlist_can_t_add_it_from	无法从这里添加
 workflowlist_cancel	取消
 workflowlist_choose_a_macro	选择宏
+workflowlist_clear_search	清除搜索
 workflowlist_delete	删除
 workflowlist_delete_confirm	删除“%1$s”？此操作无法撤销。
 workflowlist_delete_workflow	删除工作流
@@ -654,146 +789,15 @@ workflowlist_mail_accounts	邮件账户
 workflowlist_more	更多
 workflowlist_new_workflow	新建工作流
 workflowlist_nfc_tags	NFC 标签
+workflowlist_no_matches	没有匹配的宏。
 workflowlist_no_other_macros_yet	还没有其他宏。
 workflowlist_no_workflows_yet_ntap_to	还没有工作流。\n点按 + 创建一个。
 workflowlist_off	已关闭
 workflowlist_permissions	权限
 workflowlist_plugins	插件
+workflowlist_search_placeholder	搜索宏
 workflowlist_smart_home	智能家居
 workflowlist_text	 ·
 workflowlist_this_macro	此宏
 workflowlist_which_trigger	哪个触发器？
 workflowlist_workflows	工作流
-smarthome_mqtt_broker	MQTT 代理
-smarthome_mqtt_broker_subtitle	你已经在运行的代理 — Mosquitto、Zigbee2MQTT、EMQX
-mqtt_connect_a_broker	连接 MQTT 代理
-mqtt_name_your_broker	为代理命名
-mqtt_setup_intro	Ottomatic 会连接到你已经在运行的代理，它自己永远不会充当代理。
-mqtt_address	代理地址
-mqtt_login_optional	如果你的代理允许网络上的任何人连接，就把这两项留空——家用代理大多如此。
-mqtt_username	用户名
-mqtt_password	密码
-mqtt_anonymous	匿名
-mqtt_broker_reached	已联系上。代理接受了此登录信息。
-mqtt_cleartext_warning	此连接未加密。对于自己网络中的代理这很正常；但通过互联网会以明文发送你的密码。
-mqtt_connected_this_is_the_name	已连接。你的宏将显示这个名称。
-mqtt_choose_a_broker	选择代理
-mqtt_no_broker_yet	还没有 MQTT 代理。请在智能家居中添加一个。
-mqtt_listen_for_topics	监听主题
-mqtt_topics_heard	已听到的主题
-mqtt_broker_subtitle	%1$s · %2$s
-category_files	文件
-files_path_placeholder	一个路径，或用于 Ottomatic 自有存储的文件名
-files_choose	选择文件或文件夹
-files_choose_folder	选择文件夹…
-files_choose_file	选择文件…
-files_folder_access	文件夹访问权限
-files_no_folders	Ottomatic 还无法访问你的任何文件夹。
-files_no_folders_hint	选择一个文件夹，让宏可以读写其中的文件。Android 不允许授予整个内部存储或 Download 文件夹本身：请在其中新建或选择一个子文件夹，例如 Download/Ottomatic。
-files_grant	选择文件夹
-files_regrant	重新授予
-files_revoke	撤销
-files_read_only	只能读取
-files_read_write	可以读取和写入
-files_missing	该文件夹已不存在。请重新授予，或将其撤销。
-files_own_storage	Ottomatic 自有存储
-files_own_storage_hint	不含任何文件夹的路径（例如 report.csv）保存在这里。它不需要任何权限，任何宏也无法访问其他应用的文件。
-files_no_path	该文件在这台手机上没有位置，宏无法指定它。存放在云端的文件，以及部分下载内容，无法这样使用——请先把它复制到手机上的某个文件夹。
-files_add_file	添加文件
-files_files_heading	单个文件
-files_download_note	Android 不允许授予 Download 文件夹本身。要使用其中已有的文件，请用“添加文件”把该文件加到这里；或者把下载内容放在其中的子文件夹里，子文件夹可以整个授予。
-files_read_only_file	只能读取这一个文件
-problem_ai_tool_missing	“%1$s”向 AI 提供了“%2$s”，但它已不可用
-problem_ai_tool_unpinned	“%1$s”提供了“%2$s”，却没有选定其%3$s，AI 无法自行填写
-config_tools_choose	AI 可以使用什么？
-config_tools_none	暂无：AI 只会回答，不会执行任何操作
-config_tools_fixed_count	已在此固定 %1$d 个值
-config_tools_remove	移除此工具
-config_tools_missing	已不可用
-config_tools_fixed	在此固定，而不是交给 AI 决定
-config_tools_must_fix	在此选定：AI 无法指明它
-config_tools_nothing_to_fix	此工具没有可设置的项
-config_tools_add	添加工具
-ai_add_model	添加模型
-ai_choose_a_model	选择模型
-ai_delete_model	删除此模型
-ai_model_effort	思考程度
-ai_model_effort_help	模型回答前要思考多久。上方标识符为空时，也由它决定供应商使用哪个模型。
-ai_model_id	模型标识符
-ai_model_id_required	必填
-ai_model_name	名称
-ai_model_name_help	宏将看到的名称。请按用途而不是按模型命名：“家居”、“总结邮件”。
-ai_model_name_placeholder	家居
-ai_model_not_finished	尚未完成：请填写名称和模型
-ai_model_provider_default	%1$s · 供应商自带的模型
-ai_no_model_to_test	请先添加模型并保存，然后再测试。
-ai_no_models_on_this_account	此帐户下还没有模型。
-ai_no_models_yet	还没有模型。添加一个，宏才有可指向的对象。
-ai_tools_allow_everything	全部允许
-ai_tools_allowed_count	已允许 %1$d / %2$d
-ai_tools_macros	宏
-ai_tools_many_warning	每一轮都会向模型描述每个工具。列表过长会挤占提示，导致选择变差。
-ai_tools_n_allowed	已允许 %1$d 个
-ai_tools_need_a_choice	还有 %1$d 个需要先选定内容才能生效。
-ai_tools_needs	需要 %1$s
-ai_tools_none_allowed	未允许任何工具：此模型只能回答
-ai_tools_over_the_cap	超出 %1$d 的上限，超出部分将被忽略；请取消勾选一些。
-ai_tools_title	工具
-ai_unnamed_model	未命名的模型
-ai_tools_adjusted	已在此调整
-ai_tools_adjusted_count	已为此节点调整 %1$d 项
-ai_tools_adjusted_off	已在此关闭
-ai_tools_adjusting	这些属于模型。在此修改只对本节点生效。
-ai_tools_as_the_model_says	模型允许的全部
-ai_tools_choose_a_model_first	请先选择模型
-ai_tools_reset	恢复跟随模型
-ai_tools_reset_all	全部重置
-config_tools_ai_chooses	由 AI 从可访问的 %1$d 项中选择%2$s
-perm_title_read_calendar	日历
-perm_title_write_calendar	修改你的日历
-perm_desc_read_calendar	允许宏读取你的日程，并让你在设置时选择日历。与通讯录不同，系统没有可供依赖的选择器，所以日历节点必须先获得此权限才能显示任何内容。
-perm_desc_write_calendar	允许宏创建、修改和删除日程。读取日程是上面那个单独的开关。
-perm_rationale_calendar_read	Ottomatic 需要日历访问权限才能读取你的日程。没有它，此节点什么也读不到，上面的日历选择器也没有内容可选。
-perm_rationale_calendar_write	Ottomatic 需要修改日历的权限，此节点才能创建、编辑或删除日程。读取日程是单独的一项权限。
-category_calendar	日历
-calendar_choose_a_calendar	选择日历
-calendar_any_calendar	任意日历
-calendar_no_calendars	这台手机上没有日历。
-calendar_no_writable_calendars	这台手机上的日历都无法写入。订阅的日历（例如节假日日历）只能读取。
-calendar_needs_access	Ottomatic 需要日历访问权限才能列出你的日历。
-calendar_grant_access	授予
-category_images	照片
-perm_title_read_media_images	照片
-perm_title_write_media_images	修改照片
-perm_title_access_media_location	照片位置
-perm_title_manage_media	媒体管理
-perm_desc_read_media_images	允许宏查找和读取手机中的图片，并在保存新图片时启动。没有此权限，所有图片节点都不会执行。
-perm_desc_write_media_images	允许宏在旧版 Android 上修改、移动或删除照片。从 Android 10 起，此处无需授权：Android 会要求你逐次确认。
-perm_desc_access_media_location	允许宏读取照片的拍摄地点。没有此权限，Android 会隐藏其他应用保存的照片中的位置信息，宏会认为照片没有位置。
-perm_desc_manage_media	允许宏修改、移动或删除照片而无需逐次确认。可选：没有它一切仍可运行，只是 Android 每次都会询问，这需要你拿着手机。
-perm_rationale_media_read	Ottomatic 需要访问你的照片，这个节点才能查找和读取它们。你自己选择图片不需要此权限，宏运行时查找才需要。
-perm_rationale_media_write	Ottomatic 需要修改照片的权限，这个节点才能重写照片。在 Android 10 及更高版本上此权限无效，Android 会要求你逐次确认。
-perm_rationale_media_location	Ottomatic 需要读取照片拍摄地点的权限，否则这个节点会报告所有图片都没有位置。你自己拍摄的照片不受影响。
-perm_rationale_media_manage	Ottomatic 可以在不逐次询问的情况下修改照片。这是可选的：没有它节点仍能工作，但 Android 会在屏幕上显示确认，因此无法无人值守运行。
-perm_rationale_overlay_media	Ottomatic 需要显示在其他应用上层的权限，才能在宏于后台运行时显示 Android 的确认对话框。没有它，当你不在 Ottomatic 中时，修改其他应用保存的照片会失败。
-setup_title	设置
-setup_section_connections	连接
-setup_section_system	系统
-setup_ai	AI
-setup_smart_home_subtitle	Hue、Home Assistant 和 MQTT
-setup_ai_subtitle	AI 节点使用的账户和模型
-setup_mail_subtitle	用于收发邮件的邮箱
-setup_variables_subtitle	所有宏都能共享的值
-setup_geofences_subtitle	宏可以响应的地点
-setup_nfc_subtitle	你保存的标签
-setup_folders_subtitle	本应用可以打开的文件夹和文件
-setup_permissions_subtitle	手机允许你的宏做什么
-setup_plugins_subtitle	添加节点的应用
-setup_app_access_subtitle	获准运行你的宏的其他应用
-workflowlist_search_placeholder	搜索宏
-workflowlist_clear_search	清除搜索
-workflowlist_no_matches	没有匹配的宏。
-intent_choice_placeholder	自行输入，或让应用代劳
-intent_choice_ask_an_app	让应用代劳
-intent_choice_no_app	此手机上没有应用能完成该操作。你仍然可以直接输入内容。
-intent_choice_needs_camera	在其他应用拍照前，Ottomatic 需要相机权限。点按以允许，然后再次点按。

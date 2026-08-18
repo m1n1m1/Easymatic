@@ -1,4 +1,6 @@
 A	A
+A quarter turn left	向左旋转 90°
+A quarter turn right	向右旋转 90°
 A run of items out of a list	列表中的一段元素
 A to Z / smallest first	A 到 Z / 从小到大
 Above	高于
@@ -10,20 +12,26 @@ Activates a lighting scene you set up in the Hue app, or turns its room off — 
 Active	启用中
 Active from	生效起始
 Active until (earlier than \'from\' runs past midnight)	生效结束（早于“起始”则跨过午夜）
+Add Calendar Event	添加日程
 Add to List	添加到列表
+Add to the end instead of replacing	追加到末尾而不是覆盖
 Adjusts an audio stream\'s volume (up, down, set, mute or unmute)	调整某个音频通道的音量（调高、调低、设定、静音或取消静音）
 Airplane Mode Changed	飞行模式已改变
 Airplane mode	飞行模式
 Alarm	闹钟
 Alarms	闹钟
 All	全部
+All day	全天
+Also fire on messages the broker had stored	也对代理已保存的消息触发
 Also when only its details change	仅细节变化时也触发
 Also when the device starts moving	设备开始移动时也触发
 Always (high battery use)	始终（耗电较高）
+Amber	琥珀色
 Ambient Light	环境光
 Ambient light	环境光
 Answer	回答
 Answer type	回答类型
+Answers whether a file exists, how big it is and when it changed	告诉你文件是否存在、有多大、何时改动过
 Any	任意
 Anything	任意
 App	应用
@@ -31,10 +39,17 @@ App (optional)	应用（可选）
 App Initialised	应用已初始化
 App Installed / Removed	应用已安装 / 已卸载
 Appends an item to a named list, usually from inside a loop	向指定列表追加一个元素，通常在循环内使用
+Applies to	应用于
+Appointment	日程
+Artist	作者
 Ask AI	询问 AI
+Ask AI (with tools)	询问 AI（可用工具）
+Ask AI About a Picture	就图片询问 AI
 Ask Yes or No	询问是或否
 Ask for Input	请求输入
+Ask the broker to keep this message	请求代理保留此消息
 Ask to Choose	请求选择
+Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer	让 AI 模型去做一件事，允许它读取手机信息并运行你选定的节点和宏，直到得出答案
 Asks the user a yes/no question in a popup dialog and branches on the answer	用弹出对话框向用户提一个是/否问题，并按回答分支
 Asks the user to type a value in a popup dialog and puts it on a port	用弹出对话框请用户输入一个值，并把它放到端口上
 At	于
@@ -45,31 +60,48 @@ Auto brightness	自动亮度
 Automatic	自动
 Away for (minutes)	离开时长（分钟）
 B	B
+Back camera	后置摄像头
 Balanced	均衡
 Battery Level	电量
 Battery level	电量
 Bcc	密送
 Below	低于
+Between two times	两个时间点之间
+Blue	蓝色
 Bluetooth Device Connected	蓝牙设备已连接
 Bluetooth State Change	蓝牙状态改变
 Bluetooth enabled	蓝牙已开启
 Body	正文
 Boolean	是/否
+Both	两者
 Break Struct	拆分结构体
 Brightness %	亮度 %
+Broker	代理
 Build text	构建文本
+Busy	忙碌
 Button	按钮
 Button label	按钮文字
+Buttons — one per line	按钮——每行一个
 C	C
+Calendar	日历
+Calendar Changed	日历已更改
+Calendar Event	日历日程
 Call Home Assistant Service	调用 Home Assistant 服务
 Called by Another App	由其他应用调用
 Calls a web API and exposes the typed response	调用一个网络 API，并给出带类型的响应
+Camera	摄像头
+Camera maker	相机厂商
+Camera model	相机型号
 Cancel button	取消按钮
 Carries on at once and continues again at a chosen moment	立即继续，并在选定的时刻再次继续
 Carry on now	立即继续
 Cc	抄送
 Change	变化
+Change Picture Details	修改图片详情
+Change format or quality	更改格式或质量
+Change how it shows you	更改显示状态
 Changes from	变化前为
+Changes or deletes an appointment, either one occurrence of it or the whole series	修改或删除日程，可以只针对一次，也可以针对整个系列
 Changes to	变化后为
 Charging	充电中
 Charging started	开始充电
@@ -85,6 +117,8 @@ Combines words and values into one piece of text	把文字和值拼成一段文�
 Compare against	比较对象
 Compare as	比较方式
 Confirm button	确认按钮
+Confirmed by the broker	由代理确认
+Confirmed exactly once	确认且仅一次
 Connected	已连接
 Connection	连接
 Contains	包含
@@ -93,9 +127,15 @@ Control Scene	控制场景
 Conversation ID	会话 ID
 Convert	转换
 Convert to	转换为
+Copies, moves or renames a file on the phone	复制、移动或重命名手机上的文件
+Copy it	复制
+Copy or Move File	复制或移动文件
+Copyright	版权
 Count	数量
 Count items	统计元素个数
 Covered	被遮挡
+Creates an appointment in one of the calendars on this phone	在这台手机的某个日历中创建日程
+Crop	裁剪
 Current time	当前时间
 Custom	自定义
 Custom sound	自定义声音
@@ -104,10 +144,18 @@ Dark theme	深色主题
 Data contains	数据包含
 Date &amp; time	日期与时间
 Date rolled over	日期已翻篇
+Date taken	拍摄日期
 Date time	日期时间
 Days	天
+Days ahead	往后几天
 Days of month (e.g. 1,15, empty = every day)	每月的哪几天（例如 1,15；留空 = 每天）
 Delete	删除
+Delete File	删除文件
+Delete Picture	删除图片
+Delete for good	彻底删除
+Delivery	送达方式
+Description	描述
+Details	详情
 Device Boot	设备启动
 Device Docked	设备已放入底座
 Device Movement	设备移动
@@ -119,6 +167,7 @@ Direction	方向
 Disable Macro	停用宏
 Disabled	已停用
 Disables another macro by id (persists the flag and disarms its triggers)	按 id 停用另一个宏（保存状态并解除它的触发器）
+Disappear after (seconds)	消失时长（秒）
 Disconnected	已断开
 Dismiss	清除
 Do Not Disturb	勿扰模式
@@ -130,6 +179,7 @@ Down	调低
 Duration	时长
 Duration (ms, used when pattern is empty)	时长（毫秒，未填写振动模式时使用）
 Dwell delay (ms)	停留延时（毫秒）
+Edit Picture	编辑图片
 Ejected	已弹出
 Email Received	收到邮件
 Empty List	清空列表
@@ -141,6 +191,7 @@ Entity	实体
 Equals	等于
 Event	事件
 Event type	事件类型
+Events	日程
 Extra data (JSON)	附加数据（JSON）
 Face down	屏幕朝下
 Face up	屏幕朝上
@@ -149,22 +200,36 @@ Falls below	降到低于
 Fast	快速
 Fetch Email	收取邮件
 Field	字段
+File	文件
+File Details	文件详情
+File name	文件名
+File or folder	文件或文件夹
+Files	文件
+Find Calendar Events	查找日程
+Find Pictures	查找图片
+Finds photos and screenshots on this phone onto a list you can loop over	查找手机中的照片和屏幕截图，生成可循环遍历的列表
 Fire time	触发时刻
+Fire when	触发时机
 Fires immediately when the workflow starts (no external event)	工作流一开始就立即触发（没有外部事件）
 Fires when a macro finishes executing after being triggered	当某个宏被触发并执行完毕时触发
 Fires when a named variable changes value	当指定变量的值发生变化时触发
 Fires when the app is initialised and running	当应用初始化并运行起来时触发
 Fires when the device\'s UI / night mode changes	当设备的界面模式 / 夜间模式改变时触发
 Fires when this macro is enabled (its triggers are armed)	当此宏被启用（它的触发器被激活）时触发
+Flash	闪光灯
 Float	小数
 Folder	文件夹
+Folders	文件夹
 For a length of time	持续一段时间
 Found	已找到
+Free	空闲
 Fridays	每周五
+From	从
 From (optional)	发件人（可选）
 From app (optional)	来自应用（可选）
 From contains	发件人包含
 From position (0 is the first)	起始位置（0 为第一个）
+Front camera	前置摄像头
 Geofence	地理围栏
 Gesture	手势
 Get	获取
@@ -173,12 +238,14 @@ Get as	获取为
 Give up after (seconds)	放弃等待时长（秒）
 Greater than	大于
 Greater than or equal	大于或等于
+Green	绿色
 HTTP Request	HTTP 请求
 Halts the current execution chain (stops following connected actions)	中止当前的执行链（不再继续后面连接的动作）
 Headers (JSON, optional)	请求头（JSON，可选）
 Headset Plugged	耳机已插入
 Headset hook	耳机线控键
 Headset plugged in	耳机已插入
+Height	高度
 Held down	长按
 Held for (seconds)	持续时间（秒）
 High — fires easily	高——很容易触发
@@ -189,6 +256,8 @@ Home Assistant Entity	Home Assistant 实体
 Home Assistant Entity Changed	Home Assistant 实体变化
 Home Assistant Event	Home Assistant 事件
 Hours	小时
+How	方式
+How long (minutes)	时长（分钟）
 How many	多少个
 How many at most	最多多少个
 How many items are in a list	列表中有多少个元素
@@ -197,41 +266,65 @@ How the device is currently resting — face up or down, portrait or landscape (
 How to watch	监视方式
 Idle	空闲
 If	如果
+If a file is already there	如果文件已存在
 If it fails	如果失败
 If missing	如果缺失
+If one is already there	如果已存在
+In an appointment	正在日程中
+Include cancelled and declined ones	包含已取消和已拒绝的
 Incoming Call State	来电状态
 Index	索引
 Initiates a phone call to a number	向某个号码发起通话
 Inputs	输入
 Installed	已安装
 Int	整数
+Into folder	放入文件夹
+It ends	结束时
+It starts	开始时
 Item	元素
 Item at position	指定位置的元素
 Item to find	要查找的元素
+Its reminder falls due	提醒到期时
+JPEG	JPEG
 JSON text	JSON 文本
 Join list	连接列表
+Keep both, adding a number	两个都保留，加上编号
+Keep until dismissed	保留直到被清除
 Key	键
 Landscape left	向左横屏
 Landscape right	向右横屏
+Latest picture	最新图片
+Latin-1 (ISO 8859-1)	Latin-1 (ISO 8859-1)
 Launch App	启动应用
 Launches another app by package name	按包名启动另一个应用
+Leave the old one alone	保留原来的文件
+Left	左
+Left to right	左右翻转
 Less than	小于
 Less than or equal	小于或等于
+Let it use tools	允许它使用工具
 Level (%)	级别（%）
 Level (when on)	亮度（开启时）
 Light or room	灯或房间
 List	列表
+List Files	列出文件
 List contains	列表包含
 List variable	列表变量
+Lists the files in a folder, as paths you can loop over	列出文件夹中的文件，作为可循环遍历的路径
 Locale Changed	语言已改变
+Location	位置
 Log Message	记录日志
 Long	长
 Longest reply (tokens)	回复上限（token）
+Longest side (pixels)	最长边（像素）
+Look at	查看范围
 Loops over a list, running the following steps once for every item in it	遍历一个列表，对其中每个元素把后续步骤执行一次
 Loops the following steps a set number of times — repeat 10 times, and so on	把后续步骤重复固定的次数——比如重复 10 次
 Loops the following steps for as long as a comparison holds	只要比较条件成立，就一直重复后续步骤
 Low — needs a deliberate gesture	低——需要刻意做出动作
 Lux	勒克斯
+MQTT Message	MQTT 消息
+MQTT Topic	MQTT 主题
 Macro	宏
 Macro Enabled	宏已启用
 Macro Finished	宏已结束
@@ -249,23 +342,42 @@ Media Mounted / Unmounted	存储介质已挂载 / 已卸载
 Medium	中
 Message	消息
 Message Received	收到消息
+Message contains	消息包含
 Messages	消息
 Method	方法
 Minutes	分钟
+Minutes before (negative fires afterwards)	提前几分钟（负数表示之后触发）
+Mirror	镜像
 Mode	模式
 Model	模型
 Mondays	每周一
+Most to return	最多返回数量
+Most turns	最多轮次
 Mounted	已挂载
 Move	移动
+Move it	移动
+Move or Copy Picture	移动或复制图片
 Move to folder	移动到文件夹
+Move to the bin	移入回收站
+Moves a photo to the bin, or deletes it for good	将照片移入回收站，或彻底删除
+Moves or copies a photo into another folder, keeping it in the gallery	将照片移动或复制到其他文件夹，并保留在图库中
 Multiple lines	多行
 Must hold for (ms)	必须按住（毫秒）
 Mute	静音
 NFC Tag	NFC 标签
 NFC enabled	NFC 已开启
 Name other apps see	其他应用看到的名称
+Names matching	名称匹配
 Network	网络
+New details (leave empty to keep them)	新详情（留空则保持不变）
+New length in minutes (-1 to keep it)	新时长，分钟（-1 表示保持不变）
+New place (leave empty to keep it)	新地点（留空则保持不变）
+New start (leave empty to keep it)	新开始时间（留空则保持不变）
+New title (leave empty to keep it)	新标题（留空则保持不变）
+New value (blank removes it)	新值（留空则删除）
+Newest first	最新的在前
 Next	下一首
+Next appointment	下一个日程
 Normal	正常
 Not equals	不等于
 Notification	通知
@@ -275,6 +387,7 @@ Number	数字
 Number of presses	按键次数
 Off	关闭
 Offhook	通话中
+Oldest first	最旧的在前
 On	开启
 On dwell	停留时
 On enter	进入时
@@ -282,25 +395,37 @@ On exit	离开时
 On staying away	持续离开时
 One item out of a list, by its position	按位置取出列表中的一个元素
 Only during a time window	仅在某个时间段内
+Only in this folder	仅在此文件夹中
 Only lights already on	仅限已经亮着的灯
+Only names matching	仅匹配以下名称
 Only unread	仅未读
 Only when it ends up lying flat	仅当最终平放时
 Only while the screen is on	仅在屏幕点亮时
 Open URL	打开网址
 Opens WhatsApp, Signal or Telegram with a message ready to send	打开 WhatsApp、Signal 或 Telegram，并预先填好待发送的消息
 Opens a URL in the default handler (browser or app). Typing google.com is enough	用默认程序（浏览器或应用）打开一个网址。输入 google.com 就够了
+Operation	操作
 Operator	运算符
 Options — one per line	选项——每行一个
+Orange	橙色
 Order	顺序
 Orientation	朝向
 Outputs	输出
+PNG	PNG
 Package	包名
 Part of list	列表的一部分
+Path	路径
 Path (e.g. main.temp) — blank for the whole document	路径（例如 main.temp）——留空表示整个文档
+Paths	路径
 Pattern (comma-separated ms, e.g. 0,200,500,200)	振动模式（毫秒，用逗号分隔，例如 0,200,500,200）
 Pause	暂停
 Pauses the workflow for a while	让工作流暂停一段时间
 Picked up	被拿起
+Picture	图片
+Picture Details	图片详情
+Picture Saved	图片已保存
+Pictures	图片
+Pink	粉色
 Place	地点
 Planned for	计划于
 Play	播放
@@ -318,7 +443,9 @@ Position	位置
 Position (0 is the first)	位置（0 为第一个）
 Position in list	在列表中的位置
 Post	发送
+Posted as	使用的标签
 Posts a notification on this device	在此设备上显示一条通知
+Posts a notification on this device, optionally with buttons and a reply field	在此设备上显示一条通知，可附带按钮和回复框
 Power Save Mode Changed	省电模式已改变
 Power save mode	省电模式
 Prefilled	预填内容
@@ -326,29 +453,48 @@ Pressed	按下
 Pressed several times	连按多次
 Previous	上一首
 Priority	优先级
+Progress (%, below 0 = busy)	进度（%，小于 0 表示不确定）
 Prompt	提示词
 Proximity	距离感应
 Proximity covered	距离传感器被遮挡
+Publish to MQTT	发布到 MQTT
 Put	放入
 Put down	被放下
+Quality	质量
 Question	问题
+Read File	读取文件
 Read from JSON	从 JSON 读取
 Reading	读数
+Reads a picture\'s size, camera, date and location out of the file	从文件中读取图片的尺寸、相机、日期和位置
+Reads a text file from the phone and passes its contents on	读取手机上的文本文件并传出其内容
+Reads appointments out of a calendar onto a list you can loop over	从日历读取日程，生成可循环遍历的列表
 Reads messages from a mailbox onto a list you can loop over	从邮箱读取邮件到一个可供遍历的列表中
 Reads one value out of JSON text, such as an HTTP response body	从 JSON 文本中读出一个值，例如 HTTP 响应的正文
 Reads whether a light is on, how bright it is and what colour — Philips Hue	读取某个灯是否亮着、亮度多少、什么颜色 — Philips Hue
 Reason (optional, logged before halting)	原因（可选，中止前会记录到日志）
+Red	红色
 Remembers a value in a variable, readable by later runs	把一个值记在变量里，供之后的运行读取
+Remind you (minutes before, -1 for no reminder)	提醒你（提前几分钟，-1 表示不提醒）
+Remove Notification	移除通知
 Removed	已卸载
+Removes a file from the phone	从手机上删除一个文件
 Repeat	重复
 Repeat every (under 15 only fires while the device is awake)	重复间隔（小于 15 时，仅在设备唤醒状态下触发）
 Repeat for each item	对每个元素重复
 Repeat on an interval	按间隔重复
 Repeat this	重复这里
 Repeat while	当满足条件时重复
+Replace it	覆盖它
 Replaced	已替换
 Replies to a message in WhatsApp, Signal, Telegram or another messenger	回复 WhatsApp、Signal、Telegram 或其他即时通讯应用中的消息
+Reply	回复
+Reply button	回复按钮
+Reply field	回复框
+Reply hint	回复框提示
 Reply to Message	回复消息
+Resize	缩放
+Resizes, rotates, mirrors, crops or re-encodes a picture into a new file	将图片缩放、旋转、镜像、裁剪或重新编码后保存为新文件
+Result	结果
 Resumed at	恢复于
 Ring	响铃
 Ringer Mode Changed	响铃模式已改变
@@ -356,6 +502,7 @@ Ringer mode	响铃模式
 Ringing	振铃中
 Ringtone	铃声
 Rises above	升到高于
+Rotate	旋转
 Routes execution by comparing a value against another	通过比较两个值来决定执行走向
 Run Script	运行脚本
 Run action	执行动作
@@ -363,7 +510,11 @@ Runs JavaScript over inputs you name and returns values on ports you name	对你
 Runs any Home Assistant service — a thermostat, a media player, a lock, a vacuum, a script	调用任意 Home Assistant 服务——恒温器、媒体播放器、门锁、扫地机、脚本
 SMS	短信
 SMS Received	收到短信
+Same as the original	与原图相同
 Saturdays	每周六
+Save as	保存为
+Save in this folder	保存到此文件夹
+Saves text to a file on the phone, replacing it or adding to the end	把文本保存到手机上的文件，覆盖原内容或追加到末尾
 Scene	场景
 Schedule	定时计划
 Screen On / Off	屏幕点亮 / 熄灭
@@ -373,9 +524,12 @@ Seconds	秒
 Send Email	发送邮件
 Send Message	发送消息
 Send SMS	发送短信
+Send and forget	发送后不确认
 Send as HTML	以 HTML 发送
 Sender (optional — any sender when empty)	发送者（可选——留空表示任何人）
+Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome	向 MQTT 代理的某个主题发送消息 — Mosquitto、Zigbee2MQTT、Tasmota、ESPHome
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text	把提示词发送给 AI 模型（Gemini、Claude、ChatGPT、OpenRouter 或自建模型），并把回复作为文本返回
+Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	向 AI 模型（Gemini、Claude、ChatGPT、OpenRouter 或自托管模型）发送提示，并以文本返回回复；开启后还可让它把节点和宏当作工具来执行
 Sends an SMS to a number with a body	向某个号码发送一条带正文的短信
 Sends an email through one of your mail accounts	通过你的某个邮件账户发送一封邮件
 Sensitivity	灵敏度
@@ -398,8 +552,11 @@ Sets the screen-off timeout in milliseconds	以毫秒为单位设置屏幕熄灭
 Shake	摇动
 Show Message	显示消息
 Show Notification	显示通知
+Show a progress bar	显示进度条
 Shows a popup dialog and waits until the user has acknowledged it	弹出一个对话框，并等待用户确认
 Shows a popup dialog offering a list of options and reports which one was picked	弹出一个带选项列表的对话框，并报告用户选了哪一项
+Shows an AI model a picture from this phone and returns what it says about it	把本机上的一张图片交给 AI 模型，并返回它的描述
+Shows you as	将你显示为
 Signal	Signal
 Silence	静音
 Silent	静音
@@ -413,6 +570,7 @@ Standing instruction	常驻指令
 Start at (seconds into the sound)	起播位置（声音的第几秒）
 Started moving — low power, works with the screen off	开始移动——低功耗，屏幕熄灭时也有效
 Starts a named list over, ready to collect into	把指定列表清空重来，准备重新收集
+Starts at	开始于
 Starts once after the device finishes booting	设备启动完成后运行一次
 Starts the workflow on an interval or at a time of day	按间隔或在一天中的某个时刻启动工作流
 Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it	当其他应用、脚本或快捷方式请求 Ottomatic 运行时，启动此工作流
@@ -425,12 +583,16 @@ Starts when a USB device is connected or disconnected	当 USB 设备被连接或
 Starts when a matching notification arrives	当收到符合条件的通知时启动
 Starts when a media button is pressed (play, pause, next, etc.)	当媒体键被按下时启动（播放、暂停、下一首等）
 Starts when a message arrives in WhatsApp, Signal, Telegram or another messenger	当 WhatsApp、Signal、Telegram 或其他即时通讯应用收到消息时启动
+Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	当 MQTT 主题收到消息时启动 — Zigbee 按钮、传感器，以及任何会发布消息的设备
+Starts when a photo, screenshot or downloaded picture is added to this phone	当手机中新增照片、屏幕截图或下载的图片时启动
 Starts when a volume button is pressed, held, or pressed several times. Needs accessibility access; the buttons keep working normally	当音量键被按下、长按或连按多次时启动。需要无障碍使用权；按键本身仍照常工作
 Starts when a wired headset is plugged or unplugged	当有线耳机被插入或拔出时启动
 Starts when airplane mode is toggled	当飞行模式被切换时启动
 Starts when an NFC tag is held to the phone. Only works while the screen is on and unlocked	当 NFC 标签贴近手机时启动。仅在屏幕点亮并解锁时有效
 Starts when an SMS arrives	当收到短信时启动
 Starts when an app is installed, removed or replaced	当应用被安装、卸载或替换时启动
+Starts when an appointment begins, ends, or its reminder falls due	当日程开始、结束或其提醒到期时启动
+Starts when an appointment is added, changed or removed in any calendar	当任意日历中添加、修改或删除日程时启动
 Starts when an email arrives in a mailbox you are watching	当你监视的邮箱收到邮件时启动
 Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	当 Home Assistant 事件总线上触发事件时启动——Zigbee 按键、标签、自定义事件
 Starts when external media is mounted, unmounted or ejected	当外部存储介质被挂载、卸载或弹出时启动
@@ -467,22 +629,37 @@ Subject contains	主题包含
 Sundays	每周日
 System	系统
 Tag	标签
+Tag — Used for manual deletion	标签——用于手动移除
+Take Photo	拍照
+Taken after	拍摄时间晚于
+Taken before	拍摄时间早于
+Takes a picture with the phone\'s front or back camera, with flash and a delay before the shot	使用手机的前置或后置摄像头拍照，可设置闪光灯和拍摄前的延迟
+Takes down a notification this app posted under a tag	移除本应用以某个标签显示的通知
 Tap on Device	敲击设备
 Taps	敲击次数
+Teal	青色
 Telegram	Telegram
 Template — use {A}, {B}, {C}	模板——使用 {A}、{B}、{C}
+Tentative	暂定
 Text	文本
 Text contains (optional)	文本包含（可选）
+Text encoding	文本编码
 Text — one item per line, or wire something in	文本——每行一个元素，或接入其他内容
 The current battery charge as a percentage in 0..100	当前电量的百分比，范围 0 到 100
 The current date and time	当前的日期和时间
 The current state of a Home Assistant entity — a sensor, a switch, a thermostat	Home Assistant 实体的当前状态——传感器、开关、恒温器
 The current value of a variable	某个变量的当前值
 The device\'s current ringer mode	设备当前的响铃模式
+The last message published to a topic on an MQTT broker	MQTT 代理某个主题上最后发布的消息
 The light level around the device in lux — a dim room is around 30, an office a few hundred	设备周围的光照强度，单位勒克斯——昏暗的房间约 30，办公室数百
+The most recent photo, screenshot or picture saved on this phone	此手机上最近保存的照片、屏幕截图或图片
 The name of the Wi-Fi network the device is currently connected to	设备当前所连 Wi-Fi 网络的名称
+The next appointment due to start in any calendar	任意日历中下一个即将开始的日程
+The next few days	接下来几天
+The rest of today	今天剩下的时间
 The same list, in order	同一个列表，已排好序
 This is a list	这是一个列表
+This occurrence	仅这一次
 Thorough	深入
 Threshold (0-100)	阈值（0-100）
 Threshold (lux)	阈值（勒克斯）
@@ -490,6 +667,7 @@ Thursdays	每周四
 Timeout (ms)	超时（毫秒）
 Timezone changed	时区已改变
 Title	标题
+Title contains	标题包含
 To	收件人
 Toggle	切换
 Toggle Auto-Rotate	切换自动旋转
@@ -497,8 +675,13 @@ Toggle Bluetooth	切换蓝牙
 Toggle Flashlight	切换手电筒
 Toggle Wi-Fi	切换 Wi-Fi
 Toggles Do-Not-Disturb on or off with a chosen policy level	按所选的级别开启或关闭勿扰模式
+Tools	工具
+Top	上
+Top to bottom	上下翻转
+Topic	主题
 Triple tap	三击
 Tuesdays	每周二
+Turn	旋转方向
 Turn off	关闭
 Turn on	开启
 Turns Bluetooth on or off and reports the resulting state	开启或关闭蓝牙，并报告最终状态
@@ -511,6 +694,8 @@ Turns the camera torch (flashlight) on or off	开启或关闭相机闪光灯（�
 Type	类型
 URL	网址
 USB Device Connected	USB 设备已连接
+UTF-16	UTF-16
+UTF-8	UTF-8
 Uncovered	未遮挡
 Undocked	已取出底座
 Unit	单位
@@ -521,7 +706,10 @@ Until	直到
 Until a date and time	直到某个日期和时间
 Until a time of day	直到一天中的某个时刻
 Up	调高
+Update	修改
+Update Calendar Event	更新日程
 Update Email	更新邮件
+Upside down	上下颠倒
 Value	值
 Value (0-100, only when mode is set)	数值（0-100，仅当模式为“设置”时）
 Value (0-255, only when auto is off)	数值（0-255，仅当自动关闭时）
@@ -530,23 +718,30 @@ Variable	变量
 Variable Change	变量改变
 Vibrate	振动
 Vibrates the device for a duration or pattern	让设备按时长或指定模式振动
+Violet	紫色
 Volume Button	音量键
 Volume down	音量减
 Volume up	音量加
 Wait	等待
 Wait Until	等待到
+Wait before the shot (seconds)	拍摄前等待（秒）
 Wait until finished	等待播放结束
 Warmth (K)	色温（K）
+WebP	WebP
 Wednesdays	每周三
 What starts it	触发条件
+What to ask	要问什么
+What to change	要修改的内容
 What to do	要做什么
 Whatsapp	WhatsApp
+When answered	有人响应时
 When cancelled	取消时
 When confirmed	确认时
 When finished	完成时
 When the light level	当光照强度
 When the time comes	时候到了
 When time runs out	超时时
+Where	地点
 Where an item sits in a list, counting from 0, or -1 when it is not there	某个元素在列表中的位置，从 0 开始计；不存在时为 -1
 Whether Bluetooth is currently enabled	蓝牙当前是否已开启
 Whether Do-Not-Disturb is currently active	勿扰模式当前是否生效
@@ -555,20 +750,26 @@ Whether Wi-Fi is currently enabled	Wi-Fi 当前是否已开启
 Whether a list holds a given item	列表中是否包含指定元素
 Whether a wired or USB headset is currently plugged in	当前是否插着有线或 USB 耳机
 Whether airplane mode is currently on	飞行模式当前是否开启
+Whether an appointment is on in any calendar right now	此刻任意日历中是否有日程正在进行
 Whether battery saver is currently on	省电模式当前是否开启
 Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	屏幕上方的传感器是否被挡住——口袋、贴在玻璃上的手，或设备屏幕朝下
 Whether the device is currently charging	设备当前是否正在充电
 Whether the device is currently in dark theme (night mode)	设备当前是否处于深色主题（夜间模式）
 Whether the device is currently sitting in a dock	设备当前是否放在底座上
 Whether the screen is currently on and interactive	屏幕当前是否点亮且可操作
+Which way up	方向
 While the screen is off	屏幕熄灭时
 Whole number	整数
+Whole series	整个系列
 Wi-Fi Network	Wi-Fi 网络
 Wi-Fi State Change	Wi-Fi 状态改变
 Wi-Fi enabled	Wi-Fi 已开启
 Wi-Fi network	Wi-Fi 网络
+Width	宽度
 Within (ms)	在此时间内（毫秒）
+Write to File	写入文件
 Writes a message to this workflow\'s console	往此工作流的控制台写一条消息
+Writes or removes a picture\'s description, date, location or camera details	写入或删除图片的描述、日期、位置或相机信息
 Yes or no	是或否
 Z to A / largest first	Z 到 A / 从大到小
 false	假
@@ -577,196 +778,3 @@ out	输出
 response	响应
 state	状态
 true	真
-MQTT Message	MQTT 消息
-Starts when a message arrives on an MQTT topic — a Zigbee button, a sensor, any device that publishes	当 MQTT 主题收到消息时启动 — Zigbee 按钮、传感器，以及任何会发布消息的设备
-Broker	代理
-Topic	主题
-Message contains	消息包含
-Also fire on messages the broker had stored	也对代理已保存的消息触发
-Publish to MQTT	发布到 MQTT
-Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome	向 MQTT 代理的某个主题发送消息 — Mosquitto、Zigbee2MQTT、Tasmota、ESPHome
-Delivery	送达方式
-Confirmed by the broker	由代理确认
-Send and forget	发送后不确认
-Confirmed exactly once	确认且仅一次
-Ask the broker to keep this message	请求代理保留此消息
-MQTT Topic	MQTT 主题
-The last message published to a topic on an MQTT broker	MQTT 代理某个主题上最后发布的消息
-Write to File	写入文件
-Saves text to a file on the phone, replacing it or adding to the end	把文本保存到手机上的文件，覆盖原内容或追加到末尾
-File	文件
-Result	结果
-Add to the end instead of replacing	追加到末尾而不是覆盖
-If a file is already there	如果文件已存在
-Replace it	覆盖它
-Keep both, adding a number	两个都保留，加上编号
-Leave the old one alone	保留原来的文件
-Text encoding	文本编码
-UTF-8	UTF-8
-UTF-16	UTF-16
-Latin-1 (ISO 8859-1)	Latin-1 (ISO 8859-1)
-Read File	读取文件
-Reads a text file from the phone and passes its contents on	读取手机上的文本文件并传出其内容
-List Files	列出文件
-Lists the files in a folder, as paths you can loop over	列出文件夹中的文件，作为可循环遍历的路径
-Only names matching	仅匹配以下名称
-Paths	路径
-Files	文件
-Folders	文件夹
-Both	两者
-File Details	文件详情
-Answers whether a file exists, how big it is and when it changed	告诉你文件是否存在、有多大、何时改动过
-File or folder	文件或文件夹
-Copy or Move File	复制或移动文件
-Copies, moves or renames a file on the phone	复制、移动或重命名手机上的文件
-From	从
-Copy it	复制
-Move it	移动
-Delete File	删除文件
-Removes a file from the phone	从手机上删除一个文件
-Ask AI (with tools)	询问 AI（可用工具）
-Ask AI About a Picture	就图片询问 AI
-Asks an AI model to do something, letting it read from the phone and run nodes and macros you choose until it has an answer	让 AI 模型去做一件事，允许它读取手机信息并运行你选定的节点和宏，直到得出答案
-Most turns	最多轮次
-Picture	图片
-Shows an AI model a picture from this phone and returns what it says about it	把本机上的一张图片交给 AI 模型，并返回它的描述
-Tools	工具
-What to ask	要问什么
-Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	向 AI 模型（Gemini、Claude、ChatGPT、OpenRouter 或自托管模型）发送提示，并以文本返回回复；开启后还可让它把节点和宏当作工具来执行
-Let it use tools	允许它使用工具
-Add Calendar Event	添加日程
-All day	全天
-Applies to	应用于
-Appointment	日程
-Between two times	两个时间点之间
-Busy	忙碌
-Calendar	日历
-Calendar Changed	日历已更改
-Calendar Event	日历日程
-Change how it shows you	更改显示状态
-Changes or deletes an appointment, either one occurrence of it or the whole series	修改或删除日程，可以只针对一次，也可以针对整个系列
-Creates an appointment in one of the calendars on this phone	在这台手机的某个日历中创建日程
-Days ahead	往后几天
-Details	详情
-Events	日程
-Find Calendar Events	查找日程
-Fire when	触发时机
-Free	空闲
-How long (minutes)	时长（分钟）
-In an appointment	正在日程中
-Include cancelled and declined ones	包含已取消和已拒绝的
-It ends	结束时
-It starts	开始时
-Its reminder falls due	提醒到期时
-Look at	查看范围
-Minutes before (negative fires afterwards)	提前几分钟（负数表示之后触发）
-New details (leave empty to keep them)	新详情（留空则保持不变）
-New length in minutes (-1 to keep it)	新时长，分钟（-1 表示保持不变）
-New place (leave empty to keep it)	新地点（留空则保持不变）
-New start (leave empty to keep it)	新开始时间（留空则保持不变）
-New title (leave empty to keep it)	新标题（留空则保持不变）
-Next appointment	下一个日程
-Reads appointments out of a calendar onto a list you can loop over	从日历读取日程，生成可循环遍历的列表
-Remind you (minutes before, -1 for no reminder)	提醒你（提前几分钟，-1 表示不提醒）
-Shows you as	将你显示为
-Starts at	开始于
-Starts when an appointment begins, ends, or its reminder falls due	当日程开始、结束或其提醒到期时启动
-Starts when an appointment is added, changed or removed in any calendar	当任意日历中添加、修改或删除日程时启动
-Tentative	暂定
-The next appointment due to start in any calendar	任意日历中下一个即将开始的日程
-The next few days	接下来几天
-The rest of today	今天剩下的时间
-This occurrence	仅这一次
-Title contains	标题包含
-Update	修改
-Update Calendar Event	更新日程
-Where	地点
-Whether an appointment is on in any calendar right now	此刻任意日历中是否有日程正在进行
-Whole series	整个系列
-Picture Saved	图片已保存
-Starts when a photo, screenshot or downloaded picture is added to this phone	当手机中新增照片、屏幕截图或下载的图片时启动
-Path	路径
-Only in this folder	仅在此文件夹中
-Find Pictures	查找图片
-Finds photos and screenshots on this phone onto a list you can loop over	查找手机中的照片和屏幕截图，生成可循环遍历的列表
-Names matching	名称匹配
-Pictures	图片
-Taken after	拍摄时间晚于
-Taken before	拍摄时间早于
-Newest first	最新的在前
-Oldest first	最旧的在前
-Most to return	最多返回数量
-Picture Details	图片详情
-Reads a picture\'s size, camera, date and location out of the file	从文件中读取图片的尺寸、相机、日期和位置
-Edit Picture	编辑图片
-Resizes, rotates, mirrors, crops or re-encodes a picture into a new file	将图片缩放、旋转、镜像、裁剪或重新编码后保存为新文件
-Longest side (pixels)	最长边（像素）
-Left	左
-Top	上
-Width	宽度
-Height	高度
-Into folder	放入文件夹
-File name	文件名
-Resize	缩放
-Rotate	旋转
-Mirror	镜像
-Crop	裁剪
-Change format or quality	更改格式或质量
-Turn	旋转方向
-A quarter turn right	向右旋转 90°
-Upside down	上下颠倒
-A quarter turn left	向左旋转 90°
-Left to right	左右翻转
-Top to bottom	上下翻转
-Save as	保存为
-Same as the original	与原图相同
-JPEG	JPEG
-PNG	PNG
-WebP	WebP
-Quality	质量
-If one is already there	如果已存在
-Change Picture Details	修改图片详情
-Writes or removes a picture\'s description, date, location or camera details	写入或删除图片的描述、日期、位置或相机信息
-New value (blank removes it)	新值（留空则删除）
-What to change	要修改的内容
-Description	描述
-Date taken	拍摄日期
-Location	位置
-Which way up	方向
-Camera maker	相机厂商
-Camera model	相机型号
-Artist	作者
-Copyright	版权
-Move or Copy Picture	移动或复制图片
-Moves or copies a photo into another folder, keeping it in the gallery	将照片移动或复制到其他文件夹，并保留在图库中
-Operation	操作
-Delete Picture	删除图片
-Moves a photo to the bin, or deletes it for good	将照片移入回收站，或彻底删除
-How	方式
-Move to the bin	移入回收站
-Delete for good	彻底删除
-Latest picture	最新图片
-The most recent photo, screenshot or picture saved on this phone	此手机上最近保存的照片、屏幕截图或图片
-Amber	琥珀色
-Blue	蓝色
-Buttons — one per line	按钮——每行一个
-Disappear after (seconds)	消失时长（秒）
-Green	绿色
-Keep until dismissed	保留直到被清除
-Orange	橙色
-Pink	粉色
-Posted as	使用的标签
-Posts a notification on this device, optionally with buttons and a reply field	在此设备上显示一条通知，可附带按钮和回复框
-Progress (%, below 0 = busy)	进度（%，小于 0 表示不确定）
-Red	红色
-Remove Notification	移除通知
-Reply	回复
-Reply button	回复按钮
-Reply field	回复框
-Reply hint	回复框提示
-Show a progress bar	显示进度条
-Tag — Used for manual deletion	标签——用于手动移除
-Takes down a notification this app posted under a tag	移除本应用以某个标签显示的通知
-Teal	青色
-Violet	紫色
-When answered	有人响应时

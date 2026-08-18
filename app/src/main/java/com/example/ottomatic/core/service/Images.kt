@@ -46,6 +46,9 @@ package com.example.ottomatic.core.service
  * [Files]' rule, and the enums here are unlabelled for the same reason, with each node
  * declaring its own `@Label`led copy and mapping onto these.
  */
+@Suppress("TooManyFunctions") // One member per thing that can be done to a picture. The
+// split this would suggest is by *subject* — pictures, screenshots, photographs — and the
+// KDoc above argues against it: they are one collection with one consent ladder.
 interface Images {
 
     /** The pictures matching [spec], capped at [ImageLimits.MAX_LISTED]. */
@@ -138,6 +141,51 @@ interface Images {
      * come back as [ImageWrite.error] with `changed = false`.
      */
     suspend fun capture(toFolder: String, name: String, whenExists: WhenExists): ImageWrite
+
+    /**
+     * Takes a photograph with the phone's own camera and saves it as a new picture.
+     *
+     * **The second member that creates a picture out of nothing**, after [capture], and it
+     * lives here for that member's two reasons: this interface is *named for images and
+     * shaped for media*, and what comes back is a row in this collection whose write path
+     * is `internal` to the media layer.
+     *
+     * **Headless.** Ottomatic opens the camera itself through camera2 — no camera app, no
+     * Activity, nobody pressing a button — which is what lets a macro photograph something
+     * while the phone is in a pocket. `ACTION_IMAGE_CAPTURE` was rejected for exactly the
+     * property that makes it easy in an editor: it hands the job to another app in the
+     * foreground, so a macro built on it does nothing at all unattended. It also cannot
+     * honour either thing the node offers — lens choice is a hint most camera apps ignore,
+     * and a delay is meaningless when a person is pressing the shutter.
+     *
+     * **It takes the torch out.** Opening a camera revokes any torch `action.flashlight`
+     * switched on, and it is not switched back: restoring it would be a hidden side effect
+     * and would fight a [PhotoRequest.flash] capture. A macro that wants light for the shot
+     * asks for it here.
+     *
+     * **The result is always a row Ottomatic owns**, so no consent ladder applies on any
+     * version — [capture]'s property, for its reason.
+     *
+     * Never throws. No camera access, no such lens, a camera another app is holding, a
+     * platform that refuses a background service the sensor, and a failed write all come
+     * back as [ImageWrite.error] with `changed = false`.
+     */
+    suspend fun takePhoto(request: PhotoRequest): ImageWrite
+
+    /**
+     * Whether this phone has a camera flash at all.
+     *
+     * A **capability rather than an outcome**, on [hasRecoverableBin]'s reasoning and for
+     * its reason: `action.camera_photo` still takes the photograph on a phone with no
+     * flash, so a flash choice being ignored is a degradation to *announce* rather than a
+     * failure to report — and [ImageWrite.error] cannot carry it, because a non-blank error
+     * there means no photo was taken.
+     *
+     * Coarse on purpose. It answers "is there a flash unit on this phone", not "on the lens
+     * you chose"; the front camera almost never has one, which the node handles by not
+     * offering the field for that lens at all.
+     */
+    val hasCameraFlash: Boolean get() = false
 
     /**
      * The most recent screenshot on this phone, or null when there is none or it cannot
@@ -341,6 +389,39 @@ data class ImageEdit(
     }
 }
 
+/**
+ * What [Images.takePhoto] should photograph, and where the result goes.
+ *
+ * A request object rather than six parameters, on [ImageEdit]'s shape: the *how* and the
+ * destination travel together, and the node maps its own `@Label`led enums onto these.
+ *
+ * [delaySeconds] is a **camera** setting rather than a schedule, and that is the whole
+ * reason it is not simply `action.delay` wired in front of the node. It is spent with the
+ * camera *open and metering*, so it buys both time to get in frame and an exposed,
+ * white-balanced frame; a wait in front of the node is spent with the camera shut and then
+ * photographs with a sensor that has had no time to settle.
+ */
+data class PhotoRequest(
+    /** The selfie camera rather than the main one. */
+    val front: Boolean = false,
+    val flash: FlashMode = FlashMode.OFF,
+    /** Clamped to [ImageLimits.MAX_PHOTO_DELAY_SECONDS] by the implementation. */
+    val delaySeconds: Int = 0,
+    /** Absolute folder for the photo. Blank means the app's own folder under `DCIM`. */
+    val toFolder: String = "",
+    /** Blank generates one in a `Photo_<date>_<time>.jpg` shape. */
+    val name: String = "",
+    val whenExists: WhenExists = WhenExists.KEEP_BOTH,
+)
+
+/**
+ * Whether [Images.takePhoto] fires the flash.
+ *
+ * Unlabelled, like every other enum here: `core` may not import `domain`, so the node
+ * declares its own `@Label`led copy and maps onto this one.
+ */
+enum class FlashMode { OFF, ON, AUTO }
+
 /** Which pixel operation [Images.edit] performs. */
 enum class ImageOperation { RESIZE, ROTATE, FLIP, CROP, CONVERT }
 
@@ -449,9 +530,21 @@ object ImageLimits {
 
     /** How many recently-fired ids the watcher remembers, to make the lookback above safe. */
     const val FIRED_RING_SIZE: Int = 64
+
+    /**
+     * The longest [PhotoRequest.delaySeconds] a photo may be asked to wait for.
+     *
+     * The camera is exclusive hardware and captures are serialised, so this delay is time
+     * during which **nothing else on the phone can photograph anything** — not another
+     * macro and not another app. A minute is generous for "give me time to get in frame";
+     * anything longer is `action.delay` wired in front of the node, where the wait is
+     * visible on the canvas and costs nobody the camera.
+     */
+    const val MAX_PHOTO_DELAY_SECONDS: Int = 60
 }
 
 /** The engine's default: no picture access, failing closed with a sentence that says so. */
+@Suppress("TooManyFunctions") // One line per member of [Images]; see its own suppression.
 object NoImages : Images {
     override suspend fun query(spec: ImageQuery) = ImageListing(error = UNAVAILABLE)
     override suspend fun latest(): ImageRecord? = null
@@ -468,6 +561,8 @@ object NoImages : Images {
 
     override suspend fun capture(toFolder: String, name: String, whenExists: WhenExists) =
         ImageWrite(error = UNAVAILABLE)
+
+    override suspend fun takePhoto(request: PhotoRequest) = ImageWrite(error = UNAVAILABLE)
 
     override suspend fun latestScreenshot(): ImageRecord? = null
 

@@ -13,6 +13,7 @@ import com.example.ottomatic.data.ai.AiModelCatalog
 import com.example.ottomatic.data.ai.RoutingAi
 import com.example.ottomatic.data.files.RoutingFiles
 import com.example.ottomatic.data.accessibility.ScreenCapture
+import com.example.ottomatic.data.camera.CameraCapture
 import com.example.ottomatic.data.images.MediaImages
 import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.data.GeofencePlaceRepository
@@ -479,7 +480,15 @@ object ServiceLocator {
             // a snapshot taken at start-up would make that work only after a restart.
             // Both storage facades take it, for that one reason.
             files = routingFiles,
-            images = MediaImages(appContext, routingFiles::openStream, ScreenCapture::grab),
+            // The camera is bound here rather than taking a Context of its own, on
+            // `ScreenCapture::grab`'s arrangement: `data/images` goes on knowing how a
+            // picture is *written* and nothing about where its pixels came from.
+            images = MediaImages(
+                appContext,
+                routingFiles::openStream,
+                ScreenCapture::grab,
+                { shot -> CameraCapture.take(appContext, shot) },
+            ),
             calendars = calendarsFacade,
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives

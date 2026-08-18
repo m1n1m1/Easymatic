@@ -1,8 +1,9 @@
-accessibility_service_description	Ottomatic はこれを音量ボタンの押下を検知するためだけに使用し、それによってマクロを開始できるようにします。画面の内容を読み取ることは決してなく、ボタン本来の動作を変えることもありません。音量キーはこれまでどおり機能します。
+accessibility_service_description	Ottomatic はこれを 2 つの目的で使用します。音量ボタンの押下を検知してマクロを開始できるようにすることと、マクロが「スクリーンショットを撮る」アクションを実行したときに画面を取り込むことです。画面を監視することは決してなく、取り込むのはマクロが要求したときだけです。またボタン本来の動作を変えることもありません。音量キーはこれまでどおり機能します。
 accessibility_service_label	Ottomatic のボタントリガー
-accessibility_service_summary	音量ボタンを押したときにマクロを開始できるようにします。
+accessibility_service_summary	音量ボタンを押したときにマクロを開始できるようにし、「スクリーンショットを撮る」アクションで画面を取り込めるようにします。
 ai_add_ai_connection	AI 接続を追加
 ai_add_connection	接続を追加
+ai_add_model	モデルを追加
 ai_ai_connections	AI 接続
 ai_answer_briefly_and_in_plain	簡潔に、わかりやすい言葉で答えてください。
 ai_api_key	API キー
@@ -10,6 +11,7 @@ ai_api_key_paste_it_in	API キー — もう一度貼り付けてください
 ai_asking_the_model	モデルに問い合わせています…
 ai_back	戻る
 ai_choose_a_connection	接続を選択
+ai_choose_a_model	モデルを選ぶ
 ai_console_anthropic	Anthropic コンソール
 ai_console_gemini	Google AI Studio
 ai_console_openai	OpenAI プラットフォーム
@@ -25,6 +27,7 @@ ai_default_name_openai	ChatGPT
 ai_default_name_openrouter	OpenRouter
 ai_default_name_self_hosted	セルフホスト
 ai_delete	削除
+ai_delete_model	このモデルを削除
 ai_edit	編集
 ai_edit_connection	接続を編集
 ai_getting_a_key	キーを取得する
@@ -35,13 +38,25 @@ ai_list_models	モデルを一覧表示
 ai_loading_models	モデルを読み込んでいます…
 ai_model_answered	モデルの回答: %1$s
 ai_model_balanced	バランス
+ai_model_effort	思考の深さ
+ai_model_effort_help	答える前にモデルがどれだけ考えるか。上の ID が空のときにプロバイダーが使うモデルもこれで決まります。
 ai_model_fast	高速
+ai_model_id	モデル ID
+ai_model_id_required	必須
+ai_model_name	名前
+ai_model_name_help	マクロから見える名前です。モデル名ではなく用途を付けましょう—「家事」「メールの要約」。
+ai_model_name_placeholder	家事
+ai_model_not_finished	未完成：名前とモデルを指定してください
+ai_model_provider_default	%1$s · プロバイダー既定のモデル
 ai_model_thorough	詳細
 ai_models	モデル
 ai_name	名前
 ai_name_the_model_your_server	サーバーまたはアカウントが提供するモデル名を指定します。「高速」だけを入力した場合、他の 2 つもそれを使います。
 ai_new_api_key_leave_empty	新しい API キー（空のままにすると現在のキーを保持）
 ai_no_connections_yet_add_one	接続はまだありません。追加すると「AI に質問」ノードを使えます。必要なのは Google AI Studio の無料 API キーだけで、取得手順はフォームが案内し、ページも開いてくれます。
+ai_no_model_to_test	先にモデルを追加して保存してからテストしてください。
+ai_no_models_on_this_account	このアカウントにはまだモデルがありません。
+ai_no_models_yet	まだモデルがありません。マクロから指定できるように一つ追加してください。
 ai_open_console	%1$s を開く
 ai_paste_key	キーを貼り付け
 ai_pointing_at_own_server	自分のサーバーを指定する
@@ -89,6 +104,25 @@ ai_steps_self_hosted:3	モデル一覧を読み込むか、サーバーの起動
 ai_test	テスト
 ai_the_key_is_stored_encrypted	キーはこの端末に暗号化して保存され、二度と表示されません。%1$s マクロが「AI に質問」ノードに到達しない限り、何も送信されません。
 ai_this_address_is_unencrypted_that	このアドレスは暗号化されていません。自分のネットワーク内のサーバーであれば普通のことですが、インターネットを越える用途には使わないでください。キーが平文で送られてしまいます。
+ai_tools_adjusted	ここで調整済み
+ai_tools_adjusted_count	このノード用に %1$d 件を調整
+ai_tools_adjusted_off	ここでオフにしました
+ai_tools_adjusting	これらはモデルのものです。ここでの変更はこのノードにだけ反映されます。
+ai_tools_allow_everything	すべて許可
+ai_tools_allowed_count	%2$d 中 %1$d を許可
+ai_tools_as_the_model_says	モデルが許可するもの
+ai_tools_choose_a_model_first	先にモデルを選んでください
+ai_tools_macros	マクロ
+ai_tools_many_warning	すべてのツールが毎回モデルに説明されます。長い一覧はプロンプトを圧迫し、選択を下手にします。
+ai_tools_n_allowed	%1$d 件を許可
+ai_tools_need_a_choice	%1$d 件は何かを選ばないと動作しません。
+ai_tools_needs	%1$s が必要
+ai_tools_none_allowed	何も許可されていません—このモデルは答えることしかできません
+ai_tools_over_the_cap	上限 %1$d を超えています。超過分は除外されます—いくつか外してください。
+ai_tools_reset	モデルに従うに戻す
+ai_tools_reset_all	すべてをリセット
+ai_tools_title	ツール
+ai_unnamed_model	名前のないモデル
 api_allow	許可
 api_allow_app_to_run	%1$s にマクロの実行を許可しますか？
 api_allowed_on	許可日: %1$s
@@ -113,13 +147,22 @@ apps_choose_an_app	アプリを選択
 apps_no_apps_match_that	一致するアプリはありません。
 apps_other_apps	その他のアプリ
 apps_search	検索
+calendar_any_calendar	すべてのカレンダー
+calendar_choose_a_calendar	カレンダーを選択
+calendar_grant_access	許可
+calendar_needs_access	カレンダーを一覧表示するには、Ottomatic にカレンダーへのアクセスが必要です。
+calendar_no_calendars	このスマートフォンにカレンダーがありません。
+calendar_no_writable_calendars	このスマートフォンのカレンダーはどれも書き込めません。祝日カレンダーなどの購読カレンダーは読み取り専用です。
 category_ai	AI
 category_automation	自動化
+category_calendar	カレンダー
 category_connectivity	接続
 category_data	データ
 category_device_settings	デバイス設定
 category_device_state	デバイスの状態
+category_files	ファイル
 category_flow_control	フロー制御
+category_images	写真
 category_interaction	ユーザーに尋ねる
 category_location	位置情報
 category_manual	手動
@@ -158,6 +201,16 @@ config_show_suggestions	候補を表示
 config_socket_feed	%1$s に上流のデータを流し込む
 config_socket_use_typed_connected	%1$s には入力した値を使う（%2$s に接続中）
 config_socket_use_typed_free	%1$s には入力した値を使う（何も接続されていません）
+config_tools_add	ツールを追加
+config_tools_ai_chooses	AI が利用できる %1$d 件から%2$sを選びます
+config_tools_choose	AI が使えるもの
+config_tools_fixed	AI に任せず、ここで固定します
+config_tools_fixed_count	ここで %1$d 件を固定
+config_tools_missing	利用できません
+config_tools_must_fix	ここで選択します。AI には指定できません
+config_tools_none	まだありません。AI は答えるだけで、操作はしません
+config_tools_nothing_to_fix	このツールに設定はありません
+config_tools_remove	このツールを削除
 console_copy_message	メッセージをコピー
 console_entry_title	ログエントリ
 console_filter_all	すべて
@@ -185,6 +238,26 @@ editor_back_to_variables	このワークフローの変数に戻る
 editor_tab_console	コンソール
 editor_tab_problems	問題
 editor_tab_variables	変数
+files_add_file	ファイルを追加
+files_choose	ファイルまたはフォルダを選ぶ
+files_choose_file	ファイルを選ぶ…
+files_choose_folder	フォルダを選ぶ…
+files_download_note	Android は Download フォルダそのものへの許可を認めていません。すでにその中にあるものを使うには、「ファイルを追加」でそのファイルをここに追加してください。または、ダウンロード先をその中のフォルダにすれば、そのフォルダごと許可できます。
+files_files_heading	個別のファイル
+files_folder_access	フォルダへのアクセス
+files_grant	フォルダを選ぶ
+files_missing	このフォルダはもうありません。もう一度許可するか、取り消してください。
+files_no_folders	Ottomatic はまだどのフォルダにもアクセスできません。
+files_no_folders_hint	フォルダを選ぶと、マクロがその中のファイルを読み書きできるようになります。Android は内部ストレージ全体や Download フォルダそのものへの許可を認めていません。その中に Download/Ottomatic のようなフォルダを作るか選んでください。
+files_no_path	そのファイルはこの端末上に場所がないため、マクロから指定できません。オンラインに保存されたファイルや一部のダウンロードはこの方法では使えません。先に端末内のフォルダへコピーしてください。
+files_own_storage	Ottomatic 専用ストレージ
+files_own_storage_hint	report.csv のようにフォルダを含まないパスは、ここに保存されます。権限は不要で、どのマクロも他のアプリのファイルにはアクセスできません。
+files_path_placeholder	パス、または Ottomatic 専用ストレージ内の名前
+files_read_only	読み取りのみ
+files_read_only_file	このファイルだけ読み取れます
+files_read_write	読み書きできます
+files_regrant	もう一度許可する
+files_revoke	取り消す
 geofence_back	戻る
 geofence_centre_on_my_location	現在地を中心にする
 geofence_choose_a_place	場所を選択
@@ -301,6 +374,10 @@ hue_hue_bridge	Hue ブリッジ
 hue_name_your_bridge	ブリッジに名前を付ける
 hue_press_the_link_button	リンクボタンを押す
 hue_text	 ·
+intent_choice_ask_an_app	アプリに任せる
+intent_choice_needs_camera	別のアプリが撮影する前に、Ottomatic にカメラへのアクセスが必要です。タップして許可し、もう一度タップしてください。
+intent_choice_no_app	この端末には対応できるアプリがありません。値を直接入力することはできます。
+intent_choice_placeholder	入力するか、アプリに任せる
 kind_action	アクション
 kind_actions	アクション
 kind_transform	変換
@@ -354,6 +431,22 @@ mail_this_provider_cannot_be_added	このプロバイダーは追加できませ
 mail_unchanged	変更なし
 mail_username_only_if_it_differs	ユーザー名（アドレスと異なる場合のみ）
 mail_work_personal_alarm_system	仕事、プライベート、警報システム…
+mqtt_address	ブローカーのアドレス
+mqtt_anonymous	匿名
+mqtt_broker_reached	接続できました。ブローカーがこのログインを受け入れました。
+mqtt_broker_subtitle	%1$s · %2$s
+mqtt_choose_a_broker	ブローカーを選択
+mqtt_cleartext_warning	この接続は暗号化されていません。自宅のネットワーク上のブローカーなら普通のことですが、インターネット経由ではパスワードが平文で送られます。
+mqtt_connect_a_broker	MQTT ブローカーを接続
+mqtt_connected_this_is_the_name	接続しました。マクロにはこの名前が表示されます。
+mqtt_listen_for_topics	トピックを聞き取る
+mqtt_login_optional	ネットワーク上の誰でも接続できるブローカーなら空のままにしてください。家庭のブローカーはたいていそうです。
+mqtt_name_your_broker	ブローカーに名前を付ける
+mqtt_no_broker_yet	MQTT ブローカーがまだありません。スマートホームで追加してください。
+mqtt_password	パスワード
+mqtt_setup_intro	Ottomatic はすでに運用しているブローカーに接続します。アプリ自体がブローカーになることはありません。
+mqtt_topics_heard	聞き取ったトピック
+mqtt_username	ユーザー名
 nfc_a_link_makes_the_tag	リンクにすると、タグにかざしたときにブラウザで開くようになります。すると、このタグを監視しているマクロは動かなくなります。Ottomatic がタグを見るより先に、Android がそのリンクを主張するアプリへタグを渡してしまうためです。テキストならこうはなりません。
 nfc_already_in_your_library	すでにライブラリにあります。
 nfc_any_tag	任意のタグ
@@ -389,48 +482,71 @@ nfc_written	書き込みました。
 perm_desc_access_background_location	Ottomatic を閉じている間もジオフェンスが動作するようにします。実際に役に立つのはそのときだけです。「常に許可」を選ぶと付与されます。
 perm_desc_access_coarse_location	正確な位置が得られないときに使われる、おおまかな測位です。
 perm_desc_access_fine_location	ジオフェンスが、ある場所への到着や離脱を検知できるようにします。
-perm_desc_accessibility_service	音量ボタンと電源ボタンの押下を Ottomatic が検知できるようにします。画面の内容を読み取ることはありません。
+perm_desc_access_media_location	マクロが写真の撮影場所を読み取れるようになります。これがないと、他のアプリが保存した写真の位置情報は Android に隠され、マクロは位置情報がないものとして扱います。
+perm_desc_accessibility_service	音量ボタンと電源ボタンの押下を Ottomatic が検知し、「スクリーンショットを撮る」アクションのために画面を取り込めるようにします。画面を監視することはありません。
 perm_desc_battery_optimisation	Android がバックグラウンドでエンジンを停止するのを防ぎます。これがないと、再起動後にマクロが再び有効にならなかったり、時刻ベースのトリガーが遅れたりすることがあります。
 perm_desc_bluetooth_connect	マクロが Bluetooth のオン・オフを切り替えられるようにします。
 perm_desc_call_phone	確認なしにマクロが電話を発信できるようにします。
+perm_desc_camera	マクロがスマートフォン本体のカメラで写真を撮れるようになります。カメラアプリも、シャッターを押す人も必要ありません。Ottomatic は「写真を撮る」アクションの実行中だけカメラを開きます。
 perm_desc_device_admin	Ottomatic がデバイス管理者の機能を使えるようにします。
 perm_desc_exact_alarm	スケジュールの発火と待機の終了を、指定した分ちょうどに行えるようにします。これがないと Android は他の処理とまとめてよいことになり、遅れて実行される場合があります。
 perm_desc_foreground_service	マクロが有効な間、Ottomatic がエンジンを動かし続けられるようにします。
+perm_desc_manage_media	マクロが確認を求められることなく写真を変更・移動・削除できるようになります。任意です。なくても動作しますが、Android が毎回確認するため端末を手に持っている必要があります。
 perm_desc_nfc	NFC タグを端末の背面にかざしたときにマクロを実行できるようにします。Ottomatic が代わりに NFC をオンにすることはできず、タグは画面がオンでロック解除されている間しか読み取られません。
 perm_desc_notification_listener	他のアプリの通知を Ottomatic が見られるようにし、マクロがそれに反応できるようにします。
 perm_desc_notification_policy	マクロがサイレントモードのオン・オフを切り替えたり、着信音をサイレントにしたりできるようにします。
 perm_desc_overlay	他のことをしている最中でも、マクロがダイアログを表示したり他のアプリを開いたりできるようにします。これがないと、Android はバックグラウンドのアプリに対してどちらも許可しません。
 perm_desc_post_notifications	Ottomatic が通知を表示できるようにします。マクロが出す通知だけでなく、再起動後にエンジンが起動できなかったことを知らせる通知も含みます。
+perm_desc_read_calendar	マクロが予定を読み取れるようになり、設定時にカレンダーを選べるようになります。連絡先と違って頼れるシステムの選択画面がないため、カレンダーのノードが何かを表示するにはこれが必要です。
 perm_desc_read_contacts	選んだ連絡先の番号をマクロが調べられるようにします。連絡先を選ぶだけなら権限は不要ですが、後で発信するときには必要です。
+perm_desc_read_media_images	マクロが端末内の画像を検索・読み取りでき、新しい画像が保存されたときに開始できるようになります。これがないと、写真ノードはすべて何もしません。
 perm_desc_receive_sms	SMS が届いたときにマクロを実行し、送信者と本文を読み取れるようにします。
 perm_desc_send_sms	マクロがあなたに代わって SMS を送信できるようにします。
 perm_desc_unknown	あなたのいずれかのマクロのノードが使用しています。
+perm_desc_write_calendar	マクロが予定を作成・変更・削除できるようになります。読み取りは上にある別のスイッチです。
+perm_desc_write_media_images	古いバージョンの Android で、マクロが写真を変更・移動・削除できるようになります。Android 10 以降はここで許可するものはなく、Android が変更のたびに確認を求めます。
 perm_desc_write_settings	マクロが画面の明るさ、画面消灯までの時間、自動回転を変更できるようにします。
-perm_rationale_accessibility_keys	ボタンの押下を検知するために、Ottomatic はユーザー補助へのアクセスを必要とします。画面の内容を読み取ることはありません。スイッチがグレー表示の場合は、先に アプリ情報 → ⋮ → 制限された設定を許可 を開いてください。
+perm_rationale_accessibility_keys	ボタンの押下を検知するために、Ottomatic はユーザー補助へのアクセスを必要とします。画面を監視することはありません。スイッチがグレー表示の場合は、先に アプリ情報 → ⋮ → 制限された設定を許可 を開いてください。
 perm_rationale_alarm_exact	この待機を指定した分ちょうどに終えるために、Ottomatic は正確なアラームを設定する権限を必要とします。これがなくても待機自体は行われますが、Android が起動を他の処理とまとめるため、数分遅れることがあります。
+perm_rationale_calendar_read	Ottomatic が予定を読み取るにはカレンダーへのアクセスが必要です。これがないとこのノードは何も読み取れず、上のカレンダー選択にも候補が出ません。
+perm_rationale_calendar_write	このノードが予定を作成・編集・削除するには、Ottomatic にカレンダーを変更する権限が必要です。予定の読み取りは別の権限です。
+perm_rationale_camera_photo	写真を撮るには Ottomatic にカメラへのアクセスが必要です。カメラを開くのはこのアクションの実行中だけで、終わればすぐに閉じます。スマートフォンが長時間バックグラウンドで待機していた場合、Android が撮影を拒否することがあります。
 perm_rationale_dnd_policy	着信音モードを変更するために、Ottomatic はサイレントモードへのアクセスを必要とします。
+perm_rationale_media_location	Ottomatic に写真の撮影場所を読み取る権限が必要です。ないと、このノードはどの画像にも位置情報がないと報告します。自分で撮影した写真は影響を受けません。
+perm_rationale_media_manage	Ottomatic は毎回確認を求めずに写真を変更できます。任意です。なくてもノードは動作しますが、Android が画面に確認を表示するため、無人では実行できません。
+perm_rationale_media_read	このノードが画像を検索して読み取るには、Ottomatic に写真へのアクセスが必要です。自分で画像を選ぶだけなら不要ですが、マクロの実行中に探す場合は必要です。
+perm_rationale_media_write	このノードが写真を書き換えるには、Ottomatic に写真を変更する権限が必要です。Android 10 以降ではこの権限は機能せず、Android が変更のたびに確認を求めます。
 perm_rationale_nfc_radio	このトリガーには NFC がオンになっている必要がありますが、これはシステム全体の設定であり、Ottomatic が自分で付与できるものではありません。またタグは画面がオンでロック解除されている間しか読み取られません。ポケットの中でスリープしている端末にかざしても反応しません。
 perm_rationale_notification_listener	他のアプリの通知を見るために、Ottomatic は通知へのアクセスを必要とします。
 perm_rationale_overlay_dialog	端末で他のことをしている最中でもこのダイアログが届くように、Ottomatic は他のアプリの上に表示する権限を必要とします。これがないと、このノードは尋ねる代わりにキャンセルします。
 perm_rationale_overlay_launch	端末で他のことをしている最中でも別のアプリを開けるように、Ottomatic は他のアプリの上に表示する権限を必要とします。Android はバックグラウンドのアプリが別のアプリを開くことを禁じており、この権限がないとこのノードは何もせず、その旨をコンソールに出力します。
+perm_rationale_overlay_media	マクロがバックグラウンドで動作している間に Android の確認画面を表示するため、Ottomatic には他のアプリの上に重ねて表示する権限が必要です。これがないと、Ottomatic を開いていないときに他のアプリが保存した写真を変更できません。
+perm_rationale_screen_capture	画面を取り込むために、Ottomatic はユーザー補助へのアクセスを必要とします。取り込むのはこのアクションの実行中だけで、画面を監視することはありません。スイッチがグレー表示の場合は、先に アプリ情報 → ⋮ → 制限された設定を許可 を開いてください。
 perm_title_access_background_location	バックグラウンドでの位置情報
 perm_title_access_coarse_location	おおよその位置情報
 perm_title_access_fine_location	位置情報
+perm_title_access_media_location	写真の位置情報
 perm_title_accessibility_service	ユーザー補助へのアクセス
 perm_title_battery_optimisation	電池使用量の制限なし
 perm_title_bluetooth_connect	Bluetooth
 perm_title_call_phone	電話の発信
+perm_title_camera	カメラ
 perm_title_device_admin	デバイス管理者
 perm_title_exact_alarm	アラームとリマインダー
 perm_title_foreground_service	フォアグラウンドサービス
+perm_title_manage_media	メディアの管理
 perm_title_nfc	NFC
 perm_title_notification_listener	通知へのアクセス
 perm_title_notification_policy	サイレントモードへのアクセス
 perm_title_overlay	他のアプリの上に表示
 perm_title_post_notifications	通知
+perm_title_read_calendar	カレンダー
 perm_title_read_contacts	連絡先
+perm_title_read_media_images	写真
 perm_title_receive_sms	SMS の受信
 perm_title_send_sms	SMS の送信
+perm_title_write_calendar	カレンダーの変更
+perm_title_write_media_images	写真の変更
 perm_title_write_settings	システム設定の変更
 permission_bind_plugin_description	このアプリが提供する追加のトリガーノードとアクションノードを Ottomatic が使えるようにします。アプリは自身の権限で自身のコードを実行します。Ottomatic が自身の権限を共有することはありません。
 permission_bind_plugin_label	Ottomatic のノードを提供
@@ -459,6 +575,8 @@ plugins_plugins	プラグイン
 plugins_provides_no_nodes	提供するノードはありません
 plugins_this_app_asks_for	このアプリが要求する権限: %1$s
 problem_ai_missing	「%1$s」はすでに存在しない AI 接続を指しています
+problem_ai_tool_missing	「%1$s」は AI に「%2$s」を提供していますが、現在は利用できません
+problem_ai_tool_unpinned	「%1$s」は「%2$s」を提供していますが、%3$s が選ばれていません。AI には指定できません
 problem_ai_unfinished	「%1$s」は設定が完了していない AI 接続を指しています
 problem_ai_unset	「%1$s」で AI 接続が選ばれていないため、何も行われません
 problem_data_cycle	データの循環を検出しました: %1$s
@@ -492,6 +610,20 @@ problems_skipped_nodes	スキップ: %1$s
 problems_summary_separator	 ·
 problems_where_separator	  ·
 problems_wire_skipped	このワイヤーはスキップされます
+setup_ai	AI
+setup_ai_subtitle	AI ノード用のアカウントとモデル
+setup_app_access_subtitle	あなたのマクロを実行できる他のアプリ
+setup_folders_subtitle	このアプリが開けるフォルダとファイル
+setup_geofences_subtitle	マクロが反応できる場所
+setup_mail_subtitle	送信と読み取りに使うメールボックス
+setup_nfc_subtitle	保存したタグ
+setup_permissions_subtitle	端末がマクロに許可していること
+setup_plugins_subtitle	ノードを追加するアプリ
+setup_section_connections	接続
+setup_section_system	システム
+setup_smart_home_subtitle	Hue、Home Assistant、MQTT
+setup_title	設定
+setup_variables_subtitle	すべてのマクロで共有できる値
 shortcut_macro_and_trigger	%1$s · %2$s
 shortcut_macro_gone	そのマクロはすでに存在しません
 shortcut_new_macro_long	新しいマクロを作成
@@ -517,6 +649,8 @@ smarthome_hub_subtitle	%1$s · 照明 %2$d 件 · シーン %3$d 件
 smarthome_it_is_the_large_button	円盤の中央、3 つの小さなライトの間にある大きなボタンです。%1$s に接続しています。
 smarthome_lights	照明
 smarthome_looking_for_bridges_on_your	Wi-Fi 上のブリッジを探しています…
+smarthome_mqtt_broker	MQTT ブローカー
+smarthome_mqtt_broker_subtitle	すでに運用しているブローカー — Mosquitto、Zigbee2MQTT、EMQX
 smarthome_name	名前
 smarthome_no_hub_yet	ハブはまだありません。追加すると、マクロから照明を操作できます。
 smarthome_no_hubs_yet_add_one	ハブがまだありません。マクロから照明を操作したり、家の中で何かが変わったときにマクロを開始したりするには、ハブを追加してください。
@@ -642,6 +776,7 @@ workflowlist_armed_with_problems	有効 · %1$s
 workflowlist_can_t_add_it_from	ここからは追加できません
 workflowlist_cancel	キャンセル
 workflowlist_choose_a_macro	マクロを選択
+workflowlist_clear_search	検索をクリア
 workflowlist_delete	削除
 workflowlist_delete_confirm	「%1$s」を削除しますか？この操作は元に戻せません。
 workflowlist_delete_workflow	ワークフローを削除
@@ -654,146 +789,15 @@ workflowlist_mail_accounts	メールアカウント
 workflowlist_more	その他
 workflowlist_new_workflow	新しいワークフロー
 workflowlist_nfc_tags	NFC タグ
+workflowlist_no_matches	一致するマクロはありません。
 workflowlist_no_other_macros_yet	他のマクロはまだありません。
 workflowlist_no_workflows_yet_ntap_to	ワークフローはまだありません。\n+ をタップして作成してください。
 workflowlist_off	オフ
 workflowlist_permissions	権限
 workflowlist_plugins	プラグイン
+workflowlist_search_placeholder	マクロを検索
 workflowlist_smart_home	スマートホーム
 workflowlist_text	 ·
 workflowlist_this_macro	このマクロ
 workflowlist_which_trigger	どのトリガーですか？
 workflowlist_workflows	ワークフロー
-smarthome_mqtt_broker	MQTT ブローカー
-smarthome_mqtt_broker_subtitle	すでに運用しているブローカー — Mosquitto、Zigbee2MQTT、EMQX
-mqtt_connect_a_broker	MQTT ブローカーを接続
-mqtt_name_your_broker	ブローカーに名前を付ける
-mqtt_setup_intro	Ottomatic はすでに運用しているブローカーに接続します。アプリ自体がブローカーになることはありません。
-mqtt_address	ブローカーのアドレス
-mqtt_login_optional	ネットワーク上の誰でも接続できるブローカーなら空のままにしてください。家庭のブローカーはたいていそうです。
-mqtt_username	ユーザー名
-mqtt_password	パスワード
-mqtt_anonymous	匿名
-mqtt_broker_reached	接続できました。ブローカーがこのログインを受け入れました。
-mqtt_cleartext_warning	この接続は暗号化されていません。自宅のネットワーク上のブローカーなら普通のことですが、インターネット経由ではパスワードが平文で送られます。
-mqtt_connected_this_is_the_name	接続しました。マクロにはこの名前が表示されます。
-mqtt_choose_a_broker	ブローカーを選択
-mqtt_no_broker_yet	MQTT ブローカーがまだありません。スマートホームで追加してください。
-mqtt_listen_for_topics	トピックを聞き取る
-mqtt_topics_heard	聞き取ったトピック
-mqtt_broker_subtitle	%1$s · %2$s
-category_files	ファイル
-files_path_placeholder	パス、または Ottomatic 専用ストレージ内の名前
-files_choose	ファイルまたはフォルダを選ぶ
-files_choose_folder	フォルダを選ぶ…
-files_choose_file	ファイルを選ぶ…
-files_folder_access	フォルダへのアクセス
-files_no_folders	Ottomatic はまだどのフォルダにもアクセスできません。
-files_no_folders_hint	フォルダを選ぶと、マクロがその中のファイルを読み書きできるようになります。Android は内部ストレージ全体や Download フォルダそのものへの許可を認めていません。その中に Download/Ottomatic のようなフォルダを作るか選んでください。
-files_grant	フォルダを選ぶ
-files_regrant	もう一度許可する
-files_revoke	取り消す
-files_read_only	読み取りのみ
-files_read_write	読み書きできます
-files_missing	このフォルダはもうありません。もう一度許可するか、取り消してください。
-files_own_storage	Ottomatic 専用ストレージ
-files_own_storage_hint	report.csv のようにフォルダを含まないパスは、ここに保存されます。権限は不要で、どのマクロも他のアプリのファイルにはアクセスできません。
-files_no_path	そのファイルはこの端末上に場所がないため、マクロから指定できません。オンラインに保存されたファイルや一部のダウンロードはこの方法では使えません。先に端末内のフォルダへコピーしてください。
-files_add_file	ファイルを追加
-files_files_heading	個別のファイル
-files_download_note	Android は Download フォルダそのものへの許可を認めていません。すでにその中にあるものを使うには、「ファイルを追加」でそのファイルをここに追加してください。または、ダウンロード先をその中のフォルダにすれば、そのフォルダごと許可できます。
-files_read_only_file	このファイルだけ読み取れます
-problem_ai_tool_missing	「%1$s」は AI に「%2$s」を提供していますが、現在は利用できません
-problem_ai_tool_unpinned	「%1$s」は「%2$s」を提供していますが、%3$s が選ばれていません。AI には指定できません
-config_tools_choose	AI が使えるもの
-config_tools_none	まだありません。AI は答えるだけで、操作はしません
-config_tools_fixed_count	ここで %1$d 件を固定
-config_tools_remove	このツールを削除
-config_tools_missing	利用できません
-config_tools_fixed	AI に任せず、ここで固定します
-config_tools_must_fix	ここで選択します。AI には指定できません
-config_tools_nothing_to_fix	このツールに設定はありません
-config_tools_add	ツールを追加
-ai_add_model	モデルを追加
-ai_choose_a_model	モデルを選ぶ
-ai_delete_model	このモデルを削除
-ai_model_effort	思考の深さ
-ai_model_effort_help	答える前にモデルがどれだけ考えるか。上の ID が空のときにプロバイダーが使うモデルもこれで決まります。
-ai_model_id	モデル ID
-ai_model_id_required	必須
-ai_model_name	名前
-ai_model_name_help	マクロから見える名前です。モデル名ではなく用途を付けましょう—「家事」「メールの要約」。
-ai_model_name_placeholder	家事
-ai_model_not_finished	未完成：名前とモデルを指定してください
-ai_model_provider_default	%1$s · プロバイダー既定のモデル
-ai_no_model_to_test	先にモデルを追加して保存してからテストしてください。
-ai_no_models_on_this_account	このアカウントにはまだモデルがありません。
-ai_no_models_yet	まだモデルがありません。マクロから指定できるように一つ追加してください。
-ai_tools_allow_everything	すべて許可
-ai_tools_allowed_count	%2$d 中 %1$d を許可
-ai_tools_macros	マクロ
-ai_tools_many_warning	すべてのツールが毎回モデルに説明されます。長い一覧はプロンプトを圧迫し、選択を下手にします。
-ai_tools_n_allowed	%1$d 件を許可
-ai_tools_need_a_choice	%1$d 件は何かを選ばないと動作しません。
-ai_tools_needs	%1$s が必要
-ai_tools_none_allowed	何も許可されていません—このモデルは答えることしかできません
-ai_tools_over_the_cap	上限 %1$d を超えています。超過分は除外されます—いくつか外してください。
-ai_tools_title	ツール
-ai_unnamed_model	名前のないモデル
-ai_tools_adjusted	ここで調整済み
-ai_tools_adjusted_count	このノード用に %1$d 件を調整
-ai_tools_adjusted_off	ここでオフにしました
-ai_tools_adjusting	これらはモデルのものです。ここでの変更はこのノードにだけ反映されます。
-ai_tools_as_the_model_says	モデルが許可するもの
-ai_tools_choose_a_model_first	先にモデルを選んでください
-ai_tools_reset	モデルに従うに戻す
-ai_tools_reset_all	すべてをリセット
-config_tools_ai_chooses	AI が利用できる %1$d 件から%2$sを選びます
-perm_title_read_calendar	カレンダー
-perm_title_write_calendar	カレンダーの変更
-perm_desc_read_calendar	マクロが予定を読み取れるようになり、設定時にカレンダーを選べるようになります。連絡先と違って頼れるシステムの選択画面がないため、カレンダーのノードが何かを表示するにはこれが必要です。
-perm_desc_write_calendar	マクロが予定を作成・変更・削除できるようになります。読み取りは上にある別のスイッチです。
-perm_rationale_calendar_read	Ottomatic が予定を読み取るにはカレンダーへのアクセスが必要です。これがないとこのノードは何も読み取れず、上のカレンダー選択にも候補が出ません。
-perm_rationale_calendar_write	このノードが予定を作成・編集・削除するには、Ottomatic にカレンダーを変更する権限が必要です。予定の読み取りは別の権限です。
-category_calendar	カレンダー
-calendar_choose_a_calendar	カレンダーを選択
-calendar_any_calendar	すべてのカレンダー
-calendar_no_calendars	このスマートフォンにカレンダーがありません。
-calendar_no_writable_calendars	このスマートフォンのカレンダーはどれも書き込めません。祝日カレンダーなどの購読カレンダーは読み取り専用です。
-calendar_needs_access	カレンダーを一覧表示するには、Ottomatic にカレンダーへのアクセスが必要です。
-calendar_grant_access	許可
-category_images	写真
-perm_title_read_media_images	写真
-perm_title_write_media_images	写真の変更
-perm_title_access_media_location	写真の位置情報
-perm_title_manage_media	メディアの管理
-perm_desc_read_media_images	マクロが端末内の画像を検索・読み取りでき、新しい画像が保存されたときに開始できるようになります。これがないと、写真ノードはすべて何もしません。
-perm_desc_write_media_images	古いバージョンの Android で、マクロが写真を変更・移動・削除できるようになります。Android 10 以降はここで許可するものはなく、Android が変更のたびに確認を求めます。
-perm_desc_access_media_location	マクロが写真の撮影場所を読み取れるようになります。これがないと、他のアプリが保存した写真の位置情報は Android に隠され、マクロは位置情報がないものとして扱います。
-perm_desc_manage_media	マクロが確認を求められることなく写真を変更・移動・削除できるようになります。任意です。なくても動作しますが、Android が毎回確認するため端末を手に持っている必要があります。
-perm_rationale_media_read	このノードが画像を検索して読み取るには、Ottomatic に写真へのアクセスが必要です。自分で画像を選ぶだけなら不要ですが、マクロの実行中に探す場合は必要です。
-perm_rationale_media_write	このノードが写真を書き換えるには、Ottomatic に写真を変更する権限が必要です。Android 10 以降ではこの権限は機能せず、Android が変更のたびに確認を求めます。
-perm_rationale_media_location	Ottomatic に写真の撮影場所を読み取る権限が必要です。ないと、このノードはどの画像にも位置情報がないと報告します。自分で撮影した写真は影響を受けません。
-perm_rationale_media_manage	Ottomatic は毎回確認を求めずに写真を変更できます。任意です。なくてもノードは動作しますが、Android が画面に確認を表示するため、無人では実行できません。
-perm_rationale_overlay_media	マクロがバックグラウンドで動作している間に Android の確認画面を表示するため、Ottomatic には他のアプリの上に重ねて表示する権限が必要です。これがないと、Ottomatic を開いていないときに他のアプリが保存した写真を変更できません。
-setup_title	設定
-setup_section_connections	接続
-setup_section_system	システム
-setup_ai	AI
-setup_smart_home_subtitle	Hue、Home Assistant、MQTT
-setup_ai_subtitle	AI ノード用のアカウントとモデル
-setup_mail_subtitle	送信と読み取りに使うメールボックス
-setup_variables_subtitle	すべてのマクロで共有できる値
-setup_geofences_subtitle	マクロが反応できる場所
-setup_nfc_subtitle	保存したタグ
-setup_folders_subtitle	このアプリが開けるフォルダとファイル
-setup_permissions_subtitle	端末がマクロに許可していること
-setup_plugins_subtitle	ノードを追加するアプリ
-setup_app_access_subtitle	あなたのマクロを実行できる他のアプリ
-workflowlist_search_placeholder	マクロを検索
-workflowlist_clear_search	検索をクリア
-workflowlist_no_matches	一致するマクロはありません。
-intent_choice_placeholder	入力するか、アプリに任せる
-intent_choice_ask_an_app	アプリに任せる
-intent_choice_no_app	この端末には対応できるアプリがありません。値を直接入力することはできます。
-intent_choice_needs_camera	別のアプリが撮影する前に、Ottomatic にカメラへのアクセスが必要です。タップして許可し、もう一度タップしてください。
