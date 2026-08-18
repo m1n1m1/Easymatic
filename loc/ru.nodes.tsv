@@ -60,6 +60,7 @@ Auto brightness	Автояркость
 Automatic	Автоматически
 Away for (minutes)	Отсутствие в течение (минут)
 B	B
+Back by	Назад на
 Back camera	Основная камера
 Balanced	Сбалансированная
 Battery Level	Уровень заряда
@@ -115,6 +116,7 @@ Clock Changed	Изменение времени
 Close automatically after (seconds)	Закрывать автоматически через (секунд)
 Colour	Цвет
 Combines words and values into one piece of text	Соединяет слова и значения в один текст
+Command	Команда
 Compare against	Сравнить с
 Compare as	Сравнивать как
 Confirm button	Кнопка подтверждения
@@ -124,6 +126,7 @@ Connected	Подключено
 Connection	Подключение
 Contains	Содержит
 Control Light	Управление светом
+Control Media	Управление воспроизведением
 Control Scene	Управление сценой
 Conversation ID	Идентификатор беседы
 Convert	Преобразовать
@@ -223,6 +226,7 @@ Float	Дробное (float)
 Folder	Папка
 Folders	Папки
 For a length of time	На заданное время
+Forward by	Вперёд на
 Found	Найдено
 Free	Свободен
 Fridays	Пятницы
@@ -292,6 +296,7 @@ Its reminder falls due	Наступает её напоминание
 JPEG	JPEG
 JSON text	Текст JSON
 Join list	Объединить список
+Jumps forward, back or to a position in the track or podcast that is playing	Перематывает вперёд, назад или на заданную позицию в треке или подкасте, который сейчас играет
 Keep both, adding a number	Оставить оба, добавив номер
 Keep until dismissed	Не убирать автоматически
 Key	Ключ
@@ -343,6 +348,8 @@ Matches regex	Соответствует регулярному выражени
 Media	Медиа
 Media Button Pressed	Нажата медиакнопка
 Media Mounted / Unmounted	Подключение / отключение носителя
+Media Playback Changed	Воспроизведение изменилось
+Media playing	Идёт воспроизведение
 Medium	Средняя
 Message	Сообщение
 Message Received	Получено сообщение
@@ -382,11 +389,13 @@ New value (blank removes it)	Новое значение (пусто — уда�
 Newest first	Сначала новые
 Next	Далее
 Next appointment	Следующая встреча
+Next track	Следующий трек
 Normal	Обычный
 Not equals	Не равно
 Notification	Уведомление
 Notification Received	Получено уведомление
 Now	Сейчас
+Now playing	Сейчас играет
 Number	Число
 Number of presses	Количество нажатий
 Off	Выключено
@@ -423,6 +432,7 @@ Path (e.g. main.temp) — blank for the whole document	Путь (наприме�
 Paths	Пути
 Pattern (comma-separated ms, e.g. 0,200,500,200)	Шаблон (мс через запятую, например 0,200,500,200)
 Pause	Пауза
+Paused	Приостановлено
 Pauses the workflow for a while	Приостанавливает сценарий на некоторое время
 Picked up	Поднято
 Picture	Изображение
@@ -434,9 +444,13 @@ Place	Место
 Planned for	Запланировано на
 Play	Воспроизвести
 Play Sound	Воспроизвести звук
+Play or pause	Воспроизвести или приостановить
 Play pause	Воспроизведение / пауза
 Play through	Воспроизводить через
+Playback	Воспроизведение
+Playing	Воспроизводится
 Plays a notification, ringtone, alarm or chosen sound	Воспроизводит звук уведомления, мелодию, будильник или выбранный звук
+Plays, pauses or skips the music, podcast or video that is playing	Воспроизводит, приостанавливает или переключает музыку, подкаст или видео, которые сейчас играют
 Plugged	Подключено
 Plugged in	Подключено
 Poll	Опрос
@@ -456,6 +470,7 @@ Prefilled	Заполнено заранее
 Pressed	Нажатие
 Pressed several times	Несколько нажатий
 Previous	Назад
+Previous track	Предыдущий трек
 Priority	Приоритет
 Progress (%, below 0 = busy)	Прогресс (%, меньше 0 — неопределённый)
 Prompt	Запрос
@@ -529,6 +544,7 @@ Screen On / Off	Экран включён / выключен
 Screen on	Экран включён
 Script — each input is a variable of its own name	Скрипт — каждый вход доступен как переменная с тем же именем
 Seconds	Секунды
+Seek Media	Перемотка
 Send Email	Отправить письмо
 Send Message	Отправить сообщение
 Send SMS	Отправить SMS
@@ -577,6 +593,7 @@ Splits text into a list — one item per line, or on a separator you choose	Ра
 Standing instruction	Постоянная инструкция
 Start Recording	Начать запись
 Start at (seconds into the sound)	Начать с (секунда внутри звука)
+Started	Началось
 Started moving — low power, works with the screen off	Начало движения — экономно, работает при выключенном экране
 Starts a named list over, ready to collect into	Очищает именованный список, чтобы начать собирать в него заново
 Starts at	Начало
@@ -606,6 +623,7 @@ Starts when an appointment is added, changed or removed in any calendar	Запу
 Starts when an email arrives in a mailbox you are watching	Срабатывает, когда в отслеживаемый почтовый ящик приходит письмо
 Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	Запускается, когда на шине событий Home Assistant возникает событие — кнопка Zigbee, метка, своё событие
 Starts when external media is mounted, unmounted or ejected	Срабатывает при подключении, отключении или извлечении внешнего носителя
+Starts when music, a podcast or a video starts, pauses, stops or changes track	Запускается, когда музыка, подкаст или видео начинается, приостанавливается, останавливается или меняется трек
 Starts when power-save mode is toggled on or off	Срабатывает при включении или выключении режима энергосбережения
 Starts when the battery level crosses a threshold (polls in the background)	Срабатывает, когда уровень заряда пересекает порог (опрашивает в фоне)
 Starts when the device body is tapped twice or three times. Unreliable in a pocket (screen on only)	Срабатывает при двойном или тройном касании корпуса. Ненадёжно в кармане (только при включённом экране)
@@ -632,6 +650,7 @@ Stop Recording	Остановить запись
 Stop Sound	Остановить звук
 Stop after (seconds, 0 = play to the end)	Остановить через (секунд, 0 — до конца)
 Stop by itself after (seconds)	Остановиться самому через (секунды)
+Stopped	Остановлено
 Stops every sound started by Play Sound	Останавливает все звуки, запущенные узлом «Воспроизвести звук»
 Stream	Поток
 String	Текст
@@ -670,6 +689,7 @@ The next appointment due to start in any calendar	Ближайшая встре�
 The next few days	Ближайшие дни
 The rest of today	Остаток сегодняшнего дня
 The same list, in order	Тот же список, по порядку
+The track, podcast or video that is playing, with its title, artist and app	Трек, подкаст или видео, которые сейчас играют, с названием, исполнителем и приложением
 This is a list	Это список
 This occurrence	Только эту встречу
 Thorough	Тщательная
@@ -681,6 +701,7 @@ Timezone changed	Часовой пояс изменён
 Title	Заголовок
 Title contains	Название содержит
 To	Кому
+To the position	К позиции
 Toggle	Переключить
 Toggle Auto-Rotate	Переключить автоповорот
 Toggle Bluetooth	Переключить Bluetooth
@@ -691,6 +712,8 @@ Tools	Инструменты
 Top	Сверху
 Top to bottom	Сверху вниз
 Topic	Тема
+Track	Трек
+Track changed	Трек сменился
 Triple tap	Тройное касание
 Tuesdays	Вторники
 Turn	Поворот
@@ -765,6 +788,7 @@ Whether a wired or USB headset is currently plugged in	Подключена ли
 Whether airplane mode is currently on	Включён ли сейчас режим полёта
 Whether an appointment is on in any calendar right now	Идёт ли сейчас встреча в каком-либо календаре
 Whether battery saver is currently on	Включено ли сейчас энергосбережение
+Whether music, a podcast or a video is playing right now	Играет ли сейчас музыка, подкаст или видео
 Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	Закрыто ли что-нибудь датчик над экраном — карман, рука на стекле, устройство экраном вниз
 Whether the device is currently charging	Заряжается ли устройство сейчас
 Whether the device is currently in dark theme (night mode)	Включена ли сейчас на устройстве тёмная тема (ночной режим)

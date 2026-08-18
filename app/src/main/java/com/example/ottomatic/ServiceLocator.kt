@@ -57,6 +57,7 @@ import com.example.ottomatic.data.plugin.PluginRepository
 import com.example.ottomatic.data.prompt.OverlayPrompts
 import com.example.ottomatic.data.script.WebViewScriptEngine
 import com.example.ottomatic.data.audio.AndroidMicrophone
+import com.example.ottomatic.data.media.AndroidMedia
 import com.example.ottomatic.data.sensor.SensorBridge
 import com.example.ottomatic.data.calendar.AndroidCalendars
 import com.example.ottomatic.data.service.AndroidContacts
@@ -498,6 +499,7 @@ object ServiceLocator {
             ),
             calendars = calendarsFacade,
             microphone = microphoneFacade,
+            media = AndroidMedia(appContext),
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.

@@ -52,6 +52,8 @@ import com.example.ottomatic.engine.action.NotificationActionAction
 import com.example.ottomatic.engine.action.NotifyAction
 import com.example.ottomatic.engine.action.NotifyCancelAction
 import com.example.ottomatic.engine.action.OpenUrlAction
+import com.example.ottomatic.engine.action.MediaControlAction
+import com.example.ottomatic.engine.action.MediaSeekAction
 import com.example.ottomatic.engine.action.PlaySoundAction
 import com.example.ottomatic.engine.action.RecordAudioAction
 import com.example.ottomatic.engine.action.RecordStartAction
@@ -205,6 +207,11 @@ object ActionRegistry {
         NotificationActionAction(),
         SendMessageAction(),
         OpenUrlAction(),
+        // The two media nodes together and next to the sound family, because that is what
+        // somebody scanning for "make the music stop" is looking at — even though only one
+        // of the four concerns this app's own sound.
+        MediaControlAction(),
+        MediaSeekAction(),
         PlaySoundAction(),
         // The palette renders in registry order, so the three loops are kept
         // together and out of alphabetical order deliberately: they are one family,

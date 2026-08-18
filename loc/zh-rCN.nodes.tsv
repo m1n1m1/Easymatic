@@ -60,6 +60,7 @@ Auto brightness	自动亮度
 Automatic	自动
 Away for (minutes)	离开时长（分钟）
 B	B
+Back by	后退
 Back camera	后置摄像头
 Balanced	均衡
 Battery Level	电量
@@ -115,6 +116,7 @@ Clock Changed	时钟已改变
 Close automatically after (seconds)	自动关闭延时（秒）
 Colour	颜色
 Combines words and values into one piece of text	把文字和值拼成一段文本
+Command	命令
 Compare against	比较对象
 Compare as	比较方式
 Confirm button	确认按钮
@@ -124,6 +126,7 @@ Connected	已连接
 Connection	连接
 Contains	包含
 Control Light	控制灯
+Control Media	控制媒体
 Control Scene	控制场景
 Conversation ID	会话 ID
 Convert	转换
@@ -223,6 +226,7 @@ Float	小数
 Folder	文件夹
 Folders	文件夹
 For a length of time	持续一段时间
+Forward by	前进
 Found	已找到
 Free	空闲
 Fridays	每周五
@@ -292,6 +296,7 @@ Its reminder falls due	提醒到期时
 JPEG	JPEG
 JSON text	JSON 文本
 Join list	连接列表
+Jumps forward, back or to a position in the track or podcast that is playing	在正在播放的曲目或播客中前进、后退或跳到指定位置
 Keep both, adding a number	两个都保留，加上编号
 Keep until dismissed	保留直到被清除
 Key	键
@@ -343,6 +348,8 @@ Matches regex	匹配正则表达式
 Media	媒体
 Media Button Pressed	媒体键被按下
 Media Mounted / Unmounted	存储介质已挂载 / 已卸载
+Media Playback Changed	媒体播放状态变化
+Media playing	正在播放媒体
 Medium	中
 Message	消息
 Message Received	收到消息
@@ -382,11 +389,13 @@ New value (blank removes it)	新值（留空则删除）
 Newest first	最新的在前
 Next	下一首
 Next appointment	下一个日程
+Next track	下一首
 Normal	正常
 Not equals	不等于
 Notification	通知
 Notification Received	收到通知
 Now	现在
+Now playing	正在播放
 Number	数字
 Number of presses	按键次数
 Off	关闭
@@ -423,6 +432,7 @@ Path (e.g. main.temp) — blank for the whole document	路径（例如 main.temp
 Paths	路径
 Pattern (comma-separated ms, e.g. 0,200,500,200)	振动模式（毫秒，用逗号分隔，例如 0,200,500,200）
 Pause	暂停
+Paused	已暂停
 Pauses the workflow for a while	让工作流暂停一段时间
 Picked up	被拿起
 Picture	图片
@@ -434,9 +444,13 @@ Place	地点
 Planned for	计划于
 Play	播放
 Play Sound	播放声音
+Play or pause	播放或暂停
 Play pause	播放/暂停
 Play through	播放通道
+Playback	播放
+Playing	播放中
 Plays a notification, ringtone, alarm or chosen sound	播放通知音、铃声、闹钟音或你选择的声音
+Plays, pauses or skips the music, podcast or video that is playing	播放、暂停或切换正在播放的音乐、播客或视频
 Plugged	已插入
 Plugged in	已插入
 Poll	轮询
@@ -456,6 +470,7 @@ Prefilled	预填内容
 Pressed	按下
 Pressed several times	连按多次
 Previous	上一首
+Previous track	上一首
 Priority	优先级
 Progress (%, below 0 = busy)	进度（%，小于 0 表示不确定）
 Prompt	提示词
@@ -529,6 +544,7 @@ Screen On / Off	屏幕点亮 / 熄灭
 Screen on	屏幕点亮
 Script — each input is a variable of its own name	脚本——每个输入都是一个同名的变量
 Seconds	秒
+Seek Media	跳转媒体位置
 Send Email	发送邮件
 Send Message	发送消息
 Send SMS	发送短信
@@ -577,6 +593,7 @@ Splits text into a list — one item per line, or on a separator you choose	把�
 Standing instruction	常驻指令
 Start Recording	开始录音
 Start at (seconds into the sound)	起播位置（声音的第几秒）
+Started	已开始
 Started moving — low power, works with the screen off	开始移动——低功耗，屏幕熄灭时也有效
 Starts a named list over, ready to collect into	把指定列表清空重来，准备重新收集
 Starts at	开始于
@@ -606,6 +623,7 @@ Starts when an appointment is added, changed or removed in any calendar	当任�
 Starts when an email arrives in a mailbox you are watching	当你监视的邮箱收到邮件时启动
 Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	当 Home Assistant 事件总线上触发事件时启动——Zigbee 按键、标签、自定义事件
 Starts when external media is mounted, unmounted or ejected	当外部存储介质被挂载、卸载或弹出时启动
+Starts when music, a podcast or a video starts, pauses, stops or changes track	当音乐、播客或视频开始、暂停、停止或切换曲目时启动
 Starts when power-save mode is toggled on or off	当省电模式被开启或关闭时启动
 Starts when the battery level crosses a threshold (polls in the background)	当电量越过某个阈值时启动（在后台轮询）
 Starts when the device body is tapped twice or three times. Unreliable in a pocket (screen on only)	当机身被敲击两下或三下时启动。放在口袋里不太可靠（仅在屏幕点亮时）
@@ -632,6 +650,7 @@ Stop Recording	停止录音
 Stop Sound	停止声音
 Stop after (seconds, 0 = play to the end)	停止时间（秒，0 = 播放到结束）
 Stop by itself after (seconds)	自动停止时间（秒）
+Stopped	已停止
 Stops every sound started by Play Sound	停止所有由“播放声音”启动的声音
 Stream	音频通道
 String	文本
@@ -670,6 +689,7 @@ The next appointment due to start in any calendar	任意日历中下一个即将
 The next few days	接下来几天
 The rest of today	今天剩下的时间
 The same list, in order	同一个列表，已排好序
+The track, podcast or video that is playing, with its title, artist and app	正在播放的曲目、播客或视频，以及其标题、艺术家和应用
 This is a list	这是一个列表
 This occurrence	仅这一次
 Thorough	深入
@@ -681,6 +701,7 @@ Timezone changed	时区已改变
 Title	标题
 Title contains	标题包含
 To	收件人
+To the position	跳到位置
 Toggle	切换
 Toggle Auto-Rotate	切换自动旋转
 Toggle Bluetooth	切换蓝牙
@@ -691,6 +712,8 @@ Tools	工具
 Top	上
 Top to bottom	上下翻转
 Topic	主题
+Track	曲目
+Track changed	曲目已切换
 Triple tap	三击
 Tuesdays	每周二
 Turn	旋转方向
@@ -765,6 +788,7 @@ Whether a wired or USB headset is currently plugged in	当前是否插着有线�
 Whether airplane mode is currently on	飞行模式当前是否开启
 Whether an appointment is on in any calendar right now	此刻任意日历中是否有日程正在进行
 Whether battery saver is currently on	省电模式当前是否开启
+Whether music, a podcast or a video is playing right now	当前是否正在播放音乐、播客或视频
 Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	屏幕上方的传感器是否被挡住——口袋、贴在玻璃上的手，或设备屏幕朝下
 Whether the device is currently charging	设备当前是否正在充电
 Whether the device is currently in dark theme (night mode)	设备当前是否处于深色主题（夜间模式）

@@ -60,6 +60,7 @@ Auto brightness	Luminosité automatique
 Automatic	Automatique
 Away for (minutes)	Absent depuis (minutes)
 B	B
+Back by	Reculer de
 Back camera	Appareil photo arrière
 Balanced	Équilibré
 Battery Level	Niveau de batterie
@@ -115,6 +116,7 @@ Clock Changed	Horloge modifiée
 Close automatically after (seconds)	Fermer automatiquement après (secondes)
 Colour	Couleur
 Combines words and values into one piece of text	Combine des mots et des valeurs en un seul texte
+Command	Commande
 Compare against	Comparer à
 Compare as	Comparer comme
 Confirm button	Bouton Confirmer
@@ -124,6 +126,7 @@ Connected	Connecté
 Connection	Connexion
 Contains	Contient
 Control Light	Piloter une lumière
+Control Media	Contrôler le lecteur
 Control Scene	Piloter une scène
 Conversation ID	Identifiant de conversation
 Convert	Convertir
@@ -223,6 +226,7 @@ Float	Décimal
 Folder	Dossier
 Folders	Dossiers
 For a length of time	Pendant une durée
+Forward by	Avancer de
 Found	Trouvé
 Free	Libre
 Fridays	Vendredis
@@ -292,6 +296,7 @@ Its reminder falls due	Son rappel arrive à échéance
 JPEG	JPEG
 JSON text	Texte JSON
 Join list	Joindre la liste
+Jumps forward, back or to a position in the track or podcast that is playing	Avance, recule ou se place à une position dans le morceau ou le podcast en cours de lecture
 Keep both, adding a number	Garder les deux, en ajoutant un numéro
 Keep until dismissed	Garder jusqu’à sa fermeture
 Key	Clé
@@ -343,6 +348,8 @@ Matches regex	Correspond à la regex
 Media	Média
 Media Button Pressed	Bouton média pressé
 Media Mounted / Unmounted	Média monté / démonté
+Media Playback Changed	Lecture multimédia modifiée
+Media playing	Lecture en cours
 Medium	Moyen
 Message	Message
 Message Received	Message reçu
@@ -382,11 +389,13 @@ New value (blank removes it)	Nouvelle valeur (vide la supprime)
 Newest first	Les plus récentes d'abord
 Next	Suivant
 Next appointment	Prochain rendez-vous
+Next track	Piste suivante
 Normal	Normal
 Not equals	Différent de
 Notification	Notification
 Notification Received	Notification reçue
 Now	Maintenant
+Now playing	En cours de lecture
 Number	Nombre
 Number of presses	Nombre d'appuis
 Off	Éteint
@@ -423,6 +432,7 @@ Path (e.g. main.temp) — blank for the whole document	Chemin (par ex. main.temp
 Paths	Chemins
 Pattern (comma-separated ms, e.g. 0,200,500,200)	Motif (ms séparées par des virgules, par ex. 0,200,500,200)
 Pause	Pause
+Paused	En pause
 Pauses the workflow for a while	Met le flux en pause un moment
 Picked up	Ramassé
 Picture	Image
@@ -434,9 +444,13 @@ Place	Lieu
 Planned for	Prévu pour
 Play	Lecture
 Play Sound	Jouer un son
+Play or pause	Lire ou mettre en pause
 Play pause	Lecture/pause
 Play through	Sortie audio
+Playback	Lecture
+Playing	En lecture
 Plays a notification, ringtone, alarm or chosen sound	Joue un son de notification, une sonnerie, une alarme ou le son choisi
+Plays, pauses or skips the music, podcast or video that is playing	Lit, met en pause ou passe la musique, le podcast ou la vidéo en cours de lecture
 Plugged	Branché
 Plugged in	Branché
 Poll	Interroger
@@ -456,6 +470,7 @@ Prefilled	Prérempli
 Pressed	Pressé
 Pressed several times	Pressé plusieurs fois
 Previous	Précédent
+Previous track	Piste précédente
 Priority	Priorité
 Progress (%, below 0 = busy)	Progression (%, en dessous de 0 = indéterminée)
 Prompt	Requête
@@ -529,6 +544,7 @@ Screen On / Off	Écran allumé / éteint
 Screen on	Écran allumé
 Script — each input is a variable of its own name	Script : chaque entrée est une variable portant son propre nom
 Seconds	Secondes
+Seek Media	Se déplacer dans le média
 Send Email	Envoyer un e-mail
 Send Message	Envoyer un message
 Send SMS	Envoyer un SMS
@@ -577,6 +593,7 @@ Splits text into a list — one item per line, or on a separator you choose	Déc
 Standing instruction	Instruction permanente
 Start Recording	Démarrer l'enregistrement
 Start at (seconds into the sound)	Démarrer à (secondes dans le son)
+Started	Démarrée
 Started moving — low power, works with the screen off	Commence à bouger : basse consommation, fonctionne écran éteint
 Starts a named list over, ready to collect into	Réinitialise une liste nommée, prête à être remplie
 Starts at	Commence à
@@ -606,6 +623,7 @@ Starts when an appointment is added, changed or removed in any calendar	Démarre
 Starts when an email arrives in a mailbox you are watching	Démarre à l'arrivée d'un e-mail dans une boîte que tu surveilles
 Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	Démarre quand un événement est émis sur le bus d'événements Home Assistant : un bouton Zigbee, un tag, un événement personnalisé
 Starts when external media is mounted, unmounted or ejected	Démarre quand un média externe est monté, démonté ou éjecté
+Starts when music, a podcast or a video starts, pauses, stops or changes track	Démarre quand une musique, un podcast ou une vidéo démarre, se met en pause, s'arrête ou change de piste
 Starts when power-save mode is toggled on or off	Démarre quand le mode économie d'énergie est activé ou désactivé
 Starts when the battery level crosses a threshold (polls in the background)	Démarre quand le niveau de batterie franchit un seuil (interrogation en arrière-plan)
 Starts when the device body is tapped twice or three times. Unreliable in a pocket (screen on only)	Démarre quand on tape deux ou trois fois sur le corps de l'appareil. Peu fiable dans une poche (écran allumé uniquement)
@@ -632,6 +650,7 @@ Stop Recording	Arrêter l'enregistrement
 Stop Sound	Arrêter le son
 Stop after (seconds, 0 = play to the end)	Arrêter après (secondes, 0 = jouer jusqu'au bout)
 Stop by itself after (seconds)	S'arrêter tout seul après (secondes)
+Stopped	Arrêtée
 Stops every sound started by Play Sound	Arrête tous les sons lancés par Jouer un son
 Stream	Canal
 String	Texte
@@ -670,6 +689,7 @@ The next appointment due to start in any calendar	Le prochain rendez-vous qui do
 The next few days	Les prochains jours
 The rest of today	Le reste de la journée
 The same list, in order	La même liste, triée
+The track, podcast or video that is playing, with its title, artist and app	Le morceau, le podcast ou la vidéo en cours de lecture, avec son titre, son artiste et son application
 This is a list	Ceci est une liste
 This occurrence	Ce rendez-vous uniquement
 Thorough	Approfondi
@@ -681,6 +701,7 @@ Timezone changed	Fuseau horaire modifié
 Title	Titre
 Title contains	Le titre contient
 To	À
+To the position	À la position
 Toggle	Basculer
 Toggle Auto-Rotate	Basculer la rotation automatique
 Toggle Bluetooth	Basculer le Bluetooth
@@ -691,6 +712,8 @@ Tools	Outils
 Top	Haut
 Top to bottom	De haut en bas
 Topic	Topic
+Track	Piste
+Track changed	Piste changée
 Triple tap	Triple appui
 Tuesdays	Mardis
 Turn	Rotation
@@ -765,6 +788,7 @@ Whether a wired or USB headset is currently plugged in	Si un casque filaire ou U
 Whether airplane mode is currently on	Si le mode avion est actuellement activé
 Whether an appointment is on in any calendar right now	Si un rendez-vous est en cours dans un agenda en ce moment
 Whether battery saver is currently on	Si l'économiseur de batterie est actuellement activé
+Whether music, a podcast or a video is playing right now	Si de la musique, un podcast ou une vidéo est en cours de lecture
 Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	Si quelque chose couvre le capteur au-dessus de l'écran : une poche, une main sur la vitre, l'appareil écran vers le bas
 Whether the device is currently charging	Si l'appareil est actuellement en charge
 Whether the device is currently in dark theme (night mode)	Si l'appareil est actuellement en thème sombre (mode nuit)

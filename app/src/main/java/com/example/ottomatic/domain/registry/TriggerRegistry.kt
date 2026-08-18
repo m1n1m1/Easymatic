@@ -68,6 +68,11 @@ object TriggerRegistry {
         // table and no high-water mark here. The recorder in `data/` ended the recording
         // itself, so the event is broadcast and this node filters on the source alone.
         add(com.example.ottomatic.engine.trigger.RecordingSavedTrigger())
+        // Beside them because it is armed rather than broadcast, and not in Tier 1 with
+        // `trigger.media_button` despite the shared word: that one hears a key press through
+        // a manifest receiver, this one hears what a player is doing through a
+        // MediaSessionManager listener that has to be registered and taken down again.
+        add(com.example.ottomatic.engine.trigger.MediaPlaybackTrigger())
         // Tier 0 — engine-internal triggers.
         add(com.example.ottomatic.engine.trigger.EmptyTrigger())
         add(com.example.ottomatic.engine.trigger.AppInitTrigger())

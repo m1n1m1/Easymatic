@@ -167,6 +167,7 @@ category_images	写真
 category_interaction	ユーザーに尋ねる
 category_location	位置情報
 category_manual	手動
+category_media	メディア
 category_messaging	メッセージ
 category_network	ネットワーク
 category_notifications	通知
@@ -517,6 +518,7 @@ perm_rationale_camera_photo	写真を撮るには Ottomatic にカメラへの�
 perm_rationale_dnd_policy	着信音モードを変更するために、Ottomatic はサイレントモードへのアクセスを必要とします。
 perm_rationale_media_location	Ottomatic に写真の撮影場所を読み取る権限が必要です。ないと、このノードはどの画像にも位置情報がないと報告します。自分で撮影した写真は影響を受けません。
 perm_rationale_media_manage	Ottomatic は毎回確認を求めずに写真を変更できます。任意です。なくてもノードは動作しますが、Android が画面に確認を表示するため、無人では実行できません。
+perm_rationale_media_playback	Ottomatic は他のアプリが表示するメディア通知を読み取り、再生中の内容を把握して再生・一時停止・スキップを送信します。これがないと、メディアノードはどのプレーヤーも認識できず操作もできません。
 perm_rationale_media_read	このノードが画像を検索して読み取るには、Ottomatic に写真へのアクセスが必要です。自分で画像を選ぶだけなら不要ですが、マクロの実行中に探す場合は必要です。
 perm_rationale_media_write	このノードが写真を書き換えるには、Ottomatic に写真を変更する権限が必要です。Android 10 以降ではこの権限は機能せず、Android が変更のたびに確認を求めます。
 perm_rationale_nfc_radio	このトリガーには NFC がオンになっている必要がありますが、これはシステム全体の設定であり、Ottomatic が自分で付与できるものではありません。またタグは画面がオンでロック解除されている間しか読み取られません。ポケットの中でスリープしている端末にかざしても反応しません。

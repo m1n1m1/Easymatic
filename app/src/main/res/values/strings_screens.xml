@@ -26,6 +26,7 @@
     <string name="category_files">Files</string>
     <string name="category_images">Photos</string>
     <string name="category_audio">Audio</string>
+    <string name="category_media">Media</string>
     <string name="category_calendar">Calendar</string>
     <string name="calendar_choose_a_calendar">Choose a calendar</string>
     <string name="calendar_any_calendar">Any calendar</string>

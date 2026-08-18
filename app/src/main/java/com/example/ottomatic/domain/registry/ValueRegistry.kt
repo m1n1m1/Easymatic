@@ -17,8 +17,10 @@ import com.example.ottomatic.engine.value.HeadsetValue
 import com.example.ottomatic.engine.value.LatestImageValue
 import com.example.ottomatic.engine.value.LatestScreenshotValue
 import com.example.ottomatic.engine.value.LightLevelValue
+import com.example.ottomatic.engine.value.MediaPlayingValue
 import com.example.ottomatic.engine.value.MqttTopicValue
 import com.example.ottomatic.engine.value.NfcValue
+import com.example.ottomatic.engine.value.NowPlayingValue
 import com.example.ottomatic.engine.value.NowValue
 import com.example.ottomatic.engine.value.PowerSaveValue
 import com.example.ottomatic.engine.value.ProximityValue
@@ -65,8 +67,10 @@ object ValueRegistry {
         LatestImageValue(),
         LatestScreenshotValue(),
         LightLevelValue(),
+        MediaPlayingValue(),
         MqttTopicValue(),
         NfcValue(),
+        NowPlayingValue(),
         NowValue(),
         PowerSaveValue(),
         ProximityValue(),

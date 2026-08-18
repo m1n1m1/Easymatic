@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatterySaver
 import androidx.compose.material.icons.filled.BatteryStd
@@ -297,4 +298,7 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // A microphone rather than VOLUME's speaker: these nodes take sound off the room, and a
     // speaker is what a phone shows while it is making sound at you.
     NodeIcon.MICROPHONE -> Icons.Filled.Mic
+    // The operation rather than MUSIC's subject: this is the one media node that moves the
+    // position inside what is playing, and a note would not say so.
+    NodeIcon.FAST_FORWARD -> Icons.Filled.FastForward
 }

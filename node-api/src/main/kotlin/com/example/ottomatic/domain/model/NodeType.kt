@@ -68,6 +68,13 @@ enum class NodeCategory(
     // under "Files" would only push the six file nodes further down. What they have in
     // common is the microphone, which is neither storage nor a picture.
     AUDIO(NodeKind.ACTION, "Audio"),
+    // Separate from both [AUDIO] and [DEVICE_SETTINGS], on [IMAGES]' argument read a third
+    // time. Not [AUDIO]: what those three nodes have in common is the microphone, and these
+    // neither record nor make a sound. Not [DEVICE_SETTINGS], which already holds volume,
+    // ringer, Wi-Fi, Bluetooth, the torch, brightness and Launch App — two more would push
+    // that list further down for nodes that are not a setting of this device at all, but
+    // requests to somebody else's player.
+    MEDIA(NodeKind.ACTION, "Media"),
     CALENDAR(NodeKind.ACTION, "Calendar"),
     DATA(NodeKind.ACTION, "Data"),
     VALUE_POWER(NodeKind.VALUE, "Power & Battery"),

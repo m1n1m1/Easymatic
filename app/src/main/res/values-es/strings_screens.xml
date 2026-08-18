@@ -23,6 +23,7 @@
     <string name="category_files">Archivos</string>
     <string name="category_images">Fotos</string>
     <string name="category_audio">Audio</string>
+    <string name="category_media">Multimedia</string>
     <string name="category_calendar">Calendario</string>
     <string name="calendar_choose_a_calendar">Elegir un calendario</string>
     <string name="calendar_any_calendar">Cualquier calendario</string>

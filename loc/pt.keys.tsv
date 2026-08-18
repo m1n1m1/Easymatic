@@ -167,6 +167,7 @@ category_images	Fotos
 category_interaction	Perguntar ao utilizador
 category_location	Localização
 category_manual	Manual
+category_media	Multimédia
 category_messaging	Mensagens
 category_network	Rede
 category_notifications	Notificações
@@ -517,6 +518,7 @@ perm_rationale_camera_photo	O Ottomatic precisa de acesso à câmara para tirar 
 perm_rationale_dnd_policy	O Ottomatic precisa de acesso ao Não incomodar para alterar o teu modo de som.
 perm_rationale_media_location	O Ottomatic precisa de permissão para ler onde uma foto foi tirada; caso contrário este nó indica que nenhuma imagem tem localização. As fotos que tirou não são afetadas.
 perm_rationale_media_manage	O Ottomatic pode alterar fotos sem lhe perguntar de cada vez. É opcional: sem isto o nó continua a funcionar, mas o Android mostra uma confirmação no ecrã, pelo que não pode correr sem supervisão.
+perm_rationale_media_playback	O Ottomatic lê a notificação multimédia que outras aplicações publicam, e assim sabe o que está a tocar e pode enviar reproduzir, pausar e saltar. Sem isto, os nós multimédia não veem nem alcançam nenhum leitor.
 perm_rationale_media_read	O Ottomatic precisa de aceder às suas fotos para que este nó as possa encontrar e ler. Escolher uma imagem manualmente não precisa disto; procurar uma durante a execução da macro precisa.
 perm_rationale_media_write	O Ottomatic precisa de permissão para alterar as suas fotos, para que este nó possa reescrever uma. No Android 10 e posteriores esta permissão não faz nada e o Android pede-lhe que confirme cada alteração.
 perm_rationale_nfc_radio	Este acionador precisa do NFC ligado, que é uma definição de todo o sistema e não algo que o Ottomatic possa conceder a si próprio. Além disso, as etiquetas só são lidas com o ecrã ligado e desbloqueado: um toque não chega a um telemóvel adormecido no bolso.

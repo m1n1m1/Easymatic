@@ -60,6 +60,7 @@ Auto brightness	明るさの自動調整
 Automatic	自動
 Away for (minutes)	離れている時間（分）
 B	B
+Back by	戻す
 Back camera	背面カメラ
 Balanced	バランス
 Battery Level	電池残量
@@ -115,6 +116,7 @@ Clock Changed	時計の変更
 Close automatically after (seconds)	自動的に閉じるまでの時間（秒）
 Colour	色
 Combines words and values into one piece of text	語句と値をつないで 1 つのテキストにします
+Command	コマンド
 Compare against	比較対象
 Compare as	比較方法
 Confirm button	確認ボタン
@@ -124,6 +126,7 @@ Connected	接続済み
 Connection	接続
 Contains	含む
 Control Light	照明を操作
+Control Media	メディアを操作
 Control Scene	シーンを操作
 Conversation ID	会話 ID
 Convert	変換
@@ -223,6 +226,7 @@ Float	小数
 Folder	フォルダー
 Folders	フォルダ
 For a length of time	一定時間
+Forward by	進める
 Found	見つかった
 Free	空き時間
 Fridays	毎週金曜
@@ -292,6 +296,7 @@ Its reminder falls due	通知の時刻になったとき
 JPEG	JPEG
 JSON text	JSON テキスト
 Join list	リストを連結
+Jumps forward, back or to a position in the track or podcast that is playing	再生中の曲やポッドキャストで、前後に移動するか指定の位置にジャンプします
 Keep both, adding a number	番号を付けて両方残す
 Keep until dismissed	消されるまで残す
 Key	キー
@@ -343,6 +348,8 @@ Matches regex	正規表現に一致
 Media	メディア
 Media Button Pressed	メディアボタンの押下
 Media Mounted / Unmounted	メディアのマウント / アンマウント
+Media Playback Changed	メディア再生の変化
+Media playing	メディア再生中
 Medium	中
 Message	メッセージ
 Message Received	メッセージ受信
@@ -382,11 +389,13 @@ New value (blank removes it)	新しい値（空にすると削除）
 Newest first	新しい順
 Next	次へ
 Next appointment	次の予定
+Next track	次の曲
 Normal	通常
 Not equals	等しくない
 Notification	通知
 Notification Received	通知の受信
 Now	現在
+Now playing	再生中
 Number	数値
 Number of presses	押した回数
 Off	オフ
@@ -423,6 +432,7 @@ Path (e.g. main.temp) — blank for the whole document	パス（例: main.temp�
 Paths	パス
 Pattern (comma-separated ms, e.g. 0,200,500,200)	パターン（ミリ秒をカンマ区切り。例: 0,200,500,200）
 Pause	一時停止
+Paused	一時停止した
 Pauses the workflow for a while	ワークフローをしばらく一時停止します
 Picked up	持ち上げられた
 Picture	画像
@@ -434,9 +444,13 @@ Place	場所
 Planned for	予定時刻
 Play	再生
 Play Sound	サウンドを再生
+Play or pause	再生または一時停止
 Play pause	再生／一時停止
 Play through	再生先
+Playback	再生
+Playing	再生中
 Plays a notification, ringtone, alarm or chosen sound	通知音、着信音、アラーム音、または選んだサウンドを再生します
+Plays, pauses or skips the music, podcast or video that is playing	再生中の音楽、ポッドキャスト、動画を再生・一時停止・スキップします
 Plugged	接続済み
 Plugged in	接続済み
 Poll	ポーリング
@@ -456,6 +470,7 @@ Prefilled	初期入力
 Pressed	押された
 Pressed several times	複数回押された
 Previous	前へ
+Previous track	前の曲
 Priority	優先度
 Progress (%, below 0 = busy)	進捗（%、0 未満は不確定）
 Prompt	プロンプト
@@ -529,6 +544,7 @@ Screen On / Off	画面のオン / オフ
 Screen on	画面がオン
 Script — each input is a variable of its own name	スクリプト — 各入力は同じ名前の変数になります
 Seconds	秒
+Seek Media	メディアをシーク
 Send Email	メールを送信
 Send Message	メッセージを送信
 Send SMS	SMS を送信
@@ -577,6 +593,7 @@ Splits text into a list — one item per line, or on a separator you choose	テ�
 Standing instruction	常設指示
 Start Recording	録音を開始
 Start at (seconds into the sound)	再生開始位置（サウンドの何秒目か）
+Started	開始した
 Started moving — low power, works with the screen off	動き始めた — 低消費電力で、画面がオフでも動作します
 Starts a named list over, ready to collect into	指定したリストを空にして、集め直せる状態にします
 Starts at	開始時刻
@@ -606,6 +623,7 @@ Starts when an appointment is added, changed or removed in any calendar	いず�
 Starts when an email arrives in a mailbox you are watching	監視中のメールボックスにメールが届いたときに開始します
 Starts when an event fires on the Home Assistant event bus — a Zigbee button, a tag, a custom event	Home Assistant のイベントバスでイベントが発生したときに開始します — Zigbee ボタン、タグ、独自のイベント
 Starts when external media is mounted, unmounted or ejected	外部メディアがマウント、アンマウント、取り出しされたときに開始します
+Starts when music, a podcast or a video starts, pauses, stops or changes track	音楽・ポッドキャスト・動画の再生開始、一時停止、停止、曲の変更で起動します
 Starts when power-save mode is toggled on or off	省電力モードがオンまたはオフになったときに開始します
 Starts when the battery level crosses a threshold (polls in the background)	電池残量がしきい値を越えたときに開始します（バックグラウンドで監視します）
 Starts when the device body is tapped twice or three times. Unreliable in a pocket (screen on only)	端末を 2 回または 3 回叩いたときに開始します。ポケットの中では不安定です（画面がオンのときのみ）
@@ -632,6 +650,7 @@ Stop Recording	録音を停止
 Stop Sound	サウンドを停止
 Stop after (seconds, 0 = play to the end)	停止までの時間（秒、0 = 最後まで再生）
 Stop by itself after (seconds)	自動で停止するまで（秒）
+Stopped	停止した
 Stops every sound started by Play Sound	「サウンドを再生」で開始したすべての音を停止します
 Stream	ストリーム
 String	テキスト
@@ -670,6 +689,7 @@ The next appointment due to start in any calendar	いずれかのカレンダー
 The next few days	これから数日
 The rest of today	今日の残り
 The same list, in order	並べ替えた同じリスト
+The track, podcast or video that is playing, with its title, artist and app	再生中の曲・ポッドキャスト・動画と、そのタイトル、アーティスト、アプリ
 This is a list	これはリストです
 This occurrence	この予定だけ
 Thorough	詳細
@@ -681,6 +701,7 @@ Timezone changed	タイムゾーンの変更
 Title	タイトル
 Title contains	タイトルに含む
 To	宛先
+To the position	指定の位置へ
 Toggle	切り替え
 Toggle Auto-Rotate	自動回転を切り替え
 Toggle Bluetooth	Bluetooth を切り替え
@@ -691,6 +712,8 @@ Tools	ツール
 Top	上
 Top to bottom	上下
 Topic	トピック
+Track	トラック
+Track changed	曲が変わった
 Triple tap	トリプルタップ
 Tuesdays	毎週火曜
 Turn	回転
@@ -765,6 +788,7 @@ Whether a wired or USB headset is currently plugged in	有線または USB の�
 Whether airplane mode is currently on	機内モードが現在オンかどうか
 Whether an appointment is on in any calendar right now	いまいずれかのカレンダーで予定が進行中かどうか
 Whether battery saver is currently on	省電力モードが現在オンかどうか
+Whether music, a podcast or a video is playing right now	今、音楽・ポッドキャスト・動画が再生されているかどうか
 Whether something is covering the sensor above the screen — a pocket, a hand on the glass, the device face down	画面上部のセンサーが何かで遮られているかどうか（ポケット、ガラスに当てた手、画面を下にした端末など）
 Whether the device is currently charging	端末が現在充電中かどうか
 Whether the device is currently in dark theme (night mode)	端末が現在ダークテーマ（ナイトモード）かどうか

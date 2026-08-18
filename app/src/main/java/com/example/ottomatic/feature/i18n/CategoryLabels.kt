@@ -47,6 +47,7 @@ internal fun NodeCategory.labelRes(): Int = when (this) {
     NodeCategory.FILES -> R.string.category_files
     NodeCategory.IMAGES -> R.string.category_images
     NodeCategory.AUDIO -> R.string.category_audio
+    NodeCategory.MEDIA -> R.string.category_media
     NodeCategory.CALENDAR -> R.string.category_calendar
     NodeCategory.DATA -> R.string.category_data
     NodeCategory.VALUE_POWER -> R.string.category_value_power

@@ -167,6 +167,7 @@ category_images	Photos
 category_interaction	Demander à l'utilisateur
 category_location	Localisation
 category_manual	Manuel
+category_media	Multimédia
 category_messaging	Messagerie
 category_network	Réseau
 category_notifications	Notifications
@@ -517,6 +518,7 @@ perm_rationale_camera_photo	Ottomatic a besoin de l'accès à l'appareil photo p
 perm_rationale_dnd_policy	Ottomatic a besoin de l'accès à Ne pas déranger pour changer ton mode sonnerie.
 perm_rationale_media_location	Ottomatic a besoin de la permission de lire le lieu de prise de vue, sinon ce nœud indique qu'aucune image n'a de lieu. Les photos que vous avez prises vous-même ne sont pas concernées.
 perm_rationale_media_manage	Ottomatic peut modifier des photos sans vous demander à chaque fois. C'est facultatif : sans cela le nœud fonctionne encore, mais Android affiche une confirmation à l'écran, donc il ne peut pas s'exécuter sans surveillance.
+perm_rationale_media_playback	Ottomatic lit la notification multimédia publiée par les autres applications : c’est ainsi qu’il sait ce qui est en cours de lecture et peut envoyer lecture, pause et piste suivante. Sans cela, les nœuds multimédia ne voient ni n’atteignent aucun lecteur.
 perm_rationale_media_read	Ottomatic a besoin d'accéder à vos photos pour que ce nœud puisse les rechercher et les lire. Choisir une image vous-même n'en a pas besoin ; en rechercher une pendant l'exécution de la macro, si.
 perm_rationale_media_write	Ottomatic a besoin de la permission de modifier vos photos pour que ce nœud puisse en réécrire une. Sur Android 10 et versions ultérieures, cette permission ne fait rien et Android vous demande de confirmer chaque modification.
 perm_rationale_nfc_radio	Ce déclencheur a besoin que le NFC soit activé, ce qui est un réglage système et non quelque chose qu'Ottomatic peut s'accorder. De plus, les tags ne sont lus que si l'écran est allumé et déverrouillé : un contact n'atteindra pas un téléphone endormi dans une poche.

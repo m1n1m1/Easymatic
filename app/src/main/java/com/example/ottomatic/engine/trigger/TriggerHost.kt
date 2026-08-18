@@ -576,6 +576,34 @@ interface TriggerHost {
      * - `value` — the new string value
      */
     fun variableChanges(name: String): Flow<TriggerEvent> = kotlinx.coroutines.flow.emptyFlow()
+
+    /**
+     * Registers [nodeId]'s interest in what the phone's media players are doing.
+     *
+     * [armImageWatch]'s lifecycle with [armCalendarWatch]'s signature, and it takes neither
+     * of their routings. Like the image watch it is one platform listener for the whole
+     * process, registered on the first arm because it needs a grant the user has probably
+     * not given at start-up — an eager registration would fail once and never recover
+     * without a process restart. Unlike it, the events are **broadcast**: there is no
+     * high-water mark and no per-node state here, so a track change is equally new to every
+     * armed node, and `trigger.media_playback` filters the bus itself.
+     *
+     * That also explains the missing spec parameter. The filters — which event, which app —
+     * are two string comparisons, so there is nothing worth pushing down into `data/`; the
+     * node id is here to refcount the registration and for nothing else.
+     *
+     * [onReport] carries a line back to the macro's own console, for [armMailWatch]'s
+     * reason, and it has one thing to say that has nowhere else to be said: notification
+     * access is off, so nothing can be heard and the trigger will sit armed for ever
+     * looking exactly like a macro that is simply waiting.
+     *
+     * The default is a no-op, so a host with no media listener behind it leaves the trigger
+     * silent rather than failing to arm.
+     */
+    fun armMediaWatch(
+        nodeId: NodeId,
+        onReport: (String, LogLevel) -> Unit = { _, _ -> },
+    ): ScheduleHandle = ScheduleHandle { }
 }
 
 /**

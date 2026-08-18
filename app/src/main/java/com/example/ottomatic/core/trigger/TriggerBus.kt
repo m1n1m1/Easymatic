@@ -128,6 +128,27 @@ enum class TriggerSource {
      * file would have nowhere to arrive.
      */
     RECORDING,
+
+    /**
+     * A media player started, paused, stopped or moved to another track.
+     *
+     * **Not [MEDIA]**, which is media *buttons* and card mounts. That source is a
+     * manifest receiver hearing a key press; this one is a `MediaSessionManager` listener
+     * hearing what a player is doing, and the two agree on nothing but the word: tapping
+     * play inside Spotify produces this and no key event at all, while a headset button
+     * produces a key event whether or not anything is playing.
+     *
+     * **Broadcast rather than addressed to a node id**, which is [RECORDING]'s arrangement
+     * rather than [MEDIA_STORE]'s. That one routes because each node carries its own
+     * high-water mark, so one photo is new to some armed triggers and not to others. There
+     * is no mark here and no per-node state at all: a track change is equally new to every
+     * armed node, and the two filters `trigger.media_playback` applies — which event, which
+     * app — are string comparisons it can run itself.
+     *
+     * The registration behind it is still armed and disarmed per node, because a platform
+     * listener that needs notification access must not be held while nothing wants it.
+     */
+    MEDIA_SESSION,
 }
 
 /**

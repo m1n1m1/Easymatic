@@ -16,9 +16,11 @@ import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.Mail
+import com.example.ottomatic.core.service.Media
 import com.example.ottomatic.core.service.Messaging
 import com.example.ottomatic.core.service.Microphone
 import com.example.ottomatic.core.service.NoMail
+import com.example.ottomatic.core.service.NoMedia
 import com.example.ottomatic.core.service.NoMessaging
 import com.example.ottomatic.core.service.NoMicrophone
 import com.example.ottomatic.core.service.NoNotifications
@@ -75,6 +77,7 @@ class DefaultExecutionContext(
     override val images: Images = NoImages,
     override val calendars: Calendars = NoCalendars,
     override val microphone: Microphone = NoMicrophone,
+    override val media: Media = NoMedia,
     private val logger: (LogEntry) -> Unit = {},
 ) : ExecutionContext {
 

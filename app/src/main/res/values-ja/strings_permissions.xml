@@ -71,6 +71,7 @@
     <string name="perm_rationale_media_write">このノードが写真を書き換えるには、Ottomatic に写真を変更する権限が必要です。Android 10 以降ではこの権限は機能せず、Android が変更のたびに確認を求めます。</string>
     <string name="perm_rationale_media_location">Ottomatic に写真の撮影場所を読み取る権限が必要です。ないと、このノードはどの画像にも位置情報がないと報告します。自分で撮影した写真は影響を受けません。</string>
     <string name="perm_rationale_media_manage">Ottomatic は毎回確認を求めずに写真を変更できます。任意です。なくてもノードは動作しますが、Android が画面に確認を表示するため、無人では実行できません。</string>
+    <string name="perm_rationale_media_playback">Ottomatic は他のアプリが表示するメディア通知を読み取り、再生中の内容を把握して再生・一時停止・スキップを送信します。これがないと、メディアノードはどのプレーヤーも認識できず操作もできません。</string>
     <string name="perm_rationale_overlay_media">マクロがバックグラウンドで動作している間に Android の確認画面を表示するため、Ottomatic には他のアプリの上に重ねて表示する権限が必要です。これがないと、Ottomatic を開いていないときに他のアプリが保存した写真を変更できません。</string>
     <string name="perm_rationale_overlay_launch">端末で他のことをしている最中でも別のアプリを開けるように、Ottomatic は他のアプリの上に表示する権限を必要とします。Android はバックグラウンドのアプリが別のアプリを開くことを禁じており、この権限がないとこのノードは何もせず、その旨をコンソールに出力します。</string>
 </resources>

@@ -1091,3 +1091,77 @@ data class MessageComposed(
     val opened: Boolean,
     val error: String = "",
 )
+
+/**
+ * What one media player is playing, as `value.now_playing` reports it on its `track`
+ * data port.
+ *
+ * The graph's copy of [com.example.ottomatic.core.service.NowPlaying]. It exists
+ * separately for the boundary rather than for tidiness — `core` may not import `domain`
+ * — which is the same reason `RecordingRecord` and `RecordingItem` are two types.
+ *
+ * [durationMs] and [positionMs] are **-1 when the player does not say, never 0**. Zero is
+ * an ordinary position for a track to be at, so a zero standing in for "unknown" would be
+ * a lie a comparison cannot see through.
+ *
+ * [app] is the package name and [appName] the label a person recognises: the first is what
+ * an `action.if` compares against and what the app picker stores, the second is what a
+ * notification should print.
+ */
+@Serializable
+data class NowPlayingItem(
+    val app: String = "",
+    val appName: String = "",
+    val title: String = "",
+    val artist: String = "",
+    val album: String = "",
+    val playing: Boolean = false,
+    val durationMs: Long = -1,
+    val positionMs: Long = -1,
+)
+
+/**
+ * A playback change reported by `trigger.media_playback` on its `playback` data port.
+ *
+ * Its own struct rather than [NowPlayingItem] with a field bolted on, for the reason
+ * [RecordingItem] is not [RecordingResultItem]: a state answers "what is true now" and an
+ * event answers "here is what just happened". [event] is the fact the state has nowhere to
+ * carry, and [timestamp] is the fact only an event has at all.
+ *
+ * [event] is `"started"`, `"paused"`, `"stopped"` or `"track_changed"` — the lowercased
+ * [com.example.ottomatic.core.service.PlaybackKind], matching what every other trigger
+ * puts in a discriminator field so an `action.if` over it reads the same way everywhere.
+ */
+@Serializable
+data class PlaybackEvent(
+    val event: String,
+    val app: String = "",
+    val appName: String = "",
+    val title: String = "",
+    val artist: String = "",
+    val album: String = "",
+    val playing: Boolean = false,
+    val durationMs: Long = -1,
+    val timestamp: DateTime,
+)
+
+/**
+ * Result of `action.media_control` and `action.media_seek` on their `state` data port.
+ *
+ * One struct for both nodes, because both answer the same question — *did the player get
+ * it?* — and a second type differing by one field would only invite the two to drift.
+ *
+ * [changed] means the command was **delivered**, not that the player obeyed it: transport
+ * controls are one-way and there is no acknowledgement to wait for, so claiming more would
+ * be inventing it.
+ *
+ * [positionMs] is -1 for everything a seek did not produce, on [NowPlayingItem]'s rule.
+ */
+@Serializable
+data class MediaControlState(
+    val command: String,
+    val app: String = "",
+    val changed: Boolean = false,
+    val positionMs: Long = -1,
+    val error: String = "",
+)

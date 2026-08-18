@@ -159,6 +159,10 @@ internal fun rationaleRes(requirement: PermissionRequirement): Int? =
         "media.location" -> R.string.perm_rationale_media_location
         "media.manage" -> R.string.perm_rationale_media_manage
         "overlay.media" -> R.string.perm_rationale_overlay_media
+        // The third rationale on the notification-access switch, beside
+        // "notification.listener": reading a message somebody sent and reaching the
+        // player that is running are different sentences, and the card is on the node.
+        "media.playback" -> R.string.perm_rationale_media_playback
         else -> null
     }
 

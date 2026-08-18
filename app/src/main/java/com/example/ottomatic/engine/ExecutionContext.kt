@@ -15,9 +15,11 @@ import com.example.ottomatic.core.service.NoContacts
 import com.example.ottomatic.core.service.LogSource
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.Mail
+import com.example.ottomatic.core.service.Media
 import com.example.ottomatic.core.service.Messaging
 import com.example.ottomatic.core.service.Microphone
 import com.example.ottomatic.core.service.NoMail
+import com.example.ottomatic.core.service.NoMedia
 import com.example.ottomatic.core.service.NoMessaging
 import com.example.ottomatic.core.service.NoMicrophone
 import com.example.ottomatic.core.service.NoNotifications
@@ -288,6 +290,26 @@ interface ExecutionContext {
      * for seconds at a time, which is squarely an action's job.
      */
     val microphone: Microphone get() = NoMicrophone
+
+    /**
+     * Plays, pauses and reads whatever media player is running — the two `action.media_*`
+     * nodes, `trigger.media_playback` and the two media values. Defaults to [NoMedia], so
+     * engine-only tests see exactly what a phone that has never granted notification access
+     * does.
+     *
+     * **The fifth facade both sides of the graph may touch**, and it reaches the pull side
+     * by [calendars]' road rather than [homeAssistant]'s. There is no socket and no warm
+     * cache: [Media.nowPlaying] and [Media.isPlaying] are one synchronous binder call into
+     * a system service that is always running, with no credential, no network and no
+     * timeout. That is what "cheap, and cannot fail" asked for all along — a push channel
+     * was one way of meeting it, never the requirement.
+     *
+     * [Media.control] and [Media.seek] stay actions' alone, for [smartHome]'s reason read
+     * one step in: they are side effects on somebody else's app, and there is no
+     * acknowledgement to wait for, so a value node doing one could not even report whether
+     * it worked.
+     */
+    val media: Media get() = NoMedia
 
     /** Optional handle to enable/disable other macros at runtime, or null. */
     val macroControl: MacroControl? get() = null

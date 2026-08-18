@@ -173,4 +173,15 @@ enum class NodeIcon {
      * listen?" is looking for a microphone, and a speaker answers the opposite question.
      */
     MICROPHONE,
+
+    /**
+     * Skipping ahead, i.e. moving *within* what is playing.
+     *
+     * Its own entry beside [MUSIC] on [MUSIC_OFF]'s argument: three of the media nodes ask
+     * what is playing or start and stop it, and exactly one moves the position inside it.
+     * A note promises the subject, where this promises the operation — and jumping thirty
+     * seconds into a podcast is the one media action whose result somebody would not
+     * recognise from a note.
+     */
+    FAST_FORWARD,
 }

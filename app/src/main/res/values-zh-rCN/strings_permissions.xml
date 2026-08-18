@@ -71,6 +71,7 @@
     <string name="perm_rationale_media_write">Ottomatic 需要修改照片的权限，这个节点才能重写照片。在 Android 10 及更高版本上此权限无效，Android 会要求你逐次确认。</string>
     <string name="perm_rationale_media_location">Ottomatic 需要读取照片拍摄地点的权限，否则这个节点会报告所有图片都没有位置。你自己拍摄的照片不受影响。</string>
     <string name="perm_rationale_media_manage">Ottomatic 可以在不逐次询问的情况下修改照片。这是可选的：没有它节点仍能工作，但 Android 会在屏幕上显示确认，因此无法无人值守运行。</string>
+    <string name="perm_rationale_media_playback">Ottomatic 会读取其他应用发布的媒体通知，以此得知正在播放的内容，并发送播放、暂停和切歌。没有它，媒体节点既看不到也控制不了任何播放器。</string>
     <string name="perm_rationale_overlay_media">Ottomatic 需要显示在其他应用上层的权限，才能在宏于后台运行时显示 Android 的确认对话框。没有它，当你不在 Ottomatic 中时，修改其他应用保存的照片会失败。</string>
     <string name="perm_rationale_overlay_launch">Ottomatic 需要显示在其他应用上层的权限，才能在你正忙于手机上别的事情时打开另一个应用。Android 会阻止后台应用打开其他应用；没有这项权限，该节点什么也不做，并会在控制台里说明。</string>
 </resources>

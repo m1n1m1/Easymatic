@@ -23,6 +23,7 @@ import com.example.ottomatic.core.service.Contacts
 import com.example.ottomatic.core.service.EventQuery
 import com.example.ottomatic.data.calendar.CalendarWatchers
 import com.example.ottomatic.data.images.ImageWatchers
+import com.example.ottomatic.data.media.MediaSessionWatchers
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.data.GeofencePlaceRepository
@@ -172,6 +173,11 @@ class AndroidTriggerHost(
     // scope would be a second thing to remember to cancel.
     private val imageWatchers = ImageWatchers(appContext, calendarScope)
 
+    // Likewise one per process, and the only one of the four that needs no scope: the
+    // classification is a diff over a snapshot rather than a debounce timer, so there is
+    // nothing here that outlives a callback.
+    private val mediaWatchers = MediaSessionWatchers(appContext)
+
     override fun mailAccount(id: String): MailAccount? = mailAccounts?.get(id)
 
     /**
@@ -211,6 +217,11 @@ class AndroidTriggerHost(
         spec: ImageWatchSpec,
         onReport: (String, LogLevel) -> Unit,
     ): ScheduleHandle = imageWatchers.arm(nodeId, spec, onReport)
+
+    override fun armMediaWatch(
+        nodeId: NodeId,
+        onReport: (String, LogLevel) -> Unit,
+    ): ScheduleHandle = mediaWatchers.arm(nodeId, onReport)
 
     override fun armMailWatch(
         nodeId: NodeId,
