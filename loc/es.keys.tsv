@@ -154,6 +154,7 @@ calendar_needs_access	Ottomatic necesita acceso al calendario para listar tus ca
 calendar_no_calendars	No hay calendarios en este teléfono.
 calendar_no_writable_calendars	No se puede añadir nada a ninguno de los calendarios de este teléfono. Un calendario suscrito, como uno de festivos, solo se puede leer.
 category_ai	IA
+category_apps	Apps e intents
 category_audio	Audio
 category_automation	Automatización
 category_calendar	Calendario

@@ -14,6 +14,7 @@
     <string name="category_sensors">センサーとジェスチャー</string>
     <string name="category_flow_control">フロー制御</string>
     <string name="category_interaction">ユーザーに尋ねる</string>
+    <string name="category_apps">アプリとインテント</string>
     <string name="category_network">ネットワーク</string>
     <string name="category_notifications">通知</string>
     <string name="category_timing">タイミング</string>

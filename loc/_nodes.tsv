@@ -77,6 +77,7 @@ Boolean	Boolean
 Both	Both
 Break Struct	Break Struct
 Brightness %	Brightness %
+Broadcast Intent	Broadcast Intent
 Broker	Broker
 Build text	Build text
 Busy	Busy
@@ -97,6 +98,7 @@ Cancel button	Cancel button
 Captures what is on the screen right now and saves it as a picture	Captures what is on the screen right now and saves it as a picture
 Carries on at once and continues again at a chosen moment	Carries on at once and continues again at a chosen moment
 Carry on now	Carry on now
+Category (optional)	Category (optional)
 Cc	Cc
 Change	Change
 Change Picture Details	Change Picture Details
@@ -142,6 +144,7 @@ Custom	Custom
 Custom sound	Custom sound
 Dark Theme Change	Dark Theme Change
 Dark theme	Dark theme
+Data URI (optional)	Data URI (optional)
 Data contains	Data contains
 Date &amp; time	Date &amp; time
 Date rolled over	Date rolled over
@@ -195,6 +198,7 @@ Event	Event
 Event type	Event type
 Events	Events
 Extra data (JSON)	Extra data (JSON)
+Extras — one key=value per line, count:int=5 to type one	Extras — one key=value per line, count:int=5 to type one
 Face down	Face down
 Face up	Face up
 Fade time (ms)	Fade time (ms)
@@ -330,6 +334,7 @@ Loops the following steps a set number of times — repeat 10 times, and so on	L
 Loops the following steps for as long as a comparison holds	Loops the following steps for as long as a comparison holds
 Low — needs a deliberate gesture	Low — needs a deliberate gesture
 Lux	Lux
+MIME type (optional)	MIME type (optional)
 MQTT Message	MQTT Message
 MQTT Topic	MQTT Topic
 Macro	Macro
@@ -545,11 +550,13 @@ Script — each input is a variable of its own name	Script — each input is a v
 Seconds	Seconds
 Seek Media	Seek Media
 Send Email	Send Email
+Send Intent	Send Intent
 Send Message	Send Message
 Send SMS	Send SMS
 Send and forget	Send and forget
 Send as HTML	Send as HTML
 Sender (optional — any sender when empty)	Sender (optional — any sender when empty)
+Sends a broadcast intent to another app, with a custom action and extras	Sends a broadcast intent to another app, with a custom action and extras
 Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome	Sends a message to a topic on an MQTT broker — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome
 Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it	Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it
 Sends an SMS to a number with a body	Sends an SMS to a number with a body
@@ -595,6 +602,7 @@ Start at (seconds into the sound)	Start at (seconds into the sound)
 Started	Started
 Started moving — low power, works with the screen off	Started moving — low power, works with the screen off
 Starts a named list over, ready to collect into	Starts a named list over, ready to collect into
+Starts an activity in another app with a custom intent action, data and extras	Starts an activity in another app with a custom intent action, data and extras
 Starts at	Starts at
 Starts once after the device finishes booting	Starts once after the device finishes booting
 Starts the workflow on an interval or at a time of day	Starts the workflow on an interval or at a time of day

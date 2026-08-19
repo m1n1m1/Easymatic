@@ -34,7 +34,7 @@ class OpenUrlAction : Action<OpenUrlConfig, Unit> {
         typeId = "action.open_url",
         displayName = "Open URL",
         description = "Opens a URL in the default handler (browser or app). Typing google.com is enough",
-        category = NodeCategory.NETWORK,
+        category = NodeCategory.APPS,
         icon = NodeIcon.BOLT,
         permissions = listOf(LAUNCH_OVERLAY_PERMISSION),
     )

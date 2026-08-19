@@ -154,6 +154,7 @@ calendar_needs_access	カレンダーを一覧表示するには、Ottomatic に
 calendar_no_calendars	このスマートフォンにカレンダーがありません。
 calendar_no_writable_calendars	このスマートフォンのカレンダーはどれも書き込めません。祝日カレンダーなどの購読カレンダーは読み取り専用です。
 category_ai	AI
+category_apps	アプリとインテント
 category_audio	オーディオ
 category_automation	自動化
 category_calendar	カレンダー

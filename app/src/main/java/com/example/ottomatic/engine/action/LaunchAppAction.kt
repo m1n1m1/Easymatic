@@ -40,7 +40,7 @@ class LaunchAppAction : Action<LaunchAppConfig, Unit> {
         typeId = "action.launch_app",
         displayName = "Launch App",
         description = "Launches another app by package name",
-        category = NodeCategory.NETWORK,
+        category = NodeCategory.APPS,
         icon = NodeIcon.BOLT,
         permissions = listOf(LAUNCH_OVERLAY_PERMISSION),
     )

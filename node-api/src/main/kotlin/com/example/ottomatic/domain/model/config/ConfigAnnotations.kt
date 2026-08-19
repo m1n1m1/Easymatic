@@ -421,7 +421,9 @@ enum class PickerKind {
     APP,
 
     /**
-     * An installed app's package name, for a field that *filters* events by app.
+     * An installed app's package name, where the app need not be launchable and where
+     * naming none is a valid answer — a field that *filters* events by app, or that
+     * *narrows* something the platform would otherwise resolve on its own.
      *
      * A separate kind from [APP] because the two ask different questions and have
      * different answer sets: a package with no launcher activity posts
@@ -429,6 +431,13 @@ enum class PickerKind {
      * and not to "which app do I open?". Encoding that in the annotation is what
      * makes each field right by declaration rather than by the user knowing which
      * of the two cases they are in.
+     *
+     * The wording above says *answer set* rather than *filter* because the second use
+     * arrived later and is not a filter at all: `action.send_intent` and
+     * `action.broadcast_intent` use it to pin an intent to one app. Both halves still
+     * hold there, which is what makes it the same kind rather than a third — an app that
+     * only registers a receiver has no launcher activity, and blank genuinely means
+     * "let `PackageManager` decide", which for an implicit intent is usually right.
      */
     APP_FILTER,
 

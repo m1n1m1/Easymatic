@@ -154,6 +154,7 @@ calendar_needs_access	O Ottomatic precisa de acesso ao calendário para listar o
 calendar_no_calendars	Não há calendários neste telemóvel.
 calendar_no_writable_calendars	Não é possível adicionar nada a nenhum dos calendários deste telemóvel. Um calendário subscrito, como um de feriados, só pode ser lido.
 category_ai	IA
+category_apps	Apps e intents
 category_audio	Áudio
 category_automation	Automatização
 category_calendar	Calendário

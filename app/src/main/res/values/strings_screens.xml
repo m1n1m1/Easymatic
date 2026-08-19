@@ -17,6 +17,7 @@
     <string name="category_sensors">Sensors &amp; Gestures</string>
     <string name="category_flow_control">Flow Control</string>
     <string name="category_interaction">Ask the User</string>
+    <string name="category_apps">Apps &amp; Intents</string>
     <string name="category_network">Network</string>
     <string name="category_notifications">Notifications</string>
     <string name="category_timing">Timing</string>

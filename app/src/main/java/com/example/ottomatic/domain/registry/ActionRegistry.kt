@@ -11,6 +11,7 @@ import com.example.ottomatic.engine.action.AutoRotateAction
 import com.example.ottomatic.engine.action.BluetoothAction
 import com.example.ottomatic.engine.action.BreakStructAction
 import com.example.ottomatic.engine.action.BrightnessAction
+import com.example.ottomatic.engine.action.BroadcastIntentAction
 import com.example.ottomatic.engine.action.CalendarAddAction
 import com.example.ottomatic.engine.action.CalendarQueryAction
 import com.example.ottomatic.engine.action.CalendarUpdateAction
@@ -65,6 +66,7 @@ import com.example.ottomatic.engine.action.ScreenRotationAction
 import com.example.ottomatic.engine.action.ScreenTimeoutAction
 import com.example.ottomatic.engine.action.ScreenshotAction
 import com.example.ottomatic.engine.action.ScriptAction
+import com.example.ottomatic.engine.action.SendIntentAction
 import com.example.ottomatic.engine.action.SendMailAction
 import com.example.ottomatic.engine.action.SendMessageAction
 import com.example.ottomatic.engine.action.SendSmsAction
@@ -136,6 +138,12 @@ object ActionRegistry {
         HttpAction(),
         IfAction(),
         LaunchAppAction(),
+        // The general case, immediately after the two special cases it subsumes: somebody
+        // reaches for this *when Launch App is not enough*, so it has to be visible from there.
+        // The registry already breaks alphabetical order for a family and this is one. Activity
+        // first — it is the one whose effect you can see, and the one people arrive looking for.
+        SendIntentAction(),
+        BroadcastIntentAction(),
         // The light family, kept together for the mail family's reason: control one,
         // recall a whole arrangement, and read back what is actually on right now.
         LightControlAction(),

@@ -154,6 +154,7 @@ calendar_needs_access	Ottomatic 需要日历访问权限才能列出你的日历
 calendar_no_calendars	这台手机上没有日历。
 calendar_no_writable_calendars	这台手机上的日历都无法写入。订阅的日历（例如节假日日历）只能读取。
 category_ai	AI
+category_apps	应用与 Intent
 category_audio	音频
 category_automation	自动化
 category_calendar	日历

@@ -46,6 +46,8 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Screenshot
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.QrCodeScanner
@@ -225,7 +227,9 @@ fun portIsList(schema: ItemSchema?): Boolean = schema is ItemSchema.ListSchema
  * Maps a node type's [NodeIcon] to its vector asset. Exhaustive by construction:
  * adding an icon to the enum is a compile error until it is drawn here.
  */
-@Suppress("CyclomaticComplexMethod") // A flat, exhaustive icon table, not branching logic.
+// A flat, exhaustive icon table, not branching logic — and one that grows by a row every time
+// an icon is added, so its length is a count of the icons rather than a measure of this function.
+@Suppress("CyclomaticComplexMethod", "LongMethod")
 fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.BOLT -> Icons.Filled.Bolt
     NodeIcon.SPLIT -> Icons.AutoMirrored.Filled.CallSplit
@@ -305,4 +309,10 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // The lock rather than BOLT's "something changed": this node is about the lock
     // screen, and the other Device State triggers are not.
     NodeIcon.LOCK -> Icons.Filled.Lock
+    // Something leaving for elsewhere, which is the one promise Send Intent makes and the one
+    // BOLT's "the phone changed" does not.
+    NodeIcon.INTENT -> Icons.AutoMirrored.Filled.OpenInNew
+    // Shouted at everyone, no reply. The pair above and below must differ by their icon, since
+    // they differ by nothing else on the card.
+    NodeIcon.BROADCAST -> Icons.Filled.Campaign
 }

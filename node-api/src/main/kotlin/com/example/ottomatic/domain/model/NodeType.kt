@@ -52,6 +52,13 @@ enum class NodeCategory(
     SMART_HOME_EVENTS(NodeKind.TRIGGER, "Smart Home"),
     FLOW_CONTROL(NodeKind.ACTION, "Flow Control"),
     INTERACTION(NodeKind.ACTION, "Ask the User"),
+    // Separate from [NETWORK], on [IMAGES]' argument read once more. Launch App and Open URL
+    // lived under "Network" and neither of them touches one — what they have in common with the
+    // two intent nodes is that they hand something to *another app on this phone*, which is a
+    // different subject from an HTTP request or a mailbox. It also puts the general node next to
+    // the two special cases it subsumes: somebody who has outgrown Launch App looks beside
+    // Launch App, not in a group they have no reason to open.
+    APPS(NodeKind.ACTION, "Apps & Intents"),
     NETWORK(NodeKind.ACTION, "Network"),
     NOTIFICATIONS(NodeKind.ACTION, "Notifications"),
     TIMING(NodeKind.ACTION, "Timing"),

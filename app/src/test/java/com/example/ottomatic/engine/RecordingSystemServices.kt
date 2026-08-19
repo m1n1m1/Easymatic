@@ -8,6 +8,7 @@ import com.example.ottomatic.core.service.DndLevel
 import com.example.ottomatic.core.service.DndResult
 import com.example.ottomatic.core.service.HttpRequest
 import com.example.ottomatic.core.service.HttpResponse
+import com.example.ottomatic.core.service.IntentRecipe
 import com.example.ottomatic.core.service.LaunchOutcome
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.MessengerRecipe
@@ -164,6 +165,14 @@ class RecordingSystemServices : SystemServices {
 
     override fun openUrl(url: String): LaunchOutcome {
         openedUrls += url
+        return launchOutcome
+    }
+
+    /** Every [IntentRecipe] handed over, in order, so a test can assert on the whole recipe. */
+    val sentIntents = mutableListOf<IntentRecipe>()
+
+    override fun sendIntent(recipe: IntentRecipe): LaunchOutcome {
+        sentIntents += recipe
         return launchOutcome
     }
 

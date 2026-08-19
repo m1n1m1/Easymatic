@@ -14,6 +14,7 @@
     <string name="category_sensors">Sensores e gestos</string>
     <string name="category_flow_control">Controlo de fluxo</string>
     <string name="category_interaction">Perguntar ao utilizador</string>
+    <string name="category_apps">Apps e intents</string>
     <string name="category_network">Rede</string>
     <string name="category_notifications">Notificações</string>
     <string name="category_timing">Temporização</string>

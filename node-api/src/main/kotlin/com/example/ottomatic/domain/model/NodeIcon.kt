@@ -194,4 +194,27 @@ enum class NodeIcon {
      * trigger in that group about somebody at the lock screen who is not you.
      */
     LOCK,
+
+    /**
+     * An arrow leaving a box, for the node that starts an arbitrary intent.
+     *
+     * Its own entry rather than [BOLT] or [SEND]. Not [BOLT], which every other "does something
+     * to the phone" action takes, because this one does something to *another app*. Not [SEND],
+     * which is a paper plane and therefore promises a **message** — and which `action.send_message`
+     * already wears, so a second node taking it would leave the two indistinguishable in the
+     * palette. What this glyph says is the one promise the node makes: something else is about to
+     * come up on screen.
+     */
+    INTENT,
+
+    /**
+     * A megaphone, for the node that broadcasts an intent.
+     *
+     * Its own entry rather than [INTENT]'s, on [MUSIC_OFF]'s and [LOCK]'s argument: the two intent
+     * nodes sit next to each other in the palette and differ in exactly one thing, so the icon has
+     * to be the thing that differs. A megaphone is also the one glyph somebody who does not know
+     * Android still reads correctly — shouted at everyone, no reply — which is literally what a
+     * broadcast is.
+     */
+    BROADCAST,
 }

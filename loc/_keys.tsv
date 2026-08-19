@@ -190,6 +190,7 @@ category_device_state	Device State
 category_sensors	Sensors &amp; Gestures
 category_flow_control	Flow Control
 category_interaction	Ask the User
+category_apps	Apps &amp; Intents
 category_network	Network
 category_notifications	Notifications
 category_timing	Timing

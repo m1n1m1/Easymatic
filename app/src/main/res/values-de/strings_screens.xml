@@ -16,6 +16,7 @@
     <string name="category_sensors">Sensoren &amp; Gesten</string>
     <string name="category_flow_control">Ablaufsteuerung</string>
     <string name="category_interaction">Nutzer fragen</string>
+    <string name="category_apps">Apps &amp; Intents</string>
     <string name="category_network">Netzwerk</string>
     <string name="category_notifications">Benachrichtigungen</string>
     <string name="category_timing">Zeitsteuerung</string>

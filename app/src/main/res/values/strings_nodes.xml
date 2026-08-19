@@ -677,6 +677,38 @@
     <string name="port_action_launch_app_out">out</string>
     <string name="port_action_launch_app_package_name">App</string>
     <string name="cfg_action_launch_app_package_name">App</string>
+    <string name="node_action_send_intent_name">Send Intent</string>
+    <string name="node_action_send_intent_desc">Starts an activity in another app with a custom intent action, data and extras</string>
+    <string name="port_action_send_intent_in">in</string>
+    <string name="port_action_send_intent_out">out</string>
+    <string name="port_action_send_intent_action">Action</string>
+    <string name="port_action_send_intent_package_name">App (optional)</string>
+    <string name="port_action_send_intent_data_uri">Data URI (optional)</string>
+    <string name="port_action_send_intent_mime_type">MIME type (optional)</string>
+    <string name="port_action_send_intent_category">Category (optional)</string>
+    <string name="port_action_send_intent_extras">Extras — one key=value per line, count:int=5 to type one</string>
+    <string name="cfg_action_send_intent_action">Action</string>
+    <string name="cfg_action_send_intent_package_name">App (optional)</string>
+    <string name="cfg_action_send_intent_data_uri">Data URI (optional)</string>
+    <string name="cfg_action_send_intent_mime_type">MIME type (optional)</string>
+    <string name="cfg_action_send_intent_category">Category (optional)</string>
+    <string name="cfg_action_send_intent_extras">Extras — one key=value per line, count:int=5 to type one</string>
+    <string name="node_action_broadcast_intent_name">Broadcast Intent</string>
+    <string name="node_action_broadcast_intent_desc">Sends a broadcast intent to another app, with a custom action and extras</string>
+    <string name="port_action_broadcast_intent_in">in</string>
+    <string name="port_action_broadcast_intent_out">out</string>
+    <string name="port_action_broadcast_intent_action">Action</string>
+    <string name="port_action_broadcast_intent_package_name">App (optional)</string>
+    <string name="port_action_broadcast_intent_data_uri">Data URI (optional)</string>
+    <string name="port_action_broadcast_intent_mime_type">MIME type (optional)</string>
+    <string name="port_action_broadcast_intent_category">Category (optional)</string>
+    <string name="port_action_broadcast_intent_extras">Extras — one key=value per line, count:int=5 to type one</string>
+    <string name="cfg_action_broadcast_intent_action">Action</string>
+    <string name="cfg_action_broadcast_intent_package_name">App (optional)</string>
+    <string name="cfg_action_broadcast_intent_data_uri">Data URI (optional)</string>
+    <string name="cfg_action_broadcast_intent_mime_type">MIME type (optional)</string>
+    <string name="cfg_action_broadcast_intent_category">Category (optional)</string>
+    <string name="cfg_action_broadcast_intent_extras">Extras — one key=value per line, count:int=5 to type one</string>
     <string name="node_action_light_control_name">Control Light</string>
     <string name="node_action_light_control_desc">Turns a light, room or zone on or off, or sets its brightness, colour or warmth — Philips Hue</string>
     <string name="port_action_light_control_in">in</string>

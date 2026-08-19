@@ -14,6 +14,7 @@
     <string name="category_sensors">传感器与手势</string>
     <string name="category_flow_control">流程控制</string>
     <string name="category_interaction">询问用户</string>
+    <string name="category_apps">应用与 Intent</string>
     <string name="category_network">网络</string>
     <string name="category_notifications">通知</string>
     <string name="category_timing">定时</string>

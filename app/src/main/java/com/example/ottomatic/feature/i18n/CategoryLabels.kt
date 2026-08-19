@@ -38,6 +38,7 @@ internal fun NodeCategory.labelRes(): Int = when (this) {
     NodeCategory.SMART_HOME_EVENTS -> R.string.category_smart_home
     NodeCategory.FLOW_CONTROL -> R.string.category_flow_control
     NodeCategory.INTERACTION -> R.string.category_interaction
+    NodeCategory.APPS -> R.string.category_apps
     NodeCategory.NETWORK -> R.string.category_network
     NodeCategory.NOTIFICATIONS -> R.string.category_notifications
     NodeCategory.TIMING -> R.string.category_timing

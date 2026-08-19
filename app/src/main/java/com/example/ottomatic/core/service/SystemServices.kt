@@ -139,6 +139,26 @@ interface SystemServices {
     fun openUrl(url: String): LaunchOutcome
 
     /**
+     * Sends the intent [recipe] describes, as an Activity start or a broadcast.
+     *
+     * One member rather than two, on [openMessenger]'s reasoning: what can be *wrong* here is
+     * the `Intent`'s construction — a data URI and a MIME type clobber one another, a
+     * `content://` extra needs a grant conveyed with the launch, an extra that is a `String`
+     * where an `int` was wanted is read as absent — and every bit of that is identical for both
+     * targets. Only the last line differs. Two members would be four chances for the two paths
+     * to drift.
+     *
+     * The recipe is built in `domain` by [com.example.ottomatic.domain.model.IntentSpec] where
+     * it can be tested; this is the part that needs a platform.
+     *
+     * [LaunchOutcome.Blocked] is reachable only for [IntentTarget.ACTIVITY], for the reason
+     * given on [launchApp]. [LaunchOutcome.NoReceiver] and [LaunchOutcome.Refused] are
+     * reachable only for [IntentTarget.BROADCAST]. Per-target reachability rather than a second
+     * outcome type, so `reportLaunch` stays the one place a failed launch is named.
+     */
+    fun sendIntent(recipe: IntentRecipe): LaunchOutcome
+
+    /**
      * Sends an SMS to [to] with [body]. Returns false on failure (requires
      * `SEND_SMS`).
      */
@@ -325,6 +345,76 @@ data class MessengerRecipe(
 /** Which Android intent action a [MessengerRecipe] needs, named so `domain` imports no platform types. */
 enum class MessengerIntent { VIEW, SENDTO }
 
+/**
+ * One intent to send, as [com.example.ottomatic.domain.model.IntentSpec] read it out of a
+ * node's config.
+ *
+ * Lives here rather than beside the function that builds it for [MessengerRecipe]'s reason, and
+ * it is the same journey one level more general: a recipe built and tested in `domain`, turned
+ * into a real `Intent` in `data/`, so nothing outside `data/` imports a platform type.
+ *
+ * [data] and [mimeType] are carried **apart** even though `Intent` has a single setter for the
+ * pair, because that is exactly where the platform's footgun is: `setData` clears the type and
+ * `setType` clears the data. Keeping them separate here is what lets `AndroidSystemServices`
+ * make the one unconditional `setDataAndType` call that cannot get it wrong.
+ */
+// One property per independent part of an Intent, all but the first two defaulted — the
+// reasoning `@IntentChoice` records for its own parameter list, and the same Intent.
+@Suppress("LongParameterList")
+data class IntentRecipe(
+    val target: IntentTarget,
+    val action: String,
+    val packageName: String = "",
+    val data: String = "",
+    val mimeType: String = "",
+    val category: String = "",
+    val extras: List<IntentExtra> = emptyList(),
+)
+
+/**
+ * Which platform mechanism an [IntentRecipe] goes through, named here so `domain` imports no
+ * platform types.
+ *
+ * There is deliberately no `SERVICE`. Since Android O a background app may not `startService` at
+ * all, and the engine is a background service, so that is the *common* path rather than an edge
+ * case; `startForegroundService` is reachable but makes a contract on the **callee** — the target
+ * must call `startForeground()` within five seconds or the platform kills it, which we cannot
+ * know of a foreign service. A node whose failure mode is crashing somebody else's app is not one
+ * worth having. The named casualty is Termux's `com.termux.RUN_COMMAND`.
+ *
+ * An enum rather than a boolean so that adding it later, if the platform ever makes it safe, is
+ * one member and one `when` branch instead of a redesign.
+ */
+enum class IntentTarget { ACTIVITY, BROADCAST }
+
+/** One extra on an [IntentRecipe]: a key, and a value carrying the type it must be put on with. */
+data class IntentExtra(val key: String, val value: IntentValue)
+
+/**
+ * The typed value of an [IntentExtra].
+ *
+ * **Sealed on purpose**, and the reason is on the far side: it makes the `putExtra` dispatch in
+ * `AndroidSystemServices` a total `when` the compiler checks, rather than a chain of casts that
+ * reports a wrong guess by not putting the extra on at all. The members are the `putExtra`
+ * overloads that matter and no others — a closed set mirroring a closed set.
+ *
+ * [UriRef] carries a `String` rather than a `Uri` because `core` may not know about Android;
+ * [MessengerRecipe.uri] already makes that trade for the same reason. It exists because
+ * `Intent.EXTRA_STREAM` is read with `getParcelableExtra`, so a `String` there is read as
+ * **absent** and the receiving app shows an empty share sheet — the clearest single case for
+ * typing extras at all.
+ */
+sealed interface IntentValue {
+    data class Text(val value: String) : IntentValue
+    data class Texts(val values: List<String>) : IntentValue
+    data class Int32(val value: Int) : IntentValue
+    data class Int64(val value: Long) : IntentValue
+    data class Float32(val value: Float) : IntentValue
+    data class Float64(val value: Double) : IntentValue
+    data class Flag(val value: Boolean) : IntentValue
+    data class UriRef(val value: String) : IntentValue
+}
+
 /** Result of [SystemServices.setTorch]. */
 data class TorchResult(
     val enabled: Boolean,
@@ -362,4 +452,36 @@ sealed interface LaunchOutcome {
 
     /** Android refused the start: Ottomatic is in the background and may not draw over other apps. */
     data object Blocked : LaunchOutcome
+
+    /**
+     * A broadcast that was sent, and that nothing on this phone appears to be listening for.
+     *
+     * The fourth place to send the user, and it is none of the other three: the recipient is very
+     * likely installed and simply spells its action differently, so "install something that
+     * handles it" would send somebody to the Play Store for an app already on the phone.
+     *
+     * **It is a suspicion, not a fact, and the broadcast is sent anyway.** The platform reports
+     * nothing whatsoever about an undelivered broadcast — `sendBroadcast` returns `void` and
+     * succeeds whether or not anybody is listening — so the only signal available is asked for
+     * *beforehand*, from `queryBroadcastReceivers`, which cannot see receivers an app registered
+     * in code while running and *can* see a manifest receiver that Android 8's implicit-broadcast
+     * rule will nonetheless not deliver to. It errs in both directions.
+     *
+     * So this is the one member reported at WARN rather than ERROR, and the one for which
+     * `reportLaunch` answers **true**: the thing was done, and may have reached nobody.
+     */
+    data object NoReceiver : LaunchOutcome
+
+    /**
+     * Android refused to send it at all: the action is a **protected broadcast**, which only the
+     * system may send — `BOOT_COMPLETED`, `ACTION_SHUTDOWN` and the rest of a device-specific
+     * list. `sendBroadcast` answers that with a `SecurityException`.
+     *
+     * Its own member rather than [Blocked], on [Blocked]'s own stated rule: they send the user to
+     * two different places, and there is no grant that fixes this one. Naming "Display over other
+     * apps" here would point somebody at a Settings switch that cannot help. It is also the
+     * commonest single mistake with an action string copied off a forum, which is what makes it
+     * worth a member of its own.
+     */
+    data object Refused : LaunchOutcome
 }

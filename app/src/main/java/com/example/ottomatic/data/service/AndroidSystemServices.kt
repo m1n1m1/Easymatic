@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.app.NotificationManager
 import android.bluetooth.BluetoothManager
 import android.content.ClipData
+import android.content.ContentResolver
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
@@ -40,6 +41,10 @@ import com.example.ottomatic.core.service.DndLevel
 import com.example.ottomatic.core.service.DndResult
 import com.example.ottomatic.core.service.HttpRequest
 import com.example.ottomatic.core.service.HttpResponse
+import com.example.ottomatic.core.service.IntentExtra
+import com.example.ottomatic.core.service.IntentRecipe
+import com.example.ottomatic.core.service.IntentTarget
+import com.example.ottomatic.core.service.IntentValue
 import com.example.ottomatic.core.service.LaunchOutcome
 import com.example.ottomatic.core.service.MessengerIntent
 import com.example.ottomatic.core.service.MessengerRecipe
@@ -513,6 +518,99 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
     override fun openUrl(url: String): LaunchOutcome = startActivityForNode(
         Intent(Intent.ACTION_VIEW, url.toUri()).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) },
     )
+
+    override fun sendIntent(recipe: IntentRecipe): LaunchOutcome {
+        val intent = intentFor(recipe)
+        return when (recipe.target) {
+            IntentTarget.ACTIVITY ->
+                startActivityForNode(intent.apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) })
+
+            IntentTarget.BROADCAST -> broadcastForNode(intent)
+        }
+    }
+
+    /**
+     * The recipe as a real `Intent`.
+     *
+     * The `setDataAndType` call is unconditional, and that is the whole reason this function
+     * exists separately from its caller. `setData` sets the data **and clears the type**;
+     * `setType` sets the type **and clears the data** — they are documented as mutually
+     * clobbering, and `setDataAndType` is the only way to have both. So the natural pair of
+     * `if`s produces a node that works when one field is filled in and silently drops the URI
+     * when two are. There is deliberately no branch here to get wrong.
+     *
+     * The type is normalised because filter matching is case-sensitive — `Image/JPEG` matches
+     * nothing at all — and that is a platform rule, so it happens here rather than in
+     * `IntentSpec`.
+     *
+     * The read grant is conveyed for any `content://` this launch carries, in the data or in an
+     * extra. Without it the receiving app takes a `SecurityException` **in its own process**,
+     * which this one can neither see nor report — the failure would look exactly like the other
+     * app being broken. `IntentRequests.intentFor` already makes the same move for its output
+     * destination. Read only, never write, and never on anything that is not a `content://`.
+     */
+    private fun intentFor(recipe: IntentRecipe): Intent = Intent(recipe.action).apply {
+        if (recipe.packageName.isNotBlank()) setPackage(recipe.packageName)
+        if (recipe.category.isNotBlank()) addCategory(recipe.category)
+
+        val uri = recipe.data.takeIf { it.isNotBlank() }?.toUri()
+        val type = recipe.mimeType.takeIf { it.isNotBlank() }?.let(Intent::normalizeMimeType)
+        if (uri != null || type != null) setDataAndType(uri, type)
+
+        recipe.extras.forEach { put(it) }
+
+        val carriesContent = uri?.scheme == ContentResolver.SCHEME_CONTENT ||
+            recipe.extras.any { extra ->
+                (extra.value as? IntentValue.UriRef)?.value?.toUri()?.scheme ==
+                    ContentResolver.SCHEME_CONTENT
+            }
+        if (carriesContent) addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+
+    /** Total by construction — see [IntentValue]. */
+    @Suppress("CyclomaticComplexMethod") // A flat exhaustive table, not branching logic.
+    private fun Intent.put(extra: IntentExtra) {
+        when (val value = extra.value) {
+            is IntentValue.Text -> putExtra(extra.key, value.value)
+            is IntentValue.Texts -> putExtra(extra.key, value.values.toTypedArray())
+            is IntentValue.Int32 -> putExtra(extra.key, value.value)
+            is IntentValue.Int64 -> putExtra(extra.key, value.value)
+            is IntentValue.Float32 -> putExtra(extra.key, value.value)
+            is IntentValue.Float64 -> putExtra(extra.key, value.value)
+            is IntentValue.Flag -> putExtra(extra.key, value.value)
+            is IntentValue.UriRef -> putExtra(extra.key, value.value.toUri())
+        }
+    }
+
+    /**
+     * Sends [intent] as a broadcast, saying as much about it as the platform allows — which is
+     * very little.
+     *
+     * `sendBroadcast` returns `void` and succeeds whether or not anybody is listening, so the
+     * only honest signal available is asked for **beforehand**, which is
+     * `IntentRequests.isAnswerable`'s argument one mechanism over. Both caveats are on
+     * [LaunchOutcome.NoReceiver]: the query cannot see receivers registered in code, and it
+     * *can* see a manifest receiver that Android 8's implicit-broadcast rule will not deliver
+     * to. It errs in both directions, so the broadcast is sent regardless of what it answers.
+     *
+     * The query **fails open**. It leans on `QUERY_ALL_PACKAGES`, which is Play-policy
+     * restricted and a plausible future removal; the day it goes, a query that failed closed
+     * would put a spurious warning on every broadcast anybody sends.
+     *
+     * A `SecurityException` here is a protected broadcast and nothing else — see
+     * [LaunchOutcome.Refused].
+     */
+    private fun broadcastForNode(intent: Intent): LaunchOutcome {
+        val heard = runCatching {
+            context.packageManager.queryBroadcastReceivers(intent, 0).isNotEmpty()
+        }.getOrDefault(true)
+        return runCatching {
+            context.sendBroadcast(intent)
+            if (heard) LaunchOutcome.Launched else LaunchOutcome.NoReceiver
+        }.getOrElse { error ->
+            if (error is SecurityException) LaunchOutcome.Refused else LaunchOutcome.NoHandler
+        }
+    }
 
     /**
      * Hands the number to `PhoneNumberUtils`, which carries libphonenumber's table

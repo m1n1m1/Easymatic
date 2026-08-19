@@ -154,6 +154,7 @@ calendar_needs_access	Ottomatic нужен доступ к календарю, �
 calendar_no_calendars	На этом телефоне нет календарей.
 calendar_no_writable_calendars	Ни в один календарь на этом телефоне нельзя добавлять записи. Подписной календарь, например с праздниками, доступен только для чтения.
 category_ai	ИИ
+category_apps	Приложения и интенты
 category_audio	Аудио
 category_automation	Автоматизация
 category_calendar	Календарь

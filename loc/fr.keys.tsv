@@ -154,6 +154,7 @@ calendar_needs_access	Ottomatic a besoin de l'accès à l'agenda pour lister vos
 calendar_no_calendars	Il n'y a aucun agenda sur ce téléphone.
 calendar_no_writable_calendars	Aucun des agendas de ce téléphone n'accepte d'ajout. Un agenda auquel on est abonné, comme un calendrier de jours fériés, ne peut être que lu.
 category_ai	IA
+category_apps	Applis et intents
 category_audio	Audio
 category_automation	Automatisation
 category_calendar	Agenda

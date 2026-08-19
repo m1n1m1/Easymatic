@@ -14,6 +14,7 @@
     <string name="category_sensors">Датчики и жесты</string>
     <string name="category_flow_control">Управление потоком</string>
     <string name="category_interaction">Спросить пользователя</string>
+    <string name="category_apps">Приложения и интенты</string>
     <string name="category_network">Сеть</string>
     <string name="category_notifications">Уведомления</string>
     <string name="category_timing">Тайминг</string>
