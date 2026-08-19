@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.MusicOff
 import androidx.compose.material.icons.filled.Nfc
@@ -301,4 +302,7 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // The operation rather than MUSIC's subject: this is the one media node that moves the
     // position inside what is playing, and a note would not say so.
     NodeIcon.FAST_FORWARD -> Icons.Filled.FastForward
+    // The lock rather than BOLT's "something changed": this node is about the lock
+    // screen, and the other Device State triggers are not.
+    NodeIcon.LOCK -> Icons.Filled.Lock
 }

@@ -1,11 +1,14 @@
 package com.example.ottomatic.feature.permissions
 
+import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.core.net.toUri
+import com.example.ottomatic.R
 import com.example.ottomatic.core.permissions.PrerequisiteType
 
 /**
@@ -57,11 +60,16 @@ internal fun Context.openSettingsFor(type: PrerequisiteType) {
             } else {
                 return
             }
-        // Nothing to open: RUNTIME goes through the permission dialog, and no
-        // node declares the other two.
+        // Deliberately *not* the grant dialog. That is ACTION_ADD_DEVICE_ADMIN, which
+        // is the one intent here that cannot be started as a new task at all — see
+        // [deviceAdminIntent] — so it goes through a launcher rather than this table.
+        // What is left is the page the administrator is listed on, which is both where
+        // it is turned off and somewhere useful for a caller holding no launcher.
+        PrerequisiteType.DEVICE_ADMIN -> Intent(Settings.ACTION_SECURITY_SETTINGS)
+        // Nothing to open: RUNTIME goes through the permission dialog, and no node
+        // declares a foreground-service type.
         PrerequisiteType.RUNTIME,
         PrerequisiteType.FOREGROUND_SERVICE,
-        PrerequisiteType.DEVICE_ADMIN,
         -> return
     }
     startSettings(intent)
@@ -81,6 +89,13 @@ internal fun Context.openRevokeFor(type: PrerequisiteType) {
         startSettings(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
         return
     }
+    // Device admin needs no branch, unlike the entry above: what [openSettingsFor]
+    // opens for it is already the list page rather than the grant dialog. Removing it
+    // there is a switch on that page — `removeActiveAdmin` would work too, since an app
+    // may always remove its own administrator, and is deliberately not used: it would be
+    // the app's only revoke that happens inside Ottomatic, and both callers re-read grant
+    // state on ON_RESUME, so a revoke that never leaves the app would leave the row
+    // showing a tick that is no longer true.
     openSettingsFor(type)
 }
 
@@ -110,11 +125,48 @@ private fun Context.notificationListenerIntent(): Intent =
         Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
     }
 
+/**
+ * The dialog that turns Ottomatic into a device administrator.
+ *
+ * **Handed back rather than started**, which is the one thing about it that is not
+ * like every other entry in this file. Settings refuses this action outright when it
+ * arrives with `FLAG_ACTIVITY_NEW_TASK` — "Cannot start ADD_DEVICE_ADMIN as a new
+ * task" — and finishes without drawing anything, which on screen is indistinguishable
+ * from a dead button. [startSettings] adds that flag to everything, correctly, because
+ * a Settings *page* started from a non-activity context needs it. So this one cannot go
+ * through it: it has to be launched from an Activity, for a result, which is also what
+ * the platform documents for it.
+ *
+ * [DevicePolicyManager.EXTRA_ADD_EXPLANATION] is the app's own sentence on a dialog
+ * otherwise written entirely by Android, and the only place the user is told *why*
+ * before agreeing.
+ */
+internal fun Context.deviceAdminIntent(): Intent =
+    Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+        .putExtra(
+            DevicePolicyManager.EXTRA_DEVICE_ADMIN,
+            ComponentName(packageName, DEVICE_ADMIN_RECEIVER_CLASS),
+        )
+        .putExtra(
+            DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+            getString(R.string.perm_explanation_device_admin),
+        )
+
 private fun Context.packageUri() = "package:$packageName".toUri()
 
+/**
+ * The `runCatching` is the difference between a missing page and a crash — and the
+ * log line is the difference between a missing page and a button that looks broken.
+ * A swallowed failure here reads exactly like a dead button, and there is nowhere
+ * else it could be reported from.
+ */
 private fun Context.startSettings(intent: Intent) {
     runCatching { startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+        .onFailure { Log.w("SettingsIntents", "No system page for ${intent.action}", it) }
 }
 
 private const val NOTIFICATION_LISTENER_CLASS =
     "com.example.ottomatic.data.trigger.NotificationListener"
+
+private const val DEVICE_ADMIN_RECEIVER_CLASS =
+    "com.example.ottomatic.data.trigger.LoginAdminReceiver"

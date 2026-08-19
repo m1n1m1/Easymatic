@@ -526,6 +526,7 @@ Ringing	Звонит
 Ringtone	Мелодия звонка
 Rises above	Поднимается выше
 Rotate	Повернуть
+Rotation	Поворот
 Routes execution by comparing a value against another	Направляет выполнение, сравнивая одно значение с другим
 Run Script	Запустить скрипт
 Run action	Выполнить действие
@@ -563,6 +564,7 @@ Service	Служба
 Set	Задать
 Set Brightness	Задать яркость
 Set Ringer Mode	Задать режим звонка
+Set Screen Rotation	Задать поворот экрана
 Set Screen Timeout	Задать таймаут экрана
 Set Variable	Задать переменную
 Set Volume	Задать громкость
@@ -726,6 +728,7 @@ Turns a list into one piece of text, separated by what you choose	Превращ
 Turns a value into another type — text, a number, yes/no or a date	Превращает значение в другой тип — текст, число, «да/нет» или дату
 Turns accelerometer auto-rotation on or off	Включает или выключает автоповорот по акселерометру
 Turns the camera torch (flashlight) on or off	Включает или выключает фонарик камеры
+Turns the screen to portrait or landscape and stops it rotating on its own	Поворачивает экран вертикально или горизонтально и отключает автоповорот
 Type	Тип
 URL	Ссылка
 USB Device Connected	Подключено USB-устройство
@@ -816,3 +819,8 @@ out	Выход
 response	ответ
 state	состояние
 true	да
+Login Attempt Failed	Неудачная попытка разблокировки
+Starts when someone enters the wrong PIN, pattern or password	Запускается, когда кто-то вводит неверный PIN-код, графический ключ или пароль
+Attempt	Попытка
+Attempts	Попытки
+After failed attempts	После неудачных попыток

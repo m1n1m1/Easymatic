@@ -16,6 +16,7 @@ Add Calendar Event	Add Calendar Event
 Add to List	Add to List
 Add to the end instead of replacing	Add to the end instead of replacing
 Adjusts an audio stream\'s volume (up, down, set, mute or unmute)	Adjusts an audio stream\'s volume (up, down, set, mute or unmute)
+After failed attempts	After failed attempts
 Airplane Mode Changed	Airplane Mode Changed
 Airplane mode	Airplane mode
 Alarm	Alarm
@@ -51,6 +52,8 @@ Asks the user a yes/no question in a popup dialog and branches on the answer	Ask
 Asks the user to type a value in a popup dialog and puts it on a port	Asks the user to type a value in a popup dialog and puts it on a port
 At	At
 At a time of day	At a time of day
+Attempt	Attempt
+Attempts	Attempts
 Attribute (optional)	Attribute (optional)
 Auto	Auto
 Auto brightness	Auto brightness
@@ -317,6 +320,7 @@ Lists the files in a folder, as paths you can loop over	Lists the files in a fol
 Locale Changed	Locale Changed
 Location	Location
 Log Message	Log Message
+Login Attempt Failed	Login Attempt Failed
 Long	Long
 Longest reply (tokens)	Longest reply (tokens)
 Longest side (pixels)	Longest side (pixels)
@@ -519,6 +523,7 @@ Ringing	Ringing
 Ringtone	Ringtone
 Rises above	Rises above
 Rotate	Rotate
+Rotation	Rotation
 Routes execution by comparing a value against another	Routes execution by comparing a value against another
 Run Script	Run Script
 Run action	Run action
@@ -556,6 +561,7 @@ Service	Service
 Set	Set
 Set Brightness	Set Brightness
 Set Ringer Mode	Set Ringer Mode
+Set Screen Rotation	Set Screen Rotation
 Set Screen Timeout	Set Screen Timeout
 Set Variable	Set Variable
 Set Volume	Set Volume
@@ -619,6 +625,7 @@ Starts when an event fires on the Home Assistant event bus — a Zigbee button, 
 Starts when external media is mounted, unmounted or ejected	Starts when external media is mounted, unmounted or ejected
 Starts when music, a podcast or a video starts, pauses, stops or changes track	Starts when music, a podcast or a video starts, pauses, stops or changes track
 Starts when power-save mode is toggled on or off	Starts when power-save mode is toggled on or off
+Starts when someone enters the wrong PIN, pattern or password	Starts when someone enters the wrong PIN, pattern or password
 Starts when the battery level crosses a threshold (polls in the background)	Starts when the battery level crosses a threshold (polls in the background)
 Starts when the device body is tapped twice or three times. Unreliable in a pocket (screen on only)	Starts when the device body is tapped twice or three times. Unreliable in a pocket (screen on only)
 Starts when the device connects to or disconnects from a Wi-Fi network	Starts when the device connects to or disconnects from a Wi-Fi network
@@ -721,6 +728,7 @@ Turns a list into one piece of text, separated by what you choose	Turns a list i
 Turns a value into another type — text, a number, yes/no or a date	Turns a value into another type — text, a number, yes/no or a date
 Turns accelerometer auto-rotation on or off	Turns accelerometer auto-rotation on or off
 Turns the camera torch (flashlight) on or off	Turns the camera torch (flashlight) on or off
+Turns the screen to portrait or landscape and stops it rotating on its own	Turns the screen to portrait or landscape and stops it rotating on its own
 Type	Type
 URL	URL
 USB Device Connected	USB Device Connected

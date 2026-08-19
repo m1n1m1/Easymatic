@@ -62,7 +62,6 @@ class PermissionCatalogueTest {
         val ungrantable = setOf(
             PrerequisiteType.RUNTIME,
             PrerequisiteType.FOREGROUND_SERVICE,
-            PrerequisiteType.DEVICE_ADMIN,
         )
         val shown = entries.map { it.requirement.type }.toSet()
         val unreachable = PrerequisiteType.entries.toSet() - ungrantable - shown

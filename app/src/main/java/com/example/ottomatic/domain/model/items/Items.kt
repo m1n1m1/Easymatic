@@ -6,6 +6,7 @@ import com.example.ottomatic.core.service.CalendarEventStatus
 import com.example.ottomatic.core.service.DndLevel
 import com.example.ottomatic.core.service.HttpMethod
 import com.example.ottomatic.core.service.RingerMode
+import com.example.ottomatic.core.service.ScreenRotation
 import com.example.ottomatic.core.service.VolumeMode
 import com.example.ottomatic.domain.model.schema.DateTime
 import kotlinx.serialization.Serializable
@@ -286,6 +287,24 @@ data class SystemState(
 )
 
 /**
+ * A failed unlock, reported by `trigger.login_failed` on its `attempt` data port.
+ *
+ * - [attempts]: consecutive failed attempts including this one, or **-1** when the
+ *   count could not be read. Not zero — a zero here would read as a successful
+ *   unlock, which is the one thing this item never describes.
+ * - [timestamp]: when the attempt failed.
+ *
+ * Deliberately not a [SystemState]. That struct's `detail` is text carrying
+ * whatever the broadcast happened to know, and a count wired into a comparison has
+ * to arrive as a number.
+ */
+@Serializable
+data class LoginAttempt(
+    val attempts: Int = -1,
+    val timestamp: DateTime,
+)
+
+/**
  * Package event reported by `trigger.app_installed` on its `package` data port.
  *
  * - [action]: `"installed"`, `"removed"` or `"replaced"`.
@@ -414,6 +433,21 @@ data class ScreenTimeoutState(
 @Serializable
 data class AutoRotateState(
     val enabled: Boolean,
+    val changed: Boolean,
+)
+
+/**
+ * Screen rotation reported by the screen rotation action on its `state` port.
+ *
+ * - [rotation]: which way round the screen is now held.
+ * - [changed]: whether the system accepted the change (requires WRITE_SETTINGS).
+ *
+ * There is deliberately no "auto-rotation is now off" field: a change the system
+ * accepted always turned it off, so the flag would only ever repeat [changed].
+ */
+@Serializable
+data class ScreenRotationState(
+    val rotation: ScreenRotation,
     val changed: Boolean,
 )
 

@@ -526,6 +526,7 @@ Ringing	着信中
 Ringtone	着信音
 Rises above	上回る
 Rotate	回転
+Rotation	回転
 Routes execution by comparing a value against another	値どうしを比較して実行の流れを振り分けます
 Run Script	スクリプトを実行
 Run action	実行する操作
@@ -563,6 +564,7 @@ Service	サービス
 Set	設定
 Set Brightness	明るさを設定
 Set Ringer Mode	着信音モードを設定
+Set Screen Rotation	画面の回転を設定
 Set Screen Timeout	画面消灯時間を設定
 Set Variable	変数を設定
 Set Volume	音量を設定
@@ -726,6 +728,7 @@ Turns a list into one piece of text, separated by what you choose	リストを 1
 Turns a value into another type — text, a number, yes/no or a date	値を別の型に変換します（テキスト、数値、はい／いいえ、日付）
 Turns accelerometer auto-rotation on or off	加速度センサーによる自動回転をオン／オフします
 Turns the camera torch (flashlight) on or off	カメラのライト（懐中電灯）をオン／オフします
+Turns the screen to portrait or landscape and stops it rotating on its own	画面を縦または横に回転させ、自動回転を止めます
 Type	型
 URL	URL
 USB Device Connected	USB デバイスの接続
@@ -816,3 +819,8 @@ out	出力
 response	レスポンス
 state	状態
 true	真
+Login Attempt Failed	ロック解除の失敗
+Starts when someone enters the wrong PIN, pattern or password	誤った PIN・パターン・パスワードが入力されたときに開始します
+Attempt	試行
+Attempts	試行回数
+After failed attempts	失敗回数

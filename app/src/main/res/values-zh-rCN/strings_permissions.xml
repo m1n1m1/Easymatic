@@ -41,7 +41,7 @@
     <string name="perm_desc_access_media_location">允许宏读取照片的拍摄地点。没有此权限，Android 会隐藏其他应用保存的照片中的位置信息，宏会认为照片没有位置。</string>
     <string name="perm_desc_manage_media">允许宏修改、移动或删除照片而无需逐次确认。可选：没有它一切仍可运行，只是 Android 每次都会询问，这需要你拿着手机。</string>
     <string name="perm_desc_foreground_service">允许 Ottomatic 在你的宏处于启用状态时保持引擎运行。</string>
-    <string name="perm_desc_device_admin">允许 Ottomatic 使用设备管理员功能。</string>
+    <string name="perm_desc_device_admin">让 Ottomatic 在有人在锁屏上输入错误的 PIN 码、图案或密码时收到通知。这是 Android 报告解锁失败的唯一方式。启用期间，必须先关闭它才能卸载 Ottomatic。</string>
     <string name="perm_desc_access_fine_location">让地理围栏知道你何时到达或离开某个地点。</string>
     <string name="perm_desc_access_coarse_location">较粗略的定位，在无法获得精确位置时使用。</string>
     <string name="perm_desc_access_background_location">让地理围栏在 Ottomatic 关闭时仍然工作——而那正是它唯一有用的时候。选择“始终允许”即可授予。</string>
@@ -73,5 +73,10 @@
     <string name="perm_rationale_media_manage">Ottomatic 可以在不逐次询问的情况下修改照片。这是可选的：没有它节点仍能工作，但 Android 会在屏幕上显示确认，因此无法无人值守运行。</string>
     <string name="perm_rationale_media_playback">Ottomatic 会读取其他应用发布的媒体通知，以此得知正在播放的内容，并发送播放、暂停和切歌。没有它，媒体节点既看不到也控制不了任何播放器。</string>
     <string name="perm_rationale_overlay_media">Ottomatic 需要显示在其他应用上层的权限，才能在宏于后台运行时显示 Android 的确认对话框。没有它，当你不在 Ottomatic 中时，修改其他应用保存的照片会失败。</string>
+    <string name="perm_rationale_login_watch">Ottomatic 需要成为设备管理员才能得知解锁失败：Android 不会在其他任何地方报告这件事，普通应用也读不到锁屏上的任何内容。它只关注这一件事：看不到你的 PIN 码，无法更改它，也不能锁定或清除手机。启用期间，必须先在设置中关闭它才能卸载 Ottomatic。</string>
     <string name="perm_rationale_overlay_launch">Ottomatic 需要显示在其他应用上层的权限，才能在你正忙于手机上别的事情时打开另一个应用。Android 会阻止后台应用打开其他应用；没有这项权限，该节点什么也不做，并会在控制台里说明。</string>
+    <string name="device_admin_label">解锁失败检测</string>
+    <string name="device_admin_description">允许在有人未能解锁本机时启动宏。</string>
+    <string name="device_admin_disable_warning">以解锁失败为触发的宏将停止工作。</string>
+    <string name="perm_explanation_device_admin">Ottomatic 用它在有人输入错误的 PIN 码、图案或密码时启动宏。除此之外不监视任何内容。</string>
 </resources>

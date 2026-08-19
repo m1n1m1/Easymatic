@@ -26,6 +26,7 @@ import android.provider.Settings
 import android.telephony.PhoneNumberUtils
 import android.telephony.SmsManager
 import android.telephony.TelephonyManager
+import android.view.Surface
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.os.ConfigurationCompat
@@ -44,6 +45,8 @@ import com.example.ottomatic.core.service.MessengerIntent
 import com.example.ottomatic.core.service.MessengerRecipe
 import com.example.ottomatic.core.service.RingerMode
 import com.example.ottomatic.core.service.RingerResult
+import com.example.ottomatic.core.service.ScreenRotation
+import com.example.ottomatic.core.service.ScreenRotationResult
 import com.example.ottomatic.core.service.ScreenTimeoutResult
 import com.example.ottomatic.core.service.SoundRequest
 import com.example.ottomatic.core.service.SoundSource
@@ -268,6 +271,30 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
             0,
         ) == 1
         AutoRotateResult(enabled = applied, changed = true)
+    }.getOrNull()
+
+    override fun setScreenRotation(rotation: ScreenRotation): ScreenRotationResult? = runCatching {
+        if (!canWriteSettings()) return@runCatching null
+        val wanted = surfaceRotationOf(rotation)
+        // Auto-rotation first, and not as a courtesy: USER_ROTATION is only read while
+        // ACCELEROMETER_ROTATION is off, so writing it on its own leaves a call that
+        // reports success and a screen that never moves.
+        Settings.System.putInt(
+            context.contentResolver,
+            Settings.System.ACCELEROMETER_ROTATION,
+            0,
+        )
+        Settings.System.putInt(
+            context.contentResolver,
+            Settings.System.USER_ROTATION,
+            wanted,
+        )
+        val applied = Settings.System.getInt(
+            context.contentResolver,
+            Settings.System.USER_ROTATION,
+            wanted,
+        )
+        ScreenRotationResult(rotation = screenRotationOf(applied) ?: rotation, changed = true)
     }.getOrNull()
 
     override fun setTorch(enabled: Boolean): TorchResult? = runCatching {
@@ -629,6 +656,34 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
     }.getOrDefault(false)
 
     private fun canWriteSettings(): Boolean = Settings.System.canWrite(context)
+
+    /**
+     * A [ScreenRotation] as the quarter turns anticlockwise from the device's natural
+     * orientation that `USER_ROTATION` is counted in.
+     *
+     * The mapping is fixed by what the *accelerometer* reads in each position, which is
+     * how the system arrives at a rotation itself: held with its top edge toward the
+     * left the device's +x axis points up, and that is the position Android reports as
+     * `ROTATION_90` and offers apps as plain `SCREEN_ORIENTATION_LANDSCAPE`. Naming it
+     * [ScreenRotation.LANDSCAPE_LEFT] here is what makes this action agree with
+     * `trigger.device_orientation`, whose detector classifies that same reading as
+     * `LANDSCAPE_LEFT`.
+     */
+    private fun surfaceRotationOf(rotation: ScreenRotation): Int = when (rotation) {
+        ScreenRotation.PORTRAIT -> Surface.ROTATION_0
+        ScreenRotation.LANDSCAPE_LEFT -> Surface.ROTATION_90
+        ScreenRotation.PORTRAIT_UPSIDE_DOWN -> Surface.ROTATION_180
+        ScreenRotation.LANDSCAPE_RIGHT -> Surface.ROTATION_270
+    }
+
+    /** [surfaceRotationOf] backwards, for reading the setting back. Null if it holds something else. */
+    private fun screenRotationOf(surfaceRotation: Int): ScreenRotation? = when (surfaceRotation) {
+        Surface.ROTATION_0 -> ScreenRotation.PORTRAIT
+        Surface.ROTATION_90 -> ScreenRotation.LANDSCAPE_LEFT
+        Surface.ROTATION_180 -> ScreenRotation.PORTRAIT_UPSIDE_DOWN
+        Surface.ROTATION_270 -> ScreenRotation.LANDSCAPE_RIGHT
+        else -> null
+    }
 
     private fun audioStreamType(stream: AudioStream): Int = when (stream) {
         AudioStream.MEDIA -> AudioManager.STREAM_MUSIC

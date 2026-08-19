@@ -526,6 +526,7 @@ Ringing	Sonne
 Ringtone	Sonnerie
 Rises above	Monte au-dessus de
 Rotate	Faire pivoter
+Rotation	Rotation
 Routes execution by comparing a value against another	Oriente l'exécution en comparant une valeur à une autre
 Run Script	Exécuter un script
 Run action	Exécuter l'action
@@ -563,6 +564,7 @@ Service	Service
 Set	Définir
 Set Brightness	Définir la luminosité
 Set Ringer Mode	Définir le mode sonnerie
+Set Screen Rotation	Définir la rotation de l'écran
 Set Screen Timeout	Définir la mise en veille de l'écran
 Set Variable	Définir une variable
 Set Volume	Définir le volume
@@ -726,6 +728,7 @@ Turns a list into one piece of text, separated by what you choose	Transforme une
 Turns a value into another type — text, a number, yes/no or a date	Convertit une valeur vers un autre type : texte, nombre, oui/non ou date
 Turns accelerometer auto-rotation on or off	Active ou désactive la rotation automatique par accéléromètre
 Turns the camera torch (flashlight) on or off	Allume ou éteint la lampe torche de l'appareil photo
+Turns the screen to portrait or landscape and stops it rotating on its own	Tourne l'écran en portrait ou en paysage et l'empêche de pivoter tout seul
 Type	Type
 URL	URL
 USB Device Connected	Appareil USB connecté
@@ -816,3 +819,8 @@ out	Sortie
 response	réponse
 state	état
 true	vrai
+Login Attempt Failed	Échec de déverrouillage
+Starts when someone enters the wrong PIN, pattern or password	Démarre lorsque quelqu'un saisit un code, un schéma ou un mot de passe incorrect
+Attempt	Tentative
+Attempts	Tentatives
+After failed attempts	Après tentatives échouées

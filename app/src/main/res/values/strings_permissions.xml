@@ -46,7 +46,7 @@
     <string name="perm_desc_access_media_location">Lets a macro read where a photo was taken. Without it, Android hides the location in photos other apps saved, and a macro is told the photo has none.</string>
     <string name="perm_desc_manage_media">Lets a macro change, move or delete photos without asking you to confirm each one. Optional: without it everything still works, Android just asks you every time, which needs you to be holding the phone.</string>
     <string name="perm_desc_foreground_service">Lets Ottomatic keep its engine running while your macros are armed.</string>
-    <string name="perm_desc_device_admin">Lets Ottomatic use device administrator features.</string>
+    <string name="perm_desc_device_admin">Lets Ottomatic be told when somebody enters the wrong PIN, pattern or password on the lock screen. It is the only way Android reports a failed unlock. While this is on, Ottomatic cannot be uninstalled until you turn it off again.</string>
     <string name="perm_desc_access_fine_location">Lets a geofence know when you arrive somewhere or leave it.</string>
     <string name="perm_desc_access_coarse_location">A rougher fix, used when precise location is not available.</string>
     <string name="perm_desc_access_background_location">Lets a geofence keep working while Ottomatic is closed — which is the only time it is any use. Granted by choosing \"Allow all the time\".</string>
@@ -80,6 +80,13 @@
     <string name="perm_rationale_media_manage">Ottomatic can change photos without asking you each time. This is optional: without it the node still works, but Android puts a confirmation on screen, so it cannot run unattended.</string>
     <string name="perm_rationale_media_playback">Ottomatic reads the media notification other apps post, which is how it can tell what is playing and send play, pause and skip to it. Without this, the media nodes can neither see nor reach any player.</string>
     <string name="perm_rationale_overlay_media">Ottomatic needs permission to draw over other apps so it can put Android’s confirmation on screen while the macro runs in the background. Without it, changing a photo another app saved fails when you are not in Ottomatic.</string>
+    <string name="perm_rationale_login_watch">Ottomatic needs to be a device administrator to be told about a failed unlock — Android reports it nowhere else, and nothing on the lock screen is readable to an ordinary app. It watches nothing but that: it cannot see your PIN, change it, or lock or wipe the phone. While this is on, Ottomatic cannot be uninstalled until you turn it off in Settings.</string>
     <string name="perm_rationale_overlay_launch">Ottomatic needs permission to draw over other apps so it can open one while you are somewhere else on your phone. Android blocks a background app from opening another, and without this the node does nothing and says so in the console.</string>
 
+    <!-- Device administrator: the words Android itself shows, on its enable dialog -->
+    <!-- and in the Device admin apps list. Not part of PermissionCopy's tables. -->
+    <string name="device_admin_label">Failed unlock detection</string>
+    <string name="device_admin_description">Lets a macro start when somebody fails to unlock this phone.</string>
+    <string name="device_admin_disable_warning">Macros that start on a failed unlock will stop working.</string>
+    <string name="perm_explanation_device_admin">Ottomatic uses this to start a macro when somebody enters the wrong PIN, pattern or password. It watches nothing else.</string>
 </resources>

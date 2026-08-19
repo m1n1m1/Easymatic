@@ -97,7 +97,17 @@ private fun SettingsPrerequisiteNotice(requirement: PermissionRequirement) {
 
     NoticeCard(
         message = stringResource(explanation),
-        actionLabel = stringResource(R.string.permissions_open_settings),
+        // "Grant" only where a tap really does produce the system dialog, which is the
+        // permissions screen's rule and the same one type is the exception to: device
+        // admin is activated from a dialog, everything else from a page you have to go
+        // and find a switch on.
+        actionLabel = stringResource(
+            if (requirement.type == PrerequisiteType.DEVICE_ADMIN) {
+                R.string.grapheditor_grant
+            } else {
+                R.string.permissions_open_settings
+            },
+        ),
         onAction = state::openSettings,
     )
 }

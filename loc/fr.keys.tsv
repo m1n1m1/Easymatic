@@ -490,7 +490,7 @@ perm_desc_battery_optimisation	Empêche Android d'arrêter le moteur en arrière
 perm_desc_bluetooth_connect	Permet à une macro d'activer et désactiver le Bluetooth.
 perm_desc_call_phone	Permet à une macro de passer un appel sans que tu le confirmes.
 perm_desc_camera	Permet à une macro de prendre une photo avec l'appareil photo du téléphone, sans application appareil photo et sans que personne appuie sur un bouton. Ottomatic n'ouvre l'appareil photo que pendant l'exécution d'une action Prendre une photo.
-perm_desc_device_admin	Permet à Ottomatic d'utiliser les fonctions d'administrateur de l'appareil.
+perm_desc_device_admin	Permet à Ottomatic d'être averti lorsque quelqu'un saisit un code, un schéma ou un mot de passe incorrect sur l'écran de verrouillage. C'est le seul moyen par lequel Android signale un déverrouillage échoué. Tant que cette option est activée, Ottomatic ne peut pas être désinstallé avant que vous ne la désactiviez.
 perm_desc_exact_alarm	Permet à une programmation de se déclencher, et à une attente de finir, à la minute demandée. Sans cette autorisation, Android peut la regrouper avec d'autres tâches, donc elle peut s'exécuter en retard.
 perm_desc_foreground_service	Permet à Ottomatic de garder son moteur actif tant que tes macros sont actives.
 perm_desc_manage_media	Permet à une macro de modifier, déplacer ou supprimer des photos sans vous demander de confirmer à chaque fois. Facultatif : sans cela tout fonctionne encore, mais Android vous demande à chaque fois, ce qui exige que vous ayez le téléphone en main.
@@ -807,3 +807,8 @@ workflowlist_text	 ·
 workflowlist_this_macro	cette macro
 workflowlist_which_trigger	Quel déclencheur ?
 workflowlist_workflows	Flux
+perm_rationale_login_watch	Ottomatic doit être administrateur de l'appareil pour être averti d'un déverrouillage échoué : Android ne le signale nulle part ailleurs, et une application ordinaire ne peut rien lire de l'écran de verrouillage. Il ne surveille rien d'autre : il ne peut pas voir votre code, le modifier, ni verrouiller ou effacer le téléphone. Tant que cette option est activée, Ottomatic ne peut pas être désinstallé avant que vous ne la désactiviez dans les Paramètres.
+device_admin_label	Détection des déverrouillages échoués
+device_admin_description	Permet à une macro de démarrer lorsque quelqu'un ne parvient pas à déverrouiller ce téléphone.
+device_admin_disable_warning	Les macros qui démarrent sur un déverrouillage échoué cesseront de fonctionner.
+perm_explanation_device_admin	Ottomatic s'en sert pour démarrer une macro lorsque quelqu'un saisit un code, un schéma ou un mot de passe incorrect. Il ne surveille rien d'autre.

@@ -490,7 +490,7 @@ perm_desc_battery_optimisation	Evita que Android detenga el motor en segundo pla
 perm_desc_bluetooth_connect	Permite que una macro active y desactive el Bluetooth.
 perm_desc_call_phone	Permite que una macro haga una llamada sin que la confirmes.
 perm_desc_camera	Permite que una macro haga una foto con la cámara del propio teléfono, sin aplicación de cámara y sin que nadie pulse un botón. Ottomatic abre la cámara solo mientras se ejecuta una acción Hacer foto.
-perm_desc_device_admin	Permite que Ottomatic use funciones de administrador del dispositivo.
+perm_desc_device_admin	Permite que Ottomatic reciba un aviso cuando alguien introduce un PIN, patrón o contraseña incorrectos en la pantalla de bloqueo. Es la única forma en que Android informa de un desbloqueo fallido. Mientras esté activado, Ottomatic no se puede desinstalar hasta que lo desactives.
 perm_desc_exact_alarm	Hace que una programación se dispare, y una espera termine, en el minuto que pediste. Sin este permiso Android puede agruparlo con otras tareas, así que puede ejecutarse tarde.
 perm_desc_foreground_service	Permite que Ottomatic mantenga su motor en marcha mientras tus macros están activas.
 perm_desc_manage_media	Permite que una macro modifique, mueva o elimine fotos sin pedirte que confirmes cada una. Opcional: sin esto todo sigue funcionando, pero Android pregunta cada vez, lo que exige que tengas el teléfono en la mano.
@@ -807,3 +807,8 @@ workflowlist_text	 ·
 workflowlist_this_macro	esta macro
 workflowlist_which_trigger	¿Qué activador?
 workflowlist_workflows	Flujos
+perm_rationale_login_watch	Ottomatic necesita ser administrador del dispositivo para enterarse de un desbloqueo fallido: Android no lo informa en ningún otro sitio, y una app normal no puede leer nada de la pantalla de bloqueo. No vigila nada más: no puede ver tu PIN, cambiarlo, ni bloquear o borrar el teléfono. Mientras esté activado, Ottomatic no se puede desinstalar hasta que lo desactives en Ajustes.
+device_admin_label	Detección de desbloqueos fallidos
+device_admin_description	Permite que una macro se inicie cuando alguien no consigue desbloquear este teléfono.
+device_admin_disable_warning	Las macros que se inician con un desbloqueo fallido dejarán de funcionar.
+perm_explanation_device_admin	Ottomatic usa esto para iniciar una macro cuando alguien introduce un PIN, patrón o contraseña incorrectos. No vigila nada más.

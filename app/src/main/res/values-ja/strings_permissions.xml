@@ -41,7 +41,7 @@
     <string name="perm_desc_access_media_location">マクロが写真の撮影場所を読み取れるようになります。これがないと、他のアプリが保存した写真の位置情報は Android に隠され、マクロは位置情報がないものとして扱います。</string>
     <string name="perm_desc_manage_media">マクロが確認を求められることなく写真を変更・移動・削除できるようになります。任意です。なくても動作しますが、Android が毎回確認するため端末を手に持っている必要があります。</string>
     <string name="perm_desc_foreground_service">マクロが有効な間、Ottomatic がエンジンを動かし続けられるようにします。</string>
-    <string name="perm_desc_device_admin">Ottomatic がデバイス管理者の機能を使えるようにします。</string>
+    <string name="perm_desc_device_admin">ロック画面で誤った PIN・パターン・パスワードが入力されたことを Ottomatic に通知します。Android が解除の失敗を伝える唯一の方法です。有効な間は、これをオフにするまで Ottomatic をアンインストールできません。</string>
     <string name="perm_desc_access_fine_location">ジオフェンスが、ある場所への到着や離脱を検知できるようにします。</string>
     <string name="perm_desc_access_coarse_location">正確な位置が得られないときに使われる、おおまかな測位です。</string>
     <string name="perm_desc_access_background_location">Ottomatic を閉じている間もジオフェンスが動作するようにします。実際に役に立つのはそのときだけです。「常に許可」を選ぶと付与されます。</string>
@@ -73,5 +73,10 @@
     <string name="perm_rationale_media_manage">Ottomatic は毎回確認を求めずに写真を変更できます。任意です。なくてもノードは動作しますが、Android が画面に確認を表示するため、無人では実行できません。</string>
     <string name="perm_rationale_media_playback">Ottomatic は他のアプリが表示するメディア通知を読み取り、再生中の内容を把握して再生・一時停止・スキップを送信します。これがないと、メディアノードはどのプレーヤーも認識できず操作もできません。</string>
     <string name="perm_rationale_overlay_media">マクロがバックグラウンドで動作している間に Android の確認画面を表示するため、Ottomatic には他のアプリの上に重ねて表示する権限が必要です。これがないと、Ottomatic を開いていないときに他のアプリが保存した写真を変更できません。</string>
+    <string name="perm_rationale_login_watch">解除の失敗を知るには、Ottomatic がデバイス管理者である必要があります。Android はそれ以外の場所では通知せず、ロック画面の内容は通常のアプリからは読み取れません。監視するのはそれだけで、PIN を見ることも変更することも、端末をロックしたり消去したりすることもできません。有効な間は、設定でオフにするまで Ottomatic をアンインストールできません。</string>
     <string name="perm_rationale_overlay_launch">端末で他のことをしている最中でも別のアプリを開けるように、Ottomatic は他のアプリの上に表示する権限を必要とします。Android はバックグラウンドのアプリが別のアプリを開くことを禁じており、この権限がないとこのノードは何もせず、その旨をコンソールに出力します。</string>
+    <string name="device_admin_label">解除失敗の検知</string>
+    <string name="device_admin_description">この端末の解除に失敗したときにマクロを開始できるようにします。</string>
+    <string name="device_admin_disable_warning">解除の失敗で開始するマクロは動作しなくなります。</string>
+    <string name="perm_explanation_device_admin">誤った PIN・パターン・パスワードが入力されたときにマクロを開始するために使います。それ以外は監視しません。</string>
 </resources>

@@ -291,6 +291,10 @@ private class PermissionsUiState(
     @StringRes
     fun actionLabelFor(entry: PermissionEntry): Int = when {
         isGranted(entry) -> R.string.permissions_revoke
+        // The one non-runtime exception, and it is the rule rather than a hole in it:
+        // ACTION_ADD_DEVICE_ADMIN puts a system dialog on screen with an Activate
+        // button, so there is no switch to go and find.
+        entry.requirement.type == PrerequisiteType.DEVICE_ADMIN -> R.string.permissions_grant
         entry.requirement.type != PrerequisiteType.RUNTIME -> R.string.permissions_open_settings
         entry.key in stuck -> R.string.permissions_open_settings
         else -> R.string.permissions_grant
@@ -320,6 +324,13 @@ private fun rememberPermissionsUiState(checker: PermissionChecker): PermissionsU
         revision++
         results++
     }
+
+    // Device admin is granted by a dialog started for a result rather than by a page,
+    // so it cannot go through `openSettingsFor` — see `deviceAdminIntent`. One launcher
+    // for the whole list, for the same reason as the one above.
+    val adminLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) { revision++ }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -356,6 +367,8 @@ private fun rememberPermissionsUiState(checker: PermissionChecker): PermissionsU
             onGrant = { entry ->
                 val manifest = entry.requirement.manifestPermission
                 when {
+                    entry.requirement.type == PrerequisiteType.DEVICE_ADMIN ->
+                        adminLauncher.launch(context.deviceAdminIntent())
                     entry.requirement.type != PrerequisiteType.RUNTIME ->
                         context.openSettingsFor(entry.requirement.type)
                     manifest == null -> Unit

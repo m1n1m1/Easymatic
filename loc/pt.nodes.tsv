@@ -526,6 +526,7 @@ Ringing	A tocar
 Ringtone	Toque
 Rises above	Sobe acima de
 Rotate	Rodar
+Rotation	Rotação
 Routes execution by comparing a value against another	Encaminha a execução comparando um valor com outro
 Run Script	Executar script
 Run action	Executar ação
@@ -563,6 +564,7 @@ Service	Serviço
 Set	Definir
 Set Brightness	Definir brilho
 Set Ringer Mode	Definir modo de som
+Set Screen Rotation	Definir rotação do ecrã
 Set Screen Timeout	Definir tempo até desligar o ecrã
 Set Variable	Definir variável
 Set Volume	Definir volume
@@ -726,6 +728,7 @@ Turns a list into one piece of text, separated by what you choose	Transforma uma
 Turns a value into another type — text, a number, yes/no or a date	Converte um valor para outro tipo: texto, número, sim/não ou data
 Turns accelerometer auto-rotation on or off	Liga ou desliga a rotação automática por acelerómetro
 Turns the camera torch (flashlight) on or off	Liga ou desliga a lanterna da câmara
+Turns the screen to portrait or landscape and stops it rotating on its own	Roda o ecrã para vertical ou horizontal e impede-o de rodar sozinho
 Type	Tipo
 URL	URL
 USB Device Connected	Dispositivo USB ligado
@@ -816,3 +819,8 @@ out	Saída
 response	resposta
 state	estado
 true	verdadeiro
+Login Attempt Failed	Tentativa de desbloqueio falhada
+Starts when someone enters the wrong PIN, pattern or password	Começa quando alguém introduz um PIN, padrão ou palavra-passe errados
+Attempt	Tentativa
+Attempts	Tentativas
+After failed attempts	Após tentativas falhadas

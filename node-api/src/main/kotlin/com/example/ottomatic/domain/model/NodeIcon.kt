@@ -184,4 +184,14 @@ enum class NodeIcon {
      * recognise from a note.
      */
     FAST_FORWARD,
+
+    /**
+     * A lock, for the node that fires when somebody fails to open one.
+     *
+     * Its own entry rather than [BOLT], which is what every other Device State trigger
+     * takes: a bolt says "something on the phone changed", which is true of the screen
+     * going off and of a dock, and is exactly the wrong promise here. This is the one
+     * trigger in that group about somebody at the lock screen who is not you.
+     */
+    LOCK,
 }

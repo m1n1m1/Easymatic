@@ -490,7 +490,7 @@ perm_desc_battery_optimisation	防止 Android 在后台停止引擎。没有它�
 perm_desc_bluetooth_connect	允许宏开启和关闭蓝牙。
 perm_desc_call_phone	允许宏在无需你确认的情况下拨打电话。
 perm_desc_camera	允许宏使用手机自带的摄像头拍照，无需相机应用，也无需有人按下快门。Ottomatic 仅在“拍照”操作运行期间打开摄像头。
-perm_desc_device_admin	允许 Ottomatic 使用设备管理员功能。
+perm_desc_device_admin	让 Ottomatic 在有人在锁屏上输入错误的 PIN 码、图案或密码时收到通知。这是 Android 报告解锁失败的唯一方式。启用期间，必须先关闭它才能卸载 Ottomatic。
 perm_desc_exact_alarm	让定时计划在你指定的那一分钟触发，让等待在那一刻结束。没有它，Android 可以把它和其他工作合并处理，因此可能会晚一些运行。
 perm_desc_foreground_service	允许 Ottomatic 在你的宏处于启用状态时保持引擎运行。
 perm_desc_manage_media	允许宏修改、移动或删除照片而无需逐次确认。可选：没有它一切仍可运行，只是 Android 每次都会询问，这需要你拿着手机。
@@ -807,3 +807,8 @@ workflowlist_text	 ·
 workflowlist_this_macro	此宏
 workflowlist_which_trigger	哪个触发器？
 workflowlist_workflows	工作流
+perm_rationale_login_watch	Ottomatic 需要成为设备管理员才能得知解锁失败：Android 不会在其他任何地方报告这件事，普通应用也读不到锁屏上的任何内容。它只关注这一件事：看不到你的 PIN 码，无法更改它，也不能锁定或清除手机。启用期间，必须先在设置中关闭它才能卸载 Ottomatic。
+device_admin_label	解锁失败检测
+device_admin_description	允许在有人未能解锁本机时启动宏。
+device_admin_disable_warning	以解锁失败为触发的宏将停止工作。
+perm_explanation_device_admin	Ottomatic 用它在有人输入错误的 PIN 码、图案或密码时启动宏。除此之外不监视任何内容。

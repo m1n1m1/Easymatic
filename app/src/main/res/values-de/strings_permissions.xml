@@ -37,7 +37,7 @@
     <string name="perm_desc_write_settings">Erlaubt einem Makro, Bildschirmhelligkeit, Bildschirm-Timeout und automatisches Drehen zu ändern.</string>
     <string name="perm_desc_nfc">Erlaubt einem Makro, zu starten, wenn du einen NFC-Tag an die Rückseite deines Telefons hältst. Ottomatic kann NFC nicht für dich einschalten, und Tags werden nur gelesen, solange der Bildschirm an und entsperrt ist.</string>
     <string name="perm_desc_foreground_service">Erlaubt Ottomatic, seine Engine laufen zu lassen, solange deine Makros scharfgeschaltet sind.</string>
-    <string name="perm_desc_device_admin">Erlaubt Ottomatic, Geräteadministrator-Funktionen zu nutzen.</string>
+    <string name="perm_desc_device_admin">Lässt Ottomatic erfahren, wenn jemand auf dem Sperrbildschirm eine falsche PIN, ein falsches Muster oder ein falsches Passwort eingibt. Nur so meldet Android einen fehlgeschlagenen Entsperrversuch. Solange das aktiv ist, lässt sich Ottomatic erst deinstallieren, wenn du es wieder ausschaltest.</string>
     <string name="perm_desc_access_fine_location">Sorgt dafür, dass ein Geofence merkt, wenn du irgendwo ankommst oder es verlässt.</string>
     <string name="perm_desc_access_coarse_location">Eine gröbere Ortung, die verwendet wird, wenn der genaue Standort nicht verfügbar ist.</string>
     <string name="perm_desc_access_background_location">Sorgt dafür, dass ein Geofence auch dann funktioniert, wenn Ottomatic geschlossen ist — und nur dann ist er überhaupt nützlich. Wird über „Immer zulassen“ erteilt.</string>
@@ -81,4 +81,9 @@
     <string name="perm_rationale_media_manage">Ottomatic kann Fotos ändern, ohne dich jedes Mal zu fragen. Optional: ohne dies funktioniert der Knoten weiterhin, aber Android zeigt eine Bestätigung an, sodass er nicht unbeaufsichtigt laufen kann.</string>
     <string name="perm_rationale_media_playback">Ottomatic liest die Medienbenachrichtigung anderer Apps. Nur so erkennt es, was gerade läuft, und kann Wiedergabe, Pause und Titelwechsel auslösen. Ohne diese Berechtigung erreichen die Medien-Knoten keinen Player.</string>
     <string name="perm_rationale_overlay_media">Ottomatic braucht die Berechtigung, sich über andere Apps zu legen, um Androids Bestätigung anzuzeigen, während das Makro im Hintergrund läuft. Ohne sie schlägt das Ändern eines von einer anderen App gespeicherten Fotos fehl, wenn du nicht in Ottomatic bist.</string>
+    <string name="perm_rationale_login_watch">Ottomatic muss Geräteadministrator sein, um von einem fehlgeschlagenen Entsperrversuch zu erfahren – Android meldet ihn nirgendwo sonst, und vom Sperrbildschirm kann eine normale App nichts lesen. Mehr beobachtet es nicht: Es kann deine PIN weder sehen noch ändern und das Telefon weder sperren noch löschen. Solange das aktiv ist, lässt sich Ottomatic erst deinstallieren, wenn du es in den Einstellungen wieder ausschaltest.</string>
+    <string name="device_admin_label">Erkennung fehlgeschlagener Entsperrversuche</string>
+    <string name="device_admin_description">Ermöglicht, dass ein Makro startet, wenn jemand dieses Telefon nicht entsperren kann.</string>
+    <string name="device_admin_disable_warning">Makros, die bei einem fehlgeschlagenen Entsperrversuch starten, funktionieren nicht mehr.</string>
+    <string name="perm_explanation_device_admin">Ottomatic startet damit ein Makro, wenn jemand eine falsche PIN, ein falsches Muster oder ein falsches Passwort eingibt. Mehr beobachtet es nicht.</string>
 </resources>

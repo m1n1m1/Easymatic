@@ -1,5 +1,7 @@
 package com.example.ottomatic.feature.permissions
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -18,10 +20,15 @@ import com.example.ottomatic.data.permissions.AndroidPermissionChecker
  * satisfied, and how to send the user there.
  *
  * The counterpart to [PermissionState], which covers permissions granted through
- * the runtime dialog. The difference that matters is that there is no result
+ * the runtime dialog. The difference that matters is that there is usually no result
  * callback to listen to: the user leaves the app entirely, toggles a switch, and
  * comes back. So this re-reads on `ON_RESUME`, the same way [PermissionState]
  * does after its own dialog.
+ *
+ * `DEVICE_ADMIN` is the exception and needs the launcher below, because its grant is a
+ * dialog started *for a result* rather than a page: Settings drops it on the floor when
+ * it arrives as a new task, which is what a bare `startActivity` from a context has to
+ * ask for. See `deviceAdminIntent`.
  */
 class PrerequisiteState internal constructor(
     val type: PrerequisiteType,
@@ -37,6 +44,13 @@ fun rememberPrerequisiteState(type: PrerequisiteType): PrerequisiteState {
     val context = LocalContext.current
 
     var revision by remember { mutableIntStateOf(0) }
+
+    // One launcher for the notice, not one per requirement: this composable is called
+    // once per prerequisite a node declares, and each call remembers its own.
+    val adminLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) { revision++ }
+
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -50,7 +64,13 @@ fun rememberPrerequisiteState(type: PrerequisiteType): PrerequisiteState {
         PrerequisiteState(
             type = type,
             isSatisfied = AndroidPermissionChecker(context).isPrerequisiteSatisfied(type),
-            onOpenSettings = { context.openSettingsFor(type) },
+            onOpenSettings = {
+                if (type == PrerequisiteType.DEVICE_ADMIN) {
+                    adminLauncher.launch(context.deviceAdminIntent())
+                } else {
+                    context.openSettingsFor(type)
+                }
+            },
         )
     }
 }

@@ -526,6 +526,7 @@ Ringing	振铃中
 Ringtone	铃声
 Rises above	升到高于
 Rotate	旋转
+Rotation	旋转
 Routes execution by comparing a value against another	通过比较两个值来决定执行走向
 Run Script	运行脚本
 Run action	执行动作
@@ -563,6 +564,7 @@ Service	服务
 Set	设置
 Set Brightness	设置亮度
 Set Ringer Mode	设置响铃模式
+Set Screen Rotation	设置屏幕旋转
 Set Screen Timeout	设置屏幕超时
 Set Variable	设置变量
 Set Volume	设置音量
@@ -726,6 +728,7 @@ Turns a list into one piece of text, separated by what you choose	把列表拼�
 Turns a value into another type — text, a number, yes/no or a date	把一个值转换成另一种类型——文本、数字、是/否或日期
 Turns accelerometer auto-rotation on or off	开启或关闭基于加速度计的自动旋转
 Turns the camera torch (flashlight) on or off	开启或关闭相机闪光灯（手电筒）
+Turns the screen to portrait or landscape and stops it rotating on its own	将屏幕转为竖屏或横屏，并停止其自动旋转
 Type	类型
 URL	网址
 USB Device Connected	USB 设备已连接
@@ -816,3 +819,8 @@ out	输出
 response	响应
 state	状态
 true	真
+Login Attempt Failed	解锁尝试失败
+Starts when someone enters the wrong PIN, pattern or password	当有人输入错误的 PIN 码、图案或密码时启动
+Attempt	尝试
+Attempts	尝试次数
+After failed attempts	失败次数达到

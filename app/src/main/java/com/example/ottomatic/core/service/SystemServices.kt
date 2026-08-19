@@ -68,6 +68,18 @@ interface SystemServices {
     fun setAutoRotate(enabled: Boolean): AutoRotateResult?
 
     /**
+     * Turns the screen to [rotation] and holds it there.
+     *
+     * Auto-rotation is switched **off** as part of the same call, because the
+     * chosen rotation is only read while it is: without that the write succeeds,
+     * the screen never moves, and nothing anywhere says why. Handing control back
+     * is `action.auto_rotate` turning it on again.
+     *
+     * Returns null on failure (requires `WRITE_SETTINGS`).
+     */
+    fun setScreenRotation(rotation: ScreenRotation): ScreenRotationResult?
+
+    /**
      * Toggles the camera torch. Returns null when no camera with a flash unit
      * is available or the call fails (requires `CAMERA`).
      */
@@ -275,6 +287,12 @@ data class ScreenTimeoutResult(
 /** Result of [SystemServices.setAutoRotate]. */
 data class AutoRotateResult(
     val enabled: Boolean,
+    val changed: Boolean,
+)
+
+/** Result of [SystemServices.setScreenRotation]. */
+data class ScreenRotationResult(
+    val rotation: ScreenRotation,
     val changed: Boolean,
 )
 

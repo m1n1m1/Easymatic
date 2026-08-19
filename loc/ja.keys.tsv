@@ -490,7 +490,7 @@ perm_desc_battery_optimisation	Android がバックグラウンドでエンジ�
 perm_desc_bluetooth_connect	マクロが Bluetooth のオン・オフを切り替えられるようにします。
 perm_desc_call_phone	確認なしにマクロが電話を発信できるようにします。
 perm_desc_camera	マクロがスマートフォン本体のカメラで写真を撮れるようになります。カメラアプリも、シャッターを押す人も必要ありません。Ottomatic は「写真を撮る」アクションの実行中だけカメラを開きます。
-perm_desc_device_admin	Ottomatic がデバイス管理者の機能を使えるようにします。
+perm_desc_device_admin	ロック画面で誤った PIN・パターン・パスワードが入力されたことを Ottomatic に通知します。Android が解除の失敗を伝える唯一の方法です。有効な間は、これをオフにするまで Ottomatic をアンインストールできません。
 perm_desc_exact_alarm	スケジュールの発火と待機の終了を、指定した分ちょうどに行えるようにします。これがないと Android は他の処理とまとめてよいことになり、遅れて実行される場合があります。
 perm_desc_foreground_service	マクロが有効な間、Ottomatic がエンジンを動かし続けられるようにします。
 perm_desc_manage_media	マクロが確認を求められることなく写真を変更・移動・削除できるようになります。任意です。なくても動作しますが、Android が毎回確認するため端末を手に持っている必要があります。
@@ -807,3 +807,8 @@ workflowlist_text	 ·
 workflowlist_this_macro	このマクロ
 workflowlist_which_trigger	どのトリガーですか？
 workflowlist_workflows	ワークフロー
+perm_rationale_login_watch	解除の失敗を知るには、Ottomatic がデバイス管理者である必要があります。Android はそれ以外の場所では通知せず、ロック画面の内容は通常のアプリからは読み取れません。監視するのはそれだけで、PIN を見ることも変更することも、端末をロックしたり消去したりすることもできません。有効な間は、設定でオフにするまで Ottomatic をアンインストールできません。
+device_admin_label	解除失敗の検知
+device_admin_description	この端末の解除に失敗したときにマクロを開始できるようにします。
+device_admin_disable_warning	解除の失敗で開始するマクロは動作しなくなります。
+perm_explanation_device_admin	誤った PIN・パターン・パスワードが入力されたときにマクロを開始するために使います。それ以外は監視しません。

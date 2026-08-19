@@ -163,6 +163,7 @@ internal fun rationaleRes(requirement: PermissionRequirement): Int? =
         // "notification.listener": reading a message somebody sent and reaching the
         // player that is running are different sentences, and the card is on the node.
         "media.playback" -> R.string.perm_rationale_media_playback
+        "login.watch" -> R.string.perm_rationale_login_watch
         else -> null
     }
 

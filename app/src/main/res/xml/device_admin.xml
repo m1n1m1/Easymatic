@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The policy set behind `trigger.login_failed`.
+
+    `watch-login` and nothing else. It is the only policy `onPasswordFailed`
+    needs, and the system dialog that enables an admin lists every policy it
+    asks for — so a second one here would ask the user to agree to something
+    no node uses.
+-->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <watch-login />
+    </uses-policies>
+</device-admin>

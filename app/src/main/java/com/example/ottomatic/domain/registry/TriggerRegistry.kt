@@ -92,6 +92,7 @@ object TriggerRegistry {
         add(com.example.ottomatic.engine.trigger.DockTrigger())
         add(com.example.ottomatic.engine.trigger.ScreenTrigger())
         add(com.example.ottomatic.engine.trigger.UserPresentTrigger())
+        add(com.example.ottomatic.engine.trigger.LoginFailedTrigger())
         add(com.example.ottomatic.engine.trigger.RingerModeTrigger())
         add(com.example.ottomatic.engine.trigger.PowerSaveTrigger())
         add(com.example.ottomatic.engine.trigger.ClockChangeTrigger())

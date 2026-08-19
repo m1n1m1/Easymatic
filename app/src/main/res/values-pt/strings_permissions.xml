@@ -41,7 +41,7 @@
     <string name="perm_desc_access_media_location">Permite que uma macro leia onde uma foto foi tirada. Sem isto, o Android oculta a localização nas fotos guardadas por outras aplicações e a macro julga que a foto não tem nenhuma.</string>
     <string name="perm_desc_manage_media">Permite que uma macro altere, mova ou elimine fotos sem lhe pedir que confirme cada uma. Opcional: sem isto tudo continua a funcionar, mas o Android pergunta sempre, o que exige que tenha o telemóvel na mão.</string>
     <string name="perm_desc_foreground_service">Permite que o Ottomatic mantenha o motor a correr enquanto as tuas macros estiverem ativas.</string>
-    <string name="perm_desc_device_admin">Permite que o Ottomatic use funcionalidades de administrador do dispositivo.</string>
+    <string name="perm_desc_device_admin">Permite que o Ottomatic seja avisado quando alguém introduz um PIN, padrão ou palavra-passe errados no ecrã de bloqueio. É a única forma de o Android comunicar um desbloqueio falhado. Enquanto estiver ativado, o Ottomatic não pode ser desinstalado até o desativar.</string>
     <string name="perm_desc_access_fine_location">Faz com que uma geocerca saiba quando chegas a um sítio ou sais dele.</string>
     <string name="perm_desc_access_coarse_location">Uma localização mais aproximada, usada quando a posição precisa não está disponível.</string>
     <string name="perm_desc_access_background_location">Faz com que uma geocerca continue a funcionar com o Ottomatic fechado, que é a única altura em que serve de alguma coisa. Concedida ao escolher «Permitir sempre».</string>
@@ -73,5 +73,10 @@
     <string name="perm_rationale_media_manage">O Ottomatic pode alterar fotos sem lhe perguntar de cada vez. É opcional: sem isto o nó continua a funcionar, mas o Android mostra uma confirmação no ecrã, pelo que não pode correr sem supervisão.</string>
     <string name="perm_rationale_media_playback">O Ottomatic lê a notificação multimédia que outras aplicações publicam, e assim sabe o que está a tocar e pode enviar reproduzir, pausar e saltar. Sem isto, os nós multimédia não veem nem alcançam nenhum leitor.</string>
     <string name="perm_rationale_overlay_media">O Ottomatic precisa de permissão para se sobrepor a outras aplicações, para poder mostrar a confirmação do Android enquanto a macro corre em segundo plano. Sem isto, alterar uma foto guardada por outra aplicação falha quando não está no Ottomatic.</string>
+    <string name="perm_rationale_login_watch">O Ottomatic precisa de ser administrador do dispositivo para ser avisado de um desbloqueio falhado: o Android não o comunica em mais lado nenhum, e uma app normal não consegue ler nada do ecrã de bloqueio. Não vigia mais nada: não consegue ver o seu PIN, alterá-lo, nem bloquear ou apagar o telemóvel. Enquanto estiver ativado, o Ottomatic não pode ser desinstalado até o desativar nas Definições.</string>
     <string name="perm_rationale_overlay_launch">O Ottomatic precisa de permissão para se sobrepor a outras aplicações e assim poder abrir uma enquanto estás noutro sítio do telemóvel. O Android impede que uma aplicação em segundo plano abra outra e, sem esta permissão, o nó não faz nada e di-lo na consola.</string>
+    <string name="device_admin_label">Deteção de desbloqueios falhados</string>
+    <string name="device_admin_description">Permite que uma macro comece quando alguém não consegue desbloquear este telemóvel.</string>
+    <string name="device_admin_disable_warning">As macros que começam com um desbloqueio falhado deixarão de funcionar.</string>
+    <string name="perm_explanation_device_admin">O Ottomatic usa isto para iniciar uma macro quando alguém introduz um PIN, padrão ou palavra-passe errados. Não vigia mais nada.</string>
 </resources>

@@ -149,6 +149,23 @@ enum class TriggerSource {
      * listener that needs notification access must not be held while nothing wants it.
      */
     MEDIA_SESSION,
+
+    /**
+     * Somebody failed to unlock the phone.
+     *
+     * Its own source rather than [DISPLAY], which is documented as the screen turning
+     * on and off and the device being unlocked — all three of which are things that
+     * happen in ordinary use. This is the one that is not, and the filter a trigger
+     * runs against it is `source` alone.
+     *
+     * **Broadcast rather than addressed to a node id**, on [RECORDING]'s reasoning: the
+     * admin receiver hearing `onPasswordFailed` has no idea which macros want it, and a
+     * wrong PIN is equally new to every armed node. Emitted through
+     * [TriggerBus.emitOrHoldBroadcast] because a failed unlock nearly always arrives
+     * with the engine cold — the phone has been locked, which is exactly when Android
+     * has had every reason to reclaim the process.
+     */
+    SECURITY,
 }
 
 /**

@@ -61,6 +61,7 @@ import com.example.ottomatic.engine.action.RecordStopAction
 import com.example.ottomatic.engine.action.RepeatAction
 import com.example.ottomatic.engine.action.ReplyMessageAction
 import com.example.ottomatic.engine.action.RingerModeAction
+import com.example.ottomatic.engine.action.ScreenRotationAction
 import com.example.ottomatic.engine.action.ScreenTimeoutAction
 import com.example.ottomatic.engine.action.ScreenshotAction
 import com.example.ottomatic.engine.action.ScriptAction
@@ -108,7 +109,11 @@ object ActionRegistry {
     private val actions: List<ExecutableAction> = listOf(
         AiPromptAction(),
         AiDescribeAction(),
+        // The two rotation nodes together, on the notify pair's reasoning: turning the
+        // screen is what somebody comes looking for, and it only holds because it
+        // switched the toggle above it off — so the pair is only readable side by side.
         AutoRotateAction(),
+        ScreenRotationAction(),
         BluetoothAction(),
         BrightnessAction(),
         CallAction(),

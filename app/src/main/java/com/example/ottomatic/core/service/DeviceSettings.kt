@@ -135,3 +135,39 @@ enum class HttpMethod {
     /** Whether this method sends a request body. */
     val sendsBody: Boolean get() = this == POST || this == PUT
 }
+
+/**
+ * Which way round the screen is locked, for `action.screen_rotation`.
+ *
+ * **Four positions where `trigger.device_orientation` reports six**, and the two
+ * that are missing are the point: face up and face down are resting positions of
+ * the *device*, and no display rotation corresponds to either — a phone lying on
+ * a desk still shows portrait or landscape. Offering them would be offering a
+ * choice that could never be applied, which is the failure a picker over a closed
+ * set is supposed to make impossible.
+ *
+ * The four that remain carry the trigger's names deliberately, and name the same
+ * physical positions, so "when it is face down, turn the screen to landscape
+ * left" is one vocabulary rather than two. [LANDSCAPE_LEFT] is the device turned
+ * anticlockwise — its top edge toward the left — and is what Android itself calls
+ * plain landscape; [LANDSCAPE_RIGHT] is the other one.
+ *
+ * Both halves measure from the device's **natural** orientation, which is
+ * portrait on a phone and landscape on some tablets. That is the frame the
+ * accelerometer axes use too, so where "portrait" is not upright the trigger and
+ * this action are wrong together rather than disagreeing.
+ */
+@Serializable
+enum class ScreenRotation {
+    @SerialName("portrait")
+    PORTRAIT,
+
+    @SerialName("portrait_upside_down")
+    PORTRAIT_UPSIDE_DOWN,
+
+    @SerialName("landscape_left")
+    LANDSCAPE_LEFT,
+
+    @SerialName("landscape_right")
+    LANDSCAPE_RIGHT,
+}

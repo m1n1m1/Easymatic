@@ -13,6 +13,8 @@ import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.core.service.MessengerRecipe
 import com.example.ottomatic.core.service.RingerMode
 import com.example.ottomatic.core.service.RingerResult
+import com.example.ottomatic.core.service.ScreenRotation
+import com.example.ottomatic.core.service.ScreenRotationResult
 import com.example.ottomatic.core.service.ScreenTimeoutResult
 import com.example.ottomatic.core.service.SoundRequest
 import com.example.ottomatic.core.service.SystemServices
@@ -70,6 +72,10 @@ class RecordingSystemServices : SystemServices {
     var bluetoothEnabled: Boolean? = null
     var wifiEnabled: Boolean? = null
     var autoRotateEnabled: Boolean? = null
+    var screenRotation: ScreenRotation? = null
+
+    /** True answers as a phone that has not granted `WRITE_SETTINGS`, i.e. one that refuses. */
+    var screenRotationRefused = false
     var ringerMode: RingerMode? = null
     var volume: Triple<AudioStream, VolumeMode, Int>? = null
     var dnd: Pair<Boolean, DndLevel>? = null
@@ -113,6 +119,13 @@ class RecordingSystemServices : SystemServices {
     override fun setAutoRotate(enabled: Boolean): AutoRotateResult? {
         autoRotateEnabled = enabled
         return AutoRotateResult(enabled = enabled, changed = true)
+    }
+
+    override fun setScreenRotation(rotation: ScreenRotation): ScreenRotationResult? {
+        if (screenRotationRefused) return null
+        screenRotation = rotation
+        autoRotateEnabled = false
+        return ScreenRotationResult(rotation = rotation, changed = true)
     }
 
     override fun setTorch(enabled: Boolean): TorchResult? {

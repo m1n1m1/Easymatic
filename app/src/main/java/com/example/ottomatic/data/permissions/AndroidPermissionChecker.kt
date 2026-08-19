@@ -3,6 +3,7 @@ package com.example.ottomatic.data.permissions
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.NotificationManager
+import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
@@ -96,9 +97,21 @@ class AndroidPermissionChecker(
         // `MediaConsents` for the ladder this switch sits at the top of.
         PrerequisiteType.MANAGE_MEDIA ->
             Build.VERSION.SDK_INT < Build.VERSION_CODES.S || MediaStore.canManageMedia(context)
-        // Neither is declared by any node; reporting them unsatisfied keeps the
-        // safe default rather than claiming something unverified is working.
-        PrerequisiteType.FOREGROUND_SERVICE, PrerequisiteType.DEVICE_ADMIN -> false
+        PrerequisiteType.DEVICE_ADMIN -> isDeviceAdminActive()
+        // Not declared by any node; reporting it unsatisfied keeps the safe
+        // default rather than claiming something unverified is working.
+        PrerequisiteType.FOREGROUND_SERVICE -> false
+    }
+
+    /**
+     * Whether *our* device administrator is active.
+     *
+     * Unlike the accessibility check below there is nothing to parse: the platform
+     * answers about one component, and the component is ours.
+     */
+    private fun isDeviceAdminActive(): Boolean {
+        val manager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        return manager.isAdminActive(ComponentName(context.packageName, DEVICE_ADMIN_RECEIVER_CLASS))
     }
 
     private fun hasNfcHardware(): Boolean =
@@ -184,5 +197,13 @@ class AndroidPermissionChecker(
          */
         const val ACCESSIBILITY_SERVICE_CLASS =
             "com.example.ottomatic.data.accessibility.OttomaticAccessibilityService"
+
+        /**
+         * Fully-qualified name of the app's device administrator, named rather than
+         * referenced for [ACCESSIBILITY_SERVICE_CLASS]'s reason.
+         * `DeviceAdminReceiverNameTest` asserts the two stay in step.
+         */
+        const val DEVICE_ADMIN_RECEIVER_CLASS =
+            "com.example.ottomatic.data.trigger.LoginAdminReceiver"
     }
 }
