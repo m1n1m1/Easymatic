@@ -1,6 +1,6 @@
 ---
 name: node-text-and-translation
-description: Read before touching user-facing strings, node text or translations - NodeText, NodeStringIds, strings_nodes.xml, NodeStringsSyncTest, IssueText, the loc/ TSV pipeline and the values-<locale>/ folders.
+description: Read before touching user-facing strings, node text or translations - NodeText, NodeStringIds, strings_nodes.xml, NodeStringsSyncTest, IssueText and the values-<locale>/ folders.
 ---
 
 # Node text and translation
@@ -45,7 +45,9 @@ Debug builds enable **pseudolocales** (`isPseudoLocalesEnabled`). `en-XA` is how
 
 **Only `values-de/` has been reviewed by someone who speaks the language.** The other six were produced in one pass each and are unreviewed — good enough to ship behind a language picker the user opts into, not good enough to assume correct when a bug report quotes one. Read a reported string against `values/` before believing what it says, and treat a native speaker's correction to any of es/fr/pt/zh-rCN/ja/ru as authoritative over what is there now.
 
-A locale is **not** written by hand into `values-<locale>/`. The English side is dumped to TSV by `loc/dump.py`, translated as three tab-separated tables (`loc/<locale>.keys.tsv` keyed by resource name, `loc/<locale>.nodes.tsv` keyed by *English value* so one translation covers every node string that says the same thing, `loc/<locale>.plurals.tsv` keyed `name:quantity`), and rendered by `python loc/mkloc.py <locale>`, which owns the XML escaping — `&`, `<`, backslashes and the bare apostrophe that is a **build error** in Android XML. It prints a count of anything still untranslated, and the run is not finished until that count is zero. Doing it by hand is how `%1$s` goes missing from one string in one locale.
+A locale **is** written by hand, straight into `values-<locale>/`, and that is the only copy of it there is. There used to be a `loc/` staging layer — three tab-separated tables per locale, rendered into XML by a script — and it was removed on 2026-08-20: it held every translated string twice, so the XML Android actually reads was only ever as current as the last time somebody re-ran the renderer. What it did own was the **XML escaping**, and that is the thing to keep in mind when editing by hand: `&` is `&amp;`, `<` is `&lt;`, a backslash is `\\`, and a **bare apostrophe is an aapt error**, not a silent one — `\'` or `"…"` around the whole string. Every one of those fails `assembleDebug` loudly, which is why losing the script costs nothing here.
+
+**Completeness is now enforced by nothing.** A locale may hold a *subset* of the keys, `TranslationKeysTest` allows exactly that, and anything absent falls back to English — so a string nobody translated looks the same as one nobody noticed. The script used to print a count of those and the rule was that the count reached zero; there is no such count any more. What is still pinned is the *superset* direction (a key that exists only in a locale is dead), the `%1$s` placeholders per key, and that each locale holds more than a thousand strings.
 
 `quantity` is per-language and **not** a translation of the English set: en/de/es/fr/pt need `one`/`other`, zh and ja need `other` alone, and **ru needs four** — `one` (1, 21, 31…), `few` (2–4, 22–24…), `many` (0, 5–20…) and `other` (fractions). `TranslationKeysTest` deliberately does *not* require the categories to match `values/`; it only requires each `<item>` to keep its placeholders. Requiring a match would forbid exactly the thing CLDR requires.
 

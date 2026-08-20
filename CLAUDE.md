@@ -86,7 +86,7 @@ Every user-facing string resolves through Android string resources, and the app 
 .\gradlew.bat :app:testDebugUnitTest --tests "*NodeStringsSyncTest*" -PregenerateNodeStrings=true
 ```
 
-The two routes (direct `R.string` where the answer set is closed, generated keys where it is open-ended), `NodeText`'s plugin fallback, `HardcodedFeatureStringTest` and the `loc/` translation pipeline are in the `node-text-and-translation` skill.
+The two routes (direct `R.string` where the answer set is closed, generated keys where it is open-ended), `NodeText`'s plugin fallback, `HardcodedFeatureStringTest` and the eight hand-maintained locales are in the `node-text-and-translation` skill.
 
 ### Values and conditions
 
@@ -215,7 +215,7 @@ Workflows persist as individual JSON files in `{filesDir}/workflows/{id}.json`. 
 
 These subsystems each have their own file so they are not resident in every session. Read the one you need before changing that area.
 
-- **Node text and translation** (`NodeText`, `NodeStringIds`, `strings_nodes.xml`, the `loc/` pipeline, the eight locales) — `node-text-and-translation` skill
+- **Node text and translation** (`NodeText`, `NodeStringIds`, `strings_nodes.xml`, the eight locales) — `node-text-and-translation` skill
 - **Scoped config fields** (`@Picker(scopedBy)`, `@Suggested`, `Suggestions`, `ConfigField.backedBy`) — `scoped-config-fields` skill
 - **Lists and iteration** (list nodes, `action.for_each` / `repeat` / `while`) — `lists-and-loops` skill
 - **Asking the user** (the four `action.dialog_*` interaction nodes) — `dialog-nodes` skill
