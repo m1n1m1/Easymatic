@@ -2,19 +2,30 @@
 <!--
     Both canRequestFilterKeyEvents and the flagRequestFilterKeyEvents flag are
     required; declaring one without the other silently yields no key events at
-    all.
+    all. canRequestFingerprintGestures and flagRequestFingerprintGestures are the
+    same pair one subject over, with the same silent failure, which is why they
+    are listed together here rather than left to be discovered separately.
 
     accessibilityEventTypes is deliberately omitted (it defaults to none) and
     canRetrieveWindowContent is false, so this service observes nothing but key
-    events: no window titles, no text on screen, no notion of which app is in
-    front.
+    events and fingerprint swipes: no window titles, no text on screen, no notion
+    of which app is in front.
+
+    Fingerprint gestures are the second deliberate widening after canTakeScreenshot
+    and a much smaller one: what arrives is a direction, four values wide, and only
+    while the sensor is not authenticating — the platform withholds them during an
+    unlock, so nothing here can observe or interfere with one. Ordinary unlock is
+    untouched. What is worth knowing instead is that most phones deliver these
+    gestures at all: only a physical, usually rear-mounted reader reports swipes,
+    which is what DeviceCapability.FINGERPRINT_GESTURES exists to say out loud.
 
     canTakeScreenshot is the one capability beyond that, and it is what
     action.screenshot runs on. It does not imply canRetrieveWindowContent — a
-    frame is not a view tree — so that stays false. Android lists this capability
-    on the enable screen, which is why accessibility_service_description names it:
-    a person turning this on for the volume-button trigger deserves to read that
-    the same switch lets a macro capture the screen.
+    frame is not a view tree — so that stays false. Android lists every one of
+    these capabilities on the enable screen, which is why
+    accessibility_service_description names them: a person turning this on for the
+    volume-button trigger deserves to read that the same switch lets a macro
+    capture the screen and see fingerprint swipes.
 
     Nothing captures unprompted. takeScreenshot is called from exactly one place
     (ScreenCapture) and only while an action.screenshot node is executing.
@@ -24,8 +35,9 @@
 -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:accessibilityFlags="flagRequestFilterKeyEvents"
+    android:accessibilityFlags="flagRequestFilterKeyEvents|flagRequestFingerprintGestures"
     android:canRequestFilterKeyEvents="true"
+    android:canRequestFingerprintGestures="true"
     android:canRetrieveWindowContent="false"
     android:canTakeScreenshot="true"
     android:description="@string/accessibility_service_description"

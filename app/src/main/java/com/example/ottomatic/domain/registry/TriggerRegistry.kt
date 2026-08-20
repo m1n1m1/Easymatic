@@ -110,6 +110,11 @@ object TriggerRegistry {
         add(com.example.ottomatic.engine.trigger.LightLevelTrigger())
         // Tier 3 — accessibility-service triggers.
         add(com.example.ottomatic.engine.trigger.VolumeButtonTrigger())
+        // Beside it by mechanism and away from it by subject, which is the split this
+        // file keeps making: what arms this is the same accessibility service, so it
+        // belongs in Tier 3, while its category is SENSORS because a swipe is a
+        // gesture and that is where somebody looks for one.
+        add(com.example.ottomatic.engine.trigger.FingerprintGestureTrigger())
     }
 
     private val byId: Map<NodeTypeId, ExecutableTrigger> = triggers.associateBy { it.typeId }

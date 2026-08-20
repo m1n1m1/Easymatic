@@ -23,6 +23,15 @@ enum class IssueReason {
     /** node, needs */
     PERMISSION_MISSING,
 
+    /**
+     * node, needs
+     *
+     * Hardware the phone does not have, as opposed to a grant it has not been given.
+     * Separate from [PERMISSION_MISSING] because the sentences must differ: one names
+     * something to go and fix, this one does not.
+     */
+    CAPABILITY_MISSING,
+
     /** node, needs, plugin */
     PLUGIN_PERMISSION_MISSING,
 

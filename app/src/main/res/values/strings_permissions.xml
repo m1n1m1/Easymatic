@@ -64,6 +64,7 @@
 
     <!-- Node-card rationales: why *this node* is asking. -->
     <string name="perm_rationale_accessibility_keys">Ottomatic needs accessibility access to see button presses. It never watches what is on screen. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.</string>
+    <string name="perm_rationale_accessibility_fingerprint">Ottomatic needs accessibility access to see swipes across the fingerprint reader. It cannot see your fingerprint or whether it matched, and unlocking is unaffected. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.</string>
     <string name="perm_rationale_screen_capture">Ottomatic needs accessibility access to capture the screen. It captures only while this action runs — it never watches what is on screen. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.</string>
     <string name="perm_rationale_audio_record">Ottomatic needs microphone access to record sound. It opens the microphone only while a recording is running and closes it as soon as the recording ends. Without this, a recording either fails or is saved as silence.</string>
     <string name="perm_rationale_camera_photo">Ottomatic needs camera access to take a photo. It opens the camera only while this action runs, and closes it straight afterwards. Android may still refuse a photo when the phone has been idle in the background for a long time.</string>

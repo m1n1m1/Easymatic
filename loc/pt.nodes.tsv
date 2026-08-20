@@ -213,6 +213,7 @@ Files	Ficheiros
 Find Calendar Events	Procurar compromissos
 Find Pictures	Localizar imagens
 Finds photos and screenshots on this phone onto a list you can loop over	Procura fotos e capturas de ecrã neste telemóvel e coloca-as numa lista que pode percorrer
+Fingerprint Gesture	Gesto de impressão digital
 Fire time	Hora de disparo
 Fire when	Disparar quando
 Fires immediately when the workflow starts (no external event)	Dispara assim que o fluxo arranca (sem evento externo)
@@ -645,6 +646,7 @@ Starts when the ringer mode changes (normal, silent, vibrate)	Inicia quando o mo
 Starts when the screen turns on or off	Inicia quando o ecrã se liga ou desliga
 Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)	Inicia quando o sensor por cima do ecrã é coberto ou descoberto. A tua mão tem de estar a tocar no vidro ou quase (na maioria dos dispositivos, apenas com o ecrã ligado)
 Starts when the user unlocks the device	Inicia quando o utilizador desbloqueia o dispositivo
+Starts when you swipe across the fingerprint reader. Needs accessibility access, and only works on phones whose reader reports swipes; unlocking is unaffected	Inicia quando deslizas o dedo no leitor de impressões digitais. Precisa de acesso de acessibilidade e só funciona em telemóveis cujo leitor comunica deslizes; o desbloqueio não é afetado
 State	Estado
 Stop	Parar
 Stop Macro	Parar macro
@@ -660,6 +662,10 @@ Struct	Estrutura
 Subject	Assunto
 Subject contains	O assunto contém
 Sundays	Domingos
+Swipe down	Deslizar para baixo
+Swipe left	Deslizar para a esquerda
+Swipe right	Deslizar para a direita
+Swipe up	Deslizar para cima
 System	Sistema
 Tag	Etiqueta
 Tag — Used for manual deletion	Etiqueta: para a remover manualmente

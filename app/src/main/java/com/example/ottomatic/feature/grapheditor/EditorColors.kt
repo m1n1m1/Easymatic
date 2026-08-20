@@ -11,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.FastForward
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatterySaver
 import androidx.compose.material.icons.filled.BatteryStd
@@ -309,6 +310,7 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // The lock rather than BOLT's "something changed": this node is about the lock
     // screen, and the other Device State triggers are not.
     NodeIcon.LOCK -> Icons.Filled.Lock
+    NodeIcon.FINGERPRINT -> Icons.Filled.Fingerprint
     // Something leaving for elsewhere, which is the one promise Send Intent makes and the one
     // BOLT's "the phone changed" does not.
     NodeIcon.INTENT -> Icons.AutoMirrored.Filled.OpenInNew

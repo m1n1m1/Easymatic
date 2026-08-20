@@ -32,6 +32,7 @@ import com.example.ottomatic.core.permissions.PrerequisiteType
 import com.example.ottomatic.data.BootFailureStore
 import com.example.ottomatic.data.location.AndroidLocationLookup
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
+import com.example.ottomatic.domain.registry.DeviceCapabilities
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.feature.ai.AiConnectionsScreen
@@ -430,6 +431,11 @@ class MainActivity : ComponentActivity() {
         // repeat: a handful of synchronous checks over the distinct grants the node
         // types declare.
         GrantedPrerequisites.hydrateFrom(ServiceLocator.permissionChecker)
+        // The hardware half, re-read on the same signal and for a reason particular to
+        // it: whether the fingerprint reader reports swipes can only be asked of a bound
+        // accessibility service, so enabling that service in Settings is exactly when an
+        // UNKNOWN can turn into a real answer.
+        DeviceCapabilities.hydrateFrom(ServiceLocator.capabilityChecker)
         // The same signal, one layer out: calendar access is granted by leaving the app,
         // and until it lands there is no calendar the validator or the AI tool catalogue
         // can name. A read that fails publishes nothing rather than an empty list — see

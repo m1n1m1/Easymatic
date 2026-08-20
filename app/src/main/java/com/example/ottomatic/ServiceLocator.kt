@@ -1,6 +1,7 @@
 package com.example.ottomatic
 
 import android.content.Context
+import com.example.ottomatic.core.capabilities.CapabilityChecker
 import com.example.ottomatic.core.permissions.PermissionChecker
 import com.example.ottomatic.core.service.Calendars
 import com.example.ottomatic.core.service.DeviceState
@@ -44,9 +45,11 @@ import com.example.ottomatic.domain.registry.HaCatalog
 import com.example.ottomatic.domain.registry.MqttCatalog
 import com.example.ottomatic.domain.registry.SmartHomeHubs
 import com.example.ottomatic.domain.registry.CalendarDirectory
+import com.example.ottomatic.domain.registry.DeviceCapabilities
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.log.RunLogStore
+import com.example.ottomatic.data.capabilities.AndroidCapabilityChecker
 import com.example.ottomatic.data.permissions.AndroidPermissionChecker
 import com.example.ottomatic.data.api.ApiCallerRepository
 import com.example.ottomatic.data.api.ApiCallers
@@ -291,6 +294,13 @@ object ServiceLocator {
      * actual request flow use an Activity-backed checker in `MainActivity`.
      */
     lateinit var permissionChecker: PermissionChecker
+
+    /**
+     * The hardware half of the same question, kept separate for the reason
+     * `DeviceCapability` gives: a permission is something the user can grant, a
+     * capability is a fact about the phone, and they reach different screens.
+     */
+    lateinit var capabilityChecker: CapabilityChecker
         private set
 
     /** Which plugin apps the user has enabled, and under which signer. */
@@ -519,16 +529,24 @@ object ServiceLocator {
     }
 
     /**
-     * Publishes what the phone has granted, for `GraphValidator`.
+     * Publishes what the phone has granted **and what it can physically do**, for
+     * `GraphValidator`.
      *
      * It asks whether a node can actually do its job and runs from paths that can
      * neither suspend nor be injected into. Re-read on every return to the foreground
      * by `MainActivity`, since granting any of these means leaving the app for a
      * Settings page.
+     *
+     * Two registries rather than one because they answer different questions and reach
+     * different screens: a grant belongs on the Permissions screen because it can be
+     * fixed there, and missing hardware would only be a row that never goes green. See
+     * `DeviceCapability`.
      */
     private fun publishGrantedPrerequisites(appContext: Context) {
         permissionChecker = AndroidPermissionChecker(appContext)
         GrantedPrerequisites.hydrateFrom(permissionChecker)
+        capabilityChecker = AndroidCapabilityChecker(appContext)
+        DeviceCapabilities.hydrateFrom(capabilityChecker)
     }
 
     /**

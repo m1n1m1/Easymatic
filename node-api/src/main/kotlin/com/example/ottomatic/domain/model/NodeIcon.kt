@@ -196,6 +196,17 @@ enum class NodeIcon {
     LOCK,
 
     /**
+     * A fingerprint, for the trigger that fires on a swipe across the reader.
+
+     * Not [LOCK], which is the nearest thing here and would be actively misleading:
+     * that icon is about somebody failing to get in, and this node cannot see an
+     * unlock at all — the platform withholds gestures while the sensor is
+     * authenticating. Not [PROXIMITY] either, which promises a sensor reading rather
+     * than a deliberate gesture. The subject really is the reader itself.
+     */
+    FINGERPRINT,
+
+    /**
      * An arrow leaving a box, for the node that starts an arbitrary intent.
      *
      * Its own entry rather than [BOLT] or [SEND]. Not [BOLT], which every other "does something

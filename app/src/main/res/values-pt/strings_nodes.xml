@@ -414,6 +414,15 @@
     <string name="cfg_trigger_volume_button_hold_ms">Manter pelo menos (ms)</string>
     <string name="cfg_trigger_volume_button_presses">Número de pressões</string>
     <string name="cfg_trigger_volume_button_window_ms">Dentro de (ms)</string>
+    <string name="node_trigger_fingerprint_gesture_name">Gesto de impressão digital</string>
+    <string name="node_trigger_fingerprint_gesture_desc">Inicia quando deslizas o dedo no leitor de impressões digitais. Precisa de acesso de acessibilidade e só funciona em telemóveis cujo leitor comunica deslizes; o desbloqueio não é afetado</string>
+    <string name="port_trigger_fingerprint_gesture_out">Saída</string>
+    <string name="port_trigger_fingerprint_gesture_state">Estado</string>
+    <string name="cfg_trigger_fingerprint_gesture_gesture">Gesto</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_up">Deslizar para cima</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_down">Deslizar para baixo</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_left">Deslizar para a esquerda</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_right">Deslizar para a direita</string>
     <string name="node_action_ai_prompt_name">Perguntar à IA</string>
     <string name="node_action_ai_prompt_desc">Envia um pedido a um modelo de IA (Gemini, Claude, ChatGPT, OpenRouter ou um modelo alojado por si) e devolve a resposta como texto, deixando-o executar nós e macros como ferramentas quando o permitir</string>
     <string name="port_action_ai_prompt_in">Entrada</string>

@@ -414,6 +414,15 @@
     <string name="cfg_trigger_volume_button_hold_ms">至少按住（毫秒）</string>
     <string name="cfg_trigger_volume_button_presses">按键次数</string>
     <string name="cfg_trigger_volume_button_window_ms">在此时间内（毫秒）</string>
+    <string name="node_trigger_fingerprint_gesture_name">指纹手势</string>
+    <string name="node_trigger_fingerprint_gesture_desc">当你在指纹传感器上滑动时启动。需要无障碍使用权，且仅在传感器会报告滑动的手机上有效；指纹解锁不受影响</string>
+    <string name="port_trigger_fingerprint_gesture_out">输出</string>
+    <string name="port_trigger_fingerprint_gesture_state">状态</string>
+    <string name="cfg_trigger_fingerprint_gesture_gesture">手势</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_up">向上滑动</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_down">向下滑动</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_left">向左滑动</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_right">向右滑动</string>
     <string name="node_action_ai_prompt_name">询问 AI</string>
     <string name="node_action_ai_prompt_desc">向 AI 模型（Gemini、Claude、ChatGPT、OpenRouter 或自托管模型）发送提示，并以文本返回回复；开启后还可让它把节点和宏当作工具来执行</string>
     <string name="port_action_ai_prompt_in">输入</string>

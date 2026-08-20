@@ -58,6 +58,14 @@ internal object PluginNodeMapping {
         // `GrantedPrerequisites`, which answer "what does *this app* need" — an answer
         // that must not change because somebody installed a plugin.
         permissionRequirements = emptyList(),
+        // And no capabilities, for a reason one step past the permissions one. A
+        // capability is the host saying "this phone cannot do this, ever" — a claim
+        // only the host can check and only the host can be wrong about. A plugin
+        // declaring one would have Ottomatic badge a node in the user's macro on the
+        // plugin's say-so, with nothing on this side able to verify it. A plugin that
+        // needs hardware it does not have knows so itself, and says so through
+        // `notReady`, which is its own sentence in its own words.
+        capabilities = emptyList(),
     )
 
     fun toConfigSchema(declaration: NodeDeclarationWire): NodeConfigSchema? =

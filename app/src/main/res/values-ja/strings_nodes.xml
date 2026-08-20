@@ -414,6 +414,15 @@
     <string name="cfg_trigger_volume_button_hold_ms">最低限の長押し時間（ミリ秒）</string>
     <string name="cfg_trigger_volume_button_presses">押した回数</string>
     <string name="cfg_trigger_volume_button_window_ms">この時間内（ミリ秒）</string>
+    <string name="node_trigger_fingerprint_gesture_name">指紋ジェスチャー</string>
+    <string name="node_trigger_fingerprint_gesture_desc">指紋センサーをスワイプしたときに開始します。ユーザー補助へのアクセスが必要で、スワイプを報告するセンサーを備えた端末でのみ動作します。ロック解除には影響しません</string>
+    <string name="port_trigger_fingerprint_gesture_out">出力</string>
+    <string name="port_trigger_fingerprint_gesture_state">状態</string>
+    <string name="cfg_trigger_fingerprint_gesture_gesture">ジェスチャー</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_up">上にスワイプ</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_down">下にスワイプ</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_left">左にスワイプ</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_right">右にスワイプ</string>
     <string name="node_action_ai_prompt_name">AI に質問</string>
     <string name="node_action_ai_prompt_desc">AI モデル（Gemini、Claude、ChatGPT、OpenRouter、または自前のモデル）にプロンプトを送り、返答をテキストで返します。許可すればノードやマクロをツールとして実行させられます</string>
     <string name="port_action_ai_prompt_in">入力</string>

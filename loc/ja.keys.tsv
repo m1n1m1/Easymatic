@@ -1,6 +1,6 @@
-accessibility_service_description	Ottomatic はこれを 2 つの目的で使用します。音量ボタンの押下を検知してマクロを開始できるようにすることと、マクロが「スクリーンショットを撮る」アクションを実行したときに画面を取り込むことです。画面を監視することは決してなく、取り込むのはマクロが要求したときだけです。またボタン本来の動作を変えることもありません。音量キーはこれまでどおり機能します。
+accessibility_service_description	Ottomatic はこれを 3 つの目的で使用します。音量ボタンの押下と指紋センサー上のスワイプを検知してマクロを開始できるようにすることと、マクロが「スクリーンショットを撮る」アクションを実行したときに画面を取り込むことです。画面を監視することは決してなく、取り込むのはマクロが要求したときだけです。また何も変更しません。音量キーはこれまでどおり機能し、指紋によるロック解除にも影響しません。
 accessibility_service_label	Ottomatic のボタントリガー
-accessibility_service_summary	音量ボタンを押したときにマクロを開始できるようにし、「スクリーンショットを撮る」アクションで画面を取り込めるようにします。
+accessibility_service_summary	音量ボタンを押したときや指紋センサーをスワイプしたときにマクロを開始できるようにし、「スクリーンショットを撮る」アクションで画面を取り込めるようにします。
 ai_add_ai_connection	AI 接続を追加
 ai_add_connection	接続を追加
 ai_add_model	モデルを追加
@@ -813,3 +813,5 @@ device_admin_label	解除失敗の検知
 device_admin_description	この端末の解除に失敗したときにマクロを開始できるようにします。
 device_admin_disable_warning	解除の失敗で開始するマクロは動作しなくなります。
 perm_explanation_device_admin	誤った PIN・パターン・パスワードが入力されたときにマクロを開始するために使います。それ以外は監視しません。
+perm_rationale_accessibility_fingerprint	指紋センサー上のスワイプを検知するために、Ottomatic はユーザー補助へのアクセスを必要とします。指紋そのものや照合結果を見ることはできず、ロック解除にも影響しません。スイッチがグレー表示の場合は、先に アプリ情報 → ⋮ → 制限された設定を許可 を開いてください。
+problem_capability_missing	「%1$s」には%2$sが必要ですが、この端末にはありません。ここで動作することはありません

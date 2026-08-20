@@ -213,6 +213,7 @@ Files	ファイル
 Find Calendar Events	予定を探す
 Find Pictures	画像を検索
 Finds photos and screenshots on this phone onto a list you can loop over	この端末の写真とスクリーンショットを探し、繰り返し処理できるリストにします
+Fingerprint Gesture	指紋ジェスチャー
 Fire time	発火時刻
 Fire when	実行するタイミング
 Fires immediately when the workflow starts (no external event)	ワークフローの開始と同時に発火します（外部イベントなし）
@@ -645,6 +646,7 @@ Starts when the ringer mode changes (normal, silent, vibrate)	着信音モード
 Starts when the screen turns on or off	画面がオンまたはオフになったときに開始します
 Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)	画面上部のセンサーが遮られた、または遮りが取れたときに開始します。手がガラスに触れているか、ほぼ触れている必要があります（多くの端末では画面がオンのときのみ）
 Starts when the user unlocks the device	ユーザーが端末のロックを解除したときに開始します
+Starts when you swipe across the fingerprint reader. Needs accessibility access, and only works on phones whose reader reports swipes; unlocking is unaffected	指紋センサーをスワイプしたときに開始します。ユーザー補助へのアクセスが必要で、スワイプを報告するセンサーを備えた端末でのみ動作します。ロック解除には影響しません
 State	状態
 Stop	停止
 Stop Macro	マクロを停止
@@ -660,6 +662,10 @@ Struct	構造体
 Subject	件名
 Subject contains	件名が次を含む
 Sundays	毎週日曜
+Swipe down	下にスワイプ
+Swipe left	左にスワイプ
+Swipe right	右にスワイプ
+Swipe up	上にスワイプ
 System	システム
 Tag	タグ
 Tag — Used for manual deletion	タグ — 手動で削除するときに使います

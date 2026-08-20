@@ -14,6 +14,7 @@ import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.schema.ItemSchema
+import com.example.ottomatic.domain.registry.DeviceCapabilities
 import com.example.ottomatic.domain.registry.GrantedPrerequisites
 import com.example.ottomatic.domain.model.ToolSpec
 import com.example.ottomatic.domain.model.ToolTarget
@@ -112,6 +113,7 @@ class GraphValidator(private val workflow: Workflow) {
         validateSmartHomeRefs(issues)
         validateAiModelRefs(issues)
         validatePrerequisites(issues)
+        validateCapabilities(issues)
         validatePluginPermissions(issues)
         validatePluginReadiness(issues)
         return GraphValidation(issues)
@@ -156,6 +158,52 @@ class GraphValidator(private val workflow: Workflow) {
                 Severity.WARNING,
                 "'${node.name}' needs $needs, which has not been granted — it may do nothing when it runs",
                 reason = IssueReason.PERMISSION_MISSING,
+                args = listOf(node.name, needs),
+                nodes = setOf(node.id),
+            )
+        }
+    }
+
+    /**
+     * A node needing hardware this phone does not have.
+     *
+     * The fifth of the [validateVariableRefs] / [validateMacroRefs] /
+     * [validatePrerequisites] / [validatePluginReadiness] family, and it takes their
+     * stance — a WARNING that blocks nothing — for a reason sharper than any of
+     * theirs. The other four describe something that could change: a variable can be
+     * declared, a macro restored, a permission granted, a plugin signed into. This one
+     * cannot. There is no Settings page, and nothing the user does to this phone will
+     * make the node work.
+     *
+     * Which is exactly why blocking would still be wrong. The macro is not broken; it
+     * is *portable*. The same file is correct on the next phone, and quarantining the
+     * node here would silently take out work on hardware that can run it — while
+     * saying, on the phone that cannot, something the user can act on: use a different
+     * trigger.
+     *
+     * The [DeviceCapabilities.isHydrated] guard is [validatePrerequisites]', and it
+     * matters for the same reason. Note that it is doing less work than it looks like:
+     * a capability nobody has been able to *ask* about is published as available, so
+     * the silence while accessibility is off comes from `CapabilityStatus.UNKNOWN`
+     * rather than from this line.
+     *
+     * Deliberately absent from `PermissionCatalogue` and the Permissions screen. That
+     * separation is the whole reason this is not a `PrerequisiteType`.
+     */
+    private fun validateCapabilities(out: MutableList<ValidationIssue>) {
+        if (!DeviceCapabilities.isHydrated) return
+        for (node in workflow.nodes) {
+            val missing = NodeTypeRegistry.byId(node.typeId)
+                ?.capabilities
+                .orEmpty()
+                .distinct()
+                .filterNot { DeviceCapabilities.isAvailable(it) }
+            if (missing.isEmpty()) continue
+            val needs = missing.joinToString(" and ") { it.label }
+            out += ValidationIssue(
+                Severity.WARNING,
+                "'${node.name}' needs $needs, which this phone does not have — it will never work here",
+                reason = IssueReason.CAPABILITY_MISSING,
                 args = listOf(node.name, needs),
                 nodes = setOf(node.id),
             )

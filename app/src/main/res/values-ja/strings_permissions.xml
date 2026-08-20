@@ -57,6 +57,7 @@
     <string name="perm_desc_camera">マクロがスマートフォン本体のカメラで写真を撮れるようになります。カメラアプリも、シャッターを押す人も必要ありません。Ottomatic は「写真を撮る」アクションの実行中だけカメラを開きます。</string>
     <string name="perm_desc_unknown">あなたのいずれかのマクロのノードが使用しています。</string>
     <string name="perm_rationale_accessibility_keys">ボタンの押下を検知するために、Ottomatic はユーザー補助へのアクセスを必要とします。画面を監視することはありません。スイッチがグレー表示の場合は、先に アプリ情報 → ⋮ → 制限された設定を許可 を開いてください。</string>
+    <string name="perm_rationale_accessibility_fingerprint">指紋センサー上のスワイプを検知するために、Ottomatic はユーザー補助へのアクセスを必要とします。指紋そのものや照合結果を見ることはできず、ロック解除にも影響しません。スイッチがグレー表示の場合は、先に アプリ情報 → ⋮ → 制限された設定を許可 を開いてください。</string>
     <string name="perm_rationale_screen_capture">画面を取り込むために、Ottomatic はユーザー補助へのアクセスを必要とします。取り込むのはこのアクションの実行中だけで、画面を監視することはありません。スイッチがグレー表示の場合は、先に アプリ情報 → ⋮ → 制限された設定を許可 を開いてください。</string>
     <string name="perm_rationale_audio_record">音を録音するために Ottomatic はマイクへのアクセスを必要とします。録音中だけマイクを開き、録音が終わるとすぐに閉じます。これがないと、録音は失敗するか無音として保存されます。</string>
     <string name="perm_rationale_camera_photo">写真を撮るには Ottomatic にカメラへのアクセスが必要です。カメラを開くのはこのアクションの実行中だけで、終わればすぐに閉じます。スマートフォンが長時間バックグラウンドで待機していた場合、Android が撮影を拒否することがあります。</string>

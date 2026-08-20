@@ -1,5 +1,6 @@
 package com.example.ottomatic.domain.model
 
+import com.example.ottomatic.core.capabilities.DeviceCapability
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.permissions.PermissionRequirement
@@ -163,6 +164,15 @@ data class NodeTypeDefinition(
     val icon: NodeIcon,
     val hasDynamicPorts: Boolean = false,
     val permissionRequirements: List<PermissionRequirement> = emptyList(),
+    /**
+     * Hardware this node needs that the phone may simply not have.
+     *
+     * The second axis beside [permissionRequirements], and deliberately not folded
+     * into it: a permission is something the user can go and grant, a capability is a
+     * fact about the phone. See [DeviceCapability] for why that difference decides
+     * which surfaces each one reaches.
+     */
+    val capabilities: List<DeviceCapability> = emptyList(),
 ) {
     /** All input ports (any kind). */
     val inputPorts: List<Port> get() = ports.filter { it.direction == Direction.IN }

@@ -6,6 +6,7 @@
 
 package com.example.ottomatic.engine
 
+import com.example.ottomatic.core.capabilities.DeviceCapability
 import com.example.ottomatic.core.permissions.PermissionRequirement
 import com.example.ottomatic.domain.model.DataOut
 import com.example.ottomatic.domain.model.NodeCategory
@@ -48,6 +49,7 @@ class ActionNodeDefinition<I : Any, O : Any> @PublishedApi internal constructor(
     val extraPorts: List<Port>,
     val hasDynamicPorts: Boolean,
     val permissions: List<PermissionRequirement> = emptyList(),
+    val capabilities: List<DeviceCapability> = emptyList(),
 ) {
     /** Static metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
     val nodeType: NodeTypeDefinition
@@ -62,6 +64,7 @@ class ActionNodeDefinition<I : Any, O : Any> @PublishedApi internal constructor(
             icon = icon,
             hasDynamicPorts = hasDynamicPorts,
             permissionRequirements = permissions,
+            capabilities = capabilities,
         )
 
     /** Static config-form view for [com.example.ottomatic.domain.registry.ConfigSchemaRegistry]. */
@@ -113,6 +116,7 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
      */
     val extraOutputs: List<DataOut<O>> = emptyList(),
     val permissions: List<PermissionRequirement> = emptyList(),
+    val capabilities: List<DeviceCapability> = emptyList(),
     /**
      * Whether this trigger's DATA outputs come from its own config and must be
      * resolved by [com.example.ottomatic.domain.registry.effectivePorts]. See
@@ -131,6 +135,7 @@ class TriggerNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor
             ports = listOf(execOut()) + listOfNotNull(output?.port) + extraOutputs.map { it.port },
             icon = icon,
             permissionRequirements = permissions,
+            capabilities = capabilities,
             hasDynamicPorts = hasDynamicPorts,
         )
 
@@ -187,6 +192,7 @@ class ValueNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor(
     @PublishedApi internal val output: DataOut<O>?,
     val hasDynamicPorts: Boolean,
     val permissions: List<PermissionRequirement> = emptyList(),
+    val capabilities: List<DeviceCapability> = emptyList(),
 ) {
     /** Static metadata view for [com.example.ottomatic.domain.registry.NodeTypeRegistry]. */
     val nodeType: NodeTypeDefinition
@@ -200,6 +206,7 @@ class ValueNodeDefinition<C : Any, O : Any> @PublishedApi internal constructor(
             icon = icon,
             hasDynamicPorts = hasDynamicPorts,
             permissionRequirements = permissions,
+            capabilities = capabilities,
         )
 
     /** Static config-form view for [com.example.ottomatic.domain.registry.ConfigSchemaRegistry]. */
@@ -376,6 +383,7 @@ inline fun <reified C : Any, O : Any> valueNode(
     icon: NodeIcon,
     output: DataOut<O>,
     permissions: List<PermissionRequirement> = emptyList(),
+    capabilities: List<DeviceCapability> = emptyList(),
 ): ValueNodeDefinition<C, O> = ValueNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -387,6 +395,7 @@ inline fun <reified C : Any, O : Any> valueNode(
     output = output,
     hasDynamicPorts = false,
     permissions = permissions,
+    capabilities = capabilities,
 )
 
 /**
@@ -441,6 +450,7 @@ inline fun <reified I : Any, O : Any> actionNode(
     output: DataOut<O>,
     execOutputs: ExecOutputs = ExecOutputs.SINGLE,
     permissions: List<PermissionRequirement> = emptyList(),
+    capabilities: List<DeviceCapability> = emptyList(),
 ): ActionNodeDefinition<I, O> = ActionNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -453,6 +463,7 @@ inline fun <reified I : Any, O : Any> actionNode(
     extraPorts = emptyList(),
     hasDynamicPorts = false,
     permissions = permissions,
+    capabilities = capabilities,
 )
 
 /**
@@ -481,6 +492,7 @@ inline fun <reified I : Any> effectNode(
     extraPorts: List<Port> = emptyList(),
     hasDynamicPorts: Boolean = false,
     permissions: List<PermissionRequirement> = emptyList(),
+    capabilities: List<DeviceCapability> = emptyList(),
 ): ActionNodeDefinition<I, Unit> = ActionNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -493,6 +505,7 @@ inline fun <reified I : Any> effectNode(
     extraPorts = extraPorts,
     hasDynamicPorts = hasDynamicPorts,
     permissions = permissions,
+    capabilities = capabilities,
 )
 
 /**
@@ -522,6 +535,7 @@ inline fun <reified I : Any> adaptiveNode(
     extraPorts: List<Port>,
     execOutputs: ExecOutputs = ExecOutputs.SINGLE,
     permissions: List<PermissionRequirement> = emptyList(),
+    capabilities: List<DeviceCapability> = emptyList(),
 ): ActionNodeDefinition<I, Unit> = ActionNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -534,6 +548,7 @@ inline fun <reified I : Any> adaptiveNode(
     extraPorts = extraPorts,
     hasDynamicPorts = true,
     permissions = permissions,
+    capabilities = capabilities,
 )
 
 /**
@@ -589,6 +604,7 @@ inline fun <reified C : Any, O : Any> triggerNode(
     output: DataOut<O>,
     extraOutputs: List<DataOut<O>> = emptyList(),
     permissions: List<PermissionRequirement> = emptyList(),
+    capabilities: List<DeviceCapability> = emptyList(),
 ): TriggerNodeDefinition<C, O> = TriggerNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -599,6 +615,7 @@ inline fun <reified C : Any, O : Any> triggerNode(
     output = output,
     extraOutputs = extraOutputs,
     permissions = permissions,
+    capabilities = capabilities,
 )
 
 /**
@@ -617,6 +634,7 @@ inline fun <reified C : Any> pulseTriggerNode(
     category: NodeCategory,
     icon: NodeIcon,
     permissions: List<PermissionRequirement> = emptyList(),
+    capabilities: List<DeviceCapability> = emptyList(),
 ): TriggerNodeDefinition<C, Unit> = TriggerNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -626,6 +644,7 @@ inline fun <reified C : Any> pulseTriggerNode(
     schema = nodeSchema<C>(),
     output = null,
     permissions = permissions,
+    capabilities = capabilities,
 )
 
 /**
@@ -657,6 +676,7 @@ inline fun <reified C : Any> adaptiveTriggerNode(
     category: NodeCategory,
     icon: NodeIcon,
     permissions: List<PermissionRequirement> = emptyList(),
+    capabilities: List<DeviceCapability> = emptyList(),
 ): TriggerNodeDefinition<C, Unit> = TriggerNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -666,5 +686,6 @@ inline fun <reified C : Any> adaptiveTriggerNode(
     schema = nodeSchema<C>(),
     output = null,
     permissions = permissions,
+    capabilities = capabilities,
     hasDynamicPorts = true,
 )

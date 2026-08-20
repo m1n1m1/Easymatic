@@ -353,6 +353,15 @@
     <string name="cfg_trigger_volume_button_hold_ms">Mindestens halten (ms)</string>
     <string name="cfg_trigger_volume_button_presses">Anzahl der Tastendrücke</string>
     <string name="cfg_trigger_volume_button_window_ms">Innerhalb von (ms)</string>
+    <string name="node_trigger_fingerprint_gesture_name">Fingerabdruck-Geste</string>
+    <string name="node_trigger_fingerprint_gesture_desc">Startet, wenn du über den Fingerabdrucksensor wischst. Braucht Bedienungshilfen-Zugriff und funktioniert nur auf Telefonen, deren Sensor Wischgesten meldet; das Entsperren bleibt unangetastet</string>
+    <string name="port_trigger_fingerprint_gesture_out">Ausgang</string>
+    <string name="port_trigger_fingerprint_gesture_state">Status</string>
+    <string name="cfg_trigger_fingerprint_gesture_gesture">Geste</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_up">Nach oben wischen</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_down">Nach unten wischen</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_left">Nach links wischen</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_right">Nach rechts wischen</string>
     <string name="node_action_ai_prompt_name">KI fragen</string>
     <string name="node_action_ai_prompt_desc">Schickt eine Anfrage an ein KI-Modell — Gemini, Claude, ChatGPT, OpenRouter oder ein selbst gehostetes Modell — und gibt die Antwort als Text zurück; auf Wunsch darf es dabei Knoten und Makros als Werkzeuge ausführen</string>
     <string name="port_action_ai_prompt_in">Eingang</string>

@@ -1,6 +1,6 @@
-accessibility_service_description	Ottomatic 用它做两件事：检测音量键的按下，好让你的宏可以借此启动；以及在宏执行“截屏”动作时捕获屏幕。它从不监视屏幕上的内容——只有宏提出要求时才捕获——也从不改变按键原本的功能：音量键仍照常工作。
+accessibility_service_description	Ottomatic 用它做三件事：检测音量键的按下和指纹传感器上的滑动，好让你的宏可以借此启动；以及在宏执行“截屏”动作时捕获屏幕。它从不监视屏幕上的内容——只有宏提出要求时才捕获——也不会改变任何东西：音量键仍照常工作，指纹解锁也不受影响。
 accessibility_service_label	Ottomatic 按键触发器
-accessibility_service_summary	让宏在你按下音量键时启动，并让“截屏”动作可以捕获屏幕。
+accessibility_service_summary	让宏在你按下音量键或在指纹传感器上滑动时启动，并让“截屏”动作可以捕获屏幕。
 ai_add_ai_connection	添加 AI 连接
 ai_add_connection	添加连接
 ai_add_model	添加模型
@@ -813,3 +813,5 @@ device_admin_label	解锁失败检测
 device_admin_description	允许在有人未能解锁本机时启动宏。
 device_admin_disable_warning	以解锁失败为触发的宏将停止工作。
 perm_explanation_device_admin	Ottomatic 用它在有人输入错误的 PIN 码、图案或密码时启动宏。除此之外不监视任何内容。
+perm_rationale_accessibility_fingerprint	Ottomatic 需要无障碍使用权来检测指纹传感器上的滑动。它看不到你的指纹，也不知道是否匹配，指纹解锁不受影响。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。
+problem_capability_missing	“%1$s”需要%2$s，而这台手机没有——它在这里永远不会工作

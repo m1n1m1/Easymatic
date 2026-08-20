@@ -1,6 +1,6 @@
-accessibility_service_description	Ottomatic lo usa para dos cosas: detectar pulsaciones de los botones de volumen, para que tus macros puedan iniciarse al pulsarlos, y capturar la pantalla cuando una macro ejecuta la acción Hacer captura de pantalla. Nunca observa lo que hay en pantalla —solo captura cuando una macro se lo pide— y nunca cambia lo que hacen los botones: las teclas de volumen siguen funcionando con normalidad.
+accessibility_service_description	Ottomatic lo usa para tres cosas: detectar pulsaciones de los botones de volumen y deslizamientos sobre el lector de huellas, para que tus macros puedan iniciarse así, y capturar la pantalla cuando una macro ejecuta la acción Hacer captura de pantalla. Nunca observa lo que hay en pantalla —solo captura cuando una macro se lo pide— y no cambia nada: las teclas de volumen siguen funcionando con normalidad y el desbloqueo con huella no se ve afectado.
 accessibility_service_label	Activadores por botón de Ottomatic
-accessibility_service_summary	Permite que las macros se inicien al pulsar los botones de volumen y que la acción Hacer captura de pantalla capture la pantalla.
+accessibility_service_summary	Permite que las macros se inicien al pulsar los botones de volumen o deslizar el dedo por el lector de huellas, y que la acción Hacer captura de pantalla capture la pantalla.
 ai_add_ai_connection	Añadir conexión de IA
 ai_add_connection	Añadir conexión
 ai_add_model	Añadir un modelo
@@ -813,3 +813,5 @@ device_admin_label	Detección de desbloqueos fallidos
 device_admin_description	Permite que una macro se inicie cuando alguien no consigue desbloquear este teléfono.
 device_admin_disable_warning	Las macros que se inician con un desbloqueo fallido dejarán de funcionar.
 perm_explanation_device_admin	Ottomatic usa esto para iniciar una macro cuando alguien introduce un PIN, patrón o contraseña incorrectos. No vigila nada más.
+perm_rationale_accessibility_fingerprint	Ottomatic necesita acceso de accesibilidad para detectar deslizamientos sobre el lector de huellas. No puede ver tu huella ni si ha coincidido, y el desbloqueo no se ve afectado. Si el interruptor está atenuado, abre primero Información de la app → ⋮ → Permitir ajustes restringidos.
+problem_capability_missing	«%1$s» necesita %2$s, y este teléfono no lo tiene: aquí nunca funcionará

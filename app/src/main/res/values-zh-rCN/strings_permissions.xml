@@ -57,6 +57,7 @@
     <string name="perm_desc_camera">允许宏使用手机自带的摄像头拍照，无需相机应用，也无需有人按下快门。Ottomatic 仅在“拍照”操作运行期间打开摄像头。</string>
     <string name="perm_desc_unknown">被你某个宏中的节点使用。</string>
     <string name="perm_rationale_accessibility_keys">Ottomatic 需要无障碍使用权来检测按键。它从不监视屏幕上的内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。</string>
+    <string name="perm_rationale_accessibility_fingerprint">Ottomatic 需要无障碍使用权来检测指纹传感器上的滑动。它看不到你的指纹，也不知道是否匹配，指纹解锁不受影响。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。</string>
     <string name="perm_rationale_screen_capture">Ottomatic 需要无障碍使用权来捕获屏幕。只在此动作运行期间捕获，从不监视屏幕上的内容。如果开关是灰色的，请先打开 应用信息 → ⋮ → 允许受限设置。</string>
     <string name="perm_rationale_audio_record">Ottomatic 需要麦克风权限才能录音。它仅在录音进行期间打开麦克风，录音一结束就立即关闭。没有此权限，录音会失败或被保存为静音。</string>
     <string name="perm_rationale_camera_photo">Ottomatic 需要摄像头权限才能拍照。它仅在此操作运行期间打开摄像头，随后立即关闭。当手机长时间在后台闲置时，Android 仍可能拒绝拍照。</string>

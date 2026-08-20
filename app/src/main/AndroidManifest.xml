@@ -69,6 +69,26 @@
       Store on every phone without an NFC chip — for one trigger out of forty.
     -->
     <uses-permission android:name="android.permission.NFC" />
+    <!--
+      Required by FLAG_REQUEST_FINGERPRINT_GESTURES, which is what lets the
+      accessibility service hear swipes across the fingerprint reader for
+      `trigger.fingerprint_gesture`. USE_FINGERPRINT is the API 26-27 spelling of the
+      same requirement and is capped accordingly, the way READ_EXTERNAL_STORAGE is.
+
+      Neither is a runtime permission and neither gets a `Permissions` constant: what
+      actually decides whether that trigger can fire is accessibility access plus a
+      reader that reports swipes at all, and the second of those is
+      DeviceCapability.FINGERPRINT_GESTURES rather than anything grantable.
+
+      The uses-feature line below is the NFC trap read again, and it bites harder here:
+      both of these imply `<uses-feature android:name="android.hardware.fingerprint"
+      android:required="true">`, which would hide the app on the Play Store from every
+      phone without a fingerprint reader.
+    -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission
+        android:name="android.permission.USE_FINGERPRINT"
+        android:maxSdkVersion="27" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -228,6 +248,7 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
+    <uses-feature android:name="android.hardware.fingerprint" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
     <!--

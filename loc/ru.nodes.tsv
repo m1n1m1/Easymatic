@@ -213,6 +213,7 @@ Files	Файлы
 Find Calendar Events	Найти встречи
 Find Pictures	Найти изображения
 Finds photos and screenshots on this phone onto a list you can loop over	Находит фотографии и снимки экрана на этом телефоне и собирает их в список для перебора
+Fingerprint Gesture	Жест по сканеру отпечатка
 Fire time	Время срабатывания
 Fire when	Срабатывать когда
 Fires immediately when the workflow starts (no external event)	Срабатывает сразу при запуске сценария (без внешнего события)
@@ -645,6 +646,7 @@ Starts when the ringer mode changes (normal, silent, vibrate)	Срабатыва
 Starts when the screen turns on or off	Срабатывает при включении или выключении экрана
 Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)	Срабатывает, когда датчик над экраном закрывают или открывают. Рука должна касаться стекла или почти касаться его (на большинстве устройств только при включённом экране)
 Starts when the user unlocks the device	Срабатывает, когда пользователь разблокирует устройство
+Starts when you swipe across the fingerprint reader. Needs accessibility access, and only works on phones whose reader reports swipes; unlocking is unaffected	Срабатывает, когда вы проводите пальцем по сканеру отпечатка. Нужен доступ к спецвозможностям, работает только на телефонах, чей сканер сообщает о свайпах; разблокировка не затрагивается
 State	Состояние
 Stop	Стоп
 Stop Macro	Остановить макрос
@@ -660,6 +662,10 @@ Struct	Структура
 Subject	Тема
 Subject contains	Тема содержит
 Sundays	Воскресенья
+Swipe down	Свайп вниз
+Swipe left	Свайп влево
+Swipe right	Свайп вправо
+Swipe up	Свайп вверх
 System	Система
 Tag	Метка
 Tag — Used for manual deletion	Метка — для ручного удаления

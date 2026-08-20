@@ -213,6 +213,7 @@ Files	Fichiers
 Find Calendar Events	Chercher des rendez-vous
 Find Pictures	Rechercher des images
 Finds photos and screenshots on this phone onto a list you can loop over	Recherche les photos et captures d'écran de ce téléphone et les place dans une liste que vous pouvez parcourir
+Fingerprint Gesture	Geste d'empreinte
 Fire time	Heure de déclenchement
 Fire when	Déclencher quand
 Fires immediately when the workflow starts (no external event)	Se déclenche dès que le flux démarre (aucun événement externe)
@@ -645,6 +646,7 @@ Starts when the ringer mode changes (normal, silent, vibrate)	Démarre quand le 
 Starts when the screen turns on or off	Démarre quand l'écran s'allume ou s'éteint
 Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)	Démarre quand le capteur au-dessus de l'écran est couvert ou découvert. Ta main doit toucher la vitre ou presque (sur la plupart des appareils, écran allumé uniquement)
 Starts when the user unlocks the device	Démarre quand l'utilisateur déverrouille l'appareil
+Starts when you swipe across the fingerprint reader. Needs accessibility access, and only works on phones whose reader reports swipes; unlocking is unaffected	Démarre quand tu balaies le lecteur d'empreintes. Nécessite l'accès à l'accessibilité et ne fonctionne que sur les téléphones dont le lecteur signale les balayages ; le déverrouillage n'est pas affecté
 State	État
 Stop	Arrêter
 Stop Macro	Arrêter la macro
@@ -660,6 +662,10 @@ Struct	Structure
 Subject	Objet
 Subject contains	L'objet contient
 Sundays	Dimanches
+Swipe down	Balayer vers le bas
+Swipe left	Balayer vers la gauche
+Swipe right	Balayer vers la droite
+Swipe up	Balayer vers le haut
 System	Système
 Tag	Tag
 Tag — Used for manual deletion	Tag : pour la supprimer manuellement

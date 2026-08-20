@@ -414,6 +414,15 @@
     <string name="cfg_trigger_volume_button_hold_ms">Удерживать не менее (мс)</string>
     <string name="cfg_trigger_volume_button_presses">Количество нажатий</string>
     <string name="cfg_trigger_volume_button_window_ms">В пределах (мс)</string>
+    <string name="node_trigger_fingerprint_gesture_name">Жест по сканеру отпечатка</string>
+    <string name="node_trigger_fingerprint_gesture_desc">Срабатывает, когда вы проводите пальцем по сканеру отпечатка. Нужен доступ к спецвозможностям, работает только на телефонах, чей сканер сообщает о свайпах; разблокировка не затрагивается</string>
+    <string name="port_trigger_fingerprint_gesture_out">Выход</string>
+    <string name="port_trigger_fingerprint_gesture_state">Состояние</string>
+    <string name="cfg_trigger_fingerprint_gesture_gesture">Жест</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_up">Свайп вверх</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_down">Свайп вниз</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_left">Свайп влево</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_right">Свайп вправо</string>
     <string name="node_action_ai_prompt_name">Спросить ИИ</string>
     <string name="node_action_ai_prompt_desc">Отправляет запрос модели ИИ (Gemini, Claude, ChatGPT, OpenRouter или собственной модели) и возвращает ответ текстом, а при разрешении позволяет ей запускать узлы и макросы как инструменты</string>
     <string name="port_action_ai_prompt_in">Вход</string>

@@ -417,6 +417,15 @@
     <string name="cfg_trigger_volume_button_hold_ms">Hold for at least (ms)</string>
     <string name="cfg_trigger_volume_button_presses">Number of presses</string>
     <string name="cfg_trigger_volume_button_window_ms">Within (ms)</string>
+    <string name="node_trigger_fingerprint_gesture_name">Fingerprint Gesture</string>
+    <string name="node_trigger_fingerprint_gesture_desc">Starts when you swipe across the fingerprint reader. Needs accessibility access, and only works on phones whose reader reports swipes; unlocking is unaffected</string>
+    <string name="port_trigger_fingerprint_gesture_out">out</string>
+    <string name="port_trigger_fingerprint_gesture_state">State</string>
+    <string name="cfg_trigger_fingerprint_gesture_gesture">Gesture</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_up">Swipe up</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_down">Swipe down</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_left">Swipe left</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_right">Swipe right</string>
     <string name="node_action_ai_prompt_name">Ask AI</string>
     <string name="node_action_ai_prompt_desc">Sends a prompt to an AI model — Gemini, Claude, ChatGPT, OpenRouter or a self-hosted model — and returns its reply as text, letting it run nodes and macros as tools when you allow it</string>
     <string name="port_action_ai_prompt_in">in</string>

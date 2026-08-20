@@ -213,6 +213,7 @@ Files	Files
 Find Calendar Events	Find Calendar Events
 Find Pictures	Find Pictures
 Finds photos and screenshots on this phone onto a list you can loop over	Finds photos and screenshots on this phone onto a list you can loop over
+Fingerprint Gesture	Fingerprint Gesture
 Fire time	Fire time
 Fire when	Fire when
 Fires immediately when the workflow starts (no external event)	Fires immediately when the workflow starts (no external event)
@@ -652,6 +653,7 @@ Starts when the ringer mode changes (normal, silent, vibrate)	Starts when the ri
 Starts when the screen turns on or off	Starts when the screen turns on or off
 Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)	Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)
 Starts when the user unlocks the device	Starts when the user unlocks the device
+Starts when you swipe across the fingerprint reader. Needs accessibility access, and only works on phones whose reader reports swipes; unlocking is unaffected	Starts when you swipe across the fingerprint reader. Needs accessibility access, and only works on phones whose reader reports swipes; unlocking is unaffected
 State	State
 Stop	Stop
 Stop Macro	Stop Macro
@@ -667,6 +669,10 @@ Struct	Struct
 Subject	Subject
 Subject contains	Subject contains
 Sundays	Sundays
+Swipe down	Swipe down
+Swipe left	Swipe left
+Swipe right	Swipe right
+Swipe up	Swipe up
 System	System
 Tag	Tag
 Tag — Used for manual deletion	Tag — Used for manual deletion

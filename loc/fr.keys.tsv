@@ -1,6 +1,6 @@
-accessibility_service_description	Ottomatic s'en sert pour deux choses : détecter les appuis sur les boutons de volume, afin que tes macros puissent démarrer ainsi, et capturer l'écran quand une macro exécute l'action Faire une capture d'écran. Il n'observe jamais ce qui est à l'écran — il ne capture que lorsqu'une macro le demande — et ne change jamais ce que font les boutons : les touches de volume continuent de fonctionner normalement.
+accessibility_service_description	Ottomatic s'en sert pour trois choses : détecter les appuis sur les boutons de volume et les balayages sur le lecteur d'empreintes, afin que tes macros puissent démarrer ainsi, et capturer l'écran quand une macro exécute l'action Faire une capture d'écran. Il n'observe jamais ce qui est à l'écran — il ne capture que lorsqu'une macro le demande — et ne change rien : les touches de volume continuent de fonctionner normalement et le déverrouillage par empreinte n'est pas affecté.
 accessibility_service_label	Déclencheurs par bouton Ottomatic
-accessibility_service_summary	Permet aux macros de démarrer quand tu appuies sur les boutons de volume, et à l'action Faire une capture d'écran de capturer l'écran.
+accessibility_service_summary	Permet aux macros de démarrer quand tu appuies sur les boutons de volume ou que tu balaies le lecteur d'empreintes, et à l'action Faire une capture d'écran de capturer l'écran.
 ai_add_ai_connection	Ajouter une connexion IA
 ai_add_connection	Ajouter une connexion
 ai_add_model	Ajouter un modèle
@@ -813,3 +813,5 @@ device_admin_label	Détection des déverrouillages échoués
 device_admin_description	Permet à une macro de démarrer lorsque quelqu'un ne parvient pas à déverrouiller ce téléphone.
 device_admin_disable_warning	Les macros qui démarrent sur un déverrouillage échoué cesseront de fonctionner.
 perm_explanation_device_admin	Ottomatic s'en sert pour démarrer une macro lorsque quelqu'un saisit un code, un schéma ou un mot de passe incorrect. Il ne surveille rien d'autre.
+perm_rationale_accessibility_fingerprint	Ottomatic a besoin de l'accès à l'accessibilité pour détecter les balayages sur le lecteur d'empreintes. Il ne peut ni voir ton empreinte ni savoir si elle correspond, et le déverrouillage n'est pas affecté. Si l'interrupteur est grisé, ouvre d'abord Infos sur l'appli → ⋮ → Autoriser les paramètres restreints.
+problem_capability_missing	« %1$s » a besoin de %2$s, dont ce téléphone ne dispose pas : cela ne fonctionnera jamais ici

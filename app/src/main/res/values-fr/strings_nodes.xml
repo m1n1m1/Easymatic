@@ -414,6 +414,15 @@
     <string name="cfg_trigger_volume_button_hold_ms">Maintenir au moins (ms)</string>
     <string name="cfg_trigger_volume_button_presses">Nombre d\'appuis</string>
     <string name="cfg_trigger_volume_button_window_ms">En moins de (ms)</string>
+    <string name="node_trigger_fingerprint_gesture_name">Geste d\'empreinte</string>
+    <string name="node_trigger_fingerprint_gesture_desc">Démarre quand tu balaies le lecteur d\'empreintes. Nécessite l\'accès à l\'accessibilité et ne fonctionne que sur les téléphones dont le lecteur signale les balayages ; le déverrouillage n\'est pas affecté</string>
+    <string name="port_trigger_fingerprint_gesture_out">Sortie</string>
+    <string name="port_trigger_fingerprint_gesture_state">État</string>
+    <string name="cfg_trigger_fingerprint_gesture_gesture">Geste</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_up">Balayer vers le haut</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_down">Balayer vers le bas</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_left">Balayer vers la gauche</string>
+    <string name="opt_trigger_fingerprint_gesture_gesture_swipe_right">Balayer vers la droite</string>
     <string name="node_action_ai_prompt_name">Demander à l\'IA</string>
     <string name="node_action_ai_prompt_desc">Envoie une requête à un modèle d\'IA (Gemini, Claude, ChatGPT, OpenRouter ou un modèle auto-hébergé) et renvoie sa réponse sous forme de texte, en le laissant exécuter des nœuds et des macros comme outils lorsque vous l\'autorisez</string>
     <string name="port_action_ai_prompt_in">Entrée</string>

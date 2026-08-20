@@ -213,6 +213,7 @@ Files	文件
 Find Calendar Events	查找日程
 Find Pictures	查找图片
 Finds photos and screenshots on this phone onto a list you can loop over	查找手机中的照片和屏幕截图，生成可循环遍历的列表
+Fingerprint Gesture	指纹手势
 Fire time	触发时刻
 Fire when	触发时机
 Fires immediately when the workflow starts (no external event)	工作流一开始就立即触发（没有外部事件）
@@ -645,6 +646,7 @@ Starts when the ringer mode changes (normal, silent, vibrate)	当响铃模式改
 Starts when the screen turns on or off	当屏幕点亮或熄灭时启动
 Starts when the sensor above the screen is covered or uncovered. Your hand has to be touching or nearly touching the glass (screen on only on most devices)	当屏幕上方的传感器被遮挡或重新露出时启动。你的手必须贴着或几乎贴着玻璃（在多数设备上仅屏幕点亮时有效）
 Starts when the user unlocks the device	当用户解锁设备时启动
+Starts when you swipe across the fingerprint reader. Needs accessibility access, and only works on phones whose reader reports swipes; unlocking is unaffected	当你在指纹传感器上滑动时启动。需要无障碍使用权，且仅在传感器会报告滑动的手机上有效；指纹解锁不受影响
 State	状态
 Stop	停止
 Stop Macro	停止宏
@@ -660,6 +662,10 @@ Struct	结构体
 Subject	主题
 Subject contains	主题包含
 Sundays	每周日
+Swipe down	向下滑动
+Swipe left	向左滑动
+Swipe right	向右滑动
+Swipe up	向上滑动
 System	系统
 Tag	标签
 Tag — Used for manual deletion	标签——用于手动移除

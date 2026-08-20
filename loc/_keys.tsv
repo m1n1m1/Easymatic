@@ -1,7 +1,7 @@
 app_name	Ottomatic
 accessibility_service_label	Ottomatic button triggers
-accessibility_service_summary	Lets macros start when you press the volume buttons, and lets the Take Screenshot action capture the screen.
-accessibility_service_description	Ottomatic uses this for two things: to notice volume button presses, so your macros can start when you press them, and to capture the screen when a macro runs the Take Screenshot action. It never watches what is on screen — it only captures when a macro asks it to — and it never changes what the buttons do: the volume keys keep working normally.
+accessibility_service_summary	Lets macros start when you press the volume buttons or swipe the fingerprint reader, and lets the Take Screenshot action capture the screen.
+accessibility_service_description	Ottomatic uses this for three things: to notice volume button presses and swipes across the fingerprint reader, so your macros can start when you make them, and to capture the screen when a macro runs the Take Screenshot action. It never watches what is on screen — it only captures when a macro asks it to — and it changes nothing: the volume keys keep working normally, and unlocking with your fingerprint is untouched.
 shortcut_new_macro_short	New macro
 shortcut_new_macro_long	Create a new macro
 widget_run_tile_label	Run tile
@@ -123,6 +123,7 @@ perm_desc_record_audio	Lets a macro record sound from the microphone and save it
 perm_desc_camera	Lets a macro take a photo with the phone\'s own camera — no camera app, and nobody pressing a button. Ottomatic opens the camera only while a Take Photo action is running.
 perm_desc_unknown	Used by a node on one of your macros.
 perm_rationale_accessibility_keys	Ottomatic needs accessibility access to see button presses. It never watches what is on screen. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.
+perm_rationale_accessibility_fingerprint	Ottomatic needs accessibility access to see swipes across the fingerprint reader. It cannot see your fingerprint or whether it matched, and unlocking is unaffected. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.
 perm_rationale_screen_capture	Ottomatic needs accessibility access to capture the screen. It captures only while this action runs — it never watches what is on screen. If the switch is greyed out, open App info → ⋮ → Allow restricted settings first.
 perm_rationale_audio_record	Ottomatic needs microphone access to record sound. It opens the microphone only while a recording is running and closes it as soon as the recording ends. Without this, a recording either fails or is saved as silence.
 perm_rationale_camera_photo	Ottomatic needs camera access to take a photo. It opens the camera only while this action runs, and closes it straight afterwards. Android may still refuse a photo when the phone has been idle in the background for a long time.
@@ -146,6 +147,7 @@ device_admin_description	Lets a macro start when somebody fails to unlock this p
 device_admin_disable_warning	Macros that start on a failed unlock will stop working.
 perm_explanation_device_admin	Ottomatic uses this to start a macro when somebody enters the wrong PIN, pattern or password. It watches nothing else.
 problem_permission_missing	\'%1$s\' needs %2$s, which has not been granted — it may do nothing when it runs
+problem_capability_missing	\'%1$s\' needs %2$s, which this phone does not have — it will never work here
 problem_plugin_permission_missing	\'%1$s\' needs %2$s, which %3$s has not been granted — it may do nothing when it runs
 problem_plugin_not_ready	\'%1$s\' will do nothing until %2$s is ready: %3$s
 problem_macro_unset	\'%1$s\' has no macro chosen, so it will do nothing

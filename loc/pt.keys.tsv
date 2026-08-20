@@ -1,6 +1,6 @@
-accessibility_service_description	O Ottomatic usa isto para duas coisas: detetar pressões nos botões de volume, para que as tuas macros possam arrancar assim, e capturar o ecrã quando uma macro executa a ação Tirar captura de ecrã. Nunca observa o que está no ecrã — só captura quando uma macro o pede — e nunca altera o que os botões fazem: as teclas de volume continuam a funcionar normalmente.
+accessibility_service_description	O Ottomatic usa isto para três coisas: detetar pressões nos botões de volume e deslizes no leitor de impressões digitais, para que as tuas macros possam arrancar assim, e capturar o ecrã quando uma macro executa a ação Tirar captura de ecrã. Nunca observa o que está no ecrã — só captura quando uma macro o pede — e não altera nada: as teclas de volume continuam a funcionar normalmente e o desbloqueio por impressão digital não é afetado.
 accessibility_service_label	Acionadores por botão do Ottomatic
-accessibility_service_summary	Permite que as macros arranquem quando premes os botões de volume e que a ação Tirar captura de ecrã capture o ecrã.
+accessibility_service_summary	Permite que as macros arranquem quando premes os botões de volume ou deslizas o dedo no leitor de impressões digitais, e que a ação Tirar captura de ecrã capture o ecrã.
 ai_add_ai_connection	Adicionar ligação de IA
 ai_add_connection	Adicionar ligação
 ai_add_model	Adicionar um modelo
@@ -813,3 +813,5 @@ device_admin_label	Deteção de desbloqueios falhados
 device_admin_description	Permite que uma macro comece quando alguém não consegue desbloquear este telemóvel.
 device_admin_disable_warning	As macros que começam com um desbloqueio falhado deixarão de funcionar.
 perm_explanation_device_admin	O Ottomatic usa isto para iniciar uma macro quando alguém introduz um PIN, padrão ou palavra-passe errados. Não vigia mais nada.
+perm_rationale_accessibility_fingerprint	O Ottomatic precisa de acesso de acessibilidade para detetar deslizes no leitor de impressões digitais. Não consegue ver a tua impressão digital nem se correspondeu, e o desbloqueio não é afetado. Se o interruptor estiver esbatido, abre primeiro Informações da app → ⋮ → Permitir definições restritas.
+problem_capability_missing	«%1$s» precisa de %2$s, e este telemóvel não o tem: aqui nunca vai funcionar

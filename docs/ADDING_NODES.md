@@ -352,6 +352,25 @@ on the node's config panel, which fails quietly rather than at compile time. A
 requirement that depends on *config* rather than on type is not declared statically —
 `action.call`'s contacts access is derived by `usesContacts` instead.
 
+**A capability** is the second axis beside a permission, declared the same way:
+
+```kotlin
+        capabilities = listOf(DeviceCapability.FINGERPRINT_GESTURES),
+```
+
+The rule for choosing is one sentence: **declare a permission for something the user
+can go and grant, and a capability for hardware the phone may simply not have.** They
+are separate because they reach different screens — a permission belongs on the
+Permissions screen because that is where it gets fixed, and a capability must stay off
+it, since a row that can never go green is not an answer to "what do I need to do?".
+`AndroidPermissionChecker` already made that call from the other side, reporting a phone
+with no NFC chip as *satisfied*. Both produce a Problems-panel warning that blocks
+nothing.
+
+`CapabilityChecker` answers a tri-state, and `UNKNOWN` is not a lapse: some hardware
+questions can only be asked of a bound service, and a phone nobody has been able to ask
+must read as silence rather than as a warning. Only `UNAVAILABLE` warns.
+
 **A struct** emitted by a trigger or action is a plain `@Serializable data class` in
 `domain/model/items/Items.kt`. Timestamps are `DateTime`, never `Long`. The house shape
 for a "did it work?" receipt is a `changed: Boolean` and an `error: String = ""`. Prefer

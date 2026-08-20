@@ -5,6 +5,8 @@
 <resources>
 
     <string name="problem_permission_missing">\'%1$s\' needs %2$s, which has not been granted — it may do nothing when it runs</string>
+    <!-- Hardware rather than a grant: no page to open, nothing to fix. See DeviceCapability. -->
+    <string name="problem_capability_missing">\'%1$s\' needs %2$s, which this phone does not have — it will never work here</string>
     <string name="problem_plugin_permission_missing">\'%1$s\' needs %2$s, which %3$s has not been granted — it may do nothing when it runs</string>
     <!-- %3$s is the plugin's own sentence and arrives untranslated; see GraphValidator.validatePluginReadiness. -->
     <string name="problem_plugin_not_ready">\'%1$s\' will do nothing until %2$s is ready: %3$s</string>
