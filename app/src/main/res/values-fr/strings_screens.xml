@@ -547,7 +547,6 @@
     <string name="config_socket_feed">Alimenter %1$s depuis les données en amont</string>
     <string name="grapheditor_delete_confirm">Supprimer « %1$s » ? Son journal d\'exécution part avec. Cette action est irréversible.</string>
     <string name="grapheditor_delete_selection_confirm">Supprimer %1$s ? Les connexions attachées partent avec. Cette action est irréversible.</string>
-    <string name="grapheditor_delete_selection_confirm_edges">Supprimer %1$s ? Cette action est irréversible.</string>
     <string name="grapheditor_zoom_percent">%1$d%%</string>
     <string name="grapheditor_connect_from">Relier depuis %1$s</string>
     <string name="nfc_tag_says">Ce tag indique : %1$s</string>

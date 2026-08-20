@@ -566,7 +566,6 @@
     <string name="config_socket_feed">%1$s aus vorgelagerten Daten speisen</string>
     <string name="grapheditor_delete_confirm">"%1$s" löschen? Das Ausführungsprotokoll geht mit. Das kann nicht rückgängig gemacht werden.</string>
     <string name="grapheditor_delete_selection_confirm">%1$s löschen? Die daran hängenden Verbindungen gehen mit. Das kann nicht rückgängig gemacht werden.</string>
-    <string name="grapheditor_delete_selection_confirm_edges">%1$s löschen? Das kann nicht rückgängig gemacht werden.</string>
     <string name="grapheditor_zoom_percent">%1$d%%</string>
     <string name="grapheditor_connect_from">Verbinden von %1$s</string>
     <string name="nfc_tag_says">Auf diesem Tag steht: %1$s</string>

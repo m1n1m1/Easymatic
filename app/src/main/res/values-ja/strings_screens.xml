@@ -547,7 +547,6 @@
     <string name="config_socket_feed">%1$s に上流のデータを流し込む</string>
     <string name="grapheditor_delete_confirm">「%1$s」を削除しますか？実行ログも一緒に削除されます。この操作は元に戻せません。</string>
     <string name="grapheditor_delete_selection_confirm">%1$sを削除しますか？つながっている接続も一緒に削除されます。この操作は元に戻せません。</string>
-    <string name="grapheditor_delete_selection_confirm_edges">%1$sを削除しますか？この操作は元に戻せません。</string>
     <string name="grapheditor_zoom_percent">%1$d%%</string>
     <string name="grapheditor_connect_from">%1$s から接続</string>
     <string name="nfc_tag_says">このタグの内容: %1$s</string>

@@ -302,7 +302,6 @@ grapheditor_delete	Supprimer
 grapheditor_delete_confirm	Supprimer « %1$s » ? Son journal d'exécution part avec. Cette action est irréversible.
 grapheditor_delete_selection	Supprimer la sélection
 grapheditor_delete_selection_confirm	Supprimer %1$s ? Les connexions attachées partent avec. Cette action est irréversible.
-grapheditor_delete_selection_confirm_edges	Supprimer %1$s ? Cette action est irréversible.
 grapheditor_delete_workflow	Supprimer le flux
 grapheditor_duplicate_selection	Dupliquer la sélection
 grapheditor_edit	Modifier…

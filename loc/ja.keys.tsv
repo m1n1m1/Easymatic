@@ -302,7 +302,6 @@ grapheditor_delete	削除
 grapheditor_delete_confirm	「%1$s」を削除しますか？実行ログも一緒に削除されます。この操作は元に戻せません。
 grapheditor_delete_selection	選択項目を削除
 grapheditor_delete_selection_confirm	%1$sを削除しますか？つながっている接続も一緒に削除されます。この操作は元に戻せません。
-grapheditor_delete_selection_confirm_edges	%1$sを削除しますか？この操作は元に戻せません。
 grapheditor_delete_workflow	ワークフローを削除
 grapheditor_duplicate_selection	選択項目を複製
 grapheditor_edit	編集…

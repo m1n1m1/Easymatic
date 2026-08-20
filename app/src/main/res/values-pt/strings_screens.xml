@@ -547,7 +547,6 @@
     <string name="config_socket_feed">Alimentar %1$s a partir dos dados anteriores</string>
     <string name="grapheditor_delete_confirm">Eliminar «%1$s»? O registo de execução vai com ele. Isto não pode ser anulado.</string>
     <string name="grapheditor_delete_selection_confirm">Eliminar %1$s? As ligações associadas vão com eles. Isto não pode ser anulado.</string>
-    <string name="grapheditor_delete_selection_confirm_edges">Eliminar %1$s? Isto não pode ser anulado.</string>
     <string name="grapheditor_zoom_percent">%1$d%%</string>
     <string name="grapheditor_connect_from">Ligar a partir de %1$s</string>
     <string name="nfc_tag_says">Esta etiqueta diz: %1$s</string>

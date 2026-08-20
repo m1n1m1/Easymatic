@@ -302,7 +302,6 @@ grapheditor_delete	删除
 grapheditor_delete_confirm	删除“%1$s”？它的运行日志也会一并删除。此操作无法撤销。
 grapheditor_delete_selection	删除所选
 grapheditor_delete_selection_confirm	删除%1$s？连接的连线也会一并删除。此操作无法撤销。
-grapheditor_delete_selection_confirm_edges	删除%1$s？此操作无法撤销。
 grapheditor_delete_workflow	删除工作流
 grapheditor_duplicate_selection	复制所选
 grapheditor_edit	编辑…

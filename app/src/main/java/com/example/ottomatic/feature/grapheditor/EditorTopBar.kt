@@ -91,7 +91,10 @@ fun EditorTopBar(
     nodeCount: Int,
     /** The selection's description, or null when nothing is selected — which is also the mode. */
     selectionLabel: String?,
-    /** Whether the selection contains a node, i.e. whether deleting it takes wires with it. */
+    /**
+     * Whether the selection contains a node, i.e. whether deleting it takes wires with
+     * it — and therefore whether the delete asks first at all.
+     */
     selectionHasNodes: Boolean,
     canConfigure: Boolean,
     isMacroEnabled: Boolean,
@@ -148,7 +151,11 @@ fun EditorTopBar(
                         onClearSelection = onClearSelection,
                         onConfigure = onConfigure,
                         onDuplicateSelection = onDuplicateSelection,
-                        onDeleteSelection = { deletingSelection = label },
+                        // Wires go without asking; anything with a node in it asks.
+                        // See `DeleteSelectionDialog`.
+                        onDeleteSelection = {
+                            if (selectionHasNodes) deletingSelection = label else onDeleteSelection()
+                        },
                     )
                 }
             }
@@ -185,7 +192,6 @@ fun EditorTopBar(
     deletingSelection?.let { what ->
         DeleteSelectionDialog(
             what = what,
-            takesWires = selectionHasNodes,
             onConfirm = {
                 deletingSelection = null
                 onDeleteSelection()
@@ -413,39 +419,36 @@ private fun DeleteWorkflowDialog(
  *
  * There is no undo stack anywhere in the app and no snackbar to hang one off, so the
  * dialog *is* the safety net: a marquee can select twenty nodes and the trash icon is
- * one tap away from them. It confirms every time rather than only above some count,
- * because a rule that asks sometimes is a rule the user cannot predict — and the tap
- * it saves is the cheap half of the trade.
+ * one tap away from them. It confirms for every selection with a node in it rather than
+ * only above some count, because a rule that asks sometimes is a rule the user cannot
+ * predict — and the tap it saves is the cheap half of the trade.
  *
- * [what] names the selection by kind ("2 nodes", "1 connection", both), which is the
+ * [what] names the selection by kind ("2 nodes", "1 node, 1 connection"), which is the
  * whole point of confirming: the bar already counts nodes and edges separately so the
  * user knows exactly what is about to go, and the dialog repeats that rather than
  * asking about "the selection".
  *
- * [takesWires] picks the body, because the sentence is only true of nodes. Deleting a
- * node silently takes every edge touching it — the loss the user cannot see coming —
- * while deleting an edge takes exactly the edge, and warning about attached wires
- * there would describe something that is not happening.
+ * **A selection of nothing but wires does not reach here at all.** The confirm-every-time
+ * rule above is bought by the loss the user cannot see coming — a deleted node silently
+ * takes every edge touching it — and a wire has none of that: what goes is exactly the
+ * thing that was highlighted, and drawing it again is one drag. Redrawing a wire is also
+ * how the user *fixes* a mis-drop, so asking turns the commonest repair in the editor
+ * into two taps a time. The rule stays predictable because the line is the kind of thing
+ * selected, which the bar is already naming, and not a count.
  */
 @Composable
 private fun DeleteSelectionDialog(
     what: String,
-    takesWires: Boolean,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val body = if (takesWires) {
-        R.string.grapheditor_delete_selection_confirm
-    } else {
-        R.string.grapheditor_delete_selection_confirm_edges
-    }
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = EditorColors.chrome,
         title = { Text(stringResource(R.string.grapheditor_delete_selection), color = EditorColors.textPrimary) },
         text = {
             Text(
-                stringResource(body, what),
+                stringResource(R.string.grapheditor_delete_selection_confirm, what),
                 color = EditorColors.textPrimary,
                 fontSize = 14.sp,
             )

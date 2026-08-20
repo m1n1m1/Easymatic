@@ -617,7 +617,6 @@
     <string name="config_socket_feed">Feed %1$s from upstream data</string>
     <string name="grapheditor_delete_confirm">Delete "%1$s"? Its run log goes with it. This cannot be undone.</string>
     <string name="grapheditor_delete_selection_confirm">Delete %1$s? Any wires attached go too. This cannot be undone.</string>
-    <string name="grapheditor_delete_selection_confirm_edges">Delete %1$s? This cannot be undone.</string>
     <string name="grapheditor_zoom_percent">%1$d%%</string>
     <string name="grapheditor_connect_from">Connect from %1$s</string>
     <string name="nfc_tag_says">This tag says: %1$s</string>

@@ -547,7 +547,6 @@
     <string name="config_socket_feed">从上游数据为 %1$s 供值</string>
     <string name="grapheditor_delete_confirm">删除“%1$s”？它的运行日志也会一并删除。此操作无法撤销。</string>
     <string name="grapheditor_delete_selection_confirm">删除%1$s？连接的连线也会一并删除。此操作无法撤销。</string>
-    <string name="grapheditor_delete_selection_confirm_edges">删除%1$s？此操作无法撤销。</string>
     <string name="grapheditor_zoom_percent">%1$d%%</string>
     <string name="grapheditor_connect_from">从 %1$s 连接</string>
     <string name="nfc_tag_says">此标签的内容是：%1$s</string>

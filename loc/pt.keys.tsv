@@ -302,7 +302,6 @@ grapheditor_delete	Eliminar
 grapheditor_delete_confirm	Eliminar «%1$s»? O registo de execução vai com ele. Isto não pode ser anulado.
 grapheditor_delete_selection	Eliminar a seleção
 grapheditor_delete_selection_confirm	Eliminar %1$s? As ligações associadas vão com eles. Isto não pode ser anulado.
-grapheditor_delete_selection_confirm_edges	Eliminar %1$s? Isto não pode ser anulado.
 grapheditor_delete_workflow	Eliminar fluxo
 grapheditor_duplicate_selection	Duplicar a seleção
 grapheditor_edit	Editar…
