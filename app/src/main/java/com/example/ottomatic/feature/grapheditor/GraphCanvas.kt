@@ -26,7 +26,9 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.Constraints
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Workflow
@@ -139,7 +141,7 @@ private fun NodeLayer(
     viewModel: GraphEditorViewModel,
 ) {
     val transform = state.transform
-    Box(
+    Layout(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer {
@@ -149,47 +151,66 @@ private fun NodeLayer(
                 scaleY = transform.scale
                 transformOrigin = TransformOrigin(0f, 0f)
             },
-    ) {
-        val selection = state.selection
-        val captured = state.interaction.marquee?.captured
-        val haptics = LocalHapticFeedback.current
-        state.workflow.nodes.forEach { node ->
-            val definition = NodeTypeRegistry.byId(node.typeId) ?: return@forEach
-            key(node.id) {
-                NodeCard(
-                    node = node,
-                    definition = definition,
-                    workflow = state.workflow,
-                    highlight = when {
-                        node.id in selection -> NodeHighlight.SELECTED
-                        captured != null && node.id in captured -> NodeHighlight.CANDIDATE
-                        else -> NodeHighlight.NONE
-                    },
-                    problem = validation.severityFor(node.id),
-                    hoverPort = state.pendingConnection?.hoverPort,
-                    revealedLabel = state.revealedLabel,
-                    pendingFrom = state.pendingConnection?.from,
-                    gestures = NodeGestureHandlers(
-                        onPress = { viewModel.beginNodeGesture() },
-                        onTap = { viewModel.tapNode(node.id) },
-                        onLongPress = {
-                            // A mode change with no feedback is not discoverable on
-                            // a surface with no hover and no cursor.
-                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                            viewModel.longPressNode(node.id)
+        content = {
+            val selection = state.selection
+            val captured = state.interaction.marquee?.captured
+            val haptics = LocalHapticFeedback.current
+            state.workflow.nodes.forEach { node ->
+                val definition = NodeTypeRegistry.byId(node.typeId) ?: return@forEach
+                key(node.id) {
+                    NodeCard(
+                        node = node,
+                        definition = definition,
+                        workflow = state.workflow,
+                        highlight = when {
+                            node.id in selection -> NodeHighlight.SELECTED
+                            captured != null && node.id in captured -> NodeHighlight.CANDIDATE
+                            else -> NodeHighlight.NONE
                         },
-                        onDragStart = { viewModel.beginNodeDrag(node.id) },
-                        onDrag = { delta -> viewModel.dragSelectedNodes(delta) },
-                        onFinish = { viewModel.endNodeGesture() },
-                        onCancel = { viewModel.cancelNodeGesture() },
-                    ),
-                    onPortDragStart = { ref -> viewModel.startPortDrag(ref) },
-                    onPortDrag = { delta -> viewModel.updatePortDrag(delta) },
-                    onPortDragEnd = { viewModel.endPortDrag() },
-                    onPortDragCancel = { viewModel.cancelPortDrag() },
-                    onToggleRevealedLabel = { ref -> viewModel.toggleRevealedLabel(ref) },
-                )
+                        problem = validation.severityFor(node.id),
+                        hoverPort = state.pendingConnection?.hoverPort,
+                        revealedLabel = state.revealedLabel,
+                        pendingFrom = state.pendingConnection?.from,
+                        gestures = NodeGestureHandlers(
+                            onPress = { viewModel.beginNodeGesture() },
+                            onTap = { viewModel.tapNode(node.id) },
+                            onLongPress = {
+                                // A mode change with no feedback is not discoverable on
+                                // a surface with no hover and no cursor.
+                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                viewModel.longPressNode(node.id)
+                            },
+                            onDragStart = { viewModel.beginNodeDrag(node.id) },
+                            onDrag = { delta -> viewModel.dragSelectedNodes(delta) },
+                            onFinish = { viewModel.endNodeGesture() },
+                            onCancel = { viewModel.cancelNodeGesture() },
+                        ),
+                        onPortDragStart = { ref -> viewModel.startPortDrag(ref) },
+                        onPortDrag = { delta -> viewModel.updatePortDrag(delta) },
+                        onPortDragEnd = { viewModel.endPortDrag() },
+                        onPortDragCancel = { viewModel.cancelPortDrag() },
+                        onToggleRevealedLabel = { ref -> viewModel.toggleRevealedLabel(ref) },
+                    )
+                }
             }
+        },
+    ) { measurables, constraints ->
+        // Cards are measured against nothing, not against the viewport.
+        //
+        // A card carries its own position in a `Modifier.offset` and its own width
+        // from its port count, so the screen it happens to be shown on bounds
+        // neither. A `Box` here handed each card the viewport as its maximum, and
+        // an over-large child is not merely clamped: `Placeable.width` is the
+        // coerced width, and `place` then adds `apparentToRealOffset`, which
+        // *centres* the real content on it. A node wider than the screen therefore
+        // drew itself — and the port handles it carries — half its overflow to the
+        // left of where it actually is, while the wires, drawn straight from the
+        // graph coordinates by the layer below, stayed where the ports belong.
+        // `action.break` over a twelve-field struct is what first reaches that
+        // width, at 418dp against a 411dp screen.
+        val placeables = measurables.map { it.measure(Constraints()) }
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            placeables.forEach { it.place(0, 0) }
         }
     }
 }
