@@ -3,7 +3,7 @@
 <!-- See "Node text and translation" in CLAUDE.md. -->
 <resources>
     <string name="node_trigger_manual_name">Manual Trigger</string>
-    <string name="node_trigger_manual_desc">Starts the workflow when you tap run, or tap its widget or shortcut</string>
+    <string name="node_trigger_manual_desc">Starts the workflow when you tap its run button, widget or shortcut</string>
     <string name="port_trigger_manual_out">out</string>
     <string name="cfg_trigger_manual_label">Button label</string>
     <string name="node_trigger_api_name">Called by Another App</string>

@@ -28,9 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FitScreen
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -340,20 +338,6 @@ private fun CanvasRegion(
                 .padding(end = 18.dp, bottom = 18.dp),
         ) {
             Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.grapheditor_add_node))
-        }
-        FloatingActionButton(
-            onClick = { if (state.isRunning) viewModel.stopWorkflow() else viewModel.runWorkflow() },
-            containerColor = EditorColors.triggerAccent,
-            contentColor = EditorColors.textPrimary,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 88.dp, bottom = 18.dp),
-        ) {
-            if (state.isRunning) {
-                Icon(Icons.Filled.Stop, contentDescription = stringResource(R.string.grapheditor_stop_workflow))
-            } else {
-                Icon(Icons.Filled.PlayArrow, contentDescription = stringResource(R.string.grapheditor_run_workflow))
-            }
         }
     }
 }

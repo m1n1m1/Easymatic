@@ -23,7 +23,6 @@ import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.ExecPorts
 import com.example.ottomatic.domain.model.MacroAccent
 import com.example.ottomatic.domain.model.MacroIcon
-import com.example.ottomatic.domain.model.NodeKind
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.VariableDeclaration
 import com.example.ottomatic.domain.model.VariableRef
@@ -69,10 +68,9 @@ import com.example.ottomatic.domain.registry.effectiveOutputPorts
 import com.example.ottomatic.domain.registry.isDataAssignable
 import com.example.ottomatic.domain.registry.suggestionsFor
 import com.example.ottomatic.engine.ExecutionContext
-import com.example.ottomatic.engine.WorkflowRunner
+import com.example.ottomatic.engine.runFromTrigger
 import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.engine.trigger.ManualTrigger
-import com.example.ottomatic.engine.trigger.TriggerHost
 import com.example.ottomatic.engine.validation.GraphValidation
 import com.example.ottomatic.engine.validation.GraphValidator
 import com.example.ottomatic.feature.i18n.NodeText
@@ -82,6 +80,7 @@ import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -144,7 +143,13 @@ data class GraphEditorUiState(
     val nodePick: NodePickRequest? = null,
     val revealedLabel: PortRef? = null,
     val isLoaded: Boolean = false,
-    val isRunning: Boolean = false,
+    /**
+     * The `trigger.manual` nodes with a run in flight from their own card button.
+     *
+     * A set rather than a flag, because a macro may hold several manual triggers
+     * — "Start", "Stop", "Reset" — and each button reports only its own run.
+     */
+    val runningNodes: Set<NodeId> = emptySet(),
     val isMacroEnabled: Boolean = false,
 )
 
@@ -153,7 +158,6 @@ data class GraphEditorUiState(
 @Suppress("TooManyFunctions", "LongParameterList")
 class GraphEditorViewModel(
     private val repository: WorkflowRepository,
-    private val triggerHost: TriggerHost,
     private val executionContext: ExecutionContext,
     private val runLog: RunLog,
     private val appContext: android.content.Context,
@@ -429,7 +433,7 @@ class GraphEditorViewModel(
             val outputPorts = effectiveOutputPorts(def, workflow, node)
             minX = min(minX, node.x)
             minY = min(minY, node.y)
-            maxX = max(maxX, node.x + GraphGeometry.nodeWidth(inputPorts.size, outputPorts.size))
+            maxX = max(maxX, node.x + GraphGeometry.nodeWidth(node.typeId, inputPorts.size, outputPorts.size))
             maxY = max(maxY, node.y + GraphGeometry.NODE_HEIGHT)
         }
         val padding = FIT_PADDING
@@ -812,7 +816,7 @@ class GraphEditorViewModel(
             NodeTypeRegistry.byId(node.typeId)?.let { definition ->
                 val inputPorts = effectiveInputPorts(definition, workflow, node)
                 val outputPorts = effectiveOutputPorts(definition, workflow, node)
-                val width = GraphGeometry.nodeWidth(inputPorts.size, outputPorts.size)
+                val width = GraphGeometry.nodeWidth(node.typeId, inputPorts.size, outputPorts.size)
                 (if (ref.isOutput) outputPorts else inputPorts)
                     .firstOrNull { it.name == ref.portName && it.kind == ref.kind }
                     ?.let { GraphGeometry.portPosition(node, inputPorts, outputPorts, width, it) }
@@ -838,7 +842,7 @@ class GraphEditorViewModel(
                     if (port.kind != from.kind) continue
                     val inputPorts = effectiveInputPorts(definition, workflow, node)
                     val outputPorts = effectiveOutputPorts(definition, workflow, node)
-                    val width = GraphGeometry.nodeWidth(inputPorts.size, outputPorts.size)
+                    val width = GraphGeometry.nodeWidth(node.typeId, inputPorts.size, outputPorts.size)
                     val portPos = GraphGeometry.portPosition(node, inputPorts, outputPorts, width, port)
                     val distance = (portPos - positionGraph).getDistance()
                     if (distance < bestDistance) {
@@ -987,12 +991,21 @@ class GraphEditorViewModel(
 
     // region Workflow execution
 
-    private var runJob: Job? = null
+    /**
+     * The job behind each running card button, keyed by the node that owns it.
+     *
+     * Kept beside [GraphEditorUiState.runningNodes] rather than in it, because a
+     * `Job` is not state anything draws — the set is what the card reads and the
+     * map is what Stop reaches for.
+     */
+    private val runJobs = mutableMapOf<NodeId, Job>()
 
     /**
      * Persists the macro's armed state and starts/stops the background engine
-     * service accordingly. Distinct from [runWorkflow]: enabling arms the macro
-     * in the long-lived service scope so it keeps running after the UI is gone.
+     * service accordingly. Distinct from [toggleManualRun]: enabling arms the
+     * macro in the long-lived service scope so it keeps listening for background
+     * events after the UI is gone, where a manual run is one walk of the graph
+     * and arms nothing.
      */
     fun setMacroEnabled(enabled: Boolean) {
         // Same guard as [persist]: arming before the load completes would target
@@ -1025,38 +1038,56 @@ class GraphEditorViewModel(
         }
     }
 
-    fun runWorkflow() {
-        val state = _uiState.value
-        // Skip the one-shot preview if it is already running, or if the macro is
-        // armed in the background service — double-arming would arm trigger
-        // sources (schedule, geofence) a second time.
-        if (state.isRunning || state.isMacroEnabled) return
-        val workflow = state.workflow
-        val firstTrigger = workflow.nodes.firstOrNull {
-            NodeTypeRegistry.byId(it.typeId)?.kind == NodeKind.TRIGGER
-        } ?: return
-        val runner = WorkflowRunner(triggerHost, executionContext)
-        _uiState.update { it.copy(isRunning = true) }
-        runJob = runner.run(viewModelScope, workflow)
-        viewModelScope.launch {
-            runJob?.join()
-            _uiState.update { it.copy(isRunning = false) }
+    /**
+     * Runs this `trigger.manual` node, or stops the run it already started.
+     *
+     * Deliberately *not* an arm. [runFromTrigger] walks the graph from one node
+     * and starts no trigger source, so there is nothing here that could register
+     * a geofence twice — which is what the old whole-graph preview had to guard
+     * against, and what made an armed macro impossible to run by hand. It is the
+     * same entry point `MacroEngineService.runManualTrigger` and
+     * `WorkflowRunner.collect` use, so the per-run `catch` and the `finally` that
+     * emits `"finished"` are written once.
+     *
+     * The graph is the live in-memory one, not `repository.load`: saves are
+     * debounced, and in an editor "run this" means "run what I am looking at".
+     * A widget has no editor to read from and keeps loading from disk.
+     *
+     * Which node runs is [nodeId] and nothing else — no scan for the first
+     * trigger in the graph, so other triggers being present, or broken, cannot
+     * take this button's run away. A broken *sibling* branch never could:
+     * `executeFrom` quarantines per node.
+     */
+    fun toggleManualRun(nodeId: NodeId) {
+        runJobs.remove(nodeId)?.let { job ->
+            job.cancel()
+            // Stopping promises the same silence disabling a macro does; a
+            // fire-and-forget sound would otherwise play on with nothing running.
+            executionContext.systemServices.stopSounds()
+            _uiState.update { it.copy(runningNodes = it.runningNodes - nodeId) }
+            return
         }
-        if (firstTrigger.typeId == ManualTrigger.TYPE_ID) {
-            ManualTrigger.fire(firstTrigger.id)
+        val workflow = _uiState.value.workflow
+        val node = workflow.node(nodeId)?.takeIf { it.typeId == ManualTrigger.TYPE_ID } ?: return
+        _uiState.update { it.copy(runningNodes = it.runningNodes + nodeId) }
+        // LAZY, then started below: viewModelScope dispatches on Main.immediate,
+        // so a graph short enough never to suspend would run to completion —
+        // `finally` included — *inside* the call that produces the job, and the
+        // assignment would then file a finished job that the next tap reads as a
+        // run to stop.
+        val job = viewModelScope.launch(start = CoroutineStart.LAZY) {
+            try {
+                // The run's own scope as the deferred one, so Stop also cancels a
+                // fork parked in `action.wait_until` rather than leaving it armed
+                // against a run that is over.
+                runFromTrigger(executionContext, workflow, node, deferredScope = this)
+            } finally {
+                runJobs.remove(nodeId)
+                _uiState.update { it.copy(runningNodes = it.runningNodes - nodeId) }
+            }
         }
-    }
-
-    fun stopWorkflow() {
-        runJob?.cancel()
-        runJob = null
-        // Stopping the preview promises the same silence disabling a macro does;
-        // a fire-and-forget sound would otherwise play on with nothing running.
-        executionContext.systemServices.stopSounds()
-        _uiState.value.workflow.nodes
-            .filter { it.typeId == ManualTrigger.TYPE_ID }
-            .forEach { ManualTrigger.release(it.id) }
-        _uiState.update { it.copy(isRunning = false) }
+        runJobs[nodeId] = job
+        job.start()
     }
 
     // endregion
@@ -1157,7 +1188,6 @@ class GraphEditorViewModel(
         @Suppress("LongParameterList") // Mirrors the ViewModel's injected dependencies 1:1.
         fun factory(
             repository: WorkflowRepository,
-            triggerHost: TriggerHost,
             executionContext: ExecutionContext,
             runLog: RunLog,
             appContext: android.content.Context,
@@ -1168,7 +1198,6 @@ class GraphEditorViewModel(
             initializer {
                 GraphEditorViewModel(
                     repository,
-                    triggerHost,
                     executionContext,
                     runLog,
                     appContext,

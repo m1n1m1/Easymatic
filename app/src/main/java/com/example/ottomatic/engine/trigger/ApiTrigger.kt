@@ -53,10 +53,12 @@ data class ApiTriggerConfig(
  * disabled macro. The difference is who is looking: somebody tapping a tile can see
  * the macro is off and means it anyway, where a caller three apps away cannot.
  *
- * None of `ManualTrigger.activeFlows`' problems recur, because there is no such
- * registry here: nothing is keyed by node id, so the editor's preview runner and the
- * engine's armed runner cannot overwrite each other, and nothing is left behind by a
- * disarm.
+ * This is now the same shape [ManualTrigger] has, and it got there second: that one
+ * kept a registry of shared flows keyed by node id for the editor's Run button to
+ * emit into, and every problem this node was built to avoid was one of its — the
+ * editor's preview runner and the engine's armed runner overwriting each other's
+ * entry, and a disarm leaving a dead flow behind. Neither trigger keys anything by
+ * node id any more.
  *
  * The returned flow is a bare [MutableSharedFlow] rather than `emptyFlow()`
  * deliberately. An empty flow **completes**, and `MacroEngineService.arm` drops a job

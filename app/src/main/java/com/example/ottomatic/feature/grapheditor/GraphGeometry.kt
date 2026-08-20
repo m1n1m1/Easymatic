@@ -2,9 +2,11 @@ package com.example.ottomatic.feature.grapheditor
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.engine.trigger.ManualTrigger
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -32,21 +34,37 @@ object GraphGeometry {
     private const val CURVE_TENSION = 0.5f
     private const val BACKWARD_TENSION = 0.6f
 
+    /** The run button on a `trigger.manual` card, plus the gap before it. */
+    private const val RUN_BUTTON_EXTRA = 44f
+
     /** Nodes flow top-to-bottom, so width grows with port count and height is fixed. */
-    fun nodeWidth(definition: NodeTypeDefinition): Float {
-        val portCount = max(definition.inputPorts.size, definition.outputPorts.size)
-        return max(NODE_MIN_WIDTH, portCount * PORT_SPACING + HORIZONTAL_PADDING)
-    }
+    fun nodeWidth(definition: NodeTypeDefinition): Float =
+        nodeWidth(definition.typeId, definition.inputPorts.size, definition.outputPorts.size)
 
     /**
      * Width for a placed node, computed from its **effective** port counts
      * (which may differ from the static [NodeTypeDefinition] for dynamic-port
-     * nodes like `action.break` / `action.make`).
+     * nodes like `action.break` / `action.make`) and from what its card carries.
+     *
+     * [typeId] is a parameter rather than a lookup because this is also what
+     * places the *wires*: [portOffsetIn] centres a node's handles on this width,
+     * and `portPositionOf` recomputes it independently to draw the bezier. A
+     * width decided anywhere else — in the card composable, say — would detach
+     * every handle from the wire that ends on it.
      */
-    fun nodeWidth(inputPortCount: Int, outputPortCount: Int): Float {
+    fun nodeWidth(typeId: NodeTypeId, inputPortCount: Int, outputPortCount: Int): Float {
         val portCount = max(inputPortCount, outputPortCount)
-        return max(NODE_MIN_WIDTH, portCount * PORT_SPACING + HORIZONTAL_PADDING)
+        return max(NODE_MIN_WIDTH, portCount * PORT_SPACING + HORIZONTAL_PADDING) + extraWidthFor(typeId)
     }
+
+    /**
+     * Card width a node type needs beyond its ports, for content only it draws.
+     *
+     * `trigger.manual` is the sole case: it carries a run button, and at
+     * [NODE_MIN_WIDTH] the button would leave its name about eighty dp.
+     */
+    private fun extraWidthFor(typeId: NodeTypeId): Float =
+        if (typeId == ManualTrigger.TYPE_ID) RUN_BUTTON_EXTRA else 0f
 
     /** Position of a port relative to the node's top-left corner (static definition). */
     fun portOffset(definition: NodeTypeDefinition, port: Port): Offset {

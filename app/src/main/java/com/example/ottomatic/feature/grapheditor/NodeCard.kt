@@ -1,3 +1,8 @@
+// The one card, drawn in parts: its body, its badge, its subtitle, its run
+// button, its port handles and their labels. Splitting them across files would
+// separate things that share the card's geometry and are only ever read together.
+@file:Suppress("TooManyFunctions")
+
 package com.example.ottomatic.feature.grapheditor
 
 import androidx.compose.ui.res.stringResource
@@ -15,6 +20,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,6 +28,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -63,6 +71,11 @@ import kotlin.math.roundToInt
 private val NodeShape = RoundedCornerShape(14.dp)
 private const val PORT_HANDLE_SIZE = 26f
 
+/** Matches the icon chip across the row from it; `RUN_BUTTON_EXTRA` is this plus its gap. */
+private val RUN_BUTTON_SIZE = 34.dp
+private val RUN_ICON_SIZE = 18.dp
+private const val RUN_BUTTON_FILL_ALPHA = 0.16f
+
 /** Fully rounded: the label reads as a pill, not a second, smaller card. */
 private val LabelShape = RoundedCornerShape(percent = 50)
 private val LabelTextStyle = TextStyle(fontSize = 10.sp, lineHeight = 12.sp, fontWeight = FontWeight.Medium)
@@ -100,6 +113,20 @@ fun NodeCard(
      * the whole `GraphValidation` never reaches this leaf.
      */
     problem: Severity?,
+    /**
+     * Whether this node has a run in flight — only ever true for the node that
+     * owns [onRunToggle].
+     *
+     * A `Boolean` and a nullable lambda rather than richer state, for the reason
+     * [problem] is a [Severity] rather than the whole `GraphValidation`: the card
+     * has to stay skippable, and every node on the canvas is handed these.
+     */
+    isRunning: Boolean,
+    /**
+     * Starts this node's run, or stops the one already going, or null for a node
+     * that has no such button — which is every node but `trigger.manual`.
+     */
+    onRunToggle: (() -> Unit)?,
     hoverPort: PortRef?,
     revealedLabel: PortRef?,
     pendingFrom: PortRef?,
@@ -114,7 +141,7 @@ fun NodeCard(
     val layoutInputPorts = effectiveInputPorts(definition, workflow, node)
     val visibleInputPorts = visibleInputPorts(definition, workflow, node)
     val outputPorts = effectiveOutputPorts(definition, workflow, node)
-    val width = GraphGeometry.nodeWidth(layoutInputPorts.size, outputPorts.size)
+    val width = GraphGeometry.nodeWidth(node.typeId, layoutInputPorts.size, outputPorts.size)
     val labelToShow = pendingFrom?.takeIf { it.nodeId == node.id } ?: revealedLabel
 
     Box(
@@ -136,6 +163,8 @@ fun NodeCard(
             definition = definition,
             highlight = highlight,
             problem = problem,
+            isRunning = isRunning,
+            onRunToggle = onRunToggle,
             gestures = gestures,
         )
         PortLabel(node.id, node.typeId, layoutInputPorts, outputPorts, width, density, labelToShow)
@@ -162,6 +191,8 @@ private fun NodeBody(
     definition: NodeTypeDefinition,
     highlight: NodeHighlight,
     problem: Severity?,
+    isRunning: Boolean,
+    onRunToggle: (() -> Unit)?,
     gestures: NodeGestureHandlers,
 ) {
     val accent = accentColor(definition.kind)
@@ -191,7 +222,10 @@ private fun NodeBody(
         contentAlignment = Alignment.CenterStart,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 14.dp),
+            // fillMaxWidth so the name below can take a weight and ellipsize
+            // *before* the run button rather than sliding under it. On a card
+            // with no button there is nothing to reserve for and nothing moves.
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
@@ -209,7 +243,7 @@ private fun NodeBody(
                 )
             }
             Column(
-                modifier = Modifier.padding(start = 10.dp),
+                modifier = Modifier.weight(1f).padding(start = 10.dp),
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
@@ -228,8 +262,46 @@ private fun NodeBody(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
+            if (onRunToggle != null) RunButton(node.id, accent, isRunning, onRunToggle)
         }
         ProblemBadge(problem, Modifier.align(Alignment.TopEnd))
+    }
+}
+
+/**
+ * The run button a `trigger.manual` card carries.
+ *
+ * The tap is taken with [detectTapGestures] rather than `clickable`, and that is
+ * the whole reason this works: the card arbitrates press, tap, long press and
+ * drag in one detector whose first line is
+ * `awaitFirstDown(requireUnconsumed = true)`, so a child that consumes its own
+ * down makes the card skip the gesture entirely. It is exactly how [PortHandle]
+ * already coexists with node drag, and it costs the same two things — a drag
+ * begun on the button does not move the node, and the target shrinks with the
+ * zoom.
+ *
+ * Sized and tinted as the icon chip opposite it, because they are the two ends
+ * of the same row and a button that out-shouted the node's own identity would
+ * make the card read as a control rather than as a step.
+ */
+@Composable
+private fun RunButton(nodeId: NodeId, accent: Color, isRunning: Boolean, onToggle: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(RUN_BUTTON_SIZE)
+            .clip(CircleShape)
+            .background(accent.copy(alpha = RUN_BUTTON_FILL_ALPHA))
+            .pointerInput(nodeId) { detectTapGestures { onToggle() } },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = if (isRunning) Icons.Filled.Stop else Icons.Filled.PlayArrow,
+            contentDescription = stringResource(
+                if (isRunning) R.string.grapheditor_stop_workflow else R.string.grapheditor_run_workflow,
+            ),
+            tint = accent,
+            modifier = Modifier.size(RUN_ICON_SIZE),
+        )
     }
 }
 

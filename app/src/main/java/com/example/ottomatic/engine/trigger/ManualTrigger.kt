@@ -1,6 +1,5 @@
 package com.example.ottomatic.engine.trigger
 
-import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
@@ -8,7 +7,6 @@ import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.engine.NodeOutput
 import com.example.ottomatic.engine.pulseTriggerNode
-import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.serialization.Serializable
@@ -32,26 +30,37 @@ data class ManualTriggerConfig(
 )
 
 /**
- * Trigger for `trigger.manual`. Fires when the user taps "Run" in the editor.
+ * Trigger for `trigger.manual`. Never fires while armed — it is *run*, not listened to.
  *
- * Holds a [MutableSharedFlow] per activation so the ViewModel can emit into it.
- * The companion keeps a registry of active flows keyed by node id so the
- * UI can reach the correct trigger instance.
+ * Every manual run — the button on the node's own card, a home-screen tile, a
+ * deck cell, a launcher shortcut — goes straight to `runFromTrigger` against the
+ * graph, which needs no activation at all and therefore works whether or not the
+ * macro is armed. So [activate] has nothing to register and hands back a flow
+ * that never emits.
  *
- * This is **not** how a widget or a shortcut runs a macro. Those go through
- * `runManualTrigger`, which executes from the graph directly, because this
- * registry cannot serve them: it is keyed by node id alone, so the editor's
- * preview runner and the engine's armed runner overwrite each other's entry for
- * the same node; [release] is only called when the editor stops a preview, so a
- * disarm leaves a dead flow behind that [fire] emits into silently; and [fire]
- * returns nothing, while a tile has to say whether the run worked.
+ * There used to be a registry of shared flows here, keyed by node id, that the
+ * editor's Run button emitted into. It was keyed by node id *alone*, so the
+ * editor's preview runner and the engine's armed runner overwrote each other's
+ * entry for the same node; its `release` ran only when the editor stopped a
+ * preview, so a disarm left a dead flow behind that a fire emitted into
+ * silently; and firing returned nothing, while a tile has to say whether the run
+ * worked. Two of the bugs it caused were visible from the outside: an armed
+ * macro could not be run by hand at all, and a graph holding any other trigger
+ * ran that one instead.
+ *
+ * Never-emitting rather than `emptyFlow()`, for the reason [ApiTrigger] gives:
+ * an empty flow **completes**, and `MacroEngineService.arm` drops a job whose
+ * body finished — so a macro whose only trigger is a manual one would read as
+ * unarmed the instant it was armed. A shared flow with no emitters never
+ * completes and never emits, which is the honest description of what this
+ * trigger does while armed.
  */
 class ManualTrigger : Trigger<ManualTriggerConfig, Unit> {
 
     override val definition = pulseTriggerNode<ManualTriggerConfig>(
         typeId = TYPE_ID.value,
         displayName = "Manual Trigger",
-        description = "Starts the workflow when you tap run, or tap its widget or shortcut",
+        description = "Starts the workflow when you tap its run button, widget or shortcut",
         category = NodeCategory.MANUAL,
         icon = NodeIcon.BOLT,
     )
@@ -60,34 +69,12 @@ class ManualTrigger : Trigger<ManualTriggerConfig, Unit> {
         config: ManualTriggerConfig,
         node: WorkflowNode,
         host: TriggerHost,
-    ): Flow<NodeOutput<Unit>> {
-        val flow = MutableSharedFlow<NodeOutput<Unit>>(extraBufferCapacity = 1)
-        activeFlows[node.id] = flow
-        return flow
-    }
+    ): Flow<NodeOutput<Unit>> = MutableSharedFlow()
 
     companion object {
         val TYPE_ID = NodeTypeId("trigger.manual")
 
         /** The config key the label is stored under; see `ManualTriggerRef`. */
         const val LABEL_KEY = "label"
-
-        /**
-         * Concurrent because the two sides genuinely are: [activate] runs on the
-         * engine service's arm coroutine while the editor's preview [fire]s from
-         * the main thread. A plain map here was a data race waiting for a user with
-         * a macro open in the editor and armed in the background.
-         */
-        private val activeFlows = ConcurrentHashMap<NodeId, MutableSharedFlow<NodeOutput<Unit>>>()
-
-        /** Called by the ViewModel to fire a manual trigger for the given node. */
-        fun fire(nodeId: NodeId) {
-            activeFlows[nodeId]?.tryEmit(NodeOutput(Unit))
-        }
-
-        /** Removes the flow when the workflow run is cancelled. */
-        fun release(nodeId: NodeId) {
-            activeFlows.remove(nodeId)
-        }
     }
 }

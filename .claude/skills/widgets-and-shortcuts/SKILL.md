@@ -1,11 +1,11 @@
 ---
 name: widgets-and-shortcuts
-description: Read before touching Ottomatic's home-screen widgets or launcher shortcuts — the two Glance widgets (Run tile and the Ottomatic panel), PanelConfig, MacroSnapshots, MacroTile, RunFeedback, MacroShortcuts, RunTilePin, RunTriggerActivity, and the MacroIcon/MacroAccent appearance a macro carries. Covers why widgets follow the system theme while the app does not, why a widget tap does not go through ManualTrigger.fire, why "Add to home screen" places a widget rather than a pinned shortcut and how the trigger reaches it, why the update traffic runs feature-ward, why appearance was added without a schema bump, and why a widget's config must be read back before it is shown.
+description: Read before touching Ottomatic's home-screen widgets or launcher shortcuts — the two Glance widgets (Run tile and the Ottomatic panel), PanelConfig, MacroSnapshots, MacroTile, RunFeedback, MacroShortcuts, RunTilePin, RunTriggerActivity, and the MacroIcon/MacroAccent appearance a macro carries. Covers why widgets follow the system theme while the app does not, why every manual run — tile, shortcut and the editor's own card button — goes through runFromTrigger, why "Add to home screen" places a widget rather than a pinned shortcut and how the trigger reaches it, why the update traffic runs feature-ward, why appearance was added without a schema bump, and why a widget's config must be read back before it is shown.
 ---
 
 # Widgets and shortcuts
 
-Everything under `feature/widget/` and `feature/shortcut/` exists to answer one question away from the app: **which macros can I run by hand, and can I run one now?** Before it, `trigger.manual` could only be fired from `GraphEditorViewModel.runWorkflow()` — four taps and a context switch for a macro whose whole point is being run on demand.
+Everything under `feature/widget/` and `feature/shortcut/` exists to answer one question away from the app: **which macros can I run by hand, and can I run one now?** Before it, `trigger.manual` could only be fired from the editor's whole-graph Run FAB — four taps and a context switch for a macro whose whole point is being run on demand.
 
 ## Two widgets, and why not three
 
@@ -56,9 +56,11 @@ Widgets are unstyled Material by default in one more place: the app's `Ottomatic
 
 ## Running from outside the app
 
-A widget tap does **not** go through `ManualTrigger.fire`. That registry is keyed by node id alone, so the editor's preview runner and the engine's armed runner clobber each other's entry; `release` is only called when the editor stops a preview, so a disarm leaves a dead flow that `fire` emits into silently; and it returns nothing, while a tile has to report an outcome.
+A widget tap goes through `MacroEngineService.ACTION_RUN_MANUAL`, which loads the graph and calls `runFromTrigger` (`engine/ManualRun.kt`) — also what `WorkflowRunner.collect` calls, so the per-event `catch` and the `"finished"` emit exist once. `trigger.manual` needs no activation at all, so this works armed or not, and needs no `armMutex`.
 
-Instead `MacroEngineService.ACTION_RUN_MANUAL` loads the graph and calls `runFromTrigger` (`engine/ManualRun.kt`) — which is also what `WorkflowRunner.collect` calls, so the per-event `catch` and the `"finished"` emit exist once. `trigger.manual` needs no activation (its `activate` only registers a flow), so this works armed or not, and needs no `armMutex`.
+It used to be the *exception*: `ManualTrigger` kept a registry of shared flows keyed by node id that the editor's Run FAB fired into, and the widgets refused to use it — keyed by node id alone, so the editor's preview runner and the engine's armed runner clobbered each other's entry; `release` ran only when the editor stopped a preview, so a disarm left a dead flow that `fire` emitted into silently; and it returned nothing, while a tile has to report an outcome. **The editor now takes this road too** (its per-card Run button calls `runFromTrigger` on the live in-memory graph, since it has an editor to read from where a tile does not), the registry is gone, and the argument above is retired rather than merely avoided.
+
+`runFromTrigger`'s `Boolean` is what `RunFeedback.finished` draws, and it is false for a run that never started as well as one that threw — `executeFrom` returns false when the *trigger node itself* is quarantined, which used to reach the tile as a green "ran" for a graph that did nothing.
 
 **A tap runs a macro whose switch is off.** `enabled` is the intent to keep a macro listening for *background events*; a tap is not one. The tile says "Off" so it is visible rather than surprising.
 

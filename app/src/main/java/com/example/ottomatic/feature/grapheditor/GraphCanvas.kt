@@ -35,6 +35,7 @@ import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.effectiveInputPorts
 import com.example.ottomatic.domain.registry.effectiveOutputPorts
+import com.example.ottomatic.engine.trigger.ManualTrigger
 import com.example.ottomatic.engine.validation.GraphValidation
 
 private const val GRID_SPACING = 26f
@@ -168,6 +169,15 @@ private fun NodeLayer(
                             else -> NodeHighlight.NONE
                         },
                         problem = validation.severityFor(node.id),
+                        isRunning = node.id in state.runningNodes,
+                        // The one node whose card carries a control. Its
+                        // counterpart is `nodeSubtitle`'s geofence branch: the
+                        // first thing in a card body that varies by node type.
+                        onRunToggle = if (node.typeId == ManualTrigger.TYPE_ID) {
+                            { viewModel.toggleManualRun(node.id) }
+                        } else {
+                            null
+                        },
                         hoverPort = state.pendingConnection?.hoverPort,
                         revealedLabel = state.revealedLabel,
                         pendingFrom = state.pendingConnection?.from,
@@ -361,7 +371,7 @@ internal fun portPositionOf(workflow: Workflow, ref: PortRef): Offset? =
             NodeTypeRegistry.byId(node.typeId)?.let { definition ->
                 val inputPorts = effectiveInputPorts(definition, workflow, node)
                 val outputPorts = effectiveOutputPorts(definition, workflow, node)
-                val width = GraphGeometry.nodeWidth(inputPorts.size, outputPorts.size)
+                val width = GraphGeometry.nodeWidth(node.typeId, inputPorts.size, outputPorts.size)
                 GraphGeometry.portPosition(node, inputPorts, outputPorts, width, port)
             }
         }

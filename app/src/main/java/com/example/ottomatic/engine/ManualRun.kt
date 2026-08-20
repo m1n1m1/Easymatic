@@ -36,13 +36,14 @@ val PULSE_ONLY: TriggerOutput = NodeOutput(emptyMap<PortName, Item>())
  * run — a failure that is invisible until someone wonders why their second macro
  * went quiet last Tuesday. That is not a rule worth writing down twice.
  *
- * A widget tap needs no trigger *activation*: `trigger.manual`'s `activate` only
- * registers a flow for the editor's Run button to emit into. So this path works
- * whether or not the macro is armed, which is what lets a tile run a macro whose
- * background switch is off.
+ * A manual run needs no trigger *activation* at all: `trigger.manual`'s `activate`
+ * registers nothing. So this path works whether or not the macro is armed, which
+ * is what lets a tile run a macro whose background switch is off — and what lets
+ * the button on the node's own card run one that is armed.
  *
- * Returns whether the run completed without throwing. [WorkflowRunner] ignores
- * that; a widget tile draws it.
+ * Returns whether the run happened and completed without throwing — false covers
+ * both a thrown run and a trigger node the validator quarantined.
+ * [WorkflowRunner] ignores that; a widget tile draws it.
  *
  * [deferredScope] is where a `Wait Until` on this graph parks its second branch.
  * That branch deliberately outlives this function — which is what keeps
@@ -62,7 +63,6 @@ suspend fun runFromTrigger(
     val executor = WorkflowExecutor(context.boundTo(workflow), deferredScope)
     return try {
         executor.executeFrom(workflow, node, output)
-        true
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {

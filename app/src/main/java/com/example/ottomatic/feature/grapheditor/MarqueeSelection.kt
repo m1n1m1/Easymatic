@@ -21,7 +21,7 @@ fun nodeBounds(workflow: Workflow, node: WorkflowNode): Rect? {
     val definition = NodeTypeRegistry.byId(node.typeId) ?: return null
     val inputs = effectiveInputPorts(definition, workflow, node)
     val outputs = effectiveOutputPorts(definition, workflow, node)
-    val width = GraphGeometry.nodeWidth(inputs.size, outputs.size)
+    val width = GraphGeometry.nodeWidth(node.typeId, inputs.size, outputs.size)
     return Rect(node.x, node.y, node.x + width, node.y + GraphGeometry.NODE_HEIGHT)
 }
 

@@ -159,8 +159,13 @@ class WorkflowExecutor(
      * explains what actually happened — and since the run now continues, that trace
      * is the interesting part. The full list belongs in the editor's Problems panel,
      * where it does not repeat; what lands here is only what a given run tripped over.
+     *
+     * Returns whether the walk actually started. False means the trigger node
+     * itself was quarantined, which is the one way this returns without having
+     * run a single step — and a caller that reported success there would have a
+     * widget tile drawing a green "ran" for a graph that did nothing.
      */
-    suspend fun executeFrom(workflow: Workflow, triggerNode: WorkflowNode, output: TriggerOutput) {
+    suspend fun executeFrom(workflow: Workflow, triggerNode: WorkflowNode, output: TriggerOutput): Boolean {
         val runId = runIds.incrementAndGet()
         val at = context.scoped(source(workflow, runId, triggerNode))
         at.log("Triggered by '${triggerNode.name}'")
@@ -170,7 +175,7 @@ class WorkflowExecutor(
         }
         if (triggerNode.id in validation.blockedNodes) {
             at.log("'${triggerNode.name}' cannot run until its problem is fixed", LogLevel.ERROR)
-            return
+            return false
         }
         // What the trigger actually delivered. Everything downstream is derived
         // from it, so a run that surprises you is very often wrong right here.
@@ -182,6 +187,7 @@ class WorkflowExecutor(
         run.onPath += triggerNode.id
         pulse(run, triggerNode, ExecutionRoute.OUT.portName)
         at.log("Run finished", LogLevel.DEBUG)
+        return true
     }
 
     /**

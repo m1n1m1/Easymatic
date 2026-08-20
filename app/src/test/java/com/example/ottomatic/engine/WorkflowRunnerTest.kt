@@ -5,17 +5,18 @@ import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.core.model.PortName
 import com.example.ottomatic.core.trigger.TriggerEvent
+import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.engine.trigger.BatteryDirection
 import com.example.ottomatic.engine.trigger.GeofenceArmResult
 import com.example.ottomatic.engine.trigger.GeofenceTransition
-import com.example.ottomatic.engine.trigger.ManualTrigger
 import com.example.ottomatic.engine.trigger.ScheduleHandle
 import com.example.ottomatic.engine.trigger.TriggerHost
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
@@ -39,13 +40,14 @@ class WorkflowRunnerTest {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
         val context = DefaultExecutionContext(services, notifications = services.notifier) { logs += it.message }
-        // BootTrigger reads busEvents() eagerly, inside activate — so a host that
+        val good = gate()
+        // BootTrigger reads its bus eagerly, inside activate — so a host that
         // refuses lands in the arming path, not in the collector.
-        val host = FakeTriggerHost { error("no bus here") }
+        val host = FakeTriggerHost { id -> if (id == BAD) error("no bus here") else good }
 
-        val job = WorkflowRunner(host, context).run(this, twoTriggerWorkflow("arm"))
+        val job = WorkflowRunner(host, context).run(this, twoTriggerWorkflow())
         repeat(YIELDS) { yield() }
-        ManualTrigger.fire(NodeId("arm-manual"))
+        good.tryEmit(bootEvent(GOOD))
         repeat(YIELDS) { yield() }
         job.cancelAndJoin()
 
@@ -58,17 +60,18 @@ class WorkflowRunnerTest {
         val services = RecordingSystemServices()
         val logs = mutableListOf<String>()
         val context = DefaultExecutionContext(services, notifications = services.notifier) { logs += it.message }
+        val good = gate()
         // Arms fine, then the flow fails on collection.
-        val host = FakeTriggerHost { flow { error("the bus went away") } }
+        val host = FakeTriggerHost { id -> if (id == BAD) flow { error("the bus went away") } else good }
 
-        val job = WorkflowRunner(host, context).run(this, twoTriggerWorkflow("die"))
+        val job = WorkflowRunner(host, context).run(this, twoTriggerWorkflow())
         repeat(YIELDS) { yield() }
-        ManualTrigger.fire(NodeId("die-manual"))
+        good.tryEmit(bootEvent(GOOD))
         repeat(YIELDS) { yield() }
         job.cancelAndJoin()
 
-        // Without the per-flow catch this is empty: the boot collector's failure
-        // cancelled the parent, and with it the manual trigger's subscription.
+        // Without the per-flow catch this is empty: the failing collector
+        // cancelled the parent, and with it the other trigger's subscription.
         assertEquals(listOf("ran"), services.notifier.titlesAndTexts.map { it.second })
         assertTrue(logs.toString(), logs.any { it.contains("'Boot' stopped listening") })
     }
@@ -77,12 +80,13 @@ class WorkflowRunnerTest {
     fun `cancelling the returned job tears every trigger down`() = runBlocking {
         val services = RecordingSystemServices()
         val context = DefaultExecutionContext(services, notifications = services.notifier) {}
-        val host = FakeTriggerHost { flow {} }
+        val good = gate()
+        val host = FakeTriggerHost { id -> if (id == BAD) flow {} else good }
 
-        val job = WorkflowRunner(host, context).run(this, twoTriggerWorkflow("stop"))
+        val job = WorkflowRunner(host, context).run(this, twoTriggerWorkflow())
         repeat(YIELDS) { yield() }
         job.cancelAndJoin()
-        ManualTrigger.fire(NodeId("stop-manual"))
+        good.tryEmit(bootEvent(GOOD))
         repeat(YIELDS) { yield() }
 
         // The supervisorScope must not have made the job outlive its children, or
@@ -91,36 +95,40 @@ class WorkflowRunnerTest {
     }
 
     /**
-     * A manual trigger that runs, plus a bus-backed one that is about to have a bad
-     * day. Ids are prefixed per test because [ManualTrigger] keys its active flows
-     * in a process-wide map.
+     * A trigger the test can fire on demand, plus one that is about to have a bad
+     * day. Both are `trigger.boot` — what matters here is that two sources arm
+     * and collect independently, not what either of them watches.
+     *
+     * The firing half is a hot flow the test emits into rather than a cold one
+     * that emits on subscribe, because two of these tests need the event to
+     * arrive at a moment they choose: after arming has settled, or after the job
+     * has already been cancelled.
      */
-    private fun twoTriggerWorkflow(prefix: String) = Workflow(
+    private fun twoTriggerWorkflow() = Workflow(
         id = "w-runner",
         nodes = listOf(
-            WorkflowNode(NodeId("$prefix-manual"), NodeTypeId("trigger.manual"), "Manual", 0f, 0f),
-            WorkflowNode(NodeId("$prefix-boot"), NodeTypeId("trigger.boot"), "Boot", 200f, 0f),
+            WorkflowNode(GOOD, NodeTypeId("trigger.boot"), "Tap", 0f, 0f),
+            WorkflowNode(BAD, NodeTypeId("trigger.boot"), "Boot", 200f, 0f),
             WorkflowNode(
-                NodeId("$prefix-n"), NodeTypeId("action.notify"), "Notify", 0f, 100f,
+                NodeId("n"), NodeTypeId("action.notify"), "Notify", 0f, 100f,
                 config = mapOf(ConfigKey("text") to "ran"),
             ),
         ),
         execConnections = listOf(
-            ExecConnection(
-                "$prefix-c1",
-                NodeId("$prefix-manual"), PortName("out"),
-                NodeId("$prefix-n"), PortName("in"),
-            ),
-            ExecConnection(
-                "$prefix-c2",
-                NodeId("$prefix-boot"), PortName("out"),
-                NodeId("$prefix-n"), PortName("in"),
-            ),
+            ExecConnection("c1", GOOD, PortName("out"), NodeId("n"), PortName("in")),
+            ExecConnection("c2", BAD, PortName("out"), NodeId("n"), PortName("in")),
         ),
     )
 
-    private class FakeTriggerHost(private val bus: () -> Flow<TriggerEvent>) : TriggerHost {
-        override fun busEvents(): Flow<TriggerEvent> = bus()
+    private fun gate() = MutableSharedFlow<TriggerEvent>(extraBufferCapacity = 1)
+
+    private fun bootEvent(nodeId: NodeId) = TriggerEvent(TriggerSource.BOOT, nodeId)
+
+    /** Dispatches on the node asking, so which flow a trigger gets is not arm order. */
+    private class FakeTriggerHost(private val bus: (NodeId) -> Flow<TriggerEvent>) : TriggerHost {
+        override fun busEvents(): Flow<TriggerEvent> = flow {}
+
+        override fun busEventsFor(nodeId: NodeId): Flow<TriggerEvent> = bus(nodeId)
 
         override fun armGeofence(
             nodeId: NodeId,
@@ -145,9 +153,12 @@ class WorkflowRunnerTest {
     }
 
     private companion object {
+        val GOOD = NodeId("good")
+        val BAD = NodeId("bad")
+
         /**
-         * `run` subscribes its collectors inside a `launch`, so a fire issued
-         * before they are running is dropped — [ManualTrigger]'s flow has no replay.
+         * `run` subscribes its collectors inside a `launch`, so an event emitted
+         * before they are running is dropped — the gate flow has no replay.
          */
         const val YIELDS = 8
     }

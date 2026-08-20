@@ -385,7 +385,6 @@ class MainActivity : ComponentActivity() {
                     key = workflowId,
                     factory = GraphEditorViewModel.factory(
                         repository = ServiceLocator.workflowRepository,
-                        triggerHost = ServiceLocator.triggerHost,
                         executionContext = ServiceLocator.executionContext,
                         runLog = ServiceLocator.runLog,
                         appContext = applicationContext,
