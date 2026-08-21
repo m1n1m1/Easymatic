@@ -15,13 +15,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.ottomatic.data.AssistantSettingsRepository
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.trigger.VariableStore
-import com.example.ottomatic.domain.model.DataConnection
 import com.example.ottomatic.domain.model.Direction
-import com.example.ottomatic.domain.model.ExecConnection
-import com.example.ottomatic.domain.model.ExecPorts
 import com.example.ottomatic.domain.model.MacroAccent
+import com.example.ottomatic.domain.model.NodeTypeDefinition
 import com.example.ottomatic.domain.model.MacroIcon
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.VariableDeclaration
@@ -29,54 +28,33 @@ import com.example.ottomatic.domain.model.VariableRef
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.WorkflowSummary
-import com.example.ottomatic.domain.model.schema.conversionTarget
 import com.example.ottomatic.domain.registry.MacroDirectory
-import com.example.ottomatic.domain.registry.generatedTarget
-import com.example.ottomatic.domain.registry.keysScopedBy
-import com.example.ottomatic.domain.registry.withJsonValue
-import com.example.ottomatic.domain.registry.CONVERT_IN
-import com.example.ottomatic.domain.registry.CONVERT_TO_KEY
-import com.example.ottomatic.domain.registry.CONVERT_TYPE_ID
-import com.example.ottomatic.domain.registry.TRANSFORM_OUT
-import com.example.ottomatic.domain.registry.IF_SOURCE_IN
-import com.example.ottomatic.domain.registry.IF_TYPE_CONFIG_KEY
-import com.example.ottomatic.domain.registry.IF_TYPE_ID
-import com.example.ottomatic.domain.registry.IF_VALUE_IN
 import com.example.ottomatic.domain.registry.DragOrigin
 import com.example.ottomatic.domain.registry.NodeSuggestion
 import com.example.ottomatic.domain.registry.NodeTypeRegistry
-import com.example.ottomatic.domain.registry.COMPARISON_TYPE_IDS
-import com.example.ottomatic.domain.registry.DIALOG_INPUT_TYPE_ID
-import com.example.ottomatic.domain.registry.DIALOG_INPUT_TYPE_KEY
-import com.example.ottomatic.domain.registry.DIALOG_TIMEOUT_KEY
-import com.example.ottomatic.domain.registry.DIALOG_TYPE_IDS
-import com.example.ottomatic.domain.registry.NOTIFY_ANSWER_KEYS
-import com.example.ottomatic.domain.registry.NOTIFY_TYPE_ID
-import com.example.ottomatic.domain.registry.notifyIsAnswerable
-import com.example.ottomatic.domain.registry.JSON_READ_LIST_KEY
-import com.example.ottomatic.domain.registry.JSON_READ_TYPE_ID
-import com.example.ottomatic.domain.registry.JSON_READ_TYPE_KEY
-import com.example.ottomatic.domain.registry.SCRIPT_INPUTS_KEY
-import com.example.ottomatic.domain.registry.SCRIPT_OUTPUTS_KEY
-import com.example.ottomatic.domain.model.ApiTokens
-import com.example.ottomatic.domain.registry.API_INPUTS_KEY
-import com.example.ottomatic.domain.registry.API_TOKEN_KEY
-import com.example.ottomatic.domain.registry.API_TRIGGER_TYPE_ID
-import com.example.ottomatic.domain.registry.SCRIPT_TYPE_ID
 import com.example.ottomatic.domain.registry.effectiveInputPorts
 import com.example.ottomatic.domain.registry.effectiveOutputPorts
-import com.example.ottomatic.domain.registry.isDataAssignable
 import com.example.ottomatic.domain.registry.suggestionsFor
 import com.example.ottomatic.engine.ExecutionContext
+import com.example.ottomatic.engine.GraphLayout
+import com.example.ottomatic.engine.PortAddress
+import com.example.ottomatic.engine.connectionExists
+import com.example.ottomatic.engine.initialConfigFor
+import com.example.ottomatic.engine.isTypeCompatible
+import com.example.ottomatic.engine.randomNodeId
 import com.example.ottomatic.engine.runFromTrigger
+import com.example.ottomatic.engine.withAutocast
+import com.example.ottomatic.engine.withConfig
+import com.example.ottomatic.engine.withConnection
 import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.engine.trigger.ManualTrigger
 import com.example.ottomatic.engine.validation.GraphValidation
 import com.example.ottomatic.engine.validation.GraphValidator
+import com.example.ottomatic.feature.grapheditor.assistant.AssistantEditor
+import com.example.ottomatic.feature.grapheditor.assistant.AssistantSession
 import com.example.ottomatic.feature.i18n.NodeText
 import com.example.ottomatic.feature.variables.VariableScope
 import com.example.ottomatic.feature.variables.specFor
-import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope
@@ -115,6 +93,16 @@ data class PortRef(
     val isOutput: Boolean,
     val kind: PortKind,
 )
+
+/**
+ * The same port, as `engine/GraphEdits.kt` names it.
+ *
+ * Two types saying one thing, converted in a line at the boundary. The alternative
+ * was moving [PortRef] into `domain`, which is a type the whole gesture layer is
+ * written around — pending drags, hover snapping, drop-to-add — and none of that
+ * belongs anywhere but here.
+ */
+internal fun PortRef.address(): PortAddress = PortAddress(nodeId, portName, kind, isOutput)
 
 /** An in-progress connection drag from a port to the current pointer position. */
 data class PendingConnection(
@@ -162,6 +150,14 @@ class GraphEditorViewModel(
     private val runLog: RunLog,
     private val appContext: android.content.Context,
     private val appScope: CoroutineScope,
+    /**
+     * Which model the graph assistant asks, remembered between sessions.
+     *
+     * A preference about the *editor*, not about this macro — see the repository. It is
+     * a constructor parameter rather than read from `ServiceLocator` for the reason
+     * everything else here is: this ViewModel is testable without a process.
+     */
+    private val assistantSettings: AssistantSettingsRepository,
     /** Public so a `@Picker(MACRO)` field can mark the row for this very workflow. */
     val workflowId: String,
     /**
@@ -397,12 +393,14 @@ class GraphEditorViewModel(
     }
 
     fun onPan(deltaPx: Offset) {
+        _canvasMovedByUser.value = true
         _uiState.update { state ->
             state.copy(transform = state.transform.copy(offset = state.transform.offset + deltaPx))
         }
     }
 
     fun onZoom(centroidPx: Offset, zoomChange: Float, panPx: Offset) {
+        _canvasMovedByUser.value = true
         _uiState.update { state ->
             val old = state.transform
             val newScale = (old.scale * zoomChange).coerceIn(GraphGeometry.MIN_ZOOM, GraphGeometry.MAX_ZOOM)
@@ -417,8 +415,26 @@ class GraphEditorViewModel(
     }
 
     fun fitToContent(viewportSizePx: Size, density: Float) {
+        showAll(_uiState.value.workflow.nodes.map { it.id }.toSet(), viewportSizePx, density)
+    }
+
+    /**
+     * Brings [nodeIds] into view, for the assistant's canvas to follow what it is
+     * building.
+     *
+     * [fitToContent] over a subset, and the same call underneath: framing three new
+     * nodes and framing the whole graph are the same question asked of different
+     * bounding boxes, and two copies of that arithmetic would drift on the day the
+     * padding changed.
+     */
+    fun focusOn(nodeIds: Set<NodeId>, viewportSizePx: Size, density: Float) {
+        if (nodeIds.isEmpty()) return
+        showAll(nodeIds, viewportSizePx, density)
+    }
+
+    private fun showAll(nodeIds: Set<NodeId>, viewportSizePx: Size, density: Float) {
         val workflow = _uiState.value.workflow
-        val nodes = workflow.nodes
+        val nodes = workflow.nodes.filter { it.id in nodeIds }
         if (nodes.isEmpty() || viewportSizePx.minDimension <= 0f) {
             _uiState.update { it.copy(transform = CanvasTransform()) }
             return
@@ -549,12 +565,12 @@ class GraphEditorViewModel(
     fun addNode(typeId: NodeTypeId, positionGraph: Offset) {
         val definition = NodeTypeRegistry.byId(typeId) ?: return
         val node = WorkflowNode(
-            id = NodeId(UUID.randomUUID().toString()),
+            id = randomNodeId(),
             typeId = typeId,
             name = nodeText.name(definition),
             x = positionGraph.x,
             y = positionGraph.y,
-            config = initialConfig(typeId),
+            config = initialConfigFor(typeId),
         )
         _uiState.update { state ->
             state.copy(workflow = state.workflow.copy(nodes = state.workflow.nodes + node))
@@ -621,52 +637,37 @@ class GraphEditorViewModel(
     }
 
     private fun commitConnection(from: PortRef, target: PortRef) {
-        val (output, input) = if (from.isOutput) from to target else target to from
-        require(output.kind == input.kind) { appContext.getString(R.string.grapheditor_cannot_connect_kinds) }
+        val (outputRef, inputRef) = if (from.isOutput) from to target else target to from
+        require(outputRef.kind == inputRef.kind) { appContext.getString(R.string.grapheditor_cannot_connect_kinds) }
+        val output = outputRef.address()
+        val input = inputRef.address()
         val workflow = _uiState.value.workflow
-        if (output.kind == PortKind.DATA && !isTypeCompatible(workflow, output, input)) {
-            insertConversion(workflow, output, input)
+        if (output.kind == PortKind.DATA && !workflow.isTypeCompatible(output, input)) {
+            insertConversion(workflow, output, input, midpoint(outputRef, inputRef))
             return
         }
-        if (!connectionExists(workflow, output, input)) addConnection(output, input)
+        if (!workflow.connectionExists(output, input)) addConnection(output, input)
     }
 
     /**
      * Bridges a DATA drop the type system refused, by placing a `transform.convert`
-     * node into the wire pre-set to the conversion that fits — Unreal Blueprints'
-     * autocast, and the reason a mismatched drop is not simply thrown away.
+     * node into the wire pre-set to the conversion that fits.
      *
-     * The conversion is a real node rather than a coercion on the edge, so it is
-     * visible, deletable, and carries its own "If it fails" setting. A drop with no
-     * conversion at all (text into a struct) is still silently refused.
+     * The rule itself lives in [withAutocast] (`engine/GraphEdits.kt`), because it is
+     * a fact about the graph rather than about the drag; what stays here is the only
+     * part that is about the drag — where on the canvas the node lands.
      */
-    private fun insertConversion(workflow: Workflow, output: PortRef, input: PortRef) {
-        val sourceSchema = resolvePort(workflow, output)?.schema
-        val targetSchema = resolvePort(workflow, input)?.schema
-        val to = conversionTarget(sourceSchema, targetSchema) ?: return
-        val definition = NodeTypeRegistry.byId(CONVERT_TYPE_ID) ?: return
-        val midpoint = midpoint(output, input)
-        val convert = WorkflowNode(
-            id = NodeId(UUID.randomUUID().toString()),
-            typeId = CONVERT_TYPE_ID,
-            name = nodeText.name(definition),
-            x = midpoint.x - GraphGeometry.nodeWidth(definition) / 2f,
-            y = midpoint.y - GraphGeometry.NODE_HEIGHT / 2f,
-            config = mapOf(CONVERT_TO_KEY to to.name),
-            // The value input is a wildcard rather than a `@Wired` property, but
-            // every DATA input starts hidden — reveal it or the edge lands nowhere.
-            visibleDataInputs = setOf(CONVERT_IN),
-        )
-        val intoConvert = PortRef(convert.id, CONVERT_IN, isOutput = false, kind = PortKind.DATA)
-        val outOfConvert = PortRef(convert.id, TRANSFORM_OUT, isOutput = true, kind = PortKind.DATA)
-        _uiState.update { state ->
-            val placed = state.workflow.copy(nodes = state.workflow.nodes + convert)
-            state.copy(
-                workflow = placed
-                    .withConnection(output, intoConvert)
-                    .withConnection(outOfConvert, input),
-            ).selectingOnly(convert.id)
-        }
+    private fun insertConversion(workflow: Workflow, output: PortAddress, input: PortAddress, midpoint: Offset) {
+        val autocast = workflow.withAutocast(
+            output = output,
+            input = input,
+            place = { definition ->
+                (midpoint.x - GraphGeometry.nodeWidth(definition) / 2f) to
+                    (midpoint.y - GraphGeometry.NODE_HEIGHT / 2f)
+            },
+            nameOf = nodeText::name,
+        ) ?: return
+        _uiState.update { it.copy(workflow = autocast.workflow).selectingOnly(autocast.convertId) }
         persist()
     }
 
@@ -683,54 +684,11 @@ class GraphEditorViewModel(
         }
     }
 
-    /**
-     * Compose-time schema subtyping check for a candidate DATA edge
-     * [output] → [input], mirroring [GraphValidator] so incompatible edges are
-     * silently rejected at drop time (Blueprint-style). Wildcard ports (e.g.
-     * `action.break`'s `struct` input) accept anything.
-     */
-    private fun isTypeCompatible(workflow: Workflow, output: PortRef, input: PortRef): Boolean =
-        isDataAssignable(resolvePort(workflow, output), resolvePort(workflow, input))
-
-    private fun connectionExists(workflow: Workflow, output: PortRef, input: PortRef): Boolean =
-        when (output.kind) {
-            PortKind.EXECUTION -> workflow.execConnections.any {
-                it.fromNodeId == output.nodeId && it.fromPort == output.portName &&
-                    it.toNodeId == input.nodeId && it.toPort == input.portName
-            }
-            PortKind.DATA -> workflow.dataConnections.any {
-                it.fromNodeId == output.nodeId && it.fromPort == output.portName &&
-                    it.toNodeId == input.nodeId && it.toPort == input.portName
-            }
-        }
-
-    private fun addConnection(output: PortRef, input: PortRef) {
+    private fun addConnection(output: PortAddress, input: PortAddress) {
         _uiState.update { state ->
             state.copy(workflow = state.workflow.withConnection(output, input))
         }
         persist()
-    }
-
-    /** Appends the exec or data edge [output] → [input] to this workflow. */
-    private fun Workflow.withConnection(output: PortRef, input: PortRef): Workflow = when (output.kind) {
-        PortKind.EXECUTION -> copy(
-            execConnections = execConnections + ExecConnection(
-                id = UUID.randomUUID().toString(),
-                fromNodeId = output.nodeId,
-                fromPort = output.portName,
-                toNodeId = input.nodeId,
-                toPort = input.portName,
-            ),
-        )
-        PortKind.DATA -> copy(
-            dataConnections = dataConnections + DataConnection(
-                id = UUID.randomUUID().toString(),
-                fromNodeId = output.nodeId,
-                fromPort = output.portName,
-                toNodeId = input.nodeId,
-                toPort = input.portName,
-            ),
-        )
     }
 
     fun cancelPortDrag() {
@@ -779,12 +737,12 @@ class GraphEditorViewModel(
             pick.dropPosGraph - Offset(GraphGeometry.nodeWidth(definition) / 2f, GraphGeometry.NODE_HEIGHT / 2f)
         }
         val node = WorkflowNode(
-            id = NodeId(UUID.randomUUID().toString()),
+            id = randomNodeId(),
             typeId = typeId,
             name = nodeText.name(definition),
             x = topLeft.x,
             y = topLeft.y,
-            config = initialConfig(typeId),
+            config = initialConfigFor(typeId),
             // `@Wired` data inputs are hidden until opted in; reveal the one we
             // are about to wire, otherwise the edge would have no visible handle.
             visibleDataInputs = if (port != null && port.kind == PortKind.DATA && port.direction == Direction.IN) {
@@ -800,7 +758,7 @@ class GraphEditorViewModel(
             } else {
                 val newRef = PortRef(node.id, port.name, port.direction == Direction.OUT, port.kind)
                 val (output, input) = if (pick.from.isOutput) pick.from to newRef else newRef to pick.from
-                withNode.withConnection(output, input)
+                withNode.withConnection(output.address(), input.address())
             }
             state.copy(workflow = workflow, nodePick = null).selectingOnly(node.id)
         }
@@ -1095,41 +1053,8 @@ class GraphEditorViewModel(
     // region Node configuration
 
     fun updateNodeConfig(nodeId: NodeId, key: ConfigKey, value: String) {
-        _uiState.update { state ->
-            val nodes = state.workflow.nodes.map { node ->
-                if (node.id != nodeId) node else node.copy(config = node.config.after(key, value, node.typeId))
-            }
-            val workflow = state.workflow.copy(nodes = nodes)
-            state.copy(workflow = pruneRetypedEdges(workflow, nodeId, key))
-        }
+        _uiState.update { state -> state.copy(workflow = state.workflow.withConfig(nodeId, key, value)) }
         persist()
-    }
-
-    /**
-     * This config with [key] set, and anything that scoped by it cleared.
-     *
-     * The sibling of [pruneRetypedEdges], which is already a schema-aware follow-up to a config
-     * edit — that one drops edges the edit invalidated, this one drops *values* it invalidated.
-     * Both exist because an edit to one field can silently falsify another, and neither the
-     * validator nor the form can see it: a scoped picker renders the name cached inside its
-     * reference, so a service its entity can no longer accept still reads perfectly.
-     *
-     * Only when the new value is **non-blank and different**. Clearing a hub back to blank means
-     * "any hub", under which the entity beside it is still entirely coherent — blanking it there
-     * would be gratuitous.
-     */
-    @Suppress("ReturnCount") // A generated write, then an edit that clears nothing, then one that does.
-    private fun Map<ConfigKey, String>.after(key: ConfigKey, value: String, typeId: NodeTypeId):
-        Map<ConfigKey, String> {
-        // A generated field has no config key of its own: its value belongs inside another
-        // property's JSON. Routing it here rather than in the widget is what keeps
-        // `WorkflowNode.config` a flat map that nothing else has to learn about.
-        generatedTarget(key)?.let { (backing, name) ->
-            return this + (backing to withJsonValue(this[backing].orEmpty(), name, value))
-        }
-        val updated = this + (key to value)
-        if (value.isBlank() || this[key] == value) return updated
-        return updated - keysScopedBy(typeId, key)
     }
 
     fun setNodeDataInputVisible(nodeId: NodeId, portName: PortName, visible: Boolean) {
@@ -1158,6 +1083,94 @@ class GraphEditorViewModel(
         }
         persist()
     }
+
+    // endregion
+
+    // region The assistant
+
+    /**
+     * The graph as it stands, for the assistant to read and edit.
+     *
+     * A plain getter rather than a flow: the assistant's tools run one at a time and
+     * each needs the result of the last, so what it wants is the value now rather than
+     * a stream it would have to collect between calls.
+     */
+    val workflow: Workflow get() = _uiState.value.workflow
+
+    private val _canvasMovedByUser = MutableStateFlow(false)
+
+    /**
+     * Whether the user has taken the canvas since the last [resetCanvasFollow].
+     *
+     * The assistant follows what it is building until this goes true, and then stops
+     * for the rest of the turn. Somebody who grabs the canvas mid-build wants to look
+     * at something, and a view that keeps snapping away from them is the whole reason
+     * auto-follow needs a way to lose.
+     */
+    val canvasMovedByUser: StateFlow<Boolean> = _canvasMovedByUser.asStateFlow()
+
+    fun resetCanvasFollow() {
+        _canvasMovedByUser.value = false
+    }
+
+    /**
+     * Replaces the graph wholesale — one tool call's result, or the snapshot an Undo
+     * puts back.
+     *
+     * It goes through the same [persist] every gesture does, so an assistant edit is
+     * saved, debounced and re-armed exactly as a dragged wire is. Selection is left
+     * alone deliberately: a turn is a sequence of edits, and selecting each node as it
+     * landed would leave the user with whatever the last one happened to be.
+     */
+    fun applyAssistantEdit(workflow: Workflow) {
+        _uiState.update { it.copy(workflow = workflow) }
+        persist()
+    }
+
+    /** Tidies the nodes a turn added, once the turn is over. */
+    fun arrangeAssistantNodes(nodeIds: Set<NodeId>) {
+        if (nodeIds.isEmpty()) return
+        _uiState.update { it.copy(workflow = GraphLayout.arrange(it.workflow, nodeIds)) }
+        persist()
+    }
+
+    /**
+     * The graph as the assistant may touch it — a narrower surface than this ViewModel's,
+     * and deliberately so: it is the whole list of what an AI turn can reach.
+     */
+    private val assistantEditor = object : AssistantEditor {
+        override val workflow: Workflow get() = this@GraphEditorViewModel.workflow
+        override val canvasMovedByUser: StateFlow<Boolean> get() = this@GraphEditorViewModel.canvasMovedByUser
+        override fun apply(workflow: Workflow) = applyAssistantEdit(workflow)
+        override fun arrange(nodeIds: Set<NodeId>) = arrangeAssistantNodes(nodeIds)
+        override fun resetCanvasFollow() = this@GraphEditorViewModel.resetCanvasFollow()
+        override fun nameOf(definition: NodeTypeDefinition): String = nodeText.name(definition)
+    }
+
+    /**
+     * The conversation about this workflow.
+     *
+     * Held here rather than remembered in the composition so a turn survives a rotation
+     * and the back gesture into a full-screen overlay: an AI call takes tens of seconds
+     * and is billed, and losing one to a configuration change would be the worst possible
+     * moment to lose it. `viewModelScope` is what cancels it when the editor really goes.
+     *
+     * `by lazy` so a workflow nobody asks the assistant about costs nothing — building it
+     * reads the model preference off disk.
+     */
+    val assistant: AssistantSession by lazy {
+        AssistantSession(
+            ai = executionContext.ai,
+            editor = assistantEditor,
+            scope = viewModelScope,
+            onModelChosen = assistantSettings::choose,
+            initialModelRef = assistantSettings.modelRef.value,
+        )
+    }
+
+    // endregion
+
+    // region Node configuration
 
     fun updateNodeName(nodeId: NodeId, name: String) {
         _uiState.update { state ->
@@ -1192,6 +1205,7 @@ class GraphEditorViewModel(
             runLog: RunLog,
             appContext: android.content.Context,
             appScope: CoroutineScope,
+            assistantSettings: AssistantSettingsRepository,
             workflowId: String,
             globalVariables: StateFlow<List<VariableDeclaration>>,
         ): ViewModelProvider.Factory = viewModelFactory {
@@ -1202,139 +1216,13 @@ class GraphEditorViewModel(
                     runLog,
                     appContext,
                     appScope,
+                    assistantSettings,
                     workflowId,
                     globalVariables,
                 )
             }
         }
     }
-}
-
-/** The two `@Ports` config keys on `action.script`, both of which retype its ports. */
-private val SCRIPT_PORT_KEYS = setOf(SCRIPT_INPUTS_KEY, SCRIPT_OUTPUTS_KEY)
-
-private val JSON_READ_PORT_KEYS = setOf(JSON_READ_TYPE_KEY, JSON_READ_LIST_KEY)
-
-/**
- * Drops the edges a config change has just invalidated.
- *
- * A handful of config keys rewrite a placed node's ports through
- * [effectivePorts], and an edge left behind on a port that no longer exists — or
- * no longer has the type it was checked against — is worse than no edge: it
- * draws, it saves, and it silently carries nothing.
- *
- * Every case is gated on the node's own typeId as well as the key, because none
- * of "type", "outputs" or "timeoutSeconds" is a reserved config name.
- */
-private fun pruneRetypedEdges(workflow: Workflow, nodeId: NodeId, key: ConfigKey): Workflow {
-    val typeId = workflow.node(nodeId)?.typeId
-    return when {
-        // A comparison's type chooser (`action.if`, `action.while`): the
-        // `source`/`value` schemas are about to change and the old connections
-        // would likely fail the new check.
-        key == IF_TYPE_CONFIG_KEY && typeId in COMPARISON_TYPE_IDS -> workflow.copy(
-            dataConnections = workflow.dataConnections.filterNot {
-                it.toNodeId == nodeId && (it.toPort == IF_SOURCE_IN || it.toPort == IF_VALUE_IN)
-            },
-        )
-        retypesDataPorts(key, typeId) ->
-            workflow.copy(dataConnections = workflow.dataConnections.filter { it.stillValid(workflow, nodeId) })
-        key == DIALOG_TIMEOUT_KEY && typeId in DIALOG_TYPE_IDS -> workflow.withoutStrandedTimeoutBranch(nodeId)
-        // `action.notify` loses a whole branch rather than one route when the last
-        // thing that could be reacted to is switched off, so both halves have to go:
-        // the exec wire here, and the three data wires that ride on it below.
-        // NOTIFY_ANSWER_KEYS and the rule behind it live beside `effectivePorts`, so
-        // the branch this prunes and the branch that stops being drawn cannot differ.
-        key in NOTIFY_ANSWER_KEYS && typeId == NOTIFY_TYPE_ID ->
-            workflow.withoutStrandedAnswerBranch(nodeId)
-                .let { it.copy(dataConnections = it.dataConnections.filter { edge -> edge.stillValid(it, nodeId) }) }
-        else -> workflow
-    }
-}
-
-/**
- * Whether [key] rewrites the DATA ports of a node of type [typeId], so that every
- * edge touching it has to be re-checked.
- *
- * Re-checking beats dropping every edge the way `action.if`'s type chooser does:
- * a port list is edited one character at a time, so clearing the lot on each
- * keystroke would delete work the user can see is still correct.
- */
-/**
- * The config a freshly placed node of [typeId] starts with, where "empty" is the
- * wrong answer.
- *
- * There is one case, and it is the only kind there can be: a value that must be
- * *generated* rather than chosen or typed. `trigger.api`'s key is minted here so the
- * node is callable the moment it is placed — an empty field would make the commonest
- * setup a two-step one, and the step nobody would guess at.
- *
- * Shared by both placement paths deliberately. The palette and the drag-to-create
- * flow build a `WorkflowNode` each, and a node created by dragging a wire out of
- * something is no less real than one tapped out of the list; a key on one and not the
- * other would be a node that works or does not depending on how it was made.
- */
-private fun initialConfig(typeId: NodeTypeId): Map<ConfigKey, String> = when (typeId) {
-    API_TRIGGER_TYPE_ID -> mapOf(API_TOKEN_KEY to ApiTokens.generate())
-    else -> emptyMap()
-}
-
-private fun retypesDataPorts(key: ConfigKey, typeId: NodeTypeId?): Boolean = when (typeId) {
-    // An edited row can rename a port, delete it or retype it.
-    SCRIPT_TYPE_ID -> key in SCRIPT_PORT_KEYS
-    // The same editor on the same config key, one direction instead of two.
-    API_TRIGGER_TYPE_ID -> key == API_INPUTS_KEY
-    // The result type and the list switch both retype the one output port, so an
-    // edge that fitted a Text no longer fits a list of them.
-    JSON_READ_TYPE_ID -> key in JSON_READ_PORT_KEYS
-    // A dialog's answer type retypes its one output port, exactly as a JSON read's does.
-    DIALOG_INPUT_TYPE_ID -> key == DIALOG_INPUT_TYPE_KEY
-    else -> false
-}
-
-/**
- * Drops the wire leaving [nodeId]'s `timed_out` port once that port has stopped
- * being drawn — i.e. once the dialog waits forever again.
- *
- * The only *exec* edge any of this prunes, and it has to happen here:
- * `GraphValidator` resolves exec edges against the static declaration, where the
- * port still exists, so nothing downstream would ever report the wire. It would
- * simply stop being drawn and never fire again.
- */
-private fun Workflow.withoutStrandedTimeoutBranch(nodeId: NodeId): Workflow {
-    val waits = (node(nodeId)?.config?.get(DIALOG_TIMEOUT_KEY)?.toIntOrNull() ?: 0) > 0
-    if (waits) return this
-    return copy(
-        execConnections = execConnections.filterNot {
-            it.fromNodeId == nodeId && it.fromPort == ExecPorts.TIMED_OUT
-        },
-    )
-}
-
-/**
- * Drops the wire leaving [nodeId]'s `resumed` port once `action.notify` has stopped
- * offering anything to react to.
- *
- * [withoutStrandedTimeoutBranch]'s job for [withoutStrandedTimeoutBranch]'s reason,
- * and the second exec edge any of this prunes. The difference is only in what makes
- * the port go away: there it is one number, here it is three fields between them
- * saying the notification can be answered at all.
- */
-private fun Workflow.withoutStrandedAnswerBranch(nodeId: NodeId): Workflow {
-    if (notifyIsAnswerable(node(nodeId)?.config.orEmpty())) return this
-    return copy(
-        execConnections = execConnections.filterNot {
-            it.fromNodeId == nodeId && it.fromPort == ExecPorts.RESUMED
-        },
-    )
-}
-
-/** True when this edge still connects two ports that exist and type-check. */
-private fun DataConnection.stillValid(workflow: Workflow, nodeId: NodeId): Boolean {
-    if (toNodeId != nodeId && fromNodeId != nodeId) return true
-    val from = resolvePort(workflow, PortRef(fromNodeId, fromPort, isOutput = true, kind = PortKind.DATA))
-    val to = resolvePort(workflow, PortRef(toNodeId, toPort, isOutput = false, kind = PortKind.DATA))
-    return from != null && to != null && isDataAssignable(from, to)
 }
 
 /**

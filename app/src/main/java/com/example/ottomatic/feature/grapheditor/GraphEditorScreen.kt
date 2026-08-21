@@ -13,7 +13,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,9 +30,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.FitScreen
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,6 +45,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,6 +67,11 @@ import com.example.ottomatic.domain.registry.effectiveConfigSchema
 import com.example.ottomatic.domain.registry.effectiveInputPorts
 import com.example.ottomatic.engine.trigger.GeofenceTrigger
 import com.example.ottomatic.engine.validation.GraphValidation
+import com.example.ottomatic.feature.grapheditor.assistant.AssistantFab
+import com.example.ottomatic.feature.grapheditor.assistant.AssistantOverlay
+import com.example.ottomatic.feature.grapheditor.assistant.AssistantTurn
+
+import com.example.ottomatic.feature.grapheditor.assistant.AssistantSession
 import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
 import com.example.ottomatic.feature.geofence.LocalGeofencePlaces
 import com.example.ottomatic.feature.ai.AiConnectionsViewModel
@@ -122,6 +133,10 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
     // for the canvas itself. It lives here rather than in the bar because the bar is
     // not what it swaps — see EditorBottomBar.
     var openTab by remember { mutableStateOf<EditorTab?>(null) }
+    // How much space the bottom bar takes below the canvas region, so an inset applied
+    // inside that region can be told about it.
+    var bottomBarHeightPx by remember { mutableIntStateOf(0) }
+    val bottomBarHeight = with(LocalDensity.current) { bottomBarHeightPx.toDp() }
     // Read here rather than inside the canvas: the cards and the wires both need
     // it, and it changes only when the graph does — which is already a recompose.
     val validation by viewModel.validation.collectAsState()
@@ -133,6 +148,15 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
     // Registered second, so it outranks the one above: with a surface open the
     // canvas is not on screen, and back is a request to get back to it.
     BackHandler(enabled = openTab != null) { openTab = null }
+    // Registered last, so it outranks both: the assistant is drawn over everything here,
+    // and back closes the topmost thing. It folds the panel away before it leaves — the
+    // same order of undoing the scrim first that the selection handler above follows —
+    // and it never cancels a turn in flight, because stopping the model is what the ✕ on
+    // the pill is for and a back gesture is not a decision to throw away a billed call.
+    val assistantState by viewModel.assistant.state.collectAsState()
+    BackHandler(enabled = assistantState.isOpen) {
+        if (assistantState.isExpanded) viewModel.assistant.minimize() else viewModel.assistant.close()
+    }
 
     // Center the workflow in the viewport once it is loaded and the canvas is measured.
     LaunchedEffect(state.isLoaded, canvasSize) {
@@ -164,7 +188,15 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
         // each one moves and why.
         AnimatedContent(
             targetState = openTab,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                // The bar below is a *sibling*, so nothing in this subtree knows the window
+                // does not end where this region does. Without that, an `imePadding()`
+                // inside — the assistant panel's — adds the whole keyboard height measured
+                // from the window bottom and lands the panel a full bar-height above the
+                // keyboard. Consuming the bar's measured height is what makes an inset
+                // applied in here mean what it says.
+                .consumeWindowInsets(PaddingValues(bottom = bottomBarHeight)),
             label = stringResource(R.string.grapheditor_editor_surface),
             transitionSpec = { surfaceTransition() },
         ) { tab ->
@@ -216,6 +248,8 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
                     density = density,
                     onCanvasSizeChange = { canvasSize = it },
                     onAddNode = { showPalette = true },
+                    assistant = viewModel.assistant,
+                    assistantBusy = assistantState.turn is AssistantTurn.Working,
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -229,6 +263,10 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
             onSelect = { openTab = it },
             validation = viewModel.validation,
             consoleProblems = viewModel.consoleProblems,
+            // Measured rather than assumed: it is a Material component plus a trimmed
+            // gesture inset, so its height is not a number this file could hold without
+            // the two drifting apart.
+            modifier = Modifier.onSizeChanged { bottomBarHeightPx = it.height },
         )
     }
 
@@ -303,6 +341,8 @@ private fun CanvasRegion(
     density: Float,
     onCanvasSizeChange: (IntSize) -> Unit,
     onAddNode: () -> Unit,
+    assistant: AssistantSession,
+    assistantBusy: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -329,16 +369,35 @@ private fun CanvasRegion(
                 .align(Alignment.BottomStart)
                 .padding(start = 14.dp, bottom = 18.dp),
         )
-        FloatingActionButton(
-            onClick = onAddNode,
-            containerColor = EditorColors.actionAccent,
-            contentColor = EditorColors.textPrimary,
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 18.dp, bottom = 18.dp),
         ) {
-            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.grapheditor_add_node))
+            // Smaller than Add, and above it: placing a node by hand is still the
+            // primary act on this canvas, and the assistant is the other way to do it
+            // rather than the way. It is also the only thing still on screen when the
+            // panel is folded away or closed, so it is where a running turn is reported.
+            AssistantFab(busy = assistantBusy, onClick = assistant::open)
+            FloatingActionButton(
+                onClick = onAddNode,
+                containerColor = EditorColors.actionAccent,
+                contentColor = EditorColors.textPrimary,
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.grapheditor_add_node))
+            }
         }
+        // Last in the Box, so it draws over the canvas and its controls. It is not a
+        // Dialog: while the model works the canvas underneath has to stay live, which
+        // is the one thing a Dialog window cannot allow.
+        AssistantOverlay(
+            session = assistant,
+            onFocusNodes = { nodes ->
+                viewModel.focusOn(nodes, Size(canvasSize.width.toFloat(), canvasSize.height.toFloat()), density)
+            },
+        )
     }
 }
 

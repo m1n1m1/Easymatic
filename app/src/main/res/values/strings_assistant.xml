@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The graph assistant: the overlay over the canvas that builds and edits a workflow.
+
+     Its own file rather than lines appended to strings_screens.xml, because these are
+     the only strings in the app whose *counterpart* is deliberately untranslated: the
+     tool descriptions and the standing instruction live in engine/ai/ in English, since
+     a model reads those and a person reads these. Keeping the two apart is what makes
+     that division visible rather than an oversight. -->
+<resources>
+
+    <!-- The button on the canvas that opens it. -->
+    <string name="grapheditor_ask_ai">Ask AI to edit this workflow</string>
+
+    <!-- Composing. -->
+    <string name="assistant_hint">Describe what this workflow should do and I will build it. You can also ask for changes to what is already here.</string>
+    <string name="assistant_placeholder">Ask for a change…</string>
+    <string name="assistant_restart">Start a new conversation</string>
+    <string name="assistant_close">Close the assistant</string>
+    <string name="assistant_resize">Expand or minimize</string>
+    <string name="assistant_send">Send</string>
+    <string name="assistant_choose_model">Choose a model</string>
+    <string name="assistant_you">You</string>
+    <string name="assistant_ai">AI</string>
+
+    <!-- Working: what the model is doing right now. -->
+    <string name="assistant_thinking">Thinking…</string>
+    <string name="assistant_looking">Looking things up…</string>
+    <string name="assistant_checking">Checking the workflow…</string>
+    <string name="assistant_adding">Adding %1$s…</string>
+    <string name="assistant_adding_a_node">Adding a node…</string>
+    <string name="assistant_removing">Removing a node…</string>
+    <string name="assistant_configuring">Setting things up…</string>
+    <string name="assistant_wiring">Connecting nodes…</string>
+    <string name="assistant_working">Working…</string>
+    <string name="assistant_stop">Stop</string>
+
+    <!-- Done: what the turn changed. %1$s is a count phrase like "3 nodes". -->
+    <string name="assistant_added">Added %1$s</string>
+    <string name="assistant_removed">Removed %1$s</string>
+    <string name="assistant_and">%1$s and %2$s</string>
+    <string name="assistant_changed">Updated the workflow</string>
+    <string name="assistant_no_changes">Nothing changed</string>
+    <string name="assistant_failed">That did not work</string>
+    <string name="assistant_undo">Undo</string>
+    <string name="assistant_dismiss">Dismiss</string>
+
+    <!-- Things the app says in the transcript, as opposed to the model's own words. -->
+    <string name="assistant_notice_no_model">Choose a model first.</string>
+    <string name="assistant_notice_cancelled">Stopped.</string>
+    <string name="assistant_notice_failed">That did not work.</string>
+    <string name="assistant_notice_done">Done.</string>
+    <string name="assistant_notice_undone">Put the workflow back as it was.</string>
+</resources>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="grapheditor_ask_ai">AI にこのワークフローの編集を頼む</string>
+
+    <string name="assistant_hint">このワークフローに何をさせたいか教えてください。作ります。すでにあるものへの変更も頼めます。</string>
+    <string name="assistant_placeholder">変更を頼む…</string>
+    <string name="assistant_restart">新しい会話を始める</string>
+    <string name="assistant_close">アシスタントを閉じる</string>
+    <string name="assistant_resize">広げる・たたむ</string>
+    <string name="assistant_send">送信</string>
+    <string name="assistant_choose_model">モデルを選ぶ</string>
+    <string name="assistant_you">あなた</string>
+    <string name="assistant_ai">AI</string>
+
+    <string name="assistant_thinking">考えています…</string>
+    <string name="assistant_looking">調べています…</string>
+    <string name="assistant_checking">ワークフローを確認しています…</string>
+    <string name="assistant_adding">%1$s を追加しています…</string>
+    <string name="assistant_adding_a_node">ノードを追加しています…</string>
+    <string name="assistant_removing">ノードを削除しています…</string>
+    <string name="assistant_configuring">設定しています…</string>
+    <string name="assistant_wiring">ノードをつないでいます…</string>
+    <string name="assistant_working">処理中…</string>
+    <string name="assistant_stop">停止</string>
+
+    <string name="assistant_added">%1$s を追加しました</string>
+    <string name="assistant_removed">%1$s を削除しました</string>
+    <string name="assistant_and">%1$s と %2$s</string>
+    <string name="assistant_changed">ワークフローを更新しました</string>
+    <string name="assistant_no_changes">変更はありません</string>
+    <string name="assistant_failed">うまくいきませんでした</string>
+    <string name="assistant_undo">元に戻す</string>
+    <string name="assistant_dismiss">閉じる</string>
+
+    <string name="assistant_notice_no_model">先にモデルを選んでください。</string>
+    <string name="assistant_notice_cancelled">停止しました。</string>
+    <string name="assistant_notice_failed">うまくいきませんでした。</string>
+    <string name="assistant_notice_done">完了しました。</string>
+    <string name="assistant_notice_undone">ワークフローを元に戻しました。</string>
+</resources>

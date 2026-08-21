@@ -94,6 +94,37 @@ class RoutingAiTest {
         assertEquals("A\n\nB", combineInstructions("  A\n", "\n B  "))
     }
 
+    /**
+     * The reply limit resolves the *opposite* way to the instructions, and that is the
+     * decision worth pinning: two prompts combine because a persona and a task are both
+     * true at once, where two numbers cannot both hold and the specific one has to win.
+     *
+     * An Ask AI node's "Longest reply" field is a visible, per-task decision. If the
+     * profile overrode it, raising the room the graph assistant gets would quietly
+     * multiply what every macro on that key may spend.
+     */
+    @Test
+    fun `a stated reply limit beats the profile's default`() {
+        assertEquals(200, replyLimit(requested = 200, profileLimit = 8_192))
+    }
+
+    /** How the graph assistant asks: it has no field of its own, so the profile governs it. */
+    @Test
+    fun `no stated limit falls back to the profile`() {
+        assertEquals(8_192, replyLimit(requested = 0, profileLimit = 8_192))
+    }
+
+    /**
+     * A profile that says nothing either — an older one decoded before the field existed,
+     * or one typed empty — must not resolve to a model asked for zero tokens, which would
+     * answer nothing at all.
+     */
+    @Test
+    fun `neither saying anything falls back to the built-in default`() {
+        assertEquals(AiRequest.DEFAULT_MAX_OUTPUT_TOKENS, replyLimit(requested = 0, profileLimit = 0))
+        assertEquals(AiRequest.DEFAULT_MAX_OUTPUT_TOKENS, replyLimit(requested = -5, profileLimit = -1))
+    }
+
     // ---- routing ---------------------------------------------------------------
 
     @Test

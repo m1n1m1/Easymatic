@@ -232,6 +232,8 @@
     <string name="ai_delete_model">Eliminar este modelo</string>
     <string name="ai_model_effort">Esfuerzo</string>
     <string name="ai_model_effort_help">Cuánto debe pensar el modelo antes de responder. También determina qué modelo usa el proveedor cuando el identificador de arriba está vacío.</string>
+    <string name="ai_reply_limit">Respuesta más larga (tokens)</string>
+    <string name="ai_reply_limit_help">Cuánto espacio recibe una respuesta cuando quien pregunta no indica nada — por ejemplo el asistente de IA del editor. El campo « Respuesta más larga » de un nodo Preguntar a la IA tiene prioridad.</string>
     <string name="ai_model_id">Identificador del modelo</string>
     <string name="ai_model_id_required">obligatorio</string>
     <string name="ai_model_name">Nombre</string>

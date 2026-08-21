@@ -232,6 +232,8 @@
     <string name="ai_delete_model">删除此模型</string>
     <string name="ai_model_effort">思考程度</string>
     <string name="ai_model_effort_help">模型回答前要思考多久。上方标识符为空时，也由它决定供应商使用哪个模型。</string>
+    <string name="ai_reply_limit">最长回复（词元）</string>
+    <string name="ai_reply_limit_help">当提问方没有自己的设置时，回复可用的长度，例如工作流编辑器中的 AI 助手。“询问 AI”节点自身的“最长回复”优先。</string>
     <string name="ai_model_id">模型标识符</string>
     <string name="ai_model_id_required">必填</string>
     <string name="ai_model_name">名称</string>

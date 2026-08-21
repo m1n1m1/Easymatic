@@ -334,6 +334,8 @@
     <string name="ai_delete_model">Dieses Modell löschen</string>
     <string name="ai_model_effort">Aufwand</string>
     <string name="ai_model_effort_help">Wie gründlich das Modell nachdenken soll, bevor es antwortet. Bestimmt außerdem, welches Modell der Anbieter verwendet, wenn die Kennung oben leer ist.</string>
+    <string name="ai_reply_limit">Längste Antwort (Tokens)</string>
+    <string name="ai_reply_limit_help">Wie viel Platz eine Antwort bekommt, wenn die anfragende Stelle nichts eigenes vorgibt — etwa der KI-Assistent im Workflow-Editor. Das Feld „Längste Antwort“ eines „KI fragen“-Knotens hat Vorrang.</string>
     <string name="ai_model_id">Modellkennung</string>
     <string name="ai_model_id_required">erforderlich</string>
     <string name="ai_model_name">Name</string>

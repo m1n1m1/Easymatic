@@ -92,8 +92,39 @@ data class AiModelProfile(
     val systemPrompt: String = "",
     /** A [ToolSpec] list, one tool per line. Blank means the model may do nothing. */
     val tools: String = "",
+    /**
+     * How long a reply may be, for whatever asks through this profile **without saying**.
+     *
+     * A default rather than a ceiling, and that is the whole of the rule: anything that
+     * states a limit of its own keeps it, so the "Longest reply" field on an Ask AI node
+     * goes on meaning exactly what it says. What this governs is the callers that have no
+     * such field — today the graph assistant, whose turns spend their budget on tool calls
+     * before a word of the answer is written and which had no way to be given more room.
+     *
+     * It lives on the *profile* rather than on the account for `systemPrompt`'s reason:
+     * one key may serve a terse summariser and an assistant building whole macros, and
+     * those two want very different room.
+     *
+     * Zero or less means "no answer here either", which falls back to
+     * [com.example.ottomatic.core.service.AiRequest.DEFAULT_MAX_OUTPUT_TOKENS].
+     */
+    val maxOutputTokens: Int = DEFAULT_MAX_OUTPUT_TOKENS,
 ) {
     companion object {
+
+        /**
+         * What a profile allows a caller that states no limit of its own.
+         *
+         * Far above a single node's default, because the caller this exists for is an
+         * agent rather than a question: a turn that builds a macro emits a dozen tool
+         * calls before it writes any prose, and running out part-way leaves a half-built
+         * graph and a message about a field that caller does not have.
+         *
+         * Generous on `thinkingHeadroom`'s reasoning — a cap is not a target, so room that
+         * goes unused costs nothing where room that was needed costs the whole turn. It is
+         * also the number the user can now change, which is the point of it being here.
+         */
+        const val DEFAULT_MAX_OUTPUT_TOKENS = 8_192
         /**
          * The id a profile minted from the pre-profile layout carries.
          *

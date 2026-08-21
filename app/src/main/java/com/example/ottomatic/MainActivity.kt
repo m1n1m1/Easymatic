@@ -390,6 +390,7 @@ class MainActivity : ComponentActivity() {
                         runLog = ServiceLocator.runLog,
                         appContext = applicationContext,
                         appScope = ServiceLocator.appScope,
+                        assistantSettings = ServiceLocator.assistantSettingsRepository,
                         workflowId = workflowId,
                         globalVariables = ServiceLocator.globalVariableRepository.variables,
                     ),

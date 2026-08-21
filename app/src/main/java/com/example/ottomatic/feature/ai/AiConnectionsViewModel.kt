@@ -107,6 +107,11 @@ data class AiModelProfileDraft(
     val systemPrompt: String = "",
     /** A `ToolSpec` list, edited by the tool permission screen and stored verbatim. */
     val tools: String = "",
+    /**
+     * How long a reply may be, as typed. Text rather than an `Int` because a field being
+     * emptied to retype it is not the user asking for zero.
+     */
+    val maxOutputTokens: String = AiModelProfile.DEFAULT_MAX_OUTPUT_TOKENS.toString(),
 ) {
     /** Whether this row would answer anything — a name to pick it by, and a model to ask. */
     fun isComplete(provider: AiProvider): Boolean =
@@ -278,6 +283,7 @@ class AiConnectionsViewModel(
                         effort = profile.effort,
                         systemPrompt = profile.systemPrompt,
                         tools = profile.tools,
+                        maxOutputTokens = profile.maxOutputTokens.toString(),
                     )
                 },
                 isNew = false,
@@ -506,6 +512,11 @@ private fun AiConnectionDraft.applyTo(connection: AiConnection): AiConnection = 
             effort = profile.effort,
             systemPrompt = profile.systemPrompt.trim(),
             tools = profile.tools,
+            // A blank or nonsense figure is the profile saying nothing rather than saying
+            // zero, and `replyLimit` reads that as "fall back" — so it round-trips to the
+            // built-in default instead of to a model that may answer nothing at all.
+            maxOutputTokens = profile.maxOutputTokens.trim().toIntOrNull()?.takeIf { it > 0 }
+                ?: AiModelProfile.DEFAULT_MAX_OUTPUT_TOKENS,
         )
     },
 )

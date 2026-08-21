@@ -67,16 +67,28 @@ object NodeToolCatalog {
         return runnable.take(ToolSpec.MAX_TOOLS).map { tool -> tool.withUniqueName(used) }
     }
 
+    /**
+     * The config fields of [typeId] as arguments, minus whatever [pinned] already
+     * answers.
+     *
+     * Public because it is the *derivation* rather than the tool: `NodeCatalog` hands
+     * the same schema to the graph assistant, which is describing a node it is about
+     * to place rather than one it is about to run. Both readings must agree about what
+     * a field is and which values it accepts — a second derivation would eventually
+     * offer the assistant an option the runner rejects.
+     */
+    fun parametersFor(typeId: NodeTypeId, pinned: Map<ConfigKey, String> = emptyMap()): List<AiParam> =
+        ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty().mapNotNull { field -> parameterFor(field, pinned) }
+
     /** One node type, with its unpinned config fields as arguments. */
     private fun nodeTool(spec: ToolSpec, typeId: NodeTypeId): NodeTool? {
         val definition = NodeTypeRegistry.byId(typeId)?.takeIf { canRunAsTool(it.typeId, it.kind) } ?: return null
-        val fields = ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
         return NodeTool(
             spec = spec,
             tool = AiTool(
                 name = AiTool.sanitizeName(typeId.value),
                 description = "${definition.displayName}. ${definition.description}.",
-                parameters = fields.mapNotNull { field -> parameterFor(field, spec.pinned) },
+                parameters = parametersFor(typeId, spec.pinned),
             ),
         )
     }

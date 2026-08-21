@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="grapheditor_ask_ai">Pedir a la IA que edite este flujo</string>
+
+    <string name="assistant_hint">Describe qué debe hacer este flujo y lo construyo. También puedes pedir cambios en lo que ya hay.</string>
+    <string name="assistant_placeholder">Pide un cambio…</string>
+    <string name="assistant_restart">Empezar una conversación nueva</string>
+    <string name="assistant_close">Cerrar el asistente</string>
+    <string name="assistant_resize">Ampliar o minimizar</string>
+    <string name="assistant_send">Enviar</string>
+    <string name="assistant_choose_model">Elegir modelo</string>
+    <string name="assistant_you">Tú</string>
+    <string name="assistant_ai">IA</string>
+
+    <string name="assistant_thinking">Pensando…</string>
+    <string name="assistant_looking">Consultando…</string>
+    <string name="assistant_checking">Comprobando el flujo…</string>
+    <string name="assistant_adding">Añadiendo %1$s…</string>
+    <string name="assistant_adding_a_node">Añadiendo un nodo…</string>
+    <string name="assistant_removing">Quitando un nodo…</string>
+    <string name="assistant_configuring">Configurando…</string>
+    <string name="assistant_wiring">Conectando nodos…</string>
+    <string name="assistant_working">Trabajando…</string>
+    <string name="assistant_stop">Parar</string>
+
+    <string name="assistant_added">Se añadió %1$s</string>
+    <string name="assistant_removed">Se quitó %1$s</string>
+    <string name="assistant_and">%1$s y %2$s</string>
+    <string name="assistant_changed">Flujo actualizado</string>
+    <string name="assistant_no_changes">No cambió nada</string>
+    <string name="assistant_failed">No funcionó</string>
+    <string name="assistant_undo">Deshacer</string>
+    <string name="assistant_dismiss">Cerrar</string>
+
+    <string name="assistant_notice_no_model">Elige primero un modelo.</string>
+    <string name="assistant_notice_cancelled">Detenido.</string>
+    <string name="assistant_notice_failed">No funcionó.</string>
+    <string name="assistant_notice_done">Listo.</string>
+    <string name="assistant_notice_undone">El flujo volvió a como estaba.</string>
+</resources>

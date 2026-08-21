@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="grapheditor_ask_ai">KI bitten, diesen Workflow zu bearbeiten</string>
+
+    <string name="assistant_hint">Beschreibe, was dieser Workflow tun soll, und ich baue ihn. Du kannst auch Änderungen an dem verlangen, was schon da ist.</string>
+    <string name="assistant_placeholder">Änderung beschreiben…</string>
+    <string name="assistant_restart">Neues Gespräch beginnen</string>
+    <string name="assistant_close">Assistent schließen</string>
+    <string name="assistant_resize">Vergrößern oder verkleinern</string>
+    <string name="assistant_send">Senden</string>
+    <string name="assistant_choose_model">Modell wählen</string>
+    <string name="assistant_you">Du</string>
+    <string name="assistant_ai">KI</string>
+
+    <string name="assistant_thinking">Denkt nach…</string>
+    <string name="assistant_looking">Schlägt nach…</string>
+    <string name="assistant_checking">Prüft den Workflow…</string>
+    <string name="assistant_adding">Fügt %1$s hinzu…</string>
+    <string name="assistant_adding_a_node">Fügt einen Knoten hinzu…</string>
+    <string name="assistant_removing">Entfernt einen Knoten…</string>
+    <string name="assistant_configuring">Stellt etwas ein…</string>
+    <string name="assistant_wiring">Verbindet Knoten…</string>
+    <string name="assistant_working">Arbeitet…</string>
+    <string name="assistant_stop">Stopp</string>
+
+    <string name="assistant_added">%1$s hinzugefügt</string>
+    <string name="assistant_removed">%1$s entfernt</string>
+    <string name="assistant_and">%1$s und %2$s</string>
+    <string name="assistant_changed">Workflow geändert</string>
+    <string name="assistant_no_changes">Nichts geändert</string>
+    <string name="assistant_failed">Das hat nicht geklappt</string>
+    <string name="assistant_undo">Rückgängig</string>
+    <string name="assistant_dismiss">Schließen</string>
+
+    <string name="assistant_notice_no_model">Wähle zuerst ein Modell.</string>
+    <string name="assistant_notice_cancelled">Gestoppt.</string>
+    <string name="assistant_notice_failed">Das hat nicht geklappt.</string>
+    <string name="assistant_notice_done">Fertig.</string>
+    <string name="assistant_notice_undone">Der Workflow ist wieder wie vorher.</string>
+</resources>

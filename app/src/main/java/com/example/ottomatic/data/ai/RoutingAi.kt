@@ -132,6 +132,7 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
                     profile.systemPrompt,
                     request.systemInstruction,
                 ),
+                maxOutputTokens = replyLimit(request.maxOutputTokens, profile.maxOutputTokens),
             ),
         )
     }
@@ -198,6 +199,29 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
  *
  * File-level and not a member, so it is testable without a repository.
  */
+/**
+ * How long the reply may be: what the caller asked for, else the profile's default.
+ *
+ * **The caller wins, which is the opposite of [combineInstructions] and right for the
+ * opposite reason.** Two system prompts combine because a persona and a task are both
+ * true at once; two numbers cannot, so one has to lose — and it must be the general one.
+ * An Ask AI node's "Longest reply" field is a visible, per-task decision somebody made
+ * about *that* node, and a profile-level setting that silently overrode it would let
+ * raising the assistant's room quietly multiply what every macro on that key may spend.
+ *
+ * [requested] of zero or less means the caller has no opinion, which is how the graph
+ * assistant asks: it has no field of its own, so the profile is exactly what should
+ * govern it. [AiRequest.DEFAULT_MAX_OUTPUT_TOKENS] is the floor under both.
+ *
+ * File-level and not a member, for [combineInstructions]' reason: testable without a
+ * repository, a key or a network.
+ */
+internal fun replyLimit(requested: Int, profileLimit: Int): Int = when {
+    requested > 0 -> requested
+    profileLimit > 0 -> profileLimit
+    else -> AiRequest.DEFAULT_MAX_OUTPUT_TOKENS
+}
+
 internal fun combineInstructions(profilePrompt: String, nodeInstruction: String): String =
     listOf(profilePrompt, nodeInstruction)
         .map { it.trim() }

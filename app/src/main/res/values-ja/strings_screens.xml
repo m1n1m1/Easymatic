@@ -232,6 +232,8 @@
     <string name="ai_delete_model">このモデルを削除</string>
     <string name="ai_model_effort">思考の深さ</string>
     <string name="ai_model_effort_help">答える前にモデルがどれだけ考えるか。上の ID が空のときにプロバイダーが使うモデルもこれで決まります。</string>
+    <string name="ai_reply_limit">返答の最大長（トークン）</string>
+    <string name="ai_reply_limit_help">指定のない依頼元に与える返答の長さです。ワークフロー編集画面の AI アシスタントなどが該当します。「AI に聞く」ノード自身の「返答の最大長」が優先されます。</string>
     <string name="ai_model_id">モデル ID</string>
     <string name="ai_model_id_required">必須</string>
     <string name="ai_model_name">名前</string>

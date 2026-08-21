@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="grapheditor_ask_ai">让 AI 编辑此工作流</string>
+
+    <string name="assistant_hint">说说这个工作流要做什么，我来搭建。也可以让我修改已有的部分。</string>
+    <string name="assistant_placeholder">说明要改什么…</string>
+    <string name="assistant_restart">开始新的对话</string>
+    <string name="assistant_close">关闭助手</string>
+    <string name="assistant_resize">展开或收起</string>
+    <string name="assistant_send">发送</string>
+    <string name="assistant_choose_model">选择模型</string>
+    <string name="assistant_you">你</string>
+    <string name="assistant_ai">AI</string>
+
+    <string name="assistant_thinking">思考中…</string>
+    <string name="assistant_looking">查找中…</string>
+    <string name="assistant_checking">检查工作流…</string>
+    <string name="assistant_adding">正在添加 %1$s…</string>
+    <string name="assistant_adding_a_node">正在添加节点…</string>
+    <string name="assistant_removing">正在删除节点…</string>
+    <string name="assistant_configuring">正在设置…</string>
+    <string name="assistant_wiring">正在连接节点…</string>
+    <string name="assistant_working">处理中…</string>
+    <string name="assistant_stop">停止</string>
+
+    <string name="assistant_added">已添加 %1$s</string>
+    <string name="assistant_removed">已删除 %1$s</string>
+    <string name="assistant_and">%1$s和%2$s</string>
+    <string name="assistant_changed">已更新工作流</string>
+    <string name="assistant_no_changes">没有任何改动</string>
+    <string name="assistant_failed">没有成功</string>
+    <string name="assistant_undo">撤销</string>
+    <string name="assistant_dismiss">关闭</string>
+
+    <string name="assistant_notice_no_model">请先选择模型。</string>
+    <string name="assistant_notice_cancelled">已停止。</string>
+    <string name="assistant_notice_failed">没有成功。</string>
+    <string name="assistant_notice_done">完成。</string>
+    <string name="assistant_notice_undone">工作流已恢复原样。</string>
+</resources>

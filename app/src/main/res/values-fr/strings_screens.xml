@@ -232,6 +232,8 @@
     <string name="ai_delete_model">Supprimer ce modèle</string>
     <string name="ai_model_effort">Effort</string>
     <string name="ai_model_effort_help">À quel point le modèle doit réfléchir avant de répondre. Détermine aussi quel modèle le fournisseur utilise quand l\'identifiant ci-dessus est vide.</string>
+    <string name="ai_reply_limit">Réponse la plus longue (jetons)</string>
+    <string name="ai_reply_limit_help">La place accordée à une réponse quand ce qui demande n’en indique aucune — l’assistant IA de l’éditeur, par exemple. Le champ « Réponse la plus longue » d’un nœud Demander à l’IA l’emporte.</string>
     <string name="ai_model_id">Identifiant du modèle</string>
     <string name="ai_model_id_required">obligatoire</string>
     <string name="ai_model_name">Nom</string>

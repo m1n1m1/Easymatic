@@ -10,6 +10,7 @@ import com.example.ottomatic.core.service.RunLog
 import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.AiConnectionRepository
+import com.example.ottomatic.data.AssistantSettingsRepository
 import com.example.ottomatic.data.ai.AiModelCatalog
 import com.example.ottomatic.data.ai.RoutingAi
 import com.example.ottomatic.data.files.RoutingFiles
@@ -255,6 +256,17 @@ object ServiceLocator {
     lateinit var aiModelCatalog: AiModelCatalog
         private set
 
+    /**
+     * Which model the graph assistant asks, remembered between sessions.
+     *
+     * A preference about the editor rather than a fifth library: it holds one id and no
+     * secret, so it is deliberately not part of [aiConnectionRepository] — a connection
+     * library is credentials and the ways of asking through them, and "what the editor
+     * used last" is neither.
+     */
+    lateinit var assistantSettingsRepository: AssistantSettingsRepository
+        private set
+
     lateinit var systemServices: SystemServices
         private set
 
@@ -421,6 +433,7 @@ object ServiceLocator {
         // browser in ten seconds, is never the reason a light stops working.
         aiConnectionRepository = AiConnectionRepository(appContext.filesDir, KeystoreSecrets(AI_KEY_ALIAS))
         aiModelCatalog = AiModelCatalog(aiConnectionRepository)
+        assistantSettingsRepository = AssistantSettingsRepository(appContext.filesDir)
         publishAiConnections()
         publishSmartHomeHubs()
         systemServices = AndroidSystemServices(appContext)

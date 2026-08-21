@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="grapheditor_ask_ai">Попросить ИИ изменить этот сценарий</string>
+
+    <string name="assistant_hint">Опишите, что должен делать этот сценарий, и я его соберу. Можно и попросить изменить то, что уже есть.</string>
+    <string name="assistant_placeholder">Что изменить…</string>
+    <string name="assistant_restart">Начать новый разговор</string>
+    <string name="assistant_close">Закрыть помощника</string>
+    <string name="assistant_resize">Развернуть или свернуть</string>
+    <string name="assistant_send">Отправить</string>
+    <string name="assistant_choose_model">Выбрать модель</string>
+    <string name="assistant_you">Вы</string>
+    <string name="assistant_ai">ИИ</string>
+
+    <string name="assistant_thinking">Думает…</string>
+    <string name="assistant_looking">Смотрит справку…</string>
+    <string name="assistant_checking">Проверяет сценарий…</string>
+    <string name="assistant_adding">Добавляет %1$s…</string>
+    <string name="assistant_adding_a_node">Добавляет узел…</string>
+    <string name="assistant_removing">Удаляет узел…</string>
+    <string name="assistant_configuring">Настраивает…</string>
+    <string name="assistant_wiring">Соединяет узлы…</string>
+    <string name="assistant_working">Работает…</string>
+    <string name="assistant_stop">Стоп</string>
+
+    <string name="assistant_added">Добавлено: %1$s</string>
+    <string name="assistant_removed">Удалено: %1$s</string>
+    <string name="assistant_and">%1$s и %2$s</string>
+    <string name="assistant_changed">Сценарий изменён</string>
+    <string name="assistant_no_changes">Ничего не изменилось</string>
+    <string name="assistant_failed">Не получилось</string>
+    <string name="assistant_undo">Отменить</string>
+    <string name="assistant_dismiss">Закрыть</string>
+
+    <string name="assistant_notice_no_model">Сначала выберите модель.</string>
+    <string name="assistant_notice_cancelled">Остановлено.</string>
+    <string name="assistant_notice_failed">Не получилось.</string>
+    <string name="assistant_notice_done">Готово.</string>
+    <string name="assistant_notice_undone">Сценарий возвращён как был.</string>
+</resources>

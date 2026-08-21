@@ -275,6 +275,8 @@
     <string name="ai_delete_model">Delete this model</string>
     <string name="ai_model_effort">Effort</string>
     <string name="ai_model_effort_help">How hard the model should think before answering. Also picks which model the provider uses when the id above is empty.</string>
+    <string name="ai_reply_limit">Longest reply (tokens)</string>
+    <string name="ai_reply_limit_help">How much room a reply gets when whatever is asking has none of its own — the AI assistant in the workflow editor. An Ask AI node’s own “Longest reply” field wins over this.</string>
     <string name="ai_model_id">Model id</string>
     <string name="ai_model_id_required">required</string>
     <string name="ai_model_name">Name</string>

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
@@ -38,11 +39,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ottomatic.R
 import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.CallableMacro
+import com.example.ottomatic.domain.model.AiModelProfile
 import com.example.ottomatic.domain.model.ToolSpec
 import com.example.ottomatic.domain.model.needsModelIds
 import com.example.ottomatic.feature.grapheditor.EditorColors
@@ -104,6 +107,8 @@ internal fun AiModelEditorOverlay(
             ModelIdField(draft = draft, profile = profile, viewModel = viewModel)
 
             EffortField(profile = profile, viewModel = viewModel)
+
+            ReplyLimitField(profile = profile, viewModel = viewModel)
 
             SystemPromptField(profile = profile, viewModel = viewModel)
 
@@ -320,6 +325,38 @@ private fun SystemPromptField(profile: AiModelProfileDraft, viewModel: AiConnect
         )
         Text(
             text = stringResource(R.string.ai_sent_ahead_of_every_prompt),
+            color = EditorColors.textSecondary,
+            fontSize = 12.sp,
+        )
+    }
+}
+
+/**
+ * How long a reply may be, for whatever asks through this profile without saying.
+ *
+ * Its helper text spells out that a node's own "Longest reply" field wins, because that
+ * is the one thing about it somebody could reasonably guess wrong — and guessing wrong
+ * here means believing every macro on this key was just given eight times the room.
+ *
+ * Digits only, and the field is text rather than a number so that clearing it to retype
+ * is not read as asking for zero. What a blank finally saves is the built-in default.
+ */
+@Composable
+private fun ReplyLimitField(profile: AiModelProfileDraft, viewModel: AiConnectionsViewModel) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        OutlinedTextField(
+            value = profile.maxOutputTokens,
+            onValueChange = { value ->
+                viewModel.updateModel(profile.id) { it.copy(maxOutputTokens = value.filter(Char::isDigit)) }
+            },
+            label = { Text(stringResource(R.string.ai_reply_limit)) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            colors = fieldColors(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Text(
+            text = stringResource(R.string.ai_reply_limit_help),
             color = EditorColors.textSecondary,
             fontSize = 12.sp,
         )

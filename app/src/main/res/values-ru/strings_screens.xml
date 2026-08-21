@@ -232,6 +232,8 @@
     <string name="ai_delete_model">Удалить эту модель</string>
     <string name="ai_model_effort">Глубина размышлений</string>
     <string name="ai_model_effort_help">Насколько долго модель думает перед ответом. Это же решает, какую модель возьмёт провайдер, если идентификатор выше пуст.</string>
+    <string name="ai_reply_limit">Самый длинный ответ (токены)</string>
+    <string name="ai_reply_limit_help">Сколько места отводится ответу, когда запрашивающая сторона ничего не указала, — например, ИИ-помощнику в редакторе. Поле «Самый длинный ответ» узла «Спросить ИИ» имеет приоритет.</string>
     <string name="ai_model_id">Идентификатор модели</string>
     <string name="ai_model_id_required">обязательно</string>
     <string name="ai_model_name">Название</string>
