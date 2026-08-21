@@ -40,6 +40,7 @@ import com.example.ottomatic.data.notification.AndroidNotifications
 import com.example.ottomatic.data.mail.MailRuntime
 import com.example.ottomatic.data.mail.MailSeenStore
 import com.example.ottomatic.data.GlobalVariableRepository
+import com.example.ottomatic.data.MacroTransferRepository
 import com.example.ottomatic.domain.registry.GlobalVariables
 import com.example.ottomatic.domain.registry.HaCatalog
 import com.example.ottomatic.domain.registry.MqttCatalog
@@ -104,6 +105,18 @@ object ServiceLocator {
     )
 
     lateinit var workflowRepository: WorkflowRepository
+        private set
+
+    /**
+     * Reads a macro out to a file and back in again, for the workflow list's
+     * Export / Share / Import commands.
+     *
+     * Built after the four libraries it draws on rather than beside them, because it
+     * holds all four: the graph plus the credential-free entries it points at are what
+     * make an exported macro work on the other phone rather than arrive full of
+     * dangling references.
+     */
+    lateinit var macroTransferRepository: MacroTransferRepository
         private set
 
     /** The geofence place library, shared by the editor UI and the trigger host. */
@@ -383,6 +396,13 @@ object ServiceLocator {
         workflowRepository = WorkflowRepository(appContext.filesDir, globalVariableRepository)
         geofencePlaceRepository = GeofencePlaceRepository(appContext.filesDir)
         nfcTagRepository = NfcTagRepository(appContext.filesDir)
+        macroTransferRepository = MacroTransferRepository(
+            workflows = workflowRepository,
+            globals = globalVariableRepository,
+            places = geofencePlaceRepository,
+            nfcTags = nfcTagRepository,
+            appVersion = appVersionOf(appContext),
+        )
         // Keystore-backed, and safe to build here for exactly one reason: it never
         // throws. Both of its members answer null on failure, so an OEM keystore
         // that misbehaves costs the user a re-typed password rather than taking
@@ -691,6 +711,19 @@ object ServiceLocator {
         executionContext = { executionContext },
         deferredScope = appScope,
     )
+
+    /**
+     * This build's version name, for the `appVersion` line an export file carries.
+     *
+     * Read from `PackageManager` rather than `BuildConfig` because the `buildConfig`
+     * feature is not enabled in this module, and turning it on to stamp one advisory
+     * string into a JSON file would add a generated class to every build. Purely
+     * informational either way — nothing reads it back — so a blank on failure is the
+     * right answer rather than a thrown one.
+     */
+    private fun appVersionOf(context: Context): String = runCatching {
+        context.packageManager.getPackageInfo(context.packageName, 0).versionName.orEmpty()
+    }.getOrDefault("")
 
     private fun publishAiConnections() {
         appScope.launch {

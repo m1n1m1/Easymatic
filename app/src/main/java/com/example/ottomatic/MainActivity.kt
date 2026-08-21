@@ -67,6 +67,7 @@ class MainActivity : ComponentActivity() {
     private val listViewModel: WorkflowListViewModel by viewModels {
         WorkflowListViewModel.factory(
             repository = ServiceLocator.workflowRepository,
+            transfers = ServiceLocator.macroTransferRepository,
             runLog = ServiceLocator.runLog,
             appContext = applicationContext,
         )

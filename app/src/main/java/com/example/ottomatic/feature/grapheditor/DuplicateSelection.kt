@@ -2,11 +2,9 @@ package com.example.ottomatic.feature.grapheditor
 
 import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.core.model.NodeId
-import com.example.ottomatic.domain.model.ApiTokens
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
-import com.example.ottomatic.domain.registry.API_TOKEN_KEY
-import com.example.ottomatic.domain.registry.API_TRIGGER_TYPE_ID
+import com.example.ottomatic.domain.model.reissuedConfig
 import java.util.UUID
 
 /**
@@ -87,26 +85,4 @@ fun Workflow.withDuplicated(
         // moves them off the originals rather than moving the originals again.
         selection = Selection(nodeIds = copies.mapTo(mutableSetOf()) { it.id }),
     )
-}
-
-/**
- * [node]'s config as a *new* node should carry it: verbatim, except for the values
- * that are only ever minted and never copied.
- *
- * There is exactly one of those today. A `trigger.api` node's token is a bearer
- * credential — `ApiTokens`' own KDoc calls it "the only credential the Intent front
- * door has", because a broadcast arrives carrying no sender identity whatsoever.
- * Copying it would leave two independently callable triggers behind one secret, so
- * rotating one would not rotate the other and a caller aiming at one would
- * authenticate against both.
- *
- * That is also just what the rest of the editor already does. `initialConfig` mints a
- * token for every `trigger.api` however it was placed, on the argument that a node
- * must not "work or not depending on how it was made" — and a duplicate is a node
- * being made. The price is that a duplicated trigger needs its new key copied into
- * whatever calls it, which is correct: it is a different endpoint.
- */
-fun reissuedConfig(node: WorkflowNode): Map<ConfigKey, String> = when (node.typeId) {
-    API_TRIGGER_TYPE_ID -> node.config + (API_TOKEN_KEY to ApiTokens.generate())
-    else -> node.config
 }

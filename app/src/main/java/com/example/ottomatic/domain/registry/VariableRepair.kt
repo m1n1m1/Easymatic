@@ -17,9 +17,7 @@ import java.util.UUID
  * any other part of the node system needs either.
  */
 fun variableRefKeys(typeId: NodeTypeId): List<ConfigKey> =
-    ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
-        .filter { (it.type as? ConfigFieldType.PICKER)?.kind == PickerKind.VARIABLE }
-        .map { it.key }
+    pickerRefKeys(typeId, PickerKind.VARIABLE)
 
 /** A repaired graph, plus the global declarations its legacy names became. */
 data class VariableRepairResult(

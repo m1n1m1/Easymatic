@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    What the export FileProvider is allowed to hand out, which is one directory and
+    nothing else.
+
+    `cache-path` rather than `files-path` is the whole security posture in one word:
+    `filesDir` holds every workflow, every variable value and every sealed library
+    file, so a provider rooted there would be able to serve any of them to whichever
+    app the share sheet resolved to. An export is a copy written for the purpose of
+    leaving, so it goes somewhere that holds nothing else — and gets swept by the
+    platform when storage runs short, which is correct for a file whose only reader
+    has already read it.
+-->
+<paths>
+    <cache-path name="macro_exports" path="exports/" />
+</paths>

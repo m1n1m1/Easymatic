@@ -16,11 +16,24 @@ import com.example.ottomatic.domain.model.config.PickerKind
  * `VariableRepair.kt` is the same idea and came first.
  */
 
+/**
+ * The config keys of [typeId] whose value was chosen from the [kind] chooser.
+ *
+ * The one lookup every other reader in this file is a special case of. It exists
+ * because the file's own rule — "derived from the node's own config class rather
+ * than listed by hand" — has a second half that only shows up once there are enough
+ * callers: a *kind* must be as underivable-by-hand as a key is. Export walks six
+ * pickers to find what a graph points at, and six near-identical functions would be
+ * exactly the hand-maintained list this file exists to avoid.
+ */
+fun pickerRefKeys(typeId: NodeTypeId, kind: PickerKind): List<ConfigKey> =
+    ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
+        .filter { (it.type as? ConfigFieldType.PICKER)?.kind == kind }
+        .map { it.key }
+
 /** The config keys of [typeId] that hold a macro id. */
 fun macroRefKeys(typeId: NodeTypeId): List<ConfigKey> =
-    ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
-        .filter { (it.type as? ConfigFieldType.PICKER)?.kind == PickerKind.MACRO }
-        .map { it.key }
+    pickerRefKeys(typeId, PickerKind.MACRO)
 
 /**
  * The config keys of [typeId] that hold a reference to something on a smart-home hub —
@@ -81,9 +94,7 @@ private val HUB_SCOPED_PICKERS = setOf(
 
 /** The config keys of [typeId] that hold an [com.example.ottomatic.domain.model.AiModelProfile] id. */
 fun aiModelRefKeys(typeId: NodeTypeId): List<ConfigKey> =
-    ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
-        .filter { (it.type as? ConfigFieldType.PICKER)?.kind == PickerKind.AI_MODEL }
-        .map { it.key }
+    pickerRefKeys(typeId, PickerKind.AI_MODEL)
 
 /**
  * The config keys of [typeId] that hold a

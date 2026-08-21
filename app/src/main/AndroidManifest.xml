@@ -365,6 +365,35 @@
             android:exported="true"
             android:grantUriPermissions="false" />
 
+        <!-- How an exported macro reaches another app.
+
+             ACTION_SEND cannot carry a file:// Uri to another process on any modern
+             Android, so sharing an export needs a content:// one, and that needs a
+             provider. This is the standard androidx FileProvider rather than anything
+             of ours because there is nothing to decide: it serves whole files, read
+             only, out of one directory.
+
+             exported="false" with grantUriPermissions="true" is the pair that matters
+             and they are not in tension. Not exported means no app may query this
+             provider on its own initiative — there is no way in from outside. Grantable
+             means *we* may hand out a one-file, read-only, revocable pass with the
+             Intent we ourselves launch, which the receiving app holds only for as long
+             as that task lives. The share is therefore a capability we give away per
+             file, not a door we leave open.
+
+             The directory it is rooted at holds copies written for the purpose of
+             leaving and nothing else; see res/xml/file_paths.xml for why that is the
+             cache and not filesDir. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <!-- The process API's door for everything that is not an Android app: a
              shell script, Tasker, Automate, an `adb shell am broadcast`. None of
              those can call a ContentProvider, which is the only reason this

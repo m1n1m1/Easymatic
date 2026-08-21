@@ -25,7 +25,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddToHomeScreen
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
@@ -36,6 +40,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -111,6 +116,8 @@ fun WorkflowListScreen(
     var pinning by remember { mutableStateOf<List<ManualTriggerRef>?>(null) }
     var pinRefused by remember { mutableStateOf(false) }
 
+    val transfer = rememberMacroTransfer(viewModel)
+
     val searchBarState = rememberSearchBarState()
     val textFieldState = rememberTextFieldState()
     val barColors = searchBarColors()
@@ -165,6 +172,9 @@ fun WorkflowListScreen(
                             onToggleEnabled = { viewModel.setEnabled(summary.id, it) },
                             onEdit = { editing = summary },
                             onDelete = { deleting = summary },
+                            onDuplicate = { viewModel.duplicate(summary.id) },
+                            onExport = { transfer.export(summary.id, summary.name) },
+                            onShare = { viewModel.share(summary.id, summary.name) },
                             manualTriggers = triggers,
                             onPin = {
                                 pinOrChoose(
@@ -193,6 +203,27 @@ fun WorkflowListScreen(
                 .padding(end = 18.dp, bottom = 18.dp),
         ) {
             Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.workflowlist_add_workflow))
+        }
+
+        // A small secondary button above the Add FAB rather than an item inside it.
+        //
+        // Importing and creating are both "a new macro appears", so they belong in the
+        // same corner — but turning the Add FAB into a menu would put a tap in front of
+        // the overwhelmingly common action to make room for a rare one. A smaller,
+        // quieter button beside it keeps creating a single tap and still puts importing
+        // where somebody would look for it.
+        SmallFloatingActionButton(
+            onClick = transfer::import,
+            containerColor = EditorColors.chrome,
+            contentColor = EditorColors.textSecondary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 24.dp, bottom = 90.dp),
+        ) {
+            Icon(
+                Icons.Filled.FileDownload,
+                contentDescription = stringResource(R.string.macro_transfer_import),
+            )
         }
     }
 
@@ -271,6 +302,10 @@ fun WorkflowListScreen(
                 }
             },
         )
+    }
+
+    state.transfer?.let { message ->
+        TransferDialog(message = message, onDismiss = viewModel::dismissTransfer)
     }
 
     deleting?.let { target ->
@@ -500,6 +535,9 @@ private fun WorkflowRow(
     onToggleEnabled: (Boolean) -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    onDuplicate: () -> Unit,
+    onExport: () -> Unit,
+    onShare: () -> Unit,
     manualTriggers: List<ManualTriggerRef>,
     onPin: () -> Unit,
 ) {
@@ -585,6 +623,30 @@ private fun WorkflowRow(
                         leadingIcon = { Icon(Icons.Filled.AddToHomeScreen, contentDescription = null) },
                     )
                 }
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.macro_transfer_duplicate)) },
+                    onClick = {
+                        menuOpen = false
+                        onDuplicate()
+                    },
+                    leadingIcon = { Icon(Icons.Filled.ContentCopy, contentDescription = null) },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.macro_transfer_export)) },
+                    onClick = {
+                        menuOpen = false
+                        onExport()
+                    },
+                    leadingIcon = { Icon(Icons.Filled.FileUpload, contentDescription = null) },
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.macro_transfer_share)) },
+                    onClick = {
+                        menuOpen = false
+                        onShare()
+                    },
+                    leadingIcon = { Icon(Icons.Filled.Share, contentDescription = null) },
+                )
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.workflowlist_delete)) },
                     onClick = {
