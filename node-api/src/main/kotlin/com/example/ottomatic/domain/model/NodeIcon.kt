@@ -175,6 +175,16 @@ enum class NodeIcon {
     MICROPHONE,
 
     /**
+     * Speech leaving the phone rather than entering it — `action.speak`.
+     *
+     * Distinct from [MICROPHONE] and from [VOLUME] because it is neither: a microphone means
+     * sound being taken off the room, and a speaker glyph is what a phone shows for how loud
+     * anything is. This is the app addressing a person, which is why the glyph is a head with
+     * sound coming out of it rather than a piece of hardware.
+     */
+    SPEAK,
+
+    /**
      * Skipping ahead, i.e. moving *within* what is playing.
      *
      * Its own entry beside [MUSIC] on [MUSIC_OFF]'s argument: three of the media nodes ask

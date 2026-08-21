@@ -27,6 +27,7 @@ import com.example.ottomatic.engine.value.ProximityValue
 import com.example.ottomatic.engine.value.RecordingValue
 import com.example.ottomatic.engine.value.RingerModeValue
 import com.example.ottomatic.engine.value.ScreenOnValue
+import com.example.ottomatic.engine.value.SpeakingValue
 import com.example.ottomatic.engine.value.VariableValue
 import com.example.ottomatic.engine.value.WifiNetworkValue
 import com.example.ottomatic.engine.value.WifiValue
@@ -77,6 +78,7 @@ object ValueRegistry {
         RecordingValue(),
         RingerModeValue(),
         ScreenOnValue(),
+        SpeakingValue(),
         VariableValue(),
         WifiNetworkValue(),
         WifiValue(),

@@ -98,6 +98,23 @@ object ExecPorts {
      * at all is the one thing a fork's labels exist to prevent.
      */
     const val ANSWERED_LABEL = "When answered"
+
+    /**
+     * What a dialog's first two outputs are called when the question was put **aloud** —
+     * `action.listen`'s branches.
+     *
+     * The same [CONFIRMED] and [CANCELLED] ports under a second pair of names, which is
+     * [ANSWERED_LABEL]'s trick applied to the other half of the dialog family: the port
+     * names are persisted in saved graphs, the labels are not, so a spoken question and a
+     * typed one can agree about the wire while disagreeing about the word.
+     *
+     * They have to disagree, because "confirmed" and "cancelled" describe a person
+     * *deciding* something, and nothing was decided here. Silence is not a refusal — the
+     * commonest reason this branch fires is that nobody was there — and a card that called
+     * it "When cancelled" would say the user said no when the user said nothing at all.
+     */
+    const val HEARD_LABEL = "When something was said"
+    const val NOTHING_HEARD_LABEL = "When nothing was said"
 }
 
 /** EXECUTION input port. */

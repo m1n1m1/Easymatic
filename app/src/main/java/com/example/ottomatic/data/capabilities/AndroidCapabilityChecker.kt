@@ -6,6 +6,8 @@ import com.example.ottomatic.core.capabilities.CapabilityChecker
 import com.example.ottomatic.core.capabilities.CapabilityStatus
 import com.example.ottomatic.core.capabilities.DeviceCapability
 import com.example.ottomatic.data.accessibility.OttomaticAccessibilityService
+import com.example.ottomatic.data.speech.AndroidSpeech
+import android.speech.SpeechRecognizer
 
 /**
  * Android implementation of [CapabilityChecker].
@@ -19,7 +21,25 @@ class AndroidCapabilityChecker(private val context: Context) : CapabilityChecker
 
     override fun status(capability: DeviceCapability): CapabilityStatus = when (capability) {
         DeviceCapability.FINGERPRINT_GESTURES -> fingerprintGestureStatus()
+        DeviceCapability.SPEECH_SYNTHESIS -> AndroidSpeech.synthesisStatus()
+        DeviceCapability.SPEECH_RECOGNITION -> recognitionStatus()
     }
+
+    /**
+     * Definitive from the first moment it is asked, unlike its synthesis counterpart.
+     *
+     * `isRecognitionAvailable` is a package-manager query for a service handling
+     * `RecognitionService`, so there is no asynchronous init to wait on and therefore no
+     * [CapabilityStatus.UNKNOWN] rung here. A phone with no Play services usually has no such
+     * service at all, and no setting anywhere will produce one — which is exactly what makes
+     * this a capability rather than a prerequisite.
+     */
+    private fun recognitionStatus(): CapabilityStatus =
+        if (runCatching { SpeechRecognizer.isRecognitionAvailable(context) }.getOrDefault(false)) {
+            CapabilityStatus.AVAILABLE
+        } else {
+            CapabilityStatus.UNAVAILABLE
+        }
 
     /**
      * A guard chain ordered by which rung reaches a definitive answer soonest.

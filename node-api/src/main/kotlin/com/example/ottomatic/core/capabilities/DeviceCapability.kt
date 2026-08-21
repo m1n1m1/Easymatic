@@ -38,6 +38,42 @@ enum class DeviceCapability {
      * can ask it.
      */
     FINGERPRINT_GESTURES,
+
+    /**
+     * A text-to-speech engine, with at least one usable voice.
+     *
+     * Android ships one on virtually every phone, so this is the rarer kind of
+     * capability: the one that is almost always present and occasionally, silently,
+     * is not — a stripped OEM image, a region where no voice data was bundled, a
+     * user who uninstalled the engine. The failure it prevents is the quietest in
+     * the whole family, because `TextToSpeech.speak` answers `SUCCESS` for an
+     * utterance that is queued against an engine that never initialised, and the
+     * phone simply stays silent.
+     *
+     * **It is the capability that made [CapabilityStatus.UNKNOWN] earn its keep a
+     * second time.** An engine announces itself only through an asynchronous init
+     * callback, so before the first `speak` in a process there is genuinely no
+     * answer — and badging every Speak node until somebody used one would warn
+     * about hardware that works. `AndroidSpeech` republishes once init resolves,
+     * exactly as `OttomaticAccessibilityService` does on connect.
+     */
+    SPEECH_SYNTHESIS,
+
+    /**
+     * A speech recognition service that can turn speech into text.
+     *
+     * Definitive in a way [SPEECH_SYNTHESIS] is not — `SpeechRecognizer`
+     * .`isRecognitionAvailable` is a synchronous package-manager query — so this
+     * one answers [CapabilityStatus.AVAILABLE] or [CapabilityStatus.UNAVAILABLE]
+     * from the first moment it is asked.
+     *
+     * It is genuinely absent on more phones than the synthesis half: recognition
+     * is normally supplied by the Google app, so a device built without Play
+     * services has none, and no setting anywhere will produce one. That is the
+     * textbook shape for a capability rather than a prerequisite — there is no
+     * page to send the user to.
+     */
+    SPEECH_RECOGNITION,
     ;
 
     /**
@@ -51,5 +87,7 @@ enum class DeviceCapability {
     val label: String
         get() = when (this) {
             FINGERPRINT_GESTURES -> "a fingerprint sensor that reports swipes"
+            SPEECH_SYNTHESIS -> "a text-to-speech engine"
+            SPEECH_RECOGNITION -> "speech recognition"
         }
 }

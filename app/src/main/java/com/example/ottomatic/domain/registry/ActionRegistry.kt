@@ -46,15 +46,16 @@ import com.example.ottomatic.engine.action.LightSceneAction
 import com.example.ottomatic.engine.action.LightStateAction
 import com.example.ottomatic.engine.action.ListAddAction
 import com.example.ottomatic.engine.action.ListClearAction
+import com.example.ottomatic.engine.action.ListenAction
 import com.example.ottomatic.engine.action.LogAction
 import com.example.ottomatic.engine.action.MailUpdateAction
+import com.example.ottomatic.engine.action.MediaControlAction
+import com.example.ottomatic.engine.action.MediaSeekAction
 import com.example.ottomatic.engine.action.MqttPublishAction
 import com.example.ottomatic.engine.action.NotificationActionAction
 import com.example.ottomatic.engine.action.NotifyAction
 import com.example.ottomatic.engine.action.NotifyCancelAction
 import com.example.ottomatic.engine.action.OpenUrlAction
-import com.example.ottomatic.engine.action.MediaControlAction
-import com.example.ottomatic.engine.action.MediaSeekAction
 import com.example.ottomatic.engine.action.PlaySoundAction
 import com.example.ottomatic.engine.action.RecordAudioAction
 import com.example.ottomatic.engine.action.RecordStartAction
@@ -72,6 +73,8 @@ import com.example.ottomatic.engine.action.SendMessageAction
 import com.example.ottomatic.engine.action.SendSmsAction
 import com.example.ottomatic.engine.action.SetVariableAction
 import com.example.ottomatic.engine.action.ShowMessageAction
+import com.example.ottomatic.engine.action.SpeakAction
+import com.example.ottomatic.engine.action.SpeakStopAction
 import com.example.ottomatic.engine.action.StopAction
 import com.example.ottomatic.engine.action.StopSoundAction
 import com.example.ottomatic.engine.action.VibrateAction
@@ -131,6 +134,14 @@ object ActionRegistry {
         AskConfirmAction(),
         AskInputAction(),
         AskChoiceAction(),
+        // The three voice nodes, immediately after the four dialog ones because they are
+        // the same family reached through a different channel: Speak is Show Message with
+        // nowhere to draw, and Listen is Ask for Input with the user's hands full. Speaking
+        // comes first for the reason a message does — it needs no answer — and Stop Speaking
+        // follows the node it exists to undo, exactly as `record_stop` follows `record_start`.
+        SpeakAction(),
+        SpeakStopAction(),
+        ListenAction(),
         DisableMacroAction(),
         DndAction(),
         EnableMacroAction(),

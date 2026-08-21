@@ -51,6 +51,16 @@ enum class ExecutionRoute(val portName: PortName, val label: String) {
      * differs from [OUT]. See [ExecPorts.ANSWERED_LABEL].
      */
     ANSWERED(ExecPorts.RESUMED, ExecPorts.ANSWERED_LABEL),
+
+    /**
+     * A spoken question's "something was said" branch — the **same port** as [CONFIRMED],
+     * differing only in what the card calls it, exactly as [ANSWERED] differs from
+     * [RESUMED]. See [ExecPorts.HEARD_LABEL].
+     */
+    HEARD(ExecPorts.CONFIRMED, ExecPorts.HEARD_LABEL),
+
+    /** A spoken question's "nothing was said" branch — the same port as [CANCELLED]. */
+    NOTHING_HEARD(ExecPorts.CANCELLED, ExecPorts.NOTHING_HEARD_LABEL),
 }
 
 /** The set of EXECUTION output ports a node exposes. */
@@ -85,6 +95,20 @@ enum class ExecOutputs(val routes: List<ExecutionRoute>) {
      * see `dialogEffectivePorts` — so the card carries no branch that cannot fire.
      */
     DECISION(listOf(ExecutionRoute.CONFIRMED, ExecutionRoute.CANCELLED, ExecutionRoute.TIMED_OUT)),
+
+    /**
+     * [DECISION]'s ports under the names a question put *aloud* needs — `action.listen`.
+     *
+     * A second constant rather than a parameter on [DECISION], on [ANSWERED]'s precedent
+     * and for the same reason: the two differ in exactly one thing a saved graph never
+     * sees, which is the word on the card. The port set is identical, so a graph wired to
+     * a dialog's `confirmed` would keep working if the two nodes were ever swapped.
+     *
+     * Its third port is shown **always**, unlike a dialog's. `dialogEffectivePorts` hides
+     * `timed_out` until a timeout is configured, because a dialog can legitimately wait
+     * forever; a recognizer cannot — its cap is mandatory, so the branch can always fire.
+     */
+    HEARD(listOf(ExecutionRoute.HEARD, ExecutionRoute.NOTHING_HEARD, ExecutionRoute.TIMED_OUT)),
 
     /**
      * `out` / `resumed`: the node carries on at once **and** again later. Both are

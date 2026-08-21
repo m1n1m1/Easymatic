@@ -378,6 +378,39 @@ enum class SuggestionSource {
      * that is exactly the middle ground between a [Picker] and a plain text field.
      */
     MQTT_TOPIC,
+
+    /**
+     * The languages this phone can actually speak, as BCP-47 tags — `de-DE`, `en-GB`.
+     *
+     * A [Picker] was the first instinct and is wrong on the half of the identifier rule
+     * that asks whether a mistake is *visible*. A language tag is not opaque: `de-DE`
+     * reads as German, a wrong one reads as wrong, and a node handed one it cannot speak
+     * falls back to the device's own language **audibly** rather than silently naming
+     * nothing. That is the failure a read-only chooser exists to prevent, and it does not
+     * happen here.
+     *
+     * The set is also not closed in the way a hub's entity list is. `TextToSpeech`
+     * .`getAvailableLanguages` reports what is *installed right now*, and voice data is
+     * downloaded on demand — so a chooser would refuse the tag of a language the user is
+     * about to install, which is [MQTT_TOPIC]'s objection reached from the other side.
+     *
+     * Blank is the meaningful default everywhere this is used: speak, and listen, in
+     * whatever language the phone is set to.
+     */
+    SPEECH_LANGUAGE,
+
+    /**
+     * The languages this phone can *understand*, as BCP-47 tags. [SPEECH_LANGUAGE]'s
+     * reasoning throughout; a separate member because the two answers differ on real
+     * phones.
+     *
+     * A device commonly speaks a dozen languages and recognises three, and the lists are
+     * published by two unrelated pieces of software — the text-to-speech engine and the
+     * recognition service. Folding them into one member would suggest, on a Listen node, a
+     * language the phone can only speak: a value that is offered, accepted, and then
+     * silently never matches anything anybody says.
+     */
+    RECOGNITION_LANGUAGE,
 }
 
 /**

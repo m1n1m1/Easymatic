@@ -10,6 +10,12 @@ import org.junit.Test
 /**
  * The four dialog nodes are one family, and have to be findable as one.
  *
+ * They are no longer the whole of [NodeCategory.INTERACTION]: the three voice nodes joined
+ * it in 2026-08, because "Ask the User" is what the category *is* and speaking to somebody
+ * is asking them through a different channel. The four are still pinned as a contiguous,
+ * ordered block at the head of it — what this file guards is that they stay together and
+ * stay first, not that nothing else may ever be an interaction.
+ *
  * The words people type looking for this are "popup", "dialog", "prompt" and
  * "ask" — and only one of them appears in any of the four *names*. The palette
  * searches descriptions and the category label as well, which is what makes the
@@ -44,9 +50,25 @@ class DialogDiscoverabilityTest {
     fun `they share a category, so the palette lists them together`() {
         assertEquals(setOf(NodeCategory.INTERACTION), dialogs.map { it.category }.toSet())
         // The palette renders in registry order, and the plainest leads: a message
-        // is what somebody reaches for before they need an answer at all.
-        val names = NodeTypeRegistry.all.filter { it.category == NodeCategory.INTERACTION }.map { it.typeId }
-        assertEquals(dialogs.map { it.typeId }, names)
+        // is what somebody reaches for before they need an answer at all. The four stay
+        // contiguous and stay at the head of the category — a voice node between
+        // `dialog_confirm` and `dialog_input` would break the family up on the card list.
+        val interaction = NodeTypeRegistry.all.filter { it.category == NodeCategory.INTERACTION }
+        assertEquals(dialogs.map { it.typeId }, interaction.take(dialogs.size).map { it.typeId })
+    }
+
+    @Test
+    fun `the voice nodes follow them, asking the same thing through a different channel`() {
+        // Speaking is `dialog_message` with nowhere to draw, and listening is
+        // `dialog_input` with the user's hands full — so they belong to this category
+        // rather than to AUDIO, whose nodes have the *microphone* in common and produce
+        // recordings. Order follows the dialogs' own rule: the one needing no answer first,
+        // and a stop immediately after the node it exists to undo.
+        val interaction = NodeTypeRegistry.all.filter { it.category == NodeCategory.INTERACTION }
+        assertEquals(
+            listOf("action.speak", "action.speak_stop", "action.listen"),
+            interaction.drop(dialogs.size).map { it.typeId.value },
+        )
     }
 
     @Test

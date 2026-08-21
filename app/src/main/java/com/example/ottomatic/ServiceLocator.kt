@@ -61,6 +61,7 @@ import com.example.ottomatic.data.plugin.PluginRepository
 import com.example.ottomatic.data.prompt.OverlayPrompts
 import com.example.ottomatic.data.script.WebViewScriptEngine
 import com.example.ottomatic.data.audio.AndroidMicrophone
+import com.example.ottomatic.data.speech.AndroidSpeech
 import com.example.ottomatic.data.media.AndroidMedia
 import com.example.ottomatic.data.sensor.SensorBridge
 import com.example.ottomatic.data.calendar.AndroidCalendars
@@ -443,6 +444,13 @@ object ServiceLocator {
         // takes the routing files for `MediaImages`' reason and `appScope` because a
         // recording started by one run outlives that run.
         val microphoneFacade = AndroidMicrophone(appContext, routingFiles::place, appScope)
+        // One voice for the process, and one pair of ears. A `TextToSpeech` is a connection
+        // to another app that announces itself asynchronously, so a second instance would
+        // orphan the first's progress listener and strand every utterance waiting on it;
+        // `value.speaking` also has to read the same flag `action.speak` set, which two
+        // instances could not agree on. It takes `appScope` for `AndroidMicrophone`'s reason,
+        // one step further: an utterance queued without waiting outlives its whole run.
+        val speechFacade = AndroidSpeech(appContext, appScope)
         val log = RunLogStore().apply { attach(appContext.filesDir, appScope) }
         runLog = log
         // One address book for the process, so an action resolving a contact and a
@@ -530,6 +538,7 @@ object ServiceLocator {
             calendars = calendarsFacade,
             microphone = microphoneFacade,
             media = AndroidMedia(appContext),
+            speech = speechFacade,
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.
@@ -567,6 +576,12 @@ object ServiceLocator {
         GrantedPrerequisites.hydrateFrom(permissionChecker)
         capabilityChecker = AndroidCapabilityChecker(appContext)
         DeviceCapabilities.hydrateFrom(capabilityChecker)
+        // Whether this phone has a voice can only be learned from an engine's init callback,
+        // so the first answer above is UNKNOWN and this is what replaces it. The third
+        // hydration site, after `MainActivity.onResume` and the accessibility service, and
+        // it is here for the reason that one is there: the fact arrives from somewhere the
+        // app cannot ask, on somebody else's schedule.
+        AndroidSpeech.capabilitiesChanged = { DeviceCapabilities.hydrateFrom(capabilityChecker) }
     }
 
     /**

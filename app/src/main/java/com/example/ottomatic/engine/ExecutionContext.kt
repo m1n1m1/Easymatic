@@ -22,6 +22,8 @@ import com.example.ottomatic.core.service.NoMail
 import com.example.ottomatic.core.service.NoMedia
 import com.example.ottomatic.core.service.NoMessaging
 import com.example.ottomatic.core.service.NoMicrophone
+import com.example.ottomatic.core.service.NoSpeech
+import com.example.ottomatic.core.service.Speech
 import com.example.ottomatic.core.service.NoNotifications
 import com.example.ottomatic.core.service.NoPrompts
 import com.example.ottomatic.core.service.Notifications
@@ -290,6 +292,24 @@ interface ExecutionContext {
      * for seconds at a time, which is squarely an action's job.
      */
     val microphone: Microphone get() = NoMicrophone
+
+    /**
+     * Says things out loud and hears what is said back — `action.speak`, `action.speak_stop`
+     * and `action.listen`. Defaults to [NoSpeech], so engine-only tests see exactly what a
+     * phone with no voice does.
+     *
+     * **The sixth facade both sides of the graph may touch, and it reaches the pull side by
+     * [microphone]'s road rather than [calendars]'.** The one member `value.speaking` reads
+     * does not leave the process: [Speech.isSpeaking] is a flag this app set when it queued
+     * the utterance, so "cheap, repeatable and cannot fail" is a description of what it is
+     * rather than a judgement about it.
+     *
+     * Nothing else here qualifies, and [Speech.listen] is the clearest exclusion in the whole
+     * set — it holds the microphone for as long as somebody keeps talking, which is not a
+     * read at all. [Speech.speak] fails the same test twice over: it holds hardware, and it
+     * is a side effect on the room.
+     */
+    val speech: Speech get() = NoSpeech
 
     /**
      * Plays, pauses and reads whatever media player is running — the two `action.media_*`

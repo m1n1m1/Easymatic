@@ -40,6 +40,8 @@ object Suggestions {
         SuggestionSource.HA_ENTITY_ATTRIBUTE -> entityAttributes(scope)
         SuggestionSource.MAIL_FOLDER -> emptyList()
         SuggestionSource.MQTT_TOPIC -> brokerTopics(scope)
+        SuggestionSource.SPEECH_LANGUAGE -> SpeechLanguages.forSpeaking()
+        SuggestionSource.RECOGNITION_LANGUAGE -> SpeechLanguages.forListening()
     }
 
     /**
@@ -57,6 +59,10 @@ object Suggestions {
         // A broker publishes no directory, so this cannot be fetched on demand either:
         // what there is to offer is what a Refresh already recorded on the hub.
         SuggestionSource.MQTT_TOPIC -> true
+        // Both are published into `SpeechLanguages` by `AndroidSpeech`; asking the
+        // platform costs an engine init, which is precisely what is not done on demand.
+        SuggestionSource.SPEECH_LANGUAGE -> true
+        SuggestionSource.RECOGNITION_LANGUAGE -> true
     }
 
     /**

@@ -44,6 +44,7 @@ import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Screenshot
 import androidx.compose.material.icons.filled.PlayArrow
@@ -304,6 +305,9 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // A microphone rather than VOLUME's speaker: these nodes take sound off the room, and a
     // speaker is what a phone shows while it is making sound at you.
     NodeIcon.MICROPHONE -> Icons.Filled.Mic
+    // A head with sound coming out of it, rather than VOLUME's speaker: this node is the app
+    // talking to a person, and a speaker is what a phone shows for how loud things are.
+    NodeIcon.SPEAK -> Icons.Filled.RecordVoiceOver
     // The operation rather than MUSIC's subject: this is the one media node that moves the
     // position inside what is playing, and a note would not say so.
     NodeIcon.FAST_FORWARD -> Icons.Filled.FastForward

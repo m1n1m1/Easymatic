@@ -175,6 +175,19 @@
         <intent>
             <action android:name="com.example.ottomatic.action.PLUGIN_CHOICE" />
         </intent>
+        <!--
+          The text-to-speech engine `action.speak` binds, and the recognition service
+          `action.listen` binds. Both are other apps, so on API 30+ they are invisible
+          without this and the two nodes report "this phone has none" on a phone that has
+          both. QUERY_ALL_PACKAGES masks it today, which is exactly why it is declared:
+          the day that grant goes, speech has to keep working.
+        -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
     </queries>
 
     <!--
