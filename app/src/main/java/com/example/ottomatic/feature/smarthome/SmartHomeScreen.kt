@@ -5,28 +5,17 @@ import com.example.ottomatic.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.ottomatic.feature.SettingsTopBar
 import com.example.ottomatic.feature.grapheditor.EditorColors
 import com.example.ottomatic.domain.model.SmartHomeKind
 import com.example.ottomatic.feature.smarthome.homeassistant.HaSetupOverlay
@@ -65,31 +54,11 @@ fun SmartHomeScreen(
             .background(EditorColors.canvasBackground),
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Surface(color = EditorColors.chrome) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .height(60.dp)
-                        .padding(start = 6.dp, end = 18.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.smarthome_back),
-                            tint = EditorColors.textPrimary,
-                        )
-                    }
-                    Text(
-                        text = stringResource(R.string.smarthome_smart_home),
-                        color = EditorColors.textPrimary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(start = 6.dp),
-                    )
-                }
-            }
+            SettingsTopBar(
+                title = stringResource(R.string.smarthome_smart_home),
+                contentDescription = stringResource(R.string.smarthome_back),
+                onBack = onBack,
+            )
 
             SmartHomeHubList(
                 hubs = state.hubs,

@@ -10,14 +10,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.ottomatic.data.api.ApiCallers
 import com.example.ottomatic.data.api.ApprovedCaller
+import com.example.ottomatic.feature.SettingsTopBar
 import com.example.ottomatic.feature.grapheditor.EditorColors
 import java.text.DateFormat
 import java.util.Date
@@ -71,31 +69,18 @@ fun ApiAccessScreen(
             .fillMaxSize()
             .background(EditorColors.canvasBackground),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 6.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.api_back),
-                    tint = EditorColors.textPrimary,
-                )
-            }
-            Text(
-                text = stringResource(R.string.api_app_access),
-                style = MaterialTheme.typography.titleLarge,
-                color = EditorColors.textPrimary,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
+        SettingsTopBar(
+            title = stringResource(R.string.api_app_access),
+            contentDescription = stringResource(R.string.api_back),
+            onBack = onBack,
+        )
 
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding(),
         ) {
             item { AccessPreamble(anyApproved = approved.isNotEmpty(), reachableMacros = reachableMacros) }
             items(approved, key = { it.packageName }) { caller ->

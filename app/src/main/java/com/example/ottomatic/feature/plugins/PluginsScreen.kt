@@ -11,15 +11,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.TextButton
@@ -36,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.ottomatic.data.plugin.InstalledPlugin
 import com.example.ottomatic.data.plugin.PluginRegistry
+import com.example.ottomatic.feature.SettingsTopBar
 import com.example.ottomatic.feature.grapheditor.EditorColors
 import kotlinx.coroutines.launch
 
@@ -84,31 +82,18 @@ fun PluginsScreen(
             .fillMaxSize()
             .background(EditorColors.canvasBackground),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 6.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.plugins_back),
-                    tint = EditorColors.textPrimary,
-                )
-            }
-            Text(
-                text = stringResource(R.string.plugins_plugins),
-                style = MaterialTheme.typography.titleLarge,
-                color = EditorColors.textPrimary,
-                fontWeight = FontWeight.SemiBold,
-            )
-        }
+        SettingsTopBar(
+            title = stringResource(R.string.plugins_plugins),
+            contentDescription = stringResource(R.string.plugins_back),
+            onBack = onBack,
+        )
 
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding(),
         ) {
             item { PluginsPreamble(anyInstalled = plugins.isNotEmpty()) }
             items(plugins, key = { it.packageName }) { plugin ->

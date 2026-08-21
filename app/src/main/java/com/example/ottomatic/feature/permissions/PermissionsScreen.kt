@@ -11,24 +11,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -61,6 +56,7 @@ import com.example.ottomatic.domain.registry.NodeTypeRegistry
 import com.example.ottomatic.domain.registry.PermissionCatalogue
 import com.example.ottomatic.feature.i18n.rememberNodeText
 import com.example.ottomatic.domain.registry.PermissionEntry
+import com.example.ottomatic.feature.SettingsTopBar
 import com.example.ottomatic.feature.grapheditor.EditorColors
 import com.example.ottomatic.feature.macro.editorTextButtonColors
 
@@ -95,31 +91,11 @@ fun PermissionsScreen(checker: PermissionChecker, onBack: () -> Unit) {
             .background(EditorColors.canvasBackground),
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Surface(color = EditorColors.chrome) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .height(60.dp)
-                        .padding(start = 6.dp, end = 18.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.permissions_back),
-                            tint = EditorColors.textPrimary,
-                        )
-                    }
-                    Text(
-                        text = stringResource(R.string.permissions_permissions),
-                        color = EditorColors.textPrimary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(start = 6.dp),
-                    )
-                }
-            }
+            SettingsTopBar(
+                title = stringResource(R.string.permissions_permissions),
+                contentDescription = stringResource(R.string.permissions_back),
+                onBack = onBack,
+            )
 
             // Hoisted: LazyColumn's content lambda is LazyListScope, not a composition,
             // so a stringResource call cannot live inside it.

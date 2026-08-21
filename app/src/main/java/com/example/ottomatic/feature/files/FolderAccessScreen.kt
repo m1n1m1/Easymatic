@@ -9,14 +9,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FolderOff
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.FolderOpen
@@ -25,8 +22,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -47,6 +42,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.runtime.DisposableEffect
 import com.example.ottomatic.R
 import com.example.ottomatic.data.files.GrantedFile
+import com.example.ottomatic.feature.SettingsTopBar
 import com.example.ottomatic.feature.grapheditor.EditorColors
 
 /**
@@ -100,31 +96,11 @@ fun FolderAccessScreen(
             .background(EditorColors.canvasBackground),
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Surface(color = EditorColors.chrome) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .height(60.dp)
-                        .padding(start = 6.dp, end = 18.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.nfc_back),
-                            tint = EditorColors.textPrimary,
-                        )
-                    }
-                    Text(
-                        text = stringResource(R.string.files_folder_access),
-                        color = EditorColors.textPrimary,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(start = 6.dp),
-                    )
-                }
-            }
+            SettingsTopBar(
+                title = stringResource(R.string.files_folder_access),
+                contentDescription = stringResource(R.string.nfc_back),
+                onBack = onBack,
+            )
 
             LazyColumn(
                 modifier = Modifier
