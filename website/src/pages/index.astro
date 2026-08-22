@@ -1,0 +1,103 @@
+---
+/**
+ * Placeholder home page.
+ *
+ * Deliberately close to empty — the marketing copy, screenshots and a real
+ * wordmark all still have to be made. What it does do is exercise the whole
+ * style chain end to end (generate-tokens.mjs -> tokens.css -> global.css ->
+ * this page), so that "the skeleton works" is something you can see rather
+ * than something you have to take on trust.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// The four node kinds, in the order the editor's palette lists them, wearing
+// the accents they wear in the app.
+const KINDS = [
+  { name: 'Triggers', token: '--brand-trigger' },
+  { name: 'Actions', token: '--brand-action' },
+  { name: 'Values', token: '--brand-value' },
+  { name: 'Transforms', token: '--brand-transform' },
+];
+---
+
+<BaseLayout
+  title="Ottomatic"
+  description="An Android automation app built on a node-based workflow graph. Wire triggers and actions together in a visual editor; a foreground service runs them in the background."
+>
+  <main>
+    <h1>Ottomatic</h1>
+    <p class="pitch">
+      An Android automation app built on a node-based workflow graph. You wire
+      triggers and actions together in a visual editor, and a foreground service
+      executes them in the background.
+    </p>
+
+    <ul class="kinds">
+      {
+        KINDS.map((kind) => (
+          <li style={`--accent: var(${kind.token})`}>
+            <span class="dot"></span>
+            {kind.name}
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="note">Site under construction.</p>
+  </main>
+</BaseLayout>
+
+<style>
+  main {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: clamp(3rem, 12vh, 8rem) 1.5rem;
+  }
+
+  h1 {
+    font: var(--md-sys-typescale-display-medium);
+    margin: 0 0 1rem;
+    /* The seed hue the whole tonal ramp is generated from. */
+    color: var(--md-sys-color-primary);
+  }
+
+  .pitch {
+    font: var(--md-sys-typescale-body-large);
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0 0 2.5rem;
+    max-width: 38rem;
+  }
+
+  .kinds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    list-style: none;
+    margin: 0 0 2.5rem;
+    padding: 0;
+  }
+
+  .kinds li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font: var(--md-sys-typescale-label-large);
+    color: var(--md-sys-color-on-surface);
+    background: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-corner-full);
+  }
+
+  .dot {
+    inline-size: 0.625rem;
+    block-size: 0.625rem;
+    border-radius: var(--md-sys-shape-corner-full);
+    background: var(--accent);
+  }
+
+  .note {
+    font: var(--md-sys-typescale-body-medium);
+    color: var(--md-sys-color-outline);
+    margin: 0;
+  }
+</style>

@@ -1,0 +1,52 @@
+---
+/**
+ * The shell every page on the site sits in — marketing and documentation
+ * alike, which is the whole reason the docs are hand-built rather than
+ * Starlight: one design system, no seam to cross.
+ *
+ * Deliberately bare for now. The site header, nav and footer land with the
+ * first real content rather than being invented ahead of it.
+ */
+import '@fontsource-variable/roboto-flex/wght.css';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+
+const SITE_NAME = 'Ottomatic';
+// Pages pass their own title; the home page passes the bare name and should not
+// read "Ottomatic · Ottomatic".
+const fullTitle = title === SITE_NAME ? title : `${title} · ${SITE_NAME}`;
+
+// `Astro.site` is the placeholder in astro.config.mjs until a deploy target is
+// chosen; canonical URLs are only meaningful once it is real.
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <title>{fullTitle}</title>
+    {description && <meta name="description" content={description} />}
+    {canonical && <link rel="canonical" href={canonical.href} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={fullTitle} />
+    {description && <meta property="og:description" content={description} />}
+    {canonical && <meta property="og:url" content={canonical.href} />}
+
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

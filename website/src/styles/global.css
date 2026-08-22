@@ -1,0 +1,100 @@
+/*
+ * The site's baseline. Everything visual resolves through the tokens in
+ * tokens.css — components should reference `var(--md-sys-*)` or `var(--brand-*)`
+ * and never hard-code a colour.
+ */
+@import './tokens.css';
+
+/* ---- Material 3 type scale -------------------------------------------- */
+/* Roboto Flex is the M3 type face; @fontsource self-hosts it (imported from
+   BaseLayout.astro so the font files go through the bundler). */
+:root {
+  --md-sys-typescale-font: 'Roboto Flex Variable', 'Roboto Flex', system-ui, sans-serif;
+
+  --md-sys-typescale-display-large: 400 3.5625rem/1.12 var(--md-sys-typescale-font);
+  --md-sys-typescale-display-medium: 400 2.8125rem/1.16 var(--md-sys-typescale-font);
+  --md-sys-typescale-display-small: 400 2.25rem/1.22 var(--md-sys-typescale-font);
+
+  --md-sys-typescale-headline-large: 400 2rem/1.25 var(--md-sys-typescale-font);
+  --md-sys-typescale-headline-medium: 400 1.75rem/1.29 var(--md-sys-typescale-font);
+  --md-sys-typescale-headline-small: 400 1.5rem/1.33 var(--md-sys-typescale-font);
+
+  --md-sys-typescale-title-large: 400 1.375rem/1.27 var(--md-sys-typescale-font);
+  --md-sys-typescale-title-medium: 500 1rem/1.5 var(--md-sys-typescale-font);
+  --md-sys-typescale-title-small: 500 0.875rem/1.43 var(--md-sys-typescale-font);
+
+  --md-sys-typescale-body-large: 400 1rem/1.5 var(--md-sys-typescale-font);
+  --md-sys-typescale-body-medium: 400 0.875rem/1.43 var(--md-sys-typescale-font);
+  --md-sys-typescale-body-small: 400 0.75rem/1.33 var(--md-sys-typescale-font);
+
+  --md-sys-typescale-label-large: 500 0.875rem/1.43 var(--md-sys-typescale-font);
+  --md-sys-typescale-label-medium: 500 0.75rem/1.33 var(--md-sys-typescale-font);
+  --md-sys-typescale-label-small: 500 0.6875rem/1.45 var(--md-sys-typescale-font);
+
+  /* ---- Material 3 shape scale ----------------------------------------- */
+  --md-sys-shape-corner-none: 0;
+  --md-sys-shape-corner-extra-small: 4px;
+  --md-sys-shape-corner-small: 8px;
+  --md-sys-shape-corner-medium: 12px;
+  --md-sys-shape-corner-large: 16px;
+  --md-sys-shape-corner-extra-large: 28px;
+  --md-sys-shape-corner-full: 9999px;
+
+  /* ---- Motion ---------------------------------------------------------- */
+  /* M3 emphasized easing. GSAP will take over the elaborate cases later; these
+     are for the small state changes that should never need a library. */
+  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-duration-short: 200ms;
+  --md-sys-motion-duration-medium: 400ms;
+
+  color-scheme: dark light;
+}
+
+@media (prefers-color-scheme: light) {
+  :root { color-scheme: light dark; }
+}
+
+/* ---- Baseline ---------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-body-large);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: var(--md-sys-color-primary);
+  text-decoration-color: color-mix(in srgb, var(--md-sys-color-primary) 40%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,23 @@
+---
+import { getCollection, render } from 'astro:content';
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths = (async () => {
+  const entries = await getCollection('docs', ({ data }) => !data.draft);
+
+  return entries.map((entry) => ({
+    // `index` is the collection root, so it should live at /docs/ rather than
+    // at /docs/index/.
+    params: { slug: entry.id === 'index' ? undefined : entry.id },
+    props: { entry },
+  }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<DocsLayout title={entry.data.title} description={entry.data.description}>
+  <Content />
+</DocsLayout>

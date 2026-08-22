@@ -1,0 +1,72 @@
+---
+/**
+ * Documentation shell.
+ *
+ * A stub over BaseLayout for now: the sidebar, table of contents and search are
+ * what a hand-built docs section owes over Starlight, and none of them can be
+ * designed against a single placeholder page.
+ */
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <main>
+    <article>
+      <h1>{title}</h1>
+      <slot />
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  main {
+    max-width: 48rem;
+    margin: 0 auto;
+    padding: clamp(2rem, 8vh, 5rem) 1.5rem;
+  }
+
+  h1 {
+    font: var(--md-sys-typescale-headline-large);
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 1.5rem;
+  }
+
+  article :global(h2) {
+    font: var(--md-sys-typescale-title-large);
+    color: var(--md-sys-color-on-surface);
+    margin: 2.5rem 0 0.75rem;
+  }
+
+  article :global(p) {
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  article :global(code) {
+    font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+    font-size: 0.9em;
+    background: var(--md-sys-color-surface-container);
+    padding: 0.15em 0.4em;
+    border-radius: var(--md-sys-shape-corner-extra-small);
+  }
+
+  article :global(pre) {
+    background: var(--brand-canvas);
+    color: var(--md-sys-color-on-surface);
+    padding: 1rem 1.25rem;
+    border-radius: var(--md-sys-shape-corner-medium);
+    border: 1px solid var(--brand-node-border);
+    overflow-x: auto;
+  }
+
+  article :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+</style>
