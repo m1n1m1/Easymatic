@@ -20,3 +20,6 @@ local.properties
 # AI tooling indexes (local to each machine)
 .codegraph/
 opencode.json.bak-*
+__pycache__/
+*.pyc
+opencode.json
