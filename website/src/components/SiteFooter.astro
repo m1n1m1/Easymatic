@@ -1,0 +1,161 @@
+---
+/**
+ * The site footer, on every page.
+ *
+ * Two bands, following the same rule as the rest of the page: an ink block
+ * carrying the link columns — where the accents are legible and do the work of
+ * separating one column from the next, so no rules or boxes are needed — then a
+ * cream baseline strip underneath it.
+ */
+import { FOOTER_COLUMNS, GITHUB_URL, PLACEHOLDER_TITLE } from '../data/home';
+
+const year = 2026;
+---
+
+<footer>
+  <div class="links">
+    <div class="shell inner">
+      <div class="about">
+        <a class="wordmark" href="/">
+          <span class="mark" aria-hidden="true"></span>
+          Ottomatic
+        </a>
+        <p>
+          Node-based automation for Android. Wire triggers and actions together
+          on a canvas; a foreground service runs them in the background.
+        </p>
+      </div>
+
+      <div class="columns">
+        {
+          FOOTER_COLUMNS.map((column) => (
+            <nav aria-label={column.heading}>
+              <h2 class="label" style={`color: ${column.accent}`}>{column.heading}</h2>
+              <ul>
+                {column.links.map((link) => (
+                  <li>
+                    <a
+                      href={link.href}
+                      rel={link.href.startsWith('http') ? 'noopener' : undefined}
+                      data-placeholder={link.placeholder ? '' : undefined}
+                      title={link.placeholder ? PLACEHOLDER_TITLE : undefined}
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="baseline">
+    <div class="shell baseline-inner">
+      <p>© {year} Mathias Weinstabl</p>
+      <p><a href={`${GITHUB_URL}/blob/main/LICENSE`} rel="noopener">MIT licensed</a></p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  /* The one raised slab on the page, and the whole of the footer sits on it:
+     with no colour left to flip to, a lighter floor is what says the content
+     has ended. The baseline strip shares it and separates by space. */
+  footer {
+    background: var(--surface-raised);
+  }
+
+  .links {
+    padding-block: clamp(3.5rem, 8vw, 6rem);
+  }
+
+  .inner {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .about {
+    max-inline-size: 26rem;
+  }
+
+  .about p {
+    margin-block-start: 1.25rem;
+    font: var(--t-small);
+    color: var(--on-surface-dim);
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font: 800 1.5rem/1 var(--font);
+    letter-spacing: var(--track-tight);
+    text-decoration: none;
+  }
+
+  .mark {
+    inline-size: 0.875rem;
+    block-size: 0.875rem;
+    background: var(--signal);
+  }
+
+  .columns {
+    display: grid;
+    gap: 2.5rem 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  }
+
+  h2 {
+    margin-block-end: 1.25rem;
+  }
+
+  ul {
+    display: grid;
+    gap: 0.625rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .columns a {
+    font: 600 1.0625rem/1.2 var(--font);
+    letter-spacing: var(--track-snug);
+    text-decoration: none;
+    transition: color 160ms linear;
+  }
+
+  .columns a:hover {
+    color: var(--signal);
+  }
+
+  .baseline {
+    padding-block: 1.75rem;
+  }
+
+  .baseline-inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    font: var(--t-small);
+    color: var(--on-surface-dim);
+  }
+
+  .baseline a {
+    text-decoration: none;
+  }
+
+  .baseline a:hover {
+    color: var(--on-surface);
+  }
+
+  @media (min-width: 60rem) {
+    .inner {
+      grid-template-columns: minmax(16rem, 1fr) 2.2fr;
+      align-items: start;
+    }
+  }
+</style>

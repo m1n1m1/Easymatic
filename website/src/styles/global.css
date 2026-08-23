@@ -1,58 +1,99 @@
 /*
- * The site's baseline. Everything visual resolves through the tokens in
- * tokens.css — components should reference `var(--md-sys-*)` or `var(--brand-*)`
- * and never hard-code a colour.
+ * The site's baseline.
+ *
+ * The design is editorial rather than Material: one near-black ground, very
+ * heavy type, and no cards. Nothing is a rounded container floating on a
+ * surface, almost nothing has a border-radius and nothing at all has a border.
+ *
+ * There used to be two grounds — cream and near-black — alternating band by
+ * band, and that alternation was the section-separation system. It was also
+ * five luminance swings on one scroll, the widest of them 18:1, which is what
+ * made the page tiring to read. Sections are still told apart by a change of
+ * ground, but the swing is now 1.05:1 instead of 18:1 — enough to see the
+ * seam, not enough to make the eye re-adapt.
+ *
+ * `tokens.css` is still generated and still imported, but nothing in it is
+ * consumed any more — the palette below is the whole of it. It is left in
+ * place because the generator derives its 54 `--md-sys-color-*` roles by
+ * reflection, and unpicking that is a separate change.
  */
 @import './tokens.css';
 
-/* ---- Material 3 type scale -------------------------------------------- */
-/* Roboto Flex is the M3 type face; @fontsource self-hosts it (imported from
-   BaseLayout.astro so the font files go through the bundler). */
 :root {
-  --md-sys-typescale-font: 'Roboto Flex Variable', 'Roboto Flex', system-ui, sans-serif;
+  /* ---- Type ------------------------------------------------------------ */
+  /* Archivo is a grotesque with real weight at the top of its range, which is
+     what "stronger" needs; @fontsource self-hosts the variable wght axis. */
+  --font: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
 
-  --md-sys-typescale-display-large: 400 3.5625rem/1.12 var(--md-sys-typescale-font);
-  --md-sys-typescale-display-medium: 400 2.8125rem/1.16 var(--md-sys-typescale-font);
-  --md-sys-typescale-display-small: 400 2.25rem/1.22 var(--md-sys-typescale-font);
+  /* Display sizes are fluid and tight. Line height under 1 is deliberate at the
+     top of the scale — the headline should read as a block, not as lines. */
+  --t-hero: 800 clamp(3rem, 5.5vw, 3.5rem) / 0.92 var(--font);
+  --t-display: 800 clamp(2.25rem, 5.5vw, 4.5rem) / 0.98 var(--font);
+  --t-section: 700 clamp(1.75rem, 3.2vw, 2.75rem) / 1.05 var(--font);
+  --t-item: 700 clamp(1.25rem, 1.8vw, 1.625rem) / 1.15 var(--font);
+  --t-lead: 400 clamp(1.125rem, 1.6vw, 1.5rem) / 1.45 var(--font);
+  --t-body: 400 1.0625rem / 1.55 var(--font);
+  --t-small: 400 0.9375rem / 1.5 var(--font);
+  --t-label: 600 0.8125rem / 1.1 var(--font);
 
-  --md-sys-typescale-headline-large: 400 2rem/1.25 var(--md-sys-typescale-font);
-  --md-sys-typescale-headline-medium: 400 1.75rem/1.29 var(--md-sys-typescale-font);
-  --md-sys-typescale-headline-small: 400 1.5rem/1.33 var(--md-sys-typescale-font);
+  --track-tight: -0.035em;
+  --track-snug: -0.02em;
+  --track-label: 0.1em;
 
-  --md-sys-typescale-title-large: 400 1.375rem/1.27 var(--md-sys-typescale-font);
-  --md-sys-typescale-title-medium: 500 1rem/1.5 var(--md-sys-typescale-font);
-  --md-sys-typescale-title-small: 500 0.875rem/1.43 var(--md-sys-typescale-font);
+  /* ---- Colour ---------------------------------------------------------- */
+  /* The neutrals are neutral — every channel identical, spread of zero — and
+     the colour on the page comes from the accents alone. An earlier pass tinted
+     the ground toward the brand orange and the whole site read as yellow;
+     hue belongs to the things that mean something, not to the paper.
 
-  --md-sys-typescale-body-large: 400 1rem/1.5 var(--md-sys-typescale-font);
-  --md-sys-typescale-body-medium: 400 0.875rem/1.43 var(--md-sys-typescale-font);
-  --md-sys-typescale-body-small: 400 0.75rem/1.33 var(--md-sys-typescale-font);
+     The base is near-black rather than a dark grey so an OLED can switch those
+     pixels off. Not #000000: at true black a scrolling page smears, and the
+     step up to a raised panel has nowhere to come from.
 
-  --md-sys-typescale-label-large: 500 0.875rem/1.43 var(--md-sys-typescale-font);
-  --md-sys-typescale-label-medium: 500 0.75rem/1.33 var(--md-sys-typescale-font);
-  --md-sys-typescale-label-small: 500 0.6875rem/1.45 var(--md-sys-typescale-font);
+     Three surfaces, each with a job:
+       --surface        the default section ground
+       --surface-alt    every other section, 1.05:1 away — visible as a seam,
+                        far too small to make the eye adapt
+       --surface-raised objects sitting on either of them: panels, pictures,
+                        <pre>, the footer slab, the scrolled header
 
-  /* ---- Material 3 shape scale ----------------------------------------- */
-  --md-sys-shape-corner-none: 0;
-  --md-sys-shape-corner-extra-small: 4px;
-  --md-sys-shape-corner-small: 8px;
-  --md-sys-shape-corner-medium: 12px;
-  --md-sys-shape-corner-large: 16px;
-  --md-sys-shape-corner-extra-large: 28px;
-  --md-sys-shape-corner-full: 9999px;
+     `raised` is 1.17:1 from the base and 1.12:1 from alt. Both matter: a panel
+     has to lift off whichever section it lands on, and the alt sections are
+     where most of the panels are. 1.09:1 is the reference — that was the old
+     ink/ink-raised step, which the showcase's open row proved is visible. */
+  --surface: #0a0a0a;
+  --surface-alt: #111111;
+  --surface-raised: #1d1d1d;
 
-  /* ---- Motion ---------------------------------------------------------- */
-  /* M3 emphasized easing. GSAP will take over the elaborate cases later; these
-     are for the small state changes that should never need a library. */
-  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
-  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
-  --md-sys-motion-duration-short: 200ms;
-  --md-sys-motion-duration-medium: 400ms;
+  /* Deliberately not #ffffff. White on near-black is ~19:1, and that extreme
+     is a halation source rather than a virtue. The deeper ground pushes every
+     ratio up, so the ink comes down to compensate: 14.8:1, the same as before. */
+  --on-surface: #dedede;
+  --on-surface-dim: #a3a3a3;
 
-  color-scheme: dark light;
-}
+  /* 7.0:1 on the ground. Used as text, as the focus ring and as the one solid
+     button fill; it no longer gets a full-bleed band of its own. */
+  --signal: #ff6a2b;
 
-@media (prefers-color-scheme: light) {
-  :root { color-scheme: light dark; }
+  /* One accent per node kind, each keeping the hue of the app's own value so a
+     trigger still reads as orange. These used to come in *pairs* — a bright
+     half for ink and a deep half for cream — and that whole axis went away
+     with the second ground. 8.0:1 to 9.4:1 on the surface. */
+  --accent-trigger: #ff8054;
+  --accent-action: #74a8ff;
+  --accent-value: #cf94ff;
+  --accent-transform: #9fadff;
+
+  /* ---- Layout ---------------------------------------------------------- */
+  --gutter: clamp(1.25rem, 5vw, 4rem);
+  --measure: 84rem;
+  --rhythm: clamp(5rem, 11vw, 10rem);
+
+  /* The design commits to one look. Saying so paints form controls, scrollbars
+     and the viewport's own ground to match, instead of leaving light-mode
+     chrome around a dark page. */
+  color-scheme: dark;
 }
 
 /* ---- Baseline ---------------------------------------------------------- */
@@ -65,17 +106,37 @@
 body {
   margin: 0;
   min-height: 100dvh;
-  background: var(--md-sys-color-surface);
-  color: var(--md-sys-color-on-surface);
-  font: var(--md-sys-typescale-body-large);
+  /* Column layout so the footer reaches the bottom of a page too short to fill
+     the viewport — the docs stub is exactly that page. */
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  color: var(--on-surface);
+  font: var(--t-body);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
+body > main {
+  flex: 1 0 auto;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+}
+
 a {
-  color: var(--md-sys-color-primary);
-  text-decoration-color: color-mix(in srgb, var(--md-sys-color-primary) 40%, transparent);
-  text-underline-offset: 0.2em;
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-underline-offset: 0.18em;
 }
 
 a:hover {
@@ -83,9 +144,8 @@ a:hover {
 }
 
 :focus-visible {
-  outline: 2px solid var(--md-sys-color-primary);
-  outline-offset: 2px;
-  border-radius: var(--md-sys-shape-corner-extra-small);
+  outline: 3px solid var(--signal);
+  outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -97,4 +157,143 @@ a:hover {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ---- Bands -------------------------------------------------------------- */
+/* A band is a full-bleed section with a centred measure inside it. It no longer
+   carries a colour of its own — with one ground there is nothing to alternate
+   — so what tells one section from the next is the space between them and the
+   accent label at the top of each.
+
+   Padding is half a rhythm on each side, so two neighbours contribute one full
+   gap between them and no section is lopsided. Symmetry is what the tinted
+   sections need: with top-only padding a `.band-alt` block would start a whole
+   rhythm above its text and stop dead at the bottom of it. */
+.band {
+  padding-block: calc(var(--rhythm) / 2);
+}
+
+.band:last-child {
+  padding-block-end: var(--rhythm);
+}
+
+/* Every other section. The step is deliberately tiny — you should notice a
+   seam without ever noticing a colour. */
+.band-alt {
+  background: var(--surface-alt);
+}
+
+.shell {
+  width: 100%;
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ---- Shared pieces ------------------------------------------------------ */
+.label {
+  font: var(--t-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+/* Buttons are the one rounded thing on the site, and they are solid fills with
+   no border — a pill reads as a control where everything else reads as text. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2rem;
+  border: 0;
+  border-radius: 9999px;
+  font: 600 1.0625rem/1 var(--font);
+  letter-spacing: var(--track-snug);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 180ms cubic-bezier(0.2, 0, 0, 1),
+    background 180ms linear,
+    color 180ms linear;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+/* The signal used to get a full-bleed band at the foot of the page. Folding
+   that into the ground left the loudest thing on the site without a home, and
+   this is it: the orange is now a pill rather than a screenful. */
+.btn-solid {
+  background: var(--signal);
+  color: var(--surface);
+}
+
+.btn-solid:hover {
+  background: var(--on-surface);
+}
+
+/* A text button is an underline that thickens, not an outlined box. */
+.btn-bare {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 1rem;
+  font: 600 1.0625rem/1 var(--font);
+  letter-spacing: var(--track-snug);
+  text-decoration: none;
+  box-shadow: inset 0 -2px 0 currentColor;
+  transition: box-shadow 180ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.btn-bare:hover {
+  box-shadow: inset 0 -6px 0 currentColor;
+}
+
+.skip-link {
+  position: absolute;
+  inset-block-start: 0.5rem;
+  inset-inline-start: 0.5rem;
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  background: var(--signal);
+  color: var(--surface);
+  font: var(--t-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* ---- Motion guard ------------------------------------------------------- */
+/* GSAP writes inline styles, which the reduced-motion block above cannot undo,
+   and anything starting at `opacity: 0` must not stay invisible when the bundle
+   fails to load. The hidden start state is therefore scoped to a class an
+   inline head script sets: no JS means no `.js`, means nothing hides. */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(1.5rem);
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal] {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+}
+
+/* The dead-man's switch from BaseLayout's inline script. `.motion-ready` is set
+   by home-motion.ts as it executes, so this only matches when the bundle failed
+   to arrive at all — in which case the content appears, unanimated, rather than
+   staying hidden behind a style nothing is left to undo. */
+.js.motion-timed-out:not(.motion-ready) [data-reveal] {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
 }

@@ -5,6 +5,11 @@
  * A stub over BaseLayout for now: the sidebar, table of contents and search are
  * what a hand-built docs section owes over Starlight, and none of them can be
  * designed against a single placeholder page.
+ *
+ * It wears the same ground and the same face as the marketing pages —
+ * that shared design system is the whole reason the docs are hand-built. The
+ * one thing it does differently is measure: prose wants a narrow column where a
+ * landing page wants the full width.
  */
 import BaseLayout from './BaseLayout.astro';
 
@@ -17,56 +22,78 @@ const { title, description } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description}>
-  <main>
-    <article>
-      <h1>{title}</h1>
-      <slot />
-    </article>
-  </main>
+  <article>
+    <h1>{title}</h1>
+    <slot />
+  </article>
 </BaseLayout>
 
 <style>
-  main {
-    max-width: 48rem;
+  /* BaseLayout owns the <main>, so the measure and padding sit on the article
+     instead of nesting a second landmark inside the first. */
+  article {
+    max-width: 46rem;
     margin: 0 auto;
-    padding: clamp(2rem, 8vh, 5rem) 1.5rem;
+    padding: clamp(3rem, 8vw, 6rem) var(--gutter) clamp(4rem, 9vw, 7rem);
   }
 
   h1 {
-    font: var(--md-sys-typescale-headline-large);
-    color: var(--md-sys-color-on-surface);
-    margin: 0 0 1.5rem;
+    font: var(--t-display);
+    font-size: clamp(2.25rem, 4.5vw, 3.5rem);
+    letter-spacing: var(--track-tight);
+    margin-block-end: 2rem;
   }
 
   article :global(h2) {
-    font: var(--md-sys-typescale-title-large);
-    color: var(--md-sys-color-on-surface);
-    margin: 2.5rem 0 0.75rem;
+    font: var(--t-section);
+    letter-spacing: var(--track-snug);
+    margin-block: 3rem 1rem;
+  }
+
+  article :global(h3) {
+    font: var(--t-item);
+    letter-spacing: var(--track-snug);
+    margin-block: 2.25rem 0.75rem;
+  }
+
+  article :global(p),
+  article :global(li) {
+    color: var(--on-surface-dim);
   }
 
   article :global(p) {
-    color: var(--md-sys-color-on-surface-variant);
+    margin-block: 1rem;
+  }
+
+  article :global(a) {
+    color: var(--accent-action);
   }
 
   article :global(code) {
-    font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+    font-family: var(--font-mono);
     font-size: 0.9em;
-    background: var(--md-sys-color-surface-container);
+    background: var(--surface-raised);
     padding: 0.15em 0.4em;
-    border-radius: var(--md-sys-shape-corner-extra-small);
   }
 
+  /* A raised block, hard edges — the same move the rest of the site makes. On
+     one ground the code block lifts off the page rather than inverting it. */
   article :global(pre) {
-    background: var(--brand-canvas);
-    color: var(--md-sys-color-on-surface);
-    padding: 1rem 1.25rem;
-    border-radius: var(--md-sys-shape-corner-medium);
-    border: 1px solid var(--brand-node-border);
+    background: var(--surface-raised);
+    color: var(--on-surface);
+    padding: 1.25rem 1.5rem;
     overflow-x: auto;
   }
 
   article :global(pre code) {
     background: none;
     padding: 0;
+    color: inherit;
+  }
+
+  article :global(blockquote) {
+    margin: 1.5rem 0;
+    padding-inline-start: 1.25rem;
+    box-shadow: inset 3px 0 0 var(--signal);
   }
 </style>

@@ -4,11 +4,13 @@
  * alike, which is the whole reason the docs are hand-built rather than
  * Starlight: one design system, no seam to cross.
  *
- * Deliberately bare for now. The site header, nav and footer land with the
- * first real content rather than being invented ahead of it.
+ * The header and footer live here rather than per page, so `/docs/` wears the
+ * same chrome as the home page without either of them knowing about the other.
  */
-import '@fontsource-variable/roboto-flex/wght.css';
+import '@fontsource-variable/archivo';
 import '../styles/global.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 
 interface Props {
   title: string;
@@ -31,8 +33,25 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefin
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* Blocking and inline on purpose: the reveal styles key off `.js`, so this
+        has to land before first paint or unstyled content flashes.
+
+        The timeout is the dead-man's switch. `.js` hides everything that is
+        going to be revealed, so a motion bundle that never arrives — blocked,
+        offline, thrown — would leave the whole page invisible. home-motion.ts
+        sets `.motion-ready` the moment it executes; if that has not happened by
+        the time this fires, the CSS shows the content and no animation runs. */}
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      setTimeout(function () {
+        document.documentElement.classList.add('motion-timed-out');
+      }, 2500);
+    </script>
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    {/* The site commits to one look, so there is one theme-color. */}
+    <meta name="theme-color" content="#0a0a0a" />
 
     <title>{fullTitle}</title>
     {description && <meta name="description" content={description} />}
@@ -47,6 +66,11 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefin
     <slot name="head" />
   </head>
   <body>
-    <slot />
+    <a class="skip-link" href="#main">Skip to content</a>
+    <SiteHeader />
+    <main id="main">
+      <slot />
+    </main>
+    <SiteFooter />
   </body>
 </html>

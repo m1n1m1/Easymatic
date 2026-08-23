@@ -1,103 +1,703 @@
 ---
 /**
- * Placeholder home page.
+ * The home page.
  *
- * Deliberately close to empty — the marketing copy, screenshots and a real
- * wordmark all still have to be made. What it does do is exercise the whole
- * style chain end to end (generate-tokens.mjs -> tokens.css -> global.css ->
- * this page), so that "the skeleton works" is something you can see rather
- * than something you have to take on trust.
+ * Layout only — every word comes from `src/data/home.ts`.
+ *
+ * The rule the whole page follows: there are no cards. A section is told apart
+ * from its neighbour by a band of colour running edge to edge, and items within
+ * a section are told apart by weight and space. Nothing is a rounded rectangle
+ * on a surface except the buttons, and nothing anywhere has a border.
+ *
+ * Bands alternate cream → signal → ink so the page has a rhythm you can feel
+ * while scrolling: cream hero, orange ticker, ink screenshot, cream argument,
+ * ink node kinds, cream detail, orange call to action, ink footer.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
-
-// The four node kinds, in the order the editor's palette lists them, wearing
-// the accents they wear in the app.
-const KINDS = [
-  { name: 'Triggers', token: '--brand-trigger' },
-  { name: 'Actions', token: '--brand-action' },
-  { name: 'Values', token: '--brand-value' },
-  { name: 'Transforms', token: '--brand-transform' },
-];
+import { Icon } from 'astro-icon/components';
+import {
+  CLOSING,
+  EXTENSIBILITY,
+  FEATURES,
+  FEATURES_LABEL,
+  HERO,
+  HERO_POINTS,
+  PLACEHOLDER_TITLE,
+  SHOWCASE,
+  SHOWCASE_LABEL,
+} from '../data/home';
 ---
 
 <BaseLayout
   title="Ottomatic"
-  description="An Android automation app built on a node-based workflow graph. Wire triggers and actions together in a visual editor; a foreground service runs them in the background."
+  description="Node-based automation for Android. Wire triggers and actions together in a visual editor; a foreground service runs them in the background. 175 nodes, open source, no account."
 >
-  <main>
-    <h1>Ottomatic</h1>
-    <p class="pitch">
-      An Android automation app built on a node-based workflow graph. You wire
-      triggers and actions together in a visual editor, and a foreground service
-      executes them in the background.
-    </p>
+  {/* ---- Hero ---------------------------------------------------------- */}
+  {/* The screenshot is the hero's second column rather than a band of its own.
+      It joins the load stagger with everything else here — it is above the
+      fold, so there is no scroll for a scroll-driven entrance to ride. */}
+  <section class="band hero">
+    <div class="shell">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="label eyebrow" data-hero-part data-reveal>{HERO.eyebrow}</p>
+          <h1 data-hero-part data-reveal>{HERO.title}</h1>
+          <p class="lead" data-hero-part data-reveal>{HERO.lead}</p>
+          <div class="cta-row" data-hero-part data-reveal>
+            <a class="btn btn-solid" href="/download" data-placeholder title={PLACEHOLDER_TITLE}>
+              Download
+            </a>
+            <a class="btn-bare" href="/docs/">Read the docs →</a>
+          </div>
+          <ul class="facts" data-hero-part data-reveal>
+            {HERO.facts.map((fact) => <li>{fact}</li>)}
+          </ul>
+        </div>
 
-    <ul class="kinds">
+        <img
+          class="shot"
+          src="/img/hero-editor.webp"
+          alt="The Ottomatic editor: a macro that fires on joining the home Wi-Fi, branches on how dark it is, and speaks, switches Wi-Fi on, clears Do Not Disturb and posts a notification."
+          width="1000"
+          height="1600"
+          fetchpriority="high"
+          decoding="async"
+          data-hero-part
+          data-reveal
+        />
+      </div>
+
+      {/* Full shell width rather than inside the copy column: three of these
+          side by side need the whole page, and at the foot of the hero they
+          close it instead of interrupting the headline and its lead. */}
+      <ul class="pillars">
+        {
+          HERO_POINTS.map((point) => (
+            <li style={`--accent: ${point.accent}`} data-hero-part data-reveal>
+              <Icon name={point.icon} aria-hidden="true" />
+              <h2>{point.title}</h2>
+              <p>{point.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  {/* ---- Showcase -------------------------------------------------------- */}
+  {/* A rail of categories beside one picture. The switching is CSS only: each
+      row carries its own radio, so `:checked ~ label` and `:checked ~ .pane`
+      are one rule each and there is nothing to break if the bundle never
+      arrives. Below 64rem the same markup lays out as an accordion — the rows
+      stack and the chosen one's picture drops in beneath it. */}
+  <section id="use-cases" class="band band-alt">
+    <div class="shell">
+      {/* An h2 wearing the small label style rather than a <p>: the section
+          still owes the document a heading, and this is the only text in it. */}
+      <h2 class="label eyebrow section-label" data-reveal>{SHOWCASE_LABEL}</h2>
+
+      <div class="showcase" style={`--rows: ${SHOWCASE.length}`} data-reveal>
+        {
+          SHOWCASE.map((item, index) => (
+            <div class="row" style={`--accent: ${item.accent}`}>
+              <input
+                class="pick"
+                type="radio"
+                name="showcase"
+                id={`showcase-${item.id}`}
+                checked={index === 0}
+              />
+              <label class="rail-item" for={`showcase-${item.id}`}>
+                <Icon name={item.icon} aria-hidden="true" />
+                <span class="rail-title">{item.title}</span>
+                <span class="rail-reveal"><span class="rail-body">{item.body}</span></span>
+              </label>
+              <div class="pane">
+                <span class="pane-inner">
+                  <img
+                    src={item.image}
+                    alt={item.imageAlt}
+                    width="1100"
+                    height="1236"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </span>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {/* ---- Feature list --------------------------------------------------- */}
+  <section id="features" class="band">
+    <div class="shell">
+      <h2 class="label eyebrow section-label" data-reveal>{FEATURES_LABEL}</h2>
+
+      {/* A list rather than a <dl>: the glyph has to sit beside the heading as
+          its sibling for the two-column grid below, and `dl > div` may only
+          hold dt and dd. An <h3> is also the truer heading here. */}
+      <ul class="features">
+        {
+          FEATURES.map((feature) => (
+            <li style={`--accent: ${feature.accent}`} data-reveal>
+              <Icon name={feature.icon} aria-hidden="true" />
+              <h3>{feature.title}</h3>
+              <p>{feature.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  {/* ---- Extensibility --------------------------------------------------- */}
+  <section class="band tight">
+    <div class="shell extend">
       {
-        KINDS.map((kind) => (
-          <li style={`--accent: var(${kind.token})`}>
-            <span class="dot"></span>
-            {kind.name}
-          </li>
+        EXTENSIBILITY.map((item) => (
+          <article style={`--accent: ${item.accent}`} data-reveal>
+            <h2><Icon name={item.icon} aria-hidden="true" />{item.title}</h2>
+            <p>{item.body}</p>
+            <a class="btn-bare" href={item.href}>{item.linkLabel} →</a>
+          </article>
         ))
       }
-    </ul>
+    </div>
+  </section>
 
-    <p class="note">Site under construction.</p>
-  </main>
+  {/* ---- Closing CTA ----------------------------------------------------- */}
+  <section class="band band-alt closing">
+    <div class="shell closing-inner" data-reveal>
+      <h2>{CLOSING.title}</h2>
+      <div class="closing-side">
+        <p class="closing-lead">{CLOSING.body}</p>
+        <a class="btn btn-solid" href="/download" data-placeholder title={PLACEHOLDER_TITLE}>
+          Download
+        </a>
+        <p class="note">{CLOSING.note}</p>
+      </div>
+    </div>
+  </section>
 </BaseLayout>
 
+<script>
+  import '../scripts/home-motion';
+</script>
+
 <style>
-  main {
-    max-width: 44rem;
-    margin: 0 auto;
-    padding: clamp(3rem, 12vh, 8rem) 1.5rem;
+  /* For the pair that reads as one thought — the extensibility strip under the
+     feature grid. Zero here, because `.band` is symmetric again and the section
+     above still contributes its own half-rhythm below its content. The two
+     share a ground, so there is no seam for the gap to explain. */
+  .tight {
+    padding-block-start: 0;
   }
 
-  h1 {
-    font: var(--md-sys-typescale-display-medium);
-    margin: 0 0 1rem;
-    /* The seed hue the whole tonal ramp is generated from. */
-    color: var(--md-sys-color-primary);
+  .eyebrow {
+    color: var(--accent-trigger);
+    margin-block-end: 1.5rem;
   }
 
-  .pitch {
-    font: var(--md-sys-typescale-body-large);
-    color: var(--md-sys-color-on-surface-variant);
-    margin: 0 0 2.5rem;
-    max-width: 38rem;
+  /* How a section announces itself: one word, uppercase, in the accent, and
+     nothing else. Bigger than the eyebrow whose style it borrows, because it
+     is not a kicker above a headline — it *is* the heading. Scaled up rather
+     than turned into display type, so the sections stay quieter than the
+     content inside them. */
+  .section-label {
+    font-size: clamp(1.125rem, 2vw, 1.75rem);
+    font-weight: 700;
+    margin-block-end: clamp(2rem, 4vw, 3rem);
   }
 
-  .kinds {
+  /* ---- Hero ----------------------------------------------------------- */
+  .hero {
+    padding-block: clamp(3rem, 7vw, 6rem) clamp(4rem, 8vw, 7rem);
+  }
+
+  .hero-grid {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .hero h1 {
+    font: var(--t-hero);
+    letter-spacing: var(--track-tight);
+    max-inline-size: 16ch;
+  }
+
+  .lead {
+    margin-block-start: clamp(1.5rem, 3vw, 2.25rem);
+    font: var(--t-lead);
+    max-inline-size: 40rem;
+    color: var(--on-surface-dim);
+  }
+
+  .cta-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    list-style: none;
-    margin: 0 0 2.5rem;
-    padding: 0;
-  }
-
-  .kinds li {
-    display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    font: var(--md-sys-typescale-label-large);
-    color: var(--md-sys-color-on-surface);
-    background: var(--md-sys-color-surface-container);
-    border-radius: var(--md-sys-shape-corner-full);
+    gap: 0.5rem 1.75rem;
+    margin-block-start: clamp(2rem, 4vw, 2.75rem);
   }
 
-  .dot {
-    inline-size: 0.625rem;
-    block-size: 0.625rem;
-    border-radius: var(--md-sys-shape-corner-full);
-    background: var(--accent);
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem 1.5rem;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    list-style: none;
+    font: var(--t-label);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--on-surface-dim);
   }
 
-  .note {
-    font: var(--md-sys-typescale-body-medium);
-    color: var(--md-sys-color-outline);
+  .facts li {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .facts li::before {
+    content: '';
+    inline-size: 0.375rem;
+    block-size: 0.375rem;
+    background: var(--accent-trigger);
+  }
+
+  .pillars {
+    display: grid;
+    gap: clamp(2rem, 4vw, 3rem);
+    margin: clamp(3.5rem, 7vw, 5.5rem) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Three across earlier than the features grid manages, because there are
+     three of them rather than nine and each is two sentences, not three. */
+  @media (min-width: 52rem) {
+    .pillars {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Beside the copy, the headline no longer has the shell's full width to run
+     in, so --t-hero's ceiling comes down with it — 7.5rem in a half-width
+     column is about five characters a line. The `ch` cap is the shell's job
+     now and would only fight the column, so it goes. */
+  @media (min-width: 62rem) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      align-items: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 4.2vw, 4rem);
+      max-inline-size: none;
+    }
+  }
+
+  /* ---- Ticker ---------------------------------------------------------- */
+  .marquee {
+    overflow: hidden;
+    padding-block: 1.125rem;
+  }
+
+  .track {
+    display: flex;
+    inline-size: max-content;
+    /* Two identical copies, so translating exactly one copy-width (-50% of the
+       track) is seamless and can loop forever. */
+    animation: slide 38s linear infinite;
+  }
+
+  .track ul {
+    display: flex;
     margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .track li {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    padding-inline-end: 2.5rem;
+    font: 700 1rem/1 var(--font);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  @keyframes slide {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* The global reduced-motion switch collapses animations to 0.01ms, which for
+     an infinite loop would freeze the track mid-slide. Stop it at the start
+     instead, where the first phrases are the ones on screen. */
+  @media (prefers-reduced-motion: reduce) {
+    .track {
+      animation: none;
+      transform: none;
+    }
+  }
+
+  /* ---- Screenshot ------------------------------------------------------ */
+  /* A portrait phone capture, so it is capped by *height* and centred in its
+     column rather than filling the width: at the hero's column width a 5:8
+     picture would run to nearly a thousand pixels and dwarf the copy beside
+     it. The width/height attributes still reserve the box, so nothing
+     reflows while it loads. */
+  .shot {
+    display: block;
+    inline-size: auto;
+    max-inline-size: 100%;
+    block-size: auto;
+    max-block-size: min(34rem, 70vh);
+    margin-inline: auto;
+    aspect-ratio: 1000 / 1600;
+    background: var(--surface-raised);
+  }
+
+  /* ---- Showcase ----------------------------------------------------------- */
+  /* `display: contents` on the row is what makes this work: the input, the rail
+     label and the picture are siblings in the DOM — so `:checked ~` reaches
+     both — while being grid items of `.showcase` for layout. */
+  .row {
+    display: contents;
+  }
+
+  /* Visually hidden, still focusable — the focus ring is drawn on the label. */
+  .pick {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Two columns — glyph, then everything else — so the title and the sentences
+     under it share one left edge and the icon hangs beside both. Putting the
+     glyph inside the title instead would indent the title past the body.
+
+     The title's font sits on the row rather than on the title, so `em` on the
+     glyph resolves against the type it stands beside. The body opts back down.
+
+     The dim is on the row for the same reason: the glyph then follows it with
+     no rule of its own. 0.7 rather than 0.6 because the smart-home row wears
+     --signal, which at 0.6 flattens to 2.99:1 on ink — under the 3:1 bar its
+     large bold title qualifies for. 0.7 is 3.77:1. */
+  .rail-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 0.45em;
+    padding: 1.125rem 1.25rem 1.25rem;
+    font: var(--t-item);
+    letter-spacing: var(--track-snug);
+    color: var(--accent);
+    cursor: pointer;
+    opacity: 0.7;
+    transition: background-color 180ms ease, opacity 180ms ease;
+  }
+
+  .rail-item:hover {
+    opacity: 0.9;
+  }
+
+  /* Baseline alignment would put the glyph's bottom edge on the text baseline,
+     which sits visibly low; start-align it and nudge onto the cap height
+     instead. Colour needs no declaration — Iconify emits currentColor. */
+  .rail-item [data-icon] {
+    grid-column: 1;
+    grid-row: 1;
+    inline-size: 1.15em;
+    block-size: 1.15em;
+    margin-block-start: 0.06em;
+  }
+
+  .rail-title {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  /* 0fr → 1fr is the one way to transition to a height nobody knows in advance;
+     the inner element is what gets clipped on the way. */
+  .rail-reveal {
+    grid-column: 2;
+    grid-row: 2;
+    display: grid;
+    /* `minmax(0, ...)` rather than a bare `0fr`, which is shorthand for
+       `minmax(auto, 0fr)` — that automatic minimum floors the track at the
+       inner element's padding, so a closed row kept a strip of it. Pinning the
+       minimum to 0 lets the track reach zero and `overflow` clips the rest. */
+    grid-template-rows: minmax(0, 0fr);
+    overflow: hidden;
+    transition: grid-template-rows 240ms ease;
+  }
+
+  .rail-body {
+    display: block;
+    overflow: hidden;
+    min-block-size: 0;
+    font: var(--t-body);
+    letter-spacing: normal;
+    padding-block-start: 0.625rem;
+    max-inline-size: 44rem;
+    color: var(--on-surface-dim);
+  }
+
+  .pick:checked ~ .rail-item {
+    opacity: 1;
+    background: var(--surface-raised);
+    box-shadow: inset 4px 0 0 var(--accent);
+  }
+
+  .pick:checked ~ .rail-item .rail-reveal {
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .pick:focus-visible ~ .rail-item {
+    outline: 2px solid var(--on-surface);
+    outline-offset: 2px;
+  }
+
+  /* These are cropped to the graph itself — no status bar, no app bar, no
+     zoom column, no floating buttons — so there is no device frame to keep
+     flush with anything, and the picture is free to be capped and centred.
+     No fill behind it either: the crop's own ground already matches. */
+  .pane img {
+    display: block;
+    inline-size: auto;
+    max-inline-size: 100%;
+    block-size: auto;
+    max-block-size: min(32rem, 68vh);
+    margin-inline: auto;
+  }
+
+  /* An accordion: the chosen category's picture drops in directly beneath it,
+     which is the same choice the two-column layout makes, arranged for one
+     column. Every row keeps its accent bar here — with the rows stacked it is
+     the category marker, not the selection, and the raised fill carries that. */
+  @media (max-width: 63.999rem) {
+    .rail-item {
+      box-shadow: inset 4px 0 0 var(--accent);
+    }
+
+    .showcase > .row:not(:first-child) .rail-item {
+      margin-block-start: 0.5rem;
+    }
+
+    .pane {
+      display: grid;
+      grid-template-rows: minmax(0, 0fr);
+      overflow: hidden;
+      transition: grid-template-rows 240ms ease, background-color 240ms ease;
+    }
+
+    /* Inset to the same edge as the sentences above it, and the padding lives
+       inside the clipped box so a closed row contributes no height at all
+       rather than a stranded margin. */
+    .pane-inner {
+      display: block;
+      overflow: hidden;
+      min-block-size: 0;
+      padding: 0 1.25rem 1.25rem;
+    }
+
+    /* The fill and the bar carry on over the picture, so an open category is
+       one block rather than a panel with a photo loose underneath it. */
+    .pick:checked ~ .pane {
+      grid-template-rows: minmax(0, 1fr);
+      background: var(--surface-raised);
+      box-shadow: inset 4px 0 0 var(--accent);
+    }
+  }
+
+  /* Two columns: the rail down the left, every picture stacked in one cell on
+     the right. `grid-template-rows` is declared so the pictures can span the
+     explicit grid — an implicit grid has no `-1` line to span to.
+
+     Only the chosen row shows its sentences. Three of them in five open rows
+     would make the rail twice the height of the picture beside it, and it is
+     also what gives choosing a row something to do. */
+  @media (min-width: 64rem) {
+    .showcase {
+      display: grid;
+      grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+      grid-template-rows: repeat(var(--rows, 5), auto);
+      gap: 0 clamp(2.5rem, 5vw, 4.5rem);
+      align-items: start;
+    }
+
+    .rail-item {
+      grid-column: 1;
+    }
+
+    .pane {
+      grid-column: 2;
+      grid-row: 1 / -1;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 220ms ease, visibility 0s linear 220ms;
+    }
+
+    .pick:checked ~ .pane {
+      opacity: 1;
+      visibility: visible;
+      transition-delay: 0s;
+    }
+  }
+
+  /* ---- Features ---------------------------------------------------------- */
+  .features {
+    display: grid;
+    gap: clamp(2.25rem, 4vw, 3.25rem) clamp(2rem, 4vw, 4rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* The showcase rail's arrangement, on cream: glyph in its own column so the
+     heading and the sentences under it share one left edge. Shared with the
+     hero's three statements, which are the same shape at a different count. */
+  .features li,
+  .pillars li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    /* `start`, or a two-line heading in one cell stretches the whole grid row
+       and the extra height is shared out among the *other* cells' rows —
+       floating their body text away from their heading. */
+    align-content: start;
+    column-gap: 0.45em;
+    font: var(--t-item);
+    letter-spacing: var(--track-snug);
+    color: var(--accent);
+  }
+
+  .features [data-icon],
+  .pillars [data-icon] {
+    grid-column: 1;
+    grid-row: 1;
+    inline-size: 1.15em;
+    block-size: 1.15em;
+    margin-block-start: 0.06em;
+  }
+
+  .features h3,
+  .pillars h2 {
+    grid-column: 2;
+    grid-row: 1;
+    font: inherit;
+    letter-spacing: inherit;
+  }
+
+  .features p,
+  .pillars p {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 0.75rem 0 0;
+    font: var(--t-small);
+    letter-spacing: normal;
+    color: var(--on-surface-dim);
+  }
+
+  @media (min-width: 44rem) {
+    .features {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 68rem) {
+    .features {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* ---- Extensibility ------------------------------------------------------ */
+  .extend {
+    display: grid;
+    gap: clamp(3rem, 6vw, 5rem);
+  }
+
+  .extend h2 {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    column-gap: 0.3em;
+    font: var(--t-display);
+    font-size: clamp(2rem, 3.6vw, 3rem);
+    letter-spacing: var(--track-tight);
+    color: var(--accent);
+    margin-block-end: 1.25rem;
+  }
+
+  /* Smaller relative to its heading than the grid's glyphs are to theirs: at
+     1.15em of display type it would out-shout the word beside it. */
+  .extend h2 [data-icon] {
+    inline-size: 0.85em;
+    block-size: 0.85em;
+    margin-block-start: 0.12em;
+  }
+
+  .extend p {
+    max-inline-size: 34rem;
+    margin-block-end: 0.5rem;
+    color: var(--on-surface-dim);
+  }
+
+  @media (min-width: 52rem) {
+    .extend {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  /* ---- Closing ------------------------------------------------------------ */
+  .closing-inner {
+    display: grid;
+    gap: clamp(2rem, 4vw, 4rem);
+    align-items: end;
+  }
+
+  /* This section used to be a screenful of signal orange. The orange is now
+     the button and the heading, which is the same shout at a hundredth of the
+     emitted light. */
+  .closing h2 {
+    font: var(--t-hero);
+    font-size: clamp(2.5rem, 6.5vw, 5.5rem);
+    letter-spacing: var(--track-tight);
+    color: var(--signal);
+    max-inline-size: 12ch;
+  }
+
+  .closing-lead {
+    margin-block-end: 2rem;
+    max-inline-size: 30rem;
+    font: var(--t-lead);
+    color: var(--on-surface-dim);
+  }
+
+  /* The opacity here was tuned against the signal band this section used to
+     be. On the ground the dim ink is already 7.3:1 and needs no fudging. */
+  .note {
+    margin-block-start: 1.5rem;
+    max-inline-size: 30rem;
+    font: var(--t-small);
+    color: var(--on-surface-dim);
+  }
+
+  @media (min-width: 56rem) {
+    .closing-inner {
+      grid-template-columns: 1.1fr 1fr;
+    }
   }
 </style>

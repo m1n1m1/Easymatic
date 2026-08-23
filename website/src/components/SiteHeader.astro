@@ -1,0 +1,216 @@
+---
+/**
+ * The site header, on every page.
+ *
+ * Flat cream, no blur panel and no bottom rule — it is part of the hero band
+ * rather than a bar laid over it. When the page scrolls it takes an ink fill so
+ * it stays legible over whichever band is passing underneath (`.is-scrolled`,
+ * toggled from home-motion.ts).
+ *
+ * The small-screen menu is a plain `<details>`: no JavaScript, so it cannot be
+ * broken by a bundle that failed to load, and it gets keyboard and
+ * screen-reader behaviour for free.
+ */
+import { NAV, GITHUB_URL, PLACEHOLDER_TITLE } from '../data/home';
+---
+
+<header class="header" data-site-header>
+  <div class="shell bar">
+    <a class="wordmark" href="/">
+      <span class="mark" aria-hidden="true"></span>
+      Ottomatic
+    </a>
+
+    <nav class="desktop" aria-label="Main">
+      {
+        NAV.map((link) => (
+          <a
+            href={link.href}
+            data-placeholder={link.placeholder ? '' : undefined}
+            title={link.placeholder ? PLACEHOLDER_TITLE : undefined}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+      <a href={GITHUB_URL} rel="noopener">GitHub</a>
+    </nav>
+
+    <a
+      class="btn btn-solid cta"
+      href="/download"
+      data-placeholder
+      title={PLACEHOLDER_TITLE}
+    >
+      Download
+    </a>
+
+    <details class="menu">
+      <summary aria-label="Menu"><span class="bars" aria-hidden="true"></span></summary>
+      <div class="panel">
+        {
+          NAV.map((link) => (
+            <a
+              href={link.href}
+              data-placeholder={link.placeholder ? '' : undefined}
+              title={link.placeholder ? PLACEHOLDER_TITLE : undefined}
+            >
+              {link.label}
+            </a>
+          ))
+        }
+        <a href={GITHUB_URL} rel="noopener">GitHub</a>
+        <a href="/download" data-placeholder title={PLACEHOLDER_TITLE}>Download</a>
+      </div>
+    </details>
+  </div>
+</header>
+
+<style>
+  /* Raised at all times, not just once scrolled. On `--surface` it was the
+     hero's own ground and read as no bar at all, and it depended on JS to ever
+     become one — the raised tone is the bar, and the shadow below is what
+     changes when there is content passing under it.
+
+     It also has to hold its own over `.band-alt` sections, which are lighter
+     than `--surface`: a header painted at the base ground goes *darker* than
+     the page as you scroll into one, which reads as a hole rather than a bar. */
+  .header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 30;
+    background: var(--surface-raised);
+    color: var(--on-surface);
+    transition: box-shadow 220ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* A hairline rule is the obvious way to separate a sticky bar and is the one
+     thing this design does not have, so the shadow does it. */
+  .header:global(.is-scrolled) {
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.55);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    min-block-size: 5rem;
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin-inline-end: auto;
+    font: 800 clamp(1.375rem, 2vw, 1.75rem) / 1 var(--font);
+    letter-spacing: var(--track-tight);
+    text-decoration: none;
+  }
+
+  /* Stands in for a logo that does not exist yet. A hard-edged square in the
+     signal orange reads as a mark rather than as a missing image. */
+  .mark {
+    inline-size: 1rem;
+    block-size: 1rem;
+    background: var(--signal);
+  }
+
+  .desktop {
+    display: none;
+    gap: clamp(1.25rem, 2.4vw, 2.25rem);
+  }
+
+  .desktop a {
+    font: 600 1rem/1 var(--font);
+    letter-spacing: var(--track-snug);
+    text-decoration: none;
+    opacity: 0.72;
+    transition: opacity 160ms linear;
+  }
+
+  .desktop a:hover {
+    opacity: 1;
+  }
+
+  .cta {
+    display: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  /* ---- Small screens ---------------------------------------------------- */
+  .menu {
+    position: relative;
+  }
+
+  .menu summary {
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .menu summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Three rules drawn from one element, so the summary holds a single child. */
+  .bars,
+  .bars::before,
+  .bars::after {
+    display: block;
+    inline-size: 1.5rem;
+    block-size: 3px;
+    background: currentColor;
+  }
+
+  .bars::before,
+  .bars::after {
+    content: '';
+    position: relative;
+  }
+
+  .bars::before {
+    inset-block-start: -8px;
+  }
+
+  .bars::after {
+    inset-block-start: 5px;
+  }
+
+  .panel {
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-end: 0;
+    display: grid;
+    min-inline-size: 14rem;
+    padding: 1rem 0;
+    background: var(--surface-raised);
+    color: var(--on-surface);
+  }
+
+  .panel a {
+    padding: 0.75rem 1.5rem;
+    font: 600 1.0625rem/1.2 var(--font);
+    letter-spacing: var(--track-snug);
+    text-decoration: none;
+  }
+
+  .panel a:hover {
+    background: var(--signal);
+    color: var(--surface);
+  }
+
+  @media (min-width: 56.25rem) {
+    .desktop,
+    .cta {
+      display: flex;
+    }
+
+    .menu {
+      display: none;
+    }
+  }
+</style>
