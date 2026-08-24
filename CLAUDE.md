@@ -88,6 +88,16 @@ Every user-facing string resolves through Android string resources, and the app 
 
 The two routes (direct `R.string` where the answer set is closed, generated keys where it is open-ended), `NodeText`'s plugin fallback, `HardcodedFeatureStringTest` and the eight hand-maintained locales are in the `node-text-and-translation` skill.
 
+### Node documentation
+
+A node's documentation is **two halves with opposite homes**, and the boundary is *prose versus facts* rather than app versus web. Ports, config rows, defaults, enum options, permissions, capabilities and the one-line `description` **are** the code, so they are exported from the declarations by `NodeDocsExportTest` (`-PregenerateNodeDocs=true`) into `docs/nodes.generated.json` — committed, and byte-compared on every `test` run, so a page can never describe a port a node no longer has. The multi-paragraph explanation is prose, which is unauthorable as a Kotlin string literal and an escaping trap as a `<string>`, so it is `docs/nodes/<typeId>.md`: plain CommonMark, no frontmatter, the filename its only key.
+
+That prose has a **fixed shape**, and it is a GeeksforGeeks article's: a two-sentence opening with two or three bullets under it, `## Working of <Node>` as one bullet per step, `## Example: <scenario>` followed by an `Explanation:` line and two more bullets, whatever sections the node needs, and `## Points to Remember` last. **Bullets carry the document, not paragraphs** — 40 to 60 lines in total, short declarative sentences, "you" for the reader, fields bolded as the form spells them, and nothing restating the tables printed above it. It is fixed so that a reader who has read one node page can skim the next, and so that a hundred and seventy pages written at different times read as one document. `docs/ADDING_NODES.md` carries the template; the five files under `docs/nodes/` are the worked examples.
+
+The website composes the two (`website/scripts/generate-node-pages.mjs`, Starlight). A node with **no** prose file still gets a full page from its facts, which is what lets the reference be complete while the prose lands node by node; `app/src/test/resources/node-docs-todo.txt` is the ratchet holding the rest, asserted two-sided so it only ever shrinks.
+
+Three constraints are load-bearing. **Nothing time-varying may enter the export** — a timestamp would fail the compare on every run and train everyone to pass the regenerate flag reflexively. **The prose is restricted to a renderable subset** (no tables, images, raw HTML, ordered or nested lists) because the app will later render the same files on the config sheet, and a subset enforced now is the difference between a ~200-line `AnnotatedString` renderer and a markdown dependency. And **`hasDynamicPorts` under-reports** — `EffectivePorts` dispatches on roughly twenty typeIds where eleven declarations set the flag — so the generated table is headed *Declared ports* for every node, and those twenty are where prose buys the most.
+
 ### Values and conditions
 
 There is deliberately **no condition node kind**. A condition is not a node family but a *comparison over a value*, so the two halves are declared separately and combined:

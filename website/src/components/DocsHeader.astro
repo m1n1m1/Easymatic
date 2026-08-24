@@ -1,0 +1,138 @@
+---
+/**
+ * The docs top bar: one bar, carrying both the site's nav and Starlight's search.
+ *
+ * A replacement for Starlight's Header rather than a wrapper around it. Wrapping it
+ * stacked two bars inside the one fixed, `--sl-nav-height`-tall box `PageFrame` draws,
+ * so the second overflowed it and sat on top of the sidebar and the content. The pieces
+ * of Starlight's header that earn their place — the search box — are rendered here
+ * instead; its site title, social icons and theme select would each have duplicated
+ * something this bar already has (the wordmark, the GitHub nav link, and a site that
+ * commits to one look).
+ *
+ * The small-screen menu button is NOT here: `PageFrame` renders `MobileMenuToggle`
+ * itself, fixed to the bar's end, and reserves room for it with the header's
+ * inline-end padding. `SiteHeader`'s own `<details>` hamburger would land underneath
+ * it, so the site's links go into the mobile sidebar instead — see `DocsMobileMenu`.
+ */
+import Search from '@astrojs/starlight/components/Search.astro';
+import { NAV, GITHUB_URL, PLACEHOLDER_TITLE } from '../data/home';
+
+/** The home page's in-page anchors have to leave the docs first. */
+const target = (href: string) => (href.startsWith('#') ? `/${href}` : href);
+---
+
+<div class="bar">
+  <a class="wordmark" href="/">
+    <span class="mark" aria-hidden="true"></span>
+    Ottomatic
+  </a>
+
+  <div class="search print:hidden">
+    <Search />
+  </div>
+
+  <nav class="desktop" aria-label="Main">
+    {
+      NAV.map((link) => (
+        <a
+          href={target(link.href)}
+          data-placeholder={link.placeholder ? '' : undefined}
+          title={link.placeholder ? PLACEHOLDER_TITLE : undefined}
+        >
+          {link.label}
+        </a>
+      ))
+    }
+    <a href={GITHUB_URL} rel="noopener">GitHub</a>
+  </nav>
+
+  <a
+    class="btn btn-solid cta"
+    href="/download"
+    data-placeholder
+    title={PLACEHOLDER_TITLE}
+  >
+    Download
+  </a>
+</div>
+
+<style>
+  /* Fills the fixed bar PageFrame draws; nothing here positions itself. */
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.75rem, 2vw, 2rem);
+    block-size: 100%;
+  }
+
+  .wordmark {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.625rem;
+    font: 800 clamp(1.25rem, 1.6vw, 1.5rem) / 1 var(--font);
+    letter-spacing: var(--track-tight);
+    text-decoration: none;
+    color: var(--on-surface);
+  }
+
+  /* Stands in for a logo that does not exist yet, as it does on every other page. */
+  .mark {
+    inline-size: 0.875rem;
+    block-size: 0.875rem;
+    background: var(--signal);
+  }
+
+  /* Takes the slack, so the nav and the CTA sit at the bar's end. `min-inline-size: 0`
+     is what stops a flex item refusing to shrink below its content. */
+  .search {
+    display: flex;
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .desktop {
+    display: none;
+    gap: clamp(1rem, 1.8vw, 1.75rem);
+  }
+
+  .desktop a {
+    font: 600 0.9375rem/1 var(--font);
+    letter-spacing: var(--track-snug);
+    text-decoration: none;
+    color: var(--on-surface);
+    opacity: 0.72;
+    transition: opacity 160ms linear;
+    white-space: nowrap;
+  }
+
+  .desktop a:hover {
+    opacity: 1;
+  }
+
+  .cta {
+    display: none;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+
+  /* 50rem is Starlight's own `md`, and it has to be matched rather than chosen: below
+     it the sidebar collapses and `DocsMobileMenu` carries these links; at and above it
+     that menu is hidden (`md:sl-hidden`). Any other number leaves a band of widths
+     where the site nav is reachable from nowhere. */
+  @media (min-width: 50rem) {
+    .desktop {
+      display: flex;
+    }
+  }
+
+  /* The CTA waits, though — the nav links do not wrap, so at 50rem it is the search
+     box that pays for it, and a search box squeezed to nothing is the worse loss.
+     Download is still one tap away in the footer of every page. */
+  @media (min-width: 68.75rem) {
+    .cta {
+      display: flex;
+    }
+  }
+</style>

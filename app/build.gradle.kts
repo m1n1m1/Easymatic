@@ -189,6 +189,12 @@ tasks.withType<Test>().configureEach {
         "ottomatic.i18n.regenerate",
         providers.gradleProperty("regenerateNodeStrings").getOrElse("false"),
     )
+    // The same trick once more, for `NodeDocsExportTest` and `docs/nodes.generated.json`
+    // — the facts half of the node documentation. See CLAUDE.md.
+    systemProperty(
+        "ottomatic.docs.regenerate",
+        providers.gradleProperty("regenerateNodeDocs").getOrElse("false"),
+    )
 }
 
 /**

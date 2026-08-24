@@ -1,0 +1,113 @@
+/*
+ * Starlight, wearing this site's design system.
+ *
+ * Starlight is themed through its own `--sl-*` custom properties, so this file is a
+ * mapping rather than a restyling: the values all come from `global.css`, which stays
+ * the single palette. Editing a colour here instead of there is how the docs and the
+ * marketing pages drift apart.
+ *
+ * The site commits to one look — see `color-scheme: dark` in `global.css`. Starlight
+ * ships a light/dark toggle, and hiding it is NOT enough on its own: its ThemeProvider
+ * writes a `starlight-theme` entry to localStorage, so anyone who ever saw a light
+ * Starlight page carries a stale preference that would render this one half-light. So
+ * the dark values are repeated under `[data-theme='light']` and the toggle is replaced
+ * with an empty component.
+ */
+
+:root,
+:root[data-theme='light'],
+:root[data-theme='dark'] {
+  /* Starlight's grey ramp runs light-to-dark; on a dark page gray-1 is the ink. */
+  --sl-color-white: var(--on-surface);
+  --sl-color-gray-1: var(--on-surface);
+  --sl-color-gray-2: var(--on-surface-dim);
+  --sl-color-gray-3: var(--on-surface-dim);
+  --sl-color-gray-4: #6b6b6b;
+  --sl-color-gray-5: #3a3a3a;
+  --sl-color-gray-6: var(--surface-raised);
+  --sl-color-gray-7: #262626;
+  --sl-color-black: var(--surface);
+
+  --sl-color-accent-low: #4a1d0c;
+  --sl-color-accent: var(--signal);
+  --sl-color-accent-high: var(--accent-trigger);
+
+  --sl-color-text: var(--on-surface);
+  --sl-color-text-accent: var(--signal);
+  --sl-color-text-invert: var(--surface);
+
+  --sl-color-bg: var(--surface);
+  /* The nav bar is an object sitting on the page, the same job `--surface-raised` does
+     for the scrolled SiteHeader. The sidebar is not: it is a section, so it takes a
+     ground rather than a raised fill. */
+  --sl-color-bg-nav: var(--surface-raised);
+  --sl-color-bg-sidebar: var(--surface);
+  --sl-color-bg-inline-code: var(--surface-raised);
+  --sl-color-bg-accent: var(--signal);
+
+  /* "Nothing at all has a border." Starlight leans on hairlines to separate the
+     sidebar, the table of contents and the content column, so the separation has to
+     come from space instead — see the padding rules below. */
+  --sl-color-hairline: transparent;
+  --sl-color-hairline-light: transparent;
+  --sl-color-hairline-shade: var(--surface-alt);
+
+  --sl-font: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
+  --sl-font-mono: var(--font-mono);
+
+  /* The measure the hand-built DocsLayout used, kept. */
+  --sl-content-width: 46rem;
+  /* Matches SiteHeader's bar height, since DocsHeader is the same bar: the sticky
+     sidebar's offset is computed from this, and too small a value slides it under the
+     chrome. It was also too *small* while the docs header was two stacked bars — the
+     second one overflowed this box rather than growing it. */
+  --sl-nav-height: 5rem;
+  --sl-line-height: 1.55;
+}
+
+/* Almost nothing on this site has a border-radius, and Starlight rounds a lot. */
+:root {
+  --sl-border-radius: 0;
+}
+
+.sl-markdown-content :is(pre, code, .expressive-code .frame),
+.sidebar-content a,
+site-search button,
+.right-sidebar a {
+  border-radius: 0 !important;
+}
+
+/* Weight carries hierarchy here, not colour or containers. */
+.sl-markdown-content :is(h1, h2, h3, h4) {
+  font-weight: 800;
+  letter-spacing: var(--track-snug);
+}
+
+.sl-markdown-content h1,
+.content-panel h1 {
+  letter-spacing: var(--track-tight);
+}
+
+/* Body copy sits a step down from headings, as it does on the marketing pages. */
+.sl-markdown-content :is(p, li) {
+  color: var(--on-surface-dim);
+}
+
+.sl-markdown-content a {
+  color: var(--accent-action);
+}
+
+/* With the hairlines gone, the columns need room to read as separate. */
+.sidebar-pane {
+  padding-inline-end: 1rem;
+}
+
+.right-sidebar {
+  padding-inline-start: 1rem;
+}
+
+/* A raised block with hard edges — the move the rest of the site makes for code,
+   pictures and panels alike. */
+.sl-markdown-content pre {
+  background: var(--surface-raised);
+}

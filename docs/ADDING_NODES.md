@@ -21,6 +21,8 @@ The minimum really is **two files**: the node, and the registry line.
 | *If it needs a new icon* | `node-api/…/domain/model/NodeIcon.kt` **and** `app/…/feature/grapheditor/EditorColors.kt` |
 | *If it needs a grant* | `permissions =` in the definition, `app/src/main/AndroidManifest.xml`, `app/…/feature/permissions/PermissionCopy.kt` |
 | *If its ports depend on the graph* | `app/src/main/java/com/example/ottomatic/domain/registry/EffectivePorts.kt` |
+| Regenerate the docs export | `-PregenerateNodeDocs=true` (below) — `docs/nodes.generated.json` |
+| Document it | `docs/nodes/<typeId>.md`, or one line in `app/src/test/resources/node-docs-todo.txt` |
 
 `NodeTypeRegistry` and `ConfigSchemaRegistry` are **derived views** of the four
 registries. Never add an entry to either one — a node that appears there but not in its
@@ -477,6 +479,78 @@ fails and names the key if you forget. The
 belong ("Philips Hue" is findable only because it is in the description). Write
 descriptions as sentence fragments with no trailing period, leading with a verb for an
 action and "The …" or "Whether …" for a value.
+
+## Documenting it
+
+A node's documentation is **two halves that are never written twice**. Everything
+structural — ports, config rows, defaults, enum options, permissions, capabilities and
+that one-line description — is exported straight from the declaration you just wrote:
+
+```
+.\gradlew.bat :app:testDebugUnitTest --tests "*NodeDocsExportTest*" -PregenerateNodeDocs=true
+```
+
+That writes `docs/nodes.generated.json`, which is committed and compared byte for byte
+on every `test` run. Forget it and the build fails naming your node. Nothing structural
+is ever typed into a documentation page by hand, because a hand-copy drifts the moment a
+config class changes.
+
+The other half is the prose: `docs/nodes/<typeId>.md`, plain CommonMark, no frontmatter
+— the filename is the only key it carries. Write what the generated tables cannot say:
+why the node exists, what the config actually means, and how it fails. **Do not repeat
+the one-line description** — the page prints it above your text, and a test says so.
+
+### The shape a prose file takes
+
+Follow this order every time. It is a GeeksforGeeks article's shape, and fixing it is
+what lets a reader who has read one node page skim the next:
+
+1. **Opening, no heading above it.** Two sentences saying what the node does, then two or
+   three bullets carrying the facts that do not fit in them.
+2. **`## Working of <Node>`.** The run, one bullet per step. No prose paragraph.
+3. **`## Example: <scenario>`.** The steps you would actually take in the editor, as
+   bullets. Follow it with a line reading `Explanation:` and two bullets saying what the
+   example demonstrates. Use a fenced block where there is code, under `## Syntax`.
+4. **Node-specific sections.** As many `##` headings as the node needs.
+5. **`## Points to Remember`.** Flat bullets, the rules and traps that fit nowhere else.
+   Always last.
+
+Headings are Title Case noun phrases, and none of them may be `Declared ports`,
+`Configuration`, `Needs` or `Notes` — the generated page already uses those four, and a
+repeat collides with its anchor.
+
+### How it should read
+
+**Bullets carry this document, not paragraphs.** A prose file is mostly list; a paragraph
+is what you use when three sentences genuinely depend on each other, and two of those in
+a row is a sign the section wants to be bullets. Aim for 40 to 60 lines in total.
+
+- Short declarative sentences, active voice, "you" for the reader.
+- Lead with the fact. A sentence whose first half only sets up its second half is one
+  sentence too long.
+- Bold a field or a switch the first time it appears, spelled as the form spells it.
+- Do not restate the generated tables. Ports, defaults and config rows are printed above
+  your text; say what they *mean*, not what they *are*.
+- Name the failure plainly. "The macro never fires" beats "nothing observable happens".
+- No em-dash asides, no rhetorical questions, and no admiring the design in passing
+  ("that is the point", "which is the honest version"). Where a choice needs defending,
+  give the constraint that forced it in one sentence and move on.
+- Verify every number against the declaration. A default that drifted is worse than no
+  prose, because the tables above it are right and the reader will believe the sentence.
+
+The five files in `docs/nodes/` are the worked examples. Read one before writing the next.
+
+Not writing it yet is allowed: add the typeId to `app/src/test/resources/node-docs-todo.txt`
+instead. That list is a ratchet, asserted two-sided, and only ever shrinks. The one case
+where prose is close to obligatory is a node whose ports move with its wiring, because
+the generated table can only describe what is *declared* — the test prints those as a
+standing reminder.
+
+The prose is also what the app will later show on the node's config sheet, which is why
+it is restricted to a subset of CommonMark: paragraphs, `##`/`###`, `-` bullets,
+`**bold**`, `` `code` ``, fenced blocks, block quotes and links. No tables, no images, no
+raw HTML, no ordered or nested lists. `NodeDocsExportTest` enforces it and names the
+offending line.
 
 Never edit `NodeTypeRegistry` or `ConfigSchemaRegistry`. A value that throws instead of
 answering `null` breaks the pull side's fail-closed contract. And a value node that

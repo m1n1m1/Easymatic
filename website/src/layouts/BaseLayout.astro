@@ -1,11 +1,18 @@
 ---
 /**
- * The shell every page on the site sits in — marketing and documentation
- * alike, which is the whole reason the docs are hand-built rather than
- * Starlight: one design system, no seam to cross.
+ * The shell every *marketing* page sits in.
  *
- * The header and footer live here rather than per page, so `/docs/` wears the
- * same chrome as the home page without either of them knowing about the other.
+ * It used to be every page, and the docs being hand-built was the reason. They are
+ * Starlight now, and Starlight owns its own `<html>` — so nothing here reaches
+ * `/docs/`, including the font import and `global.css` below. Those arrive there
+ * through `customCss` in `astro.config.mjs` instead, and the one design system is
+ * held by `global.css` being the single palette both routes map onto rather than by
+ * a shared layout.
+ *
+ * The header and footer live here rather than per page. The docs get the header
+ * through a Starlight component override — `DocsHeader.astro`, which is this bar plus
+ * Starlight's search box — and keep Starlight's own footer, so `SiteFooter` is a
+ * marketing-page thing only.
  */
 import '@fontsource-variable/archivo';
 import '../styles/global.css';

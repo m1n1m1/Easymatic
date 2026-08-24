@@ -1,0 +1,55 @@
+---
+/**
+ * The site's nav, at the foot of the mobile sidebar.
+ *
+ * Overrides Starlight's MobileMenuFooter, which held the social icons, the theme
+ * select and the language select — none of which this site has. It stands in for
+ * `SiteHeader`'s `<details>` hamburger: below Starlight's `md` breakpoint the top bar
+ * shows only the wordmark and search, and this is where the rest of the site stays
+ * reachable from. Rendered by `Sidebar` inside a `md:sl-hidden` wrapper, so it is
+ * absent on the widths where `DocsHeader` shows the links itself.
+ */
+import { NAV, GITHUB_URL, PLACEHOLDER_TITLE } from '../data/home';
+
+const target = (href: string) => (href.startsWith('#') ? `/${href}` : href);
+---
+
+<nav class="site-nav" aria-label="Main">
+  {
+    NAV.map((link) => (
+      <a
+        href={target(link.href)}
+        data-placeholder={link.placeholder ? '' : undefined}
+        title={link.placeholder ? PLACEHOLDER_TITLE : undefined}
+      >
+        {link.label}
+      </a>
+    ))
+  }
+  <a href={GITHUB_URL} rel="noopener">GitHub</a>
+  <a href="/download" data-placeholder title={PLACEHOLDER_TITLE}>Download</a>
+</nav>
+
+<style>
+  /* The sidebar has no rules anywhere else, so the separation from the node tree
+     above is space plus the one hairline Starlight already uses for this slot. */
+  .site-nav {
+    display: grid;
+    gap: 0.25rem;
+    margin-block-start: 1.5rem;
+    padding-block: 1rem 2rem;
+    border-block-start: 1px solid var(--surface-alt);
+  }
+
+  .site-nav a {
+    padding-block: 0.5rem;
+    font: 600 1rem/1.2 var(--font);
+    letter-spacing: var(--track-snug);
+    text-decoration: none;
+    color: var(--on-surface);
+  }
+
+  .site-nav a:hover {
+    color: var(--signal);
+  }
+</style>

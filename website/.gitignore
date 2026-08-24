@@ -22,3 +22,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# generated node reference (npm run nodes) — see scripts/generate-node-pages.mjs
+src/content/docs/docs/reference/nodes/
+
+# generated node sidebar (npm run nodes) — see scripts/generate-node-pages.mjs
+src/generated/

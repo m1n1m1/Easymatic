@@ -154,10 +154,58 @@ still under.
 
 ## Documentation
 
-Docs are Astro content collections (`src/content/docs/`, schema in
-`src/content.config.ts`) with hand-built layouts rather than Starlight, so that
-marketing and docs share one design system with no seam between them. Sidebar, table
-of contents and search are still to come.
+Docs are **Starlight**, at `/docs/`. It was hand-built layouts for a while, on the
+argument that marketing and docs should share one design system with no seam — the
+sidebar, table of contents and search were "still to come". They were still to come
+because they are the expensive part, and a reference of 175 node pages needs all
+three on day one.
 
-The content source of truth is currently [`../docs/`](../docs/) —
-`PLUGINS.md` and `EXTERNAL_API.md` are the two externally-facing guides.
+One design system survives that, just held somewhere else: `global.css` is still the
+only palette, and `src/styles/starlight-theme.css` maps it onto Starlight's own
+`--sl-*` properties. Edit a colour there instead of in `global.css` and the two
+halves of the site start to drift. Starlight's own values sit in `@layer starlight.*`
+and ours do not, which is what makes the mapping win regardless of source order.
+
+Three things about that setup look like mistakes and are not:
+
+- **`src/content/docs/docs/`** is doubled on purpose. Starlight's `docsLoader()`
+  reads `src/content/docs/` with no way to point it elsewhere, and maps each file's
+  path within it straight to a URL. Nesting one level deeper is the only way to serve
+  from `/docs/` rather than from `/`, which `src/pages/index.astro` already holds.
+- **`Header` and `Footer` are wrapped, not replaced.** Starlight's default Header
+  carries the search box and the small-screen menu toggle; replacing it outright
+  removes both silently.
+- **The theme toggle is replaced with an empty component *and* the dark values are
+  repeated under `[data-theme='light']`.** Hiding the toggle is not enough on its
+  own — Starlight's ThemeProvider reads a `starlight-theme` entry from localStorage,
+  so anyone carrying a stale `light` from another Starlight site would get a
+  half-light page.
+
+### Node reference
+
+`/docs/reference/nodes/` is generated, and its source is deliberately split in two:
+
+| Half | Where | Written by |
+| --- | --- | --- |
+| Facts — ports, config rows, permissions, the one-line description | [`../docs/nodes.generated.json`](../docs/nodes.generated.json) | `NodeDocsExportTest`, from the Kotlin declarations |
+| Prose — the multi-paragraph explanation | [`../docs/nodes/`](../docs/nodes/) | by hand, one plain-CommonMark file per node |
+
+`npm run nodes` composes the two into one page per node. A node with no prose file
+still gets a full page from its facts, so the reference is complete and the prose
+lands node by node.
+
+The split is **prose versus facts, not app versus web**: the app will later render
+the same prose files on a node's config sheet, which is why they are restricted to a
+subset of CommonMark — no tables, no images, no raw HTML, no MDX. `NodeDocsExportTest`
+enforces that, so an unrenderable construct fails the Android build rather than
+being discovered a year later.
+
+Consequences worth knowing: `npm run build`, `dev` and `check` all run `npm run nodes`
+first, and the generated pages are **gitignored** — unlike `tokens.css`, because their
+producer runs in the same command as their consumer and so they cannot go stale. The
+JSON is the opposite case and is committed and byte-compared. This directory is still
+invisible to Gradle, but it is no longer self-contained: the build reads `../docs/`.
+
+The remaining hand-written guides are still at [`../docs/`](../docs/) —
+`PLUGINS.md` and `EXTERNAL_API.md` are the two externally-facing ones, not yet
+brought across.
