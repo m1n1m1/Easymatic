@@ -51,6 +51,16 @@ export default defineConfig({
       // `NAV`'s company now, so the icon row would only have said it twice.
       sidebar: [
         { label: 'Overview', link: '/docs/' },
+        // The hand-written guides. Each group's label is written here for the same
+        // reason the generated ones are: `autogenerate` heads a group with its
+        // *directory name*, so these would read `start`, `concepts` and `extend`.
+        // Ordering within a group comes from each page's `sidebar.order` frontmatter,
+        // which keeps a page's position next to the page rather than in this file.
+        { label: 'Getting started', items: [{ autogenerate: { directory: 'docs/start' } }] },
+        { label: 'Core concepts', items: [{ autogenerate: { directory: 'docs/concepts' } }] },
+        { label: 'Integrations', items: [{ autogenerate: { directory: 'docs/integrations' } }] },
+        { label: 'Permissions & the phone', items: [{ autogenerate: { directory: 'docs/system' } }] },
+        { label: 'Extending Ottomatic', items: [{ autogenerate: { directory: 'docs/extend' } }] },
         {
           label: 'Node reference',
           // Both the pages and the category groups below come from `npm run nodes`,
@@ -68,6 +78,7 @@ export default defineConfig({
             { label: 'Transforms', items: nodeSidebar.TRANSFORM },
           ],
         },
+        { label: 'Help', items: [{ autogenerate: { directory: 'docs/help' } }] },
       ],
     }),
   ],
