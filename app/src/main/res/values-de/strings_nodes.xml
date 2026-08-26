@@ -553,13 +553,14 @@
     <string name="port_action_enable_macro_state">Status</string>
     <string name="cfg_action_enable_macro_macro_id">Makro</string>
     <string name="node_action_flashlight_name">Taschenlampe umschalten</string>
-    <string name="node_action_flashlight_desc">Schaltet das Kameralicht (Taschenlampe) ein oder aus</string>
+    <string name="node_action_flashlight_desc">Schaltet das Kameralicht (Taschenlampe) ein, aus oder in den umgekehrten Zustand</string>
     <string name="port_action_flashlight_in">Eingang</string>
     <string name="port_action_flashlight_out">Ausgang</string>
     <string name="port_action_flashlight_state">Status</string>
     <string name="cfg_action_flashlight_state">Status</string>
     <string name="opt_action_flashlight_state_on">An</string>
     <string name="opt_action_flashlight_state_off">Aus</string>
+    <string name="opt_action_flashlight_state_toggle">Umschalten</string>
     <string name="node_action_http_name">HTTP-Anfrage</string>
     <string name="node_action_http_desc">Ruft eine Web-API auf und stellt die typisierte Antwort bereit</string>
     <string name="port_action_http_in">Eingang</string>
@@ -1595,4 +1596,7 @@
     <string name="node_value_speaking_name">Spricht</string>
     <string name="node_value_speaking_desc">Ob das Telefon gerade etwas vorliest</string>
     <string name="port_value_speaking_speaking">Spricht</string>
+    <string name="node_value_torch_name">Taschenlampe an</string>
+    <string name="node_value_torch_desc">Ob das Kameralicht (Taschenlampe) gerade leuchtet</string>
+    <string name="port_value_torch_on">An</string>
 </resources>

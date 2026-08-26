@@ -661,13 +661,14 @@
     <string name="port_action_enable_macro_state">state</string>
     <string name="cfg_action_enable_macro_macro_id">Macro</string>
     <string name="node_action_flashlight_name">Toggle Flashlight</string>
-    <string name="node_action_flashlight_desc">Turns the camera torch (flashlight) on or off</string>
+    <string name="node_action_flashlight_desc">Turns the camera torch (flashlight) on, off or to the opposite of its current state</string>
     <string name="port_action_flashlight_in">in</string>
     <string name="port_action_flashlight_out">out</string>
     <string name="port_action_flashlight_state">state</string>
     <string name="cfg_action_flashlight_state">State</string>
     <string name="opt_action_flashlight_state_on">On</string>
     <string name="opt_action_flashlight_state_off">Off</string>
+    <string name="opt_action_flashlight_state_toggle">Toggle</string>
     <string name="node_action_http_name">HTTP Request</string>
     <string name="node_action_http_desc">Calls a web API and exposes the typed response</string>
     <string name="port_action_http_in">in</string>
@@ -1543,6 +1544,9 @@
     <string name="node_value_speaking_name">Speaking</string>
     <string name="node_value_speaking_desc">Whether the phone is saying something out loud right now</string>
     <string name="port_value_speaking_speaking">Speaking</string>
+    <string name="node_value_torch_name">Flashlight on</string>
+    <string name="node_value_torch_desc">Whether the camera torch (flashlight) is currently lit</string>
+    <string name="port_value_torch_on">On</string>
     <string name="node_value_variable_name">Variable</string>
     <string name="node_value_variable_desc">The current value of a variable</string>
     <string name="port_value_variable_value">Value</string>

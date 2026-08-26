@@ -87,7 +87,10 @@ import com.example.ottomatic.feature.variables.LocalVariables
 import com.example.ottomatic.feature.workflowlist.LocalMacros
 import com.example.ottomatic.feature.i18n.NodeText
 import com.example.ottomatic.feature.i18n.rememberNodeText
+import com.example.ottomatic.feature.macro.rememberMacroExport
+import com.example.ottomatic.feature.macro.rememberMacroPinner
 import com.example.ottomatic.feature.workflowlist.MacroLibrary
+import com.example.ottomatic.feature.workflowlist.TransferDialog
 import kotlin.math.roundToInt
 
 @Composable
@@ -140,6 +143,23 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
     // Read here rather than inside the canvas: the cards and the wires both need
     // it, and it changes only when the graph does — which is already a recompose.
     val validation by viewModel.validation.collectAsState()
+
+    // The parts of the workflow menu that need something of the *screen* rather than of
+    // the ViewModel: a launcher for the document picker, the two dialogs the pin flow
+    // can raise, and the one an export failure raises. Each draws what it needs from
+    // here, so the menu itself stays six lambdas.
+    val macroActions = viewModel.macroActions
+    val exporter = rememberMacroExport(
+        suggestedFileName = { macroActions.suggestedFileName() },
+        // The id is this editor's own; the launcher carries it only because the list's
+        // rows have several to tell apart.
+        onTargetChosen = { _, target -> macroActions.export(target) },
+    )
+    val pinner = rememberMacroPinner(macroActions::pin)
+    // Recomputed when the graph changes rather than on every frame of a pan: adding a
+    // manual trigger is what makes the item appear, and nothing else does.
+    val manualTriggers = remember(state.workflow) { macroActions.manualTriggers() }
+    val transfer by macroActions.transfer.collectAsState()
 
     // Back leaves selection mode before it leaves the editor — what the
     // contextual bar's ✕ does, from the system gesture. The overlays are each a
@@ -229,11 +249,16 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
                     selectionHasNodes = state.selection.nodeIds.isNotEmpty(),
                     canConfigure = state.selection.singleNodeId != null,
                     isMacroEnabled = state.isMacroEnabled,
+                    canPin = manualTriggers.isNotEmpty(),
                     icon = state.workflow.icon,
                     accent = state.workflow.accent,
                     onBack = onBack,
                     onToggleEnabled = { viewModel.setMacroEnabled(it) },
                     onEditMacro = { name, icon, accent -> viewModel.updateMacro(name, icon, accent) },
+                    onPinWorkflow = { pinner.pin(manualTriggers) },
+                    onDuplicateWorkflow = { macroActions.duplicate() },
+                    onExportWorkflow = { exporter.export(viewModel.workflowId, state.workflow.name) },
+                    onShareWorkflow = { macroActions.share() },
                     onDeleteWorkflow = { viewModel.deleteWorkflow(onDeleted = onBack) },
                     onClearSelection = { viewModel.clearSelection() },
                     onConfigure = { showConfig = true },
@@ -321,6 +346,11 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
         }
     }
 
+    // An export that could not be written, said once. The list screen's dialog, not a
+    // second one that words the same failure differently.
+    transfer?.let { message ->
+        TransferDialog(message = message, onDismiss = macroActions::dismissTransfer)
+    }
 }
 
 /**

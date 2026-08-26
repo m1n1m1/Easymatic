@@ -1,5 +1,5 @@
 {
-    "nodeCount": 175,
+    "nodeCount": 176,
     "nodes": [
         {
             "typeId": "trigger.manual",
@@ -5216,7 +5216,7 @@
             "typeId": "action.flashlight",
             "slug": "action_flashlight",
             "displayName": "Toggle Flashlight",
-            "description": "Turns the camera torch (flashlight) on or off",
+            "description": "Turns the camera torch (flashlight) on, off or to the opposite of its current state",
             "kind": "ACTION",
             "category": "DEVICE_SETTINGS",
             "categoryLabel": "Device Settings",
@@ -5260,6 +5260,10 @@
                         {
                             "value": "off",
                             "label": "Off"
+                        },
+                        {
+                            "value": "toggle",
+                            "label": "Toggle"
                         }
                     ],
                     "chooser": null
@@ -11939,6 +11943,29 @@
                 {
                     "name": "speaking",
                     "label": "Speaking",
+                    "kind": "DATA",
+                    "direction": "OUT",
+                    "type": "Boolean"
+                }
+            ],
+            "configFields": [],
+            "permissions": [],
+            "capabilities": []
+        },
+        {
+            "typeId": "value.torch",
+            "slug": "value_torch",
+            "displayName": "Flashlight on",
+            "description": "Whether the camera torch (flashlight) is currently lit",
+            "kind": "VALUE",
+            "category": "VALUE_DEVICE",
+            "categoryLabel": "Device State",
+            "icon": "BOLT",
+            "hasDynamicPorts": false,
+            "ports": [
+                {
+                    "name": "on",
+                    "label": "On",
                     "kind": "DATA",
                     "direction": "OUT",
                     "type": "Boolean"

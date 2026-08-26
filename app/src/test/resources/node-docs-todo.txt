@@ -103,7 +103,6 @@ action.listen
 action.disable_macro
 action.dnd
 action.enable_macro
-action.flashlight
 action.http
 action.launch_app
 action.send_intent

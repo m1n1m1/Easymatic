@@ -76,6 +76,19 @@ interface DeviceState {
 
     /** Whether the device is in night mode (dark theme). */
     fun isNightMode(): Boolean?
+
+    /**
+     * Whether the camera torch is lit, or null when this phone has no flash unit
+     * and when the state has not been observed yet.
+     *
+     * The platform offers no synchronous getter, so the Android implementation
+     * keeps a cache warmed by `CameraManager.registerTorchCallback` — the same
+     * shape `value.ha_state` uses, and what makes this read cheap and repeatable
+     * enough to sit on the pull side. It follows the torch wherever it was lit
+     * from, so a quick-settings tile and [SystemServices.setTorch] are read back
+     * the same way.
+     */
+    fun isTorchOn(): Boolean?
 }
 
 /**
@@ -99,4 +112,5 @@ object UnknownDeviceState : DeviceState {
     override fun isHeadsetPlugged(): Boolean? = null
     override fun isDocked(): Boolean? = null
     override fun isNightMode(): Boolean? = null
+    override fun isTorchOn(): Boolean? = null
 }

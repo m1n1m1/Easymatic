@@ -187,7 +187,7 @@ class ValueRegistryTest {
     }
 
     /**
-     * `value.nfc` is the one value node with no trigger counterpart — the pairing
+     * `value.nfc` is one of the value nodes with no trigger counterpart — the pairing
      * rule runs trigger → value, and the platform publishes no NFC-adapter broadcast
      * worth arming on. It still has to behave like every other boolean source.
      */

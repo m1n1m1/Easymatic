@@ -625,13 +625,14 @@
     <string name="port_action_enable_macro_state">состояние</string>
     <string name="cfg_action_enable_macro_macro_id">Макрос</string>
     <string name="node_action_flashlight_name">Переключить фонарик</string>
-    <string name="node_action_flashlight_desc">Включает или выключает фонарик камеры</string>
+    <string name="node_action_flashlight_desc">Включает, выключает фонарик камеры или переключает его в противоположное состояние</string>
     <string name="port_action_flashlight_in">Вход</string>
     <string name="port_action_flashlight_out">Выход</string>
     <string name="port_action_flashlight_state">состояние</string>
     <string name="cfg_action_flashlight_state">Состояние</string>
     <string name="opt_action_flashlight_state_on">Включено</string>
     <string name="opt_action_flashlight_state_off">Выключено</string>
+    <string name="opt_action_flashlight_state_toggle">Переключить</string>
     <string name="node_action_http_name">HTTP-запрос</string>
     <string name="node_action_http_desc">Обращается к веб-API и выдаёт типизированный ответ</string>
     <string name="port_action_http_in">Вход</string>
@@ -1613,4 +1614,7 @@
     <string name="node_value_speaking_name">Говорит</string>
     <string name="node_value_speaking_desc">Произносит ли телефон что-то вслух прямо сейчас</string>
     <string name="port_value_speaking_speaking">Говорит</string>
+    <string name="node_value_torch_name">Фонарик включён</string>
+    <string name="node_value_torch_desc">Горит ли сейчас фонарик камеры</string>
+    <string name="port_value_torch_on">Включено</string>
 </resources>

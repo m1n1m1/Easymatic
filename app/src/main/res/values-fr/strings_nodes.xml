@@ -625,13 +625,14 @@
     <string name="port_action_enable_macro_state">état</string>
     <string name="cfg_action_enable_macro_macro_id">Macro</string>
     <string name="node_action_flashlight_name">Basculer la lampe torche</string>
-    <string name="node_action_flashlight_desc">Allume ou éteint la lampe torche de l\'appareil photo</string>
+    <string name="node_action_flashlight_desc">Allume, éteint ou inverse l\'état actuel de la lampe torche de l\'appareil photo</string>
     <string name="port_action_flashlight_in">Entrée</string>
     <string name="port_action_flashlight_out">Sortie</string>
     <string name="port_action_flashlight_state">état</string>
     <string name="cfg_action_flashlight_state">État</string>
     <string name="opt_action_flashlight_state_on">Allumé</string>
     <string name="opt_action_flashlight_state_off">Éteint</string>
+    <string name="opt_action_flashlight_state_toggle">Basculer</string>
     <string name="node_action_http_name">Requête HTTP</string>
     <string name="node_action_http_desc">Appelle une API web et expose la réponse typée</string>
     <string name="port_action_http_in">Entrée</string>
@@ -1613,4 +1614,7 @@
     <string name="node_value_speaking_name">Parle</string>
     <string name="node_value_speaking_desc">Si le téléphone est en train de dire quelque chose à voix haute</string>
     <string name="port_value_speaking_speaking">Parle</string>
+    <string name="node_value_torch_name">Lampe torche allumée</string>
+    <string name="node_value_torch_desc">Si la lampe torche de l\'appareil photo est actuellement allumée</string>
+    <string name="port_value_torch_on">Allumé</string>
 </resources>

@@ -22,21 +22,13 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddToHomeScreen
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.FileDownload
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -73,6 +65,8 @@ import com.example.ottomatic.domain.model.WorkflowSummary
 import com.example.ottomatic.feature.grapheditor.EditorColors
 import com.example.ottomatic.feature.grapheditor.editorSwitchColors
 import com.example.ottomatic.feature.macro.EditMacroDialog
+import com.example.ottomatic.feature.macro.MacroActionsMenu
+import com.example.ottomatic.feature.macro.rememberMacroPinner
 import com.example.ottomatic.feature.macro.editorTextButtonColors
 import com.example.ottomatic.feature.macro.MacroIconChip
 import com.example.ottomatic.feature.widget.ManualTriggerRef
@@ -113,8 +107,8 @@ fun WorkflowListScreen(
 
     var editing by remember { mutableStateOf<WorkflowSummary?>(null) }
     var deleting by remember { mutableStateOf<WorkflowSummary?>(null) }
-    var pinning by remember { mutableStateOf<List<ManualTriggerRef>?>(null) }
-    var pinRefused by remember { mutableStateOf(false) }
+    // Draws its own two dialogs — which button to pin, and the launcher that refuses.
+    val pinner = rememberMacroPinner(viewModel::pin)
 
     val transfer = rememberMacroTransfer(viewModel)
 
@@ -176,14 +170,7 @@ fun WorkflowListScreen(
                             onExport = { transfer.export(summary.id, summary.name) },
                             onShare = { viewModel.share(summary.id, summary.name) },
                             manualTriggers = triggers,
-                            onPin = {
-                                pinOrChoose(
-                                    viewModel = viewModel,
-                                    triggers = triggers,
-                                    onRefused = { pinRefused = true },
-                                    onChoose = { pinning = it },
-                                )
-                            },
+                            onPin = { pinner.pin(triggers) },
                         )
                         HorizontalDivider(color = EditorColors.chromeBorder, thickness = 1.dp)
                     }
@@ -248,62 +235,6 @@ fun WorkflowListScreen(
         )
     }
 
-    // Only ever shown for a macro with more than one manual trigger: the question
-    // is which button to pin, and a macro with one has no such question.
-    pinning?.let { triggers ->
-        AlertDialog(
-            onDismissRequest = { pinning = null },
-            containerColor = EditorColors.chrome,
-            title = { Text(stringResource(R.string.workflowlist_which_trigger), color = EditorColors.textPrimary) },
-            text = {
-                Column {
-                    triggers.forEach { trigger ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    pinning = null
-                                    if (!viewModel.pin(trigger)) pinRefused = true
-                                }
-                                .padding(vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            MacroIconChip(icon = trigger.icon, accent = trigger.accent)
-                            Spacer(Modifier.width(12.dp))
-                            Text(trigger.label, color = EditorColors.textPrimary, fontSize = 15.sp)
-                        }
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { pinning = null }, colors = editorTextButtonColors()) {
-                    Text(stringResource(R.string.workflowlist_cancel))
-                }
-            },
-        )
-    }
-
-    if (pinRefused) {
-        AlertDialog(
-            onDismissRequest = { pinRefused = false },
-            containerColor = EditorColors.chrome,
-            title = { Text(stringResource(R.string.workflowlist_can_t_add_it_from), color = EditorColors.textPrimary) },
-            text = {
-                Text(
-                    stringResource(R.string.workflowlist_launcher_cannot_place),
-                    color = EditorColors.textPrimary,
-                    fontSize = 14.sp,
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { pinRefused = false }, colors = editorTextButtonColors()) {
-                    Text("OK")
-                }
-            },
-        )
-    }
-
     state.transfer?.let { message ->
         TransferDialog(message = message, onDismiss = viewModel::dismissTransfer)
     }
@@ -333,27 +264,6 @@ fun WorkflowListScreen(
                     stringResource(R.string.workflowlist_cancel)) }
             },
         )
-    }
-}
-
-/**
- * What "Add to home screen" does, which depends on how many buttons the macro has.
- *
- * One trigger is not a choice, so it is not a dialog: placing goes straight to the
- * launcher's own confirmation, which is the only prompt that decision actually needs.
- * Several is a question, and a launcher that refuses to place anything at all is a
- * third answer that has to be reported rather than waited on.
- */
-private fun pinOrChoose(
-    viewModel: WorkflowListViewModel,
-    triggers: List<ManualTriggerRef>,
-    onRefused: () -> Unit,
-    onChoose: (List<ManualTriggerRef>) -> Unit,
-) {
-    if (triggers.size == 1) {
-        if (!viewModel.pin(triggers.first())) onRefused()
-    } else {
-        onChoose(triggers)
     }
 }
 
@@ -600,62 +510,18 @@ private fun WorkflowRow(
                     tint = EditorColors.textSecondary,
                 )
             }
-            DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.workflowlist_edit)) },
-                    onClick = {
-                        menuOpen = false
-                        onEdit()
-                    },
-                    leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
-                )
-                // Only offered when there is something to pin. A macro with no
-                // manual trigger has no button to put on a home screen, and an
-                // item that explains that after being tapped is worse than an
-                // item that is not there.
-                if (manualTriggers.isNotEmpty()) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.workflowlist_add_to_home_screen)) },
-                        onClick = {
-                            menuOpen = false
-                            onPin()
-                        },
-                        leadingIcon = { Icon(Icons.Filled.AddToHomeScreen, contentDescription = null) },
-                    )
-                }
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.macro_transfer_duplicate)) },
-                    onClick = {
-                        menuOpen = false
-                        onDuplicate()
-                    },
-                    leadingIcon = { Icon(Icons.Filled.ContentCopy, contentDescription = null) },
-                )
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.macro_transfer_export)) },
-                    onClick = {
-                        menuOpen = false
-                        onExport()
-                    },
-                    leadingIcon = { Icon(Icons.Filled.FileUpload, contentDescription = null) },
-                )
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.macro_transfer_share)) },
-                    onClick = {
-                        menuOpen = false
-                        onShare()
-                    },
-                    leadingIcon = { Icon(Icons.Filled.Share, contentDescription = null) },
-                )
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.workflowlist_delete)) },
-                    onClick = {
-                        menuOpen = false
-                        onDelete()
-                    },
-                    leadingIcon = { Icon(Icons.Filled.Delete, contentDescription = null) },
-                )
-            }
+            // The same menu the editor's own bar opens — see [MacroActionsMenu].
+            MacroActionsMenu(
+                expanded = menuOpen,
+                onDismissRequest = { menuOpen = false },
+                canPin = manualTriggers.isNotEmpty(),
+                onEdit = onEdit,
+                onPin = onPin,
+                onDuplicate = onDuplicate,
+                onExport = onExport,
+                onShare = onShare,
+                onDelete = onDelete,
+            )
         }
     }
 }

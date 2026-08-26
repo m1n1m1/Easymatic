@@ -5,11 +5,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
+import android.hardware.camera2.CameraManager
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.net.wifi.WifiManager
 import android.nfc.NfcAdapter
 import android.os.BatteryManager
+import android.os.Handler
+import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
 import com.example.ottomatic.core.service.DeviceState
@@ -26,6 +29,49 @@ import com.example.ottomatic.domain.model.WifiSsid
  */
 @Suppress("TooManyFunctions") // Implements every DeviceState reader.
 class AndroidDeviceState(private val context: Context) : DeviceState {
+
+    /**
+     * The torch's last known state, or null until the platform has said.
+     *
+     * `CameraManager` has no getter, only a callback, so the state is cached here
+     * and kept current by [torchCallback]. Volatile because the callback is
+     * delivered on a background thread and every value read happens on whichever
+     * thread the executor is on.
+     */
+    @Volatile
+    private var torchOn: Boolean? = null
+
+    /**
+     * Registered for the life of the process, which is what makes [isTorchOn] a
+     * field read rather than a camera call.
+     *
+     * The platform delivers one callback per flash unit immediately on
+     * registration, so the cache is warm within moments of startup rather than on
+     * the first torch change. Phones with several flash units report each of them;
+     * the last one to speak wins, which matches `setTorch` driving only the first
+     * unit it finds.
+     */
+    private val torchCallback = object : CameraManager.TorchCallback() {
+        override fun onTorchModeChanged(cameraId: String, enabled: Boolean) {
+            torchOn = enabled
+        }
+
+        override fun onTorchModeUnavailable(cameraId: String) {
+            // The camera is in use by another app, so the torch cannot be driven
+            // and its state is no longer knowable. Null rather than false: a
+            // Toggle that cannot be resolved must do nothing, not guess "off".
+            torchOn = null
+        }
+    }
+
+    init {
+        // A phone with no camera service at all must not take the app down at
+        // startup; it simply never learns a torch state, and isTorchOn stays null.
+        runCatching {
+            val cameraManager = context.applicationContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            cameraManager.registerTorchCallback(torchCallback, Handler(Looper.getMainLooper()))
+        }
+    }
 
     override fun isWifiEnabled(): Boolean? = runCatching {
         val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
@@ -143,6 +189,8 @@ class AndroidDeviceState(private val context: Context) : DeviceState {
         val mode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         mode == Configuration.UI_MODE_NIGHT_YES
     }.getOrNull()
+
+    override fun isTorchOn(): Boolean? = torchOn
 
     private companion object {
         const val PERCENT = 100

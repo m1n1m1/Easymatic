@@ -18,13 +18,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -49,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ottomatic.domain.model.MacroAccent
 import com.example.ottomatic.domain.model.MacroIcon
 import com.example.ottomatic.feature.macro.EditMacroDialog
+import com.example.ottomatic.feature.macro.MacroActionsMenu
 import com.example.ottomatic.feature.macro.editorTextButtonColors
 
 /**
@@ -67,7 +64,8 @@ import com.example.ottomatic.feature.macro.editorTextButtonColors
  * say "1 node selected" in full rather than "1 selected".
  *
  * Everything workflow-level that is not one of the four primary controls goes in
- * the overflow menu, so the bar does not have to grow again for the next action.
+ * the overflow menu — which is the list screen's, item for item — so the bar does
+ * not have to grow again for the next action.
  *
  * The console and the problems panel used to be icons here, and a third — the
  * variables panel — would have left the title about seventy dp again. All three are
@@ -98,11 +96,17 @@ fun EditorTopBar(
     selectionHasNodes: Boolean,
     canConfigure: Boolean,
     isMacroEnabled: Boolean,
+    /** Whether this macro has a manual trigger to put on the home screen. */
+    canPin: Boolean,
     icon: MacroIcon,
     accent: MacroAccent,
     onBack: () -> Unit,
     onToggleEnabled: (Boolean) -> Unit,
     onEditMacro: (name: String, icon: MacroIcon, accent: MacroAccent) -> Unit,
+    onPinWorkflow: () -> Unit,
+    onDuplicateWorkflow: () -> Unit,
+    onExportWorkflow: () -> Unit,
+    onShareWorkflow: () -> Unit,
     onDeleteWorkflow: () -> Unit,
     onClearSelection: () -> Unit,
     onConfigure: () -> Unit,
@@ -138,9 +142,14 @@ fun EditorTopBar(
                         title = title,
                         nodeCount = nodeCount,
                         isMacroEnabled = isMacroEnabled,
+                        canPin = canPin,
                         onBack = onBack,
                         onToggleEnabled = onToggleEnabled,
                         onEdit = { editing = true },
+                        onPin = onPinWorkflow,
+                        onDuplicate = onDuplicateWorkflow,
+                        onExport = onExportWorkflow,
+                        onShare = onShareWorkflow,
                         onDelete = { deleting = true },
                     )
                 } else {
@@ -217,9 +226,14 @@ private fun WorkflowBar(
     title: String,
     nodeCount: Int,
     isMacroEnabled: Boolean,
+    canPin: Boolean,
     onBack: () -> Unit,
     onToggleEnabled: (Boolean) -> Unit,
     onEdit: () -> Unit,
+    onPin: () -> Unit,
+    onDuplicate: () -> Unit,
+    onExport: () -> Unit,
+    onShare: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Row(
@@ -258,7 +272,15 @@ private fun WorkflowBar(
             colors = editorSwitchColors(),
             modifier = Modifier.semantics { contentDescription = enabledLabel },
         )
-        WorkflowMenu(onEdit = onEdit, onDelete = onDelete)
+        WorkflowMenu(
+            canPin = canPin,
+            onEdit = onEdit,
+            onPin = onPin,
+            onDuplicate = onDuplicate,
+            onExport = onExport,
+            onShare = onShare,
+            onDelete = onDelete,
+        )
     }
 }
 
@@ -339,12 +361,22 @@ private fun SelectionBar(
 /**
  * Everything workflow-level that is not worth a permanent icon.
  *
- * This is the bar's release valve: duplicate, share/export and per-workflow
- * settings all land here as further [DropdownMenuItem]s, and none of them costs
- * the title a single dp.
+ * The items themselves are [MacroActionsMenu], which the workflow list's rows open too.
+ * This bar used to carry a menu of its own with Edit and Delete in it, which made the
+ * editor the one place a macro could be looked at but not exported, duplicated or sent
+ * to anybody — and the editor is exactly where somebody is standing when they decide a
+ * macro is finished. There is one menu now, so the two cannot differ again.
  */
 @Composable
-private fun WorkflowMenu(onEdit: () -> Unit, onDelete: () -> Unit) {
+private fun WorkflowMenu(
+    canPin: Boolean,
+    onEdit: () -> Unit,
+    onPin: () -> Unit,
+    onDuplicate: () -> Unit,
+    onExport: () -> Unit,
+    onShare: () -> Unit,
+    onDelete: () -> Unit,
+) {
     var menuOpen by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { menuOpen = true }) {
@@ -354,32 +386,17 @@ private fun WorkflowMenu(onEdit: () -> Unit, onDelete: () -> Unit) {
                 tint = EditorColors.textPrimary,
             )
         }
-        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.grapheditor_edit)) },
-                onClick = {
-                    menuOpen = false
-                    onEdit()
-                },
-                leadingIcon = { Icon(Icons.Filled.Edit, contentDescription = null) },
-            )
-            HorizontalDivider()
-            DropdownMenuItem(
-                text = { Text(
-                    stringResource(R.string.grapheditor_delete_workflow), color = EditorColors.triggerAccent) },
-                onClick = {
-                    menuOpen = false
-                    onDelete()
-                },
-                leadingIcon = {
-                    Icon(
-                        Icons.Filled.Delete,
-                        contentDescription = null,
-                        tint = EditorColors.triggerAccent,
-                    )
-                },
-            )
-        }
+        MacroActionsMenu(
+            expanded = menuOpen,
+            onDismissRequest = { menuOpen = false },
+            canPin = canPin,
+            onEdit = onEdit,
+            onPin = onPin,
+            onDuplicate = onDuplicate,
+            onExport = onExport,
+            onShare = onShare,
+            onDelete = onDelete,
+        )
     }
 }
 

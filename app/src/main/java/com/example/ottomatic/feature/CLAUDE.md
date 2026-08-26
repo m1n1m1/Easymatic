@@ -42,6 +42,16 @@ A collapsed 44 dp strip that overlaid the canvas and could be **dragged** to hal
 
 That second level lives **inside the editor** rather than routing to the standalone globals screen, and the back gesture is why: leaving the editor and coming back would land on the canvas, whereas back from the globals has to return to the workflow's own variables. So `EditorTabPanel` holds a `showingGlobals` flag with its own `BackHandler`, registered below `GraphEditorContent`'s so the dispatcher offers it the gesture first. `PanelTopBar`'s leading button carries which of two things it does — ✕ leaves for the graph, ← goes back a level — since it is the same button and the icon is the only thing that says which.
 
+## A macro's own actions, in one menu
+
+Edit, Add to home screen, Duplicate, Export, Share, Delete — the six things done to a macro *as a whole* — are **`MacroActionsMenu`** (`feature/macro/`), opened both by a `WorkflowRow`'s ⋮ and by `EditorTopBar`'s. They were two menus until 2026-08-26: six items on the list row, two in the editor, which made the editor the one place a macro could be looked at but not sent to anybody — and the editor is exactly where somebody is standing when they decide a macro is finished. One composable now, so the next item added appears in both.
+
+What each item *does* is likewise one implementation, **`MacroOperations`** (`feature/macro/`), which both ViewModels delegate to: a Duplicate that re-mints credentials on one screen and not on the other is not a difference any user could predict. The document-picker round trip (`rememberMacroExport`) and the whole pin flow with its two dialogs (`rememberMacroPinner`) are shared the same way, because each is state plus a launcher that a screen offering the item has nothing to say about.
+
+Two differences are real and stayed. **Deleting** is each screen's own — the editor has a debounced save and an `isDeleted` flag to stand down first, the list has neither. And the editor has **a graph in memory that is newer than the file**: every one of these actions reads the macro back through the repository, so `EditorMacroActions` flushes first. Without that, exporting thirty seconds into a session writes the graph as it was when the last keystroke settled — silently, into a file the user is about to send somebody.
+
+Two things are deliberately *not* in the menu. **Arming** is a switch beside it in both places, because it is flipped repeatedly and has to say its state without being opened. **Import** belongs to the list rather than to any one macro, so it sits by the Add FAB.
+
 ## The AI assistant
 
 `AssistantOverlay` (`feature/grapheditor/assistant/`) is the editor's fourth surface and the only one that is **not** one of the bottom bar's. It is **one panel whose conversation folds**, with a drag handle on top: handle, conversation (transcript + model chip), status row, input. A small FAB above Add Node opens it.

@@ -209,7 +209,6 @@
     <string name="workflowlist_choose_a_macro">Makro auswählen</string>
     <string name="workflowlist_delete">Löschen</string>
     <string name="workflowlist_delete_workflow">Workflow löschen</string>
-    <string name="workflowlist_edit">Bearbeiten</string>
     <string name="workflowlist_geofences">Geofences</string>
     <string name="workflowlist_global_variables">Globale Variablen</string>
     <string name="workflowlist_libraries">Bibliotheken</string>

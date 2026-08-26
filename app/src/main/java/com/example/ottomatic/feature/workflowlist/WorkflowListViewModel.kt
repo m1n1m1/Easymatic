@@ -15,13 +15,12 @@ import com.example.ottomatic.data.trigger.VariableStore
 import com.example.ottomatic.domain.model.MacroAccent
 import com.example.ottomatic.domain.model.MacroIcon
 import com.example.ottomatic.domain.model.WorkflowSummary
-import com.example.ottomatic.domain.model.reissuedConfig
 import com.example.ottomatic.domain.transfer.ImportResult
 import com.example.ottomatic.engine.service.MacroEngineService
 import com.example.ottomatic.engine.validation.GraphValidator
+import com.example.ottomatic.feature.macro.MacroOperations
 import com.example.ottomatic.feature.widget.MacroSnapshots
 import com.example.ottomatic.feature.widget.ManualTriggerRef
-import com.example.ottomatic.feature.widget.RunTilePin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -90,6 +89,12 @@ class WorkflowListViewModel(
     private val _uiState = MutableStateFlow(WorkflowListUiState())
     val uiState: StateFlow<WorkflowListUiState> = _uiState.asStateFlow()
 
+    /**
+     * Duplicate, export, share and pin — the four the editor's overflow menu offers
+     * too, performed by the one class both screens delegate to. See [MacroOperations].
+     */
+    private val operations = MacroOperations(repository, transfers, appContext)
+
     init {
         refresh()
     }
@@ -154,33 +159,22 @@ class WorkflowListViewModel(
     }
 
     /**
-     * Writes [id] to [target] as an export file.
+     * Writes [id] to [target] as an export file, saying so when it could not be done.
      *
-     * The file is produced by [MacroTransferRepository], which strips the one
-     * credential a graph can hold and gathers the credential-free library entries the
-     * macro points at, so what lands on the other phone resolves rather than dangling.
+     * What the file contains, and what is stripped from it on the way out, is
+     * [MacroOperations.export]'s business — the part that belongs here is that a failed
+     * write has to reach the user rather than being a menu item that did nothing.
      */
     fun export(id: String, target: Uri) {
         viewModelScope.launch {
-            val text = transfers.exportText(id)
-            val written = text != null && write(target, text)
-            if (!written) fail(TransferFailure.EXPORT_FAILED)
+            if (!operations.export(id, target)) fail(TransferFailure.EXPORT_FAILED)
         }
     }
 
-    /**
-     * Writes [id] into the cache and hands the share sheet a read grant on it.
-     *
-     * A cache copy rather than the stored file: the stored one holds the live API token
-     * and the arming flag, and it lives beside every other macro in a directory no
-     * other app may be given a foothold in. See `res/xml/file_paths.xml`.
-     */
+    /** Hands [id] to the share sheet as a sanitised copy. */
     fun share(id: String, name: String) {
         viewModelScope.launch {
-            val text = transfers.exportText(id)
-            if (text == null || !MacroSharing.share(appContext, transfers.fileNameFor(name), text)) {
-                fail(TransferFailure.EXPORT_FAILED)
-            }
+            if (!operations.share(id, name)) fail(TransferFailure.EXPORT_FAILED)
         }
     }
 
@@ -191,7 +185,7 @@ class WorkflowListViewModel(
      * suffix are the export format's business, and a second copy of them in the UI
      * would be free to drift from the one the share path uses.
      */
-    fun suggestedFileName(name: String): String = transfers.fileNameFor(name)
+    fun suggestedFileName(name: String): String = operations.suggestedFileName(name)
 
     /** Reads [source] and, when it holds a macro, saves it under a fresh id. */
     fun import(source: Uri) {
@@ -210,28 +204,10 @@ class WorkflowListViewModel(
         }
     }
 
-    /**
-     * Copies [id] into a new macro, disarmed and with its credentials re-minted.
-     *
-     * Goes through the same [reissuedConfig] the editor's duplicate-selection uses, on
-     * the same argument: a node must not work or not depending on how it was made, and
-     * a copy sharing the original's API token would leave two endpoints behind one
-     * secret.
-     */
+    /** Copies [id] into a new macro, disarmed and with its credentials re-minted. */
     fun duplicate(id: String) {
         viewModelScope.launch {
-            val original = repository.load(id) ?: return@launch
-            val copy = repository.create(
-                appContext.getString(R.string.macro_transfer_copy_suffix, original.name),
-            )
-            repository.save(
-                original.copy(
-                    id = copy.id,
-                    name = copy.name,
-                    enabled = false,
-                    nodes = original.nodes.map { it.copy(config = reissuedConfig(it)) },
-                ),
-            )
+            operations.duplicate(id)
             refresh()
         }
     }
@@ -258,18 +234,6 @@ class WorkflowListViewModel(
         _uiState.update { it.copy(transfer = TransferMessage.Failed(reason)) }
     }
 
-    private suspend fun write(target: Uri, text: String): Boolean =
-        withContext(Dispatchers.IO) {
-            runCatching {
-                // "wt" truncates. Without it, overwriting a longer file leaves the tail
-                // of the old one past the end of the new JSON, which parses as garbage
-                // on the way back in rather than failing at the point of writing.
-                appContext.contentResolver.openOutputStream(target, "wt")?.use {
-                    it.write(text.toByteArray())
-                } != null
-            }.getOrDefault(false)
-        }
-
     private suspend fun read(source: Uri): String? = withContext(Dispatchers.IO) {
         runCatching {
             appContext.contentResolver.openInputStream(source)?.use {
@@ -279,17 +243,10 @@ class WorkflowListViewModel(
     }
 
     /**
-     * Asks the launcher to place a Run tile widget for [trigger] on the home screen.
-     *
-     * A widget rather than the launcher shortcut this used to pin: the two occupy the
-     * same grid cell and run the same macro, but a shortcut is a static icon the
-     * launcher owns, while a tile reports what the run is doing. See [RunTilePin].
-     *
-     * Returns false when the launcher refuses — several launchers do not support
-     * pinning at all — so the screen can say so rather than leaving the user
-     * waiting for a system dialog that is never going to appear.
+     * Asks the launcher to place a Run tile widget for [trigger] on the home screen,
+     * reporting false when the launcher refuses — several do not support pinning at all.
      */
-    fun pin(trigger: ManualTriggerRef): Boolean = RunTilePin.request(appContext, trigger)
+    fun pin(trigger: ManualTriggerRef): Boolean = operations.pin(trigger)
 
     /** Applies everything the Edit dialog can change: name, icon and accent. */
     fun updateMacro(id: String, name: String, icon: MacroIcon, accent: MacroAccent) {

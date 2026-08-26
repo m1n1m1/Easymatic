@@ -625,13 +625,14 @@
     <string name="port_action_enable_macro_state">状態</string>
     <string name="cfg_action_enable_macro_macro_id">マクロ</string>
     <string name="node_action_flashlight_name">ライトを切り替え</string>
-    <string name="node_action_flashlight_desc">カメラのライト（懐中電灯）をオン／オフします</string>
+    <string name="node_action_flashlight_desc">カメラのライト（懐中電灯）をオン／オフ、または現在と逆の状態にします</string>
     <string name="port_action_flashlight_in">入力</string>
     <string name="port_action_flashlight_out">出力</string>
     <string name="port_action_flashlight_state">状態</string>
     <string name="cfg_action_flashlight_state">状態</string>
     <string name="opt_action_flashlight_state_on">オン</string>
     <string name="opt_action_flashlight_state_off">オフ</string>
+    <string name="opt_action_flashlight_state_toggle">切り替え</string>
     <string name="node_action_http_name">HTTP リクエスト</string>
     <string name="node_action_http_desc">Web API を呼び出し、型付きのレスポンスを出力します</string>
     <string name="port_action_http_in">入力</string>
@@ -1613,4 +1614,7 @@
     <string name="node_value_speaking_name">読み上げ中</string>
     <string name="node_value_speaking_desc">端末が今何かを読み上げているかどうか</string>
     <string name="port_value_speaking_speaking">読み上げ中</string>
+    <string name="node_value_torch_name">ライトがオン</string>
+    <string name="node_value_torch_desc">カメラのライト（懐中電灯）が現在点灯しているかどうか</string>
+    <string name="port_value_torch_on">オン</string>
 </resources>

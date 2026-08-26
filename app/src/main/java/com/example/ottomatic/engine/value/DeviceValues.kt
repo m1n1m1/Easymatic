@@ -120,7 +120,7 @@ class WifiNetworkValue : DeviceValue<String>() {
  *
  * Two things about this one are exceptions, and both are deliberate.
  *
- * It is the only value node with **no trigger counterpart**. The pairing rule runs
+ * It has **no trigger counterpart**, as [TorchValue] does not. The pairing rule runs
  * the other way — every trigger over a readable state earns a value — and there is
  * no `trigger.nfc_state` because the platform publishes no adapter-state broadcast
  * worth arming a macro on. A value with no trigger costs nothing and answers a real
@@ -269,4 +269,36 @@ class RingerModeValue : DeviceValue<RingerMode>() {
     )
 
     override fun readValue(context: ExecutionContext) = context.deviceState.ringerMode()
+}
+
+/**
+ * `value.torch` — whether the camera torch is lit.
+ *
+ * The read half of `action.flashlight`, and what its **Toggle** option resolves
+ * against. It follows the torch wherever it was lit from — a quick-settings tile,
+ * another app, a macro — because the platform pushes every change into the cache
+ * behind [com.example.ottomatic.core.service.DeviceState.isTorchOn] rather than
+ * this node tracking what Ottomatic itself did.
+ *
+ * Like [NfcValue] it declares **no permission**, for the same reason: a node whose
+ * whole job is to answer *"is the light on?"* must not be badged in the Problems
+ * panel for the light being off. Reading the state needs no grant either — only
+ * `action.flashlight`, which changes it, does.
+ *
+ * Reads null until the platform has reported a torch mode, which covers a phone
+ * with no flash unit and one whose camera another app currently holds. A
+ * comparison over null fails closed, so "if the torch is on" is false rather than
+ * guessed.
+ */
+class TorchValue : DeviceValue<Boolean>() {
+    override val definition = valueNode<NoConfig, Boolean>(
+        typeId = "value.torch",
+        displayName = "Flashlight on",
+        description = "Whether the camera torch (flashlight) is currently lit",
+        category = NodeCategory.VALUE_DEVICE,
+        icon = NodeIcon.BOLT,
+        output = dataOut("on", label = "On"),
+    )
+
+    override fun readValue(context: ExecutionContext) = context.deviceState.isTorchOn()
 }

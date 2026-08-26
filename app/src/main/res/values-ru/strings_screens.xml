@@ -205,7 +205,6 @@
     <string name="workflowlist_choose_a_macro">Выберите макрос</string>
     <string name="workflowlist_delete">Удалить</string>
     <string name="workflowlist_delete_workflow">Удалить сценарий</string>
-    <string name="workflowlist_edit">Изменить</string>
     <string name="workflowlist_geofences">Геозоны</string>
     <string name="workflowlist_global_variables">Глобальные переменные</string>
     <string name="workflowlist_libraries">Библиотеки</string>

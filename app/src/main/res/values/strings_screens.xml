@@ -246,7 +246,6 @@
     <string name="workflowlist_choose_a_macro">Choose a macro</string>
     <string name="workflowlist_delete">Delete</string>
     <string name="workflowlist_delete_workflow">Delete workflow</string>
-    <string name="workflowlist_edit">Edit</string>
     <string name="workflowlist_geofences">Geofences</string>
     <string name="workflowlist_global_variables">Global variables</string>
     <string name="workflowlist_libraries">Libraries</string>

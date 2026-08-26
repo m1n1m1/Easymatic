@@ -33,6 +33,41 @@ enum class OnOff {
     }
 }
 
+/**
+ * A two-state toggle plus [TOGGLE], which asks for the *opposite* of whatever is
+ * true right now.
+ *
+ * Separate from [OnOff] rather than a third entry on it, because the third entry
+ * is only answerable where the state can be read back. `action.wifi`,
+ * `action.bluetooth` and `action.auto_rotate` write a setting and are never told
+ * what it was; offering them a "Toggle" that silently did nothing would be worse
+ * than not offering it. The torch has a reader behind it
+ * ([DeviceState.isTorchOn]), so it gets the third option and they do not.
+ */
+@Serializable
+enum class OnOffToggle {
+    @SerialName("on")
+    ON,
+
+    @SerialName("off")
+    OFF,
+
+    @SerialName("toggle")
+    TOGGLE,
+    ;
+
+    /**
+     * What this choice means given [current], the state read back from the
+     * device, or null when [TOGGLE] was asked for and nothing could be read —
+     * which is the one case where there is no honest answer to invert.
+     */
+    fun resolve(current: Boolean?): Boolean? = when (this) {
+        ON -> true
+        OFF -> false
+        TOGGLE -> current?.not()
+    }
+}
+
 /** An audio stream whose volume can be adjusted. */
 @Serializable
 enum class AudioStream {

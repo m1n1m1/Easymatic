@@ -625,13 +625,14 @@
     <string name="port_action_enable_macro_state">状态</string>
     <string name="cfg_action_enable_macro_macro_id">宏</string>
     <string name="node_action_flashlight_name">切换手电筒</string>
-    <string name="node_action_flashlight_desc">开启或关闭相机闪光灯（手电筒）</string>
+    <string name="node_action_flashlight_desc">开启、关闭相机闪光灯（手电筒），或切换到相反状态</string>
     <string name="port_action_flashlight_in">输入</string>
     <string name="port_action_flashlight_out">输出</string>
     <string name="port_action_flashlight_state">状态</string>
     <string name="cfg_action_flashlight_state">状态</string>
     <string name="opt_action_flashlight_state_on">开启</string>
     <string name="opt_action_flashlight_state_off">关闭</string>
+    <string name="opt_action_flashlight_state_toggle">切换</string>
     <string name="node_action_http_name">HTTP 请求</string>
     <string name="node_action_http_desc">调用一个网络 API，并给出带类型的响应</string>
     <string name="port_action_http_in">输入</string>
@@ -1613,4 +1614,7 @@
     <string name="node_value_speaking_name">正在朗读</string>
     <string name="node_value_speaking_desc">手机此刻是否正在朗读内容</string>
     <string name="port_value_speaking_speaking">正在朗读</string>
+    <string name="node_value_torch_name">手电筒已开启</string>
+    <string name="node_value_torch_desc">相机闪光灯（手电筒）当前是否亮着</string>
+    <string name="port_value_torch_on">开启</string>
 </resources>

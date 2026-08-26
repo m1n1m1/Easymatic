@@ -625,13 +625,14 @@
     <string name="port_action_enable_macro_state">estado</string>
     <string name="cfg_action_enable_macro_macro_id">Macro</string>
     <string name="node_action_flashlight_name">Alternar lanterna</string>
-    <string name="node_action_flashlight_desc">Liga ou desliga a lanterna da câmara</string>
+    <string name="node_action_flashlight_desc">Liga, desliga ou inverte o estado atual da lanterna da câmara</string>
     <string name="port_action_flashlight_in">Entrada</string>
     <string name="port_action_flashlight_out">Saída</string>
     <string name="port_action_flashlight_state">estado</string>
     <string name="cfg_action_flashlight_state">Estado</string>
     <string name="opt_action_flashlight_state_on">Ligado</string>
     <string name="opt_action_flashlight_state_off">Desligado</string>
+    <string name="opt_action_flashlight_state_toggle">Alternar</string>
     <string name="node_action_http_name">Pedido HTTP</string>
     <string name="node_action_http_desc">Chama uma API web e expõe a resposta tipificada</string>
     <string name="port_action_http_in">Entrada</string>
@@ -1613,4 +1614,7 @@
     <string name="node_value_speaking_name">A falar</string>
     <string name="node_value_speaking_desc">Se o telemóvel está a dizer algo em voz alta neste momento</string>
     <string name="port_value_speaking_speaking">A falar</string>
+    <string name="node_value_torch_name">Lanterna ligada</string>
+    <string name="node_value_torch_desc">Se a lanterna da câmara está ligada neste momento</string>
+    <string name="port_value_torch_on">Ligado</string>
 </resources>

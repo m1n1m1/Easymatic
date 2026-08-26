@@ -45,10 +45,27 @@ class DeviceValuesTest {
         assertNull(DarkModeValue().read(NoConfig, context))
     }
 
+    /**
+     * `value.torch` is the read half of `action.flashlight`'s **Toggle** option, so
+     * the two must agree about what "unreadable" means: nothing, not `false`. A
+     * comparison over nothing fails closed, and Toggle over nothing does nothing.
+     */
+    @Test
+    fun `the torch reader reports the lit state and nothing when it is unknown`() = runBlocking {
+        assertEquals(true, TorchValue().read(NoConfig, contextOf(TorchAt(true))))
+        assertEquals(false, TorchValue().read(NoConfig, contextOf(TorchAt(false))))
+        assertNull(TorchValue().read(NoConfig, contextOf(UnknownDeviceState)))
+    }
+
     private fun contextOf(state: DeviceState) = DefaultExecutionContext(
         systemServices = RecordingSystemServices(),
         deviceState = state,
     )
+}
+
+/** Reports the torch and nothing else. */
+private class TorchAt(private val lit: Boolean) : DeviceState by UnknownDeviceState {
+    override fun isTorchOn(): Boolean = lit
 }
 
 /** Reports the four properties under test and nothing else. */

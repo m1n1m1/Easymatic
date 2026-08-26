@@ -205,7 +205,6 @@
     <string name="workflowlist_choose_a_macro">Escolher uma macro</string>
     <string name="workflowlist_delete">Eliminar</string>
     <string name="workflowlist_delete_workflow">Eliminar fluxo</string>
-    <string name="workflowlist_edit">Editar</string>
     <string name="workflowlist_geofences">Geocercas</string>
     <string name="workflowlist_global_variables">Variáveis globais</string>
     <string name="workflowlist_libraries">Bibliotecas</string>

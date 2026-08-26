@@ -625,13 +625,14 @@
     <string name="port_action_enable_macro_state">estado</string>
     <string name="cfg_action_enable_macro_macro_id">Macro</string>
     <string name="node_action_flashlight_name">Alternar linterna</string>
-    <string name="node_action_flashlight_desc">Enciende o apaga la linterna de la cámara</string>
+    <string name="node_action_flashlight_desc">Enciende, apaga o invierte el estado actual de la linterna de la cámara</string>
     <string name="port_action_flashlight_in">Entrada</string>
     <string name="port_action_flashlight_out">Salida</string>
     <string name="port_action_flashlight_state">estado</string>
     <string name="cfg_action_flashlight_state">Estado</string>
     <string name="opt_action_flashlight_state_on">Encendido</string>
     <string name="opt_action_flashlight_state_off">Apagado</string>
+    <string name="opt_action_flashlight_state_toggle">Alternar</string>
     <string name="node_action_http_name">Petición HTTP</string>
     <string name="node_action_http_desc">Llama a una API web y expone la respuesta tipada</string>
     <string name="port_action_http_in">Entrada</string>
@@ -1613,4 +1614,7 @@
     <string name="node_value_speaking_name">Hablando</string>
     <string name="node_value_speaking_desc">Si el teléfono está diciendo algo en voz alta ahora mismo</string>
     <string name="port_value_speaking_speaking">Hablando</string>
+    <string name="node_value_torch_name">Linterna encendida</string>
+    <string name="node_value_torch_desc">Si la linterna de la cámara está encendida ahora mismo</string>
+    <string name="port_value_torch_on">Encendido</string>
 </resources>

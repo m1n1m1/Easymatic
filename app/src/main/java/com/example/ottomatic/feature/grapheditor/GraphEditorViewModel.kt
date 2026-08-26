@@ -16,6 +16,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.ottomatic.data.AssistantSettingsRepository
+import com.example.ottomatic.data.MacroTransferRepository
 import com.example.ottomatic.data.WorkflowRepository
 import com.example.ottomatic.data.trigger.VariableStore
 import com.example.ottomatic.domain.model.Direction
@@ -53,6 +54,7 @@ import com.example.ottomatic.engine.validation.GraphValidator
 import com.example.ottomatic.feature.grapheditor.assistant.AssistantEditor
 import com.example.ottomatic.feature.grapheditor.assistant.AssistantSession
 import com.example.ottomatic.feature.i18n.NodeText
+import com.example.ottomatic.feature.macro.MacroOperations
 import com.example.ottomatic.feature.variables.VariableScope
 import com.example.ottomatic.feature.variables.specFor
 import kotlin.math.max
@@ -146,6 +148,13 @@ data class GraphEditorUiState(
 @Suppress("TooManyFunctions", "LongParameterList")
 class GraphEditorViewModel(
     private val repository: WorkflowRepository,
+    /**
+     * The export format, for the Export and Share items of the workflow menu.
+     *
+     * Here rather than reached for through `ServiceLocator` like everything else in
+     * this ViewModel: it keeps the editor constructible without a process.
+     */
+    private val transfers: MacroTransferRepository,
     private val executionContext: ExecutionContext,
     private val runLog: RunLog,
     private val appContext: android.content.Context,
@@ -171,6 +180,21 @@ class GraphEditorViewModel(
 
     private val _uiState = MutableStateFlow(GraphEditorUiState())
     val uiState: StateFlow<GraphEditorUiState> = _uiState.asStateFlow()
+
+    /**
+     * The workflow menu's items — duplicate, export, share, pin.
+     *
+     * Performed by the same [MacroOperations] the workflow list delegates them to, so
+     * the menu now shared between the two screens is backed by one implementation as
+     * well as drawn by one composable. See [EditorMacroActions] for the half that is
+     * the editor's own: writing the in-memory graph out before anything reads it back.
+     */
+    val macroActions = EditorMacroActions(
+        operations = MacroOperations(repository, transfers, appContext),
+        scope = viewModelScope,
+        workflow = { _uiState.value.workflow },
+        saveNow = ::saveNow,
+    )
 
     /**
      * Names a node as it is placed.
@@ -945,6 +969,21 @@ class GraphEditorViewModel(
         }
     }
 
+    /**
+     * Writes the pending edits out before something reads this workflow back from disk.
+     *
+     * Answers false while the initial load is still in flight or the macro has been
+     * deleted, which are the two states [flush] itself declines to write in — there is
+     * nothing to export, duplicate or share from either.
+     */
+    private suspend fun saveNow(): Boolean {
+        val state = _uiState.value
+        if (!state.isLoaded || isDeleted) return false
+        saveJob?.cancel()
+        flush()
+        return true
+    }
+
     // endregion
 
     // region Workflow execution
@@ -1201,6 +1240,7 @@ class GraphEditorViewModel(
         @Suppress("LongParameterList") // Mirrors the ViewModel's injected dependencies 1:1.
         fun factory(
             repository: WorkflowRepository,
+            transfers: MacroTransferRepository,
             executionContext: ExecutionContext,
             runLog: RunLog,
             appContext: android.content.Context,
@@ -1212,6 +1252,7 @@ class GraphEditorViewModel(
             initializer {
                 GraphEditorViewModel(
                     repository,
+                    transfers,
                     executionContext,
                     runLog,
                     appContext,
