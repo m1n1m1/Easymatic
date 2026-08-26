@@ -22,7 +22,7 @@ import com.example.ottomatic.feature.grapheditor.EditorColors
 /**
  * The header every screen reached from Setup wears: back arrow, title, chrome surface.
  *
- * One composable rather than one copy per screen, for the reason `trimmedBottomInsets`
+ * One composable rather than one copy per screen, for the reason `BottomNavigationBar`
  * is one function — the rule is the same rule, and a copy can only drift. It already
  * had: the ten screens that hand-rolled this Row agreed on the height, the padding and
  * the 18sp title, while App access and Plugins had drifted onto `titleLarge` and, worse,

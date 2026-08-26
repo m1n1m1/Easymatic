@@ -14,12 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,11 +22,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.sp
 import com.example.ottomatic.R
+import com.example.ottomatic.feature.BottomNavigationBar
+import com.example.ottomatic.feature.BottomNavigationBarIcon
+import com.example.ottomatic.feature.BottomNavigationBarItem
 import com.example.ottomatic.feature.grapheditor.EditorColors
 import com.example.ottomatic.feature.setup.SetupScreen
-import com.example.ottomatic.feature.trimmedBottomInsets
 import com.example.ottomatic.feature.workflowlist.WorkflowListScreen
 import com.example.ottomatic.feature.workflowlist.WorkflowListViewModel
 
@@ -124,41 +119,26 @@ enum class HomeTab(@StringRes val labelRes: Int, val icon: ImageVector) {
 }
 
 /**
- * The app's navigation bar, in the app's palette.
+ * The app's navigation bar: [BottomNavigationBar] with this screen's two tabs in it.
  *
- * [NavigationBar] at its full height rather than the editor's `ShortNavigationBar`:
- * that one is squeezed to 64 dp because it sits over a canvas that wants every pixel,
- * and there is no such pressure here. The two reading differently is right — this is
- * where you are in the app, that is a dock over a document.
- *
- * Only the colours are overridden, from [EditorColors], which is the rule everywhere
- * in this app: the palette is fixed dark and independent of `MaterialTheme`, so a bar
- * taking `MaterialTheme.colorScheme` would render light under it.
+ * It used to be a full-height `NavigationBar` while the editor's was a
+ * `ShortNavigationBar`, on the argument that the editor's is squeezed because it
+ * sits over a canvas that wants every pixel and nothing here is under that pressure.
+ * The pressure was the wrong test: the 16 dp is padding above and below the label,
+ * and there is no screen in this app where a taller bar says more. Both are the
+ * short one now, and the identical component is what stops them drifting apart
+ * again.
  */
 @Composable
 private fun HomeBottomBar(selected: HomeTab, onSelect: (HomeTab) -> Unit) {
-    Column {
-        HorizontalDivider(color = EditorColors.chromeBorder)
-        NavigationBar(
-            containerColor = EditorColors.chrome,
-            contentColor = EditorColors.textPrimary,
-            windowInsets = trimmedBottomInsets(),
-        ) {
-            HomeTab.entries.forEach { tab ->
-                NavigationBarItem(
-                    selected = selected == tab,
-                    onClick = { onSelect(tab) },
-                    icon = { Icon(imageVector = tab.icon, contentDescription = null) },
-                    label = { Text(stringResource(tab.labelRes), fontSize = 11.sp) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = EditorColors.textPrimary,
-                        selectedTextColor = EditorColors.textPrimary,
-                        indicatorColor = EditorColors.nodeBackground,
-                        unselectedIconColor = EditorColors.textSecondary,
-                        unselectedTextColor = EditorColors.textSecondary,
-                    ),
-                )
-            }
+    BottomNavigationBar {
+        HomeTab.entries.forEach { tab ->
+            BottomNavigationBarItem(
+                selected = selected == tab,
+                onClick = { onSelect(tab) },
+                label = stringResource(tab.labelRes),
+                icon = { BottomNavigationBarIcon(tab.icon) },
+            )
         }
     }
 }

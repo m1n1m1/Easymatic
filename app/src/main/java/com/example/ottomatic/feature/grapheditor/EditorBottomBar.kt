@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -22,9 +21,6 @@ import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ShortNavigationBar
-import androidx.compose.material3.ShortNavigationBarItem
-import androidx.compose.material3.ShortNavigationBarItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +35,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ottomatic.core.model.NodeId
-import com.example.ottomatic.feature.trimmedBottomInsets
+import com.example.ottomatic.feature.BottomNavigationBar
+import com.example.ottomatic.feature.BottomNavigationBarIcon
+import com.example.ottomatic.feature.BottomNavigationBarItem
 import com.example.ottomatic.core.service.LogEntry
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.Workflow
@@ -58,18 +56,12 @@ import kotlinx.coroutines.flow.StateFlow
  * visible, which is the point: a warning nobody can see until they open something
  * is not a warning.
  *
- * ### A standard navigation bar, in the editor's palette
+ * ### The bar itself is the app's
  *
- * [ShortNavigationBar] rather than `NavigationBar`: same stacked icon-over-label
- * item, 64 dp instead of 80, because the difference between them is almost entirely
- * padding above and below the content. The component is still Material's, so the
- * touch targets, the ripple, the selection pill and the accessibility semantics
- * are too.
- *
- * Only the colours are overridden, from [EditorColors]. That is deliberate and not
- * an oversight: the editor's palette is fixed dark and independent of the app theme
- * (see [EditorColors]), so a bar taking `MaterialTheme.colorScheme` would render
- * light — under a permanently dark canvas — on any light-themed phone.
+ * Everything but the items is [BottomNavigationBar] — the height, the rule above it,
+ * the palette, the trimmed inset — shared with the home shell's bar, which is the
+ * only bar in the app that is not this one. This file supplies three items and their
+ * badges and nothing else.
  *
  * ### The bar stays put; the surface above it changes
  *
@@ -101,28 +93,14 @@ fun EditorBottomBar(
     consoleProblems: StateFlow<Int>,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
-        HorizontalDivider(color = EditorColors.chromeBorder)
-        ShortNavigationBar(
-            containerColor = EditorColors.chrome,
-            contentColor = EditorColors.textPrimary,
-            windowInsets = trimmedBottomInsets(),
-        ) {
-            EditorTab.entries.forEach { tab ->
-                ShortNavigationBarItem(
-                    selected = selected == tab,
-                    onClick = { onSelect(tab.takeIf { it != selected }) },
-                    icon = { TabIcon(tab = tab, validation = validation, consoleProblems = consoleProblems) },
-                    label = { Text(stringResource(tab.labelRes), fontSize = 11.sp) },
-                    colors = ShortNavigationBarItemDefaults.colors(
-                        selectedIconColor = EditorColors.textPrimary,
-                        selectedTextColor = EditorColors.textPrimary,
-                        selectedIndicatorColor = EditorColors.nodeBackground,
-                        unselectedIconColor = EditorColors.textSecondary,
-                        unselectedTextColor = EditorColors.textSecondary,
-                    ),
-                )
-            }
+    BottomNavigationBar(modifier = modifier) {
+        EditorTab.entries.forEach { tab ->
+            BottomNavigationBarItem(
+                selected = selected == tab,
+                onClick = { onSelect(tab.takeIf { it != selected }) },
+                label = stringResource(tab.labelRes),
+                icon = { TabIcon(tab = tab, validation = validation, consoleProblems = consoleProblems) },
+            )
         }
     }
 }
@@ -303,9 +281,7 @@ private fun TabIcon(
     validation: StateFlow<GraphValidation>,
     consoleProblems: StateFlow<Int>,
 ) {
-    val icon: @Composable () -> Unit = {
-        Icon(imageVector = tab.icon, contentDescription = null, modifier = Modifier.size(22.dp))
-    }
+    val icon: @Composable () -> Unit = { BottomNavigationBarIcon(tab.icon) }
     when (tab) {
         EditorTab.PROBLEMS -> ProblemsBadge(validation, icon)
         EditorTab.CONSOLE -> ConsoleBadge(consoleProblems, icon)
