@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.ottomatic.R
 import com.example.ottomatic.domain.model.HaScope
@@ -389,16 +388,12 @@ private fun HaRow(title: String, subtitle: String, selected: Boolean, onClick: (
             style = MaterialTheme.typography.bodyLarge,
             color = EditorColors.textPrimary,
             fontWeight = FontWeight.Medium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
         )
         if (subtitle.isNotBlank()) {
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.textSecondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
             )
         }
     }
