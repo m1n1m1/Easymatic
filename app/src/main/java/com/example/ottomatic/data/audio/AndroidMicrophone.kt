@@ -5,6 +5,8 @@ import android.media.MediaMetadataRetriever
 import android.media.MediaRecorder
 import android.os.Build
 import com.example.ottomatic.core.model.NodeId
+import com.example.ottomatic.core.service.CaptureOutcome
+import com.example.ottomatic.core.service.CaptureRequest
 import com.example.ottomatic.core.service.FileResult
 import com.example.ottomatic.core.service.Microphone
 import com.example.ottomatic.core.service.RecordingOutcome
@@ -93,7 +95,46 @@ class AndroidMicrophone(
     @Volatile
     private var active: Session? = null
 
-    override fun isRecording(): Boolean = active != null
+    /**
+     * Whether [capture] is holding the microphone.
+     *
+     * A flag beside [active] rather than a second kind of [Session], because a capture
+     * has no recorder to stop, no temp file to move and nothing to announce — every
+     * field a session carries and every step [finish] takes. Making it one type would
+     * put three `if` branches inside the one function whose whole justification is that
+     * a recording ends in exactly one place.
+     *
+     * Guarded by the same [lock], which is the part that matters: there is one
+     * microphone, so "is anything running?" and "claim it" have to be one decision
+     * across both kinds or two macros firing together both see nothing running.
+     */
+    @Volatile
+    private var capturing = false
+
+    /** Completed to end the running capture early. */
+    private var captureStop: CompletableDeferred<Unit>? = null
+
+    /** The reading job, awaited by [endCapture] so the last buffer is not lost. */
+    private var captureJob: Job? = null
+
+    /**
+     * A finished clip nobody has collected yet.
+     *
+     * Exists because a capture can end **without** anybody asking it to: its own limit
+     * runs out. Discarding the clip then would mean a macro that listened for the full
+     * minute got silence from its stop node, which reads as the microphone having failed.
+     */
+    private var pendingCapture: CaptureOutcome? = null
+
+    /**
+     * True while either kind of session holds the microphone.
+     *
+     * **Both, not just [active]**, and the reason is what this member is for: it is what
+     * `value.recording` reads, and a "no" while the system's own recording indicator is
+     * lit is precisely the answer that member exists to prevent. It is also what stops
+     * `action.record_start` reaching for hardware an `action.ai_listen` already has.
+     */
+    override fun isRecording(): Boolean = active != null || capturing
 
     override suspend fun record(request: RecordingRequest): RecordingOutcome {
         val begun = lock.withLock { begin(request) }
@@ -136,6 +177,104 @@ class AndroidMicrophone(
     override suspend fun stop(): RecordingOutcome = lock.withLock {
         val session = active ?: return@withLock RecordingOutcome(error = "Nothing is recording")
         finish(session)
+    }
+
+    /**
+     * A clip held in memory, taking the microphone for as long as it runs.
+     *
+     * **The claim is taken under [lock] and released in a `finally`, but the read itself
+     * is not held under it**, and that split is deliberate. Holding the mutex for the
+     * whole two minutes would make `stop()` — and `isRecording()`'s callers — wait on a
+     * clip they have nothing to do with; the flag is what other entry points actually
+     * need to see, so the flag is what the lock protects.
+     *
+     * **Nothing reaches `TriggerBus`.** `trigger.recording_saved` says "here is a file",
+     * and there is no file: firing it with a path that resolves to nothing would break
+     * every macro downstream of that trigger the first time somebody used this node.
+     */
+    override suspend fun capture(request: CaptureRequest): CaptureOutcome {
+        val refusal = lock.withLock {
+            when {
+                active != null -> "A recording is already running"
+                capturing -> "Already listening"
+                else -> {
+                    capturing = true
+                    null
+                }
+            }
+        }
+        if (refusal != null) return CaptureOutcome(error = refusal)
+        return try {
+            AudioCapture.record(appContext, request)
+        } finally {
+            // NonCancellable so a stopped run still gives the microphone back; without it
+            // the flag sticks and every later listen answers "already listening".
+            withContext(NonCancellable) { lock.withLock { capturing = false } }
+        }
+    }
+
+    /**
+     * Opens a capture that runs until [endCapture] or until its own limit.
+     *
+     * **The reading runs on [scope], not on the caller**, which is the whole difference
+     * from [capture] and the reason `action.ai_listen_start` can pulse `out` at once: the
+     * node that starts a capture returns long before the clip does, so a job tied to that
+     * node's coroutine would be cancelled the moment it finished.
+     *
+     * The clip is **kept when the limit ends it** rather than thrown away, in
+     * [pendingCapture], so a macro that listened for its full sixty seconds still has
+     * something for its stop node to send. The microphone is released either way, which
+     * is what stops a forgotten capture holding the hardware.
+     */
+    @Suppress("ReturnCount") // Busy, unstartable and begun are three answers a node reports differently.
+    override suspend fun beginCapture(request: CaptureRequest): String {
+        val refusal = lock.withLock {
+            when {
+                active != null -> "A recording is already running"
+                capturing -> "Already listening"
+                else -> {
+                    capturing = true
+                    pendingCapture = null
+                    captureStop = CompletableDeferred()
+                    null
+                }
+            }
+        }
+        if (refusal != null) return refusal
+        val signal = captureStop ?: return "Could not start listening"
+        captureJob = scope.launch {
+            val outcome = AudioCapture.record(appContext, request, signal)
+            withContext(NonCancellable) {
+                lock.withLock {
+                    pendingCapture = outcome
+                    capturing = false
+                }
+            }
+        }
+        return ""
+    }
+
+    /**
+     * Ends the capture and answers with the clip, or collects one the limit already ended.
+     *
+     * Awaits the reading job rather than reading [pendingCapture] straight away, because
+     * the loop checks the stop signal once per buffer: returning immediately would hand
+     * back a clip missing its last tenth of a second, or — if the stop arrived first —
+     * nothing at all.
+     */
+    override suspend fun endCapture(): CaptureOutcome {
+        val job = lock.withLock {
+            captureStop?.complete(Unit)
+            captureJob
+        }
+        job?.join()
+        return lock.withLock {
+            val outcome = pendingCapture
+            pendingCapture = null
+            captureStop = null
+            captureJob = null
+            outcome ?: CaptureOutcome(error = "Nothing is listening")
+        }
     }
 
     /**

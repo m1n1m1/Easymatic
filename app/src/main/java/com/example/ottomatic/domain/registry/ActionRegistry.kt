@@ -3,6 +3,10 @@ package com.example.ottomatic.domain.registry
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.engine.ExecutableAction
 import com.example.ottomatic.engine.action.AiDescribeAction
+import com.example.ottomatic.engine.action.AiListenAction
+import com.example.ottomatic.engine.action.AiListenStartAction
+import com.example.ottomatic.engine.action.AiListenStopAction
+import com.example.ottomatic.engine.action.AiTranscribeAction
 import com.example.ottomatic.engine.action.AiPromptAction
 import com.example.ottomatic.engine.action.AskChoiceAction
 import com.example.ottomatic.engine.action.AskConfirmAction
@@ -114,6 +118,16 @@ object ActionRegistry {
     private val actions: List<ExecutableAction> = listOf(
         AiPromptAction(),
         AiDescribeAction(),
+        // The two media questions sit beside the picture one rather than with the
+        // recording family: what a user is looking for here is "ask AI about a…", and
+        // the palette renders in this order.
+        AiTranscribeAction(),
+        // The one-shot listen first, then the start/stop pair — `action.record_audio`'s
+        // family order, and for its reason: the node most macros want is the one that
+        // needs no partner.
+        AiListenAction(),
+        AiListenStartAction(),
+        AiListenStopAction(),
         // The two rotation nodes together, on the notify pair's reasoning: turning the
         // screen is what somebody comes looking for, and it only holds because it
         // switched the toggle above it off — so the pair is only readable side by side.

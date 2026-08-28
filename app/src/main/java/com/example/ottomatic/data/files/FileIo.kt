@@ -56,29 +56,44 @@ internal fun readBounded(stream: InputStream, encoding: TextEncoding): FileRead 
 }
 
 /**
- * [readBounded]'s Base64 twin, sharing its cap and its reason for having one.
+ * [readBounded]'s Base64 twin, sharing its reason for having a cap.
  *
  * **Refuses a truncated read rather than returning it**, which is the one place these
  * two differ and is forced by what the bytes are for: half a text file is still text
  * somebody may want, where half a JPEG is not an image at all — a model sent one
- * reports that it cannot see the picture, which reads as the feature being broken.
+ * reports that it cannot see the picture, which reads as the feature being broken. The
+ * same holds for half a recording.
+ *
+ * **[maxBytes] is a parameter and the buffer grows into it rather than starting at
+ * it.** Both halves of that matter. The parameter exists because `action.ai_transcribe`
+ * knows it is holding a recording where this function cannot know anything; the growth
+ * exists because it would otherwise allocate the whole cap to read a thirty-kilobyte
+ * voice note — which was survivable at one megabyte and is not at four, in a process
+ * holding every armed macro on the phone.
+ *
+ * The cap is clamped to [FileLimits.MAX_BYTES_CEILING] here rather than trusted,
+ * because it now arrives from a caller instead of from a constant.
  */
-internal fun readBoundedBase64(stream: InputStream, mediaType: String): FileBytes {
-    val cap = FileLimits.MAX_READ_BYTES
-    val buffer = ByteArray(cap)
-    var filled = 0
-    while (filled < cap) {
-        val read = stream.read(buffer, filled, cap - filled)
+internal fun readBoundedBase64(
+    stream: InputStream,
+    mediaType: String,
+    maxBytes: Int = FileLimits.MAX_READ_BYTES,
+): FileBytes {
+    val cap = maxBytes.coerceIn(1, FileLimits.MAX_BYTES_CEILING)
+    val collected = java.io.ByteArrayOutputStream()
+    val buffer = ByteArray(BUFFER_BYTES)
+    while (collected.size() < cap) {
+        val read = stream.read(buffer, 0, minOf(BUFFER_BYTES, cap - collected.size()))
         if (read <= 0) break
-        filled += read
+        collected.write(buffer, 0, read)
     }
-    if (filled == cap && stream.read() != -1) {
+    if (collected.size() == cap && stream.read() != -1) {
         // The number, not the name of the constant. This read `${'$'}cap` until 2026-08-16,
         // which told the user nothing and looked like a broken template.
         return FileBytes(error = "That file is too big to read (over ${cap / BYTES_PER_KB} KB)")
     }
     return FileBytes(
-        base64 = Base64.encodeToString(buffer.copyOf(filled), Base64.NO_WRAP),
+        base64 = Base64.encodeToString(collected.toByteArray(), Base64.NO_WRAP),
         mediaType = mediaType,
     )
 }
@@ -109,15 +124,37 @@ internal suspend fun copyStream(from: InputStream, to: OutputStream): Long {
  *
  * Read off the extension rather than sniffed from the bytes, and read here rather
  * than asked of the platform, because the two callers disagree about what they can
- * ask: an app-storage file has no `ContentResolver` entry to query at all. The set is
- * the four every model here accepts and no more — offering a media type a provider
- * will reject only moves the failure later.
+ * ask: an app-storage file has no `ContentResolver` entry to query at all.
+ *
+ * **A blank answer is a refusal, and every caller must treat it as one** — that is
+ * what the set being closed buys. A guessed media type comes back from a provider as
+ * a generic 400 naming neither the file nor the reason, so a name this does not
+ * recognise has to be reported here, where the file can still be named.
+ *
+ * **The set is no longer "the types every model accepts", and it cannot be.** It was,
+ * while pictures were the only media: the four image types are accepted by every
+ * provider that sees pictures at all, so the media type never decided whether a
+ * request was sendable. Sound broke that — Gemini refuses `audio/mp4`, OpenAI's chat
+ * wire takes only wav and mp3, its transcription endpoint takes nearly everything, and
+ * Claude takes none of it. So this answers what the *file* is, and
+ * `AiProtocol.audioProblem` answers whether a given provider will take it. Naming a
+ * type here that some provider rejects is now correct rather than a mistake.
  */
 internal fun mediaTypeOf(name: String): String = when (name.substringAfterLast('.', "").lowercase()) {
     "jpg", "jpeg" -> "image/jpeg"
     "png" -> "image/png"
     "gif" -> "image/gif"
     "webp" -> "image/webp"
+    "wav" -> "audio/wav"
+    "mp3" -> "audio/mpeg"
+    // What this app's own `action.record_*` nodes write. Named here so it can be
+    // *refused* by name rather than guessed at, which is the whole point above.
+    "m4a", "mp4" -> "audio/mp4"
+    "aac" -> "audio/aac"
+    "ogg", "oga" -> "audio/ogg"
+    "opus" -> "audio/opus"
+    "flac" -> "audio/flac"
+    "aiff", "aif" -> "audio/aiff"
     else -> ""
 }
 

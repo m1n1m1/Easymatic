@@ -65,4 +65,13 @@
         <item>Colle sa clé d\'API s\'il en demande une. Beaucoup de serveurs locaux acceptent n\'importe laquelle.</item>
         <item>Charge la liste des modèles, ou saisis le nom du modèle avec lequel ton serveur a été lancé.</item>
     </string-array>
+    <string name="ai_models_on_this_key">Modèles de cette clé</string>
+    <string name="ai_provider_does_not_publish_capabilities">Ce fournisseur ne publie pas ce que chaque modèle accepte : la liste n\'est donc pas filtrée.</string>
+    <string name="ai_no_models_match_that_filter">Aucun modèle listé ne correspond à ce filtre.</string>
+    <string name="ai_modality_text">Texte</string>
+    <string name="ai_modality_image">Images</string>
+    <string name="ai_modality_audio">Son</string>
+    <string name="ai_modality_video">Vidéo</string>
+    <string name="ai_modality_file">Fichiers</string>
+    <string name="ai_modality_separator">" · "</string>
 </resources>

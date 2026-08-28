@@ -213,30 +213,23 @@ private fun ModelIdField(
                 colors = fieldColors(),
                 modifier = Modifier.weight(1f),
             )
-            Column {
-                OutlinedButton(onClick = viewModel::loadModels, enabled = !draft.busy && !draft.isNew) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
-                        contentDescription = stringResource(R.string.ai_list_models),
-                        tint = if (draft.isNew) EditorColors.textSecondary else EditorColors.textPrimary,
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-                DropdownMenu(
-                    expanded = draft.choosingModelId,
-                    onDismissRequest = viewModel::closeModelChooser,
-                ) {
-                    draft.modelIds.forEach { id ->
-                        DropdownMenuItem(
-                            text = { Text(id) },
-                            onClick = {
-                                viewModel.updateModel(profile.id) { it.copy(modelId = id) }
-                                viewModel.closeModelChooser()
-                            },
-                        )
-                    }
-                }
+            OutlinedButton(onClick = viewModel::loadModels, enabled = !draft.busy && !draft.isNew) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
+                    contentDescription = stringResource(R.string.ai_list_models),
+                    tint = if (draft.isNew) EditorColors.textSecondary else EditorColors.textPrimary,
+                    modifier = Modifier.size(18.dp),
+                )
             }
+        }
+        if (draft.choosingModelId) {
+            AiModelIdChooserOverlay(
+                models = draft.listedModels,
+                filter = draft.modalityFilter,
+                onToggleModality = viewModel::toggleModality,
+                onPick = { id -> viewModel.updateModel(profile.id) { it.copy(modelId = id) } },
+                onDismiss = viewModel::closeModelChooser,
+            )
         }
         if (draft.message.isNotBlank()) {
             Surface(

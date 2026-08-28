@@ -124,6 +124,27 @@ internal object AnthropicProtocol : AiProtocol {
     }.toString()
 
     /**
+     * Always a sentence, because the Messages API has no audio content block at all.
+     *
+     * **The one refusal here that is about the provider rather than about the file.**
+     * Gemini and OpenAI each take some audio types and not others, so their answers
+     * depend on what is being sent; this one does not, and never will until Anthropic
+     * ships a content block for it. Refusing here rather than rendering something and
+     * letting the server object is what turns "it did not work" into a sentence naming
+     * the four providers that would have worked — which is the only thing the user can
+     * act on, since there is no setting anywhere that would make this one work.
+     *
+     * [userTurn] is therefore never asked to render a clip, which is why its early
+     * return still tests only `images`.
+     */
+    override fun audioProblem(request: AiRequest, target: AiTarget): String? =
+        if (request.audio.isEmpty()) {
+            null
+        } else {
+            "Claude cannot listen to audio — choose a Gemini, OpenAI, OpenRouter or self-hosted model"
+        }
+
+    /**
      * The user turn: a bare string, or a block array once it carries a picture.
      *
      * Kept as a string in the ordinary case rather than always sending blocks, so a
@@ -306,13 +327,23 @@ internal object AnthropicProtocol : AiProtocol {
         return AiReply(text = text, truncated = stop == MAX_TOKENS_STOP)
     }
 
-    /** The listing, as `data[].id`. */
+    /**
+     * The listing, as `data[].id`, with the display name beside it.
+     *
+     * No modalities: this API publishes none, and there would be nothing useful to say
+     * if it did — every Claude model takes text and pictures and none of them takes
+     * sound, which `audioProblem` states once rather than repeating per row.
+     */
     override fun readModels(status: Int, body: String): AiModels {
         val root = runCatching { json.parseToJsonElement(body).jsonObject }.getOrNull()
         if (status !in SUCCESS_RANGE) return AiModels(error = errorText(status, root))
-        val ids = root?.get(DATA_KEY)?.arrayOrNull().orEmpty()
-            .mapNotNull { it.objectOrNull()?.get(ID_KEY)?.stringOrNull() }
-        return AiModels(ids = ids)
+        val models = root?.get(DATA_KEY)?.arrayOrNull().orEmpty()
+            .mapNotNull { entry ->
+                val model = entry.objectOrNull() ?: return@mapNotNull null
+                val id = model[ID_KEY]?.stringOrNull() ?: return@mapNotNull null
+                AiModelInfo(id = id, label = model[DISPLAY_NAME_KEY]?.stringOrNull().orEmpty())
+            }
+        return AiModels(models = models)
     }
 
     /** A reply that came back with no text in it, named by why it stopped. */
@@ -375,5 +406,6 @@ internal object AnthropicProtocol : AiProtocol {
     private const val TEXT_KEY = "text"
     private const val STOP_KEY = "stop_reason"
     private const val DATA_KEY = "data"
+    private const val DISPLAY_NAME_KEY = "display_name"
     private const val ID_KEY = "id"
 }

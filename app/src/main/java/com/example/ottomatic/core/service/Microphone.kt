@@ -62,8 +62,133 @@ interface Microphone {
      */
     suspend fun stop(): RecordingOutcome
 
-    /** Whether a recording is running right now. */
+    /**
+     * Listens for a moment and answers with the sound itself, writing nothing anywhere.
+     *
+     * **The one member that produces no file, which is exactly why it is a member
+     * rather than a [RecordingRequest] with a clever folder.** `action.ai_listen` wants
+     * a clip that exists for the length of one network call and then does not exist —
+     * it has no name anybody chose, nowhere anybody wants it, and nothing to clean up
+     * afterwards. [RecordingRequest] cannot express that: it takes a folder and a name
+     * because a recording is a thing somebody keeps. Routing a live listen through it
+     * would leave a file behind on every run, and "delete it afterwards" is a promise
+     * this facade would then have to keep across a cancelled coroutine.
+     *
+     * **Answers WAV, and that is forced rather than chosen.** [record] writes
+     * MPEG-4/AAC, which is right for a file people attach to a mail and is refused by
+     * two of the three providers that can hear at all — Gemini's inline set does not
+     * include `audio/mp4` and OpenAI's chat wire takes wav and mp3 and nothing else.
+     * Mono 16 kHz PCM is the one format all of them accept, and it is also what every
+     * speech model resamples to anyway, so nothing is lost by starting there.
+     *
+     * Suspends for the whole clip, on [record]'s reasoning. Nothing throws.
+     */
+    suspend fun capture(request: CaptureRequest): CaptureOutcome =
+        CaptureOutcome(error = "Recording is not available here")
+
+    /**
+     * Begins listening and returns at once, answering a problem or `""`.
+     *
+     * [record]'s relationship to [start], one family along, and for the same reason: a
+     * macro that says "listen while I do something else, then ask about it" cannot be
+     * written with a call that blocks for the whole clip. The finished sound arrives at
+     * [endCapture].
+     *
+     * [CaptureRequest.maxSeconds] is a **limit** rather than a length here, and it is not
+     * optional: a capture nobody ends would hold the microphone with the system's
+     * indicator lit and — unlike [start] — with no file growing on disk to make it
+     * visible. When the limit is reached the microphone is released and the clip is
+     * **kept** for [endCapture] to collect, which is the least surprising reading of "a
+     * limit": the macro asked to listen for up to that long and gets what there was.
+     */
+    suspend fun beginCapture(request: CaptureRequest): String =
+        "Recording is not available here"
+
+    /**
+     * Ends the running capture, or collects one its own limit already ended.
+     *
+     * With nothing listening and nothing waiting to be collected this is a worded error
+     * rather than a silent empty clip, on [stop]'s reasoning: a macro reaching a stop it
+     * did not start is usually a graph that ran in an order its author did not expect.
+     */
+    suspend fun endCapture(): CaptureOutcome =
+        CaptureOutcome(error = "Recording is not available here")
+
+    /** Whether a recording **or** a capture is running right now. */
     fun isRecording(): Boolean
+}
+
+/**
+ * How long to listen for, and what should end it.
+ *
+ * [RecordingRequest]'s reasoning for being an object rather than two parameters, and
+ * deliberately *not* that class: this one has no folder and no name, because nothing
+ * it produces is kept.
+ */
+data class CaptureRequest(
+    /**
+     * The longest the clip may run, clamped to [CaptureLimits.MAX_SECONDS].
+     *
+     * Not optional and with no "forever" value, on `action.listen`'s argument: an open
+     * microphone holds the hardware with the system's indicator lit and — unlike
+     * [start] — has no file growing on disk to make that visible. Here the clamp does
+     * a second job, because 16 kHz mono PCM is thirty-two kilobytes a second, so the
+     * number of seconds *is* the heap bound.
+     */
+    val maxSeconds: Int = 15,
+    /**
+     * How much quiet ends the clip early, or `0` to run to [maxSeconds].
+     *
+     * **Zero means something different here than it does on `action.listen`**, and the
+     * label has to say so. There, zero hands end-of-speech detection to the platform,
+     * which is far better at it than any number a user could pick. There is no platform
+     * detector behind a raw microphone read, so zero here can only mean "do not stop
+     * early" — and a field whose zero silently meant the opposite of the same field one
+     * node over would be a lie the user has no way to catch.
+     */
+    val silenceSeconds: Int = 3,
+)
+
+/**
+ * A clip, held in memory.
+ *
+ * Base64 rather than a `ByteArray` for `Files.readBytes`' reason: it is the form every
+ * provider wants, and holding both would double what a foreground service carries.
+ *
+ * [heard] is separate from a blank [error] because **nothing being said is not a
+ * failure**. A macro that listens on a schedule and hears silence has worked exactly
+ * as asked; reporting that as an error would put it in the run log in red every time
+ * the room was quiet. `action.listen` draws the same line with its `nothing` port.
+ *
+ * [durationMs] is `-1` when unknown, never `0`, on [RecordingOutcome]'s rule: a zero
+ * here reads as "it recorded nothing", which is a different and much more alarming
+ * thing than "it does not say".
+ */
+data class CaptureOutcome(
+    val base64: String = "",
+    val mediaType: String = "",
+    val durationMs: Long = -1,
+    val heard: Boolean = false,
+    val error: String = "",
+)
+
+/** What a capture may not exceed, whatever a node's config says. */
+object CaptureLimits {
+
+    /**
+     * Two minutes, which is both a courtesy and a heap bound.
+     *
+     * `AndroidSpeech.listen` clamps its own cap rather than trusting config, and the
+     * same argument applies twice over here: an open microphone is visible to the user
+     * the whole time it is open, and this one is accumulating thirty-two kilobytes a
+     * second in memory while it does. Two minutes is under four megabytes, which lines
+     * up with [AudioLimits.MAX_MODEL_BYTES] — so a clip that reaches the clamp is still
+     * a clip a model will accept.
+     */
+    const val MAX_SECONDS: Int = 120
+
+    /** The rate every speech model resamples to anyway, so nothing is gained by more. */
+    const val SAMPLE_RATE_HZ: Int = 16_000
 }
 
 /**
@@ -149,6 +274,9 @@ object NoMicrophone : Microphone {
     override suspend fun record(request: RecordingRequest) = RecordingOutcome(error = UNAVAILABLE)
     override suspend fun start(request: RecordingRequest) = UNAVAILABLE
     override suspend fun stop() = RecordingOutcome(error = UNAVAILABLE)
+    override suspend fun capture(request: CaptureRequest) = CaptureOutcome(error = UNAVAILABLE)
+    override suspend fun beginCapture(request: CaptureRequest) = UNAVAILABLE
+    override suspend fun endCapture() = CaptureOutcome(error = UNAVAILABLE)
     override fun isRecording(): Boolean = false
 
     private const val UNAVAILABLE = "Recording is not available on this phone"

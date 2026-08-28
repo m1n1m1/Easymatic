@@ -58,8 +58,8 @@ class AiModelCatalog(private val connections: AiConnectionRepository) {
         val models = protocol.readModels(status, body)
         return when {
             models.error.isNotBlank() -> models
-            models.ids.isEmpty() -> AiModels(error = "This server listed no models — type the name instead")
-            else -> models.copy(ids = models.ids.sorted())
+            models.models.isEmpty() -> AiModels(error = "This server listed no models — type the name instead")
+            else -> models.copy(models = models.models.sortedBy { it.id })
         }
     }
 }

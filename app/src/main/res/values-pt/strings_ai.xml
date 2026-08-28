@@ -65,4 +65,13 @@
         <item>Cola a chave de API se ele pedir uma. Muitos servidores locais aceitam qualquer uma.</item>
         <item>Carrega a lista de modelos, ou escreve o nome do modelo com que arrancaste o servidor.</item>
     </string-array>
+    <string name="ai_models_on_this_key">Modelos desta chave</string>
+    <string name="ai_provider_does_not_publish_capabilities">Este fornecedor não publica o que cada modelo aceita, por isso a lista não é filtrada.</string>
+    <string name="ai_no_models_match_that_filter">Nenhum modelo listado corresponde a esse filtro.</string>
+    <string name="ai_modality_text">Texto</string>
+    <string name="ai_modality_image">Imagens</string>
+    <string name="ai_modality_audio">Som</string>
+    <string name="ai_modality_video">Vídeo</string>
+    <string name="ai_modality_file">Ficheiros</string>
+    <string name="ai_modality_separator">" · "</string>
 </resources>

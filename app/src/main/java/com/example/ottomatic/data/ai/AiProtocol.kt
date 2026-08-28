@@ -6,6 +6,7 @@ import com.example.ottomatic.core.service.AiRequest
 import com.example.ottomatic.core.service.AiTool
 import com.example.ottomatic.domain.model.AiBaseUrl
 import com.example.ottomatic.domain.model.AiConnection
+import com.example.ottomatic.domain.model.AiModality
 import com.example.ottomatic.domain.model.AiModelProfile
 import com.example.ottomatic.domain.model.AiProvider
 import kotlinx.serialization.json.JsonArray
@@ -34,6 +35,10 @@ import kotlinx.serialization.json.jsonObject
  * **Model ids live in the implementations and nowhere above**, which is the whole
  * point of [AiModel] naming a trade-off rather than a product — see [modelIdFor].
  */
+@Suppress("TooManyFunctions") // Two wires, and the second needs four members of its own:
+// where it is, what travels with the upload, how its answer reads, and whether this
+// provider will take the sound at all. Splitting them into a second interface would put
+// "can this protocol hear?" somewhere `protocolFor` does not reach.
 internal interface AiProtocol {
 
     /** Where a prompt is sent for [target]. */
@@ -114,6 +119,71 @@ internal interface AiProtocol {
      * Wi-Fi over an empty box in this app.
      */
     fun configurationProblem(target: AiTarget): String? = null
+
+    /**
+     * Why this provider will not take the sound on [request], or null when it will.
+     * Checked before anything reaches the network.
+     *
+     * **The one capability question this file has ever had to answer, and pictures
+     * never needed it.** Every provider here that sees images at all accepts the same
+     * four image types, so an image's media type never decided whether a request was
+     * sendable — `action.ai_describe` can hand any picture to any model and let a
+     * self-hosted server that cannot see say so in its own words. Sound is not like
+     * that in either direction: Claude has no audio content block at all, Gemini's
+     * inline set excludes `audio/mp4` — which is what this app's own recorder writes —
+     * and OpenAI's chat wire takes wav and mp3 and nothing else. Those are facts about
+     * the *protocol*, fixed and knowable here, so leaving them to the server means a
+     * generic 400 naming neither the file nor the reason. The skill's rule for a
+     * picture whose kind is unknown, applied one step further out.
+     *
+     * Takes the [request] rather than only the [target] because the answer depends on
+     * the media type carried, which is not a property of the account or the profile.
+     *
+     * Null by default: a protocol that says nothing is one for which sound is not a
+     * special case, which is the honest default for a member the audio nodes are the
+     * only callers of.
+     */
+    fun audioProblem(request: AiRequest, target: AiTarget): String? = null
+
+    /**
+     * Where this provider transcribes an audio file, or null when it has no such
+     * endpoint.
+     *
+     * **The second wire, and the only reason there is one.** A chat request carrying
+     * sound needs a model that can hear, which on a self-hosted server almost never
+     * exists — what such a server runs is Whisper, behind `POST /audio/transcriptions`,
+     * which is also what `whisper.cpp`, `faster-whisper` and LM Studio all serve. That
+     * endpoint is the fully offline path, and audio is the payload where offline
+     * matters most. Null here means "this provider has one wire", which is the answer
+     * for Gemini (it publishes no transcription endpoint on the developer API) and for
+     * OpenRouter (its endpoint takes a JSON body of its own rather than OpenAI's
+     * multipart, so pretending otherwise would be a 404 dressed as a network failure).
+     *
+     * Which wire a request actually takes is [audioWireFor]'s decision, not this one's.
+     */
+    fun transcriptionEndpoint(target: AiTarget): String? = null
+
+    /**
+     * The form fields sent beside the uploaded clip — the model id, at least.
+     *
+     * On the protocol rather than in `RoutingAi` because resolving a published model id
+     * needs this provider's own table, which is exactly what [requestBody] takes an
+     * [AiTarget] for.
+     */
+    fun transcriptionFields(target: AiTarget): Map<String, String> = emptyMap()
+
+    /**
+     * What a transcription response means.
+     *
+     * **Deliberately not defaulted to [readReply].** A transcription body is
+     * `{"text": …}`, which every one of these readers would parse as a response with no
+     * candidates in it and report as "the model returned an empty answer" — a sentence
+     * about the model that is really a sentence about the code. Defaulting to a refusal
+     * makes the omission say what it is. It is unreachable while
+     * [transcriptionEndpoint] answers null, which is the point.
+     */
+    fun readTranscription(status: Int, body: String): AiReply =
+        AiReply(error = "This provider has no transcription endpoint")
 }
 
 /**
@@ -143,9 +213,144 @@ internal data class AiTarget(
  * `/models` is still perfectly usable.
  */
 data class AiModels(
-    val ids: List<String> = emptyList(),
+    val models: List<AiModelInfo> = emptyList(),
     val error: String = "",
+) {
+    /**
+     * Just the ids, for the callers that only ever wanted those.
+     *
+     * Derived rather than stored so the two can never disagree, and kept so that adding
+     * capabilities changed the shape only where somebody actually wanted them.
+     */
+    val ids: List<String> get() = models.map { it.id }
+}
+
+/**
+ * One model a key can reach, with whatever the provider was willing to say about it.
+ *
+ * **`null` [modalities] means "this provider does not publish it", never "this model
+ * takes nothing"**, and that distinction is the whole contract. Only OpenRouter states
+ * what each model accepts; Gemini publishes generation methods and no modality field at
+ * all, and OpenAI and Anthropic publish little more than ids. A chooser that read a
+ * missing answer as "no" would hide every usable model on three providers out of five.
+ *
+ * This is `CapabilityStatus.UNKNOWN`'s rule and `PickerOptions`' degradation rule, in a
+ * third place: an empty answer means the question could not be asked, so nothing is
+ * narrowed and the screen says why.
+ *
+ * [label] is the provider's own display name where it gives one — "Claude Opus 5" beside
+ * `claude-opus-5` — and blank where it does not, in which case the id is the name.
+ */
+data class AiModelInfo(
+    val id: String,
+    val label: String = "",
+    val modalities: Set<AiModality>? = null,
 )
+
+/**
+ * Which wire a request carrying sound takes, or why it takes none.
+ *
+ * **One function, called once, so the two decisions cannot drift.** Choosing the wire
+ * and deciding whether the media type is acceptable are the same question asked twice —
+ * OpenAI's chat endpoint takes wav and mp3 where its transcription endpoint takes eight
+ * formats, so "is this sendable?" has no answer until "sent where?" does. Split across
+ * `RoutingAi` and a protocol they would eventually disagree, and the shape of that bug
+ * is a file refused for being an `.m4a` on the one wire that would have accepted it.
+ *
+ * It is a file-level function on [combineInstructions]' and [replyLimit]'s precedent,
+ * for their reason: pure, needing no repository, no key and no network, so the whole
+ * decision table is a JVM test.
+ *
+ * **The rule is one sentence.** A request with sound and *no prompt* is somebody asking
+ * for a transcript, which is what a transcription endpoint is; anything else is a
+ * question about a recording, which only a chat model can answer. Nothing about the
+ * mechanism is exposed — the user leaves a box empty or fills it in.
+ */
+@Suppress("ReturnCount") // No sound, a transcript wanted, and a question asked are three
+// distinct routes; folding them is what loses the one rule this function exists to state.
+internal fun audioWireFor(request: AiRequest, protocol: AiProtocol, target: AiTarget): AudioWire {
+    if (request.audio.isEmpty()) return AudioWire.Chat
+    val transcription = protocol.transcriptionEndpoint(target)
+    if (request.isTranscription && transcription != null) return AudioWire.Transcription(transcription)
+    return protocol.audioProblem(request, target)?.let { AudioWire.Refused(it) } ?: AudioWire.Chat
+}
+
+/**
+ * Whether this request asks for a transcript rather than for an answer.
+ *
+ * **A blank question beside a clip is the setting, not a missing field** — it is what
+ * `action.ai_transcribe` and the listen nodes mean by leaving *What to ask* empty, and it
+ * is what [audioWireFor] reads to choose the transcription endpoint.
+ *
+ * It lives here rather than on [AiRequest] because it is a fact about how this package
+ * routes a request, not about the request itself; `core/` knows nothing of wires.
+ */
+internal val AiRequest.isTranscription: Boolean
+    get() = prompt.isBlank() && audio.isNotEmpty()
+
+/**
+ * What to say to a chat model that has been handed a clip and no question.
+ *
+ * **Shared by every chat renderer rather than written per protocol, because leaving it
+ * out is silent.** It began on Gemini alone, which was the only provider whose blank
+ * prompt reached a chat body at all — and then OpenRouter, which has audio-capable chat
+ * models and no transcription endpoint, started sending a clip beside an **empty** text
+ * part. A model given audio and nothing to do with it does whatever it likes: usually it
+ * answers conversationally, sometimes it describes the recording, and nothing anywhere
+ * reports that a transcript was not what came back.
+ *
+ * The wording does two jobs and both are load-bearing. It asks for the words, and it
+ * forbids the framing — models reliably reach for "Sure! Here is the transcript:" and a
+ * closing remark, which is not a transcript and is exactly what a macro then mails to
+ * somebody. English, like every other string a model rather than a person reads.
+ */
+internal const val TRANSCRIBE_INSTRUCTION: String =
+    "Transcribe the audio word for word. Output only the transcript itself: no preamble, " +
+        "no explanation, no commentary, no quotation marks, and no closing remark. " +
+        "If the audio contains no speech, output nothing at all."
+
+/**
+ * The text a chat turn carries for [request] — the question, or the instruction to
+ * transcribe when there is none.
+ *
+ * One function so the three renderers cannot disagree, which they already had.
+ */
+internal fun chatPrompt(request: AiRequest): String =
+    if (request.isTranscription) TRANSCRIBE_INSTRUCTION else request.prompt
+
+/** Where a request carrying sound is going. */
+internal sealed interface AudioWire {
+
+    /** The ordinary chat body, with the sound rendered into it. */
+    data object Chat : AudioWire
+
+    /** A multipart upload to [url], answering a transcript and nothing else. */
+    data class Transcription(val url: String) : AudioWire
+
+    /** Not sendable at all, with the sentence saying why. */
+    data class Refused(val error: String) : AudioWire
+}
+
+/**
+ * The file half of a multipart request.
+ *
+ * A holder rather than four more parameters on [AiTransport.postMultipart], on
+ * `RecordingRequest`'s stated reasoning — and because seven positional parameters is a
+ * detekt failure as well as an unreadable call.
+ */
+internal data class AiUpload(
+    val fieldName: String,
+    val fileName: String,
+    val mediaType: String,
+    val bytes: ByteArray,
+) {
+    // `ByteArray` has identity equality, which a data class would otherwise inherit
+    // silently into `==`. Nothing compares these, so the honest thing is to say so
+    // rather than to generate a deep comparison nobody asked for.
+    override fun equals(other: Any?): Boolean = this === other
+
+    override fun hashCode(): Int = System.identityHashCode(this)
+}
 
 /** The protocol for [provider]. The one `when` over the enum on the execution path. */
 internal fun protocolFor(provider: AiProvider): AiProtocol = when (provider) {

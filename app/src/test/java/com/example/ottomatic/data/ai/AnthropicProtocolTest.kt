@@ -6,6 +6,7 @@ import com.example.ottomatic.domain.model.AiConnection
 import com.example.ottomatic.domain.model.AiProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -269,5 +270,32 @@ class AnthropicProtocolTest {
         )
         assertEquals(listOf("claude-opus-5"), models.ids)
         assertEquals("", models.error)
+    }
+
+    /**
+     * The display name is read because it is the string a person recognises — a chooser
+     * showing `claude-opus-5` beside "Claude Opus 5" is a chooser you can read.
+     */
+    @Test
+    fun `the display name is kept beside the id`() {
+        val models = AnthropicProtocol.readModels(
+            status = 200,
+            body = """{"data":[{"id":"claude-opus-5","display_name":"Claude Opus 5"}],"has_more":false}""",
+        )
+        assertEquals("Claude Opus 5", models.models.single().label)
+    }
+
+    /**
+     * This API publishes no modalities, and the chooser must read that as "not published"
+     * rather than as "accepts nothing" — otherwise every Claude model disappears the
+     * moment somebody ticks a filter chip.
+     */
+    @Test
+    fun `no modalities are claimed, which is not the same as claiming none`() {
+        val models = AnthropicProtocol.readModels(
+            status = 200,
+            body = """{"data":[{"id":"claude-opus-5","display_name":"Claude Opus 5"}]}""",
+        )
+        assertNull(models.models.single().modalities)
     }
 }

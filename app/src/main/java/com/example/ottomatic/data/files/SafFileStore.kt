@@ -63,12 +63,12 @@ internal class SafFileStore(private val context: Context) : FileStore {
                 .getOrElse { FileRead(error = it.message.orEmpty().ifBlank { "Could not read $path" }) }
         }
 
-    override suspend fun readBytes(path: FilePath): FileBytes = withContext(Dispatchers.IO) {
+    override suspend fun readBytes(path: FilePath, maxBytes: Int): FileBytes = withContext(Dispatchers.IO) {
         val stream = openRead(path)
             ?: return@withContext FileBytes(
                 error = if (SafGrants.treeFor(context, path.toString()) == null) noGrant(path) else missing(path),
             )
-        runCatching { stream.use { readBoundedBase64(it, mediaTypeOf(path.toString())) } }
+        runCatching { stream.use { readBoundedBase64(it, mediaTypeOf(path.toString()), maxBytes) } }
             .getOrElse { FileBytes(error = it.message.orEmpty().ifBlank { "Could not read ${'$'}path" }) }
     }
 

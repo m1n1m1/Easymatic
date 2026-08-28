@@ -1,6 +1,6 @@
 ---
 name: ai-nodes
-description: Read before touching the AI nodes - action.ai_prompt, action.ai_describe, the Ai facade, AiConnection and AiModelProfile, AiProtocol and data/ai/, plus the tool harness (ToolSpec, ToolOverrides, NodeToolCatalog, NodeToolRunner).
+description: Read before touching the AI nodes - action.ai_prompt, action.ai_describe, action.ai_transcribe, action.ai_listen, action.ai_listen_start, action.ai_listen_stop, the Ai facade, AiConnection and AiModelProfile, AiProtocol and data/ai/, the model-capability chooser, plus the tool harness (ToolSpec, ToolOverrides, NodeToolCatalog, NodeToolRunner).
 ---
 
 # AI nodes and the AI tool harness
@@ -113,3 +113,6 @@ The node may **widen** as well as narrow: the profile is a default, not a ceilin
 
 **Every tool call is written to the run log as it happens**, at INFO with its arguments, and that is the only record anywhere of what an unattended macro let a model do. There is deliberately **no confirmation prompt**: the point of this app is a macro that fires unattended, and a dialog nobody is there to answer would make the feature useless rather than safe. What makes it safe is three things, each visible in a different place: the author chose the tools *on the profile*, decided per field what is fixed and what the model may pick *in the pin form*, and switched tool use on *on the node*.
 
+### AI and audio
+
+`action.ai_transcribe`, `action.ai_listen` and the `action.ai_listen_start` / `action.ai_listen_stop` pair are in **`audio.md`** beside this file — the two wires and the one rule that chooses between them, why the capture is WAV, and what each provider publishes about its own models. Read it before touching `AiProtocol.audioProblem`, `audioWireFor`, `TRANSCRIBE_INSTRUCTION`, `standingInstruction`, `AudioCapture` or the model chooser.

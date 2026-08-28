@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.ai
 
+import com.example.ottomatic.core.service.AiAudio
 import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.AiParam
 import com.example.ottomatic.core.service.AiParamSchema
@@ -150,6 +151,105 @@ class RoutingAiTest {
     fun `a blank prompt is refused without a model being looked up`() = runBlocking {
         val reply = RoutingAi(repository()).complete(request(modelRef = "anything", prompt = "  "))
         assertTrue(reply.error.contains("No prompt"))
+    }
+
+    /**
+     * The one guard sound had to relax, and the one place it must not be relaxed further.
+     *
+     * A blank prompt beside a clip is not an empty request — it is "just transcribe this",
+     * which is both the commonest thing to ask of a recording and the thing a
+     * transcription endpoint takes literally. Refusing it here would have made the audio
+     * nodes' empty question mean nothing at all. The refusal has to survive for a request
+     * carrying neither, which is still a node with an unfilled field.
+     */
+    @Test
+    fun `a blank prompt carrying sound is not refused as empty`() = runBlocking {
+        val repository = repository()
+        val modelRef = repository.withModel("Claude", AiProvider.ANTHROPIC)
+        repository.setKey(repository.connectionForProfile(modelRef)!!.id, "anything")
+
+        val reply = RoutingAi(repository).complete(
+            AiRequest(
+                modelRef = modelRef,
+                prompt = "",
+                audio = listOf(AiAudio(base64 = "QUFB", mediaType = "audio/wav")),
+            ),
+        )
+
+        // It gets past the blank-prompt guard and fails on this provider's own refusal,
+        // which is the next thing that should stop it.
+        assertFalse(reply.error.contains("No prompt"))
+        assertTrue(reply.error.contains("cannot listen"))
+    }
+
+    /** Claude has no audio block at all, and no setting anywhere would change that. */
+    @Test
+    fun `a provider that cannot hear is refused before the network`() = runBlocking {
+        val repository = repository()
+        val modelRef = repository.withModel("Claude", AiProvider.ANTHROPIC)
+        repository.setKey(repository.connectionForProfile(modelRef)!!.id, "anything")
+
+        val reply = RoutingAi(repository).complete(
+            AiRequest(
+                modelRef = modelRef,
+                prompt = "what was said?",
+                audio = listOf(AiAudio(base64 = "QUFB", mediaType = "audio/wav")),
+            ),
+        )
+
+        assertTrue(reply.error.contains("Claude cannot listen"))
+        assertTrue(reply.error.contains("Gemini"))
+    }
+
+    /**
+     * **A persona has no business in a transcript.** "Reply in German", "keep it to one
+     * line", "you are a terse assistant" are all perfectly good standing instructions on a
+     * profile, and every one of them would rewrite a verbatim transcript into something
+     * else — with no field on the node to turn them off, because a node asking for a
+     * transcript asked no question at all.
+     */
+    @Test
+    fun `a transcription drops the profile's persona`() {
+        val transcribing = AiRequest(
+            modelRef = TEST_MODEL_REF,
+            prompt = "",
+            audio = listOf(AiAudio(base64 = "QUFB", mediaType = "audio/wav")),
+        )
+
+        assertEquals("", standingInstruction("Answer in German.", transcribing))
+    }
+
+    /** The same profile still frames an actual question, which is what it is for. */
+    @Test
+    fun `a question about a clip keeps the profile's persona`() {
+        val asking = AiRequest(
+            modelRef = TEST_MODEL_REF,
+            prompt = "was that a yes?",
+            audio = listOf(AiAudio(base64 = "QUFB", mediaType = "audio/wav")),
+        )
+
+        assertEquals("Answer in German.", standingInstruction("Answer in German.", asking))
+    }
+
+    /** A node's own instruction is the task, not the persona, so it survives either way. */
+    @Test
+    fun `a transcription keeps whatever the node itself asked for`() {
+        val transcribing = AiRequest(
+            modelRef = TEST_MODEL_REF,
+            prompt = "",
+            systemInstruction = "Use British spelling.",
+            audio = listOf(AiAudio(base64 = "QUFB", mediaType = "audio/wav")),
+        )
+
+        assertEquals("Use British spelling.", standingInstruction("Answer in German.", transcribing))
+    }
+
+    /** A text prompt is untouched by any of this. */
+    @Test
+    fun `a request with no sound is unaffected by the transcription rule`() {
+        val asking = AiRequest(modelRef = TEST_MODEL_REF, prompt = "hi")
+
+        assertEquals("Answer in German.", standingInstruction("Answer in German.", asking))
     }
 
     @Test

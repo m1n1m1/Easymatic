@@ -4,6 +4,7 @@ import androidx.annotation.ArrayRes
 import androidx.annotation.StringRes
 import com.example.ottomatic.R
 import com.example.ottomatic.core.service.AiModel
+import com.example.ottomatic.domain.model.AiModality
 import com.example.ottomatic.domain.model.AiProvider
 
 /**
@@ -147,3 +148,20 @@ internal val SELF_HOSTED_PRESETS: List<Pair<String, String>> = listOf(
     "vLLM" to "http://192.168.1.10:8000/v1",
     "llama.cpp" to "http://192.168.1.10:8080/v1",
 )
+
+/**
+ * What an input kind is called on screen.
+ *
+ * Beside the provider copy rather than on [AiModality] itself, for the reason every
+ * label in this file sits here: `@StringRes` lives in `feature/`, and the enum is in
+ * `domain/` where `R` cannot be reached. An exhaustive `when` so a sixth modality fails
+ * to compile until somebody has decided what the screens call it.
+ */
+@StringRes
+internal fun AiModality.labelRes(): Int = when (this) {
+    AiModality.TEXT -> R.string.ai_modality_text
+    AiModality.IMAGE -> R.string.ai_modality_image
+    AiModality.AUDIO -> R.string.ai_modality_audio
+    AiModality.VIDEO -> R.string.ai_modality_video
+    AiModality.FILE -> R.string.ai_modality_file
+}

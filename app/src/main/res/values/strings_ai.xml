@@ -84,4 +84,13 @@
     <string name="ai_asking_the_model">Asking the model…</string>
     <string name="ai_key_not_stored_securely">This phone would not store the key securely.</string>
 
+    <string name="ai_models_on_this_key">Models on this key</string>
+    <string name="ai_provider_does_not_publish_capabilities">This provider does not publish what each model accepts, so the list is not filtered.</string>
+    <string name="ai_no_models_match_that_filter">No listed model matches that filter.</string>
+    <string name="ai_modality_text">Text</string>
+    <string name="ai_modality_image">Pictures</string>
+    <string name="ai_modality_audio">Sound</string>
+    <string name="ai_modality_video">Video</string>
+    <string name="ai_modality_file">Files</string>
+    <string name="ai_modality_separator">" · "</string>
 </resources>

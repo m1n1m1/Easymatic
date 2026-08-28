@@ -88,14 +88,25 @@ interface Files {
      * is `Images.encodeForModel`, which shrinks by construction instead. Reach for this
      * one only where the bytes must arrive unchanged.
      *
-     * Bounded by [FileLimits.MAX_READ_BYTES] while the stream is read, exactly as
-     * [readText] is, and for the identical reason: a 200 MB video is not a slow read
-     * but an out-of-memory kill that takes every armed macro with it.
+     * Bounded by [maxBytes] while the stream is read, exactly as [readText] is bounded,
+     * and for the identical reason: a 200 MB video is not a slow read but an
+     * out-of-memory kill that takes every armed macro with it.
+     *
+     * **[maxBytes] is a parameter rather than a constant because one megabyte is right
+     * for the caller that cannot know what the bytes are and wrong for the one that
+     * can.** `action.ai_transcribe` knows it is holding a recording and passes
+     * [AudioLimits.MAX_MODEL_BYTES]; everything else takes the default and reads
+     * exactly as it did before this parameter existed. It is clamped to
+     * [FileLimits.MAX_BYTES_CEILING] on the way in, because a bound reachable from a
+     * node's config is a bound somebody eventually passes two gigabytes to.
      *
      * Defaulted so the facade's other implementations — and any future one — need not
-     * grow a member for a case only images have.
+     * grow a member for a case only media has.
      */
-    suspend fun readBytes(path: String): FileBytes = FileBytes(error = "Reading bytes is not available here")
+    suspend fun readBytes(
+        path: String,
+        maxBytes: Int = FileLimits.MAX_READ_BYTES,
+    ): FileBytes = FileBytes(error = "Reading bytes is not available here")
 }
 
 /**
@@ -165,6 +176,18 @@ object FileLimits {
      * thousand files in it does not build the list in the first place.
      */
     const val MAX_LISTED: Int = 2000
+
+    /**
+     * The most [Files.readBytes] will read however large a bound it is handed.
+     *
+     * Exists because that bound became a **parameter**, and a parameter reaching down
+     * from a node is one a caller can get wrong in a way a constant never could. The
+     * ceiling is the promise the file layer keeps on its own account: whatever the
+     * caller believes it is asking for, the engine service is not going to be handed a
+     * hundred-megabyte array. Set at [AudioLimits.MAX_MODEL_BYTES]' size because audio
+     * is the largest thing anything currently asks for by name.
+     */
+    const val MAX_BYTES_CEILING: Int = 4 * 1024 * 1024
 }
 
 /** The outcome of a read. */

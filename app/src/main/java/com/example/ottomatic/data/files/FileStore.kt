@@ -31,8 +31,14 @@ internal interface FileStore {
 
     suspend fun readText(path: FilePath, encoding: TextEncoding): FileRead
 
-    /** The bytes at [path], Base64-encoded — see [com.example.ottomatic.core.service.Files.readBytes]. */
-    suspend fun readBytes(path: FilePath): FileBytes
+    /**
+     * The bytes at [path], Base64-encoded, at most [maxBytes] of them — see
+     * [com.example.ottomatic.core.service.Files.readBytes].
+     *
+     * The bound is passed down rather than defaulted here: an override may not carry a
+     * default value in Kotlin, and the one place the default belongs is the facade.
+     */
+    suspend fun readBytes(path: FilePath, maxBytes: Int): FileBytes
 
     suspend fun writeText(
         path: FilePath,

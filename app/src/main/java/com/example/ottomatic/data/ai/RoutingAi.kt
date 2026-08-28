@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.ai
 
+import android.util.Base64
 import com.example.ottomatic.core.service.Ai
 import com.example.ottomatic.core.service.AiReply
 import com.example.ottomatic.core.service.AiRequest
@@ -41,12 +42,58 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
     override suspend fun complete(request: AiRequest): AiReply =
         when (val resolved = resolve(request)) {
             is Resolution.Refused -> AiReply(error = resolved.error)
-            is Resolution.Ready -> {
-                val body = resolved.protocol.requestBody(resolved.request, resolved.target)
-                val (status, answer) = resolved.post(body)
-                resolved.protocol.readReply(status, answer)
+            is Resolution.Ready -> resolved.send()
+        }
+
+    /**
+     * One round trip, down whichever wire the request's own shape asks for.
+     *
+     * The choice is [audioWireFor]'s, not this function's — which is the same division
+     * every other provider-shaped question here follows. This class knows *which
+     * protocol*; it does not know what shape a body takes.
+     */
+    private suspend fun Resolution.Ready.send(): AiReply =
+        when (val wire = audioWireFor(request, protocol, target)) {
+            is AudioWire.Refused -> AiReply(error = wire.error)
+            is AudioWire.Transcription -> transcribe(wire.url)
+            AudioWire.Chat -> {
+                val body = protocol.requestBody(request, target)
+                val (status, answer) = post(body)
+                protocol.readReply(status, answer)
             }
         }
+
+    /**
+     * Uploads the clip to a transcription endpoint and reads the transcript back.
+     *
+     * The Base64 is decoded **here** rather than inside the protocol, and that is
+     * deliberate: `android.util.Base64` in `data/ai/` would make one of those pure,
+     * JVM-tested files depend on the Android runtime, which is most of why they are
+     * worth having. A clip that will not decode is reported rather than uploaded as
+     * nothing.
+     */
+    @Suppress("ReturnCount") // Nothing to send, bytes that will not decode, and a real
+    // upload each answer a different sentence.
+    private suspend fun Resolution.Ready.transcribe(url: String): AiReply {
+        val clip = request.audio.firstOrNull() ?: return AiReply(error = "There is no audio to transcribe")
+        val bytes = runCatching { Base64.decode(clip.base64, Base64.NO_WRAP) }.getOrNull()
+            ?: return AiReply(error = "That recording could not be read")
+        val (status, answer) = AiTransport.postMultipart(
+            url = url,
+            headers = protocol.headers(key),
+            fields = protocol.transcriptionFields(target),
+            upload = AiUpload(
+                fieldName = UPLOAD_FIELD,
+                // The name is never stored anywhere; it exists because several servers
+                // read the *extension* to decide how to decode, and a nameless part is
+                // rejected outright by some of them.
+                fileName = "audio." + extensionFor(clip.mediaType),
+                mediaType = clip.mediaType,
+                bytes = bytes,
+            ),
+        )
+        return protocol.readTranscription(status, answer)
+    }
 
     /**
      * The tool list the profile [modelRef] names carries, as stored.
@@ -106,7 +153,13 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
      */
     @Suppress("ReturnCount") // Guards that must never reach the network, then the resolved request.
     private fun resolve(request: AiRequest): Resolution {
-        if (request.prompt.isBlank()) return Resolution.Refused("No prompt to send")
+        // A blank prompt *with sound* is not an empty request — it is "just transcribe
+        // this", which is both the commonest thing to ask of a recording and the thing a
+        // transcription endpoint takes literally. Refusing it here would have made the
+        // audio nodes' empty question mean nothing at all.
+        if (request.prompt.isBlank() && request.audio.isEmpty()) {
+            return Resolution.Refused("No prompt to send")
+        }
         if (request.modelRef.isBlank()) {
             return Resolution.Refused("No AI model chosen on this node")
         }
@@ -118,16 +171,20 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
         val target = AiTarget(connection, profile)
         val protocol = protocolFor(connection.provider)
         protocol.configurationProblem(target)?.let { return Resolution.Refused(it) }
+        // `audioProblem` is deliberately *not* a sixth guard here, and the reason is the
+        // one mistake this design is most likely to be "corrected" into. Whether a clip
+        // is sendable depends on which wire it takes — OpenAI's chat endpoint refuses an
+        // `.m4a` that its transcription endpoint accepts happily — so asking before the
+        // wire is chosen would refuse exactly the file the second wire exists for.
+        // `audioWireFor` asks it, once, after deciding. Anthropic still fails before the
+        // network, because having no transcription endpoint it reaches that branch too.
 
         return Resolution.Ready(
             target = target,
             key = key,
             protocol = protocol,
             request = request.copy(
-                systemInstruction = combineInstructions(
-                    profile.systemPrompt,
-                    request.systemInstruction,
-                ),
+                systemInstruction = standingInstruction(profile.systemPrompt, request),
                 maxOutputTokens = replyLimit(request.maxOutputTokens, profile.maxOutputTokens),
             ),
         )
@@ -167,7 +224,31 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
 
     private companion object {
         const val DELETED_MODEL = "This node points at an AI model that no longer exists"
+
+        /** What OpenAI's transcription endpoint calls the uploaded file. */
+        const val UPLOAD_FIELD = "file"
     }
+}
+
+/**
+ * A file extension for [mediaType], because several servers decode by name.
+ *
+ * Not the inverse of `mediaTypeOf` and not trying to be: that function answers what a
+ * file *is* from a name the user chose, where this invents a name for a part that has
+ * none. `bin` is the honest fallback — a server that cannot decode it says so, which is
+ * better than a confident `.wav` on something that is not one.
+ */
+internal fun extensionFor(mediaType: String): String = when (mediaType.lowercase()) {
+    "audio/wav", "audio/x-wav" -> "wav"
+    "audio/mpeg", "audio/mp3" -> "mp3"
+    "audio/mp4" -> "m4a"
+    "audio/aac" -> "aac"
+    "audio/ogg" -> "ogg"
+    "audio/opus" -> "opus"
+    "audio/flac" -> "flac"
+    "audio/aiff" -> "aiff"
+    "audio/webm" -> "webm"
+    else -> "bin"
 }
 
 /**
@@ -217,6 +298,26 @@ internal fun replyLimit(requested: Int, profileLimit: Int): Int = when {
     profileLimit > 0 -> profileLimit
     else -> AiRequest.DEFAULT_MAX_OUTPUT_TOKENS
 }
+
+/**
+ * The standing instruction a request is actually sent with.
+ *
+ * **A persona has no business in a transcript**, which is the one thing this adds over
+ * [combineInstructions]. "Reply in German", "keep it to one line", "you are a terse
+ * assistant" are all perfectly good things to put on a profile, and every one of them
+ * would rewrite a verbatim transcript into something that is no longer one — with no
+ * field on the node to turn them off, because a node asking for a transcript asked no
+ * question at all. So a transcription is sent with the node's own instruction and nothing
+ * else, and a *question* about the same clip keeps the persona, which is what it is for.
+ *
+ * A pure function beside [combineInstructions] and [replyLimit], on their reasoning: the
+ * decision is worth a test and needs no repository to make.
+ */
+internal fun standingInstruction(profilePrompt: String, request: AiRequest): String =
+    combineInstructions(
+        if (request.isTranscription) "" else profilePrompt,
+        request.systemInstruction,
+    )
 
 internal fun combineInstructions(profilePrompt: String, nodeInstruction: String): String =
     listOf(profilePrompt, nodeInstruction)

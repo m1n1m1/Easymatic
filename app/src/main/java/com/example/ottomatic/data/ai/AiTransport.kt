@@ -53,6 +53,57 @@ internal object AiTransport {
         call(url, headers) { it.requestMethod = "GET" }
 
     /**
+     * Uploads [upload] with [fields] beside it, as `multipart/form-data`.
+     *
+     * **A third caller of [call] rather than a second transport**, which is this
+     * object's whole argument: the connect timeout, the ninety-second read, the
+     * cancel-on-stop handler and the error-stream-first read do not vary by body
+     * format, and a second copy of them is a second place for one of the four to be
+     * forgotten.
+     *
+     * **`Content-Type` is replaced rather than merged**, and that is not tidiness: every
+     * protocol's `headers()` puts `application/json` there, and a multipart body
+     * carrying that header is a 400 on every server that has ever existed. The boundary
+     * has to travel with the header, so this is the one call that cannot use the
+     * protocol's headers unchanged.
+     *
+     * The parts go **straight to the socket**. Assembling them into a `String` first
+     * would hold the whole recording twice more — once as text and once as the bytes of
+     * that text — inside the process holding every armed macro, which is the same
+     * objection `readBoundedBase64` answers one layer down.
+     */
+    suspend fun postMultipart(
+        url: String,
+        headers: Map<String, String>,
+        fields: Map<String, String>,
+        upload: AiUpload,
+    ): Pair<Int, String> {
+        val boundary = "----ottomatic" + System.nanoTime().toString(RADIX_HEX)
+        val sending = headers + (CONTENT_TYPE to "multipart/form-data; boundary=$boundary")
+        return call(url, sending) { connection ->
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            connection.outputStream.use { out ->
+                fields.forEach { (name, value) ->
+                    out.ascii("--$boundary\r\n")
+                    out.ascii("Content-Disposition: form-data; name=\"$name\"\r\n\r\n")
+                    out.ascii("$value\r\n")
+                }
+                out.ascii("--$boundary\r\n")
+                out.ascii(
+                    "Content-Disposition: form-data; name=\"${upload.fieldName}\"; " +
+                        "filename=\"${upload.fileName}\"\r\n",
+                )
+                out.ascii("Content-Type: ${upload.mediaType}\r\n\r\n")
+                out.write(upload.bytes)
+                out.ascii("\r\n--$boundary--\r\n")
+            }
+        }
+    }
+
+    private fun java.io.OutputStream.ascii(text: String) = write(text.toByteArray(Charsets.UTF_8))
+
+    /**
      * The error stream is read in preference to the input stream, as
      * `AndroidSystemServices.httpRequest` does: a 400 from any of these APIs carries
      * the only sentence that says *why* the key was refused, and reading the input
@@ -88,6 +139,9 @@ internal object AiTransport {
 
     /** Reaching the host is either quick or not happening; this is not the slow part. */
     private const val CONNECT_TIMEOUT_MS = 15_000
+
+    private const val CONTENT_TYPE = "Content-Type"
+    private const val RADIX_HEX = 16
 
     /**
      * Ninety seconds. A generation is the slow part and a bounded wait is the point —

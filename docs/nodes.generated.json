@@ -1,5 +1,5 @@
 {
-    "nodeCount": 176,
+    "nodeCount": 180,
     "nodes": [
         {
             "typeId": "trigger.manual",
@@ -3560,6 +3560,353 @@
                 }
             ],
             "permissions": [],
+            "capabilities": []
+        },
+        {
+            "typeId": "action.ai_transcribe",
+            "slug": "action_ai_transcribe",
+            "displayName": "Transcribe Audio with AI",
+            "description": "Sends a sound file to an AI model and returns the transcript, or the answer to a question about what was said",
+            "kind": "ACTION",
+            "category": "AI",
+            "categoryLabel": "AI",
+            "icon": "AI",
+            "hasDynamicPorts": false,
+            "ports": [
+                {
+                    "name": "in",
+                    "label": "in",
+                    "kind": "EXECUTION",
+                    "direction": "IN",
+                    "type": null
+                },
+                {
+                    "name": "out",
+                    "label": "out",
+                    "kind": "EXECUTION",
+                    "direction": "OUT",
+                    "type": null
+                },
+                {
+                    "name": "audio",
+                    "label": "Audio file",
+                    "kind": "DATA",
+                    "direction": "IN",
+                    "type": "String"
+                },
+                {
+                    "name": "prompt",
+                    "label": "What to ask (leave empty to transcribe it)",
+                    "kind": "DATA",
+                    "direction": "IN",
+                    "type": "String"
+                },
+                {
+                    "name": "answer",
+                    "label": "Answer",
+                    "kind": "DATA",
+                    "direction": "OUT",
+                    "type": "String"
+                }
+            ],
+            "configFields": [
+                {
+                    "key": "modelRef",
+                    "label": "Model",
+                    "type": "PICKER",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": "AI_MODEL"
+                },
+                {
+                    "key": "audio",
+                    "label": "Audio file",
+                    "type": "FILE_PATH",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                },
+                {
+                    "key": "prompt",
+                    "label": "What to ask (leave empty to transcribe it)",
+                    "type": "MULTILINE",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                },
+                {
+                    "key": "maxOutputTokens",
+                    "label": "Longest reply (tokens)",
+                    "type": "INT",
+                    "defaultValue": "1024",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                },
+                {
+                    "key": "fallback",
+                    "label": "If it fails",
+                    "type": "MULTILINE",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                }
+            ],
+            "permissions": [],
+            "capabilities": []
+        },
+        {
+            "typeId": "action.ai_listen",
+            "slug": "action_ai_listen",
+            "displayName": "Listen with AI",
+            "description": "Listens through the microphone and sends what it heard to an AI model to transcribe, or to answer a question about what was said",
+            "kind": "ACTION",
+            "category": "AI",
+            "categoryLabel": "AI",
+            "icon": "MICROPHONE",
+            "hasDynamicPorts": false,
+            "ports": [
+                {
+                    "name": "in",
+                    "label": "in",
+                    "kind": "EXECUTION",
+                    "direction": "IN",
+                    "type": null
+                },
+                {
+                    "name": "out",
+                    "label": "out",
+                    "kind": "EXECUTION",
+                    "direction": "OUT",
+                    "type": null
+                },
+                {
+                    "name": "prompt",
+                    "label": "What to ask (leave empty to transcribe it)",
+                    "kind": "DATA",
+                    "direction": "IN",
+                    "type": "String"
+                },
+                {
+                    "name": "answer",
+                    "label": "Answer",
+                    "kind": "DATA",
+                    "direction": "OUT",
+                    "type": "String"
+                }
+            ],
+            "configFields": [
+                {
+                    "key": "modelRef",
+                    "label": "Model",
+                    "type": "PICKER",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": "AI_MODEL"
+                },
+                {
+                    "key": "prompt",
+                    "label": "What to ask (leave empty to transcribe it)",
+                    "type": "MULTILINE",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                },
+                {
+                    "key": "maxSeconds",
+                    "label": "Listen for at most (seconds)",
+                    "type": "INT",
+                    "defaultValue": "15",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                },
+                {
+                    "key": "silenceSeconds",
+                    "label": "Stop after this much silence (seconds, 0 = listen the whole time)",
+                    "type": "INT",
+                    "defaultValue": "3",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                },
+                {
+                    "key": "maxOutputTokens",
+                    "label": "Longest reply (tokens)",
+                    "type": "INT",
+                    "defaultValue": "1024",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                },
+                {
+                    "key": "fallback",
+                    "label": "If it fails",
+                    "type": "MULTILINE",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                }
+            ],
+            "permissions": [
+                {
+                    "key": "android.permission.RECORD_AUDIO",
+                    "type": "RUNTIME",
+                    "manifestPermission": "android.permission.RECORD_AUDIO",
+                    "label": "microphone access"
+                }
+            ],
+            "capabilities": []
+        },
+        {
+            "typeId": "action.ai_listen_start",
+            "slug": "action_ai_listen_start",
+            "displayName": "Start Listening with AI",
+            "description": "Opens the microphone and keeps listening until Stop Listening with AI transcribes it or asks a question about what was said",
+            "kind": "ACTION",
+            "category": "AI",
+            "categoryLabel": "AI",
+            "icon": "MICROPHONE",
+            "hasDynamicPorts": false,
+            "ports": [
+                {
+                    "name": "in",
+                    "label": "in",
+                    "kind": "EXECUTION",
+                    "direction": "IN",
+                    "type": null
+                },
+                {
+                    "name": "out",
+                    "label": "out",
+                    "kind": "EXECUTION",
+                    "direction": "OUT",
+                    "type": null
+                }
+            ],
+            "configFields": [
+                {
+                    "key": "maxSeconds",
+                    "label": "Listen for at most (seconds)",
+                    "type": "INT",
+                    "defaultValue": "60",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                },
+                {
+                    "key": "silenceSeconds",
+                    "label": "Stop after this much silence (seconds, 0 = listen the whole time)",
+                    "type": "INT",
+                    "defaultValue": "0",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                }
+            ],
+            "permissions": [
+                {
+                    "key": "android.permission.RECORD_AUDIO",
+                    "type": "RUNTIME",
+                    "manifestPermission": "android.permission.RECORD_AUDIO",
+                    "label": "microphone access"
+                }
+            ],
+            "capabilities": []
+        },
+        {
+            "typeId": "action.ai_listen_stop",
+            "slug": "action_ai_listen_stop",
+            "displayName": "Stop Listening with AI",
+            "description": "Stops the microphone opened by Start Listening with AI and sends what it heard to an AI model to transcribe, or to answer a question about what was said",
+            "kind": "ACTION",
+            "category": "AI",
+            "categoryLabel": "AI",
+            "icon": "MICROPHONE",
+            "hasDynamicPorts": false,
+            "ports": [
+                {
+                    "name": "in",
+                    "label": "in",
+                    "kind": "EXECUTION",
+                    "direction": "IN",
+                    "type": null
+                },
+                {
+                    "name": "out",
+                    "label": "out",
+                    "kind": "EXECUTION",
+                    "direction": "OUT",
+                    "type": null
+                },
+                {
+                    "name": "prompt",
+                    "label": "What to ask (leave empty to transcribe it)",
+                    "kind": "DATA",
+                    "direction": "IN",
+                    "type": "String"
+                },
+                {
+                    "name": "answer",
+                    "label": "Answer",
+                    "kind": "DATA",
+                    "direction": "OUT",
+                    "type": "String"
+                }
+            ],
+            "configFields": [
+                {
+                    "key": "modelRef",
+                    "label": "Model",
+                    "type": "PICKER",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": "AI_MODEL"
+                },
+                {
+                    "key": "prompt",
+                    "label": "What to ask (leave empty to transcribe it)",
+                    "type": "MULTILINE",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                },
+                {
+                    "key": "maxOutputTokens",
+                    "label": "Longest reply (tokens)",
+                    "type": "INT",
+                    "defaultValue": "1024",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                },
+                {
+                    "key": "fallback",
+                    "label": "If it fails",
+                    "type": "MULTILINE",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                }
+            ],
+            "permissions": [
+                {
+                    "key": "android.permission.RECORD_AUDIO",
+                    "type": "RUNTIME",
+                    "manifestPermission": "android.permission.RECORD_AUDIO",
+                    "label": "microphone access"
+                }
+            ],
             "capabilities": []
         },
         {

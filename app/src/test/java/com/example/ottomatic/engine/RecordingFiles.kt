@@ -22,6 +22,8 @@ data class FileCall(
     val show: ListFilter = ListFilter.FILES,
     val move: Boolean = false,
     val to: String = "",
+    /** What bound the caller asked for — `action.ai_transcribe`'s is not the default. */
+    val maxBytes: Int = 0,
 )
 
 /**
@@ -48,8 +50,8 @@ class RecordingFiles(
         return read
     }
 
-    override suspend fun readBytes(path: String): FileBytes {
-        calls += FileCall("readBytes", path)
+    override suspend fun readBytes(path: String, maxBytes: Int): FileBytes {
+        calls += FileCall("readBytes", path, maxBytes = maxBytes)
         return bytes
     }
 

@@ -3,9 +3,11 @@ package com.example.ottomatic.data.ai
 import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.AiRequest
 import com.example.ottomatic.domain.model.AiConnection
+import com.example.ottomatic.domain.model.AiModality
 import com.example.ottomatic.domain.model.AiProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -320,6 +322,64 @@ class OpenAiProtocolTest {
         val models = OpenAiProtocol.SelfHosted.readModels(status = 404, body = "not found")
         assertTrue(models.ids.isEmpty())
         assertTrue(models.error.isNotBlank())
+    }
+
+    /**
+     * OpenRouter is the only provider anywhere in this app that publishes what each model
+     * accepts, which is the entire reason the chooser can filter at all.
+     */
+    @Test
+    fun `openrouter's published input modalities are read`() {
+        val models = OpenAiProtocol.OpenRouter.readModels(
+            status = 200,
+            body = """
+                {"data":[{"id":"google/gemini-3.6-flash","name":"Google: Gemini 3.6 Flash",
+                "architecture":{"input_modalities":["text","image","audio"],
+                "output_modalities":["text"]}}]}
+            """.trimIndent(),
+        )
+
+        val model = models.models.single()
+        assertEquals("google/gemini-3.6-flash", model.id)
+        assertEquals("Google: Gemini 3.6 Flash", model.label)
+        assertEquals(setOf(AiModality.TEXT, AiModality.IMAGE, AiModality.AUDIO), model.modalities)
+    }
+
+    /**
+     * A plain `/v1/models` answers ids and nothing else, and null has to mean "did not
+     * say". Reading it as "accepts nothing" would hide every model on OpenAI and on every
+     * self-hosted server the moment a filter chip was ticked.
+     */
+    @Test
+    fun `a listing with no architecture block claims no modalities at all`() {
+        val models = OpenAiProtocol.OpenAi.readModels(
+            status = 200,
+            body = """{"object":"list","data":[{"id":"gpt-5.1","object":"model","owned_by":"openai"}]}""",
+        )
+
+        assertNull(models.models.single().modalities)
+    }
+
+    /** An empty array has told us nothing either, and must not read as "accepts nothing". */
+    @Test
+    fun `an empty modality array is treated as no answer`() {
+        val models = OpenAiProtocol.OpenRouter.readModels(
+            status = 200,
+            body = """{"data":[{"id":"m","architecture":{"input_modalities":[]}}]}""",
+        )
+
+        assertNull(models.models.single().modalities)
+    }
+
+    /** A sixth modality upstream should cost a chip, never the row. */
+    @Test
+    fun `an unrecognised modality is dropped rather than losing the model`() {
+        val models = OpenAiProtocol.OpenRouter.readModels(
+            status = 200,
+            body = """{"data":[{"id":"m","architecture":{"input_modalities":["text","hologram"]}}]}""",
+        )
+
+        assertEquals(setOf(AiModality.TEXT), models.models.single().modalities)
     }
 
     // ---- the standing instruction ----------------------------------------------

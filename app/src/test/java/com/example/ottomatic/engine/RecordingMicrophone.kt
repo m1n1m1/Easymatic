@@ -1,5 +1,7 @@
 package com.example.ottomatic.engine
 
+import com.example.ottomatic.core.service.CaptureOutcome
+import com.example.ottomatic.core.service.CaptureRequest
 import com.example.ottomatic.core.service.Microphone
 import com.example.ottomatic.core.service.RecordingOutcome
 import com.example.ottomatic.core.service.RecordingRequest
@@ -16,10 +18,21 @@ class RecordingMicrophone(
     var outcome: RecordingOutcome = RecordingOutcome(changed = true, path = "Recordings/a.m4a", name = "a.m4a"),
     var startProblem: String = "",
     var running: Boolean = false,
+    var captureProblem: String = "",
+    var captured: CaptureOutcome = CaptureOutcome(
+        base64 = "AAAA",
+        mediaType = "audio/wav",
+        durationMs = 1_000,
+        heard = true,
+    ),
 ) : Microphone {
 
     val recorded = mutableListOf<RecordingRequest>()
     val started = mutableListOf<RecordingRequest>()
+    val captures = mutableListOf<CaptureRequest>()
+    val begunCaptures = mutableListOf<CaptureRequest>()
+    var endedCaptures: Int = 0
+        private set
     var stops: Int = 0
         private set
 
@@ -36,6 +49,21 @@ class RecordingMicrophone(
     override suspend fun stop(): RecordingOutcome {
         stops++
         return outcome
+    }
+
+    override suspend fun capture(request: CaptureRequest): CaptureOutcome {
+        captures += request
+        return captured
+    }
+
+    override suspend fun beginCapture(request: CaptureRequest): String {
+        begunCaptures += request
+        return captureProblem
+    }
+
+    override suspend fun endCapture(): CaptureOutcome {
+        endedCaptures++
+        return captured
     }
 
     override fun isRecording(): Boolean = running

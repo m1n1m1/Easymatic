@@ -75,4 +75,13 @@
     <string name="ai_asking_the_model">Modell wird gefragt…</string>
     <string name="ai_key_not_stored_securely">Dieses Telefon würde den Schlüssel nicht sicher speichern.</string>
 
+    <string name="ai_models_on_this_key">Modelle für diesen Schlüssel</string>
+    <string name="ai_provider_does_not_publish_capabilities">Dieser Anbieter veröffentlicht nicht, was die einzelnen Modelle annehmen — die Liste wird daher nicht gefiltert.</string>
+    <string name="ai_no_models_match_that_filter">Kein aufgeführtes Modell passt zu diesem Filter.</string>
+    <string name="ai_modality_text">Text</string>
+    <string name="ai_modality_image">Bilder</string>
+    <string name="ai_modality_audio">Ton</string>
+    <string name="ai_modality_video">Video</string>
+    <string name="ai_modality_file">Dateien</string>
+    <string name="ai_modality_separator">" · "</string>
 </resources>

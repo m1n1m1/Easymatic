@@ -14,9 +14,11 @@ import com.example.ottomatic.core.service.CallableMacro
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.data.ai.AiModelCatalog
+import com.example.ottomatic.data.ai.AiModelInfo
 import com.example.ottomatic.domain.model.AiBaseUrl
 import com.example.ottomatic.domain.model.AiConnection
 import com.example.ottomatic.domain.model.AiModelProfile
+import com.example.ottomatic.domain.model.AiModality
 import com.example.ottomatic.domain.model.AiProvider
 import com.example.ottomatic.domain.model.needsBaseUrl
 import com.example.ottomatic.domain.model.needsModelIds
@@ -52,8 +54,23 @@ data class AiConnectionDraft(
     val busy: Boolean = false,
     val message: String = "",
     val failed: Boolean = false,
-    /** The listing from this connection's own server, once somebody has asked for it. */
-    val modelIds: List<String> = emptyList(),
+    /**
+     * The listing from this connection's own server, once somebody has asked for it.
+     *
+     * Named apart from [models], which is the profiles the user has minted. The two are
+     * easy to confuse and mean opposite things: that is what this account *offers*, this
+     * is what the user has *chosen to keep*.
+     */
+    val listedModels: List<AiModelInfo> = emptyList(),
+    /**
+     * Which input kinds the chooser is narrowed to, or empty for all of them.
+     *
+     * **A row whose modalities are null is never hidden by this**, whatever is ticked.
+     * Only OpenRouter publishes what each model accepts; treating the other four
+     * providers' silence as "does not" would empty the list on every one of them. The
+     * filter narrows what is known and leaves what is not, and the screen says so.
+     */
+    val modalityFilter: Set<AiModality> = emptySet(),
     /** Which profile's sub-editor is open, by id, or null when none is. */
     val editingModel: String? = null,
     /** Whether the id chooser is open over the profile being edited. */
@@ -316,7 +333,13 @@ class AiConnectionsViewModel(
      */
     fun onProviderChange(value: AiProvider) = editDraft { draft ->
         val renamed = if (draft.name == suggestedName(draft.provider)) suggestedName(value) else draft.name
-        draft.copy(provider = value, name = renamed, modelIds = emptyList(), choosingModelId = false)
+        draft.copy(
+            provider = value,
+            name = renamed,
+            listedModels = emptyList(),
+            modalityFilter = emptySet(),
+            choosingModelId = false,
+        )
     }
 
     /** Fills a base URL preset in; the host is a placeholder only the user can replace. */
@@ -343,8 +366,9 @@ class AiConnectionsViewModel(
             editDraft {
                 it.copy(
                     busy = false,
-                    modelIds = models.ids,
-                    choosingModelId = models.ids.isNotEmpty(),
+                    listedModels = models.models,
+                    modalityFilter = emptySet(),
+                    choosingModelId = models.models.isNotEmpty(),
                     message = models.error,
                     failed = models.error.isNotBlank(),
                 )
@@ -353,6 +377,16 @@ class AiConnectionsViewModel(
     }
 
     fun closeModelChooser() = editDraft { it.copy(choosingModelId = false) }
+
+    /** Ticks one input kind on or off in the chooser's filter. */
+    fun toggleModality(modality: AiModality) = editDraft { draft ->
+        val next = if (modality in draft.modalityFilter) {
+            draft.modalityFilter - modality
+        } else {
+            draft.modalityFilter + modality
+        }
+        draft.copy(modalityFilter = next)
+    }
 
     /**
      * Persists the draft, then the key if one was typed.

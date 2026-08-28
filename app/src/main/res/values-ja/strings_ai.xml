@@ -65,4 +65,13 @@
         <item>API キーが必要なら貼り付けます。ローカルサーバーの多くは任意のキーを受け付けます。</item>
         <item>モデル一覧を読み込むか、サーバーの起動時に指定したモデル名を入力します。</item>
     </string-array>
+    <string name="ai_models_on_this_key">このキーで使えるモデル</string>
+    <string name="ai_provider_does_not_publish_capabilities">このプロバイダーは各モデルが受け付ける入力を公開していないため、一覧は絞り込まれません。</string>
+    <string name="ai_no_models_match_that_filter">その条件に合うモデルはありません。</string>
+    <string name="ai_modality_text">テキスト</string>
+    <string name="ai_modality_image">画像</string>
+    <string name="ai_modality_audio">音声</string>
+    <string name="ai_modality_video">動画</string>
+    <string name="ai_modality_file">ファイル</string>
+    <string name="ai_modality_separator">"・"</string>
 </resources>

@@ -172,6 +172,23 @@ data class AiRequest(
      * before this field existed.
      */
     val images: List<AiImage> = emptyList(),
+    /**
+     * Sound to listen to alongside [prompt].
+     *
+     * A list for [images]' symmetry rather than because two clips are useful — every
+     * provider that takes audio takes an array, so the singular form would be the
+     * special case, and the two media fields reading alike is worth more than the one
+     * element saved.
+     *
+     * **A blank [prompt] beside a non-empty list is a legitimate request**, and it is
+     * the one place this field changes a rule rather than adding one: it means "just
+     * transcribe this", which is both the commonest thing to want and the thing a
+     * transcription endpoint takes literally. `RoutingAi` therefore refuses a blank
+     * prompt only when there is no audio either.
+     *
+     * Defaulted empty, on [images]' reasoning.
+     */
+    val audio: List<AiAudio> = emptyList(),
 ) {
     companion object {
         /**
@@ -199,6 +216,45 @@ data class AiImage(
     val base64: String,
     val mediaType: String,
 )
+
+/**
+ * One sound, ready for the wire.
+ *
+ * [AiImage]'s shape and its reasons — Base64 because that is the form every provider
+ * wants, and an explicit [mediaType] because every one of them demands it.
+ *
+ * **It is a separate type from [AiImage] because the two are refused differently.**
+ * Every provider here that sees pictures at all accepts the same four picture types,
+ * so an image's media type never decides whether a request is sendable. Sound is the
+ * opposite: Gemini takes wav, mp3, aiff, aac, ogg and flac but not `audio/mp4`;
+ * OpenAI's chat wire takes wav and mp3 and nothing else; a transcription endpoint
+ * takes almost anything; and Claude takes none of it. `AiProtocol.audioProblem` is
+ * what reads this field to say so before the network, and it needs a field it can be
+ * sure is sound.
+ */
+data class AiAudio(
+    val base64: String,
+    val mediaType: String,
+)
+
+/**
+ * How much sound may be sent to a model in one request.
+ *
+ * **Four megabytes, and the number is a heap budget rather than a provider's limit.**
+ * Gemini's own bound is 20 MB on the whole request, which is measured *after* Base64
+ * inflates the bytes by a third — but the binding constraint here is nearer home:
+ * this is read inside `MacroEngineService`, which is holding every armed macro on the
+ * phone, and a file of this size is simultaneously a `ByteArray`, a Base64 `String`
+ * (UTF-16, so twice again) and the request body. Four megabytes is about seventeen
+ * minutes of the app's own voice recording, which is far past anything a macro
+ * sensibly asks a model about, and it keeps that peak survivable.
+ *
+ * Over it the file is **refused with a sentence naming the size**, never truncated —
+ * `readBoundedBase64`'s rule, for its reason: half a recording is not a recording.
+ */
+object AudioLimits {
+    const val MAX_MODEL_BYTES: Int = 4 * 1024 * 1024
+}
 
 /**
  * What a model answered, or why it did not.

@@ -65,4 +65,13 @@
         <item>Вставьте ключ API, если сервер его требует. Многие локальные серверы принимают любой.</item>
         <item>Загрузите список моделей или введите имя модели, с которой запущен сервер.</item>
     </string-array>
+    <string name="ai_models_on_this_key">Модели для этого ключа</string>
+    <string name="ai_provider_does_not_publish_capabilities">Этот провайдер не публикует, что принимает каждая модель, поэтому список не фильтруется.</string>
+    <string name="ai_no_models_match_that_filter">Ни одна модель из списка не подходит под этот фильтр.</string>
+    <string name="ai_modality_text">Текст</string>
+    <string name="ai_modality_image">Изображения</string>
+    <string name="ai_modality_audio">Звук</string>
+    <string name="ai_modality_video">Видео</string>
+    <string name="ai_modality_file">Файлы</string>
+    <string name="ai_modality_separator">" · "</string>
 </resources>

@@ -6,6 +6,7 @@ import com.example.ottomatic.core.service.AiRequest
 import com.example.ottomatic.core.service.AiTool
 import com.example.ottomatic.core.service.AiToolCall
 import com.example.ottomatic.domain.model.AiConnection
+import com.example.ottomatic.domain.model.AiModality
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArrayBuilder
 import kotlinx.serialization.json.JsonObject
@@ -57,6 +58,18 @@ internal sealed class OpenAiProtocol(
      * every self-hosted connection for a parameter they cannot use.
      */
     private val sendsReasoningEffort: Boolean,
+    /**
+     * Whether `POST {base}/audio/transcriptions` exists here, in OpenAI's own multipart
+     * shape.
+     *
+     * A constructor argument rather than three overrides, on [tokenField]'s precedent —
+     * and it is **false for OpenRouter**, which is the entry worth explaining because
+     * OpenRouter does publish a transcription endpoint. Its body is JSON carrying a
+     * base64 `input_audio` object rather than a multipart upload, so calling it through
+     * this code path is a 400 dressed up as a transcription failure. OpenRouter has
+     * audio-capable *chat* models instead, which is the wire it takes.
+     */
+    private val servesTranscription: Boolean = false,
     /** Anything beyond auth and content type. */
     private val extraHeaders: Map<String, String> = emptyMap(),
 ) : AiProtocol {
@@ -82,6 +95,19 @@ internal sealed class OpenAiProtocol(
     override fun endpoint(target: AiTarget): String = "${base(target.connection)}/chat/completions"
 
     override fun modelsEndpoint(connection: AiConnection): String = "${base(connection)}/models"
+
+    override fun transcriptionEndpoint(target: AiTarget): String? =
+        if (servesTranscription) "${base(target.connection)}/audio/transcriptions" else null
+
+    /**
+     * The form fields beside the uploaded clip.
+     *
+     * Here rather than in `RoutingAi` because resolving the published model id needs
+     * [defaultModelId], which is the one thing that varies per object — the same reason
+     * [requestBody] takes an [AiTarget] instead of the id.
+     */
+    override fun transcriptionFields(target: AiTarget): Map<String, String> =
+        mapOf(MODEL_FIELD to resolvedModelId(target))
 
     override fun headers(key: String): Map<String, String> = buildMap {
         put(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE)
@@ -129,16 +155,22 @@ internal sealed class OpenAiProtocol(
     }.toString()
 
     /**
-     * The user turn: a plain string, or a content array once it carries a picture.
+     * The user turn: a plain string, or a content array once it carries media.
      *
      * Kept as a string in the ordinary case rather than always sending the array
-     * form, so a request with no images renders exactly the body it did before — which
+     * form, so a request with no media renders exactly the body it did before — which
      * matters more here than for the other two, since several self-hosted servers
      * accept only the string shape.
+     *
+     * **The early return has to test both media fields**, and testing only `images` is
+     * the worst bug this file could carry: a request with sound and no picture would
+     * render as a plain string, the clip would simply not be on the wire, and the model
+     * would answer a question about a recording it was never sent — confidently, with
+     * no error anywhere. Nothing downstream could tell that from a bad transcription.
      */
     private fun userTurn(request: AiRequest): JsonObject = buildJsonObject {
         put(ROLE_KEY, USER_ROLE)
-        if (request.images.isEmpty()) {
+        if (request.images.isEmpty() && request.audio.isEmpty()) {
             put(CONTENT_KEY, request.prompt)
             return@buildJsonObject
         }
@@ -155,8 +187,49 @@ internal sealed class OpenAiProtocol(
                     },
                 )
             }
-            add(buildJsonObject { put(TYPE_KEY, TEXT_TYPE); put(TEXT_KEY, request.prompt) })
+            request.audio.forEach { clip ->
+                add(
+                    buildJsonObject {
+                        put(TYPE_KEY, INPUT_AUDIO_TYPE)
+                        // And sound takes neither shape: two fields, where the second is
+                        // a bare format name from a closed set rather than a media type.
+                        // `audioProblem` is what keeps anything else from reaching here.
+                        putJsonObject(INPUT_AUDIO_KEY) {
+                            put(AUDIO_DATA_KEY, clip.base64)
+                            put(FORMAT_KEY, chatAudioFormat(clip.mediaType).orEmpty())
+                        }
+                    },
+                )
+            }
+            // `chatPrompt`, not `request.prompt`: OpenRouter has audio-capable chat
+            // models and no transcription endpoint, so a blank question lands here — and
+            // used to send an *empty* text part beside the clip, which asks the model for
+            // nothing and gets whatever it feels like instead of a transcript.
+            add(buildJsonObject { put(TYPE_KEY, TEXT_TYPE); put(TEXT_KEY, chatPrompt(request)) })
         }
+    }
+
+    /**
+     * Which sounds the *chat* endpoint will take, checked before the network.
+     *
+     * **The narrowest audio support of any wire here, and the gap is the point.** This
+     * endpoint takes wav and mp3 and nothing else, where `/audio/transcriptions` two
+     * lines down takes eight formats including the `.m4a` this app records. So a file
+     * can be perfectly sendable to this provider and refused by this member — which is
+     * exactly why the wire is chosen before the media type is judged, in `audioWireFor`,
+     * rather than each deciding separately.
+     */
+    override fun audioProblem(request: AiRequest, target: AiTarget): String? {
+        val refused = request.audio.firstOrNull { chatAudioFormat(it.mediaType) == null } ?: return null
+        return "This model can only be asked about WAV or MP3 audio, not ${refused.mediaType}. " +
+            "Leave the question empty to transcribe it instead, or use \"Listen with AI\", which records WAV"
+    }
+
+    /** The closed two-member set this API's `format` field accepts, or null. */
+    private fun chatAudioFormat(mediaType: String): String? = when (mediaType.lowercase()) {
+        "audio/wav", "audio/x-wav" -> "wav"
+        "audio/mpeg", "audio/mp3" -> "mp3"
+        else -> null
     }
 
     /**
@@ -291,13 +364,75 @@ internal sealed class OpenAiProtocol(
         return AiReply(text = text, truncated = finish == LENGTH_FINISH)
     }
 
-    /** The listing, as `data[].id` — served by OpenAI, OpenRouter, vLLM, Ollama and LM Studio alike. */
+    /**
+     * What a `/audio/transcriptions` response means.
+     *
+     * `{"text": …}` and nothing else worth reading — the `duration` and `language`
+     * fields the newer models add would each have to become a port, and this node has
+     * one output for [readReply]'s stated reason.
+     *
+     * `error.message` first, and a blank transcript treated as a failure, on
+     * [readReply]'s rules for its reasons. A blank one is worth its own sentence: an
+     * empty transcript is what a *silent* recording produces, which is a thing that
+     * genuinely happens — a denied microphone on some OEM builds records zeroes rather
+     * than failing — and "the model returned an empty answer" would send somebody
+     * looking at the wrong end of it.
+     */
+    @Suppress("ReturnCount") // Refused, unreadable, silent and transcribed each say their own thing.
+    override fun readTranscription(status: Int, body: String): AiReply {
+        val root = runCatching { json.parseToJsonElement(body).jsonObject }.getOrNull()
+        if (status !in SUCCESS_RANGE) return AiReply(error = errorText(status, root))
+        root ?: return AiReply(error = "The transcription came back unreadable (HTTP $status)")
+        val text = root[TEXT_KEY]?.stringOrNull().orEmpty()
+        if (text.isBlank()) return AiReply(error = "Nothing was transcribed — the recording may be silent")
+        return AiReply(text = text)
+    }
+
+    /**
+     * The listing, as `data[].id` — served by OpenAI, OpenRouter, vLLM, Ollama and LM
+     * Studio alike, and carrying wildly different amounts beside the id.
+     *
+     * **OpenRouter is the only provider anywhere in this app that publishes what each
+     * model accepts**, as `architecture.input_modalities`, and it is why the chooser can
+     * filter at all. Plain OpenAI answers id, creation date and owner; a self-hosted
+     * `/v1/models` answers whatever that server felt like. Both therefore answer
+     * [AiModelInfo.modalities] as null — "not published" — rather than a guess, because a
+     * chooser that treated silence as "text only" would hide every usable model on them.
+     */
     override fun readModels(status: Int, body: String): AiModels {
         val root = runCatching { json.parseToJsonElement(body).jsonObject }.getOrNull()
         if (status !in SUCCESS_RANGE) return AiModels(error = errorText(status, root))
-        val ids = root?.get(DATA_KEY)?.arrayOrNull().orEmpty()
-            .mapNotNull { it.objectOrNull()?.get(ID_KEY)?.stringOrNull() }
-        return AiModels(ids = ids)
+        val models = root?.get(DATA_KEY)?.arrayOrNull().orEmpty()
+            .mapNotNull { entry ->
+                val model = entry.objectOrNull() ?: return@mapNotNull null
+                val id = model[ID_KEY]?.stringOrNull() ?: return@mapNotNull null
+                AiModelInfo(
+                    id = id,
+                    label = model[NAME_KEY]?.stringOrNull().orEmpty(),
+                    modalities = inputModalities(model),
+                )
+            }
+        return AiModels(models = models)
+    }
+
+    /**
+     * What `architecture.input_modalities` says, or null where the field is absent.
+     *
+     * An **empty** array is null too rather than an empty set: a provider that publishes
+     * the key with nothing in it has told us nothing, and the difference between "no
+     * answer" and "accepts nothing" is the one this whole field exists to keep.
+     * Unrecognised names are dropped rather than failing the row — a sixth modality
+     * appearing upstream should cost a filter chip, not the model.
+     */
+    private fun inputModalities(model: JsonObject): Set<AiModality>? {
+        val listed = model[ARCHITECTURE_KEY]?.objectOrNull()
+            ?.get(INPUT_MODALITIES_KEY)?.arrayOrNull()
+            ?.mapNotNull { it.stringOrNull() }
+            ?: return null
+        val known = listed.mapNotNull { name ->
+            AiModality.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }
+        }
+        return known.toSet().ifEmpty { null }
     }
 
     private fun reasoningEffort(model: AiModel): String = when (model) {
@@ -339,6 +474,7 @@ internal sealed class OpenAiProtocol(
         defaultBaseUrl = "https://api.openai.com/v1",
         tokenField = "max_completion_tokens",
         sendsReasoningEffort = true,
+        servesTranscription = true,
     ) {
         override fun defaultModelId(model: AiModel): String = when (model) {
             AiModel.FAST -> "gpt-5.1-mini"
@@ -377,11 +513,19 @@ internal sealed class OpenAiProtocol(
      * the user knows about, and the second is whatever that machine was started with.
      * Both are required, and [configurationProblem] says which is missing rather than
      * letting the request fail as a network error.
+     *
+     * **This is the one that makes transcription worth having.** `whisper.cpp`,
+     * `faster-whisper` and LM Studio all serve `/audio/transcriptions` in exactly
+     * OpenAI's shape, which is how a recording gets turned into text without leaving
+     * the user's own network — and audio is the payload where that matters most. A
+     * server here that has no such endpoint answers 404, which reaches the run log as
+     * its own sentence.
      */
     object SelfHosted : OpenAiProtocol(
         defaultBaseUrl = "",
         tokenField = "max_tokens",
         sendsReasoningEffort = false,
+        servesTranscription = true,
     ) {
         override fun defaultModelId(model: AiModel): String = ""
     }
@@ -410,6 +554,13 @@ internal sealed class OpenAiProtocol(
         const val IMAGE_URL_TYPE = "image_url"
         const val IMAGE_URL_KEY = "image_url"
         const val URL_KEY = "url"
+        const val INPUT_AUDIO_TYPE = "input_audio"
+        const val INPUT_AUDIO_KEY = "input_audio"
+        const val AUDIO_DATA_KEY = "data"
+        const val FORMAT_KEY = "format"
+
+        /** The multipart field name, which is `model` rather than the JSON `model` key. */
+        const val MODEL_FIELD = "model"
         const val MODEL_KEY = "model"
         const val EFFORT_KEY = "reasoning_effort"
         const val MESSAGES_KEY = "messages"
@@ -421,6 +572,8 @@ internal sealed class OpenAiProtocol(
         const val CHOICE_MESSAGE_KEY = "message"
         const val FINISH_KEY = "finish_reason"
         const val DATA_KEY = "data"
+        const val ARCHITECTURE_KEY = "architecture"
+        const val INPUT_MODALITIES_KEY = "input_modalities"
         const val ID_KEY = "id"
     }
 }

@@ -48,10 +48,10 @@ internal class AppFileStore(filesDir: File) : FileStore {
                 .getOrElse { FileRead(error = it.message.orEmpty().ifBlank { "Could not read $path" }) }
         }
 
-    override suspend fun readBytes(path: FilePath): FileBytes = withContext(Dispatchers.IO) {
+    override suspend fun readBytes(path: FilePath, maxBytes: Int): FileBytes = withContext(Dispatchers.IO) {
         val file = resolve(path) ?: return@withContext FileBytes(error = outside(path))
         if (!file.isFile) return@withContext FileBytes(error = "There is no file at ${'$'}path")
-        runCatching { file.inputStream().use { readBoundedBase64(it, mediaTypeOf(file.name)) } }
+        runCatching { file.inputStream().use { readBoundedBase64(it, mediaTypeOf(file.name), maxBytes) } }
             .getOrElse { FileBytes(error = it.message.orEmpty().ifBlank { "Could not read ${'$'}path" }) }
     }
 

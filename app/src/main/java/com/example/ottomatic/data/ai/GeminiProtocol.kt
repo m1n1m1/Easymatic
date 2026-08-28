@@ -160,7 +160,26 @@ internal object GeminiProtocol : AiProtocol {
                                 },
                             )
                         }
-                        add(buildJsonObject { put(TEXT_KEY, request.prompt) })
+                        // Sound rides the same inline part as a picture — one of the
+                        // few places this API is simpler than the others, where audio
+                        // needs its own content type entirely.
+                        request.audio.forEach { clip ->
+                            add(
+                                buildJsonObject {
+                                    putJsonObject(INLINE_DATA_KEY) {
+                                        put(MIME_TYPE_KEY, clip.mediaType)
+                                        put(IMAGE_DATA_KEY, clip.base64)
+                                    }
+                                },
+                            )
+                        }
+                        // The blank prompt is filled in *here* rather than in the node,
+                        // and that is what keeps the wire choice honest: `audioWireFor`
+                        // reads the blank to mean "just transcribe it", so substituting
+                        // earlier would send every transcription down the chat wire.
+                        // This provider has no transcription endpoint, so a blank prompt
+                        // always lands here and always needs the instruction spelt out.
+                        add(buildJsonObject { put(TEXT_KEY, chatPrompt(request)) })
                     }
                 },
             )
@@ -175,6 +194,23 @@ internal object GeminiProtocol : AiProtocol {
             putJsonObject(THINKING_KEY) { put(THINKING_LEVEL_KEY, thinkingLevel(target.effort)) }
         }
     }.toString()
+
+    /**
+     * Which sounds this API will take inline, checked before the network.
+     *
+     * **`audio/mp4` is the one that matters, and it is the one this app produces.**
+     * `action.record_audio` writes MPEG-4/AAC, so the most obvious macro anybody will
+     * build — record a note, then transcribe it — is exactly the one that fails here.
+     * Gemini's inline set is wav, mp3, aiff, aac, ogg and flac; an `.m4a` comes back as
+     * a 400 that names neither the file nor the format, so the refusal is worded here
+     * and names the fix instead.
+     */
+    override fun audioProblem(request: AiRequest, target: AiTarget): String? {
+        val refused = request.audio.map { it.mediaType.lowercase() }.firstOrNull { it !in INLINE_AUDIO_TYPES }
+            ?: return null
+        return "Gemini cannot read $refused — it takes WAV, MP3, AIFF, AAC, OGG or FLAC. " +
+            "\"Listen with AI\" records WAV, or convert the file first"
+    }
 
     /**
      * The request body for an exchange that may use [tools].
@@ -352,9 +388,19 @@ internal object GeminiProtocol : AiProtocol {
                 ?.mapNotNull { it.stringOrNull() }
                 .orEmpty()
             if (supported.isNotEmpty() && GENERATE_CONTENT !in supported) return@mapNotNull null
-            model[NAME_KEY]?.stringOrNull()?.removePrefix(MODEL_NAME_PREFIX)
+            val id = model[NAME_KEY]?.stringOrNull()?.removePrefix(MODEL_NAME_PREFIX)
+                ?: return@mapNotNull null
+            AiModelInfo(
+                id = id,
+                label = model[DISPLAY_NAME_KEY]?.stringOrNull().orEmpty(),
+                // Gemini publishes generation *methods* and no modality field at all, so
+                // there is nothing to answer with. Null rather than a guessed set: a
+                // chooser reading "unknown" as "text only" would hide every model on this
+                // provider from an audio filter, which is worse than not filtering.
+                modalities = null,
+            )
         }
-        return AiModels(ids = ids)
+        return AiModels(models = ids)
     }
 
     /**
@@ -411,6 +457,19 @@ internal object GeminiProtocol : AiProtocol {
     private const val FUNCTION_RESPONSE_KEY = "functionResponse"
     private const val RESPONSE_KEY = "response"
     private const val ARGS_KEY = "args"
+    /** What `inlineData` will carry as sound. Not `audio/mp4`, which is the trap. */
+    private val INLINE_AUDIO_TYPES = setOf(
+        "audio/wav",
+        "audio/x-wav",
+        "audio/mpeg",
+        "audio/mp3",
+        "audio/aiff",
+        "audio/aac",
+        "audio/ogg",
+        "audio/flac",
+    )
+
+    private const val DISPLAY_NAME_KEY = "displayName"
     private const val INLINE_DATA_KEY = "inlineData"
     private const val MIME_TYPE_KEY = "mimeType"
     private const val IMAGE_DATA_KEY = "data"
