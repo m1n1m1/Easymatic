@@ -447,6 +447,7 @@
     <string name="console_entry_title">Запись журнала</string>
     <string name="console_copy_message">Скопировать сообщение</string>
     <string name="console_show_node">Показать узел</string>
+    <string name="console_delete_entry">Удалить эту запись</string>
     <string name="console_run_number">Запуск %1$d</string>
     <string name="console_level_debug">Отладка</string>
     <string name="console_level_info">Инфо</string>

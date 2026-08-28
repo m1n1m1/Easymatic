@@ -447,6 +447,7 @@
     <string name="console_entry_title">Entrada del registro</string>
     <string name="console_copy_message">Copiar el mensaje</string>
     <string name="console_show_node">Mostrar el nodo</string>
+    <string name="console_delete_entry">Eliminar esta entrada</string>
     <string name="console_run_number">Ejecución %1$d</string>
     <string name="console_level_debug">Depuración</string>
     <string name="console_level_info">Info</string>

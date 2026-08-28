@@ -506,6 +506,7 @@
     <string name="console_entry_title">Log entry</string>
     <string name="console_copy_message">Copy the message</string>
     <string name="console_show_node">Show the node</string>
+    <string name="console_delete_entry">Delete this entry</string>
     <string name="console_run_number">Run %1$d</string>
     <string name="console_level_debug">Debug</string>
     <string name="console_level_info">Info</string>

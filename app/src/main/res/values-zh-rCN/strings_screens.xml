@@ -447,6 +447,7 @@
     <string name="console_entry_title">日志条目</string>
     <string name="console_copy_message">复制消息</string>
     <string name="console_show_node">显示节点</string>
+    <string name="console_delete_entry">删除此条目</string>
     <string name="console_run_number">第 %1$d 次运行</string>
     <string name="console_level_debug">调试</string>
     <string name="console_level_info">信息</string>

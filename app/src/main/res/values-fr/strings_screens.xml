@@ -447,6 +447,7 @@
     <string name="console_entry_title">Entrée du journal</string>
     <string name="console_copy_message">Copier le message</string>
     <string name="console_show_node">Afficher le nœud</string>
+    <string name="console_delete_entry">Supprimer cette entrée</string>
     <string name="console_run_number">Exécution %1$d</string>
     <string name="console_level_debug">Débogage</string>
     <string name="console_level_info">Info</string>

@@ -273,8 +273,33 @@ class AssistantSession(
         onModelChosen(modelRef)
     }
 
+    /**
+     * Stops the turn, and says so at once.
+     *
+     * **The notice is written here rather than in the turn's own cancellation branch**,
+     * which is where it used to be — and that is what "Stop does not stop" was.
+     * Cancellation is cooperative, so a turn sitting in a socket read went on being
+     * reported as working, with the composer still refusing the next question, until the
+     * provider got round to answering: up to a minute and a half of the ✕ looking like it
+     * did nothing. What the user pressed is a decision, and a decision is knowable
+     * immediately; the coroutine unwinding behind it has nothing left to announce.
+     *
+     * [com.example.ottomatic.data.ai.AiTransport] closes the socket on cancellation, so
+     * the request is genuinely dropped rather than merely stopped being listened to.
+     */
     fun cancel() {
-        turn?.cancel()
+        val running = turn?.takeIf { it.isActive } ?: return
+        // Forgotten before it is cancelled, so `send` and `restart` are usable at once
+        // rather than waiting on a turn whose result can no longer reach anything.
+        turn = null
+        running.cancel()
+        // What was half-built stays on the canvas, and the snapshot is what offers to take
+        // it back — which is the whole reason `send` takes one.
+        finish(
+            before = snapshot ?: editor.workflow,
+            message = AssistantMessage.Notice(AssistantNotice.CANCELLED),
+            isError = true,
+        )
     }
 
     /**
@@ -365,12 +390,10 @@ class AssistantSession(
                     invoke = { call -> runTool(call, added, placed) },
                 )
             }.getOrElse { cause ->
-                // A cancelled turn is not a failed one, and the rethrow is what keeps
-                // `cancel()` meaning cancel rather than being logged as an error.
-                if (cause is CancellationException) {
-                    finish(before, AssistantMessage.Notice(AssistantNotice.CANCELLED), isError = true)
-                    throw cause
-                }
+                // A cancelled turn is not a failed one, and [cancel] has already said so.
+                // The rethrow is all that is left of it: it keeps a scope torn down with
+                // the editor from being reported as a provider failure.
+                if (cause is CancellationException) throw cause
                 val message = cause.message
                     ?.let { AssistantMessage.FromAssistant(it, isError = true) }
                     ?: AssistantMessage.Notice(AssistantNotice.FAILED)

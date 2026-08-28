@@ -3,8 +3,6 @@ package com.example.ottomatic.data.ai
 import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.domain.model.AiBaseUrl
 import com.example.ottomatic.domain.model.needsBaseUrl
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /**
  * Which models a connection's key may actually use.
@@ -53,12 +51,10 @@ class AiModelCatalog(private val connections: AiConnectionRepository) {
             return AiModels(error = "Add the server address first, then load the models")
         }
         val protocol = protocolFor(connection.provider)
-        val (status, body) = withContext(Dispatchers.IO) {
-            AiTransport.get(
-                url = protocol.modelsEndpoint(connection),
-                headers = protocol.headers(key),
-            )
-        }
+        val (status, body) = AiTransport.get(
+            url = protocol.modelsEndpoint(connection),
+            headers = protocol.headers(key),
+        )
         val models = protocol.readModels(status, body)
         return when {
             models.error.isNotBlank() -> models

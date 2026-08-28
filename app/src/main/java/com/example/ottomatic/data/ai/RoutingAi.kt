@@ -9,8 +9,6 @@ import com.example.ottomatic.core.service.AiToolLimits
 import com.example.ottomatic.core.service.AiToolResult
 import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.domain.model.AiConnection
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /**
  * [Ai] over whichever provider the chosen connection names, authenticated with the
@@ -91,13 +89,11 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
 
     /** One round trip on this connection. */
     private suspend fun Resolution.Ready.post(body: String): Pair<Int, String> =
-        withContext(Dispatchers.IO) {
-            AiTransport.post(
-                url = protocol.endpoint(target),
-                headers = protocol.headers(key),
-                body = body,
-            )
-        }
+        AiTransport.post(
+            url = protocol.endpoint(target),
+            headers = protocol.headers(key),
+            body = body,
+        )
 
     /**
      * Everything a request needs before it may reach the network, or the sentence

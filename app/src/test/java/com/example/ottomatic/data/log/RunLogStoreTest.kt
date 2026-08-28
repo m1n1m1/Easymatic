@@ -207,6 +207,129 @@ class RunLogStoreTest {
     }
 
     @Test
+    fun `deleting one line rewrites the file without it`() {
+        // The point of a per-entry delete: the rest of the history stays, and the
+        // one line the user threw away does not come back with the process.
+        val store = attached()
+        store.record(entry("keep me", level = LogLevel.ERROR, atMs = STAMP))
+        store.record(entry("go away", level = LogLevel.ERROR, atMs = STAMP + 1))
+        store.persist()
+
+        val doomed = store.entries(WORKFLOW).value.single { it.message == "go away" }
+        store.delete(WORKFLOW, doomed.id)
+
+        assertEquals(listOf("keep me"), store.entries(WORKFLOW).value.map { it.message })
+        assertEquals(listOf("keep me"), attached().entries(WORKFLOW).value.map { it.message })
+    }
+
+    @Test
+    fun `deleting the last line removes the file rather than leaving an empty one`() {
+        val store = attached()
+        store.record(entry("only", level = LogLevel.ERROR))
+        store.persist()
+
+        store.delete(WORKFLOW, store.entries(WORKFLOW).value.single().id)
+
+        assertTrue(folder.root.resolve("logs/$WORKFLOW.jsonl").let { !it.exists() || it.length() == 0L })
+        assertEquals(emptyList<String>(), attached().entries(WORKFLOW).value.map { it.message })
+    }
+
+    @Test
+    fun `deleting an id that is not there changes nothing`() {
+        val store = RunLogStore()
+        store.record(entry("still here"))
+
+        store.delete(WORKFLOW, -1L)
+
+        assertEquals(listOf("still here"), store.entries(WORKFLOW).value.map { it.message })
+    }
+
+    @Test
+    fun `queued lines survive a delete rather than being flushed in twice`() {
+        // `rewrite` drops the pending batch because those lines are already in the
+        // buffer it rewrites from. Flushing afterwards must not append them again.
+        val store = attached()
+        store.record(entry("first", level = LogLevel.ERROR, atMs = STAMP))
+        store.record(entry("second", level = LogLevel.ERROR, atMs = STAMP + 1))
+
+        store.delete(WORKFLOW, store.entries(WORKFLOW).value.first().id)
+        store.persist()
+
+        assertEquals(listOf("second"), attached().entries(WORKFLOW).value.map { it.message })
+    }
+
+    // endregion
+
+    // region Acknowledgement
+
+    @Test
+    fun `acknowledging moves the watermark to the newest line`() {
+        val store = RunLogStore()
+        store.record(entry("a warning", level = LogLevel.WARN, atMs = STAMP))
+
+        assertEquals(0L, store.acknowledged(WORKFLOW).value)
+        store.acknowledge(WORKFLOW)
+
+        assertEquals(STAMP, store.acknowledged(WORKFLOW).value)
+    }
+
+    @Test
+    fun `a line logged after the acknowledgement is not covered by it`() {
+        // Which is what makes the badge appear again for a *new* problem rather
+        // than staying dark once the console has ever been opened.
+        val store = RunLogStore()
+        store.record(entry("old", level = LogLevel.WARN, atMs = STAMP))
+        store.acknowledge(WORKFLOW)
+        store.record(entry("new", level = LogLevel.WARN, atMs = STAMP + 1))
+
+        val unseen = store.entries(WORKFLOW).value.filter { it.atMs > store.acknowledged(WORKFLOW).value }
+
+        assertEquals(listOf("new"), unseen.map { it.message })
+    }
+
+    @Test
+    fun `the watermark survives a restart, so a seen warning stays seen`() {
+        // The whole complaint this answers: a problem that has been looked at must
+        // not badge the console again tomorrow morning.
+        val store = attached()
+        store.record(entry("a warning", level = LogLevel.WARN, atMs = STAMP))
+        store.acknowledge(WORKFLOW)
+        store.persist()
+
+        assertEquals(STAMP, attached().acknowledged(WORKFLOW).value)
+    }
+
+    @Test
+    fun `clearing resets the watermark along with the history`() {
+        val store = attached()
+        store.record(entry("a warning", level = LogLevel.WARN, atMs = STAMP))
+        store.acknowledge(WORKFLOW)
+
+        store.clear(WORKFLOW)
+
+        assertEquals(0L, store.acknowledged(WORKFLOW).value)
+        assertEquals(0L, attached().acknowledged(WORKFLOW).value)
+    }
+
+    @Test
+    fun `acknowledging never moves backwards`() {
+        val store = RunLogStore()
+        store.record(entry("newer", level = LogLevel.WARN, atMs = STAMP + 10))
+        store.acknowledge(WORKFLOW)
+        store.clear(WORKFLOW)
+        store.record(entry("older", level = LogLevel.WARN, atMs = STAMP))
+        store.acknowledge(WORKFLOW)
+        store.record(entry("older still", level = LogLevel.WARN, atMs = STAMP - 10))
+        store.acknowledge(WORKFLOW)
+
+        assertEquals(STAMP, store.acknowledged(WORKFLOW).value)
+    }
+
+    // endregion
+
+    // region On disk, continued
+
+    @Test
     fun `a corrupt line is skipped rather than losing the whole history`() {
         // Losing one line to a half-written flush is bad; losing every line the
         // user was about to read because of it is worse.

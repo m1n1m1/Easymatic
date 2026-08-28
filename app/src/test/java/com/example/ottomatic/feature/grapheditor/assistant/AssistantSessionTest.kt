@@ -351,6 +351,58 @@ class AssistantSessionTest {
         assertTrue("and once it is over, it clears", session.state.value.transcript.isEmpty())
     }
 
+    /**
+     * Stop means stopped, now.
+     *
+     * Cancellation is cooperative, so the turn's own coroutine cannot be what reports it:
+     * a provider that has not answered leaves it parked in a socket read for as long as it
+     * likes, and everything the user can see — the pill, the notice, the composer refusing
+     * the next question — used to wait there with it.
+     */
+    @Test
+    fun `stopping is reported at once, without waiting for the provider`() {
+        val neverAnswers = CompletableDeferred<Unit>()
+        val ai = object : Ai {
+            var asked = 0
+            override suspend fun complete(request: AiRequest): AiReply = AiReply()
+            override suspend fun toolsFor(modelRef: String): String = ""
+            override suspend fun converse(
+                request: AiRequest,
+                tools: List<AiTool>,
+                maxTurns: Int,
+                invoke: suspend (AiToolCall) -> AiToolResult,
+            ): AiReply {
+                asked++
+                neverAnswers.await()
+                return AiReply(text = "too late")
+            }
+        }
+        val session = AssistantSession(ai, RecordingEditor(), scope, initialModelRef = "profile-1")
+
+        session.send("build it")
+        assertTrue(session.state.value.turn is AssistantTurn.Working)
+
+        session.cancel()
+
+        assertTrue("the pill states the outcome now", session.state.value.turn is AssistantTurn.Done)
+        assertEquals(
+            AssistantNotice.CANCELLED,
+            (session.state.value.transcript.last() as AssistantMessage.Notice).notice,
+        )
+
+        // And the composer is free immediately, not once the provider gives up.
+        session.send("something else instead")
+        assertEquals(2, ai.asked)
+        assertTrue(session.state.value.turn is AssistantTurn.Working)
+
+        neverAnswers.complete(Unit)
+        assertEquals(
+            "the stopped turn's answer never arrives",
+            1,
+            session.state.value.transcript.count { it is AssistantMessage.FromAssistant },
+        )
+    }
+
     /** Minimizing to go and look at the canvas must not throw away a half-typed question. */
     @Test
     fun `a half-written question survives folding the panel away`() {

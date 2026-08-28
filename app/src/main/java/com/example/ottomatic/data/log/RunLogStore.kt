@@ -38,6 +38,7 @@ class RunLogStore : RunLog {
 
     private val buffers = ConcurrentHashMap<String, MutableStateFlow<List<LogEntry>>>()
     private val hydrated = Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
+    private val acks = LogAcknowledgements()
 
     private var storage: Storage? = null
 
@@ -56,7 +57,9 @@ class RunLogStore : RunLog {
      * would put the writes outside any test scheduler's reach.
      */
     fun attach(directory: File, scope: CoroutineScope) {
-        storage = Storage(File(directory, DIR_NAME), scope)
+        val logs = File(directory, DIR_NAME)
+        storage = Storage(logs, scope)
+        acks.attach(logs)
     }
 
     /**
@@ -75,22 +78,6 @@ class RunLogStore : RunLog {
         if (bounded.level >= PERSIST_FROM) storage?.queue(workflowId, bounded)
     }
 
-    /**
-     * Caps one line's length, so the buffer's entry count is a real bound on its
-     * size rather than a bound on nothing.
-     *
-     * This is the **only** cut. `action.log`'s message is `@Wired`, so pointing an
-     * HTTP response at it logs the whole body — at INFO, which is persisted — and
-     * the executor's `in`/`out` lines carry whatever crossed a wire. Capping here
-     * rather than at each call site is what makes the limit hold for every writer,
-     * including the next one, and it is what lets a writer hand over everything it
-     * has: a value cut short on the way in is cut short in the entry overlay too,
-     * which is the one surface that exists to show a line whole.
-     */
-    private fun LogEntry.truncated(): LogEntry =
-        if (message.length <= RunLog.MAX_MESSAGE_CHARS) this
-        else copy(message = message.take(RunLog.MAX_MESSAGE_CHARS) + "… (${message.length} chars)")
-
     override fun entries(workflowId: String): StateFlow<List<LogEntry>> {
         val buffer = bufferFor(workflowId)
         hydrate(workflowId, buffer)
@@ -107,7 +94,36 @@ class RunLogStore : RunLog {
 
     override fun clear(workflowId: String) {
         bufferFor(workflowId).value = emptyList()
-        storage?.delete(workflowId)
+        acks.forget(workflowId)
+        storage?.rewrite(workflowId, emptyList())
+    }
+
+    /**
+     * Removes one line and rewrites what is left.
+     *
+     * [hydrate] first, so the rewrite is over the whole history rather than over
+     * whatever this process happens to have logged — deleting a line from a
+     * console that was never opened would otherwise truncate the file to the
+     * current run. In practice the console has always hydrated by the time it can
+     * offer a delete; this is what makes that a fact rather than an assumption.
+     */
+    override fun delete(workflowId: String, entryId: Long) {
+        val buffer = bufferFor(workflowId)
+        hydrate(workflowId, buffer)
+        if (buffer.value.none { it.id == entryId }) return
+        buffer.update { entries -> entries.filterNot { it.id == entryId } }
+        storage?.rewrite(workflowId, buffer.value.filter { it.level >= PERSIST_FROM })
+    }
+
+    override fun acknowledged(workflowId: String): StateFlow<Long> {
+        hydrate(workflowId, bufferFor(workflowId))
+        return acks.of(workflowId)
+    }
+
+    /** The newest line there is, is the newest line that has been seen. */
+    override fun acknowledge(workflowId: String) {
+        val newest = bufferFor(workflowId).value.maxOfOrNull { it.atMs } ?: return
+        acks.mark(workflowId, newest)
     }
 
     /**
@@ -136,6 +152,9 @@ class RunLogStore : RunLog {
         // The `takeIf` order matters: an unattached store must not mark the
         // workflow hydrated, or attaching later would never restore it.
         val store = storage?.takeIf { hydrated.add(workflowId) } ?: return
+        // Before the entries, so a badge is never drawn for lines the last session
+        // already acknowledged, not even for the frame between the two reads.
+        acks.restore(workflowId)
         val restored = store.read(workflowId)
         if (restored.isEmpty()) return
         buffer.update { live ->
@@ -184,13 +203,36 @@ class RunLogStore : RunLog {
         }.getOrDefault(emptyList())
 
         /**
-         * Deletes synchronously. A clear the user just asked for must not race
-         * the debounced write that is about to append to the same file.
+         * Replaces the file with exactly [entries] — the one write that is not an
+         * append, because removing a line from the middle of a log cannot be one.
+         * An empty list deletes it, which is what clearing a console is: the same
+         * operation with nothing left over, rather than a second path with its own
+         * bookkeeping to keep in step.
+         *
+         * **Synchronous**, because a deletion the user just asked for must not race
+         * the debounced write that is about to append to the same file — and it
+         * drops [pending] for a subtler reason: those lines are already in the
+         * buffer this list came from, so they are *in* the rewrite. Flushing them
+         * afterwards would append them a second time.
+         *
+         * It is also a compaction, and the only lines it can lose are ones no
+         * surface could show: the buffer holds at most [MAX_ENTRIES_PER_WORKFLOW],
+         * which is exactly what [read] restores and what the next [compact] would
+         * have kept anyway.
          */
-        fun delete(workflowId: String) {
+        fun rewrite(workflowId: String, entries: List<LogEntry>) {
             pending.remove(workflowId)
-            lineCounts.remove(workflowId)
-            runCatching { fileFor(workflowId).delete() }
+            runCatching {
+                val file = fileFor(workflowId)
+                if (entries.isEmpty()) {
+                    lineCounts.remove(workflowId)
+                    file.delete()
+                    return@runCatching
+                }
+                file.parentFile?.mkdirs()
+                file.writeText(entries.joinToString(separator = "") { encode(it) })
+                lineCounts[workflowId] = entries.size
+            }
         }
 
         suspend fun flushAll() = pending.keys.toList().forEach { flush(it) }
@@ -204,9 +246,7 @@ class RunLogStore : RunLog {
         private fun append(workflowId: String, batch: List<LogEntry>) {
             val file = fileFor(workflowId)
             file.parentFile?.mkdirs()
-            file.appendText(
-                batch.joinToString(separator = "") { JSON.encodeToString(LogEntry.serializer(), it) + "\n" },
-            )
+            file.appendText(batch.joinToString(separator = "") { encode(it) })
             val count = (lineCounts[workflowId] ?: countLines(file, batch.size)) + batch.size
             lineCounts[workflowId] = if (count > MAX_ENTRIES_PER_WORKFLOW * COMPACT_AT) compact(file) else count
         }
@@ -226,10 +266,6 @@ class RunLogStore : RunLog {
         private fun countLines(file: File, appended: Int): Int =
             runCatching { file.readLines().size - appended }.getOrDefault(0).coerceAtLeast(0)
 
-        private fun decode(line: String): LogEntry? =
-            if (line.isBlank()) null
-            else runCatching { JSON.decodeFromString(LogEntry.serializer(), line) }.getOrNull()
-
         private fun fileFor(workflowId: String) = File(directory, "$workflowId$SUFFIX")
     }
 
@@ -245,18 +281,41 @@ class RunLogStore : RunLog {
         private const val SUFFIX = ".jsonl"
         private const val FLUSH_DELAY_MS = 500L
         private const val COMPACT_AT = 2
-
-        /**
-         * `encodeDefaults` is load-bearing, not tidiness. [LogEntry.atMs] carries
-         * a default, so without it the timestamp is simply not written — and a
-         * restored entry then decodes back to *its own* default, meaning every
-         * line from last night reads as having happened the moment the console
-         * was opened. That is precisely the question persistence exists to
-         * answer, and nothing fails loudly when it is wrong.
-         */
-        private val JSON = Json {
-            ignoreUnknownKeys = true
-            encodeDefaults = true
-        }
     }
+}
+
+/**
+ * Caps one line's length, so the buffer's entry count is a real bound on its size
+ * rather than a bound on nothing.
+ *
+ * This is the **only** cut. `action.log`'s message is `@Wired`, so pointing an HTTP
+ * response at it logs the whole body — at INFO, which is persisted — and the
+ * executor's `in`/`out` lines carry whatever crossed a wire. Capping at the sink
+ * rather than at each call site is what makes the limit hold for every writer,
+ * including the next one, and it is what lets a writer hand over everything it has:
+ * a value cut short on the way in is cut short in the entry overlay too, which is
+ * the one surface that exists to show a line whole.
+ */
+private fun LogEntry.truncated(): LogEntry =
+    if (message.length <= RunLog.MAX_MESSAGE_CHARS) this
+    else copy(message = message.take(RunLog.MAX_MESSAGE_CHARS) + "… (${message.length} chars)")
+
+/** One JSON-Lines line, newline included, so an append and a rewrite agree on it. */
+private fun encode(entry: LogEntry): String = JSON.encodeToString(LogEntry.serializer(), entry) + "\n"
+
+/** `null` rather than throwing: one half-written line must not cost the history. */
+private fun decode(line: String): LogEntry? =
+    if (line.isBlank()) null
+    else runCatching { JSON.decodeFromString(LogEntry.serializer(), line) }.getOrNull()
+
+/**
+ * `encodeDefaults` is load-bearing, not tidiness. [LogEntry.atMs] carries a
+ * default, so without it the timestamp is simply not written — and a restored entry
+ * then decodes back to *its own* default, meaning every line from last night reads
+ * as having happened the moment the console was opened. That is precisely the
+ * question persistence exists to answer, and nothing fails loudly when it is wrong.
+ */
+private val JSON = Json {
+    ignoreUnknownKeys = true
+    encodeDefaults = true
 }

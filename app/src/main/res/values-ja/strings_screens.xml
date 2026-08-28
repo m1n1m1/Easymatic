@@ -447,6 +447,7 @@
     <string name="console_entry_title">ログエントリ</string>
     <string name="console_copy_message">メッセージをコピー</string>
     <string name="console_show_node">ノードを表示</string>
+    <string name="console_delete_entry">このエントリを削除</string>
     <string name="console_run_number">実行 %1$d</string>
     <string name="console_level_debug">デバッグ</string>
     <string name="console_level_info">情報</string>

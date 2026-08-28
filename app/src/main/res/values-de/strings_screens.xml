@@ -469,6 +469,7 @@
     <string name="console_entry_title">Protokolleintrag</string>
     <string name="console_copy_message">Die Meldung kopieren</string>
     <string name="console_show_node">Den Knoten anzeigen</string>
+    <string name="console_delete_entry">Diesen Eintrag löschen</string>
     <string name="console_run_number">Lauf %1$d</string>
     <string name="console_level_debug">Debug</string>
     <string name="console_level_info">Info</string>

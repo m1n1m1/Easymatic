@@ -138,6 +138,8 @@ fun EditorTabPanel(
     variableValues: StateFlow<Map<String, String>>,
     onMinLevelChange: (LogLevel) -> Unit,
     onClearConsole: () -> Unit,
+    onAcknowledgeConsole: () -> Unit,
+    onDeleteConsoleEntry: (LogEntry) -> Unit,
     onClose: () -> Unit,
     onSelectNode: (NodeId) -> Unit,
     onSelectConnection: (String) -> Unit,
@@ -189,6 +191,8 @@ fun EditorTabPanel(
                     minLevel = consoleMinLevel,
                     onMinLevelChange = onMinLevelChange,
                     onSelectNode = onSelectNode,
+                    onAcknowledge = onAcknowledgeConsole,
+                    onDeleteEntry = onDeleteConsoleEntry,
                 )
                 EditorTab.VARIABLES -> VariablesBody(
                     variableValues = variableValues,

@@ -39,6 +39,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.DisableSelection
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Close
@@ -307,12 +309,19 @@ private fun Conversation(
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
             )
         } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.heightIn(max = TRANSCRIPT_MAX_HEIGHT),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                items(state.transcript.size) { index -> MessageRow(state.transcript[index]) }
+            // **The one text in the editor the user did not type.** An answer naming an
+            // entity id, quoting a script or explaining what it could not do is worth
+            // taking somewhere else, and a `Text` is not selectable unless something says
+            // so. Around the whole list rather than per message, so a selection can run
+            // from a question into its answer.
+            SelectionContainer {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.heightIn(max = TRANSCRIPT_MAX_HEIGHT),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    items(state.transcript.size) { index -> MessageRow(state.transcript[index]) }
+                }
             }
         }
         ModelChip(state.modelRef, session::chooseModel)
@@ -501,12 +510,16 @@ private fun MessageRow(message: AssistantMessage) {
         else -> stringResource(R.string.assistant_ai)
     }
     Column {
-        Text(
-            text = prefix,
-            color = EditorColors.textSecondary,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.SemiBold,
-        )
+        // The speaker labels are the app talking about the conversation rather than part
+        // of it, so they stay out of the selection: what is copied is what was said.
+        DisableSelection {
+            Text(
+                text = prefix,
+                color = EditorColors.textSecondary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
         Text(text = text, color = colour, style = MaterialTheme.typography.bodyMedium)
     }
 }

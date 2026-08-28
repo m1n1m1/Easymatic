@@ -85,6 +85,43 @@ interface RunLog {
     /** Drops [workflowId]'s history, in memory and on disk. */
     fun clear(workflowId: String)
 
+    /**
+     * Drops the one line [entryId] names, in memory and on disk.
+     *
+     * Keyed by [LogEntry.id] rather than by the entry, because the entry the
+     * console is holding came out of the buffer and is the same object — an
+     * identity a value class does not otherwise have, since two identical
+     * `console.log("x")` calls in the same millisecond are equal in every
+     * persisted field.
+     *
+     * Silently does nothing when the id is not there: a line can be deleted twice
+     * from two places, and the second is already what was asked for.
+     */
+    fun delete(workflowId: String, entryId: Long)
+
+    /**
+     * When [workflowId]'s lines were last all seen, as a wall-clock stamp; `0`
+     * when they never were.
+     *
+     * A watermark rather than a per-entry flag for one reason: it has to survive
+     * the process, and [LogEntry.id] deliberately does not. [LogEntry.atMs] is the
+     * only identity a restored line keeps, so it is the only thing an
+     * acknowledgement can be expressed in.
+     */
+    fun acknowledged(workflowId: String): StateFlow<Long>
+
+    /**
+     * Marks everything recorded for [workflowId] so far as seen, moving the
+     * watermark to the newest line.
+     *
+     * This is what stops a warning nagging forever. The console's badge is there
+     * to say "something went wrong that you have not looked at"; once the console
+     * is open, the second half is no longer true, and a badge that stays is a
+     * badge nobody reads. The lines themselves are untouched — the history is
+     * still the history, and [clear] is still the only thing that shortens it.
+     */
+    fun acknowledge(workflowId: String)
+
     companion object {
         /**
          * The longest a single line may be, enforced at the sink so it holds for

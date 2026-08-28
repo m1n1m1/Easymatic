@@ -48,7 +48,14 @@ selectable block, with:
 
 - a **copy** button;
 - a **go to the node** button, where the entry has one;
+- a **delete this entry** button, which removes that one line and leaves the rest of the
+  history alone;
 - the **run id**, which is the only thing that untangles two interleaved runs.
+
+Deleting lives here rather than on the row on purpose: a row is three lines of text you
+are reading, and a delete under the finger reaching to read it is a delete you did not
+mean. The button sits under the message it removes, which is both the confirmation and
+the thing being confirmed — so there is no dialog on top of it, and no undo either.
 
 Day separators say "Today" and "Yesterday" while you scroll; each row also carries its
 own date, so a row read alone or screenshotted into a bug report still says when it
@@ -61,4 +68,20 @@ happened.
   the live edit-and-run loop where the process is alive by definition.
 - Deleting a macro deletes its log.
 
-**Clear console** is in the console's own top bar.
+**Clear console** is in the console's own top bar, and it is still the way to drop a
+whole history at once.
+
+## The badge, and why it goes away
+
+The console's tab carries a badge counting **warnings and errors you have not looked at
+yet**. Opening the console is what marks them as looked at — the badge clears, and lines
+that arrive while you are watching it never raise it again.
+
+Nothing is deleted by this. The warnings stay in the log, at the same level, findable
+under the *Problems* filter for as long as the history holds them; the badge is only a
+statement about whether anything is *new*. It comes back the moment a run logs the next
+one, which is what makes it worth looking at — a badge that goes red once and stays red
+is a badge nobody reads.
+
+It is also remembered across restarts, so a problem you read last night does not badge
+the macro again in the morning.

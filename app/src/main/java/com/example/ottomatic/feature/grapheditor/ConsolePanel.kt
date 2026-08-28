@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -79,7 +80,17 @@ import java.util.Locale
  * puts the canvas back. That request is made from [LogEntryOverlay] rather than
  * from the row: a tap on a row now opens the line, which is the thing every row
  * can do, and "go to the node" becomes a labelled button instead of an invisible
- * property of some rows and not others.
+ * property of some rows and not others. [onDeleteEntry] arrives there for the
+ * same reason, and gains one of its own: a destructive action wants a label and a
+ * deliberate tap, not an icon on a row that the finger reaching to read it lands
+ * on.
+ *
+ * **Being on screen is what acknowledges the log.** The badge on the console tab
+ * exists to say something went wrong that nobody has looked at; this body *is*
+ * somebody looking, so it says so on every change to the list rather than once on
+ * open — a line arriving mid-run while the console is watched has been seen too,
+ * and re-badging the tab the user is standing on would be the same nag in a new
+ * place.
  */
 @Composable
 fun ConsoleBody(
@@ -87,12 +98,16 @@ fun ConsoleBody(
     minLevel: StateFlow<LogLevel>,
     onMinLevelChange: (LogLevel) -> Unit,
     onSelectNode: (NodeId) -> Unit,
+    onAcknowledge: () -> Unit,
+    onDeleteEntry: (LogEntry) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val all by entries.collectAsState()
     val level by minLevel.collectAsState()
     val visible = remember(all, level) { all.filter { it.level >= level } }
     var opened by remember { mutableStateOf<LogEntry?>(null) }
+
+    LaunchedEffect(all) { onAcknowledge() }
 
     Column(modifier = modifier.fillMaxSize()) {
         LevelFilter(selected = level, onSelect = onMinLevelChange)
@@ -111,6 +126,10 @@ fun ConsoleBody(
             onShowNode = { nodeId ->
                 opened = null
                 onSelectNode(nodeId)
+            },
+            onDelete = {
+                opened = null
+                onDeleteEntry(entry)
             },
         )
     }

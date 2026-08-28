@@ -230,6 +230,8 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
                     variableValues = viewModel.variableValues,
                     onMinLevelChange = { viewModel.setConsoleMinLevel(it) },
                     onClearConsole = { viewModel.clearConsole() },
+                    onAcknowledgeConsole = { viewModel.acknowledgeConsole() },
+                    onDeleteConsoleEntry = { viewModel.deleteConsoleEntry(it.id) },
                     onClose = { openTab = null },
                     // Picking a finding is a request to go and look at what it
                     // names, so it selects the node *and* brings the canvas back.

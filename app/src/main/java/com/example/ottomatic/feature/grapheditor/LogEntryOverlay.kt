@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +34,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -76,16 +79,28 @@ private const val COPIED_MS = 1_600L
  * fired mid-animation, the panel would vanish instead of dropping away. Setting it
  * and calling `dismiss` plays the exit first, and [EditorOverlay] then reports the
  * close — see the `onClose` below, which is where the navigation actually happens.
+ * [onDelete] goes through the same slot for the same reason.
+ *
+ * **Deleting one line lives here rather than on the row**, and that is the same
+ * call as "go to the node": the row is a summary clamped to three lines, and
+ * hanging a destructive icon off it puts a delete under the finger that was
+ * reaching to read the thing. Here it is a labelled button under the message it
+ * removes, which is both the confirmation and the thing being confirmed — so it
+ * needs no dialog on top. Clearing the whole console keeps its own button in the
+ * panel's top bar; this is the other half of that, and the reason the log is no
+ * longer all-or-nothing.
  */
 @Composable
 fun LogEntryOverlay(
     entry: LogEntry,
     onClose: () -> Unit,
     onShowNode: (NodeId) -> Unit,
+    onDelete: () -> Unit,
 ) {
     val clipboard = LocalClipboardManager.current
     var copied by remember { mutableStateOf(false) }
     var pendingNode by remember { mutableStateOf<NodeId?>(null) }
+    var pendingDelete by remember { mutableStateOf(false) }
 
     LaunchedEffect(copied) {
         if (!copied) return@LaunchedEffect
@@ -95,7 +110,13 @@ fun LogEntryOverlay(
 
     EditorOverlay(
         title = stringResource(R.string.console_entry_title),
-        onClose = { pendingNode?.let(onShowNode) ?: onClose() },
+        onClose = {
+            when {
+                pendingNode != null -> pendingNode?.let(onShowNode)
+                pendingDelete -> onDelete()
+                else -> onClose()
+            }
+        },
         action = {
             IconButton(
                 onClick = {
@@ -135,29 +156,49 @@ fun LogEntryOverlay(
                     fontFamily = FontFamily.Monospace,
                 )
             }
-            entry.source?.nodeId?.let { nodeId ->
-                Spacer(Modifier.height(24.dp))
-                TextButton(
-                    onClick = {
-                        pendingNode = NodeId(nodeId)
-                        dismiss()
-                    },
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.MyLocation,
-                        contentDescription = null,
+            Spacer(Modifier.height(24.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                entry.source?.nodeId?.let { nodeId ->
+                    EntryAction(
+                        icon = Icons.Filled.MyLocation,
+                        label = stringResource(R.string.console_show_node),
                         tint = EditorColors.actionAccent,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.console_show_node),
-                        color = EditorColors.actionAccent,
-                        fontSize = 14.sp,
+                        onClick = {
+                            pendingNode = NodeId(nodeId)
+                            dismiss()
+                        },
                     )
                 }
+                EntryAction(
+                    icon = Icons.Filled.DeleteOutline,
+                    label = stringResource(R.string.console_delete_entry),
+                    tint = EditorColors.triggerAccent,
+                    onClick = {
+                        pendingDelete = true
+                        dismiss()
+                    },
+                )
             }
         }
+    }
+}
+
+/**
+ * One of the overlay's two verbs, drawn the same way so neither reads as the
+ * primary — going to the node and dropping the line are equally ordinary things
+ * to want from a line you have just read.
+ */
+@Composable
+private fun EntryAction(icon: ImageVector, label: String, tint: Color, onClick: () -> Unit) {
+    TextButton(onClick = onClick) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(18.dp),
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(text = label, color = tint, fontSize = 14.sp)
     }
 }
 

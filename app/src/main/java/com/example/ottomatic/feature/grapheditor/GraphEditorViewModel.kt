@@ -221,16 +221,37 @@ class GraphEditorViewModel(
     private val _consoleMinLevel = MutableStateFlow(LogLevel.INFO)
     val consoleMinLevel: StateFlow<LogLevel> = _consoleMinLevel.asStateFlow()
 
-    /** Drives the badge on the console button: what is worth looking at. */
-    val consoleProblems: StateFlow<Int> = console
-        .map { entries -> entries.count { it.level >= LogLevel.WARN } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_STOP_TIMEOUT_MS), 0)
+    /**
+     * Drives the badge on the console button: what went wrong that has not been
+     * looked at yet.
+     *
+     * The second half is the point. A badge counting every warning the log has
+     * ever held is a badge that goes red once and stays red, which is a badge
+     * nobody reads — so the count is against the acknowledgement watermark the
+     * console moves as it is opened, and a run's problems announce themselves
+     * exactly once.
+     */
+    val consoleProblems: StateFlow<Int> = combine(console, runLog.acknowledged(workflowId)) { entries, seenUpTo ->
+        entries.count { it.level >= LogLevel.WARN && it.atMs > seenUpTo }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_STOP_TIMEOUT_MS), 0)
 
     fun setConsoleMinLevel(level: LogLevel) {
         _consoleMinLevel.value = level
     }
 
     fun clearConsole() = runLog.clear(workflowId)
+
+    /**
+     * Marks the console as read, which is what the badge counts against.
+     *
+     * Called from the console body while it is showing rather than once when it
+     * opens, so a line that arrives during a run you are already watching does
+     * not re-badge the tab you are standing on.
+     */
+    fun acknowledgeConsole() = runLog.acknowledge(workflowId)
+
+    /** Drops one console line. The rest of the history is untouched. */
+    fun deleteConsoleEntry(entryId: Long) = runLog.delete(workflowId, entryId)
 
     /**
      * Selects the node a console line came from, if it is still on the canvas.
