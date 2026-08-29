@@ -6,6 +6,7 @@ import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WebUrl
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Wired
@@ -29,7 +30,9 @@ import kotlinx.serialization.json.Json
 data class HttpConfig(
     @Label("Method") val method: HttpMethod = HttpMethod.GET,
     @Label("URL") @Wired val url: String = "https://example.com",
-    @Label("Headers (JSON, optional)") @Multiline @Wired val headers: String = "",
+    @Label("Headers")
+    @Hint("JSON, optional")
+    @Multiline @Wired val headers: String = "",
     @Label("Body") @Multiline @Wired val body: String = "",
 )
 

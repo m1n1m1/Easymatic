@@ -1,5 +1,6 @@
 package com.example.ottomatic.engine.action
 
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Picker
@@ -73,7 +74,8 @@ data class IntentConfig(
 
     @Label("Category (optional)") @Wired val category: String = "",
 
-    @Label("Extras — one key=value per line, count:int=5 to type one")
+    @Label("Extras")
+    @Hint("one key=value per line, count:int=5 to type one")
     @Multiline
     @Wired
     val extras: String = "",

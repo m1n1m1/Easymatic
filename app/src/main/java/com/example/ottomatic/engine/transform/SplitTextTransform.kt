@@ -2,6 +2,7 @@ package com.example.ottomatic.engine.transform
 
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Wired
@@ -24,8 +25,12 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class SplitTextConfig(
-    @Label("Text — one item per line, or wire something in") @Multiline @Wired val text: String = "",
-    @Label("Separator (blank for a new line)") val separator: String = "",
+    @Label("Text")
+    @Hint("one item per line, or wire something in")
+    @Multiline @Wired val text: String = "",
+    @Label("Separator")
+    @Hint("blank for a new line")
+    val separator: String = "",
 )
 
 /**

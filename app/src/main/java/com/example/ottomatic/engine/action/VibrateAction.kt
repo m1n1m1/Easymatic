@@ -2,6 +2,7 @@ package com.example.ottomatic.engine.action
 
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.engine.Action
 import com.example.ottomatic.engine.ExecutionContext
@@ -15,8 +16,12 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class VibrateConfig(
-    @Label("Duration (ms, used when pattern is empty)") val durationMs: Int = DEFAULT_DURATION_MS,
-    @Label("Pattern (comma-separated ms, e.g. 0,200,500,200)") val pattern: String = "",
+    @Label("Duration")
+    @Hint("ms, used when pattern is empty")
+    val durationMs: Int = DEFAULT_DURATION_MS,
+    @Label("Pattern")
+    @Hint("comma-separated ms, e.g. 0,200,500,200")
+    val pattern: String = "",
 ) {
     /** The parsed [pattern], or empty when unset/unparseable. */
     val patternMillis: List<Long>

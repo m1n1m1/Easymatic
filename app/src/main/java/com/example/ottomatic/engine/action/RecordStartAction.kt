@@ -5,6 +5,7 @@ import com.example.ottomatic.core.service.RecordingRequest
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.FilePath
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.engine.Action
@@ -25,7 +26,8 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class RecordStartConfig(
-    @Label("Stop by itself after (seconds)")
+    @Label("Stop by itself after")
+    @Hint("seconds")
     @Wired
     val maxSeconds: Int = 300,
     @Label("Quality")

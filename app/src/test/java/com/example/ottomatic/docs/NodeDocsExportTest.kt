@@ -291,6 +291,8 @@ private data class PortDoc(
 private data class ConfigFieldDoc(
     val key: String,
     val label: String,
+    /** Absent for a field whose name already says it; see `Hint`. */
+    val hint: String? = null,
     /**
      * The field type's name only — `PICKER`, not `PICKER(kind=HA_ENTITY, optional=true)`.
      *
@@ -366,6 +368,7 @@ private fun NodeTypeDefinition.toDoc(): NodeDoc = NodeDoc(
 private fun ConfigField<*>.toDoc(): ConfigFieldDoc = ConfigFieldDoc(
     key = key.value,
     label = label,
+    hint = hint.takeIf { it.isNotBlank() },
     type = type::class.simpleName.orEmpty(),
     defaultValue = defaultValue,
     visibleWhen = visibleWhen?.let { VisibilityDoc(it.key.value, it.values.sorted()) },

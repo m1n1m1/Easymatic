@@ -17,7 +17,8 @@
     <string name="cfg_trigger_schedule_mode">Mode</string>
     <string name="opt_trigger_schedule_mode_interval">Répéter à intervalle régulier</string>
     <string name="opt_trigger_schedule_mode_at_time">À une heure de la journée</string>
-    <string name="cfg_trigger_schedule_every">Répéter toutes les (en dessous de 15, ne se déclenche que si l\'appareil est éveillé)</string>
+    <string name="cfg_trigger_schedule_every">Répéter toutes les</string>
+    <string name="hint_trigger_schedule_every">en dessous de 15, ne se déclenche que si l\'appareil est éveillé</string>
     <string name="cfg_trigger_schedule_every_unit">Unité</string>
     <string name="opt_trigger_schedule_every_unit_minutes">Minutes</string>
     <string name="opt_trigger_schedule_every_unit_hours">Heures</string>
@@ -30,15 +31,18 @@
     <string name="cfg_trigger_schedule_friday">Vendredis</string>
     <string name="cfg_trigger_schedule_saturday">Samedis</string>
     <string name="cfg_trigger_schedule_sunday">Dimanches</string>
-    <string name="cfg_trigger_schedule_days_of_month">Jours du mois (par ex. 1,15 ; vide = tous les jours)</string>
+    <string name="cfg_trigger_schedule_days_of_month">Jours du mois</string>
+    <string name="hint_trigger_schedule_days_of_month">par ex. 1,15 ; vide = tous les jours</string>
     <string name="cfg_trigger_schedule_window_enabled">Seulement pendant une plage horaire</string>
     <string name="cfg_trigger_schedule_window_from">Actif à partir de</string>
-    <string name="cfg_trigger_schedule_window_until">Actif jusqu\'à (une heure antérieure à « à partir de » franchit minuit)</string>
+    <string name="cfg_trigger_schedule_window_until">Actif jusqu\'à</string>
+    <string name="hint_trigger_schedule_window_until">une heure antérieure à « à partir de » franchit minuit</string>
     <string name="node_trigger_sms_name">SMS reçu</string>
     <string name="node_trigger_sms_desc">Démarre à l\'arrivée d\'un SMS</string>
     <string name="port_trigger_sms_out">Sortie</string>
     <string name="port_trigger_sms_sms">SMS</string>
-    <string name="cfg_trigger_sms_sender">Expéditeur (facultatif : vide signifie n\'importe lequel)</string>
+    <string name="cfg_trigger_sms_sender">Expéditeur</string>
+    <string name="hint_trigger_sms_sender">facultatif : vide signifie n\'importe lequel</string>
     <string name="node_trigger_mail_name">E-mail reçu</string>
     <string name="node_trigger_mail_desc">Démarre à l\'arrivée d\'un e-mail dans une boîte que tu surveilles</string>
     <string name="port_trigger_mail_out">Sortie</string>
@@ -51,7 +55,8 @@
     <string name="cfg_trigger_mail_mode">Mode de surveillance</string>
     <string name="opt_trigger_mail_mode_automatic">Automatique</string>
     <string name="opt_trigger_mail_mode_poll">Interroger</string>
-    <string name="cfg_trigger_mail_interval_minutes">Vérifier toutes les (minutes, minimum 15)</string>
+    <string name="cfg_trigger_mail_interval_minutes">Vérifier toutes les</string>
+    <string name="hint_trigger_mail_interval_minutes">minutes, minimum 15</string>
     <string name="node_trigger_calendar_event_name">Rendez-vous de l\'agenda</string>
     <string name="node_trigger_calendar_event_desc">Démarre quand un rendez-vous commence, se termine ou que son rappel arrive à échéance</string>
     <string name="port_trigger_calendar_event_out">Sortie</string>
@@ -60,7 +65,8 @@
     <string name="opt_trigger_calendar_event_fire_when_reminder">Son rappel arrive à échéance</string>
     <string name="opt_trigger_calendar_event_fire_when_starts">Il commence</string>
     <string name="opt_trigger_calendar_event_fire_when_ends">Il se termine</string>
-    <string name="cfg_trigger_calendar_event_lead_minutes">Minutes avant (négatif déclenche après)</string>
+    <string name="cfg_trigger_calendar_event_lead_minutes">Minutes avant</string>
+    <string name="hint_trigger_calendar_event_lead_minutes">négatif déclenche après</string>
     <string name="cfg_trigger_calendar_event_calendar">Agenda</string>
     <string name="cfg_trigger_calendar_event_title_contains">Le titre contient</string>
     <string name="node_trigger_calendar_changed_name">Agenda modifié</string>
@@ -92,15 +98,18 @@
     <string name="node_trigger_notification_desc">Démarre à l\'arrivée d\'une notification correspondante</string>
     <string name="port_trigger_notification_out">Sortie</string>
     <string name="port_trigger_notification_notification">Notification</string>
-    <string name="cfg_trigger_notification_package_filter">De l\'application (facultatif)</string>
+    <string name="cfg_trigger_notification_package_filter">De l\'application</string>
+    <string name="hint_trigger_notification_package_filter">facultatif</string>
     <string name="node_trigger_message_name">Message reçu</string>
     <string name="node_trigger_message_desc">Démarre à l\'arrivée d\'un message dans WhatsApp, Signal, Telegram ou une autre messagerie</string>
     <string name="port_trigger_message_out">Sortie</string>
     <string name="port_trigger_message_message">Message</string>
     <string name="port_trigger_message_conversation_id">Identifiant de conversation</string>
-    <string name="cfg_trigger_message_package_filter">De l\'application (facultatif)</string>
+    <string name="cfg_trigger_message_package_filter">De l\'application</string>
+    <string name="hint_trigger_message_package_filter">facultatif</string>
     <string name="cfg_trigger_message_sender_contains">De (facultatif)</string>
-    <string name="cfg_trigger_message_text_contains">Le texte contient (facultatif)</string>
+    <string name="cfg_trigger_message_text_contains">Le texte contient</string>
+    <string name="hint_trigger_message_text_contains">facultatif</string>
     <string name="node_trigger_boot_name">Démarrage de l\'appareil</string>
     <string name="node_trigger_boot_desc">S\'exécute une fois après le démarrage de l\'appareil</string>
     <string name="port_trigger_boot_out">Sortie</string>
@@ -119,7 +128,8 @@
     <string name="opt_trigger_battery_level_direction_below">En dessous</string>
     <string name="opt_trigger_battery_level_direction_above">Au-dessus</string>
     <string name="cfg_trigger_battery_level_level">Seuil (0-100)</string>
-    <string name="cfg_trigger_battery_level_interval_minutes">Intervalle d\'interrogation (minutes, minimum 15)</string>
+    <string name="cfg_trigger_battery_level_interval_minutes">Intervalle d\'interrogation</string>
+    <string name="hint_trigger_battery_level_interval_minutes">minutes, minimum 15</string>
     <string name="node_trigger_geofence_name">Géorepérage</string>
     <string name="node_trigger_geofence_desc">Démarre quand l\'appareil entre dans une zone circulaire, en sort ou y demeure, ou quand il en est éloigné depuis un moment</string>
     <string name="port_trigger_geofence_out">Sortie</string>
@@ -394,7 +404,8 @@
     <string name="opt_trigger_light_level_direction_above">Monte au-dessus de</string>
     <string name="opt_trigger_light_level_direction_below">Descend sous</string>
     <string name="cfg_trigger_light_level_threshold_lux">Seuil (lux)</string>
-    <string name="cfg_trigger_light_level_hysteresis_lux">Ne pas redémarrer avant que cela revienne de (lux)</string>
+    <string name="cfg_trigger_light_level_hysteresis_lux">Ne pas redémarrer avant que cela revienne de</string>
+    <string name="hint_trigger_light_level_hysteresis_lux">lux</string>
     <string name="cfg_trigger_light_level_dwell_ms">Doit être maintenu (ms)</string>
     <string name="node_trigger_volume_button_name">Bouton de volume</string>
     <string name="node_trigger_volume_button_desc">Démarre quand un bouton de volume est pressé, maintenu ou pressé plusieurs fois. Nécessite l\'accès à l\'accessibilité ; les boutons continuent de fonctionner normalement</string>
@@ -432,7 +443,8 @@
     <string name="cfg_action_ai_prompt_use_tools">Le laisser utiliser des outils</string>
     <string name="cfg_action_ai_prompt_tool_overrides">Outils</string>
     <string name="cfg_action_ai_prompt_max_turns">Tours maximum</string>
-    <string name="cfg_action_ai_prompt_max_output_tokens">Réponse la plus longue (jetons)</string>
+    <string name="cfg_action_ai_prompt_max_output_tokens">Réponse la plus longue</string>
+    <string name="hint_action_ai_prompt_max_output_tokens">jetons</string>
     <string name="cfg_action_ai_prompt_fallback">En cas d\'échec</string>
     <string name="node_action_ai_describe_name">Interroger l\'IA sur une image</string>
     <string name="node_action_ai_describe_desc">Montre une image de ce téléphone à un modèle d\'IA et renvoie ce qu\'il en dit</string>
@@ -444,7 +456,8 @@
     <string name="cfg_action_ai_describe_model_ref">Modèle</string>
     <string name="cfg_action_ai_describe_image">Image</string>
     <string name="cfg_action_ai_describe_prompt">Quoi demander</string>
-    <string name="cfg_action_ai_describe_max_output_tokens">Réponse la plus longue (jetons)</string>
+    <string name="cfg_action_ai_describe_max_output_tokens">Réponse la plus longue</string>
+    <string name="hint_action_ai_describe_max_output_tokens">jetons</string>
     <string name="cfg_action_ai_describe_fallback">En cas d\'échec</string>
     <string name="node_action_transcribe_name">Transcrire</string>
     <string name="node_action_transcribe_desc">Écoute au micro et transcrit ce qui a été dit — avec un modèle d\'IA, qui peut aussi répondre à une question à ce sujet, ou gratuitement sur le téléphone lui-même</string>
@@ -457,15 +470,19 @@
     <string name="opt_action_transcribe_using_ai">Un modèle d\'IA</string>
     <string name="opt_action_transcribe_using_phone">Ce téléphone, hors ligne</string>
     <string name="cfg_action_transcribe_model_ref">Modèle</string>
-    <string name="cfg_action_transcribe_prompt">Que demander (laisser vide pour transcrire)</string>
+    <string name="cfg_action_transcribe_prompt">Que demander</string>
+    <string name="hint_action_transcribe_prompt">laisser vide pour transcrire</string>
     <string name="cfg_action_transcribe_language_mode">Langue</string>
     <string name="opt_action_transcribe_language_mode_phone">La langue du téléphone</string>
     <string name="opt_action_transcribe_language_mode_detect">Détecter automatiquement</string>
     <string name="opt_action_transcribe_language_mode_chosen">Une langue que je choisis</string>
     <string name="cfg_action_transcribe_language">Quelle langue</string>
-    <string name="cfg_action_transcribe_max_seconds">Écouter au plus (secondes)</string>
-    <string name="cfg_action_transcribe_silence_seconds">Arrêter après ce silence (secondes, 0 = écouter tout le temps)</string>
-    <string name="cfg_action_transcribe_max_output_tokens">Réponse la plus longue (jetons)</string>
+    <string name="cfg_action_transcribe_max_seconds">Écouter au plus</string>
+    <string name="hint_action_transcribe_max_seconds">secondes</string>
+    <string name="cfg_action_transcribe_silence_seconds">Arrêter après ce silence</string>
+    <string name="hint_action_transcribe_silence_seconds">secondes, 0 = écouter tout le temps</string>
+    <string name="cfg_action_transcribe_max_output_tokens">Réponse la plus longue</string>
+    <string name="hint_action_transcribe_max_output_tokens">jetons</string>
     <string name="cfg_action_transcribe_fallback">En cas d\'échec</string>
     <string name="node_action_transcribe_start_name">Démarrer la transcription</string>
     <string name="node_action_transcribe_start_desc">Ouvre le micro et continue d\'écouter jusqu\'à ce que « Terminer la transcription » convertisse en texte ce qui a été dit</string>
@@ -476,15 +493,19 @@
     <string name="opt_action_transcribe_start_using_ai">Un modèle d\'IA</string>
     <string name="opt_action_transcribe_start_using_phone">Ce téléphone, hors ligne</string>
     <string name="cfg_action_transcribe_start_model_ref">Modèle</string>
-    <string name="cfg_action_transcribe_start_prompt">Que demander (laisser vide pour transcrire)</string>
-    <string name="cfg_action_transcribe_start_max_output_tokens">Réponse la plus longue (jetons)</string>
+    <string name="cfg_action_transcribe_start_prompt">Que demander</string>
+    <string name="hint_action_transcribe_start_prompt">laisser vide pour transcrire</string>
+    <string name="cfg_action_transcribe_start_max_output_tokens">Réponse la plus longue</string>
+    <string name="hint_action_transcribe_start_max_output_tokens">jetons</string>
     <string name="cfg_action_transcribe_start_language_mode">Langue</string>
     <string name="opt_action_transcribe_start_language_mode_phone">La langue du téléphone</string>
     <string name="opt_action_transcribe_start_language_mode_detect">Détecter automatiquement</string>
     <string name="opt_action_transcribe_start_language_mode_chosen">Une langue que je choisis</string>
     <string name="cfg_action_transcribe_start_language">Quelle langue</string>
-    <string name="cfg_action_transcribe_start_max_seconds">Écouter au plus (secondes)</string>
-    <string name="cfg_action_transcribe_start_silence_seconds">Arrêter après ce silence (secondes, 0 = écouter tout le temps)</string>
+    <string name="cfg_action_transcribe_start_max_seconds">Écouter au plus</string>
+    <string name="hint_action_transcribe_start_max_seconds">secondes</string>
+    <string name="cfg_action_transcribe_start_silence_seconds">Arrêter après ce silence</string>
+    <string name="hint_action_transcribe_start_silence_seconds">secondes, 0 = écouter tout le temps</string>
     <string name="node_action_transcribe_end_name">Terminer la transcription</string>
     <string name="node_action_transcribe_end_desc">Ferme le micro ouvert par « Démarrer la transcription » et convertit en texte ce qui a été dit, avec un modèle d\'IA ou sur le téléphone lui-même</string>
     <string name="port_action_transcribe_end_in">Entrée</string>
@@ -501,8 +522,10 @@
     <string name="port_action_transcribe_file_answer">Réponse</string>
     <string name="cfg_action_transcribe_file_model_ref">Modèle</string>
     <string name="cfg_action_transcribe_file_audio">Fichier audio</string>
-    <string name="cfg_action_transcribe_file_prompt">Que demander (laisser vide pour transcrire)</string>
-    <string name="cfg_action_transcribe_file_max_output_tokens">Réponse la plus longue (jetons)</string>
+    <string name="cfg_action_transcribe_file_prompt">Que demander</string>
+    <string name="hint_action_transcribe_file_prompt">laisser vide pour transcrire</string>
+    <string name="cfg_action_transcribe_file_max_output_tokens">Réponse la plus longue</string>
+    <string name="hint_action_transcribe_file_max_output_tokens">jetons</string>
     <string name="cfg_action_transcribe_file_fallback">En cas d\'échec</string>
     <string name="node_action_auto_rotate_name">Basculer la rotation automatique</string>
     <string name="node_action_auto_rotate_desc">Active ou désactive la rotation automatique par accéléromètre</string>
@@ -536,7 +559,8 @@
     <string name="port_action_brightness_out">Sortie</string>
     <string name="port_action_brightness_state">état</string>
     <string name="cfg_action_brightness_auto">Luminosité automatique</string>
-    <string name="cfg_action_brightness_value">Valeur (0-255, seulement quand l\'automatique est désactivé)</string>
+    <string name="cfg_action_brightness_value">Valeur</string>
+    <string name="hint_action_brightness_value">0-255, seulement quand l\'automatique est désactivé</string>
     <string name="node_action_call_name">Appeler</string>
     <string name="node_action_call_desc">Lance un appel vers un numéro</string>
     <string name="port_action_call_in">Entrée</string>
@@ -590,7 +614,8 @@
     <string name="cfg_action_wait_until_friday">Vendredis</string>
     <string name="cfg_action_wait_until_saturday">Samedis</string>
     <string name="cfg_action_wait_until_sunday">Dimanches</string>
-    <string name="cfg_action_wait_until_days_of_month">Jours du mois (par ex. 1,15 ; vide = tous les jours)</string>
+    <string name="cfg_action_wait_until_days_of_month">Jours du mois</string>
+    <string name="hint_action_wait_until_days_of_month">par ex. 1,15 ; vide = tous les jours</string>
     <string name="cfg_action_wait_until_until">Jusqu\'à</string>
     <string name="node_action_dialog_message_name">Afficher un message</string>
     <string name="node_action_dialog_message_desc">Affiche une boîte de dialogue et attend que l\'utilisateur la valide</string>
@@ -601,7 +626,8 @@
     <string name="cfg_action_dialog_message_title">Titre</string>
     <string name="cfg_action_dialog_message_message">Message</string>
     <string name="cfg_action_dialog_message_confirm_label">Bouton</string>
-    <string name="cfg_action_dialog_message_timeout_seconds">Fermer automatiquement après (secondes)</string>
+    <string name="cfg_action_dialog_message_timeout_seconds">Fermer automatiquement après</string>
+    <string name="hint_action_dialog_message_timeout_seconds">secondes</string>
     <string name="node_action_dialog_confirm_name">Demander oui ou non</string>
     <string name="node_action_dialog_confirm_desc">Pose à l\'utilisateur une question oui/non dans une boîte de dialogue et bifurque selon la réponse</string>
     <string name="port_action_dialog_confirm_in">Entrée</string>
@@ -649,7 +675,8 @@
     <string name="port_action_dialog_choice_index">Index</string>
     <string name="cfg_action_dialog_choice_title">Titre</string>
     <string name="cfg_action_dialog_choice_message">Question</string>
-    <string name="cfg_action_dialog_choice_options">Options : une par ligne</string>
+    <string name="cfg_action_dialog_choice_options">Options</string>
+    <string name="hint_action_dialog_choice_options">une par ligne</string>
     <string name="cfg_action_dialog_choice_cancel_label">Bouton Annuler</string>
     <string name="cfg_action_dialog_choice_timeout_seconds">Abandonner après (secondes)</string>
     <string name="node_action_speak_name">Parler</string>
@@ -682,7 +709,8 @@
     <string name="port_action_listen_text">Entendu</string>
     <string name="cfg_action_listen_language">Langue</string>
     <string name="cfg_action_listen_max_seconds">Abandonner après (secondes)</string>
-    <string name="cfg_action_listen_silence_seconds">Arrêter après ce silence (secondes, 0 = laisser le téléphone décider)</string>
+    <string name="cfg_action_listen_silence_seconds">Arrêter après ce silence</string>
+    <string name="hint_action_listen_silence_seconds">secondes, 0 = laisser le téléphone décider</string>
     <string name="cfg_action_listen_prefer_offline">Reconnaître sur l\'appareil si possible</string>
     <string name="node_action_disable_macro_name">Désactiver une macro</string>
     <string name="node_action_disable_macro_desc">Désactive une autre macro par son identifiant (enregistre l\'état et désarme ses déclencheurs)</string>
@@ -699,7 +727,8 @@
     <string name="cfg_action_dnd_state">État</string>
     <string name="opt_action_dnd_state_on">Allumé</string>
     <string name="opt_action_dnd_state_off">Éteint</string>
-    <string name="cfg_action_dnd_level">Niveau (quand allumée)</string>
+    <string name="cfg_action_dnd_level">Niveau</string>
+    <string name="hint_action_dnd_level">quand allumée</string>
     <string name="opt_action_dnd_level_priority">Priorité</string>
     <string name="opt_action_dnd_level_alarms">Alarmes</string>
     <string name="opt_action_dnd_level_silence">Silence</string>
@@ -734,7 +763,8 @@
     <string name="opt_action_http_method_put">Mettre</string>
     <string name="opt_action_http_method_delete">Supprimer</string>
     <string name="cfg_action_http_url">URL</string>
-    <string name="cfg_action_http_headers">En-têtes (JSON, facultatif)</string>
+    <string name="cfg_action_http_headers">En-têtes</string>
+    <string name="hint_action_http_headers">JSON, facultatif</string>
     <string name="cfg_action_http_body">Corps</string>
     <string name="node_action_if_name">Si</string>
     <string name="node_action_if_desc">Oriente l\'exécution en comparant une valeur à une autre</string>
@@ -785,7 +815,8 @@
     <string name="cfg_action_send_intent_data_uri">URI de données (facultatif)</string>
     <string name="cfg_action_send_intent_mime_type">Type MIME (facultatif)</string>
     <string name="cfg_action_send_intent_category">Catégorie (facultatif)</string>
-    <string name="cfg_action_send_intent_extras">Extras — un key=value par ligne, count:int=5 pour typer</string>
+    <string name="cfg_action_send_intent_extras">Extras</string>
+    <string name="hint_action_send_intent_extras">un key=value par ligne, count:int=5 pour typer</string>
     <string name="node_action_broadcast_intent_name">Envoyer un broadcast</string>
     <string name="node_action_broadcast_intent_desc">Envoie un intent de broadcast à une autre app, avec une action et des extras personnalisés</string>
     <string name="port_action_broadcast_intent_in">Entrée</string>
@@ -801,7 +832,8 @@
     <string name="cfg_action_broadcast_intent_data_uri">URI de données (facultatif)</string>
     <string name="cfg_action_broadcast_intent_mime_type">Type MIME (facultatif)</string>
     <string name="cfg_action_broadcast_intent_category">Catégorie (facultatif)</string>
-    <string name="cfg_action_broadcast_intent_extras">Extras — un key=value par ligne, count:int=5 pour typer</string>
+    <string name="cfg_action_broadcast_intent_extras">Extras</string>
+    <string name="hint_action_broadcast_intent_extras">un key=value par ligne, count:int=5 pour typer</string>
     <string name="node_action_light_control_name">Piloter une lumière</string>
     <string name="node_action_light_control_desc">Allume ou éteint une lumière, une pièce ou une zone, ou règle sa luminosité, sa couleur ou sa température — Philips Hue</string>
     <string name="port_action_light_control_in">Entrée</string>
@@ -847,7 +879,8 @@
     <string name="cfg_action_ha_service_hub">Home Assistant</string>
     <string name="cfg_action_ha_service_target">Entité</string>
     <string name="cfg_action_ha_service_service">Service</string>
-    <string name="cfg_action_ha_service_data">Données supplémentaires (JSON)</string>
+    <string name="cfg_action_ha_service_data">Données supplémentaires</string>
+    <string name="hint_action_ha_service_data">JSON</string>
     <string name="node_action_mqtt_publish_name">Publier sur MQTT</string>
     <string name="node_action_mqtt_publish_desc">Envoie un message vers un topic d’un broker MQTT – Mosquitto, Zigbee2MQTT, Tasmota, ESPHome</string>
     <string name="port_action_mqtt_publish_in">Entrée</string>
@@ -965,7 +998,8 @@
     <string name="opt_action_camera_photo_flash_off">Éteint</string>
     <string name="opt_action_camera_photo_flash_on">Allumé</string>
     <string name="opt_action_camera_photo_flash_auto">Automatique</string>
-    <string name="cfg_action_camera_photo_delay_seconds">Attendre avant le déclenchement (secondes)</string>
+    <string name="cfg_action_camera_photo_delay_seconds">Attendre avant le déclenchement</string>
+    <string name="hint_action_camera_photo_delay_seconds">secondes</string>
     <string name="cfg_action_camera_photo_to_folder">Enregistrer dans ce dossier</string>
     <string name="cfg_action_camera_photo_name">Nom du fichier</string>
     <string name="cfg_action_camera_photo_when_exists">S\'il y en a déjà un</string>
@@ -1055,7 +1089,8 @@
     <string name="opt_action_image_metadata_detail_model">Modèle de l\'appareil photo</string>
     <string name="opt_action_image_metadata_detail_artist">Auteur</string>
     <string name="opt_action_image_metadata_detail_copyright">Droits d\'auteur</string>
-    <string name="cfg_action_image_metadata_value">Nouvelle valeur (vide la supprime)</string>
+    <string name="cfg_action_image_metadata_value">Nouvelle valeur</string>
+    <string name="hint_action_image_metadata_value">vide la supprime</string>
     <string name="node_action_image_move_name">Déplacer ou copier l\'image</string>
     <string name="node_action_image_move_desc">Déplace ou copie une photo vers un autre dossier, en la gardant dans la galerie</string>
     <string name="port_action_image_move_in">Entrée</string>
@@ -1107,7 +1142,8 @@
     <string name="port_action_record_start_max_seconds">S\'arrêter tout seul après (secondes)</string>
     <string name="port_action_record_start_to_folder">Enregistrer dans ce dossier</string>
     <string name="port_action_record_start_name">Nom du fichier</string>
-    <string name="cfg_action_record_start_max_seconds">S\'arrêter tout seul après (secondes)</string>
+    <string name="cfg_action_record_start_max_seconds">S\'arrêter tout seul après</string>
+    <string name="hint_action_record_start_max_seconds">secondes</string>
     <string name="cfg_action_record_start_quality">Qualité</string>
     <string name="opt_action_record_start_quality_voice">Voix — petit fichier</string>
     <string name="opt_action_record_start_quality_high">Élevée — musique et détails</string>
@@ -1153,7 +1189,8 @@
     <string name="port_action_notify_reply">Réponse</string>
     <string name="cfg_action_notify_title">Titre</string>
     <string name="cfg_action_notify_text">Texte</string>
-    <string name="cfg_action_notify_buttons">Boutons : un par ligne</string>
+    <string name="cfg_action_notify_buttons">Boutons</string>
+    <string name="hint_action_notify_buttons">un par ligne</string>
     <string name="cfg_action_notify_reply_field">Champ de réponse</string>
     <string name="cfg_action_notify_reply_label">Bouton Répondre</string>
     <string name="cfg_action_notify_reply_hint">Indication du champ</string>
@@ -1170,7 +1207,8 @@
     <string name="opt_action_notify_accent_pink">Rose</string>
     <string name="cfg_action_notify_show_progress">Afficher une barre de progression</string>
     <string name="cfg_action_notify_ongoing">Garder jusqu’à sa fermeture</string>
-    <string name="cfg_action_notify_tag">Tag : pour la supprimer manuellement</string>
+    <string name="cfg_action_notify_tag">Tag</string>
+    <string name="hint_action_notify_tag">pour la supprimer manuellement</string>
     <string name="node_action_notify_cancel_name">Supprimer la notification</string>
     <string name="node_action_notify_cancel_desc">Supprime une notification publiée par cette application sous un tag</string>
     <string name="port_action_notify_cancel_in">Entrée</string>
@@ -1264,7 +1302,8 @@
     <string name="opt_action_calendar_add_availability_busy">Occupé</string>
     <string name="opt_action_calendar_add_availability_free">Libre</string>
     <string name="opt_action_calendar_add_availability_tentative">Provisoire</string>
-    <string name="cfg_action_calendar_add_reminder_minutes">Vous rappeler (minutes avant, -1 pour aucun rappel)</string>
+    <string name="cfg_action_calendar_add_reminder_minutes">Vous rappeler</string>
+    <string name="hint_action_calendar_add_reminder_minutes">minutes avant, -1 pour aucun rappel</string>
     <string name="node_action_calendar_update_name">Modifier un rendez-vous</string>
     <string name="node_action_calendar_update_desc">Modifie ou supprime un rendez-vous, soit une seule occurrence, soit toute la série</string>
     <string name="port_action_calendar_update_in">Entrée</string>
@@ -1282,11 +1321,16 @@
     <string name="cfg_action_calendar_update_scope">S\'applique à</string>
     <string name="opt_action_calendar_update_scope_this_occurrence">Ce rendez-vous uniquement</string>
     <string name="opt_action_calendar_update_scope_whole_series">Toute la série</string>
-    <string name="cfg_action_calendar_update_title">Nouveau titre (laisser vide pour le conserver)</string>
-    <string name="cfg_action_calendar_update_starts_at">Nouveau début (laisser vide pour le conserver)</string>
-    <string name="cfg_action_calendar_update_duration_minutes">Nouvelle durée en minutes (-1 pour la conserver)</string>
-    <string name="cfg_action_calendar_update_location">Nouveau lieu (laisser vide pour le conserver)</string>
-    <string name="cfg_action_calendar_update_description">Nouveaux détails (laisser vide pour les conserver)</string>
+    <string name="cfg_action_calendar_update_title">Nouveau titre</string>
+    <string name="hint_action_calendar_update_title">laisser vide pour le conserver</string>
+    <string name="cfg_action_calendar_update_starts_at">Nouveau début</string>
+    <string name="hint_action_calendar_update_starts_at">laisser vide pour le conserver</string>
+    <string name="cfg_action_calendar_update_duration_minutes">Nouvelle durée en minutes</string>
+    <string name="hint_action_calendar_update_duration_minutes">-1 pour la conserver</string>
+    <string name="cfg_action_calendar_update_location">Nouveau lieu</string>
+    <string name="hint_action_calendar_update_location">laisser vide pour le conserver</string>
+    <string name="cfg_action_calendar_update_description">Nouveaux détails</string>
+    <string name="hint_action_calendar_update_description">laisser vide pour les conserver</string>
     <string name="cfg_action_calendar_update_change_availability">Changer comment il vous affiche</string>
     <string name="cfg_action_calendar_update_availability">Vous affiche comme</string>
     <string name="opt_action_calendar_update_availability_busy">Occupé</string>
@@ -1374,8 +1418,10 @@
     <string name="opt_action_play_sound_stream_alarm">Alarme</string>
     <string name="opt_action_play_sound_stream_notification">Notification</string>
     <string name="opt_action_play_sound_stream_system">Système</string>
-    <string name="cfg_action_play_sound_start_seconds">Démarrer à (secondes dans le son)</string>
-    <string name="cfg_action_play_sound_max_seconds">Arrêter après (secondes, 0 = jouer jusqu\'au bout)</string>
+    <string name="cfg_action_play_sound_start_seconds">Démarrer à</string>
+    <string name="hint_action_play_sound_start_seconds">secondes dans le son</string>
+    <string name="cfg_action_play_sound_max_seconds">Arrêter après</string>
+    <string name="hint_action_play_sound_max_seconds">secondes, 0 = jouer jusqu\'au bout</string>
     <string name="cfg_action_play_sound_wait_for_completion">Attendre la fin</string>
     <string name="node_action_repeat_name">Répéter</string>
     <string name="node_action_repeat_desc">Répète les étapes suivantes un nombre fixe de fois : répéter 10 fois, par exemple</string>
@@ -1442,7 +1488,8 @@
     <string name="port_action_script_in">Entrée</string>
     <string name="port_action_script_out">Sortie</string>
     <string name="cfg_action_script_inputs">Entrées</string>
-    <string name="cfg_action_script_script">Script : chaque entrée est une variable portant son propre nom</string>
+    <string name="cfg_action_script_script">Script</string>
+    <string name="hint_action_script_script">chaque entrée est une variable portant son propre nom</string>
     <string name="cfg_action_script_outputs">Sorties</string>
     <string name="cfg_action_script_timeout_ms">Délai d\'attente (ms)</string>
     <string name="cfg_action_script_fallback">En cas d\'échec</string>
@@ -1467,7 +1514,8 @@
     <string name="port_action_stop_in">Entrée</string>
     <string name="port_action_stop_out">Sortie</string>
     <string name="port_action_stop_reason">Raison (facultatif, journalisée avant l\'arrêt)</string>
-    <string name="cfg_action_stop_reason">Raison (facultatif, journalisée avant l\'arrêt)</string>
+    <string name="cfg_action_stop_reason">Raison</string>
+    <string name="hint_action_stop_reason">facultatif, journalisée avant l\'arrêt</string>
     <string name="node_action_stop_sound_name">Arrêter le son</string>
     <string name="node_action_stop_sound_desc">Arrête tous les sons lancés par Jouer un son</string>
     <string name="port_action_stop_sound_in">Entrée</string>
@@ -1476,8 +1524,10 @@
     <string name="node_action_vibrate_desc">Fait vibrer l\'appareil pendant une durée ou selon un motif</string>
     <string name="port_action_vibrate_in">Entrée</string>
     <string name="port_action_vibrate_out">Sortie</string>
-    <string name="cfg_action_vibrate_duration_ms">Durée (ms, utilisée quand il n\'y a pas de motif)</string>
-    <string name="cfg_action_vibrate_pattern">Motif (ms séparées par des virgules, par ex. 0,200,500,200)</string>
+    <string name="cfg_action_vibrate_duration_ms">Durée</string>
+    <string name="hint_action_vibrate_duration_ms">ms, utilisée quand il n\'y a pas de motif</string>
+    <string name="cfg_action_vibrate_pattern">Motif</string>
+    <string name="hint_action_vibrate_pattern">ms séparées par des virgules, par ex. 0,200,500,200</string>
     <string name="node_action_volume_name">Définir le volume</string>
     <string name="node_action_volume_desc">Ajuste le volume d\'un canal audio (monter, baisser, définir, couper ou rétablir)</string>
     <string name="port_action_volume_in">Entrée</string>
@@ -1495,7 +1545,8 @@
     <string name="opt_action_volume_mode_set">Définir</string>
     <string name="opt_action_volume_mode_mute">Couper le son</string>
     <string name="opt_action_volume_mode_unmute">Rétablir le son</string>
-    <string name="cfg_action_volume_value">Valeur (0-100, seulement quand le mode est Définir)</string>
+    <string name="cfg_action_volume_value">Valeur</string>
+    <string name="hint_action_volume_value">0-100, seulement quand le mode est Définir</string>
     <string name="node_action_wifi_name">Basculer le Wi-Fi</string>
     <string name="node_action_wifi_desc">Active ou désactive le Wi-Fi et indique l\'état obtenu</string>
     <string name="port_action_wifi_in">Entrée</string>
@@ -1609,7 +1660,8 @@
     <string name="port_transform_text_b">B</string>
     <string name="port_transform_text_c">C</string>
     <string name="port_transform_text_text">Texte</string>
-    <string name="cfg_transform_text_template">Modèle : utilise {A}, {B}, {C}</string>
+    <string name="cfg_transform_text_template">Modèle</string>
+    <string name="hint_transform_text_template">utilise {A}, {B}, {C}</string>
     <string name="cfg_transform_text_a">A</string>
     <string name="cfg_transform_text_b">B</string>
     <string name="cfg_transform_text_c">C</string>
@@ -1629,7 +1681,8 @@
     <string name="port_transform_json_read_json">Texte JSON</string>
     <string name="port_transform_json_read_value">Valeur</string>
     <string name="cfg_transform_json_read_json">Texte JSON</string>
-    <string name="cfg_transform_json_read_path">Chemin (par ex. main.temp) : vide pour tout le document</string>
+    <string name="cfg_transform_json_read_path">Chemin</string>
+    <string name="hint_transform_json_read_path">par ex. main.temp — : vide pour tout le document</string>
     <string name="cfg_transform_json_read_type">Obtenir comme</string>
     <string name="opt_transform_json_read_type_text">Texte</string>
     <string name="opt_transform_json_read_type_number">Nombre</string>
@@ -1642,8 +1695,10 @@
     <string name="node_transform_split_text_desc">Découpe un texte en liste : un élément par ligne, ou selon un séparateur de ton choix</string>
     <string name="port_transform_split_text_text">Texte : un élément par ligne, ou relie quelque chose</string>
     <string name="port_transform_split_text_value">Liste</string>
-    <string name="cfg_transform_split_text_text">Texte : un élément par ligne, ou relie quelque chose</string>
-    <string name="cfg_transform_split_text_separator">Séparateur (vide pour un retour à la ligne)</string>
+    <string name="cfg_transform_split_text_text">Texte</string>
+    <string name="hint_transform_split_text_text">un élément par ligne, ou relie quelque chose</string>
+    <string name="cfg_transform_split_text_separator">Séparateur</string>
+    <string name="hint_transform_split_text_separator">vide pour un retour à la ligne</string>
     <string name="node_transform_list_count_name">Compter les éléments</string>
     <string name="node_transform_list_count_desc">Combien d\'éléments contient une liste</string>
     <string name="port_transform_list_count_list">Liste</string>
@@ -1682,7 +1737,8 @@
     <string name="node_transform_list_slice_desc">Une portion d\'éléments d\'une liste</string>
     <string name="port_transform_list_slice_list">Liste</string>
     <string name="port_transform_list_slice_value">Liste</string>
-    <string name="cfg_transform_list_slice_from">À partir de la position (0 est la première)</string>
+    <string name="cfg_transform_list_slice_from">À partir de la position</string>
+    <string name="hint_transform_list_slice_from">0 est la première</string>
     <string name="cfg_transform_list_slice_count">Combien</string>
     <string name="valuetype_text">Texte</string>
     <string name="valuetype_number">Nombre</string>
@@ -1694,14 +1750,16 @@
     <string name="port_action_light_control_brightness" formatted="false">Luminosité %</string>
     <string name="cfg_action_light_control_brightness" formatted="false">Luminosité %</string>
     <string name="port_action_notify_progress" formatted="false">Progression (%, sous 0 = occupé)</string>
-    <string name="cfg_action_notify_progress" formatted="false">Progression (%, sous 0 = occupé)</string>
+    <string name="cfg_action_notify_progress" formatted="false">Progression</string>
+    <string name="hint_action_notify_progress" formatted="false">%, sous 0 = occupé</string>
     <string name="port_value_battery_level" formatted="false">Niveau (%)</string>
     <string name="node_trigger_call_state_name">État de l’appel</string>
     <string name="node_trigger_call_state_desc">Démarre quand un appel sonne, est décroché ou se termine, sur le téléphone ou dans Teams, WhatsApp, Discord ou une autre application d’appel</string>
     <string name="port_trigger_call_state_call">Appel</string>
     <string name="opt_trigger_call_state_event_active">En cours</string>
     <string name="opt_trigger_call_state_event_ended">Terminé</string>
-    <string name="cfg_trigger_call_state_package_filter">De l\'application (facultatif)</string>
+    <string name="cfg_trigger_call_state_package_filter">De l\'application</string>
+    <string name="hint_trigger_call_state_package_filter">facultatif</string>
     <string name="node_trigger_call_ended_name">Appel terminé</string>
     <string name="node_trigger_call_ended_desc">Démarre quand un appel se termine, avec sa durée et s’il a été décroché, sur le téléphone ou dans Teams, WhatsApp, Discord ou une autre application d’appel</string>
     <string name="port_trigger_call_ended_out">Sortie</string>
@@ -1712,7 +1770,8 @@
     <string name="cfg_trigger_call_ended_direction">Sens</string>
     <string name="opt_trigger_call_ended_direction_incoming">Entrant</string>
     <string name="opt_trigger_call_ended_direction_outgoing">Sortant</string>
-    <string name="cfg_trigger_call_ended_package_filter">De l\'application (facultatif)</string>
+    <string name="cfg_trigger_call_ended_package_filter">De l\'application</string>
+    <string name="hint_trigger_call_ended_package_filter">facultatif</string>
     <string name="node_value_call_active_name">En appel</string>
     <string name="node_value_call_active_desc">Si un appel est en cours en ce moment, sur le téléphone ou dans Teams, WhatsApp, Discord ou une autre application d’appel</string>
     <string name="port_value_call_active_active">En appel</string>

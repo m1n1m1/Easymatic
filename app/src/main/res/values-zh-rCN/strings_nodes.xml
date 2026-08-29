@@ -17,7 +17,8 @@
     <string name="cfg_trigger_schedule_mode">模式</string>
     <string name="opt_trigger_schedule_mode_interval">按间隔重复</string>
     <string name="opt_trigger_schedule_mode_at_time">在一天中的某个时刻</string>
-    <string name="cfg_trigger_schedule_every">重复间隔（小于 15 时，仅在设备唤醒状态下触发）</string>
+    <string name="cfg_trigger_schedule_every">重复间隔</string>
+    <string name="hint_trigger_schedule_every">小于 15 时，仅在设备唤醒状态下触发</string>
     <string name="cfg_trigger_schedule_every_unit">单位</string>
     <string name="opt_trigger_schedule_every_unit_minutes">分钟</string>
     <string name="opt_trigger_schedule_every_unit_hours">小时</string>
@@ -30,15 +31,18 @@
     <string name="cfg_trigger_schedule_friday">每周五</string>
     <string name="cfg_trigger_schedule_saturday">每周六</string>
     <string name="cfg_trigger_schedule_sunday">每周日</string>
-    <string name="cfg_trigger_schedule_days_of_month">每月的哪几天（例如 1,15；留空 = 每天）</string>
+    <string name="cfg_trigger_schedule_days_of_month">每月的哪几天</string>
+    <string name="hint_trigger_schedule_days_of_month">例如 1,15；留空 = 每天</string>
     <string name="cfg_trigger_schedule_window_enabled">仅在某个时间段内</string>
     <string name="cfg_trigger_schedule_window_from">生效起始</string>
-    <string name="cfg_trigger_schedule_window_until">生效结束（早于“起始”则跨过午夜）</string>
+    <string name="cfg_trigger_schedule_window_until">生效结束</string>
+    <string name="hint_trigger_schedule_window_until">早于“起始”则跨过午夜</string>
     <string name="node_trigger_sms_name">收到短信</string>
     <string name="node_trigger_sms_desc">当收到短信时启动</string>
     <string name="port_trigger_sms_out">输出</string>
     <string name="port_trigger_sms_sms">短信</string>
-    <string name="cfg_trigger_sms_sender">发送者（可选——留空表示任何人）</string>
+    <string name="cfg_trigger_sms_sender">发送者</string>
+    <string name="hint_trigger_sms_sender">可选——留空表示任何人</string>
     <string name="node_trigger_mail_name">收到邮件</string>
     <string name="node_trigger_mail_desc">当你监视的邮箱收到邮件时启动</string>
     <string name="port_trigger_mail_out">输出</string>
@@ -51,7 +55,8 @@
     <string name="cfg_trigger_mail_mode">监视方式</string>
     <string name="opt_trigger_mail_mode_automatic">自动</string>
     <string name="opt_trigger_mail_mode_poll">轮询</string>
-    <string name="cfg_trigger_mail_interval_minutes">检查间隔（分钟，最少 15）</string>
+    <string name="cfg_trigger_mail_interval_minutes">检查间隔</string>
+    <string name="hint_trigger_mail_interval_minutes">分钟，最少 15</string>
     <string name="node_trigger_calendar_event_name">日历日程</string>
     <string name="node_trigger_calendar_event_desc">当日程开始、结束或其提醒到期时启动</string>
     <string name="port_trigger_calendar_event_out">输出</string>
@@ -60,7 +65,8 @@
     <string name="opt_trigger_calendar_event_fire_when_reminder">提醒到期时</string>
     <string name="opt_trigger_calendar_event_fire_when_starts">开始时</string>
     <string name="opt_trigger_calendar_event_fire_when_ends">结束时</string>
-    <string name="cfg_trigger_calendar_event_lead_minutes">提前几分钟（负数表示之后触发）</string>
+    <string name="cfg_trigger_calendar_event_lead_minutes">提前几分钟</string>
+    <string name="hint_trigger_calendar_event_lead_minutes">负数表示之后触发</string>
     <string name="cfg_trigger_calendar_event_calendar">日历</string>
     <string name="cfg_trigger_calendar_event_title_contains">标题包含</string>
     <string name="node_trigger_calendar_changed_name">日历已更改</string>
@@ -92,15 +98,18 @@
     <string name="node_trigger_notification_desc">当收到符合条件的通知时启动</string>
     <string name="port_trigger_notification_out">输出</string>
     <string name="port_trigger_notification_notification">通知</string>
-    <string name="cfg_trigger_notification_package_filter">来自应用（可选）</string>
+    <string name="cfg_trigger_notification_package_filter">来自应用</string>
+    <string name="hint_trigger_notification_package_filter">可选</string>
     <string name="node_trigger_message_name">收到消息</string>
     <string name="node_trigger_message_desc">当 WhatsApp、Signal、Telegram 或其他即时通讯应用收到消息时启动</string>
     <string name="port_trigger_message_out">输出</string>
     <string name="port_trigger_message_message">消息</string>
     <string name="port_trigger_message_conversation_id">会话 ID</string>
-    <string name="cfg_trigger_message_package_filter">来自应用（可选）</string>
+    <string name="cfg_trigger_message_package_filter">来自应用</string>
+    <string name="hint_trigger_message_package_filter">可选</string>
     <string name="cfg_trigger_message_sender_contains">发件人（可选）</string>
-    <string name="cfg_trigger_message_text_contains">文本包含（可选）</string>
+    <string name="cfg_trigger_message_text_contains">文本包含</string>
+    <string name="hint_trigger_message_text_contains">可选</string>
     <string name="node_trigger_boot_name">设备启动</string>
     <string name="node_trigger_boot_desc">设备启动完成后运行一次</string>
     <string name="port_trigger_boot_out">输出</string>
@@ -119,7 +128,8 @@
     <string name="opt_trigger_battery_level_direction_below">低于</string>
     <string name="opt_trigger_battery_level_direction_above">高于</string>
     <string name="cfg_trigger_battery_level_level">阈值（0-100）</string>
-    <string name="cfg_trigger_battery_level_interval_minutes">轮询间隔（分钟，最少 15）</string>
+    <string name="cfg_trigger_battery_level_interval_minutes">轮询间隔</string>
+    <string name="hint_trigger_battery_level_interval_minutes">分钟，最少 15</string>
     <string name="node_trigger_geofence_name">地理围栏</string>
     <string name="node_trigger_geofence_desc">当设备进入、离开或停留在某个圆形区域内时启动，或在离开它一段时间之后启动</string>
     <string name="port_trigger_geofence_out">输出</string>
@@ -394,7 +404,8 @@
     <string name="opt_trigger_light_level_direction_above">升到高于</string>
     <string name="opt_trigger_light_level_direction_below">降到低于</string>
     <string name="cfg_trigger_light_level_threshold_lux">阈值（勒克斯）</string>
-    <string name="cfg_trigger_light_level_hysteresis_lux">回落多少后才允许再次启动（勒克斯）</string>
+    <string name="cfg_trigger_light_level_hysteresis_lux">回落多少后才允许再次启动</string>
+    <string name="hint_trigger_light_level_hysteresis_lux">勒克斯</string>
     <string name="cfg_trigger_light_level_dwell_ms">必须按住（毫秒）</string>
     <string name="node_trigger_volume_button_name">音量键</string>
     <string name="node_trigger_volume_button_desc">当音量键被按下、长按或连按多次时启动。需要无障碍使用权；按键本身仍照常工作</string>
@@ -432,7 +443,8 @@
     <string name="cfg_action_ai_prompt_use_tools">允许它使用工具</string>
     <string name="cfg_action_ai_prompt_tool_overrides">工具</string>
     <string name="cfg_action_ai_prompt_max_turns">最多轮次</string>
-    <string name="cfg_action_ai_prompt_max_output_tokens">回复上限（token）</string>
+    <string name="cfg_action_ai_prompt_max_output_tokens">回复上限</string>
+    <string name="hint_action_ai_prompt_max_output_tokens">token</string>
     <string name="cfg_action_ai_prompt_fallback">如果失败</string>
     <string name="node_action_ai_describe_name">就图片询问 AI</string>
     <string name="node_action_ai_describe_desc">把本机上的一张图片交给 AI 模型，并返回它的描述</string>
@@ -444,7 +456,8 @@
     <string name="cfg_action_ai_describe_model_ref">模型</string>
     <string name="cfg_action_ai_describe_image">图片</string>
     <string name="cfg_action_ai_describe_prompt">要问什么</string>
-    <string name="cfg_action_ai_describe_max_output_tokens">回复上限（token）</string>
+    <string name="cfg_action_ai_describe_max_output_tokens">回复上限</string>
+    <string name="hint_action_ai_describe_max_output_tokens">token</string>
     <string name="cfg_action_ai_describe_fallback">如果失败</string>
     <string name="node_action_transcribe_name">转写</string>
     <string name="node_action_transcribe_desc">通过麦克风聆听并转写所说的内容 — 可用 AI 模型（还能回答相关问题），也可在本机上免费完成</string>
@@ -457,15 +470,19 @@
     <string name="opt_action_transcribe_using_ai">AI 模型</string>
     <string name="opt_action_transcribe_using_phone">本机（离线）</string>
     <string name="cfg_action_transcribe_model_ref">模型</string>
-    <string name="cfg_action_transcribe_prompt">要问什么（留空则仅转写）</string>
+    <string name="cfg_action_transcribe_prompt">要问什么</string>
+    <string name="hint_action_transcribe_prompt">留空则仅转写</string>
     <string name="cfg_action_transcribe_language_mode">语言</string>
     <string name="opt_action_transcribe_language_mode_phone">手机的语言</string>
     <string name="opt_action_transcribe_language_mode_detect">自动识别</string>
     <string name="opt_action_transcribe_language_mode_chosen">我指定的语言</string>
     <string name="cfg_action_transcribe_language">哪种语言</string>
-    <string name="cfg_action_transcribe_max_seconds">最长聆听时间（秒）</string>
-    <string name="cfg_action_transcribe_silence_seconds">静音这么久后停止（秒，0 = 全程聆听）</string>
-    <string name="cfg_action_transcribe_max_output_tokens">回复上限（token）</string>
+    <string name="cfg_action_transcribe_max_seconds">最长聆听时间</string>
+    <string name="hint_action_transcribe_max_seconds">秒</string>
+    <string name="cfg_action_transcribe_silence_seconds">静音这么久后停止</string>
+    <string name="hint_action_transcribe_silence_seconds">秒，0 = 全程聆听</string>
+    <string name="cfg_action_transcribe_max_output_tokens">回复上限</string>
+    <string name="hint_action_transcribe_max_output_tokens">token</string>
     <string name="cfg_action_transcribe_fallback">如果失败</string>
     <string name="node_action_transcribe_start_name">开始转写</string>
     <string name="node_action_transcribe_start_desc">打开麦克风并持续聆听，直到“结束转写”把所说的内容变成文本</string>
@@ -476,15 +493,19 @@
     <string name="opt_action_transcribe_start_using_ai">AI 模型</string>
     <string name="opt_action_transcribe_start_using_phone">本机（离线）</string>
     <string name="cfg_action_transcribe_start_model_ref">模型</string>
-    <string name="cfg_action_transcribe_start_prompt">要问什么（留空则仅转写）</string>
-    <string name="cfg_action_transcribe_start_max_output_tokens">回复上限（token）</string>
+    <string name="cfg_action_transcribe_start_prompt">要问什么</string>
+    <string name="hint_action_transcribe_start_prompt">留空则仅转写</string>
+    <string name="cfg_action_transcribe_start_max_output_tokens">回复上限</string>
+    <string name="hint_action_transcribe_start_max_output_tokens">token</string>
     <string name="cfg_action_transcribe_start_language_mode">语言</string>
     <string name="opt_action_transcribe_start_language_mode_phone">手机的语言</string>
     <string name="opt_action_transcribe_start_language_mode_detect">自动识别</string>
     <string name="opt_action_transcribe_start_language_mode_chosen">我指定的语言</string>
     <string name="cfg_action_transcribe_start_language">哪种语言</string>
-    <string name="cfg_action_transcribe_start_max_seconds">最长聆听时间（秒）</string>
-    <string name="cfg_action_transcribe_start_silence_seconds">静音这么久后停止（秒，0 = 全程聆听）</string>
+    <string name="cfg_action_transcribe_start_max_seconds">最长聆听时间</string>
+    <string name="hint_action_transcribe_start_max_seconds">秒</string>
+    <string name="cfg_action_transcribe_start_silence_seconds">静音这么久后停止</string>
+    <string name="hint_action_transcribe_start_silence_seconds">秒，0 = 全程聆听</string>
     <string name="node_action_transcribe_end_name">结束转写</string>
     <string name="node_action_transcribe_end_desc">结束由“开始转写”打开的麦克风，并用 AI 模型或本机把所说的内容变成文本</string>
     <string name="port_action_transcribe_end_in">输入</string>
@@ -501,8 +522,10 @@
     <string name="port_action_transcribe_file_answer">回答</string>
     <string name="cfg_action_transcribe_file_model_ref">模型</string>
     <string name="cfg_action_transcribe_file_audio">音频文件</string>
-    <string name="cfg_action_transcribe_file_prompt">要问什么（留空则仅转写）</string>
-    <string name="cfg_action_transcribe_file_max_output_tokens">回复上限（token）</string>
+    <string name="cfg_action_transcribe_file_prompt">要问什么</string>
+    <string name="hint_action_transcribe_file_prompt">留空则仅转写</string>
+    <string name="cfg_action_transcribe_file_max_output_tokens">回复上限</string>
+    <string name="hint_action_transcribe_file_max_output_tokens">token</string>
     <string name="cfg_action_transcribe_file_fallback">如果失败</string>
     <string name="node_action_auto_rotate_name">切换自动旋转</string>
     <string name="node_action_auto_rotate_desc">开启或关闭基于加速度计的自动旋转</string>
@@ -536,7 +559,8 @@
     <string name="port_action_brightness_out">输出</string>
     <string name="port_action_brightness_state">状态</string>
     <string name="cfg_action_brightness_auto">自动亮度</string>
-    <string name="cfg_action_brightness_value">数值（0-255，仅当自动关闭时）</string>
+    <string name="cfg_action_brightness_value">数值</string>
+    <string name="hint_action_brightness_value">0-255，仅当自动关闭时</string>
     <string name="node_action_call_name">拨打电话</string>
     <string name="node_action_call_desc">向某个号码发起通话</string>
     <string name="port_action_call_in">输入</string>
@@ -590,7 +614,8 @@
     <string name="cfg_action_wait_until_friday">每周五</string>
     <string name="cfg_action_wait_until_saturday">每周六</string>
     <string name="cfg_action_wait_until_sunday">每周日</string>
-    <string name="cfg_action_wait_until_days_of_month">每月的哪几天（例如 1,15；留空 = 每天）</string>
+    <string name="cfg_action_wait_until_days_of_month">每月的哪几天</string>
+    <string name="hint_action_wait_until_days_of_month">例如 1,15；留空 = 每天</string>
     <string name="cfg_action_wait_until_until">直到</string>
     <string name="node_action_dialog_message_name">显示消息</string>
     <string name="node_action_dialog_message_desc">弹出一个对话框，并等待用户确认</string>
@@ -601,7 +626,8 @@
     <string name="cfg_action_dialog_message_title">标题</string>
     <string name="cfg_action_dialog_message_message">消息</string>
     <string name="cfg_action_dialog_message_confirm_label">按钮</string>
-    <string name="cfg_action_dialog_message_timeout_seconds">自动关闭延时（秒）</string>
+    <string name="cfg_action_dialog_message_timeout_seconds">自动关闭延时</string>
+    <string name="hint_action_dialog_message_timeout_seconds">秒</string>
     <string name="node_action_dialog_confirm_name">询问是或否</string>
     <string name="node_action_dialog_confirm_desc">用弹出对话框向用户提一个是/否问题，并按回答分支</string>
     <string name="port_action_dialog_confirm_in">输入</string>
@@ -649,7 +675,8 @@
     <string name="port_action_dialog_choice_index">索引</string>
     <string name="cfg_action_dialog_choice_title">标题</string>
     <string name="cfg_action_dialog_choice_message">问题</string>
-    <string name="cfg_action_dialog_choice_options">选项——每行一个</string>
+    <string name="cfg_action_dialog_choice_options">选项</string>
+    <string name="hint_action_dialog_choice_options">每行一个</string>
     <string name="cfg_action_dialog_choice_cancel_label">取消按钮</string>
     <string name="cfg_action_dialog_choice_timeout_seconds">放弃等待时长（秒）</string>
     <string name="node_action_speak_name">朗读</string>
@@ -682,7 +709,8 @@
     <string name="port_action_listen_text">听到的内容</string>
     <string name="cfg_action_listen_language">语言</string>
     <string name="cfg_action_listen_max_seconds">放弃前等待（秒）</string>
-    <string name="cfg_action_listen_silence_seconds">静音这么久后停止（秒，0 表示由手机决定）</string>
+    <string name="cfg_action_listen_silence_seconds">静音这么久后停止</string>
+    <string name="hint_action_listen_silence_seconds">秒，0 表示由手机决定</string>
     <string name="cfg_action_listen_prefer_offline">尽可能在设备上识别</string>
     <string name="node_action_disable_macro_name">停用宏</string>
     <string name="node_action_disable_macro_desc">按 id 停用另一个宏（保存状态并解除它的触发器）</string>
@@ -699,7 +727,8 @@
     <string name="cfg_action_dnd_state">状态</string>
     <string name="opt_action_dnd_state_on">开启</string>
     <string name="opt_action_dnd_state_off">关闭</string>
-    <string name="cfg_action_dnd_level">亮度（开启时）</string>
+    <string name="cfg_action_dnd_level">亮度</string>
+    <string name="hint_action_dnd_level">开启时</string>
     <string name="opt_action_dnd_level_priority">优先级</string>
     <string name="opt_action_dnd_level_alarms">闹钟</string>
     <string name="opt_action_dnd_level_silence">静音</string>
@@ -734,7 +763,8 @@
     <string name="opt_action_http_method_put">放入</string>
     <string name="opt_action_http_method_delete">删除</string>
     <string name="cfg_action_http_url">网址</string>
-    <string name="cfg_action_http_headers">请求头（JSON，可选）</string>
+    <string name="cfg_action_http_headers">请求头</string>
+    <string name="hint_action_http_headers">JSON，可选</string>
     <string name="cfg_action_http_body">正文</string>
     <string name="node_action_if_name">如果</string>
     <string name="node_action_if_desc">通过比较两个值来决定执行走向</string>
@@ -785,7 +815,8 @@
     <string name="cfg_action_send_intent_data_uri">数据 URI（可选）</string>
     <string name="cfg_action_send_intent_mime_type">MIME 类型（可选）</string>
     <string name="cfg_action_send_intent_category">类别（可选）</string>
-    <string name="cfg_action_send_intent_extras">Extras — 每行一个 key=value，count:int=5 可指定类型</string>
+    <string name="cfg_action_send_intent_extras">Extras</string>
+    <string name="hint_action_send_intent_extras">每行一个 key=value，count:int=5 可指定类型</string>
     <string name="node_action_broadcast_intent_name">发送广播</string>
     <string name="node_action_broadcast_intent_desc">向其他应用发送广播 Intent，可自定义 action 和 extras</string>
     <string name="port_action_broadcast_intent_in">输入</string>
@@ -801,7 +832,8 @@
     <string name="cfg_action_broadcast_intent_data_uri">数据 URI（可选）</string>
     <string name="cfg_action_broadcast_intent_mime_type">MIME 类型（可选）</string>
     <string name="cfg_action_broadcast_intent_category">类别（可选）</string>
-    <string name="cfg_action_broadcast_intent_extras">Extras — 每行一个 key=value，count:int=5 可指定类型</string>
+    <string name="cfg_action_broadcast_intent_extras">Extras</string>
+    <string name="hint_action_broadcast_intent_extras">每行一个 key=value，count:int=5 可指定类型</string>
     <string name="node_action_light_control_name">控制灯</string>
     <string name="node_action_light_control_desc">开启或关闭某个灯、房间或区域，或设置它的亮度、颜色或色温 — Philips Hue</string>
     <string name="port_action_light_control_in">输入</string>
@@ -847,7 +879,8 @@
     <string name="cfg_action_ha_service_hub">Home Assistant</string>
     <string name="cfg_action_ha_service_target">实体</string>
     <string name="cfg_action_ha_service_service">服务</string>
-    <string name="cfg_action_ha_service_data">附加数据（JSON）</string>
+    <string name="cfg_action_ha_service_data">附加数据</string>
+    <string name="hint_action_ha_service_data">JSON</string>
     <string name="node_action_mqtt_publish_name">发布到 MQTT</string>
     <string name="node_action_mqtt_publish_desc">向 MQTT 代理的某个主题发送消息 — Mosquitto、Zigbee2MQTT、Tasmota、ESPHome</string>
     <string name="port_action_mqtt_publish_in">输入</string>
@@ -965,7 +998,8 @@
     <string name="opt_action_camera_photo_flash_off">关闭</string>
     <string name="opt_action_camera_photo_flash_on">开启</string>
     <string name="opt_action_camera_photo_flash_auto">自动</string>
-    <string name="cfg_action_camera_photo_delay_seconds">拍摄前等待（秒）</string>
+    <string name="cfg_action_camera_photo_delay_seconds">拍摄前等待</string>
+    <string name="hint_action_camera_photo_delay_seconds">秒</string>
     <string name="cfg_action_camera_photo_to_folder">保存到此文件夹</string>
     <string name="cfg_action_camera_photo_name">文件名</string>
     <string name="cfg_action_camera_photo_when_exists">如果已存在</string>
@@ -1055,7 +1089,8 @@
     <string name="opt_action_image_metadata_detail_model">相机型号</string>
     <string name="opt_action_image_metadata_detail_artist">作者</string>
     <string name="opt_action_image_metadata_detail_copyright">版权</string>
-    <string name="cfg_action_image_metadata_value">新值（留空则删除）</string>
+    <string name="cfg_action_image_metadata_value">新值</string>
+    <string name="hint_action_image_metadata_value">留空则删除</string>
     <string name="node_action_image_move_name">移动或复制图片</string>
     <string name="node_action_image_move_desc">将照片移动或复制到其他文件夹，并保留在图库中</string>
     <string name="port_action_image_move_in">输入</string>
@@ -1107,7 +1142,8 @@
     <string name="port_action_record_start_max_seconds">自动停止时间（秒）</string>
     <string name="port_action_record_start_to_folder">保存到此文件夹</string>
     <string name="port_action_record_start_name">文件名</string>
-    <string name="cfg_action_record_start_max_seconds">自动停止时间（秒）</string>
+    <string name="cfg_action_record_start_max_seconds">自动停止时间</string>
+    <string name="hint_action_record_start_max_seconds">秒</string>
     <string name="cfg_action_record_start_quality">质量</string>
     <string name="opt_action_record_start_quality_voice">语音 — 文件较小</string>
     <string name="opt_action_record_start_quality_high">高音质 — 音乐与细节</string>
@@ -1153,7 +1189,8 @@
     <string name="port_action_notify_reply">回复</string>
     <string name="cfg_action_notify_title">标题</string>
     <string name="cfg_action_notify_text">文本</string>
-    <string name="cfg_action_notify_buttons">按钮——每行一个</string>
+    <string name="cfg_action_notify_buttons">按钮</string>
+    <string name="hint_action_notify_buttons">每行一个</string>
     <string name="cfg_action_notify_reply_field">回复框</string>
     <string name="cfg_action_notify_reply_label">回复按钮</string>
     <string name="cfg_action_notify_reply_hint">回复框提示</string>
@@ -1170,7 +1207,8 @@
     <string name="opt_action_notify_accent_pink">粉色</string>
     <string name="cfg_action_notify_show_progress">显示进度条</string>
     <string name="cfg_action_notify_ongoing">保留直到被清除</string>
-    <string name="cfg_action_notify_tag">标签——用于手动移除</string>
+    <string name="cfg_action_notify_tag">标签</string>
+    <string name="hint_action_notify_tag">用于手动移除</string>
     <string name="node_action_notify_cancel_name">移除通知</string>
     <string name="node_action_notify_cancel_desc">移除本应用以某个标签显示的通知</string>
     <string name="port_action_notify_cancel_in">输入</string>
@@ -1264,7 +1302,8 @@
     <string name="opt_action_calendar_add_availability_busy">忙碌</string>
     <string name="opt_action_calendar_add_availability_free">空闲</string>
     <string name="opt_action_calendar_add_availability_tentative">暂定</string>
-    <string name="cfg_action_calendar_add_reminder_minutes">提醒你（提前几分钟，-1 表示不提醒）</string>
+    <string name="cfg_action_calendar_add_reminder_minutes">提醒你</string>
+    <string name="hint_action_calendar_add_reminder_minutes">提前几分钟，-1 表示不提醒</string>
     <string name="node_action_calendar_update_name">更新日程</string>
     <string name="node_action_calendar_update_desc">修改或删除日程，可以只针对一次，也可以针对整个系列</string>
     <string name="port_action_calendar_update_in">输入</string>
@@ -1282,11 +1321,16 @@
     <string name="cfg_action_calendar_update_scope">应用于</string>
     <string name="opt_action_calendar_update_scope_this_occurrence">仅这一次</string>
     <string name="opt_action_calendar_update_scope_whole_series">整个系列</string>
-    <string name="cfg_action_calendar_update_title">新标题（留空则保持不变）</string>
-    <string name="cfg_action_calendar_update_starts_at">新开始时间（留空则保持不变）</string>
-    <string name="cfg_action_calendar_update_duration_minutes">新时长，分钟（-1 表示保持不变）</string>
-    <string name="cfg_action_calendar_update_location">新地点（留空则保持不变）</string>
-    <string name="cfg_action_calendar_update_description">新详情（留空则保持不变）</string>
+    <string name="cfg_action_calendar_update_title">新标题</string>
+    <string name="hint_action_calendar_update_title">留空则保持不变</string>
+    <string name="cfg_action_calendar_update_starts_at">新开始时间</string>
+    <string name="hint_action_calendar_update_starts_at">留空则保持不变</string>
+    <string name="cfg_action_calendar_update_duration_minutes">新时长，分钟</string>
+    <string name="hint_action_calendar_update_duration_minutes">-1 表示保持不变</string>
+    <string name="cfg_action_calendar_update_location">新地点</string>
+    <string name="hint_action_calendar_update_location">留空则保持不变</string>
+    <string name="cfg_action_calendar_update_description">新详情</string>
+    <string name="hint_action_calendar_update_description">留空则保持不变</string>
     <string name="cfg_action_calendar_update_change_availability">更改显示状态</string>
     <string name="cfg_action_calendar_update_availability">将你显示为</string>
     <string name="opt_action_calendar_update_availability_busy">忙碌</string>
@@ -1374,8 +1418,10 @@
     <string name="opt_action_play_sound_stream_alarm">闹钟</string>
     <string name="opt_action_play_sound_stream_notification">通知</string>
     <string name="opt_action_play_sound_stream_system">系统</string>
-    <string name="cfg_action_play_sound_start_seconds">起播位置（声音的第几秒）</string>
-    <string name="cfg_action_play_sound_max_seconds">停止时间（秒，0 = 播放到结束）</string>
+    <string name="cfg_action_play_sound_start_seconds">起播位置</string>
+    <string name="hint_action_play_sound_start_seconds">声音的第几秒</string>
+    <string name="cfg_action_play_sound_max_seconds">停止时间</string>
+    <string name="hint_action_play_sound_max_seconds">秒，0 = 播放到结束</string>
     <string name="cfg_action_play_sound_wait_for_completion">等待播放结束</string>
     <string name="node_action_repeat_name">重复</string>
     <string name="node_action_repeat_desc">把后续步骤重复固定的次数——比如重复 10 次</string>
@@ -1442,7 +1488,8 @@
     <string name="port_action_script_in">输入</string>
     <string name="port_action_script_out">输出</string>
     <string name="cfg_action_script_inputs">输入</string>
-    <string name="cfg_action_script_script">脚本——每个输入都是一个同名的变量</string>
+    <string name="cfg_action_script_script">脚本</string>
+    <string name="hint_action_script_script">每个输入都是一个同名的变量</string>
     <string name="cfg_action_script_outputs">输出</string>
     <string name="cfg_action_script_timeout_ms">超时（毫秒）</string>
     <string name="cfg_action_script_fallback">如果失败</string>
@@ -1467,7 +1514,8 @@
     <string name="port_action_stop_in">输入</string>
     <string name="port_action_stop_out">输出</string>
     <string name="port_action_stop_reason">原因（可选，中止前会记录到日志）</string>
-    <string name="cfg_action_stop_reason">原因（可选，中止前会记录到日志）</string>
+    <string name="cfg_action_stop_reason">原因</string>
+    <string name="hint_action_stop_reason">可选，中止前会记录到日志</string>
     <string name="node_action_stop_sound_name">停止声音</string>
     <string name="node_action_stop_sound_desc">停止所有由“播放声音”启动的声音</string>
     <string name="port_action_stop_sound_in">输入</string>
@@ -1476,8 +1524,10 @@
     <string name="node_action_vibrate_desc">让设备按时长或指定模式振动</string>
     <string name="port_action_vibrate_in">输入</string>
     <string name="port_action_vibrate_out">输出</string>
-    <string name="cfg_action_vibrate_duration_ms">时长（毫秒，未填写振动模式时使用）</string>
-    <string name="cfg_action_vibrate_pattern">振动模式（毫秒，用逗号分隔，例如 0,200,500,200）</string>
+    <string name="cfg_action_vibrate_duration_ms">时长</string>
+    <string name="hint_action_vibrate_duration_ms">毫秒，未填写振动模式时使用</string>
+    <string name="cfg_action_vibrate_pattern">振动模式</string>
+    <string name="hint_action_vibrate_pattern">毫秒，用逗号分隔，例如 0,200,500,200</string>
     <string name="node_action_volume_name">设置音量</string>
     <string name="node_action_volume_desc">调整某个音频通道的音量（调高、调低、设定、静音或取消静音）</string>
     <string name="port_action_volume_in">输入</string>
@@ -1495,7 +1545,8 @@
     <string name="opt_action_volume_mode_set">设置</string>
     <string name="opt_action_volume_mode_mute">静音</string>
     <string name="opt_action_volume_mode_unmute">取消静音</string>
-    <string name="cfg_action_volume_value">数值（0-100，仅当模式为“设置”时）</string>
+    <string name="cfg_action_volume_value">数值</string>
+    <string name="hint_action_volume_value">0-100，仅当模式为“设置”时</string>
     <string name="node_action_wifi_name">切换 Wi-Fi</string>
     <string name="node_action_wifi_desc">开启或关闭 Wi-Fi，并报告最终状态</string>
     <string name="port_action_wifi_in">输入</string>
@@ -1609,7 +1660,8 @@
     <string name="port_transform_text_b">B</string>
     <string name="port_transform_text_c">C</string>
     <string name="port_transform_text_text">文本</string>
-    <string name="cfg_transform_text_template">模板——使用 {A}、{B}、{C}</string>
+    <string name="cfg_transform_text_template">模板</string>
+    <string name="hint_transform_text_template">使用 {A}、{B}、{C}</string>
     <string name="cfg_transform_text_a">A</string>
     <string name="cfg_transform_text_b">B</string>
     <string name="cfg_transform_text_c">C</string>
@@ -1629,7 +1681,8 @@
     <string name="port_transform_json_read_json">JSON 文本</string>
     <string name="port_transform_json_read_value">值</string>
     <string name="cfg_transform_json_read_json">JSON 文本</string>
-    <string name="cfg_transform_json_read_path">路径（例如 main.temp）——留空表示整个文档</string>
+    <string name="cfg_transform_json_read_path">路径</string>
+    <string name="hint_transform_json_read_path">例如 main.temp — —留空表示整个文档</string>
     <string name="cfg_transform_json_read_type">获取为</string>
     <string name="opt_transform_json_read_type_text">文本</string>
     <string name="opt_transform_json_read_type_number">数字</string>
@@ -1642,8 +1695,10 @@
     <string name="node_transform_split_text_desc">把文本拆成列表——每行一个元素，或按你选择的分隔符拆分</string>
     <string name="port_transform_split_text_text">文本——每行一个元素，或接入其他内容</string>
     <string name="port_transform_split_text_value">列表</string>
-    <string name="cfg_transform_split_text_text">文本——每行一个元素，或接入其他内容</string>
-    <string name="cfg_transform_split_text_separator">分隔符（留空表示换行）</string>
+    <string name="cfg_transform_split_text_text">文本</string>
+    <string name="hint_transform_split_text_text">每行一个元素，或接入其他内容</string>
+    <string name="cfg_transform_split_text_separator">分隔符</string>
+    <string name="hint_transform_split_text_separator">留空表示换行</string>
     <string name="node_transform_list_count_name">统计元素个数</string>
     <string name="node_transform_list_count_desc">列表中有多少个元素</string>
     <string name="port_transform_list_count_list">列表</string>
@@ -1682,7 +1737,8 @@
     <string name="node_transform_list_slice_desc">列表中的一段元素</string>
     <string name="port_transform_list_slice_list">列表</string>
     <string name="port_transform_list_slice_value">列表</string>
-    <string name="cfg_transform_list_slice_from">起始位置（0 为第一个）</string>
+    <string name="cfg_transform_list_slice_from">起始位置</string>
+    <string name="hint_transform_list_slice_from">0 为第一个</string>
     <string name="cfg_transform_list_slice_count">多少个</string>
     <string name="valuetype_text">文本</string>
     <string name="valuetype_number">数字</string>
@@ -1694,14 +1750,16 @@
     <string name="port_action_light_control_brightness" formatted="false">亮度 %</string>
     <string name="cfg_action_light_control_brightness" formatted="false">亮度 %</string>
     <string name="port_action_notify_progress" formatted="false">进度（%，小于 0 = 忙碌）</string>
-    <string name="cfg_action_notify_progress" formatted="false">进度（%，小于 0 = 忙碌）</string>
+    <string name="cfg_action_notify_progress" formatted="false">进度</string>
+    <string name="hint_action_notify_progress" formatted="false">%，小于 0 = 忙碌</string>
     <string name="port_value_battery_level" formatted="false">电量（%）</string>
     <string name="node_trigger_call_state_name">通话状态</string>
     <string name="node_trigger_call_state_desc">当通话响铃、被接听或结束时启动，适用于电话以及 Teams、WhatsApp、Discord 等通话应用</string>
     <string name="port_trigger_call_state_call">通话</string>
     <string name="opt_trigger_call_state_event_active">通话中</string>
     <string name="opt_trigger_call_state_event_ended">已结束</string>
-    <string name="cfg_trigger_call_state_package_filter">来自应用（可选）</string>
+    <string name="cfg_trigger_call_state_package_filter">来自应用</string>
+    <string name="hint_trigger_call_state_package_filter">可选</string>
     <string name="node_trigger_call_ended_name">通话结束</string>
     <string name="node_trigger_call_ended_desc">当通话结束时启动，带有通话时长和是否被接听，适用于电话以及 Teams、WhatsApp、Discord 等通话应用</string>
     <string name="port_trigger_call_ended_out">输出</string>
@@ -1712,7 +1770,8 @@
     <string name="cfg_trigger_call_ended_direction">方向</string>
     <string name="opt_trigger_call_ended_direction_incoming">来电</string>
     <string name="opt_trigger_call_ended_direction_outgoing">去电</string>
-    <string name="cfg_trigger_call_ended_package_filter">来自应用（可选）</string>
+    <string name="cfg_trigger_call_ended_package_filter">来自应用</string>
+    <string name="hint_trigger_call_ended_package_filter">可选</string>
     <string name="node_value_call_active_name">通话中</string>
     <string name="node_value_call_active_desc">当前是否正在通话，适用于电话以及 Teams、WhatsApp、Discord 等通话应用</string>
     <string name="port_value_call_active_active">通话中</string>

@@ -42,7 +42,8 @@
     <string name="category_plugin">Extension</string>
     <string name="permissions_needed_by">Nécessaire pour : %1$s</string>
     <string name="permissions_open_settings">Ouvrir les paramètres</string>
-    <string name="config_field_wired_from">%1$s ← %2$s</string>
+    <string name="config_hint_show">Expliquer %1$s</string>
+    <string name="config_hint_hide">Masquer l\'explication de %1$s</string>
     <string name="cd_palette_collapse_group">Réduire %1$s</string>
     <string name="cd_palette_expand_group">Développer %1$s</string>
     <string name="apps_any_app">N\'importe quelle application</string>

@@ -50,7 +50,9 @@
     <string name="permissions_open_settings">Open settings</string>
 
     <!-- feature/grapheditor -->
-    <string name="config_field_wired_from">%1$s ← %2$s</string>
+    <string name="config_field_wired_from">← %1$s</string>
+    <string name="config_hint_show">Explain %1$s</string>
+    <string name="config_hint_hide">Hide the explanation of %1$s</string>
     <string name="cd_palette_collapse_group">Collapse %1$s</string>
     <string name="cd_palette_expand_group">Expand %1$s</string>
 

@@ -9,6 +9,7 @@ import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
@@ -36,7 +37,8 @@ data class CalendarEventTriggerConfig(
     @Label("Fire when") val fireWhen: CalendarWhen = CalendarWhen.STARTS,
 
     @VisibleWhen("fireWhen", "STARTS", "ENDS")
-    @Label("Minutes before (negative fires afterwards)")
+    @Label("Minutes before")
+    @Hint("negative fires afterwards")
     val leadMinutes: Int = 0,
 
     @Label("Calendar")

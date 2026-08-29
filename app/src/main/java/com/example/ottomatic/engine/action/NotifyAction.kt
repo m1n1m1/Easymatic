@@ -11,6 +11,7 @@ import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.VisibleWhen
@@ -66,7 +67,9 @@ data class NotifyConfig(
     @Label("Title") val title: String = "Ottomatic",
     @Label("Text") @Multiline @Wired val text: String = "Workflow ran",
 
-    @Label("Buttons — one per line") @Multiline @Wired val buttons: String = "",
+    @Label("Buttons")
+    @Hint("one per line")
+    @Multiline @Wired val buttons: String = "",
     @Label("Reply field") val replyField: Boolean = false,
     @VisibleWhen("replyField", "true") @Label("Reply button") val replyLabel: String = "Reply",
     @VisibleWhen("replyField", "true") @Label("Reply hint") val replyHint: String = "",
@@ -75,12 +78,14 @@ data class NotifyConfig(
     @Label("Colour") val accent: MacroAccent = MacroAccent.SYSTEM,
     @Label("Show a progress bar") val showProgress: Boolean = false,
     @VisibleWhen("showProgress", "true")
-    @Label("Progress (%, below 0 = busy)")
+    @Label("Progress")
+    @Hint("%, below 0 = busy")
     @Wired
     val progress: Int = 0,
     @Label("Keep until dismissed") val ongoing: Boolean = false,
 
-    @Label("Tag — Used for manual deletion")
+    @Label("Tag")
+    @Hint("Used for manual deletion")
     @Wired
     val tag: String = "",
 ) {

@@ -7,6 +7,7 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Suggested
 import com.example.ottomatic.domain.model.config.SuggestionSource
@@ -42,7 +43,8 @@ import kotlinx.serialization.Serializable
 data class ListenConfig(
     @Label("Language") @Suggested(SuggestionSource.RECOGNITION_LANGUAGE) val language: String = "",
     @Label("Give up after (seconds)") val maxSeconds: Int = 15,
-    @Label("Stop after this much silence (seconds, 0 = let the phone decide)")
+    @Label("Stop after this much silence")
+    @Hint("seconds, 0 = let the phone decide")
     val silenceSeconds: Int = 0,
     @Label("Recognise on the device where possible") val preferOffline: Boolean = true,
 )

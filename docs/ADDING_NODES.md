@@ -209,12 +209,31 @@ or a `DateTime`; a `List` is rejected outright. Use `NoConfig` when there is not
 configure.
 
 The annotations, all in `domain/model/config/ConfigAnnotations.kt`: `@Label` names the
-row, `@Multiline` makes it a text area, `@Wired` gives it a socket, and `@VisibleWhen`
-hides it until a sibling holds a given value. Then the ten widget annotations —
+row, `@Hint` explains it, `@Multiline` makes it a text area, `@Wired` gives it a socket,
+and `@VisibleWhen` hides it until a sibling holds a given value. Then the ten widget
+annotations —
 `@Picker`, `@Ports`, `@PhoneNumber`, `@TimeOfDay`, `@WifiNetwork`, `@ContactName`,
 `@FilePath`, `@IntentChoice`, `@Suggested` and `@ApiToken` — of which **at most one may
 claim a property**, and each requires a `String`. A second is a registry-initialisation
 failure, not something the form renders around.
+
+**`@Label` names the field; `@Hint` is where everything else it has to say goes.** The
+label is drawn in the *notch* of the outlined field — a gap punched through the border —
+which is one line high by construction and holds about thirty characters, so a name with
+an explanation bracketed onto it (`"Stop after this much silence (seconds, 0 = listen the
+whole time)"`) loses the half that explains. Translation makes that structural rather than
+occasional: the same label runs about half again as long in German and French. So write
+the name in `@Label` and the sentence in `@Hint`, which is rendered outside the outline
+where it can wrap, behind an ⓘ beside the field.
+
+A **unit stays in the label**. `@Label("Warmth (K)")` and `@Label("How long (minutes)")`
+name the field rather than explain it, and splitting them leaves a label that no longer
+says what it means. The test is whether the bracket could be dropped without the name
+going vague — if it could, it is a hint.
+
+`@Hint` is not one of the widget annotations below and does not compete with them: those
+each *replace* the editor, so a property may claim one, where this only adds a sentence
+beside whichever editor was chosen. Every field may have one.
 
 `@Picker` is for an identifier chosen from a chooser, never typed: a mistyped identifier
 does not fail loudly, it names something else or nothing, and the node just looks broken.

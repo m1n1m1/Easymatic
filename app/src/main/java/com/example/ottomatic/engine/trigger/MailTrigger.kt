@@ -6,6 +6,7 @@ import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Suggested
 import com.example.ottomatic.domain.model.config.SuggestionSource
@@ -57,7 +58,8 @@ data class MailTriggerConfig(
     @Label("Subject contains") val subjectContains: String = "",
     @Label("Only unread") val unreadOnly: Boolean = true,
     @Label("How to watch") val mode: MailWatchMode = MailWatchMode.AUTOMATIC,
-    @Label("Check every (minutes, minimum 15)")
+    @Label("Check every")
+    @Hint("minutes, minimum 15")
     @VisibleWhen("mode", "POLL")
     val intervalMinutes: Long = DEFAULT_MAIL_POLL_MINUTES,
 )

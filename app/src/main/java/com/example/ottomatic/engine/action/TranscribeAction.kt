@@ -4,6 +4,7 @@ import com.example.ottomatic.core.service.AiRequest
 import com.example.ottomatic.core.service.CaptureRequest
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Picker
@@ -46,7 +47,8 @@ import kotlinx.serialization.Serializable
 data class TranscribeConfig(
     @Label("Transcribe with") val using: TranscribeUsing = TranscribeUsing.AI,
     @Label("Model") @Picker(PickerKind.AI_MODEL) @VisibleWhen("using", "ai") val modelRef: String = "",
-    @Label("What to ask (leave empty to transcribe it)")
+    @Label("What to ask")
+    @Hint("leave empty to transcribe it")
     @Multiline @Wired @VisibleWhen("using", "ai")
     val prompt: String = "",
     @Label("Language") @VisibleWhen("using", "phone")
@@ -55,10 +57,15 @@ data class TranscribeConfig(
     @Suggested(SuggestionSource.RECOGNITION_LANGUAGE)
     @VisibleWhen("languageMode", "chosen")
     val language: String = "",
-    @Label("Listen for at most (seconds)") val maxSeconds: Int = 15,
-    @Label("Stop after this much silence (seconds, 0 = listen the whole time)")
+    @Label("Listen for at most")
+    @Hint("seconds")
+    val maxSeconds: Int = 15,
+    @Label("Stop after this much silence")
+    @Hint("seconds, 0 = listen the whole time")
     val silenceSeconds: Int = 3,
-    @Label("Longest reply (tokens)") @VisibleWhen("using", "ai")
+    @Label("Longest reply")
+    @Hint("tokens")
+    @VisibleWhen("using", "ai")
     val maxOutputTokens: Int = AiRequest.DEFAULT_MAX_OUTPUT_TOKENS,
     @Label("If it fails") @Multiline val fallback: String = "",
 )

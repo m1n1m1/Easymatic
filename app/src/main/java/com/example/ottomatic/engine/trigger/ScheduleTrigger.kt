@@ -7,6 +7,7 @@ import com.example.ottomatic.domain.model.MINUTES_PER_HOUR
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.TimeOfDay
 import com.example.ottomatic.domain.model.config.VisibleWhen
@@ -68,7 +69,8 @@ data class ScheduleConfig(
     @Label("Mode") val mode: ScheduleMode = ScheduleMode.INTERVAL,
 
     @VisibleWhen("mode", "INTERVAL")
-    @Label("Repeat every (under 15 only fires while the device is awake)")
+    @Label("Repeat every")
+    @Hint("under 15 only fires while the device is awake")
     val every: Int = DEFAULT_INTERVAL_MINUTES.toInt(),
 
     @VisibleWhen("mode", "INTERVAL")
@@ -87,7 +89,9 @@ data class ScheduleConfig(
     @Label("Fridays") val friday: Boolean = false,
     @Label("Saturdays") val saturday: Boolean = false,
     @Label("Sundays") val sunday: Boolean = false,
-    @Label("Days of month (e.g. 1,15, empty = every day)") val daysOfMonth: String = "",
+    @Label("Days of month")
+    @Hint("e.g. 1,15, empty = every day")
+    val daysOfMonth: String = "",
 
     @VisibleWhen("mode", "INTERVAL")
     @Label("Only during a time window")
@@ -99,7 +103,8 @@ data class ScheduleConfig(
     val windowFrom: String = "22:00",
 
     @VisibleWhen("windowEnabled", "true")
-    @Label("Active until (earlier than 'from' runs past midnight)")
+    @Label("Active until")
+    @Hint("earlier than 'from' runs past midnight")
     @TimeOfDay
     val windowUntil: String = "07:00",
 ) {

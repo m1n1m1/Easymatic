@@ -42,7 +42,8 @@
     <string name="category_plugin">プラグイン</string>
     <string name="permissions_needed_by">必要とするノード: %1$s</string>
     <string name="permissions_open_settings">設定を開く</string>
-    <string name="config_field_wired_from">%1$s ← %2$s</string>
+    <string name="config_hint_show">%1$s の説明</string>
+    <string name="config_hint_hide">%1$s の説明を隠す</string>
     <string name="cd_palette_collapse_group">%1$s を折りたたむ</string>
     <string name="cd_palette_expand_group">%1$s を展開</string>
     <string name="apps_any_app">任意のアプリ</string>

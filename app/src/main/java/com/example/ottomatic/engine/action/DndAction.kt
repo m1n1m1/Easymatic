@@ -4,6 +4,7 @@ import com.example.ottomatic.core.service.DndLevel
 import com.example.ottomatic.core.service.OnOff
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.DndState
@@ -20,7 +21,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DndConfig(
     @Label("State") val state: OnOff = OnOff.ON,
-    @Label("Level (when on)") val level: DndLevel = DndLevel.PRIORITY,
+    @Label("Level")
+    @Hint("when on")
+    val level: DndLevel = DndLevel.PRIORITY,
 )
 
 /**

@@ -2,6 +2,7 @@ package com.example.ottomatic.engine.action
 
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.engine.Action
@@ -13,7 +14,9 @@ import kotlinx.serialization.Serializable
 /** Config for `action.stop`. */
 @Serializable
 data class StopConfig(
-    @Label("Reason (optional, logged before halting)") @Wired val reason: String = "",
+    @Label("Reason")
+    @Hint("optional, logged before halting")
+    @Wired val reason: String = "",
 )
 
 /**

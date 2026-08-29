@@ -163,8 +163,11 @@ internal fun ConfigFieldEditor(
     val type = field.type
     var expanded by remember { mutableStateOf(false) }
     val colors = tint.asTextFieldColors()
-    // Single line + ellipsis: the label can carry the wiring source, and a long
-    // node name must not wrap the field's outline open.
+    // A backstop, not the plan. Material draws this in the outline's notch — a gap punched
+    // through the border — which is one line high by construction, so nothing here can ever
+    // wrap however much room the sheet has. The field's explanation and its wiring source
+    // therefore live outside the outline (see ConfigFieldRow), and what is left is a name
+    // short enough to fit; this clamp only stops an unusually long one breaking the border.
     val labelSlot: @Composable () -> Unit = {
         Text(text = label, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
@@ -1423,12 +1426,13 @@ internal fun PickerFieldChrome(
     placeholder: String? = null,
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
+        // Read-only chrome rather than an OutlinedTextField, so the value can scroll instead of
+        // ellipsizing — see ReadOnlyFieldChrome. Every picker in the app wears this one, so a
+        // chosen path, entity or place is readable to its end wherever it was chosen.
+        ReadOnlyFieldChrome(
             value = display,
-            onValueChange = {},
-            readOnly = true,
-            label = labelSlot,
             colors = colors,
+            label = labelSlot,
             placeholder = {
                 Text(
                     text = placeholder ?: stringResource(R.string.config_none_selected),
@@ -1437,8 +1441,6 @@ internal fun PickerFieldChrome(
                 )
             },
             trailingIcon = { Icon(imageVector = icon, contentDescription = null) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
         )
         // A read-only field still consumes its own taps, so the tap target is a
         // transparent layer over it rather than a clickable on the field.

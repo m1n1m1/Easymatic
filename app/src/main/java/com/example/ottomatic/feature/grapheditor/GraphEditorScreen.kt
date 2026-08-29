@@ -528,11 +528,6 @@ private fun originLabel(
     return context.getString(R.string.grapheditor_port_path, node.name, portLabel)
 }
 
-/** The config keys a (possibly absent) schema renders a field for. */
-private fun schemaKeys(
-    schema: com.example.ottomatic.domain.registry.NodeConfigSchema?,
-): Set<ConfigKey> = schema?.fields?.map { it.key }?.toSet().orEmpty()
-
 /**
  * "Node › Port" for whatever feeds [port] on [nodeId], or `null` when nothing is
  * connected there yet. Data inputs accept a single edge, so the first is the one.
@@ -581,9 +576,10 @@ private fun NodeConfigOverlay(
     // only ever delete the edge wired into it — which the canvas already does,
     // visibly.
     val portByKey = dataInputPorts.associateBy { ConfigKey(it.name.value) }
-    // One wirable field puts every field in this sheet on the narrower measure, so
-    // they keep a common right edge rather than the wirable ones looking clipped.
-    val gutter = schemaKeys(schema).any { it in portByKey }
+    // One field with anything in the gutter puts every field in this sheet on the narrower
+    // measure, so they keep a common right edge rather than the plain ones running wider.
+    // A hint counts as well as a socket: both are buttons that live out there.
+    val gutter = schema?.fields.orEmpty().any { it.key in portByKey || it.hint.isNotBlank() }
     // The form grows without bound — a script alone can declare sixteen ports —
     // so it gets a full screen to scroll in.
     EditorOverlay(title = stringResource(R.string.grapheditor_configure), onClose = onDismiss) { _ ->

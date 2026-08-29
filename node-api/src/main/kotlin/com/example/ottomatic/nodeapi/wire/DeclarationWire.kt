@@ -206,6 +206,14 @@ data class ConfigFieldWire(
     val type: ConfigFieldTypeWire,
     val defaultValue: String = "",
     val visibleWhen: VisibilityWire? = null,
+    /**
+     * The sentence under the field, wrapped rather than ellipsized.
+     *
+     * Last, and defaulted, so that adding it moved no existing parameter: a plugin author
+     * constructs these positionally, and slipping a new field in ahead of [defaultValue] would
+     * silently turn every such call's default into its explanation.
+     */
+    val hint: String = "",
 )
 
 /** One execution output port a plugin node routes to, in [ExecOutputsWire.Named]. */

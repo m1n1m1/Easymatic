@@ -38,7 +38,8 @@
     <string name="permissions_open_settings">Einstellungen öffnen</string>
 
     <!-- feature/grapheditor -->
-    <string name="config_field_wired_from">%1$s ← %2$s</string>
+    <string name="config_hint_show">%1$s erklären</string>
+    <string name="config_hint_hide">Erklärung von %1$s ausblenden</string>
     <string name="cd_palette_collapse_group">%1$s einklappen</string>
     <string name="cd_palette_expand_group">%1$s ausklappen</string>
 

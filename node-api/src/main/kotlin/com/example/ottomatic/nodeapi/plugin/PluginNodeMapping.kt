@@ -113,6 +113,7 @@ internal object PluginNodeMapping {
         key = ConfigKey(key),
         label = label.ifBlank { key },
         type = type.toConfigFieldType(typeId),
+        hint = hint,
         defaultValue = defaultValue,
         visibleWhen = visibleWhen?.let { VisibilityRule(ConfigKey(it.key), it.values) },
     )

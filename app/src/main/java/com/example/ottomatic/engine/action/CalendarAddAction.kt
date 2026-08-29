@@ -8,6 +8,7 @@ import com.example.ottomatic.core.service.EventDraft
 import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Picker
@@ -47,7 +48,9 @@ data class CalendarAddConfig(
     @Label("Where") @Wired val location: String = "",
     @Label("Details") @Multiline @Wired val description: String = "",
     @Label("Shows you as") val availability: CalendarAvailability = CalendarAvailability.BUSY,
-    @Label("Remind you (minutes before, -1 for no reminder)") val reminderMinutes: Int = NO_REMINDER,
+    @Label("Remind you")
+    @Hint("minutes before, -1 for no reminder")
+    val reminderMinutes: Int = NO_REMINDER,
 )
 
 private const val DEFAULT_DURATION_MINUTES = 60

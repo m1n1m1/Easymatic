@@ -7,6 +7,7 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.config.ContactName
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
@@ -47,9 +48,13 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class MessageTriggerConfig(
-    @Label("From app (optional)") @Picker(PickerKind.APP_FILTER) val packageFilter: String = "",
+    @Label("From app")
+    @Hint("optional")
+    @Picker(PickerKind.APP_FILTER) val packageFilter: String = "",
     @Label("From (optional)") @ContactName val senderContains: String = "",
-    @Label("Text contains (optional)") val textContains: String = "",
+    @Label("Text contains")
+    @Hint("optional")
+    val textContains: String = "",
 )
 
 /**

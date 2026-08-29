@@ -4,6 +4,7 @@ import com.example.ottomatic.core.service.MetadataDetail
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.FilePath
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Wired
 import com.example.ottomatic.domain.model.dataOut
@@ -81,7 +82,8 @@ data class ImageMetadataConfig(
     val image: String = "",
     @Label("What to change")
     val detail: ImageDetailField = ImageDetailField.DESCRIPTION,
-    @Label("New value (blank removes it)")
+    @Label("New value")
+    @Hint("blank removes it")
     @Wired
     val value: String = "",
 )

@@ -4,6 +4,7 @@ import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.BatteryState
@@ -27,7 +28,9 @@ enum class BatteryDirection {
 data class BatteryLevelConfig(
     @Label("Direction") val direction: BatteryDirection = BatteryDirection.BELOW,
     @Label("Threshold (0-100)") val level: Int = DEFAULT_THRESHOLD,
-    @Label("Poll interval (minutes, minimum 15)") val intervalMinutes: Long = DEFAULT_INTERVAL_MINUTES,
+    @Label("Poll interval")
+    @Hint("minutes, minimum 15")
+    val intervalMinutes: Long = DEFAULT_INTERVAL_MINUTES,
 )
 
 private const val DEFAULT_THRESHOLD = 20

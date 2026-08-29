@@ -12,6 +12,7 @@ import com.example.ottomatic.core.service.SeriesScope
 import com.example.ottomatic.domain.model.CalendarEventRef
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.VisibleWhen
@@ -50,19 +51,33 @@ data class CalendarUpdateConfig(
     @Label("What to do") val op: CalendarOp = CalendarOp.UPDATE,
     @Label("Applies to") val scope: SeriesScope = SeriesScope.THIS_OCCURRENCE,
 
-    @VisibleWhen("op", "UPDATE") @Label("New title (leave empty to keep it)") @Wired
+    @VisibleWhen("op", "UPDATE")
+    @Label("New title")
+    @Hint("leave empty to keep it")
+    @Wired
     val title: String = "",
 
-    @VisibleWhen("op", "UPDATE") @Label("New start (leave empty to keep it)") @Wired
+    @VisibleWhen("op", "UPDATE")
+    @Label("New start")
+    @Hint("leave empty to keep it")
+    @Wired
     val startsAt: DateTime = DateTime.EPOCH,
 
-    @VisibleWhen("op", "UPDATE") @Label("New length in minutes (-1 to keep it)")
+    @VisibleWhen("op", "UPDATE")
+    @Label("New length in minutes")
+    @Hint("-1 to keep it")
     val durationMinutes: Int = KEEP,
 
-    @VisibleWhen("op", "UPDATE") @Label("New place (leave empty to keep it)") @Wired
+    @VisibleWhen("op", "UPDATE")
+    @Label("New place")
+    @Hint("leave empty to keep it")
+    @Wired
     val location: String = "",
 
-    @VisibleWhen("op", "UPDATE") @Label("New details (leave empty to keep them)") @Multiline @Wired
+    @VisibleWhen("op", "UPDATE")
+    @Label("New details")
+    @Hint("leave empty to keep them")
+    @Multiline @Wired
     val description: String = "",
 
     @VisibleWhen("op", "UPDATE") @Label("Change how it shows you") val changeAvailability: Boolean = false,

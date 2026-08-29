@@ -5,6 +5,7 @@ import com.example.ottomatic.core.service.ServiceCall
 import com.example.ottomatic.domain.model.HomeAssistantRef
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Picker
@@ -37,7 +38,8 @@ data class HaServiceConfig(
     @Label("Service")
     @Picker(PickerKind.HA_SERVICE, scopedBy = ["hub", "target"])
     val service: String = "",
-    @Label("Extra data (JSON)")
+    @Label("Extra data")
+    @Hint("JSON")
     @Multiline
     @Wired
     val data: String = "",

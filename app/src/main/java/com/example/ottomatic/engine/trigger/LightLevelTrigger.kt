@@ -4,6 +4,7 @@ import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.SensorReading
@@ -23,7 +24,8 @@ import kotlinx.serialization.Serializable
 data class LightLevelConfig(
     @Label("When the light level") val direction: Threshold = Threshold.BELOW,
     @Label("Threshold (lux)") val thresholdLux: Float = LightLevelDetector.DEFAULT_THRESHOLD_LUX,
-    @Label("Don't start again until it changes back by (lux)")
+    @Label("Don't start again until it changes back by")
+    @Hint("lux")
     val hysteresisLux: Float = LightLevelDetector.DEFAULT_HYSTERESIS_LUX,
     @Label("Must hold for (ms)") val dwellMs: Long = LightLevelDetector.DEFAULT_DWELL_MS,
 )

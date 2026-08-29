@@ -7,6 +7,7 @@ import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.FilePath
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Picker
@@ -39,8 +40,12 @@ import kotlinx.serialization.Serializable
 data class TranscribeFileConfig(
     @Label("Model") @Picker(PickerKind.AI_MODEL) val modelRef: String = "",
     @Label("Audio file") @FilePath @Wired val audio: String = "",
-    @Label("What to ask (leave empty to transcribe it)") @Multiline @Wired val prompt: String = "",
-    @Label("Longest reply (tokens)") val maxOutputTokens: Int = AiRequest.DEFAULT_MAX_OUTPUT_TOKENS,
+    @Label("What to ask")
+    @Hint("leave empty to transcribe it")
+    @Multiline @Wired val prompt: String = "",
+    @Label("Longest reply")
+    @Hint("tokens")
+    val maxOutputTokens: Int = AiRequest.DEFAULT_MAX_OUTPUT_TOKENS,
     @Label("If it fails") @Multiline val fallback: String = "",
 )
 

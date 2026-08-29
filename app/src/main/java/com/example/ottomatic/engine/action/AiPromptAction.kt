@@ -8,6 +8,7 @@ import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.ToolOverrides
 import com.example.ottomatic.domain.model.ToolSpec
 import com.example.ottomatic.domain.model.ToolTarget
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Picker
@@ -71,7 +72,9 @@ data class AiPromptConfig(
     @Tools("modelRef")
     val toolOverrides: String = "",
     @Label("Most turns") @VisibleWhen("useTools", "true") val maxTurns: Int = AiToolLimits.DEFAULT_MAX_TURNS,
-    @Label("Longest reply (tokens)") val maxOutputTokens: Int = AiRequest.DEFAULT_MAX_OUTPUT_TOKENS,
+    @Label("Longest reply")
+    @Hint("tokens")
+    val maxOutputTokens: Int = AiRequest.DEFAULT_MAX_OUTPUT_TOKENS,
     @Label("If it fails") @Multiline val fallback: String = "",
 )
 

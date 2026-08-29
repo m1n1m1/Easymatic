@@ -5,6 +5,7 @@ import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
@@ -36,7 +37,9 @@ enum class CallDirection {
 data class CallEndedConfig(
     @Label("Outcome") val outcome: CallOutcome? = null,
     @Label("Direction") val direction: CallDirection? = null,
-    @Label("From app (optional)") @Picker(PickerKind.APP_FILTER) val packageFilter: String = "",
+    @Label("From app")
+    @Hint("optional")
+    @Picker(PickerKind.APP_FILTER) val packageFilter: String = "",
 )
 
 /**

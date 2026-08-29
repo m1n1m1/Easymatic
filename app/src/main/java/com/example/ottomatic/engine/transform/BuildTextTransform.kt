@@ -2,6 +2,7 @@ package com.example.ottomatic.engine.transform
 
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Wired
@@ -22,7 +23,9 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class BuildTextConfig(
-    @Label("Template — use {A}, {B}, {C}") @Multiline val template: String = "",
+    @Label("Template")
+    @Hint("use {A}, {B}, {C}")
+    @Multiline val template: String = "",
     @Label("A") @Wired val a: String = "",
     @Label("B") @Wired val b: String = "",
     @Label("C") @Wired val c: String = "",

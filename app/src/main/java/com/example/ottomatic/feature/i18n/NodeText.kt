@@ -56,6 +56,16 @@ internal class NodeText(private val lookup: (String) -> String?) {
         lookup("cfg_${typeId.slug()}_${field.key.value.snake()}") ?: field.label
 
     /**
+     * The sentence explaining a form row, or blank when the name already says it.
+     *
+     * A separate key family rather than a second half of the label's, because the two are read in
+     * different places — the label in the outline's notch, this outside it — and a field that
+     * gains or loses its explanation must not disturb the key its label already has.
+     */
+    fun fieldHint(typeId: NodeTypeId, field: ConfigField<*>): String =
+        lookup("hint_${typeId.slug()}_${field.key.value.snake()}") ?: field.hint
+
+    /**
      * One choice in a form row's dropdown.
      *
      * A blank value is the "not set" option every nullable enum field offers, and it

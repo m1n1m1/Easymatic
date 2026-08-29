@@ -9,6 +9,7 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Wired
@@ -42,7 +43,9 @@ import kotlinx.serialization.Serializable
 data class AskChoiceConfig(
     @Label("Title") val title: String = "Ottomatic",
     @Label("Question") @Multiline @Wired val message: String = "",
-    @Label("Options — one per line") @Multiline @Wired val options: String = "",
+    @Label("Options")
+    @Hint("one per line")
+    @Multiline @Wired val options: String = "",
     @Label("Cancel button") val cancelLabel: String = "Cancel",
     @Label("Give up after (seconds)") val timeoutSeconds: Int = 0,
 )

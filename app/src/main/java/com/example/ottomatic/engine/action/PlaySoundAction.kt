@@ -5,6 +5,7 @@ import com.example.ottomatic.core.service.SoundRequest
 import com.example.ottomatic.core.service.SoundSource
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
@@ -38,8 +39,12 @@ data class PlaySoundConfig(
     @VisibleWhen("sound", "custom")
     val uri: String = "",
     @Label("Play through") val stream: AudioStream = AudioStream.NOTIFICATION,
-    @Label("Start at (seconds into the sound)") val startSeconds: Int = 0,
-    @Label("Stop after (seconds, 0 = play to the end)") val maxSeconds: Int = DEFAULT_MAX_SECONDS,
+    @Label("Start at")
+    @Hint("seconds into the sound")
+    val startSeconds: Int = 0,
+    @Label("Stop after")
+    @Hint("seconds, 0 = play to the end")
+    val maxSeconds: Int = DEFAULT_MAX_SECONDS,
     @Label("Wait until finished") val waitForCompletion: Boolean = false,
 ) {
     /** This config as a playback request, with its seconds in milliseconds. */

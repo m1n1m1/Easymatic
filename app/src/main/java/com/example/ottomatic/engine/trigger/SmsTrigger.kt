@@ -8,6 +8,7 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.PhoneRef
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.PhoneNumber
 import com.example.ottomatic.domain.model.dataOut
@@ -27,7 +28,9 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class SmsTriggerConfig(
-    @Label("Sender (optional — any sender when empty)") @PhoneNumber val sender: String = "",
+    @Label("Sender")
+    @Hint("optional — any sender when empty")
+    @PhoneNumber val sender: String = "",
 )
 
 /**

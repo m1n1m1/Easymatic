@@ -4,6 +4,7 @@ import com.example.ottomatic.core.service.AudioStream
 import com.example.ottomatic.core.service.VolumeMode
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.VolumeState
@@ -21,7 +22,9 @@ import kotlinx.serialization.Serializable
 data class VolumeConfig(
     @Label("Stream") val stream: AudioStream = AudioStream.MEDIA,
     @Label("Mode") val mode: VolumeMode = VolumeMode.UP,
-    @Label("Value (0-100, only when mode is set)") val value: Int = DEFAULT_VOLUME,
+    @Label("Value")
+    @Hint("0-100, only when mode is set")
+    val value: Int = DEFAULT_VOLUME,
 )
 
 private const val DEFAULT_VOLUME = 50

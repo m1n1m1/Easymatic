@@ -42,7 +42,8 @@
     <string name="category_plugin">插件</string>
     <string name="permissions_needed_by">需要它的有：%1$s</string>
     <string name="permissions_open_settings">打开设置</string>
-    <string name="config_field_wired_from">%1$s ← %2$s</string>
+    <string name="config_hint_show">说明 %1$s</string>
+    <string name="config_hint_hide">隐藏 %1$s 的说明</string>
     <string name="cd_palette_collapse_group">收起%1$s</string>
     <string name="cd_palette_expand_group">展开%1$s</string>
     <string name="apps_any_app">任意应用</string>

@@ -6,6 +6,7 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.ValueType
@@ -38,7 +39,9 @@ import kotlinx.serialization.json.JsonObject
 @Serializable
 data class JsonReadConfig(
     @Label("JSON text") @Multiline @Wired val json: String = "",
-    @Label("Path (e.g. main.temp) — blank for the whole document") val path: String = "",
+    @Label("Path")
+    @Hint("e.g. main.temp — blank for the whole document")
+    val path: String = "",
     @Label("Get as") val type: ValueType = ValueType.TEXT,
     @Label("This is a list") val list: Boolean = false,
     @Label("If missing") val fallback: String = "",

@@ -10,6 +10,7 @@ import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.config.ApiToken
 import com.example.ottomatic.domain.model.config.ContactName
 import com.example.ottomatic.domain.model.config.FilePath
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.IntentChoice
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
@@ -134,6 +135,7 @@ class NodeSchema<T : Any> @PublishedApi internal constructor(
                 field = ConfigField(
                     key = ConfigKey(key),
                     label = annotations.labelOr(key),
+                    hint = annotations.hint(),
                     type = formTypeOf(
                         element = element,
                         multiline = annotations.any { it is Multiline },
@@ -550,6 +552,10 @@ fun enumConfigOptions(descriptor: SerialDescriptor): List<ConfigOption> =
 
 private fun List<Annotation>.labelOr(name: String): String =
     filterIsInstance<Label>().firstOrNull()?.value ?: prettify(name)
+
+/** Blank rather than derived: there is nothing to prettify a missing explanation out of. */
+private fun List<Annotation>.hint(): String =
+    filterIsInstance<Hint>().firstOrNull()?.value.orEmpty()
 
 private fun List<Annotation>.visibilityRule(): VisibilityRule? =
     filterIsInstance<VisibleWhen>().firstOrNull()?.let {

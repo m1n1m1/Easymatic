@@ -7,6 +7,7 @@ import com.example.ottomatic.core.service.ScriptOutcome
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.PortSpec
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Ports
@@ -47,7 +48,9 @@ import kotlinx.serialization.json.booleanOrNull
 @Serializable
 data class ScriptConfig(
     @Label("Inputs") @Ports val inputs: String = "",
-    @Label("Script — each input is a variable of its own name") @Multiline
+    @Label("Script")
+    @Hint("each input is a variable of its own name")
+    @Multiline
     val script: String = "return { result: \"hello\" }",
     @Label("Outputs") @Ports val outputs: String = "result:TEXT",
     @Label("Timeout (ms)") val timeoutMs: Int = DEFAULT_TIMEOUT_MS,

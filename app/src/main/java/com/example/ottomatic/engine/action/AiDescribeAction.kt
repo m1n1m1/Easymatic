@@ -6,6 +6,7 @@ import com.example.ottomatic.core.service.LogLevel
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.FilePath
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Picker
@@ -41,7 +42,9 @@ data class AiDescribeConfig(
     @Label("Model") @Picker(PickerKind.AI_MODEL) val modelRef: String = "",
     @Label("Picture") @FilePath @Wired val image: String = "",
     @Label("What to ask") @Multiline @Wired val prompt: String = "What is in this picture?",
-    @Label("Longest reply (tokens)") val maxOutputTokens: Int = AiRequest.DEFAULT_MAX_OUTPUT_TOKENS,
+    @Label("Longest reply")
+    @Hint("tokens")
+    val maxOutputTokens: Int = AiRequest.DEFAULT_MAX_OUTPUT_TOKENS,
     @Label("If it fails") @Multiline val fallback: String = "",
 )
 

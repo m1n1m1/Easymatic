@@ -2,6 +2,7 @@ package com.example.ottomatic.feature.i18n
 
 import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.config.ValueType
+import com.example.ottomatic.domain.registry.ConfigField
 import com.example.ottomatic.domain.registry.ConfigFieldType
 import com.example.ottomatic.domain.registry.ConfigSchemaRegistry
 import com.example.ottomatic.domain.registry.NodeSchema
@@ -111,7 +112,7 @@ private fun configEntries(typeId: NodeTypeId, slug: String, id: String): List<St
         val options = (field.type as? ConfigFieldType.ENUM)?.options.orEmpty()
         listOf(
             StringEntry("cfg_${slug}_$key", field.label, "$id config ${field.key.value}"),
-        ) + options
+        ) + hintEntry(field, slug, key, id) + options
             // The blank "not set" choice shares one key across every field — see
             // NodeText.optionLabel.
             .filterNot { it.value.isBlank() }
@@ -123,6 +124,24 @@ private fun configEntries(typeId: NodeTypeId, slug: String, id: String): List<St
                 )
             }
     }
+}
+
+/**
+ * A field's explanation, listed only when it has one.
+ *
+ * Absent rather than blank for a field whose name already says it: an empty `<string>` in eight
+ * locales is eight invitations to translate nothing, and [NodeText.fieldHint] falls back to the
+ * declaration anyway.
+ */
+private fun hintEntry(
+    field: ConfigField<*>,
+    slug: String,
+    key: String,
+    id: String,
+): List<StringEntry> = if (field.hint.isBlank()) {
+    emptyList()
+} else {
+    listOf(StringEntry("hint_${slug}_$key", field.hint, "$id hint ${field.key.value}"))
 }
 
 /**

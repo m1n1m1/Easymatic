@@ -9,6 +9,7 @@ import com.example.ottomatic.core.service.PhotoRequest
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.config.FilePath
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.Wired
@@ -78,7 +79,8 @@ data class CameraPhotoConfig(
     @Label("Flash")
     @VisibleWhen("lens", "back")
     val flash: CameraFlash = CameraFlash.OFF,
-    @Label("Wait before the shot (seconds)")
+    @Label("Wait before the shot")
+    @Hint("seconds")
     @Wired
     val delaySeconds: Int = 0,
     @Label("Save in this folder")

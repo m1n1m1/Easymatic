@@ -3,6 +3,7 @@ package com.example.ottomatic.engine.action
 import com.example.ottomatic.core.service.PromptRequest
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Wired
@@ -27,7 +28,9 @@ data class ShowMessageConfig(
     @Label("Title") val title: String = "Ottomatic",
     @Label("Message") @Multiline @Wired val message: String = "",
     @Label("Button") val confirmLabel: String = "OK",
-    @Label("Close automatically after (seconds)") val timeoutSeconds: Int = 0,
+    @Label("Close automatically after")
+    @Hint("seconds")
+    val timeoutSeconds: Int = 0,
 )
 
 /**

@@ -10,21 +10,19 @@ import android.os.Build
 import android.os.PersistableBundle
 import android.widget.Toast
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.ottomatic.domain.model.ApiTokens
+import com.example.ottomatic.feature.grapheditor.ReadOnlyFieldChrome
 
 /**
  * An `@ApiToken` field: the generated key a `trigger.api` carries, shown read-only
@@ -57,12 +55,12 @@ fun ApiTokenField(
     colors: TextFieldColors,
 ) {
     val context = LocalContext.current
-    OutlinedTextField(
+    // A key is thirty-odd characters of noise that differs from the last one at no fixed
+    // position, so an ellipsis tells you nothing about which key you are looking at.
+    ReadOnlyFieldChrome(
         value = value,
-        onValueChange = {},
-        readOnly = true,
-        label = labelSlot,
         colors = colors,
+        label = labelSlot,
         placeholder = {
             Text(text =
                 stringResource(R.string.api_no_key_approved_apps_only), maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -91,8 +89,6 @@ fun ApiTokenField(
                 }
             }
         },
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth(),
     )
 }
 

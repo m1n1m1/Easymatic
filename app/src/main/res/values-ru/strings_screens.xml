@@ -42,7 +42,8 @@
     <string name="category_plugin">Плагин</string>
     <string name="permissions_needed_by">Требуется для: %1$s</string>
     <string name="permissions_open_settings">Открыть настройки</string>
-    <string name="config_field_wired_from">%1$s ← %2$s</string>
+    <string name="config_hint_show">Пояснить: %1$s</string>
+    <string name="config_hint_hide">Скрыть пояснение: %1$s</string>
     <string name="cd_palette_collapse_group">Свернуть «%1$s»</string>
     <string name="cd_palette_expand_group">Развернуть «%1$s»</string>
     <string name="apps_any_app">Любое приложение</string>

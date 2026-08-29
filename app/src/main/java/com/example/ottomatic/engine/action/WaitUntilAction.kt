@@ -11,6 +11,7 @@ import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
 import com.example.ottomatic.domain.model.Direction
 import com.example.ottomatic.domain.model.TimeOfDay as ClockTime
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.TimeOfDay
 import com.example.ottomatic.domain.model.config.VisibleWhen
@@ -101,7 +102,8 @@ data class WaitUntilConfig(
     @VisibleWhen("mode", "TIME_OF_DAY") @Label("Sundays") val sunday: Boolean = false,
 
     @VisibleWhen("mode", "TIME_OF_DAY")
-    @Label("Days of month (e.g. 1,15, empty = every day)")
+    @Label("Days of month")
+    @Hint("e.g. 1,15, empty = every day")
     val daysOfMonth: String = "",
 
     @VisibleWhen("mode", "DATE_TIME")

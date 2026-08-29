@@ -17,7 +17,8 @@
     <string name="cfg_trigger_schedule_mode">Режим</string>
     <string name="opt_trigger_schedule_mode_interval">Повторять с интервалом</string>
     <string name="opt_trigger_schedule_mode_at_time">В определённое время суток</string>
-    <string name="cfg_trigger_schedule_every">Повторять каждые (меньше 15 срабатывает только при бодрствующем устройстве)</string>
+    <string name="cfg_trigger_schedule_every">Повторять каждые</string>
+    <string name="hint_trigger_schedule_every">меньше 15 срабатывает только при бодрствующем устройстве</string>
     <string name="cfg_trigger_schedule_every_unit">Единица</string>
     <string name="opt_trigger_schedule_every_unit_minutes">Минуты</string>
     <string name="opt_trigger_schedule_every_unit_hours">Часы</string>
@@ -30,15 +31,18 @@
     <string name="cfg_trigger_schedule_friday">Пятницы</string>
     <string name="cfg_trigger_schedule_saturday">Субботы</string>
     <string name="cfg_trigger_schedule_sunday">Воскресенья</string>
-    <string name="cfg_trigger_schedule_days_of_month">Дни месяца (например, 1,15; пусто — каждый день)</string>
+    <string name="cfg_trigger_schedule_days_of_month">Дни месяца</string>
+    <string name="hint_trigger_schedule_days_of_month">например, 1,15; пусто — каждый день</string>
     <string name="cfg_trigger_schedule_window_enabled">Только в заданный интервал</string>
     <string name="cfg_trigger_schedule_window_from">Активно с</string>
-    <string name="cfg_trigger_schedule_window_until">Активно до (если раньше, чем «с», интервал переходит через полночь)</string>
+    <string name="cfg_trigger_schedule_window_until">Активно до</string>
+    <string name="hint_trigger_schedule_window_until">если раньше, чем «с», интервал переходит через полночь</string>
     <string name="node_trigger_sms_name">Получено SMS</string>
     <string name="node_trigger_sms_desc">Срабатывает при получении SMS</string>
     <string name="port_trigger_sms_out">Выход</string>
     <string name="port_trigger_sms_sms">SMS</string>
-    <string name="cfg_trigger_sms_sender">Отправитель (необязательно — пусто означает любого)</string>
+    <string name="cfg_trigger_sms_sender">Отправитель</string>
+    <string name="hint_trigger_sms_sender">необязательно — пусто означает любого</string>
     <string name="node_trigger_mail_name">Получено письмо</string>
     <string name="node_trigger_mail_desc">Срабатывает, когда в отслеживаемый почтовый ящик приходит письмо</string>
     <string name="port_trigger_mail_out">Выход</string>
@@ -51,7 +55,8 @@
     <string name="cfg_trigger_mail_mode">Как отслеживать</string>
     <string name="opt_trigger_mail_mode_automatic">Автоматически</string>
     <string name="opt_trigger_mail_mode_poll">Опрос</string>
-    <string name="cfg_trigger_mail_interval_minutes">Проверять каждые (минут, минимум 15)</string>
+    <string name="cfg_trigger_mail_interval_minutes">Проверять каждые</string>
+    <string name="hint_trigger_mail_interval_minutes">минут, минимум 15</string>
     <string name="node_trigger_calendar_event_name">Встреча в календаре</string>
     <string name="node_trigger_calendar_event_desc">Запускается, когда встреча начинается, заканчивается или наступает её напоминание</string>
     <string name="port_trigger_calendar_event_out">Выход</string>
@@ -60,7 +65,8 @@
     <string name="opt_trigger_calendar_event_fire_when_reminder">Наступает её напоминание</string>
     <string name="opt_trigger_calendar_event_fire_when_starts">Начинается</string>
     <string name="opt_trigger_calendar_event_fire_when_ends">Заканчивается</string>
-    <string name="cfg_trigger_calendar_event_lead_minutes">За сколько минут (отрицательное — после)</string>
+    <string name="cfg_trigger_calendar_event_lead_minutes">За сколько минут</string>
+    <string name="hint_trigger_calendar_event_lead_minutes">отрицательное — после</string>
     <string name="cfg_trigger_calendar_event_calendar">Календарь</string>
     <string name="cfg_trigger_calendar_event_title_contains">Название содержит</string>
     <string name="node_trigger_calendar_changed_name">Календарь изменён</string>
@@ -92,15 +98,18 @@
     <string name="node_trigger_notification_desc">Срабатывает, когда приходит подходящее уведомление</string>
     <string name="port_trigger_notification_out">Выход</string>
     <string name="port_trigger_notification_notification">Уведомление</string>
-    <string name="cfg_trigger_notification_package_filter">От приложения (необязательно)</string>
+    <string name="cfg_trigger_notification_package_filter">От приложения</string>
+    <string name="hint_trigger_notification_package_filter">необязательно</string>
     <string name="node_trigger_message_name">Получено сообщение</string>
     <string name="node_trigger_message_desc">Срабатывает, когда приходит сообщение в WhatsApp, Signal, Telegram или другом мессенджере</string>
     <string name="port_trigger_message_out">Выход</string>
     <string name="port_trigger_message_message">Сообщение</string>
     <string name="port_trigger_message_conversation_id">Идентификатор беседы</string>
-    <string name="cfg_trigger_message_package_filter">От приложения (необязательно)</string>
+    <string name="cfg_trigger_message_package_filter">От приложения</string>
+    <string name="hint_trigger_message_package_filter">необязательно</string>
     <string name="cfg_trigger_message_sender_contains">От (необязательно)</string>
-    <string name="cfg_trigger_message_text_contains">Текст содержит (необязательно)</string>
+    <string name="cfg_trigger_message_text_contains">Текст содержит</string>
+    <string name="hint_trigger_message_text_contains">необязательно</string>
     <string name="node_trigger_boot_name">Загрузка устройства</string>
     <string name="node_trigger_boot_desc">Срабатывает один раз после завершения загрузки устройства</string>
     <string name="port_trigger_boot_out">Выход</string>
@@ -119,7 +128,8 @@
     <string name="opt_trigger_battery_level_direction_below">Ниже</string>
     <string name="opt_trigger_battery_level_direction_above">Выше</string>
     <string name="cfg_trigger_battery_level_level">Порог (0–100)</string>
-    <string name="cfg_trigger_battery_level_interval_minutes">Интервал опроса (минут, минимум 15)</string>
+    <string name="cfg_trigger_battery_level_interval_minutes">Интервал опроса</string>
+    <string name="hint_trigger_battery_level_interval_minutes">минут, минимум 15</string>
     <string name="node_trigger_geofence_name">Геозона</string>
     <string name="node_trigger_geofence_desc">Срабатывает при входе в круговую область, выходе из неё или пребывании внутри, а также когда устройство отсутствовало в ней некоторое время</string>
     <string name="port_trigger_geofence_out">Выход</string>
@@ -394,7 +404,8 @@
     <string name="opt_trigger_light_level_direction_above">Поднимается выше</string>
     <string name="opt_trigger_light_level_direction_below">Опускается ниже</string>
     <string name="cfg_trigger_light_level_threshold_lux">Порог (люкс)</string>
-    <string name="cfg_trigger_light_level_hysteresis_lux">Не срабатывать снова, пока не изменится обратно на (люкс)</string>
+    <string name="cfg_trigger_light_level_hysteresis_lux">Не срабатывать снова, пока не изменится обратно на</string>
+    <string name="hint_trigger_light_level_hysteresis_lux">люкс</string>
     <string name="cfg_trigger_light_level_dwell_ms">Удерживать (мс)</string>
     <string name="node_trigger_volume_button_name">Кнопка громкости</string>
     <string name="node_trigger_volume_button_desc">Срабатывает при нажатии, удержании или многократном нажатии кнопки громкости. Нужен доступ к спецвозможностям; сами кнопки продолжают работать как обычно</string>
@@ -432,7 +443,8 @@
     <string name="cfg_action_ai_prompt_use_tools">Разрешить ей пользоваться инструментами</string>
     <string name="cfg_action_ai_prompt_tool_overrides">Инструменты</string>
     <string name="cfg_action_ai_prompt_max_turns">Максимум ходов</string>
-    <string name="cfg_action_ai_prompt_max_output_tokens">Максимальная длина ответа (токенов)</string>
+    <string name="cfg_action_ai_prompt_max_output_tokens">Максимальная длина ответа</string>
+    <string name="hint_action_ai_prompt_max_output_tokens">токенов</string>
     <string name="cfg_action_ai_prompt_fallback">При ошибке</string>
     <string name="node_action_ai_describe_name">Спросить ИИ об изображении</string>
     <string name="node_action_ai_describe_desc">Показывает модели ИИ изображение с этого телефона и возвращает её описание</string>
@@ -444,7 +456,8 @@
     <string name="cfg_action_ai_describe_model_ref">Модель</string>
     <string name="cfg_action_ai_describe_image">Изображение</string>
     <string name="cfg_action_ai_describe_prompt">О чём спросить</string>
-    <string name="cfg_action_ai_describe_max_output_tokens">Максимальная длина ответа (токенов)</string>
+    <string name="cfg_action_ai_describe_max_output_tokens">Максимальная длина ответа</string>
+    <string name="hint_action_ai_describe_max_output_tokens">токенов</string>
     <string name="cfg_action_ai_describe_fallback">При ошибке</string>
     <string name="node_action_transcribe_name">Расшифровать</string>
     <string name="node_action_transcribe_desc">Слушает через микрофон и расшифровывает сказанное — моделью ИИ, которая может и ответить на вопрос об этом, либо бесплатно на самом телефоне</string>
@@ -457,15 +470,19 @@
     <string name="opt_action_transcribe_using_ai">Моделью ИИ</string>
     <string name="opt_action_transcribe_using_phone">Этим телефоном, офлайн</string>
     <string name="cfg_action_transcribe_model_ref">Модель</string>
-    <string name="cfg_action_transcribe_prompt">О чём спросить (пусто — просто расшифровать)</string>
+    <string name="cfg_action_transcribe_prompt">О чём спросить</string>
+    <string name="hint_action_transcribe_prompt">пусто — просто расшифровать</string>
     <string name="cfg_action_transcribe_language_mode">Язык</string>
     <string name="opt_action_transcribe_language_mode_phone">Язык телефона</string>
     <string name="opt_action_transcribe_language_mode_detect">Определять автоматически</string>
     <string name="opt_action_transcribe_language_mode_chosen">Выбранный язык</string>
     <string name="cfg_action_transcribe_language">Какой язык</string>
-    <string name="cfg_action_transcribe_max_seconds">Слушать не дольше (секунды)</string>
-    <string name="cfg_action_transcribe_silence_seconds">Остановить после такой паузы (секунды, 0 = слушать всё время)</string>
-    <string name="cfg_action_transcribe_max_output_tokens">Максимальная длина ответа (токенов)</string>
+    <string name="cfg_action_transcribe_max_seconds">Слушать не дольше</string>
+    <string name="hint_action_transcribe_max_seconds">секунды</string>
+    <string name="cfg_action_transcribe_silence_seconds">Остановить после такой паузы</string>
+    <string name="hint_action_transcribe_silence_seconds">секунды, 0 = слушать всё время</string>
+    <string name="cfg_action_transcribe_max_output_tokens">Максимальная длина ответа</string>
+    <string name="hint_action_transcribe_max_output_tokens">токенов</string>
     <string name="cfg_action_transcribe_fallback">При ошибке</string>
     <string name="node_action_transcribe_start_name">Начать расшифровку</string>
     <string name="node_action_transcribe_start_desc">Открывает микрофон и продолжает слушать, пока «Завершить расшифровку» не превратит сказанное в текст</string>
@@ -476,15 +493,19 @@
     <string name="opt_action_transcribe_start_using_ai">Моделью ИИ</string>
     <string name="opt_action_transcribe_start_using_phone">Этим телефоном, офлайн</string>
     <string name="cfg_action_transcribe_start_model_ref">Модель</string>
-    <string name="cfg_action_transcribe_start_prompt">О чём спросить (пусто — просто расшифровать)</string>
-    <string name="cfg_action_transcribe_start_max_output_tokens">Максимальная длина ответа (токенов)</string>
+    <string name="cfg_action_transcribe_start_prompt">О чём спросить</string>
+    <string name="hint_action_transcribe_start_prompt">пусто — просто расшифровать</string>
+    <string name="cfg_action_transcribe_start_max_output_tokens">Максимальная длина ответа</string>
+    <string name="hint_action_transcribe_start_max_output_tokens">токенов</string>
     <string name="cfg_action_transcribe_start_language_mode">Язык</string>
     <string name="opt_action_transcribe_start_language_mode_phone">Язык телефона</string>
     <string name="opt_action_transcribe_start_language_mode_detect">Определять автоматически</string>
     <string name="opt_action_transcribe_start_language_mode_chosen">Выбранный язык</string>
     <string name="cfg_action_transcribe_start_language">Какой язык</string>
-    <string name="cfg_action_transcribe_start_max_seconds">Слушать не дольше (секунды)</string>
-    <string name="cfg_action_transcribe_start_silence_seconds">Остановить после такой паузы (секунды, 0 = слушать всё время)</string>
+    <string name="cfg_action_transcribe_start_max_seconds">Слушать не дольше</string>
+    <string name="hint_action_transcribe_start_max_seconds">секунды</string>
+    <string name="cfg_action_transcribe_start_silence_seconds">Остановить после такой паузы</string>
+    <string name="hint_action_transcribe_start_silence_seconds">секунды, 0 = слушать всё время</string>
     <string name="node_action_transcribe_end_name">Завершить расшифровку</string>
     <string name="node_action_transcribe_end_desc">Закрывает микрофон, открытый узлом «Начать расшифровку», и превращает сказанное в текст — моделью ИИ или на самом телефоне</string>
     <string name="port_action_transcribe_end_in">Вход</string>
@@ -501,8 +522,10 @@
     <string name="port_action_transcribe_file_answer">Ответ</string>
     <string name="cfg_action_transcribe_file_model_ref">Модель</string>
     <string name="cfg_action_transcribe_file_audio">Звуковой файл</string>
-    <string name="cfg_action_transcribe_file_prompt">О чём спросить (пусто — просто расшифровать)</string>
-    <string name="cfg_action_transcribe_file_max_output_tokens">Максимальная длина ответа (токенов)</string>
+    <string name="cfg_action_transcribe_file_prompt">О чём спросить</string>
+    <string name="hint_action_transcribe_file_prompt">пусто — просто расшифровать</string>
+    <string name="cfg_action_transcribe_file_max_output_tokens">Максимальная длина ответа</string>
+    <string name="hint_action_transcribe_file_max_output_tokens">токенов</string>
     <string name="cfg_action_transcribe_file_fallback">При ошибке</string>
     <string name="node_action_auto_rotate_name">Переключить автоповорот</string>
     <string name="node_action_auto_rotate_desc">Включает или выключает автоповорот по акселерометру</string>
@@ -536,7 +559,8 @@
     <string name="port_action_brightness_out">Выход</string>
     <string name="port_action_brightness_state">состояние</string>
     <string name="cfg_action_brightness_auto">Автояркость</string>
-    <string name="cfg_action_brightness_value">Значение (0–255, только когда автояркость выключена)</string>
+    <string name="cfg_action_brightness_value">Значение</string>
+    <string name="hint_action_brightness_value">0–255, только когда автояркость выключена</string>
     <string name="node_action_call_name">Позвонить</string>
     <string name="node_action_call_desc">Начинает телефонный звонок на номер</string>
     <string name="port_action_call_in">Вход</string>
@@ -590,7 +614,8 @@
     <string name="cfg_action_wait_until_friday">Пятницы</string>
     <string name="cfg_action_wait_until_saturday">Субботы</string>
     <string name="cfg_action_wait_until_sunday">Воскресенья</string>
-    <string name="cfg_action_wait_until_days_of_month">Дни месяца (например, 1,15; пусто — каждый день)</string>
+    <string name="cfg_action_wait_until_days_of_month">Дни месяца</string>
+    <string name="hint_action_wait_until_days_of_month">например, 1,15; пусто — каждый день</string>
     <string name="cfg_action_wait_until_until">До</string>
     <string name="node_action_dialog_message_name">Показать сообщение</string>
     <string name="node_action_dialog_message_desc">Показывает всплывающее окно и ждёт, пока пользователь его не подтвердит</string>
@@ -601,7 +626,8 @@
     <string name="cfg_action_dialog_message_title">Заголовок</string>
     <string name="cfg_action_dialog_message_message">Сообщение</string>
     <string name="cfg_action_dialog_message_confirm_label">Кнопка</string>
-    <string name="cfg_action_dialog_message_timeout_seconds">Закрывать автоматически через (секунд)</string>
+    <string name="cfg_action_dialog_message_timeout_seconds">Закрывать автоматически через</string>
+    <string name="hint_action_dialog_message_timeout_seconds">секунд</string>
     <string name="node_action_dialog_confirm_name">Спросить «да или нет»</string>
     <string name="node_action_dialog_confirm_desc">Задаёт пользователю вопрос «да/нет» во всплывающем окне и ветвится по ответу</string>
     <string name="port_action_dialog_confirm_in">Вход</string>
@@ -649,7 +675,8 @@
     <string name="port_action_dialog_choice_index">Позиция</string>
     <string name="cfg_action_dialog_choice_title">Заголовок</string>
     <string name="cfg_action_dialog_choice_message">Вопрос</string>
-    <string name="cfg_action_dialog_choice_options">Варианты — по одному в строке</string>
+    <string name="cfg_action_dialog_choice_options">Варианты</string>
+    <string name="hint_action_dialog_choice_options">по одному в строке</string>
     <string name="cfg_action_dialog_choice_cancel_label">Кнопка отмены</string>
     <string name="cfg_action_dialog_choice_timeout_seconds">Сдаться через (секунд)</string>
     <string name="node_action_speak_name">Произнести</string>
@@ -682,7 +709,8 @@
     <string name="port_action_listen_text">Услышано</string>
     <string name="cfg_action_listen_language">Язык</string>
     <string name="cfg_action_listen_max_seconds">Сдаться через (секунды)</string>
-    <string name="cfg_action_listen_silence_seconds">Остановиться после такой паузы (секунды, 0 — пусть решает телефон)</string>
+    <string name="cfg_action_listen_silence_seconds">Остановиться после такой паузы</string>
+    <string name="hint_action_listen_silence_seconds">секунды, 0 — пусть решает телефон</string>
     <string name="cfg_action_listen_prefer_offline">Распознавать на устройстве, если возможно</string>
     <string name="node_action_disable_macro_name">Выключить макрос</string>
     <string name="node_action_disable_macro_desc">Выключает другой макрос по идентификатору (сохраняет флаг и снимает его триггеры)</string>
@@ -699,7 +727,8 @@
     <string name="cfg_action_dnd_state">Состояние</string>
     <string name="opt_action_dnd_state_on">Включено</string>
     <string name="opt_action_dnd_state_off">Выключено</string>
-    <string name="cfg_action_dnd_level">Уровень (когда включено)</string>
+    <string name="cfg_action_dnd_level">Уровень</string>
+    <string name="hint_action_dnd_level">когда включено</string>
     <string name="opt_action_dnd_level_priority">Приоритет</string>
     <string name="opt_action_dnd_level_alarms">Будильники</string>
     <string name="opt_action_dnd_level_silence">Тишина</string>
@@ -734,7 +763,8 @@
     <string name="opt_action_http_method_put">Положить</string>
     <string name="opt_action_http_method_delete">Удалить</string>
     <string name="cfg_action_http_url">Ссылка</string>
-    <string name="cfg_action_http_headers">Заголовки (JSON, необязательно)</string>
+    <string name="cfg_action_http_headers">Заголовки</string>
+    <string name="hint_action_http_headers">JSON, необязательно</string>
     <string name="cfg_action_http_body">Текст</string>
     <string name="node_action_if_name">Если</string>
     <string name="node_action_if_desc">Направляет выполнение, сравнивая одно значение с другим</string>
@@ -785,7 +815,8 @@
     <string name="cfg_action_send_intent_data_uri">URI данных (необязательно)</string>
     <string name="cfg_action_send_intent_mime_type">MIME-тип (необязательно)</string>
     <string name="cfg_action_send_intent_category">Категория (необязательно)</string>
-    <string name="cfg_action_send_intent_extras">Extras — по одному key=value в строке, count:int=5 для указания типа</string>
+    <string name="cfg_action_send_intent_extras">Extras</string>
+    <string name="hint_action_send_intent_extras">по одному key=value в строке, count:int=5 для указания типа</string>
     <string name="node_action_broadcast_intent_name">Отправить broadcast</string>
     <string name="node_action_broadcast_intent_desc">Отправляет broadcast-intent другому приложению со своим действием и extras</string>
     <string name="port_action_broadcast_intent_in">Вход</string>
@@ -801,7 +832,8 @@
     <string name="cfg_action_broadcast_intent_data_uri">URI данных (необязательно)</string>
     <string name="cfg_action_broadcast_intent_mime_type">MIME-тип (необязательно)</string>
     <string name="cfg_action_broadcast_intent_category">Категория (необязательно)</string>
-    <string name="cfg_action_broadcast_intent_extras">Extras — по одному key=value в строке, count:int=5 для указания типа</string>
+    <string name="cfg_action_broadcast_intent_extras">Extras</string>
+    <string name="hint_action_broadcast_intent_extras">по одному key=value в строке, count:int=5 для указания типа</string>
     <string name="node_action_light_control_name">Управление светом</string>
     <string name="node_action_light_control_desc">Включает или выключает светильник, комнату либо зону, а также задаёт яркость, цвет или теплоту — Philips Hue</string>
     <string name="port_action_light_control_in">Вход</string>
@@ -847,7 +879,8 @@
     <string name="cfg_action_ha_service_hub">Home Assistant</string>
     <string name="cfg_action_ha_service_target">Сущность</string>
     <string name="cfg_action_ha_service_service">Служба</string>
-    <string name="cfg_action_ha_service_data">Дополнительные данные (JSON)</string>
+    <string name="cfg_action_ha_service_data">Дополнительные данные</string>
+    <string name="hint_action_ha_service_data">JSON</string>
     <string name="node_action_mqtt_publish_name">Опубликовать в MQTT</string>
     <string name="node_action_mqtt_publish_desc">Отправляет сообщение в тему на MQTT-брокере — Mosquitto, Zigbee2MQTT, Tasmota, ESPHome</string>
     <string name="port_action_mqtt_publish_in">Вход</string>
@@ -965,7 +998,8 @@
     <string name="opt_action_camera_photo_flash_off">Выключено</string>
     <string name="opt_action_camera_photo_flash_on">Включено</string>
     <string name="opt_action_camera_photo_flash_auto">Автоматически</string>
-    <string name="cfg_action_camera_photo_delay_seconds">Подождать перед съёмкой (секунды)</string>
+    <string name="cfg_action_camera_photo_delay_seconds">Подождать перед съёмкой</string>
+    <string name="hint_action_camera_photo_delay_seconds">секунды</string>
     <string name="cfg_action_camera_photo_to_folder">Сохранить в эту папку</string>
     <string name="cfg_action_camera_photo_name">Имя файла</string>
     <string name="cfg_action_camera_photo_when_exists">Если такой уже есть</string>
@@ -1055,7 +1089,8 @@
     <string name="opt_action_image_metadata_detail_model">Модель камеры</string>
     <string name="opt_action_image_metadata_detail_artist">Автор</string>
     <string name="opt_action_image_metadata_detail_copyright">Авторские права</string>
-    <string name="cfg_action_image_metadata_value">Новое значение (пусто — удалить)</string>
+    <string name="cfg_action_image_metadata_value">Новое значение</string>
+    <string name="hint_action_image_metadata_value">пусто — удалить</string>
     <string name="node_action_image_move_name">Переместить или скопировать изображение</string>
     <string name="node_action_image_move_desc">Перемещает или копирует фотографию в другую папку, оставляя её в галерее</string>
     <string name="port_action_image_move_in">Вход</string>
@@ -1107,7 +1142,8 @@
     <string name="port_action_record_start_max_seconds">Остановиться самому через (секунды)</string>
     <string name="port_action_record_start_to_folder">Сохранить в эту папку</string>
     <string name="port_action_record_start_name">Имя файла</string>
-    <string name="cfg_action_record_start_max_seconds">Остановиться самому через (секунды)</string>
+    <string name="cfg_action_record_start_max_seconds">Остановиться самому через</string>
+    <string name="hint_action_record_start_max_seconds">секунды</string>
     <string name="cfg_action_record_start_quality">Качество</string>
     <string name="opt_action_record_start_quality_voice">Речь — небольшой файл</string>
     <string name="opt_action_record_start_quality_high">Высокое — музыка и детали</string>
@@ -1153,7 +1189,8 @@
     <string name="port_action_notify_reply">Ответ</string>
     <string name="cfg_action_notify_title">Заголовок</string>
     <string name="cfg_action_notify_text">Текст</string>
-    <string name="cfg_action_notify_buttons">Кнопки — по одной в строке</string>
+    <string name="cfg_action_notify_buttons">Кнопки</string>
+    <string name="hint_action_notify_buttons">по одной в строке</string>
     <string name="cfg_action_notify_reply_field">Поле ответа</string>
     <string name="cfg_action_notify_reply_label">Кнопка ответа</string>
     <string name="cfg_action_notify_reply_hint">Подсказка в поле</string>
@@ -1170,7 +1207,8 @@
     <string name="opt_action_notify_accent_pink">Розовый</string>
     <string name="cfg_action_notify_show_progress">Показать индикатор прогресса</string>
     <string name="cfg_action_notify_ongoing">Не убирать автоматически</string>
-    <string name="cfg_action_notify_tag">Метка — для ручного удаления</string>
+    <string name="cfg_action_notify_tag">Метка</string>
+    <string name="hint_action_notify_tag">для ручного удаления</string>
     <string name="node_action_notify_cancel_name">Убрать уведомление</string>
     <string name="node_action_notify_cancel_desc">Убирает уведомление, которое это приложение показало с меткой</string>
     <string name="port_action_notify_cancel_in">Вход</string>
@@ -1264,7 +1302,8 @@
     <string name="opt_action_calendar_add_availability_busy">Занят</string>
     <string name="opt_action_calendar_add_availability_free">Свободен</string>
     <string name="opt_action_calendar_add_availability_tentative">Под вопросом</string>
-    <string name="cfg_action_calendar_add_reminder_minutes">Напомнить (за сколько минут, -1 — без напоминания)</string>
+    <string name="cfg_action_calendar_add_reminder_minutes">Напомнить</string>
+    <string name="hint_action_calendar_add_reminder_minutes">за сколько минут, -1 — без напоминания</string>
     <string name="node_action_calendar_update_name">Обновить встречу</string>
     <string name="node_action_calendar_update_desc">Изменяет или удаляет встречу — либо одно повторение, либо всю серию</string>
     <string name="port_action_calendar_update_in">Вход</string>
@@ -1282,11 +1321,16 @@
     <string name="cfg_action_calendar_update_scope">Применить к</string>
     <string name="opt_action_calendar_update_scope_this_occurrence">Только эту встречу</string>
     <string name="opt_action_calendar_update_scope_whole_series">Всю серию</string>
-    <string name="cfg_action_calendar_update_title">Новое название (пусто — оставить как есть)</string>
-    <string name="cfg_action_calendar_update_starts_at">Новое начало (пусто — оставить как есть)</string>
-    <string name="cfg_action_calendar_update_duration_minutes">Новая длительность в минутах (-1 — оставить)</string>
-    <string name="cfg_action_calendar_update_location">Новое место (пусто — оставить как есть)</string>
-    <string name="cfg_action_calendar_update_description">Новое описание (пусто — оставить как есть)</string>
+    <string name="cfg_action_calendar_update_title">Новое название</string>
+    <string name="hint_action_calendar_update_title">пусто — оставить как есть</string>
+    <string name="cfg_action_calendar_update_starts_at">Новое начало</string>
+    <string name="hint_action_calendar_update_starts_at">пусто — оставить как есть</string>
+    <string name="cfg_action_calendar_update_duration_minutes">Новая длительность в минутах</string>
+    <string name="hint_action_calendar_update_duration_minutes">-1 — оставить</string>
+    <string name="cfg_action_calendar_update_location">Новое место</string>
+    <string name="hint_action_calendar_update_location">пусто — оставить как есть</string>
+    <string name="cfg_action_calendar_update_description">Новое описание</string>
+    <string name="hint_action_calendar_update_description">пусто — оставить как есть</string>
     <string name="cfg_action_calendar_update_change_availability">Изменить показ занятости</string>
     <string name="cfg_action_calendar_update_availability">Показывать вас как</string>
     <string name="opt_action_calendar_update_availability_busy">Занят</string>
@@ -1374,8 +1418,10 @@
     <string name="opt_action_play_sound_stream_alarm">Будильник</string>
     <string name="opt_action_play_sound_stream_notification">Уведомление</string>
     <string name="opt_action_play_sound_stream_system">Система</string>
-    <string name="cfg_action_play_sound_start_seconds">Начать с (секунда внутри звука)</string>
-    <string name="cfg_action_play_sound_max_seconds">Остановить через (секунд, 0 — до конца)</string>
+    <string name="cfg_action_play_sound_start_seconds">Начать с</string>
+    <string name="hint_action_play_sound_start_seconds">секунда внутри звука</string>
+    <string name="cfg_action_play_sound_max_seconds">Остановить через</string>
+    <string name="hint_action_play_sound_max_seconds">секунд, 0 — до конца</string>
     <string name="cfg_action_play_sound_wait_for_completion">Ждать завершения</string>
     <string name="node_action_repeat_name">Повторить</string>
     <string name="node_action_repeat_desc">Повторяет следующие шаги заданное число раз — например, 10 раз</string>
@@ -1442,7 +1488,8 @@
     <string name="port_action_script_in">Вход</string>
     <string name="port_action_script_out">Выход</string>
     <string name="cfg_action_script_inputs">Входы</string>
-    <string name="cfg_action_script_script">Скрипт — каждый вход доступен как переменная с тем же именем</string>
+    <string name="cfg_action_script_script">Скрипт</string>
+    <string name="hint_action_script_script">каждый вход доступен как переменная с тем же именем</string>
     <string name="cfg_action_script_outputs">Выходы</string>
     <string name="cfg_action_script_timeout_ms">Таймаут (мс)</string>
     <string name="cfg_action_script_fallback">При ошибке</string>
@@ -1467,7 +1514,8 @@
     <string name="port_action_stop_in">Вход</string>
     <string name="port_action_stop_out">Выход</string>
     <string name="port_action_stop_reason">Причина (необязательно, записывается перед остановкой)</string>
-    <string name="cfg_action_stop_reason">Причина (необязательно, записывается перед остановкой)</string>
+    <string name="cfg_action_stop_reason">Причина</string>
+    <string name="hint_action_stop_reason">необязательно, записывается перед остановкой</string>
     <string name="node_action_stop_sound_name">Остановить звук</string>
     <string name="node_action_stop_sound_desc">Останавливает все звуки, запущенные узлом «Воспроизвести звук»</string>
     <string name="port_action_stop_sound_in">Вход</string>
@@ -1476,8 +1524,10 @@
     <string name="node_action_vibrate_desc">Включает вибрацию на заданное время или по шаблону</string>
     <string name="port_action_vibrate_in">Вход</string>
     <string name="port_action_vibrate_out">Выход</string>
-    <string name="cfg_action_vibrate_duration_ms">Длительность (мс, используется, когда шаблон пуст)</string>
-    <string name="cfg_action_vibrate_pattern">Шаблон (мс через запятую, например 0,200,500,200)</string>
+    <string name="cfg_action_vibrate_duration_ms">Длительность</string>
+    <string name="hint_action_vibrate_duration_ms">мс, используется, когда шаблон пуст</string>
+    <string name="cfg_action_vibrate_pattern">Шаблон</string>
+    <string name="hint_action_vibrate_pattern">мс через запятую, например 0,200,500,200</string>
     <string name="node_action_volume_name">Задать громкость</string>
     <string name="node_action_volume_desc">Меняет громкость аудиопотока (громче, тише, задать, выключить или включить звук)</string>
     <string name="port_action_volume_in">Вход</string>
@@ -1495,7 +1545,8 @@
     <string name="opt_action_volume_mode_set">Задать</string>
     <string name="opt_action_volume_mode_mute">Выключить звук</string>
     <string name="opt_action_volume_mode_unmute">Включить звук</string>
-    <string name="cfg_action_volume_value">Значение (0–100, только в режиме «Задать»)</string>
+    <string name="cfg_action_volume_value">Значение</string>
+    <string name="hint_action_volume_value">0–100, только в режиме «Задать»</string>
     <string name="node_action_wifi_name">Переключить Wi-Fi</string>
     <string name="node_action_wifi_desc">Включает или выключает Wi-Fi и сообщает получившееся состояние</string>
     <string name="port_action_wifi_in">Вход</string>
@@ -1609,7 +1660,8 @@
     <string name="port_transform_text_b">B</string>
     <string name="port_transform_text_c">C</string>
     <string name="port_transform_text_text">Текст</string>
-    <string name="cfg_transform_text_template">Шаблон — используйте {A}, {B}, {C}</string>
+    <string name="cfg_transform_text_template">Шаблон</string>
+    <string name="hint_transform_text_template">используйте {A}, {B}, {C}</string>
     <string name="cfg_transform_text_a">A</string>
     <string name="cfg_transform_text_b">B</string>
     <string name="cfg_transform_text_c">C</string>
@@ -1629,7 +1681,8 @@
     <string name="port_transform_json_read_json">Текст JSON</string>
     <string name="port_transform_json_read_value">Значение</string>
     <string name="cfg_transform_json_read_json">Текст JSON</string>
-    <string name="cfg_transform_json_read_path">Путь (например, main.temp) — пусто, чтобы взять весь документ</string>
+    <string name="cfg_transform_json_read_path">Путь</string>
+    <string name="hint_transform_json_read_path">например, main.temp — пусто, чтобы взять весь документ</string>
     <string name="cfg_transform_json_read_type">Получить как</string>
     <string name="opt_transform_json_read_type_text">Текст</string>
     <string name="opt_transform_json_read_type_number">Число</string>
@@ -1642,8 +1695,10 @@
     <string name="node_transform_split_text_desc">Разбивает текст в список — по одному элементу на строку или по выбранному разделителю</string>
     <string name="port_transform_split_text_text">Текст — по одному элементу на строку, или подключите что-нибудь</string>
     <string name="port_transform_split_text_value">Список</string>
-    <string name="cfg_transform_split_text_text">Текст — по одному элементу на строку, или подключите что-нибудь</string>
-    <string name="cfg_transform_split_text_separator">Разделитель (пусто — перенос строки)</string>
+    <string name="cfg_transform_split_text_text">Текст</string>
+    <string name="hint_transform_split_text_text">по одному элементу на строку, или подключите что-нибудь</string>
+    <string name="cfg_transform_split_text_separator">Разделитель</string>
+    <string name="hint_transform_split_text_separator">пусто — перенос строки</string>
     <string name="node_transform_list_count_name">Посчитать элементы</string>
     <string name="node_transform_list_count_desc">Сколько элементов в списке</string>
     <string name="port_transform_list_count_list">Список</string>
@@ -1682,7 +1737,8 @@
     <string name="node_transform_list_slice_desc">Часть списка подряд идущих элементов</string>
     <string name="port_transform_list_slice_list">Список</string>
     <string name="port_transform_list_slice_value">Список</string>
-    <string name="cfg_transform_list_slice_from">С позиции (0 — первая)</string>
+    <string name="cfg_transform_list_slice_from">С позиции</string>
+    <string name="hint_transform_list_slice_from">0 — первая</string>
     <string name="cfg_transform_list_slice_count">Сколько</string>
     <string name="valuetype_text">Текст</string>
     <string name="valuetype_number">Число</string>
@@ -1694,14 +1750,16 @@
     <string name="port_action_light_control_brightness" formatted="false">Яркость %</string>
     <string name="cfg_action_light_control_brightness" formatted="false">Яркость %</string>
     <string name="port_action_notify_progress" formatted="false">Прогресс (%, меньше 0 = выполняется)</string>
-    <string name="cfg_action_notify_progress" formatted="false">Прогресс (%, меньше 0 = выполняется)</string>
+    <string name="cfg_action_notify_progress" formatted="false">Прогресс</string>
+    <string name="hint_action_notify_progress" formatted="false">%, меньше 0 = выполняется</string>
     <string name="port_value_battery_level" formatted="false">Уровень (%)</string>
     <string name="node_trigger_call_state_name">Состояние звонка</string>
     <string name="node_trigger_call_state_desc">Запускается, когда звонок начинается, принимается или завершается — по телефону или в Teams, WhatsApp, Discord или другом приложении</string>
     <string name="port_trigger_call_state_call">Звонок</string>
     <string name="opt_trigger_call_state_event_active">Идёт разговор</string>
     <string name="opt_trigger_call_state_event_ended">Завершён</string>
-    <string name="cfg_trigger_call_state_package_filter">От приложения (необязательно)</string>
+    <string name="cfg_trigger_call_state_package_filter">От приложения</string>
+    <string name="hint_trigger_call_state_package_filter">необязательно</string>
     <string name="node_trigger_call_ended_name">Звонок завершён</string>
     <string name="node_trigger_call_ended_desc">Запускается, когда звонок заканчивается, с длительностью и тем, был ли он принят — по телефону или в Teams, WhatsApp, Discord или другом приложении</string>
     <string name="port_trigger_call_ended_out">Выход</string>
@@ -1712,7 +1770,8 @@
     <string name="cfg_trigger_call_ended_direction">Направление</string>
     <string name="opt_trigger_call_ended_direction_incoming">Входящий</string>
     <string name="opt_trigger_call_ended_direction_outgoing">Исходящий</string>
-    <string name="cfg_trigger_call_ended_package_filter">От приложения (необязательно)</string>
+    <string name="cfg_trigger_call_ended_package_filter">От приложения</string>
+    <string name="hint_trigger_call_ended_package_filter">необязательно</string>
     <string name="node_value_call_active_name">Разговор идёт</string>
     <string name="node_value_call_active_desc">Идёт ли сейчас звонок — по телефону или в Teams, WhatsApp, Discord или другом приложении</string>
     <string name="port_value_call_active_active">Разговор идёт</string>

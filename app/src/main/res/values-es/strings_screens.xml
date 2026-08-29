@@ -42,7 +42,8 @@
     <string name="category_plugin">Complemento</string>
     <string name="permissions_needed_by">Lo necesitan: %1$s</string>
     <string name="permissions_open_settings">Abrir ajustes</string>
-    <string name="config_field_wired_from">%1$s ← %2$s</string>
+    <string name="config_hint_show">Explicar %1$s</string>
+    <string name="config_hint_hide">Ocultar la explicación de %1$s</string>
     <string name="cd_palette_collapse_group">Contraer %1$s</string>
     <string name="cd_palette_expand_group">Expandir %1$s</string>
     <string name="apps_any_app">Cualquier aplicación</string>

@@ -4,6 +4,7 @@ import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
@@ -35,7 +36,9 @@ enum class CallStateEvent {
 @Serializable
 data class CallStateConfig(
     @Label("Event") val event: CallStateEvent? = null,
-    @Label("From app (optional)") @Picker(PickerKind.APP_FILTER) val packageFilter: String = "",
+    @Label("From app")
+    @Hint("optional")
+    @Picker(PickerKind.APP_FILTER) val packageFilter: String = "",
 )
 
 /**

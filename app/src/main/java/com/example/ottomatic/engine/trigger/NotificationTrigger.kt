@@ -6,6 +6,7 @@ import com.example.ottomatic.core.trigger.TriggerSource
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
@@ -21,7 +22,9 @@ import kotlinx.serialization.Serializable
 /** Config for `trigger.notification`; an empty filter matches every app. */
 @Serializable
 data class NotificationConfig(
-    @Label("From app (optional)") @Picker(PickerKind.APP_FILTER) val packageFilter: String = "",
+    @Label("From app")
+    @Hint("optional")
+    @Picker(PickerKind.APP_FILTER) val packageFilter: String = "",
 )
 
 /**

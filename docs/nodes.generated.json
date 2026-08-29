@@ -24,6 +24,7 @@
                 {
                     "key": "label",
                     "label": "Button label",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -57,6 +58,7 @@
                 {
                     "key": "label",
                     "label": "Name other apps see",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -66,6 +68,7 @@
                 {
                     "key": "inputs",
                     "label": "Values this call carries",
+                    "hint": null,
                     "type": "PORT_LIST",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -75,6 +78,7 @@
                 {
                     "key": "token",
                     "label": "Key",
+                    "hint": null,
                     "type": "API_TOKEN",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -115,6 +119,7 @@
                 {
                     "key": "mode",
                     "label": "Mode",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "INTERVAL",
                     "visibleWhen": null,
@@ -132,7 +137,8 @@
                 },
                 {
                     "key": "every",
-                    "label": "Repeat every (under 15 only fires while the device is awake)",
+                    "label": "Repeat every",
+                    "hint": "under 15 only fires while the device is awake",
                     "type": "INT",
                     "defaultValue": "15",
                     "visibleWhen": {
@@ -147,6 +153,7 @@
                 {
                     "key": "everyUnit",
                     "label": "Unit",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "MINUTES",
                     "visibleWhen": {
@@ -174,6 +181,7 @@
                 {
                     "key": "atTime",
                     "label": "At",
+                    "hint": null,
                     "type": "TIME_OF_DAY",
                     "defaultValue": "07:30",
                     "visibleWhen": {
@@ -188,6 +196,7 @@
                 {
                     "key": "monday",
                     "label": "Mondays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -197,6 +206,7 @@
                 {
                     "key": "tuesday",
                     "label": "Tuesdays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -206,6 +216,7 @@
                 {
                     "key": "wednesday",
                     "label": "Wednesdays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -215,6 +226,7 @@
                 {
                     "key": "thursday",
                     "label": "Thursdays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -224,6 +236,7 @@
                 {
                     "key": "friday",
                     "label": "Fridays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -233,6 +246,7 @@
                 {
                     "key": "saturday",
                     "label": "Saturdays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -242,6 +256,7 @@
                 {
                     "key": "sunday",
                     "label": "Sundays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -250,7 +265,8 @@
                 },
                 {
                     "key": "daysOfMonth",
-                    "label": "Days of month (e.g. 1,15, empty = every day)",
+                    "label": "Days of month",
+                    "hint": "e.g. 1,15, empty = every day",
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -260,6 +276,7 @@
                 {
                     "key": "windowEnabled",
                     "label": "Only during a time window",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": {
@@ -274,6 +291,7 @@
                 {
                     "key": "windowFrom",
                     "label": "Active from",
+                    "hint": null,
                     "type": "TIME_OF_DAY",
                     "defaultValue": "22:00",
                     "visibleWhen": {
@@ -287,7 +305,8 @@
                 },
                 {
                     "key": "windowUntil",
-                    "label": "Active until (earlier than 'from' runs past midnight)",
+                    "label": "Active until",
+                    "hint": "earlier than 'from' runs past midnight",
                     "type": "TIME_OF_DAY",
                     "defaultValue": "07:00",
                     "visibleWhen": {
@@ -332,7 +351,8 @@
             "configFields": [
                 {
                     "key": "sender",
-                    "label": "Sender (optional — any sender when empty)",
+                    "label": "Sender",
+                    "hint": "optional — any sender when empty",
                     "type": "PHONE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -380,6 +400,7 @@
                 {
                     "key": "accountId",
                     "label": "Account",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -389,6 +410,7 @@
                 {
                     "key": "folder",
                     "label": "Folder",
+                    "hint": null,
                     "type": "SUGGESTED",
                     "defaultValue": "INBOX",
                     "visibleWhen": null,
@@ -398,6 +420,7 @@
                 {
                     "key": "fromContains",
                     "label": "From contains",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -407,6 +430,7 @@
                 {
                     "key": "subjectContains",
                     "label": "Subject contains",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -416,6 +440,7 @@
                 {
                     "key": "unreadOnly",
                     "label": "Only unread",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "true",
                     "visibleWhen": null,
@@ -425,6 +450,7 @@
                 {
                     "key": "mode",
                     "label": "How to watch",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "AUTOMATIC",
                     "visibleWhen": null,
@@ -442,7 +468,8 @@
                 },
                 {
                     "key": "intervalMinutes",
-                    "label": "Check every (minutes, minimum 15)",
+                    "label": "Check every",
+                    "hint": "minutes, minimum 15",
                     "type": "INT",
                     "defaultValue": "15",
                     "visibleWhen": {
@@ -488,6 +515,7 @@
                 {
                     "key": "fireWhen",
                     "label": "Fire when",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "STARTS",
                     "visibleWhen": null,
@@ -509,7 +537,8 @@
                 },
                 {
                     "key": "leadMinutes",
-                    "label": "Minutes before (negative fires afterwards)",
+                    "label": "Minutes before",
+                    "hint": "negative fires afterwards",
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": {
@@ -525,6 +554,7 @@
                 {
                     "key": "calendar",
                     "label": "Calendar",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -534,6 +564,7 @@
                 {
                     "key": "titleContains",
                     "label": "Title contains",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -611,6 +642,7 @@
                 {
                     "key": "entity",
                     "label": "Entity",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -620,6 +652,7 @@
                 {
                     "key": "trigger",
                     "label": "What starts it",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -629,6 +662,7 @@
                 {
                     "key": "forSeconds",
                     "label": "Held for (seconds)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": null,
@@ -669,6 +703,7 @@
                 {
                     "key": "hub",
                     "label": "Home Assistant",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -678,6 +713,7 @@
                 {
                     "key": "eventType",
                     "label": "Event type",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -687,6 +723,7 @@
                 {
                     "key": "dataContains",
                     "label": "Data contains",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -727,6 +764,7 @@
                 {
                     "key": "broker",
                     "label": "Broker",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -736,6 +774,7 @@
                 {
                     "key": "topicFilter",
                     "label": "Topic",
+                    "hint": null,
                     "type": "SUGGESTED",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -745,6 +784,7 @@
                 {
                     "key": "payloadContains",
                     "label": "Message contains",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -754,6 +794,7 @@
                 {
                     "key": "includeRetained",
                     "label": "Also fire on messages the broker had stored",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -793,7 +834,8 @@
             "configFields": [
                 {
                     "key": "packageFilter",
-                    "label": "From app (optional)",
+                    "label": "From app",
+                    "hint": "optional",
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -847,7 +889,8 @@
             "configFields": [
                 {
                     "key": "packageFilter",
-                    "label": "From app (optional)",
+                    "label": "From app",
+                    "hint": "optional",
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -857,6 +900,7 @@
                 {
                     "key": "senderContains",
                     "label": "From (optional)",
+                    "hint": null,
                     "type": "CONTACT_NAME",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -865,7 +909,8 @@
                 },
                 {
                     "key": "textContains",
-                    "label": "Text contains (optional)",
+                    "label": "Text contains",
+                    "hint": "optional",
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -936,6 +981,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -989,6 +1035,7 @@
                 {
                     "key": "direction",
                     "label": "Direction",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "BELOW",
                     "visibleWhen": null,
@@ -1007,6 +1054,7 @@
                 {
                     "key": "level",
                     "label": "Threshold (0-100)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "20",
                     "visibleWhen": null,
@@ -1015,7 +1063,8 @@
                 },
                 {
                     "key": "intervalMinutes",
-                    "label": "Poll interval (minutes, minimum 15)",
+                    "label": "Poll interval",
+                    "hint": "minutes, minimum 15",
                     "type": "INT",
                     "defaultValue": "15",
                     "visibleWhen": null,
@@ -1056,6 +1105,7 @@
                 {
                     "key": "placeId",
                     "label": "Place",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1065,6 +1115,7 @@
                 {
                     "key": "onEnter",
                     "label": "On enter",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "true",
                     "visibleWhen": null,
@@ -1074,6 +1125,7 @@
                 {
                     "key": "onExit",
                     "label": "On exit",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -1083,6 +1135,7 @@
                 {
                     "key": "onDwell",
                     "label": "On dwell",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -1092,6 +1145,7 @@
                 {
                     "key": "dwellDelayMs",
                     "label": "Dwell delay (ms)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "30000",
                     "visibleWhen": {
@@ -1106,6 +1160,7 @@
                 {
                     "key": "onAway",
                     "label": "On staying away",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -1115,6 +1170,7 @@
                 {
                     "key": "awayMinutes",
                     "label": "Away for (minutes)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "30",
                     "visibleWhen": {
@@ -1173,6 +1229,7 @@
                 {
                     "key": "tagId",
                     "label": "Tag",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1227,6 +1284,7 @@
                 {
                     "key": "folder",
                     "label": "Only in this folder",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1236,6 +1294,7 @@
                 {
                     "key": "pattern",
                     "label": "Only names matching",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1371,6 +1430,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1401,6 +1461,7 @@
                 {
                     "key": "app",
                     "label": "App (optional)",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1570,6 +1631,7 @@
                 {
                     "key": "name",
                     "label": "Variable",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1610,6 +1672,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1663,6 +1726,7 @@
                 {
                     "key": "ssid",
                     "label": "Network",
+                    "hint": null,
                     "type": "WIFI_NETWORK",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1672,6 +1736,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1732,6 +1797,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1785,6 +1851,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1838,6 +1905,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1891,6 +1959,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1916,7 +1985,8 @@
                 },
                 {
                     "key": "packageFilter",
-                    "label": "From app (optional)",
+                    "label": "From app",
+                    "hint": "optional",
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1970,6 +2040,7 @@
                 {
                     "key": "outcome",
                     "label": "Outcome",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -1992,6 +2063,7 @@
                 {
                     "key": "direction",
                     "label": "Direction",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2013,7 +2085,8 @@
                 },
                 {
                     "key": "packageFilter",
-                    "label": "From app (optional)",
+                    "label": "From app",
+                    "hint": "optional",
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2067,6 +2140,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2120,6 +2194,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2173,6 +2248,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2226,6 +2302,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2316,6 +2393,7 @@
                 {
                     "key": "afterAttempts",
                     "label": "After failed attempts",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "1",
                     "visibleWhen": null,
@@ -2363,6 +2441,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2420,6 +2499,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2473,6 +2553,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2586,6 +2667,7 @@
                 {
                     "key": "action",
                     "label": "Action",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2612,6 +2694,7 @@
                 {
                     "key": "packageFilter",
                     "label": "App (optional)",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2652,6 +2735,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2725,6 +2809,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2782,6 +2867,7 @@
                 {
                     "key": "orientation",
                     "label": "Orientation",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -2820,6 +2906,7 @@
                 {
                     "key": "dwellMs",
                     "label": "Must hold for (ms)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "700",
                     "visibleWhen": null,
@@ -2829,6 +2916,7 @@
                 {
                     "key": "screenOff",
                     "label": "While the screen is off",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "NEVER",
                     "visibleWhen": null,
@@ -2878,6 +2966,7 @@
                 {
                     "key": "sensitivity",
                     "label": "Sensitivity",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "MEDIUM",
                     "visibleWhen": null,
@@ -2900,6 +2989,7 @@
                 {
                     "key": "screenOff",
                     "label": "While the screen is off",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "NEVER",
                     "visibleWhen": null,
@@ -2953,6 +3043,7 @@
                 {
                     "key": "taps",
                     "label": "Taps",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "DOUBLE_TAP",
                     "visibleWhen": null,
@@ -2971,6 +3062,7 @@
                 {
                     "key": "sensitivity",
                     "label": "Sensitivity",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "MEDIUM",
                     "visibleWhen": null,
@@ -2993,6 +3085,7 @@
                 {
                     "key": "screenOff",
                     "label": "While the screen is off",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "NEVER",
                     "visibleWhen": null,
@@ -3042,6 +3135,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "PICKED_UP",
                     "visibleWhen": null,
@@ -3064,6 +3158,7 @@
                 {
                     "key": "sensitivity",
                     "label": "Sensitivity",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "MEDIUM",
                     "visibleWhen": {
@@ -3092,6 +3187,7 @@
                 {
                     "key": "surfaceOnly",
                     "label": "Only when it ends up lying flat",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "true",
                     "visibleWhen": {
@@ -3106,6 +3202,7 @@
                 {
                     "key": "screenOff",
                     "label": "While the screen is off",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "NEVER",
                     "visibleWhen": {
@@ -3165,6 +3262,7 @@
                 {
                     "key": "event",
                     "label": "Event",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "NEAR",
                     "visibleWhen": null,
@@ -3214,6 +3312,7 @@
                 {
                     "key": "direction",
                     "label": "When the light level",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "BELOW",
                     "visibleWhen": null,
@@ -3232,6 +3331,7 @@
                 {
                     "key": "thresholdLux",
                     "label": "Threshold (lux)",
+                    "hint": null,
                     "type": "DOUBLE",
                     "defaultValue": "30.0",
                     "visibleWhen": null,
@@ -3240,7 +3340,8 @@
                 },
                 {
                     "key": "hysteresisLux",
-                    "label": "Don't start again until it changes back by (lux)",
+                    "label": "Don't start again until it changes back by",
+                    "hint": "lux",
                     "type": "DOUBLE",
                     "defaultValue": "10.0",
                     "visibleWhen": null,
@@ -3250,6 +3351,7 @@
                 {
                     "key": "dwellMs",
                     "label": "Must hold for (ms)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "3000",
                     "visibleWhen": null,
@@ -3290,6 +3392,7 @@
                 {
                     "key": "key",
                     "label": "Button",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "VOLUME_DOWN",
                     "visibleWhen": null,
@@ -3308,6 +3411,7 @@
                 {
                     "key": "gesture",
                     "label": "Gesture",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "SEQUENCE",
                     "visibleWhen": null,
@@ -3330,6 +3434,7 @@
                 {
                     "key": "holdMs",
                     "label": "Hold for at least (ms)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "800",
                     "visibleWhen": {
@@ -3344,6 +3449,7 @@
                 {
                     "key": "presses",
                     "label": "Number of presses",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "3",
                     "visibleWhen": {
@@ -3358,6 +3464,7 @@
                 {
                     "key": "windowMs",
                     "label": "Within (ms)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "2000",
                     "visibleWhen": {
@@ -3410,6 +3517,7 @@
                 {
                     "key": "gesture",
                     "label": "Gesture",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -3501,6 +3609,7 @@
                 {
                     "key": "modelRef",
                     "label": "Model",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -3510,6 +3619,7 @@
                 {
                     "key": "prompt",
                     "label": "Prompt",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -3519,6 +3629,7 @@
                 {
                     "key": "systemInstruction",
                     "label": "Standing instruction",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -3528,6 +3639,7 @@
                 {
                     "key": "useTools",
                     "label": "Let it use tools",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -3537,6 +3649,7 @@
                 {
                     "key": "toolOverrides",
                     "label": "Tools",
+                    "hint": null,
                     "type": "TOOL_LIST",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -3551,6 +3664,7 @@
                 {
                     "key": "maxTurns",
                     "label": "Most turns",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "8",
                     "visibleWhen": {
@@ -3564,7 +3678,8 @@
                 },
                 {
                     "key": "maxOutputTokens",
-                    "label": "Longest reply (tokens)",
+                    "label": "Longest reply",
+                    "hint": "tokens",
                     "type": "INT",
                     "defaultValue": "1024",
                     "visibleWhen": null,
@@ -3574,6 +3689,7 @@
                 {
                     "key": "fallback",
                     "label": "If it fails",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -3635,6 +3751,7 @@
                 {
                     "key": "modelRef",
                     "label": "Model",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -3644,6 +3761,7 @@
                 {
                     "key": "image",
                     "label": "Picture",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -3653,6 +3771,7 @@
                 {
                     "key": "prompt",
                     "label": "What to ask",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "What is in this picture?",
                     "visibleWhen": null,
@@ -3661,7 +3780,8 @@
                 },
                 {
                     "key": "maxOutputTokens",
-                    "label": "Longest reply (tokens)",
+                    "label": "Longest reply",
+                    "hint": "tokens",
                     "type": "INT",
                     "defaultValue": "1024",
                     "visibleWhen": null,
@@ -3671,6 +3791,7 @@
                 {
                     "key": "fallback",
                     "label": "If it fails",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -3708,7 +3829,7 @@
                 },
                 {
                     "name": "prompt",
-                    "label": "What to ask (leave empty to transcribe it)",
+                    "label": "What to ask",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -3732,6 +3853,7 @@
                 {
                     "key": "using",
                     "label": "Transcribe with",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "ai",
                     "visibleWhen": null,
@@ -3750,6 +3872,7 @@
                 {
                     "key": "modelRef",
                     "label": "Model",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -3763,7 +3886,8 @@
                 },
                 {
                     "key": "prompt",
-                    "label": "What to ask (leave empty to transcribe it)",
+                    "label": "What to ask",
+                    "hint": "leave empty to transcribe it",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -3778,6 +3902,7 @@
                 {
                     "key": "languageMode",
                     "label": "Language",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "phone",
                     "visibleWhen": {
@@ -3805,6 +3930,7 @@
                 {
                     "key": "language",
                     "label": "Which language",
+                    "hint": null,
                     "type": "SUGGESTED",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -3818,7 +3944,8 @@
                 },
                 {
                     "key": "maxSeconds",
-                    "label": "Listen for at most (seconds)",
+                    "label": "Listen for at most",
+                    "hint": "seconds",
                     "type": "INT",
                     "defaultValue": "15",
                     "visibleWhen": null,
@@ -3827,7 +3954,8 @@
                 },
                 {
                     "key": "silenceSeconds",
-                    "label": "Stop after this much silence (seconds, 0 = listen the whole time)",
+                    "label": "Stop after this much silence",
+                    "hint": "seconds, 0 = listen the whole time",
                     "type": "INT",
                     "defaultValue": "3",
                     "visibleWhen": null,
@@ -3836,7 +3964,8 @@
                 },
                 {
                     "key": "maxOutputTokens",
-                    "label": "Longest reply (tokens)",
+                    "label": "Longest reply",
+                    "hint": "tokens",
                     "type": "INT",
                     "defaultValue": "1024",
                     "visibleWhen": {
@@ -3851,6 +3980,7 @@
                 {
                     "key": "fallback",
                     "label": "If it fails",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -3895,7 +4025,7 @@
                 },
                 {
                     "name": "prompt",
-                    "label": "What to ask (leave empty to transcribe it)",
+                    "label": "What to ask",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -3905,6 +4035,7 @@
                 {
                     "key": "using",
                     "label": "Transcribe with",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "ai",
                     "visibleWhen": null,
@@ -3923,6 +4054,7 @@
                 {
                     "key": "modelRef",
                     "label": "Model",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -3936,7 +4068,8 @@
                 },
                 {
                     "key": "prompt",
-                    "label": "What to ask (leave empty to transcribe it)",
+                    "label": "What to ask",
+                    "hint": "leave empty to transcribe it",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -3950,7 +4083,8 @@
                 },
                 {
                     "key": "maxOutputTokens",
-                    "label": "Longest reply (tokens)",
+                    "label": "Longest reply",
+                    "hint": "tokens",
                     "type": "INT",
                     "defaultValue": "1024",
                     "visibleWhen": {
@@ -3965,6 +4099,7 @@
                 {
                     "key": "languageMode",
                     "label": "Language",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "phone",
                     "visibleWhen": {
@@ -3992,6 +4127,7 @@
                 {
                     "key": "language",
                     "label": "Which language",
+                    "hint": null,
                     "type": "SUGGESTED",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -4005,7 +4141,8 @@
                 },
                 {
                     "key": "maxSeconds",
-                    "label": "Listen for at most (seconds)",
+                    "label": "Listen for at most",
+                    "hint": "seconds",
                     "type": "INT",
                     "defaultValue": "60",
                     "visibleWhen": null,
@@ -4014,7 +4151,8 @@
                 },
                 {
                     "key": "silenceSeconds",
-                    "label": "Stop after this much silence (seconds, 0 = listen the whole time)",
+                    "label": "Stop after this much silence",
+                    "hint": "seconds, 0 = listen the whole time",
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": null,
@@ -4076,6 +4214,7 @@
                 {
                     "key": "fallback",
                     "label": "If it fails",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -4127,7 +4266,7 @@
                 },
                 {
                     "name": "prompt",
-                    "label": "What to ask (leave empty to transcribe it)",
+                    "label": "What to ask",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -4144,6 +4283,7 @@
                 {
                     "key": "modelRef",
                     "label": "Model",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -4153,6 +4293,7 @@
                 {
                     "key": "audio",
                     "label": "Audio file",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -4161,7 +4302,8 @@
                 },
                 {
                     "key": "prompt",
-                    "label": "What to ask (leave empty to transcribe it)",
+                    "label": "What to ask",
+                    "hint": "leave empty to transcribe it",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -4170,7 +4312,8 @@
                 },
                 {
                     "key": "maxOutputTokens",
-                    "label": "Longest reply (tokens)",
+                    "label": "Longest reply",
+                    "hint": "tokens",
                     "type": "INT",
                     "defaultValue": "1024",
                     "visibleWhen": null,
@@ -4180,6 +4323,7 @@
                 {
                     "key": "fallback",
                     "label": "If it fails",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -4234,6 +4378,7 @@
                 {
                     "key": "text",
                     "label": "Text",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -4243,6 +4388,7 @@
                 {
                     "key": "sourceMode",
                     "label": "Translate from",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "detect",
                     "visibleWhen": null,
@@ -4261,6 +4407,7 @@
                 {
                     "key": "sourceLanguage",
                     "label": "Which language",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -4275,6 +4422,7 @@
                 {
                     "key": "targetLanguage",
                     "label": "Translate to",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -4284,6 +4432,7 @@
                 {
                     "key": "fallback",
                     "label": "If it fails",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -4331,6 +4480,7 @@
                 {
                     "key": "state",
                     "label": "State",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "on",
                     "visibleWhen": null,
@@ -4387,6 +4537,7 @@
                 {
                     "key": "rotation",
                     "label": "Rotation",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "portrait",
                     "visibleWhen": null,
@@ -4451,6 +4602,7 @@
                 {
                     "key": "state",
                     "label": "State",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "on",
                     "visibleWhen": null,
@@ -4507,6 +4659,7 @@
                 {
                     "key": "auto",
                     "label": "Auto brightness",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -4515,7 +4668,8 @@
                 },
                 {
                     "key": "value",
-                    "label": "Value (0-255, only when auto is off)",
+                    "label": "Value",
+                    "hint": "0-255, only when auto is off",
                     "type": "INT",
                     "defaultValue": "128",
                     "visibleWhen": null,
@@ -4570,6 +4724,7 @@
                 {
                     "key": "number",
                     "label": "Number",
+                    "hint": null,
                     "type": "PHONE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -4630,6 +4785,7 @@
                 {
                     "key": "mode",
                     "label": "Mode",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "SET",
                     "visibleWhen": null,
@@ -4648,6 +4804,7 @@
                 {
                     "key": "text",
                     "label": "Text",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -4688,6 +4845,7 @@
                 {
                     "key": "duration",
                     "label": "Duration",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "5",
                     "visibleWhen": null,
@@ -4697,6 +4855,7 @@
                 {
                     "key": "unit",
                     "label": "Unit",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "SECONDS",
                     "visibleWhen": null,
@@ -4789,6 +4948,7 @@
                 {
                     "key": "mode",
                     "label": "Wait",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "DURATION",
                     "visibleWhen": null,
@@ -4811,6 +4971,7 @@
                 {
                     "key": "duration",
                     "label": "Duration",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "30",
                     "visibleWhen": {
@@ -4825,6 +4986,7 @@
                 {
                     "key": "unit",
                     "label": "Unit",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "MINUTES",
                     "visibleWhen": {
@@ -4856,6 +5018,7 @@
                 {
                     "key": "atTime",
                     "label": "At",
+                    "hint": null,
                     "type": "TIME_OF_DAY",
                     "defaultValue": "07:30",
                     "visibleWhen": {
@@ -4870,6 +5033,7 @@
                 {
                     "key": "monday",
                     "label": "Mondays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": {
@@ -4884,6 +5048,7 @@
                 {
                     "key": "tuesday",
                     "label": "Tuesdays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": {
@@ -4898,6 +5063,7 @@
                 {
                     "key": "wednesday",
                     "label": "Wednesdays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": {
@@ -4912,6 +5078,7 @@
                 {
                     "key": "thursday",
                     "label": "Thursdays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": {
@@ -4926,6 +5093,7 @@
                 {
                     "key": "friday",
                     "label": "Fridays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": {
@@ -4940,6 +5108,7 @@
                 {
                     "key": "saturday",
                     "label": "Saturdays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": {
@@ -4954,6 +5123,7 @@
                 {
                     "key": "sunday",
                     "label": "Sundays",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": {
@@ -4967,7 +5137,8 @@
                 },
                 {
                     "key": "daysOfMonth",
-                    "label": "Days of month (e.g. 1,15, empty = every day)",
+                    "label": "Days of month",
+                    "hint": "e.g. 1,15, empty = every day",
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -4982,6 +5153,7 @@
                 {
                     "key": "until",
                     "label": "Until",
+                    "hint": null,
                     "type": "DATE_TIME",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -5048,6 +5220,7 @@
                 {
                     "key": "title",
                     "label": "Title",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "Ottomatic",
                     "visibleWhen": null,
@@ -5057,6 +5230,7 @@
                 {
                     "key": "message",
                     "label": "Message",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -5066,6 +5240,7 @@
                 {
                     "key": "confirmLabel",
                     "label": "Button",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "OK",
                     "visibleWhen": null,
@@ -5074,7 +5249,8 @@
                 },
                 {
                     "key": "timeoutSeconds",
-                    "label": "Close automatically after (seconds)",
+                    "label": "Close automatically after",
+                    "hint": "seconds",
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": null,
@@ -5143,6 +5319,7 @@
                 {
                     "key": "title",
                     "label": "Title",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "Ottomatic",
                     "visibleWhen": null,
@@ -5152,6 +5329,7 @@
                 {
                     "key": "message",
                     "label": "Question",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -5161,6 +5339,7 @@
                 {
                     "key": "confirmLabel",
                     "label": "Confirm button",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "Yes",
                     "visibleWhen": null,
@@ -5170,6 +5349,7 @@
                 {
                     "key": "cancelLabel",
                     "label": "Cancel button",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "No",
                     "visibleWhen": null,
@@ -5179,6 +5359,7 @@
                 {
                     "key": "timeoutSeconds",
                     "label": "Give up after (seconds)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": null,
@@ -5261,6 +5442,7 @@
                 {
                     "key": "title",
                     "label": "Title",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "Ottomatic",
                     "visibleWhen": null,
@@ -5270,6 +5452,7 @@
                 {
                     "key": "message",
                     "label": "Question",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -5279,6 +5462,7 @@
                 {
                     "key": "answerType",
                     "label": "Answer type",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "TEXT",
                     "visibleWhen": null,
@@ -5309,6 +5493,7 @@
                 {
                     "key": "prefilled",
                     "label": "Prefilled",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -5318,6 +5503,7 @@
                 {
                     "key": "hint",
                     "label": "Hint",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -5327,6 +5513,7 @@
                 {
                     "key": "multiline",
                     "label": "Multiple lines",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": {
@@ -5341,6 +5528,7 @@
                 {
                     "key": "confirmLabel",
                     "label": "Confirm button",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "OK",
                     "visibleWhen": null,
@@ -5350,6 +5538,7 @@
                 {
                     "key": "cancelLabel",
                     "label": "Cancel button",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "Cancel",
                     "visibleWhen": null,
@@ -5359,6 +5548,7 @@
                 {
                     "key": "timeoutSeconds",
                     "label": "Give up after (seconds)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": null,
@@ -5424,7 +5614,7 @@
                 },
                 {
                     "name": "options",
-                    "label": "Options — one per line",
+                    "label": "Options",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -5448,6 +5638,7 @@
                 {
                     "key": "title",
                     "label": "Title",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "Ottomatic",
                     "visibleWhen": null,
@@ -5457,6 +5648,7 @@
                 {
                     "key": "message",
                     "label": "Question",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -5465,7 +5657,8 @@
                 },
                 {
                     "key": "options",
-                    "label": "Options — one per line",
+                    "label": "Options",
+                    "hint": "one per line",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -5475,6 +5668,7 @@
                 {
                     "key": "cancelLabel",
                     "label": "Cancel button",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "Cancel",
                     "visibleWhen": null,
@@ -5484,6 +5678,7 @@
                 {
                     "key": "timeoutSeconds",
                     "label": "Give up after (seconds)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": null,
@@ -5538,6 +5733,7 @@
                 {
                     "key": "text",
                     "label": "Text",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -5547,6 +5743,7 @@
                 {
                     "key": "language",
                     "label": "Language",
+                    "hint": null,
                     "type": "SUGGESTED",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -5556,6 +5753,7 @@
                 {
                     "key": "rate",
                     "label": "Speed",
+                    "hint": null,
                     "type": "DOUBLE",
                     "defaultValue": "1.0",
                     "visibleWhen": null,
@@ -5565,6 +5763,7 @@
                 {
                     "key": "pitch",
                     "label": "Pitch",
+                    "hint": null,
                     "type": "DOUBLE",
                     "defaultValue": "1.0",
                     "visibleWhen": null,
@@ -5574,6 +5773,7 @@
                 {
                     "key": "stream",
                     "label": "Play through",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "media",
                     "visibleWhen": null,
@@ -5604,6 +5804,7 @@
                 {
                     "key": "waitForCompletion",
                     "label": "Wait until finished",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "true",
                     "visibleWhen": null,
@@ -5613,6 +5814,7 @@
                 {
                     "key": "queue",
                     "label": "Queue behind what is already being spoken",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -5708,6 +5910,7 @@
                 {
                     "key": "language",
                     "label": "Language",
+                    "hint": null,
                     "type": "SUGGESTED",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -5717,6 +5920,7 @@
                 {
                     "key": "maxSeconds",
                     "label": "Give up after (seconds)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "15",
                     "visibleWhen": null,
@@ -5725,7 +5929,8 @@
                 },
                 {
                     "key": "silenceSeconds",
-                    "label": "Stop after this much silence (seconds, 0 = let the phone decide)",
+                    "label": "Stop after this much silence",
+                    "hint": "seconds, 0 = let the phone decide",
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": null,
@@ -5735,6 +5940,7 @@
                 {
                     "key": "preferOffline",
                     "label": "Recognise on the device where possible",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "true",
                     "visibleWhen": null,
@@ -5798,6 +6004,7 @@
                 {
                     "key": "macroId",
                     "label": "Macro",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -5845,6 +6052,7 @@
                 {
                     "key": "state",
                     "label": "State",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "on",
                     "visibleWhen": null,
@@ -5862,7 +6070,8 @@
                 },
                 {
                     "key": "level",
-                    "label": "Level (when on)",
+                    "label": "Level",
+                    "hint": "when on",
                     "type": "ENUM",
                     "defaultValue": "priority",
                     "visibleWhen": null,
@@ -5934,6 +6143,7 @@
                 {
                     "key": "macroId",
                     "label": "Macro",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -5981,6 +6191,7 @@
                 {
                     "key": "state",
                     "label": "State",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "on",
                     "visibleWhen": null,
@@ -6038,7 +6249,7 @@
                 },
                 {
                     "name": "headers",
-                    "label": "Headers (JSON, optional)",
+                    "label": "Headers",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -6062,6 +6273,7 @@
                 {
                     "key": "method",
                     "label": "Method",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "GET",
                     "visibleWhen": null,
@@ -6088,6 +6300,7 @@
                 {
                     "key": "url",
                     "label": "URL",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "https://example.com",
                     "visibleWhen": null,
@@ -6096,7 +6309,8 @@
                 },
                 {
                     "key": "headers",
-                    "label": "Headers (JSON, optional)",
+                    "label": "Headers",
+                    "hint": "JSON, optional",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6106,6 +6320,7 @@
                 {
                     "key": "body",
                     "label": "Body",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6167,6 +6382,7 @@
                 {
                     "key": "type",
                     "label": "Type",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "AUTO",
                     "visibleWhen": null,
@@ -6209,6 +6425,7 @@
                 {
                     "key": "field",
                     "label": "Field",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6218,6 +6435,7 @@
                 {
                     "key": "operator",
                     "label": "Operator",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "EQUALS",
                     "visibleWhen": null,
@@ -6260,6 +6478,7 @@
                 {
                     "key": "source",
                     "label": "Source",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6269,6 +6488,7 @@
                 {
                     "key": "value",
                     "label": "Compare against",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6316,6 +6536,7 @@
                 {
                     "key": "packageName",
                     "label": "App",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6395,7 +6616,7 @@
                 },
                 {
                     "name": "extras",
-                    "label": "Extras — one key=value per line, count:int=5 to type one",
+                    "label": "Extras",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -6405,6 +6626,7 @@
                 {
                     "key": "action",
                     "label": "Action",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6414,6 +6636,7 @@
                 {
                     "key": "packageName",
                     "label": "App (optional)",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6423,6 +6646,7 @@
                 {
                     "key": "dataUri",
                     "label": "Data URI (optional)",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6432,6 +6656,7 @@
                 {
                     "key": "mimeType",
                     "label": "MIME type (optional)",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6441,6 +6666,7 @@
                 {
                     "key": "category",
                     "label": "Category (optional)",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6449,7 +6675,8 @@
                 },
                 {
                     "key": "extras",
-                    "label": "Extras — one key=value per line, count:int=5 to type one",
+                    "label": "Extras",
+                    "hint": "one key=value per line, count:int=5 to type one",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6529,7 +6756,7 @@
                 },
                 {
                     "name": "extras",
-                    "label": "Extras — one key=value per line, count:int=5 to type one",
+                    "label": "Extras",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -6539,6 +6766,7 @@
                 {
                     "key": "action",
                     "label": "Action",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6548,6 +6776,7 @@
                 {
                     "key": "packageName",
                     "label": "App (optional)",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6557,6 +6786,7 @@
                 {
                     "key": "dataUri",
                     "label": "Data URI (optional)",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6566,6 +6796,7 @@
                 {
                     "key": "mimeType",
                     "label": "MIME type (optional)",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6575,6 +6806,7 @@
                 {
                     "key": "category",
                     "label": "Category (optional)",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6583,7 +6815,8 @@
                 },
                 {
                     "key": "extras",
-                    "label": "Extras — one key=value per line, count:int=5 to type one",
+                    "label": "Extras",
+                    "hint": "one key=value per line, count:int=5 to type one",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6652,6 +6885,7 @@
                 {
                     "key": "target",
                     "label": "Light or room",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6661,6 +6895,7 @@
                 {
                     "key": "op",
                     "label": "What to do",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "TURN_ON",
                     "visibleWhen": null,
@@ -6695,6 +6930,7 @@
                 {
                     "key": "brightness",
                     "label": "Brightness %",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "100",
                     "visibleWhen": {
@@ -6709,6 +6945,7 @@
                 {
                     "key": "colour",
                     "label": "Colour",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "#FFA757",
                     "visibleWhen": {
@@ -6723,6 +6960,7 @@
                 {
                     "key": "kelvin",
                     "label": "Warmth (K)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "2700",
                     "visibleWhen": {
@@ -6737,6 +6975,7 @@
                 {
                     "key": "onlyLightsOn",
                     "label": "Only lights already on",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": {
@@ -6753,6 +6992,7 @@
                 {
                     "key": "transitionMs",
                     "label": "Fade time (ms)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "400",
                     "visibleWhen": null,
@@ -6800,6 +7040,7 @@
                 {
                     "key": "scene",
                     "label": "Scene",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6809,6 +7050,7 @@
                 {
                     "key": "op",
                     "label": "What to do",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "ACTIVATE",
                     "visibleWhen": null,
@@ -6831,6 +7073,7 @@
                 {
                     "key": "transitionMs",
                     "label": "Fade time (ms)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "400",
                     "visibleWhen": null,
@@ -6878,6 +7121,7 @@
                 {
                     "key": "target",
                     "label": "Light or room",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6915,7 +7159,7 @@
                 },
                 {
                     "name": "data",
-                    "label": "Extra data (JSON)",
+                    "label": "Extra data",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -6932,6 +7176,7 @@
                 {
                     "key": "hub",
                     "label": "Home Assistant",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6941,6 +7186,7 @@
                 {
                     "key": "target",
                     "label": "Entity",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6950,6 +7196,7 @@
                 {
                     "key": "service",
                     "label": "Service",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6958,7 +7205,8 @@
                 },
                 {
                     "key": "data",
-                    "label": "Extra data (JSON)",
+                    "label": "Extra data",
+                    "hint": "JSON",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7020,6 +7268,7 @@
                 {
                     "key": "broker",
                     "label": "Broker",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7029,6 +7278,7 @@
                 {
                     "key": "topic",
                     "label": "Topic",
+                    "hint": null,
                     "type": "SUGGESTED",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7038,6 +7288,7 @@
                 {
                     "key": "payload",
                     "label": "Message",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7047,6 +7298,7 @@
                 {
                     "key": "quality",
                     "label": "Delivery",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "AT_LEAST_ONCE",
                     "visibleWhen": null,
@@ -7069,6 +7321,7 @@
                 {
                     "key": "retain",
                     "label": "Ask the broker to keep this message",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -7130,6 +7383,7 @@
                 {
                     "key": "path",
                     "label": "File",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7139,6 +7393,7 @@
                 {
                     "key": "text",
                     "label": "Text",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7148,6 +7403,7 @@
                 {
                     "key": "append",
                     "label": "Add to the end instead of replacing",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -7157,6 +7413,7 @@
                 {
                     "key": "whenExists",
                     "label": "If a file is already there",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "replace",
                     "visibleWhen": {
@@ -7184,6 +7441,7 @@
                 {
                     "key": "encoding",
                     "label": "Text encoding",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "utf8",
                     "visibleWhen": null,
@@ -7258,6 +7516,7 @@
                 {
                     "key": "path",
                     "label": "File",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7267,6 +7526,7 @@
                 {
                     "key": "encoding",
                     "label": "Text encoding",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "utf8",
                     "visibleWhen": null,
@@ -7289,6 +7549,7 @@
                 {
                     "key": "fallback",
                     "label": "If it fails",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7350,6 +7611,7 @@
                 {
                     "key": "path",
                     "label": "Folder",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7359,6 +7621,7 @@
                 {
                     "key": "pattern",
                     "label": "Only names matching",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7368,6 +7631,7 @@
                 {
                     "key": "entries",
                     "label": "List",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "files",
                     "visibleWhen": null,
@@ -7435,6 +7699,7 @@
                 {
                     "key": "path",
                     "label": "File or folder",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7496,6 +7761,7 @@
                 {
                     "key": "from",
                     "label": "From",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7505,6 +7771,7 @@
                 {
                     "key": "to",
                     "label": "To",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7514,6 +7781,7 @@
                 {
                     "key": "operation",
                     "label": "What to do",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "copy",
                     "visibleWhen": null,
@@ -7532,6 +7800,7 @@
                 {
                     "key": "whenExists",
                     "label": "If a file is already there",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "replace",
                     "visibleWhen": null,
@@ -7599,6 +7868,7 @@
                 {
                     "key": "path",
                     "label": "File",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7660,6 +7930,7 @@
                 {
                     "key": "toFolder",
                     "label": "Save in this folder",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7669,6 +7940,7 @@
                 {
                     "key": "name",
                     "label": "File name",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7678,6 +7950,7 @@
                 {
                     "key": "whenExists",
                     "label": "If one is already there",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "keep_both",
                     "visibleWhen": null,
@@ -7735,7 +8008,7 @@
                 },
                 {
                     "name": "delaySeconds",
-                    "label": "Wait before the shot (seconds)",
+                    "label": "Wait before the shot",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "Int"
@@ -7766,6 +8039,7 @@
                 {
                     "key": "lens",
                     "label": "Camera",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "back",
                     "visibleWhen": null,
@@ -7784,6 +8058,7 @@
                 {
                     "key": "flash",
                     "label": "Flash",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "off",
                     "visibleWhen": {
@@ -7810,7 +8085,8 @@
                 },
                 {
                     "key": "delaySeconds",
-                    "label": "Wait before the shot (seconds)",
+                    "label": "Wait before the shot",
+                    "hint": "seconds",
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": null,
@@ -7820,6 +8096,7 @@
                 {
                     "key": "toFolder",
                     "label": "Save in this folder",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7829,6 +8106,7 @@
                 {
                     "key": "name",
                     "label": "File name",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7838,6 +8116,7 @@
                 {
                     "key": "whenExists",
                     "label": "If one is already there",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "keep_both",
                     "visibleWhen": null,
@@ -7919,6 +8198,7 @@
                 {
                     "key": "folder",
                     "label": "Folder",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7928,6 +8208,7 @@
                 {
                     "key": "pattern",
                     "label": "Names matching",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7937,6 +8218,7 @@
                 {
                     "key": "takenAfter",
                     "label": "Taken after",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7946,6 +8228,7 @@
                 {
                     "key": "takenBefore",
                     "label": "Taken before",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -7955,6 +8238,7 @@
                 {
                     "key": "order",
                     "label": "Order",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "newest",
                     "visibleWhen": null,
@@ -7973,6 +8257,7 @@
                 {
                     "key": "limit",
                     "label": "Most to return",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "50",
                     "visibleWhen": null,
@@ -8034,6 +8319,7 @@
                 {
                     "key": "image",
                     "label": "Picture",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8150,6 +8436,7 @@
                 {
                     "key": "image",
                     "label": "Picture",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8159,6 +8446,7 @@
                 {
                     "key": "operation",
                     "label": "What to do",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "resize",
                     "visibleWhen": null,
@@ -8189,6 +8477,7 @@
                 {
                     "key": "maxSide",
                     "label": "Longest side (pixels)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "1920",
                     "visibleWhen": {
@@ -8203,6 +8492,7 @@
                 {
                     "key": "turn",
                     "label": "Turn",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "right",
                     "visibleWhen": {
@@ -8230,6 +8520,7 @@
                 {
                     "key": "mirror",
                     "label": "Mirror",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "horizontal",
                     "visibleWhen": {
@@ -8253,6 +8544,7 @@
                 {
                     "key": "cropX",
                     "label": "Left",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": {
@@ -8267,6 +8559,7 @@
                 {
                     "key": "cropY",
                     "label": "Top",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": {
@@ -8281,6 +8574,7 @@
                 {
                     "key": "cropWidth",
                     "label": "Width",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": {
@@ -8295,6 +8589,7 @@
                 {
                     "key": "cropHeight",
                     "label": "Height",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": {
@@ -8309,6 +8604,7 @@
                 {
                     "key": "format",
                     "label": "Save as",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "same",
                     "visibleWhen": null,
@@ -8335,6 +8631,7 @@
                 {
                     "key": "quality",
                     "label": "Quality",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "90",
                     "visibleWhen": null,
@@ -8344,6 +8641,7 @@
                 {
                     "key": "toFolder",
                     "label": "Into folder",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8353,6 +8651,7 @@
                 {
                     "key": "name",
                     "label": "File name",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8362,6 +8661,7 @@
                 {
                     "key": "whenExists",
                     "label": "If one is already there",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "keep_both",
                     "visibleWhen": null,
@@ -8426,7 +8726,7 @@
                 },
                 {
                     "name": "value",
-                    "label": "New value (blank removes it)",
+                    "label": "New value",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -8443,6 +8743,7 @@
                 {
                     "key": "image",
                     "label": "Picture",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8452,6 +8753,7 @@
                 {
                     "key": "detail",
                     "label": "What to change",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "description",
                     "visibleWhen": null,
@@ -8493,7 +8795,8 @@
                 },
                 {
                     "key": "value",
-                    "label": "New value (blank removes it)",
+                    "label": "New value",
+                    "hint": "blank removes it",
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8574,6 +8877,7 @@
                 {
                     "key": "image",
                     "label": "Picture",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8583,6 +8887,7 @@
                 {
                     "key": "toFolder",
                     "label": "Into folder",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8592,6 +8897,7 @@
                 {
                     "key": "operation",
                     "label": "Operation",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "move",
                     "visibleWhen": null,
@@ -8610,6 +8916,7 @@
                 {
                     "key": "whenExists",
                     "label": "If one is already there",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "keep_both",
                     "visibleWhen": null,
@@ -8696,6 +9003,7 @@
                 {
                     "key": "image",
                     "label": "Picture",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8705,6 +9013,7 @@
                 {
                     "key": "removal",
                     "label": "How",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "bin",
                     "visibleWhen": null,
@@ -8801,6 +9110,7 @@
                 {
                     "key": "seconds",
                     "label": "How long (seconds)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "10",
                     "visibleWhen": null,
@@ -8810,6 +9120,7 @@
                 {
                     "key": "quality",
                     "label": "Quality",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "voice",
                     "visibleWhen": null,
@@ -8828,6 +9139,7 @@
                 {
                     "key": "toFolder",
                     "label": "Save in this folder",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8837,6 +9149,7 @@
                 {
                     "key": "name",
                     "label": "File name",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8846,6 +9159,7 @@
                 {
                     "key": "whenExists",
                     "label": "If one is already there",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "keep_both",
                     "visibleWhen": null,
@@ -8903,7 +9217,7 @@
                 },
                 {
                     "name": "maxSeconds",
-                    "label": "Stop by itself after (seconds)",
+                    "label": "Stop by itself after",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "Int"
@@ -8926,7 +9240,8 @@
             "configFields": [
                 {
                     "key": "maxSeconds",
-                    "label": "Stop by itself after (seconds)",
+                    "label": "Stop by itself after",
+                    "hint": "seconds",
                     "type": "INT",
                     "defaultValue": "300",
                     "visibleWhen": null,
@@ -8936,6 +9251,7 @@
                 {
                     "key": "quality",
                     "label": "Quality",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "voice",
                     "visibleWhen": null,
@@ -8954,6 +9270,7 @@
                 {
                     "key": "toFolder",
                     "label": "Save in this folder",
+                    "hint": null,
                     "type": "FILE_PATH",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8963,6 +9280,7 @@
                 {
                     "key": "name",
                     "label": "File name",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -8972,6 +9290,7 @@
                 {
                     "key": "whenExists",
                     "label": "If one is already there",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "keep_both",
                     "visibleWhen": null,
@@ -9083,6 +9402,7 @@
                 {
                     "key": "name",
                     "label": "List variable",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9123,6 +9443,7 @@
                 {
                     "key": "name",
                     "label": "List variable",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9170,6 +9491,7 @@
                 {
                     "key": "message",
                     "label": "Message",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9221,21 +9543,21 @@
                 },
                 {
                     "name": "buttons",
-                    "label": "Buttons — one per line",
+                    "label": "Buttons",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
                 },
                 {
                     "name": "progress",
-                    "label": "Progress (%, below 0 = busy)",
+                    "label": "Progress",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "Int"
                 },
                 {
                     "name": "tag",
-                    "label": "Tag — Used for manual deletion",
+                    "label": "Tag",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -9273,6 +9595,7 @@
                 {
                     "key": "title",
                     "label": "Title",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "Ottomatic",
                     "visibleWhen": null,
@@ -9282,6 +9605,7 @@
                 {
                     "key": "text",
                     "label": "Text",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "Workflow ran",
                     "visibleWhen": null,
@@ -9290,7 +9614,8 @@
                 },
                 {
                     "key": "buttons",
-                    "label": "Buttons — one per line",
+                    "label": "Buttons",
+                    "hint": "one per line",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9300,6 +9625,7 @@
                 {
                     "key": "replyField",
                     "label": "Reply field",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -9309,6 +9635,7 @@
                 {
                     "key": "replyLabel",
                     "label": "Reply button",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "Reply",
                     "visibleWhen": {
@@ -9323,6 +9650,7 @@
                 {
                     "key": "replyHint",
                     "label": "Reply hint",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -9337,6 +9665,7 @@
                 {
                     "key": "timeoutSeconds",
                     "label": "Disappear after (seconds)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": null,
@@ -9346,6 +9675,7 @@
                 {
                     "key": "accent",
                     "label": "Colour",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "SYSTEM",
                     "visibleWhen": null,
@@ -9392,6 +9722,7 @@
                 {
                     "key": "showProgress",
                     "label": "Show a progress bar",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -9400,7 +9731,8 @@
                 },
                 {
                     "key": "progress",
-                    "label": "Progress (%, below 0 = busy)",
+                    "label": "Progress",
+                    "hint": "%, below 0 = busy",
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": {
@@ -9415,6 +9747,7 @@
                 {
                     "key": "ongoing",
                     "label": "Keep until dismissed",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -9423,7 +9756,8 @@
                 },
                 {
                     "key": "tag",
-                    "label": "Tag — Used for manual deletion",
+                    "label": "Tag",
+                    "hint": "Used for manual deletion",
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9478,6 +9812,7 @@
                 {
                     "key": "tag",
                     "label": "Tag",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9560,6 +9895,7 @@
                 {
                     "key": "accountId",
                     "label": "Account",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9569,6 +9905,7 @@
                 {
                     "key": "to",
                     "label": "To",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9578,6 +9915,7 @@
                 {
                     "key": "cc",
                     "label": "Cc",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9587,6 +9925,7 @@
                 {
                     "key": "bcc",
                     "label": "Bcc",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9596,6 +9935,7 @@
                 {
                     "key": "subject",
                     "label": "Subject",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9605,6 +9945,7 @@
                 {
                     "key": "body",
                     "label": "Body",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9614,6 +9955,7 @@
                 {
                     "key": "html",
                     "label": "Send as HTML",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -9682,6 +10024,7 @@
                 {
                     "key": "accountId",
                     "label": "Account",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9691,6 +10034,7 @@
                 {
                     "key": "folder",
                     "label": "Folder",
+                    "hint": null,
                     "type": "SUGGESTED",
                     "defaultValue": "INBOX",
                     "visibleWhen": null,
@@ -9700,6 +10044,7 @@
                 {
                     "key": "unreadOnly",
                     "label": "Only unread",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "true",
                     "visibleWhen": null,
@@ -9709,6 +10054,7 @@
                 {
                     "key": "fromContains",
                     "label": "From contains",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9718,6 +10064,7 @@
                 {
                     "key": "subjectContains",
                     "label": "Subject contains",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9727,6 +10074,7 @@
                 {
                     "key": "limit",
                     "label": "How many at most",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "10",
                     "visibleWhen": null,
@@ -9788,6 +10136,7 @@
                 {
                     "key": "ref",
                     "label": "Message",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9797,6 +10146,7 @@
                 {
                     "key": "op",
                     "label": "What to do",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "MARK_READ",
                     "visibleWhen": null,
@@ -9823,6 +10173,7 @@
                 {
                     "key": "targetFolder",
                     "label": "Move to folder",
+                    "hint": null,
                     "type": "SUGGESTED",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -9903,6 +10254,7 @@
                 {
                     "key": "calendar",
                     "label": "Calendar",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9912,6 +10264,7 @@
                 {
                     "key": "window",
                     "label": "Look at",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "NEXT_DAYS",
                     "visibleWhen": null,
@@ -9934,6 +10287,7 @@
                 {
                     "key": "days",
                     "label": "Days ahead",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "7",
                     "visibleWhen": {
@@ -9948,6 +10302,7 @@
                 {
                     "key": "from",
                     "label": "From",
+                    "hint": null,
                     "type": "DATE_TIME",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -9962,6 +10317,7 @@
                 {
                     "key": "until",
                     "label": "Until",
+                    "hint": null,
                     "type": "DATE_TIME",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -9976,6 +10332,7 @@
                 {
                     "key": "titleContains",
                     "label": "Title contains",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -9985,6 +10342,7 @@
                 {
                     "key": "includeCancelled",
                     "label": "Include cancelled and declined ones",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -9994,6 +10352,7 @@
                 {
                     "key": "limit",
                     "label": "How many at most",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "20",
                     "visibleWhen": null,
@@ -10083,6 +10442,7 @@
                 {
                     "key": "calendar",
                     "label": "Calendar",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10092,6 +10452,7 @@
                 {
                     "key": "title",
                     "label": "Title",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10101,6 +10462,7 @@
                 {
                     "key": "startsAt",
                     "label": "Starts at",
+                    "hint": null,
                     "type": "DATE_TIME",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10110,6 +10472,7 @@
                 {
                     "key": "durationMinutes",
                     "label": "How long (minutes)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "60",
                     "visibleWhen": null,
@@ -10119,6 +10482,7 @@
                 {
                     "key": "allDay",
                     "label": "All day",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -10128,6 +10492,7 @@
                 {
                     "key": "location",
                     "label": "Where",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10137,6 +10502,7 @@
                 {
                     "key": "description",
                     "label": "Details",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10146,6 +10512,7 @@
                 {
                     "key": "availability",
                     "label": "Shows you as",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "BUSY",
                     "visibleWhen": null,
@@ -10167,7 +10534,8 @@
                 },
                 {
                     "key": "reminderMinutes",
-                    "label": "Remind you (minutes before, -1 for no reminder)",
+                    "label": "Remind you",
+                    "hint": "minutes before, -1 for no reminder",
                     "type": "INT",
                     "defaultValue": "-1",
                     "visibleWhen": null,
@@ -10225,28 +10593,28 @@
                 },
                 {
                     "name": "title",
-                    "label": "New title (leave empty to keep it)",
+                    "label": "New title",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
                 },
                 {
                     "name": "startsAt",
-                    "label": "New start (leave empty to keep it)",
+                    "label": "New start",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "DateTime"
                 },
                 {
                     "name": "location",
-                    "label": "New place (leave empty to keep it)",
+                    "label": "New place",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
                 },
                 {
                     "name": "description",
-                    "label": "New details (leave empty to keep them)",
+                    "label": "New details",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -10263,6 +10631,7 @@
                 {
                     "key": "ref",
                     "label": "Appointment",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10272,6 +10641,7 @@
                 {
                     "key": "op",
                     "label": "What to do",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "UPDATE",
                     "visibleWhen": null,
@@ -10290,6 +10660,7 @@
                 {
                     "key": "scope",
                     "label": "Applies to",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "THIS_OCCURRENCE",
                     "visibleWhen": null,
@@ -10307,7 +10678,8 @@
                 },
                 {
                     "key": "title",
-                    "label": "New title (leave empty to keep it)",
+                    "label": "New title",
+                    "hint": "leave empty to keep it",
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -10321,7 +10693,8 @@
                 },
                 {
                     "key": "startsAt",
-                    "label": "New start (leave empty to keep it)",
+                    "label": "New start",
+                    "hint": "leave empty to keep it",
                     "type": "DATE_TIME",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -10335,7 +10708,8 @@
                 },
                 {
                     "key": "durationMinutes",
-                    "label": "New length in minutes (-1 to keep it)",
+                    "label": "New length in minutes",
+                    "hint": "-1 to keep it",
                     "type": "INT",
                     "defaultValue": "-1",
                     "visibleWhen": {
@@ -10349,7 +10723,8 @@
                 },
                 {
                     "key": "location",
-                    "label": "New place (leave empty to keep it)",
+                    "label": "New place",
+                    "hint": "leave empty to keep it",
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -10363,7 +10738,8 @@
                 },
                 {
                     "key": "description",
-                    "label": "New details (leave empty to keep them)",
+                    "label": "New details",
+                    "hint": "leave empty to keep them",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -10378,6 +10754,7 @@
                 {
                     "key": "changeAvailability",
                     "label": "Change how it shows you",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": {
@@ -10392,6 +10769,7 @@
                 {
                     "key": "availability",
                     "label": "Shows you as",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "BUSY",
                     "visibleWhen": {
@@ -10484,6 +10862,7 @@
                 {
                     "key": "conversationId",
                     "label": "Conversation ID",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10493,6 +10872,7 @@
                 {
                     "key": "text",
                     "label": "Message",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10561,6 +10941,7 @@
                 {
                     "key": "conversationId",
                     "label": "Conversation ID",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10570,6 +10951,7 @@
                 {
                     "key": "op",
                     "label": "What to do",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "MARK_READ",
                     "visibleWhen": null,
@@ -10592,6 +10974,7 @@
                 {
                     "key": "label",
                     "label": "Button",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -10665,6 +11048,7 @@
                 {
                     "key": "app",
                     "label": "App",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "WHATSAPP",
                     "visibleWhen": null,
@@ -10687,6 +11071,7 @@
                 {
                     "key": "to",
                     "label": "To",
+                    "hint": null,
                     "type": "PHONE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10696,6 +11081,7 @@
                 {
                     "key": "text",
                     "label": "Message",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10750,6 +11136,7 @@
                 {
                     "key": "url",
                     "label": "URL",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "https://example.com",
                     "visibleWhen": null,
@@ -10804,6 +11191,7 @@
                 {
                     "key": "command",
                     "label": "Command",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "play_pause",
                     "visibleWhen": null,
@@ -10838,6 +11226,7 @@
                 {
                     "key": "app",
                     "label": "App (optional)",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10899,6 +11288,7 @@
                 {
                     "key": "mode",
                     "label": "Move",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "forward",
                     "visibleWhen": null,
@@ -10921,6 +11311,7 @@
                 {
                     "key": "seconds",
                     "label": "Seconds",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "30",
                     "visibleWhen": null,
@@ -10930,6 +11321,7 @@
                 {
                     "key": "app",
                     "label": "App (optional)",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -10977,6 +11369,7 @@
                 {
                     "key": "sound",
                     "label": "Sound",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "notification",
                     "visibleWhen": null,
@@ -11003,6 +11396,7 @@
                 {
                     "key": "uri",
                     "label": "Custom sound",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": {
@@ -11017,6 +11411,7 @@
                 {
                     "key": "stream",
                     "label": "Play through",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "notification",
                     "visibleWhen": null,
@@ -11046,7 +11441,8 @@
                 },
                 {
                     "key": "startSeconds",
-                    "label": "Start at (seconds into the sound)",
+                    "label": "Start at",
+                    "hint": "seconds into the sound",
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": null,
@@ -11055,7 +11451,8 @@
                 },
                 {
                     "key": "maxSeconds",
-                    "label": "Stop after (seconds, 0 = play to the end)",
+                    "label": "Stop after",
+                    "hint": "seconds, 0 = play to the end",
                     "type": "INT",
                     "defaultValue": "30",
                     "visibleWhen": null,
@@ -11065,6 +11462,7 @@
                 {
                     "key": "waitForCompletion",
                     "label": "Wait until finished",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -11126,6 +11524,7 @@
                 {
                     "key": "times",
                     "label": "How many times",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "3",
                     "visibleWhen": null,
@@ -11252,6 +11651,7 @@
                 {
                     "key": "type",
                     "label": "Type",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "AUTO",
                     "visibleWhen": null,
@@ -11294,6 +11694,7 @@
                 {
                     "key": "field",
                     "label": "Field",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -11303,6 +11704,7 @@
                 {
                     "key": "operator",
                     "label": "Operator",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "EQUALS",
                     "visibleWhen": null,
@@ -11345,6 +11747,7 @@
                 {
                     "key": "source",
                     "label": "Source",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -11354,6 +11757,7 @@
                 {
                     "key": "value",
                     "label": "Compare against",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -11401,6 +11805,7 @@
                 {
                     "key": "mode",
                     "label": "Mode",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "normal",
                     "visibleWhen": null,
@@ -11461,6 +11866,7 @@
                 {
                     "key": "timeoutMs",
                     "label": "Timeout (ms)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "30000",
                     "visibleWhen": null,
@@ -11501,6 +11907,7 @@
                 {
                     "key": "inputs",
                     "label": "Inputs",
+                    "hint": null,
                     "type": "PORT_LIST",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -11509,7 +11916,8 @@
                 },
                 {
                     "key": "script",
-                    "label": "Script — each input is a variable of its own name",
+                    "label": "Script",
+                    "hint": "each input is a variable of its own name",
                     "type": "MULTILINE",
                     "defaultValue": "return { result: \"hello\" }",
                     "visibleWhen": null,
@@ -11519,6 +11927,7 @@
                 {
                     "key": "outputs",
                     "label": "Outputs",
+                    "hint": null,
                     "type": "PORT_LIST",
                     "defaultValue": "result:TEXT",
                     "visibleWhen": null,
@@ -11528,6 +11937,7 @@
                 {
                     "key": "timeoutMs",
                     "label": "Timeout (ms)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "2000",
                     "visibleWhen": null,
@@ -11537,6 +11947,7 @@
                 {
                     "key": "fallback",
                     "label": "If it fails",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -11598,6 +12009,7 @@
                 {
                     "key": "to",
                     "label": "To",
+                    "hint": null,
                     "type": "PHONE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -11607,6 +12019,7 @@
                 {
                     "key": "body",
                     "label": "Body",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -11661,6 +12074,7 @@
                 {
                     "key": "name",
                     "label": "Variable",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -11670,6 +12084,7 @@
                 {
                     "key": "value",
                     "label": "Value",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -11707,7 +12122,7 @@
                 },
                 {
                     "name": "reason",
-                    "label": "Reason (optional, logged before halting)",
+                    "label": "Reason",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -11716,7 +12131,8 @@
             "configFields": [
                 {
                     "key": "reason",
-                    "label": "Reason (optional, logged before halting)",
+                    "label": "Reason",
+                    "hint": "optional, logged before halting",
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -11786,7 +12202,8 @@
             "configFields": [
                 {
                     "key": "durationMs",
-                    "label": "Duration (ms, used when pattern is empty)",
+                    "label": "Duration",
+                    "hint": "ms, used when pattern is empty",
                     "type": "INT",
                     "defaultValue": "500",
                     "visibleWhen": null,
@@ -11795,7 +12212,8 @@
                 },
                 {
                     "key": "pattern",
-                    "label": "Pattern (comma-separated ms, e.g. 0,200,500,200)",
+                    "label": "Pattern",
+                    "hint": "comma-separated ms, e.g. 0,200,500,200",
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -11843,6 +12261,7 @@
                 {
                     "key": "stream",
                     "label": "Stream",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "media",
                     "visibleWhen": null,
@@ -11873,6 +12292,7 @@
                 {
                     "key": "mode",
                     "label": "Mode",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "up",
                     "visibleWhen": null,
@@ -11902,7 +12322,8 @@
                 },
                 {
                     "key": "value",
-                    "label": "Value (0-100, only when mode is set)",
+                    "label": "Value",
+                    "hint": "0-100, only when mode is set",
                     "type": "INT",
                     "defaultValue": "50",
                     "visibleWhen": null,
@@ -11950,6 +12371,7 @@
                 {
                     "key": "state",
                     "label": "State",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "on",
                     "visibleWhen": null,
@@ -12345,6 +12767,7 @@
                 {
                     "key": "entity",
                     "label": "Entity",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -12354,6 +12777,7 @@
                 {
                     "key": "attribute",
                     "label": "Attribute (optional)",
+                    "hint": null,
                     "type": "SUGGESTED",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -12523,6 +12947,7 @@
                 {
                     "key": "broker",
                     "label": "Broker",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -12532,6 +12957,7 @@
                 {
                     "key": "topic",
                     "label": "Topic",
+                    "hint": null,
                     "type": "SUGGESTED",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -12802,6 +13228,7 @@
                 {
                     "key": "name",
                     "label": "Variable",
+                    "hint": null,
                     "type": "PICKER",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -12908,7 +13335,8 @@
             "configFields": [
                 {
                     "key": "template",
-                    "label": "Template — use {A}, {B}, {C}",
+                    "label": "Template",
+                    "hint": "use {A}, {B}, {C}",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -12918,6 +13346,7 @@
                 {
                     "key": "a",
                     "label": "A",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -12927,6 +13356,7 @@
                 {
                     "key": "b",
                     "label": "B",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -12936,6 +13366,7 @@
                 {
                     "key": "c",
                     "label": "C",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -12976,6 +13407,7 @@
                 {
                     "key": "to",
                     "label": "Convert to",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "TEXT",
                     "visibleWhen": null,
@@ -13006,6 +13438,7 @@
                 {
                     "key": "fallback",
                     "label": "If it fails",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -13046,6 +13479,7 @@
                 {
                     "key": "json",
                     "label": "JSON text",
+                    "hint": null,
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -13054,7 +13488,8 @@
                 },
                 {
                     "key": "path",
-                    "label": "Path (e.g. main.temp) — blank for the whole document",
+                    "label": "Path",
+                    "hint": "e.g. main.temp — blank for the whole document",
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -13064,6 +13499,7 @@
                 {
                     "key": "type",
                     "label": "Get as",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "TEXT",
                     "visibleWhen": null,
@@ -13094,6 +13530,7 @@
                 {
                     "key": "list",
                     "label": "This is a list",
+                    "hint": null,
                     "type": "BOOL",
                     "defaultValue": "false",
                     "visibleWhen": null,
@@ -13103,6 +13540,7 @@
                 {
                     "key": "fallback",
                     "label": "If missing",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -13126,7 +13564,7 @@
             "ports": [
                 {
                     "name": "text",
-                    "label": "Text — one item per line, or wire something in",
+                    "label": "Text",
                     "kind": "DATA",
                     "direction": "IN",
                     "type": "String"
@@ -13142,7 +13580,8 @@
             "configFields": [
                 {
                     "key": "text",
-                    "label": "Text — one item per line, or wire something in",
+                    "label": "Text",
+                    "hint": "one item per line, or wire something in",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -13151,7 +13590,8 @@
                 },
                 {
                     "key": "separator",
-                    "label": "Separator (blank for a new line)",
+                    "label": "Separator",
+                    "hint": "blank for a new line",
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -13222,6 +13662,7 @@
                 {
                     "key": "index",
                     "label": "Position (0 is the first)",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": null,
@@ -13262,6 +13703,7 @@
                 {
                     "key": "separator",
                     "label": "Separator",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": ", ",
                     "visibleWhen": null,
@@ -13302,6 +13744,7 @@
                 {
                     "key": "value",
                     "label": "Item to find",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -13342,6 +13785,7 @@
                 {
                     "key": "value",
                     "label": "Item to find",
+                    "hint": null,
                     "type": "STR",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -13382,6 +13826,7 @@
                 {
                     "key": "direction",
                     "label": "Order",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "ASCENDING",
                     "visibleWhen": null,
@@ -13400,6 +13845,7 @@
                 {
                     "key": "compareAs",
                     "label": "Compare as",
+                    "hint": null,
                     "type": "ENUM",
                     "defaultValue": "TEXT",
                     "visibleWhen": null,
@@ -13448,7 +13894,8 @@
             "configFields": [
                 {
                     "key": "from",
-                    "label": "From position (0 is the first)",
+                    "label": "From position",
+                    "hint": "0 is the first",
                     "type": "INT",
                     "defaultValue": "0",
                     "visibleWhen": null,
@@ -13458,6 +13905,7 @@
                 {
                     "key": "count",
                     "label": "How many",
+                    "hint": null,
                     "type": "INT",
                     "defaultValue": "1",
                     "visibleWhen": null,

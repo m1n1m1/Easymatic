@@ -327,6 +327,16 @@ data class ConfigField<T>(
      * `Map<ConfigKey, String>` that nothing else has to learn about.
      */
     val backedBy: ConfigKey? = null,
+    /**
+     * The sentence explaining the field, shown outside the outline where it can wrap; blank for a
+     * field whose name already says it. See [com.example.ottomatic.domain.model.config.Hint] for
+     * why this is a slot of its own rather than more words in [label].
+     *
+     * Last, and defaulted, because several callers build a [ConfigField] positionally
+     * (`EffectivePorts` retyping a comparison's literal, the variable editor's ad-hoc rows), and
+     * a new parameter ahead of [defaultValue] would silently become their default value.
+     */
+    val hint: String = "",
 )
 
 /** Schema for a node type's configuration form. Looked up by [typeId]. */

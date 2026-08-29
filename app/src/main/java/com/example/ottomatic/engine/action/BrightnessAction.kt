@@ -2,6 +2,7 @@ package com.example.ottomatic.engine.action
 
 import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.dataOut
 import com.example.ottomatic.domain.model.items.BrightnessState
@@ -15,7 +16,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class BrightnessConfig(
     @Label("Auto brightness") val auto: Boolean = false,
-    @Label("Value (0-255, only when auto is off)") val value: Int = DEFAULT_BRIGHTNESS,
+    @Label("Value")
+    @Hint("0-255, only when auto is off")
+    val value: Int = DEFAULT_BRIGHTNESS,
 )
 
 private const val DEFAULT_BRIGHTNESS = 128

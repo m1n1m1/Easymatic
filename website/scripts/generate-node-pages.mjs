@@ -125,7 +125,10 @@ function portsSection(node) {
 function configSection(node) {
   if (node.configFields.length === 0) return '';
   const rows = node.configFields.map((field) => {
+    // First, because it is the field's own explanation rather than a fact about it — and
+    // because it used to be part of `label`, so leaving it out would lose what the table said.
     const notes = [];
+    if (field.hint) notes.push(field.hint);
     if (field.chooser) notes.push(`chosen from ${field.chooser}`);
     if (field.options.length > 0) {
       notes.push(field.options.map((option) => `\`${option.value}\``).join(', '));

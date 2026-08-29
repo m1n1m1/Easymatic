@@ -5,6 +5,7 @@ import com.example.ottomatic.domain.model.NodeCategory
 import com.example.ottomatic.domain.model.NodeIcon
 import com.example.ottomatic.domain.model.Port
 import com.example.ottomatic.domain.model.PortKind
+import com.example.ottomatic.domain.model.config.Hint
 import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.NoConfig
 import com.example.ottomatic.domain.model.listDataIn
@@ -273,7 +274,9 @@ class ListSortTransform : RawTransform<ListSortConfig> {
 /** Config for `transform.list_slice`. */
 @Serializable
 data class ListSliceConfig(
-    @Label("From position (0 is the first)") val from: Int = 0,
+    @Label("From position")
+    @Hint("0 is the first")
+    val from: Int = 0,
     @Label("How many") val count: Int = 1,
 )
 

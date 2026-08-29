@@ -27,6 +27,32 @@ import kotlinx.serialization.Serializable
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Label(val value: String)
 
+/**
+ * The sentence under a form field that explains what to put in it.
+ *
+ * It exists because [Label] was doing both jobs and could only do one. A label is drawn in the
+ * **notch** of an outlined text field — a gap punched through the border — and a gap in a border
+ * is one line high by construction, so it holds roughly thirty characters and ellipsizes the rest.
+ * With nowhere else to say anything, declarations wrote the explanation into the name
+ * (`"Stop after this much silence (seconds, 0 = listen the whole time)"`), and the half after the
+ * bracket had never been readable by anybody. Eight locales made it worse rather than equally bad:
+ * the same label runs about half again as long in German and French, so a field that just fitted in
+ * English was cut in six other languages.
+ *
+ * So the rule is now: **the notch holds the field's name, and everything else it has to say lives
+ * out here**, where the text is a plain `Text` and can wrap to any length. A hint is orthogonal to
+ * the widget annotations below — `checkWidgetAnnotations` lets a property claim at most one of
+ * those because they each replace the editor, where this only adds a sentence beside whichever
+ * editor was chosen. Every field may have one.
+ *
+ * Keep a *unit* in the label: `"Warmth (K)"` and `"How long (minutes)"` name the field rather than
+ * explain it, and splitting them would leave a label that no longer says what it wants.
+ */
+@SerialInfo
+@Target(AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class Hint(val value: String)
+
 /** Renders the property as a multi-line text field instead of a single line. */
 @SerialInfo
 @Target(AnnotationTarget.PROPERTY)
