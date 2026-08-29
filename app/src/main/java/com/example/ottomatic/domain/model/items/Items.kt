@@ -272,7 +272,7 @@ data class ModeChange(
 /**
  * Generic system-state event reported by Tier 1 broadcast-receiver triggers
  * (wifi, bluetooth, airplane, headset, usb, dock, screen, ringer, power-save,
- * clock-change, locale, shutdown, call) on their `state` data port.
+ * clock-change, locale, shutdown) on their `state` data port.
  *
  * - [event]: discriminator — `"enabled"`, `"disabled"`, `"connected"`,
  *   `"disconnected"`, `"on"`, `"off"`, `"plugged"`, `"unplugged"`, etc.
@@ -1053,6 +1053,42 @@ data class RecordingResultItem(
 data class CallInitiated(
     val number: String,
     val initiated: Boolean,
+)
+
+/**
+ * A phone call starting, connecting or ending, on `trigger.call_state`'s and
+ * `trigger.call_ended`'s `call` data port, and read back by `value.current_call`.
+ *
+ * One struct for the cellular radio *and* for every app that places calls, which is the
+ * whole point: "when a call ends, turn the music back on" is one macro whether the call
+ * came in on the SIM, on Teams or on WhatsApp. `CallSessions` merges the two channels
+ * before anything reaches here, so nothing downstream has to know which it was.
+ *
+ * - [state]: `"ringing"`, `"active"` or `"ended"`.
+ * - [caller]: who is on the other end, as the call app printed it — a contact name where
+ *   there is one, otherwise whatever it showed instead. Empty when the app named nobody.
+ *   There is deliberately no separate `number` field: telephony discloses one only under
+ *   `READ_CALL_LOG`, which Ottomatic does not ask for, and a field that is permanently
+ *   empty is worse than an absent one.
+ * - [appName] / [packageName]: which app the call is in. For a cellular call this is the
+ *   phone's own dialer.
+ * - [incoming]: false for a call this phone placed. Derived from a connect with no ring
+ *   before it, which is the only signal either channel gives.
+ * - [answered] and [durationSeconds] are meaningful **only** once [state] is `"ended"`;
+ *   both are 0/false before that, and both stay 0/false for a call that was never picked
+ *   up, which is what tells a missed call from a short one.
+ */
+@Serializable
+data class CallEvent(
+    val state: String,
+    val caller: String = "",
+    val appName: String = "",
+    val packageName: String = "",
+    val incoming: Boolean = true,
+    val video: Boolean = false,
+    val answered: Boolean = false,
+    val durationSeconds: Int = 0,
+    val timestamp: DateTime,
 )
 
 /**

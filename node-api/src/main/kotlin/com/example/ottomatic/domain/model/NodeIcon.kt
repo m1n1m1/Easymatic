@@ -14,6 +14,9 @@ enum class NodeIcon {
     SCHEDULE,
     NOTIFICATION,
     SMS,
+
+    /** A phone call, on the two call triggers and the two call values. */
+    CALL,
     SEND,
     MAIL,
     HTTP,

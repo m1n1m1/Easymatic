@@ -65,6 +65,7 @@ trigger.bluetooth
 trigger.bluetooth_connect
 trigger.airplane_mode
 trigger.call_state
+trigger.call_ended
 trigger.headset
 trigger.usb_device
 trigger.dock
@@ -159,7 +160,9 @@ value.battery
 value.bluetooth
 value.calendar_busy
 value.calendar_next
+value.call_active
 value.charging
+value.current_call
 value.dark_mode
 value.orientation
 value.dnd

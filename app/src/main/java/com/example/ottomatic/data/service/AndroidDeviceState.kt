@@ -15,8 +15,13 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
+import android.telecom.TelecomManager
+import androidx.core.content.getSystemService
+import com.example.ottomatic.core.service.CallStatus
 import com.example.ottomatic.core.service.DeviceState
 import com.example.ottomatic.core.service.RingerMode
+import com.example.ottomatic.data.call.CallPhase
+import com.example.ottomatic.data.call.CallSessions
 import com.example.ottomatic.domain.model.WifiSsid
 
 /**
@@ -191,6 +196,40 @@ class AndroidDeviceState(private val context: Context) : DeviceState {
     }.getOrNull()
 
     override fun isTorchOn(): Boolean? = torchOn
+
+    /**
+     * The tracked session first, then the platform's own answer.
+     *
+     * The order matters and is not a preference for freshness: only the tracked session
+     * knows *who* is calling and which app it is in, so asking Telecom first would throw
+     * that away on every call. Telecom is the backstop for the case the cache cannot
+     * cover — a call that was already going on when this process started, where there was
+     * no broadcast and no notification post to see, only a notification that was already
+     * there.
+     *
+     * `isInCall` covers self-managed connections as well as the cellular radio, so it
+     * catches a WhatsApp or Signal call too; it just cannot say whose. It needs
+     * `READ_PHONE_STATE`, and answers null rather than false without it, so a comparison
+     * over an ungranted read fails closed instead of asserting there is no call.
+     */
+    @Suppress("ReturnCount") // The tracked session, nothing knowable, and the platform's answer.
+    override fun currentCall(): CallStatus? {
+        CallSessions.current()?.let { session ->
+            return CallStatus(
+                active = session.phase == CallPhase.ACTIVE,
+                ringing = session.phase == CallPhase.RINGING,
+                caller = session.caller,
+                appName = session.appName,
+                packageName = session.packageName,
+                incoming = session.incoming,
+                video = session.video,
+            )
+        }
+        val inCall = runCatching {
+            context.getSystemService<TelecomManager>()?.isInCall
+        }.getOrNull() ?: return null
+        return CallStatus(active = inCall, ringing = false)
+    }
 
     private companion object {
         const val PERCENT = 100

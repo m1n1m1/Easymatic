@@ -20,6 +20,7 @@
     <string name="perm_title_receive_sms">接收短信</string>
     <string name="perm_title_send_sms">发送短信</string>
     <string name="perm_title_call_phone">拨打电话</string>
+    <string name="perm_title_read_phone_state">通话状态</string>
     <string name="perm_title_read_contacts">通讯录</string>
     <string name="perm_title_read_calendar">日历</string>
     <string name="perm_title_write_calendar">修改你的日历</string>
@@ -47,6 +48,7 @@
     <string name="perm_desc_receive_sms">允许宏在短信到达时运行，并读取发件人和内容。</string>
     <string name="perm_desc_send_sms">允许宏以你的名义发送短信。</string>
     <string name="perm_desc_call_phone">允许宏在无需你确认的情况下拨打电话。</string>
+    <string name="perm_desc_read_phone_state">让宏知道通话何时开始、被接听和结束。不读取号码和通话记录，只看是否正在通话。</string>
     <string name="perm_desc_read_contacts">允许宏查找你所选联系人的号码。选择联系人不需要任何权限；之后拨号才需要。</string>
     <string name="perm_desc_read_calendar">允许宏读取你的日程，并让你在设置时选择日历。与通讯录不同，系统没有可供依赖的选择器，所以日历节点必须先获得此权限才能显示任何内容。</string>
     <string name="perm_desc_write_calendar">允许宏创建、修改和删除日程。读取日程是上面那个单独的开关。</string>
@@ -61,6 +63,8 @@
     <string name="perm_rationale_audio_record">Ottomatic 需要麦克风权限才能录音。它仅在录音进行期间打开麦克风，录音一结束就立即关闭。没有此权限，录音会失败或被保存为静音。</string>
     <string name="perm_rationale_camera_photo">Ottomatic 需要摄像头权限才能拍照。它仅在此操作运行期间打开摄像头，随后立即关闭。当手机长时间在后台闲置时，Android 仍可能拒绝拍照。</string>
     <string name="perm_rationale_notification_listener">Ottomatic 需要通知使用权才能看到其他应用的通知。</string>
+    <string name="perm_rationale_call_state">Ottomatic 需要通话状态权限，才能知道通话何时开始、被接听和结束。它不读取号码和通话记录。没有它，移动网络的通话会被错过；其他应用的通话则由通知权限覆盖。</string>
+    <string name="perm_rationale_call_notification">Ottomatic 需要通知权限，才能发现 Teams、WhatsApp、Discord 等应用里的通话。它们都不会用其他方式告知通话，普通电话中来电者的名字也是从这里来的。没有它，就只能看到移动网络的通话。</string>
     <string name="perm_rationale_dnd_policy">Ottomatic 需要勿扰模式使用权才能更改你的响铃模式。</string>
     <string name="perm_rationale_overlay_dialog">Ottomatic 需要显示在其他应用上层的权限，这样在你正忙于手机上别的事情时，这个对话框才能出现在你面前。没有它，该节点会直接取消而不是发问。</string>
     <string name="perm_rationale_nfc_radio">此触发器需要开启 NFC，那是一项系统级设置，Ottomatic 无法自行授予。此外，只有在屏幕点亮并解锁时才会读取标签：贴一下无法唤醒口袋里休眠的手机。</string>

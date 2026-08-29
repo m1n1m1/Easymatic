@@ -221,14 +221,9 @@
     <string name="cfg_trigger_airplane_mode_event">Événement</string>
     <string name="opt_trigger_airplane_mode_event_on">Allumé</string>
     <string name="opt_trigger_airplane_mode_event_off">Éteint</string>
-    <string name="node_trigger_call_state_name">État d\'appel entrant</string>
-    <string name="node_trigger_call_state_desc">Démarre quand l\'état de l\'appel change (sonne, en communication, libre)</string>
     <string name="port_trigger_call_state_out">Sortie</string>
-    <string name="port_trigger_call_state_state">État</string>
     <string name="cfg_trigger_call_state_event">Événement</string>
     <string name="opt_trigger_call_state_event_ringing">Sonne</string>
-    <string name="opt_trigger_call_state_event_offhook">En communication</string>
-    <string name="opt_trigger_call_state_event_idle">Libre</string>
     <string name="node_trigger_headset_name">Casque branché</string>
     <string name="node_trigger_headset_desc">Démarre quand un casque filaire est branché ou débranché</string>
     <string name="port_trigger_headset_out">Sortie</string>
@@ -1701,4 +1696,27 @@
     <string name="port_action_notify_progress" formatted="false">Progression (%, sous 0 = occupé)</string>
     <string name="cfg_action_notify_progress" formatted="false">Progression (%, sous 0 = occupé)</string>
     <string name="port_value_battery_level" formatted="false">Niveau (%)</string>
+    <string name="node_trigger_call_state_name">État de l’appel</string>
+    <string name="node_trigger_call_state_desc">Démarre quand un appel sonne, est décroché ou se termine, sur le téléphone ou dans Teams, WhatsApp, Discord ou une autre application d’appel</string>
+    <string name="port_trigger_call_state_call">Appel</string>
+    <string name="opt_trigger_call_state_event_active">En cours</string>
+    <string name="opt_trigger_call_state_event_ended">Terminé</string>
+    <string name="cfg_trigger_call_state_package_filter">De l\'application (facultatif)</string>
+    <string name="node_trigger_call_ended_name">Appel terminé</string>
+    <string name="node_trigger_call_ended_desc">Démarre quand un appel se termine, avec sa durée et s’il a été décroché, sur le téléphone ou dans Teams, WhatsApp, Discord ou une autre application d’appel</string>
+    <string name="port_trigger_call_ended_out">Sortie</string>
+    <string name="port_trigger_call_ended_call">Appel</string>
+    <string name="cfg_trigger_call_ended_outcome">Résultat</string>
+    <string name="opt_trigger_call_ended_outcome_answered">Décroché</string>
+    <string name="opt_trigger_call_ended_outcome_missed">Manqué</string>
+    <string name="cfg_trigger_call_ended_direction">Sens</string>
+    <string name="opt_trigger_call_ended_direction_incoming">Entrant</string>
+    <string name="opt_trigger_call_ended_direction_outgoing">Sortant</string>
+    <string name="cfg_trigger_call_ended_package_filter">De l\'application (facultatif)</string>
+    <string name="node_value_call_active_name">En appel</string>
+    <string name="node_value_call_active_desc">Si un appel est en cours en ce moment, sur le téléphone ou dans Teams, WhatsApp, Discord ou une autre application d’appel</string>
+    <string name="port_value_call_active_active">En appel</string>
+    <string name="node_value_current_call_name">Appel en cours</string>
+    <string name="node_value_current_call_desc">L’appel en cours, avec qui il a lieu et dans quelle application</string>
+    <string name="port_value_current_call_call">Appel</string>
 </resources>

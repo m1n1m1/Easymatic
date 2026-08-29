@@ -223,14 +223,9 @@
     <string name="cfg_trigger_airplane_mode_event">Ereignis</string>
     <string name="opt_trigger_airplane_mode_event_on">An</string>
     <string name="opt_trigger_airplane_mode_event_off">Aus</string>
-    <string name="node_trigger_call_state_name">Status eingehender Anruf</string>
-    <string name="node_trigger_call_state_desc">Startet, wenn sich der Anrufstatus ändert (klingelt, im Gespräch, bereit)</string>
     <string name="port_trigger_call_state_out">Ausgang</string>
-    <string name="port_trigger_call_state_state">Status</string>
     <string name="cfg_trigger_call_state_event">Ereignis</string>
     <string name="opt_trigger_call_state_event_ringing">Klingelt</string>
-    <string name="opt_trigger_call_state_event_offhook">Im Gespräch</string>
-    <string name="opt_trigger_call_state_event_idle">Bereit</string>
     <string name="node_trigger_headset_name">Headset angeschlossen</string>
     <string name="node_trigger_headset_desc">Startet, wenn ein kabelgebundenes Headset ein- oder ausgesteckt wird</string>
     <string name="port_trigger_headset_out">Ausgang</string>
@@ -1703,4 +1698,27 @@
     <string name="port_action_notify_progress" formatted="false">Fortschritt (%, unter 0 = beschäftigt)</string>
     <string name="cfg_action_notify_progress" formatted="false">Fortschritt (%, unter 0 = beschäftigt)</string>
     <string name="port_value_battery_level" formatted="false">Ladestand (%)</string>
+    <string name="node_trigger_call_state_name">Anrufstatus</string>
+    <string name="node_trigger_call_state_desc">Startet, wenn ein Anruf klingelt, angenommen wird oder endet – am Telefon oder in Teams, WhatsApp, Discord oder einer anderen Anruf-App</string>
+    <string name="port_trigger_call_state_call">Anruf</string>
+    <string name="opt_trigger_call_state_event_active">Aktiv</string>
+    <string name="opt_trigger_call_state_event_ended">Beendet</string>
+    <string name="cfg_trigger_call_state_package_filter">Von App (optional)</string>
+    <string name="node_trigger_call_ended_name">Anruf beendet</string>
+    <string name="node_trigger_call_ended_desc">Startet, wenn ein Anruf endet – mit Dauer und ob er angenommen wurde; am Telefon oder in Teams, WhatsApp, Discord oder einer anderen Anruf-App</string>
+    <string name="port_trigger_call_ended_out">Ausgang</string>
+    <string name="port_trigger_call_ended_call">Anruf</string>
+    <string name="cfg_trigger_call_ended_outcome">Ergebnis</string>
+    <string name="opt_trigger_call_ended_outcome_answered">Angenommen</string>
+    <string name="opt_trigger_call_ended_outcome_missed">Verpasst</string>
+    <string name="cfg_trigger_call_ended_direction">Richtung</string>
+    <string name="opt_trigger_call_ended_direction_incoming">Eingehend</string>
+    <string name="opt_trigger_call_ended_direction_outgoing">Ausgehend</string>
+    <string name="cfg_trigger_call_ended_package_filter">Von App (optional)</string>
+    <string name="node_value_call_active_name">Im Gespräch</string>
+    <string name="node_value_call_active_desc">Ob gerade ein Anruf läuft – am Telefon oder in Teams, WhatsApp, Discord oder einer anderen Anruf-App</string>
+    <string name="port_value_call_active_active">Im Gespräch</string>
+    <string name="node_value_current_call_name">Aktueller Anruf</string>
+    <string name="node_value_current_call_desc">Der laufende Anruf, mit wem er ist und in welcher App</string>
+    <string name="port_value_current_call_call">Anruf</string>
 </resources>

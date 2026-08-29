@@ -221,14 +221,9 @@
     <string name="cfg_trigger_airplane_mode_event">イベント</string>
     <string name="opt_trigger_airplane_mode_event_on">オン</string>
     <string name="opt_trigger_airplane_mode_event_off">オフ</string>
-    <string name="node_trigger_call_state_name">着信の状態</string>
-    <string name="node_trigger_call_state_desc">通話の状態が変わったときに開始します（着信中、通話中、待機中）</string>
     <string name="port_trigger_call_state_out">出力</string>
-    <string name="port_trigger_call_state_state">状態</string>
     <string name="cfg_trigger_call_state_event">イベント</string>
     <string name="opt_trigger_call_state_event_ringing">着信中</string>
-    <string name="opt_trigger_call_state_event_offhook">通話中</string>
-    <string name="opt_trigger_call_state_event_idle">待機中</string>
     <string name="node_trigger_headset_name">ヘッドセットの接続</string>
     <string name="node_trigger_headset_desc">有線ヘッドセットが接続または取り外されたときに開始します</string>
     <string name="port_trigger_headset_out">出力</string>
@@ -1701,4 +1696,27 @@
     <string name="port_action_notify_progress" formatted="false">進捗（%、0 未満は処理中）</string>
     <string name="cfg_action_notify_progress" formatted="false">進捗（%、0 未満は処理中）</string>
     <string name="port_value_battery_level" formatted="false">残量（%）</string>
+    <string name="node_trigger_call_state_name">通話の状態</string>
+    <string name="node_trigger_call_state_desc">電話や Teams、WhatsApp、Discord などの通話アプリで、着信した・応答した・終了したときに開始します</string>
+    <string name="port_trigger_call_state_call">通話</string>
+    <string name="opt_trigger_call_state_event_active">通話中</string>
+    <string name="opt_trigger_call_state_event_ended">終了</string>
+    <string name="cfg_trigger_call_state_package_filter">送信元アプリ（任意）</string>
+    <string name="node_trigger_call_ended_name">通話終了</string>
+    <string name="node_trigger_call_ended_desc">通話が終わったときに、通話時間と応答したかどうかを付けて開始します。電話や Teams、WhatsApp、Discord などの通話アプリに対応</string>
+    <string name="port_trigger_call_ended_out">出力</string>
+    <string name="port_trigger_call_ended_call">通話</string>
+    <string name="cfg_trigger_call_ended_outcome">結果</string>
+    <string name="opt_trigger_call_ended_outcome_answered">応答した</string>
+    <string name="opt_trigger_call_ended_outcome_missed">不在着信</string>
+    <string name="cfg_trigger_call_ended_direction">発着信</string>
+    <string name="opt_trigger_call_ended_direction_incoming">着信</string>
+    <string name="opt_trigger_call_ended_direction_outgoing">発信</string>
+    <string name="cfg_trigger_call_ended_package_filter">送信元アプリ（任意）</string>
+    <string name="node_value_call_active_name">通話中</string>
+    <string name="node_value_call_active_desc">今通話中かどうか。電話や Teams、WhatsApp、Discord などの通話アプリに対応</string>
+    <string name="port_value_call_active_active">通話中</string>
+    <string name="node_value_current_call_name">現在の通話</string>
+    <string name="node_value_current_call_desc">進行中の通話。相手と使用アプリを含みます</string>
+    <string name="port_value_current_call_call">通話</string>
 </resources>

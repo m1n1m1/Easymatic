@@ -7,7 +7,9 @@ import com.example.ottomatic.engine.value.BatteryLevelValue
 import com.example.ottomatic.engine.value.BluetoothValue
 import com.example.ottomatic.engine.value.CalendarBusyValue
 import com.example.ottomatic.engine.value.CalendarNextValue
+import com.example.ottomatic.engine.value.CallActiveValue
 import com.example.ottomatic.engine.value.ChargingValue
+import com.example.ottomatic.engine.value.CurrentCallValue
 import com.example.ottomatic.engine.value.DarkModeValue
 import com.example.ottomatic.engine.value.DeviceOrientationValue
 import com.example.ottomatic.engine.value.DndValue
@@ -59,7 +61,9 @@ object ValueRegistry {
         BluetoothValue(),
         CalendarBusyValue(),
         CalendarNextValue(),
+        CallActiveValue(),
         ChargingValue(),
+        CurrentCallValue(),
         DarkModeValue(),
         DeviceOrientationValue(),
         DndValue(),

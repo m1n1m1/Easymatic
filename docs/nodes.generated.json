@@ -1,5 +1,5 @@
 {
-    "nodeCount": 180,
+    "nodeCount": 183,
     "nodes": [
         {
             "typeId": "trigger.manual",
@@ -1864,12 +1864,12 @@
         {
             "typeId": "trigger.call_state",
             "slug": "trigger_call_state",
-            "displayName": "Incoming Call State",
-            "description": "Starts when the phone call state changes (ringing, offhook, idle)",
+            "displayName": "Call State",
+            "description": "Starts when a call starts ringing, is answered or ends, on the phone or in Teams, WhatsApp, Discord or another calling app",
             "kind": "TRIGGER",
             "category": "PHONE_MEDIA",
             "categoryLabel": "Phone & Media",
-            "icon": "BOLT",
+            "icon": "CALL",
             "hasDynamicPorts": false,
             "ports": [
                 {
@@ -1880,11 +1880,11 @@
                     "type": null
                 },
                 {
-                    "name": "state",
-                    "label": "State",
+                    "name": "call",
+                    "label": "Call",
                     "kind": "DATA",
                     "direction": "OUT",
-                    "type": "Object{event: String, detail: String, timestamp: DateTime}"
+                    "type": "Object{state: String, caller: String, appName: String, packageName: String, incoming: Boolean, video: Boolean, answered: Boolean, durationSeconds: Int, timestamp: DateTime}"
                 }
             ],
             "configFields": [
@@ -1904,18 +1904,137 @@
                             "label": "Ringing"
                         },
                         {
-                            "value": "OFFHOOK",
-                            "label": "Offhook"
+                            "value": "ACTIVE",
+                            "label": "Active"
                         },
                         {
-                            "value": "IDLE",
-                            "label": "Idle"
+                            "value": "ENDED",
+                            "label": "Ended"
                         }
                     ],
                     "chooser": null
+                },
+                {
+                    "key": "packageFilter",
+                    "label": "From app (optional)",
+                    "type": "PICKER",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": "APP_FILTER"
                 }
             ],
-            "permissions": [],
+            "permissions": [
+                {
+                    "key": "android.permission.READ_PHONE_STATE",
+                    "type": "RUNTIME",
+                    "manifestPermission": "android.permission.READ_PHONE_STATE",
+                    "label": "phone state access"
+                },
+                {
+                    "key": "NOTIFICATION_LISTENER",
+                    "type": "NOTIFICATION_LISTENER",
+                    "manifestPermission": null,
+                    "label": "notification access"
+                }
+            ],
+            "capabilities": []
+        },
+        {
+            "typeId": "trigger.call_ended",
+            "slug": "trigger_call_ended",
+            "displayName": "Call Ended",
+            "description": "Starts when a call finishes, with how long it lasted and whether it was answered — on the phone or in Teams, WhatsApp, Discord or another calling app",
+            "kind": "TRIGGER",
+            "category": "PHONE_MEDIA",
+            "categoryLabel": "Phone & Media",
+            "icon": "CALL",
+            "hasDynamicPorts": false,
+            "ports": [
+                {
+                    "name": "out",
+                    "label": "out",
+                    "kind": "EXECUTION",
+                    "direction": "OUT",
+                    "type": null
+                },
+                {
+                    "name": "call",
+                    "label": "Call",
+                    "kind": "DATA",
+                    "direction": "OUT",
+                    "type": "Object{state: String, caller: String, appName: String, packageName: String, incoming: Boolean, video: Boolean, answered: Boolean, durationSeconds: Int, timestamp: DateTime}"
+                }
+            ],
+            "configFields": [
+                {
+                    "key": "outcome",
+                    "label": "Outcome",
+                    "type": "ENUM",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [
+                        {
+                            "value": "",
+                            "label": "Any"
+                        },
+                        {
+                            "value": "ANSWERED",
+                            "label": "Answered"
+                        },
+                        {
+                            "value": "MISSED",
+                            "label": "Missed"
+                        }
+                    ],
+                    "chooser": null
+                },
+                {
+                    "key": "direction",
+                    "label": "Direction",
+                    "type": "ENUM",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [
+                        {
+                            "value": "",
+                            "label": "Any"
+                        },
+                        {
+                            "value": "INCOMING",
+                            "label": "Incoming"
+                        },
+                        {
+                            "value": "OUTGOING",
+                            "label": "Outgoing"
+                        }
+                    ],
+                    "chooser": null
+                },
+                {
+                    "key": "packageFilter",
+                    "label": "From app (optional)",
+                    "type": "PICKER",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": "APP_FILTER"
+                }
+            ],
+            "permissions": [
+                {
+                    "key": "android.permission.READ_PHONE_STATE",
+                    "type": "RUNTIME",
+                    "manifestPermission": "android.permission.READ_PHONE_STATE",
+                    "label": "phone state access"
+                },
+                {
+                    "key": "NOTIFICATION_LISTENER",
+                    "type": "NOTIFICATION_LISTENER",
+                    "manifestPermission": null,
+                    "label": "notification access"
+                }
+            ],
             "capabilities": []
         },
         {
@@ -11913,6 +12032,42 @@
             "capabilities": []
         },
         {
+            "typeId": "value.call_active",
+            "slug": "value_call_active",
+            "displayName": "On a call",
+            "description": "Whether a call is in progress right now, on the phone or in Teams, WhatsApp, Discord or another calling app",
+            "kind": "VALUE",
+            "category": "VALUE_DEVICE",
+            "categoryLabel": "Device State",
+            "icon": "CALL",
+            "hasDynamicPorts": false,
+            "ports": [
+                {
+                    "name": "active",
+                    "label": "On a call",
+                    "kind": "DATA",
+                    "direction": "OUT",
+                    "type": "Boolean"
+                }
+            ],
+            "configFields": [],
+            "permissions": [
+                {
+                    "key": "android.permission.READ_PHONE_STATE",
+                    "type": "RUNTIME",
+                    "manifestPermission": "android.permission.READ_PHONE_STATE",
+                    "label": "phone state access"
+                },
+                {
+                    "key": "NOTIFICATION_LISTENER",
+                    "type": "NOTIFICATION_LISTENER",
+                    "manifestPermission": null,
+                    "label": "notification access"
+                }
+            ],
+            "capabilities": []
+        },
+        {
             "typeId": "value.charging",
             "slug": "value_charging",
             "displayName": "Charging",
@@ -11933,6 +12088,42 @@
             ],
             "configFields": [],
             "permissions": [],
+            "capabilities": []
+        },
+        {
+            "typeId": "value.current_call",
+            "slug": "value_current_call",
+            "displayName": "Current call",
+            "description": "The call in progress, with who it is with and which app it is in",
+            "kind": "VALUE",
+            "category": "VALUE_DEVICE",
+            "categoryLabel": "Device State",
+            "icon": "CALL",
+            "hasDynamicPorts": false,
+            "ports": [
+                {
+                    "name": "call",
+                    "label": "Call",
+                    "kind": "DATA",
+                    "direction": "OUT",
+                    "type": "Object{state: String, caller: String, appName: String, packageName: String, incoming: Boolean, video: Boolean, answered: Boolean, durationSeconds: Int, timestamp: DateTime}"
+                }
+            ],
+            "configFields": [],
+            "permissions": [
+                {
+                    "key": "android.permission.READ_PHONE_STATE",
+                    "type": "RUNTIME",
+                    "manifestPermission": "android.permission.READ_PHONE_STATE",
+                    "label": "phone state access"
+                },
+                {
+                    "key": "NOTIFICATION_LISTENER",
+                    "type": "NOTIFICATION_LISTENER",
+                    "manifestPermission": null,
+                    "label": "notification access"
+                }
+            ],
             "capabilities": []
         },
         {

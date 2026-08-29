@@ -7,6 +7,11 @@ import android.service.notification.StatusBarNotification
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.data.call.CallSessions
+import com.example.ottomatic.data.call.CallTransition
+import com.example.ottomatic.data.call.DefaultDialer
+import com.example.ottomatic.data.call.NotificationCalls
+import com.example.ottomatic.data.call.toPayload
 import com.example.ottomatic.data.notification.ActiveNotifications
 import com.example.ottomatic.data.notification.NotificationMessages
 import com.example.ottomatic.data.notification.ParsedMessage
@@ -46,6 +51,10 @@ class NotificationListener : NotificationListenerService() {
      */
     override fun onListenerDisconnected() {
         ActiveNotifications.detach()
+        // Their notifications can never be seen to disappear now, so nothing would ever
+        // close them and `value.call_active` would answer true forever. The cellular
+        // session is left alone: telephony is a separate grant and reports its own end.
+        CallSessions.forgetAppCalls()
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
@@ -66,6 +75,7 @@ class NotificationListener : NotificationListenerService() {
             ),
         )
         emitMessage(sbn)
+        emitCall(sbn)
     }
 
     /**
@@ -79,6 +89,55 @@ class NotificationListener : NotificationListenerService() {
      */
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
         ActiveNotifications.forget(sbn.key)
+        emitCallEnded(sbn)
+    }
+
+    /**
+     * Publishes [sbn] as a call, if it is one and if it changes what was already known.
+     *
+     * Runs beside [emitMessage] rather than instead of it, and the two never collide:
+     * `NotificationMessages` refuses an ongoing notification and `NotificationCalls`
+     * requires one. A call app that also messages produces one or the other per post,
+     * never both.
+     *
+     * [CallSessions] answers null for a notification that tells it nothing new — a call
+     * app re-posting its ongoing notification every second while the timer ticks is the
+     * normal case, and firing a macro on each of those would be the same bug
+     * `MessageDedup` exists to prevent.
+     */
+    private fun emitCall(sbn: StatusBarNotification) {
+        val call = NotificationCalls.read(sbn, packageManager) ?: return
+        val transition = CallSessions.onCallNotification(
+            key = sbn.key,
+            call = call,
+            nowMs = System.currentTimeMillis(),
+            dialerPackage = DefaultDialer.packageName(this),
+        ) ?: return
+        emitCall(transition)
+    }
+
+    /**
+     * Publishes the end of a call whose notification has just gone.
+     *
+     * This is the whole of "the call ended" for every app that is not the cellular radio,
+     * because no app broadcasts anything when a call finishes — the notification going
+     * away is the only signal Android gives. [CallSessions] answers null for every
+     * notification that was not a call it was following, which is nearly all of them, and
+     * also for a cellular call telephony has already closed.
+     */
+    private fun emitCallEnded(sbn: StatusBarNotification) {
+        val transition = CallSessions.onNotificationGone(sbn.key, System.currentTimeMillis()) ?: return
+        emitCall(transition)
+    }
+
+    private fun emitCall(transition: CallTransition) {
+        TriggerBus.emitOrHoldBroadcast(
+            TriggerEvent(
+                source = TriggerSource.CALL,
+                triggerNodeId = NodeId.BROADCAST,
+                payload = transition.toPayload(),
+            ),
+        )
     }
 
     /**

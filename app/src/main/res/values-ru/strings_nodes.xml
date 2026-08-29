@@ -221,14 +221,9 @@
     <string name="cfg_trigger_airplane_mode_event">Событие</string>
     <string name="opt_trigger_airplane_mode_event_on">Включено</string>
     <string name="opt_trigger_airplane_mode_event_off">Выключено</string>
-    <string name="node_trigger_call_state_name">Состояние входящего звонка</string>
-    <string name="node_trigger_call_state_desc">Срабатывает при изменении состояния звонка (звонит, разговор, свободна)</string>
     <string name="port_trigger_call_state_out">Выход</string>
-    <string name="port_trigger_call_state_state">Состояние</string>
     <string name="cfg_trigger_call_state_event">Событие</string>
     <string name="opt_trigger_call_state_event_ringing">Звонит</string>
-    <string name="opt_trigger_call_state_event_offhook">Разговор</string>
-    <string name="opt_trigger_call_state_event_idle">Свободна</string>
     <string name="node_trigger_headset_name">Гарнитура подключена</string>
     <string name="node_trigger_headset_desc">Срабатывает при подключении или отключении проводной гарнитуры</string>
     <string name="port_trigger_headset_out">Выход</string>
@@ -1701,4 +1696,27 @@
     <string name="port_action_notify_progress" formatted="false">Прогресс (%, меньше 0 = выполняется)</string>
     <string name="cfg_action_notify_progress" formatted="false">Прогресс (%, меньше 0 = выполняется)</string>
     <string name="port_value_battery_level" formatted="false">Уровень (%)</string>
+    <string name="node_trigger_call_state_name">Состояние звонка</string>
+    <string name="node_trigger_call_state_desc">Запускается, когда звонок начинается, принимается или завершается — по телефону или в Teams, WhatsApp, Discord или другом приложении</string>
+    <string name="port_trigger_call_state_call">Звонок</string>
+    <string name="opt_trigger_call_state_event_active">Идёт разговор</string>
+    <string name="opt_trigger_call_state_event_ended">Завершён</string>
+    <string name="cfg_trigger_call_state_package_filter">От приложения (необязательно)</string>
+    <string name="node_trigger_call_ended_name">Звонок завершён</string>
+    <string name="node_trigger_call_ended_desc">Запускается, когда звонок заканчивается, с длительностью и тем, был ли он принят — по телефону или в Teams, WhatsApp, Discord или другом приложении</string>
+    <string name="port_trigger_call_ended_out">Выход</string>
+    <string name="port_trigger_call_ended_call">Звонок</string>
+    <string name="cfg_trigger_call_ended_outcome">Итог</string>
+    <string name="opt_trigger_call_ended_outcome_answered">Принят</string>
+    <string name="opt_trigger_call_ended_outcome_missed">Пропущен</string>
+    <string name="cfg_trigger_call_ended_direction">Направление</string>
+    <string name="opt_trigger_call_ended_direction_incoming">Входящий</string>
+    <string name="opt_trigger_call_ended_direction_outgoing">Исходящий</string>
+    <string name="cfg_trigger_call_ended_package_filter">От приложения (необязательно)</string>
+    <string name="node_value_call_active_name">Разговор идёт</string>
+    <string name="node_value_call_active_desc">Идёт ли сейчас звонок — по телефону или в Teams, WhatsApp, Discord или другом приложении</string>
+    <string name="port_value_call_active_active">Разговор идёт</string>
+    <string name="node_value_current_call_name">Текущий звонок</string>
+    <string name="node_value_current_call_desc">Идущий звонок: с кем он и в каком приложении</string>
+    <string name="port_value_current_call_call">Звонок</string>
 </resources>

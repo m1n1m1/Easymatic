@@ -19,6 +19,7 @@
     <string name="perm_title_receive_sms">SMS empfangen</string>
     <string name="perm_title_send_sms">SMS senden</string>
     <string name="perm_title_call_phone">Anrufe tätigen</string>
+    <string name="perm_title_read_phone_state">Telefonstatus</string>
     <string name="perm_title_read_contacts">Kontakte</string>
     <string name="perm_title_read_calendar">Kalender</string>
     <string name="perm_title_write_calendar">Kalender ändern</string>
@@ -44,6 +45,7 @@
     <string name="perm_desc_receive_sms">Erlaubt einem Makro, zu starten, wenn eine SMS ankommt, und zu lesen, von wem sie ist und was darin steht.</string>
     <string name="perm_desc_send_sms">Erlaubt einem Makro, in deinem Namen eine SMS zu senden.</string>
     <string name="perm_desc_call_phone">Erlaubt einem Makro, einen Anruf zu tätigen, ohne dass du ihn bestätigst.</string>
+    <string name="perm_desc_read_phone_state">Erlaubt einem Makro zu erkennen, wann ein Anruf beginnt, angenommen wird und endet. Es liest keine Nummern und keine Anrufliste — nur, ob gerade ein Anruf läuft.</string>
     <string name="perm_desc_read_contacts">Erlaubt einem Makro, die Nummer eines von dir gewählten Kontakts nachzuschlagen. Das Auswählen braucht nichts; das spätere Wählen schon.</string>
     <string name="perm_desc_read_calendar">Erlaubt einem Makro, deine Termine zu lesen, und dir, beim Einrichten einen Kalender auszuwählen. Anders als bei Kontakten gibt es keine Systemauswahl, auf die man sich stützen könnte — deshalb braucht ein Kalender-Knoten das schon, bevor er dir überhaupt etwas anzeigen kann.</string>
     <string name="perm_desc_write_calendar">Erlaubt einem Makro, Termine anzulegen, zu ändern und zu löschen. Das Lesen ist der eigene Schalter darüber.</string>
@@ -60,6 +62,8 @@
     <string name="perm_rationale_audio_record">Ottomatic braucht Zugriff auf das Mikrofon, um Ton aufzunehmen. Es öffnet das Mikrofon nur, solange eine Aufnahme läuft, und schließt es sofort danach. Ohne diese Berechtigung schlägt eine Aufnahme fehl oder wird als Stille gespeichert.</string>
     <string name="perm_rationale_camera_photo">Ottomatic braucht Kamerazugriff, um ein Foto aufzunehmen. Die Kamera wird nur geöffnet, solange diese Aktion läuft, und danach sofort wieder geschlossen. Android kann eine Aufnahme trotzdem ablehnen, wenn das Telefon lange im Hintergrund untätig war.</string>
     <string name="perm_rationale_notification_listener">Ottomatic braucht Benachrichtigungszugriff, um Benachrichtigungen anderer Apps zu sehen.</string>
+    <string name="perm_rationale_call_state">Ottomatic braucht Zugriff auf den Telefonstatus, um zu erfahren, wann ein Anruf beginnt, angenommen wird und endet. Nummern und Anrufliste werden nicht gelesen. Ohne diese Berechtigung bleiben Anrufe im Mobilfunknetz unbemerkt; Anrufe in anderen Apps deckt stattdessen der Benachrichtigungszugriff ab.</string>
+    <string name="perm_rationale_call_notification">Ottomatic braucht Benachrichtigungszugriff, um Anrufe in Teams, WhatsApp, Discord und anderen Anruf-Apps zu bemerken. Keine dieser Apps teilt einen Anruf auf anderem Weg mit, und von dort stammt auch der Name des Anrufers bei einem normalen Telefonat. Ohne diesen Zugriff werden nur Anrufe im Mobilfunknetz erkannt.</string>
     <string name="perm_rationale_dnd_policy">Ottomatic braucht Zugriff auf „Bitte nicht stören“, um deinen Klingelmodus zu ändern.</string>
     <string name="perm_rationale_overlay_dialog">Ottomatic braucht die Berechtigung, über anderen Apps anzuzeigen, damit dieser Dialog dich auch erreicht, wenn du gerade woanders auf deinem Telefon bist. Ohne sie bricht der Knoten ab, statt zu fragen.</string>
     <string name="perm_rationale_nfc_radio">Dieser Auslöser braucht eingeschaltetes NFC — das ist eine systemweite Einstellung und nichts, was Ottomatic sich selbst erteilen kann. Außerdem werden Tags nur gelesen, solange der Bildschirm an und entsperrt ist: ein Tippen erreicht kein Telefon, das in der Tasche schläft.</string>

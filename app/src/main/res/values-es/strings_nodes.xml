@@ -221,14 +221,9 @@
     <string name="cfg_trigger_airplane_mode_event">Evento</string>
     <string name="opt_trigger_airplane_mode_event_on">Encendido</string>
     <string name="opt_trigger_airplane_mode_event_off">Apagado</string>
-    <string name="node_trigger_call_state_name">Estado de llamada entrante</string>
-    <string name="node_trigger_call_state_desc">Se inicia cuando cambia el estado de la llamada (sonando, en llamada, libre)</string>
     <string name="port_trigger_call_state_out">Salida</string>
-    <string name="port_trigger_call_state_state">Estado</string>
     <string name="cfg_trigger_call_state_event">Evento</string>
     <string name="opt_trigger_call_state_event_ringing">Sonando</string>
-    <string name="opt_trigger_call_state_event_offhook">En llamada</string>
-    <string name="opt_trigger_call_state_event_idle">Libre</string>
     <string name="node_trigger_headset_name">Auriculares conectados</string>
     <string name="node_trigger_headset_desc">Se inicia al conectar o desconectar unos auriculares con cable</string>
     <string name="port_trigger_headset_out">Salida</string>
@@ -1701,4 +1696,27 @@
     <string name="port_action_notify_progress" formatted="false">Progreso (%, menos de 0 = ocupado)</string>
     <string name="cfg_action_notify_progress" formatted="false">Progreso (%, menos de 0 = ocupado)</string>
     <string name="port_value_battery_level" formatted="false">Nivel (%)</string>
+    <string name="node_trigger_call_state_name">Estado de la llamada</string>
+    <string name="node_trigger_call_state_desc">Se inicia cuando una llamada suena, se responde o termina, en el teléfono o en Teams, WhatsApp, Discord u otra app de llamadas</string>
+    <string name="port_trigger_call_state_call">Llamada</string>
+    <string name="opt_trigger_call_state_event_active">Activa</string>
+    <string name="opt_trigger_call_state_event_ended">Terminada</string>
+    <string name="cfg_trigger_call_state_package_filter">De la aplicación (opcional)</string>
+    <string name="node_trigger_call_ended_name">Llamada terminada</string>
+    <string name="node_trigger_call_ended_desc">Se inicia cuando termina una llamada, con cuánto duró y si se respondió, en el teléfono o en Teams, WhatsApp, Discord u otra app de llamadas</string>
+    <string name="port_trigger_call_ended_out">Salida</string>
+    <string name="port_trigger_call_ended_call">Llamada</string>
+    <string name="cfg_trigger_call_ended_outcome">Resultado</string>
+    <string name="opt_trigger_call_ended_outcome_answered">Respondida</string>
+    <string name="opt_trigger_call_ended_outcome_missed">Perdida</string>
+    <string name="cfg_trigger_call_ended_direction">Dirección</string>
+    <string name="opt_trigger_call_ended_direction_incoming">Entrante</string>
+    <string name="opt_trigger_call_ended_direction_outgoing">Saliente</string>
+    <string name="cfg_trigger_call_ended_package_filter">De la aplicación (opcional)</string>
+    <string name="node_value_call_active_name">En una llamada</string>
+    <string name="node_value_call_active_desc">Si hay una llamada en curso ahora mismo, en el teléfono o en Teams, WhatsApp, Discord u otra app de llamadas</string>
+    <string name="port_value_call_active_active">En una llamada</string>
+    <string name="node_value_current_call_name">Llamada actual</string>
+    <string name="node_value_current_call_desc">La llamada en curso, con quién es y en qué app</string>
+    <string name="port_value_current_call_call">Llamada</string>
 </resources>

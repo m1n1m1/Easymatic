@@ -87,6 +87,11 @@ object TriggerRegistry {
         add(com.example.ottomatic.engine.trigger.BluetoothConnectTrigger())
         add(com.example.ottomatic.engine.trigger.AirplaneModeTrigger())
         add(com.example.ottomatic.engine.trigger.CallStateTrigger())
+        // Directly after the state trigger it refines, so the palette shows the pair
+        // together — the arrangement `trigger.message` gets beside `trigger.notification`.
+        // One fires on every phase of a call, the other only on the last, and only that
+        // one can carry how long the call lasted and whether anybody picked it up.
+        add(com.example.ottomatic.engine.trigger.CallEndedTrigger())
         add(com.example.ottomatic.engine.trigger.HeadsetTrigger())
         add(com.example.ottomatic.engine.trigger.UsbDeviceTrigger())
         add(com.example.ottomatic.engine.trigger.DockTrigger())

@@ -22,6 +22,19 @@ object Permissions {
     val CALL_PHONE = Permission("android.permission.CALL_PHONE")
 
     /**
+     * Knowing whether a call is going on, which is what gates delivery of the
+     * `PHONE_STATE` broadcast and what `TelecomManager.isInCall` checks for.
+     *
+     * The manifest has held this since the call trigger was written, but no node
+     * declared it — so somebody who denied it got a macro that looked armed and simply
+     * never fired, with nothing anywhere saying so. It buys the *state* only: the
+     * caller's number rides on `READ_CALL_LOG`, which Ottomatic deliberately does not
+     * ask for. The caller's **name** arrives by another road entirely — the dialer's own
+     * call notification — so declining that permission costs nothing this app shows.
+     */
+    val READ_PHONE_STATE = Permission("android.permission.READ_PHONE_STATE")
+
+    /**
      * Reading the address book. Needed only to *resolve* a chosen contact when a
      * node runs — choosing one costs nothing, because the system picker hands its
      * row back under a transient grant. That is why no node declares this

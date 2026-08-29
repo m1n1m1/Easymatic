@@ -221,14 +221,9 @@
     <string name="cfg_trigger_airplane_mode_event">事件</string>
     <string name="opt_trigger_airplane_mode_event_on">开启</string>
     <string name="opt_trigger_airplane_mode_event_off">关闭</string>
-    <string name="node_trigger_call_state_name">来电状态</string>
-    <string name="node_trigger_call_state_desc">当通话状态改变时启动（振铃中、通话中、空闲）</string>
     <string name="port_trigger_call_state_out">输出</string>
-    <string name="port_trigger_call_state_state">状态</string>
     <string name="cfg_trigger_call_state_event">事件</string>
     <string name="opt_trigger_call_state_event_ringing">振铃中</string>
-    <string name="opt_trigger_call_state_event_offhook">通话中</string>
-    <string name="opt_trigger_call_state_event_idle">空闲</string>
     <string name="node_trigger_headset_name">耳机已插入</string>
     <string name="node_trigger_headset_desc">当有线耳机被插入或拔出时启动</string>
     <string name="port_trigger_headset_out">输出</string>
@@ -1701,4 +1696,27 @@
     <string name="port_action_notify_progress" formatted="false">进度（%，小于 0 = 忙碌）</string>
     <string name="cfg_action_notify_progress" formatted="false">进度（%，小于 0 = 忙碌）</string>
     <string name="port_value_battery_level" formatted="false">电量（%）</string>
+    <string name="node_trigger_call_state_name">通话状态</string>
+    <string name="node_trigger_call_state_desc">当通话响铃、被接听或结束时启动，适用于电话以及 Teams、WhatsApp、Discord 等通话应用</string>
+    <string name="port_trigger_call_state_call">通话</string>
+    <string name="opt_trigger_call_state_event_active">通话中</string>
+    <string name="opt_trigger_call_state_event_ended">已结束</string>
+    <string name="cfg_trigger_call_state_package_filter">来自应用（可选）</string>
+    <string name="node_trigger_call_ended_name">通话结束</string>
+    <string name="node_trigger_call_ended_desc">当通话结束时启动，带有通话时长和是否被接听，适用于电话以及 Teams、WhatsApp、Discord 等通话应用</string>
+    <string name="port_trigger_call_ended_out">输出</string>
+    <string name="port_trigger_call_ended_call">通话</string>
+    <string name="cfg_trigger_call_ended_outcome">结果</string>
+    <string name="opt_trigger_call_ended_outcome_answered">已接听</string>
+    <string name="opt_trigger_call_ended_outcome_missed">未接听</string>
+    <string name="cfg_trigger_call_ended_direction">方向</string>
+    <string name="opt_trigger_call_ended_direction_incoming">来电</string>
+    <string name="opt_trigger_call_ended_direction_outgoing">去电</string>
+    <string name="cfg_trigger_call_ended_package_filter">来自应用（可选）</string>
+    <string name="node_value_call_active_name">通话中</string>
+    <string name="node_value_call_active_desc">当前是否正在通话，适用于电话以及 Teams、WhatsApp、Discord 等通话应用</string>
+    <string name="port_value_call_active_active">通话中</string>
+    <string name="node_value_current_call_name">当前通话</string>
+    <string name="node_value_current_call_desc">正在进行的通话，包括对方和所在应用</string>
+    <string name="port_value_current_call_call">通话</string>
 </resources>

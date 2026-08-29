@@ -61,6 +61,7 @@ private fun runtimeTitleRes(manifest: String?): Int? = when (manifest) {
     Permissions.RECEIVE_SMS.manifest -> R.string.perm_title_receive_sms
     Permissions.SEND_SMS.manifest -> R.string.perm_title_send_sms
     Permissions.CALL_PHONE.manifest -> R.string.perm_title_call_phone
+    Permissions.READ_PHONE_STATE.manifest -> R.string.perm_title_read_phone_state
     Permissions.READ_CONTACTS.manifest -> R.string.perm_title_read_contacts
     Permissions.READ_CALENDAR.manifest -> R.string.perm_title_read_calendar
     Permissions.WRITE_CALENDAR.manifest -> R.string.perm_title_write_calendar
@@ -112,6 +113,7 @@ private fun runtimeDescriptionRes(manifest: String?): Int = when (manifest) {
     Permissions.RECEIVE_SMS.manifest -> R.string.perm_desc_receive_sms
     Permissions.SEND_SMS.manifest -> R.string.perm_desc_send_sms
     Permissions.CALL_PHONE.manifest -> R.string.perm_desc_call_phone
+    Permissions.READ_PHONE_STATE.manifest -> R.string.perm_desc_read_phone_state
     Permissions.READ_CONTACTS.manifest -> R.string.perm_desc_read_contacts
     Permissions.READ_CALENDAR.manifest -> R.string.perm_desc_read_calendar
     Permissions.WRITE_CALENDAR.manifest -> R.string.perm_desc_write_calendar
@@ -148,6 +150,11 @@ internal fun rationaleRes(requirement: PermissionRequirement): Int? =
         "camera.photo" -> R.string.perm_rationale_camera_photo
         "audio.record" -> R.string.perm_rationale_audio_record
         "notification.listener" -> R.string.perm_rationale_notification_listener
+        "call.state" -> R.string.perm_rationale_call_state
+        // The fourth rationale on the notification-access switch: a call in Teams or
+        // WhatsApp is described by nothing but its notification, which is a different
+        // sentence from reading a message, and the card is on the node.
+        "call.notification" -> R.string.perm_rationale_call_notification
         "dnd.policy" -> R.string.perm_rationale_dnd_policy
         "overlay.dialog" -> R.string.perm_rationale_overlay_dialog
         "nfc.radio" -> R.string.perm_rationale_nfc_radio

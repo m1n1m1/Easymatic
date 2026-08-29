@@ -24,6 +24,7 @@
     <string name="perm_title_receive_sms">Receive texts</string>
     <string name="perm_title_send_sms">Send texts</string>
     <string name="perm_title_call_phone">Make calls</string>
+    <string name="perm_title_read_phone_state">Phone state</string>
     <string name="perm_title_read_contacts">Contacts</string>
     <string name="perm_title_read_calendar">Calendar</string>
     <string name="perm_title_write_calendar">Change your calendar</string>
@@ -53,6 +54,7 @@
     <string name="perm_desc_receive_sms">Lets a macro run when a text arrives, and read who it is from and what it says.</string>
     <string name="perm_desc_send_sms">Lets a macro send a text on your behalf.</string>
     <string name="perm_desc_call_phone">Lets a macro place a call without you confirming it.</string>
+    <string name="perm_desc_read_phone_state">Lets a macro know when a call starts, is answered and ends. It reads no numbers and no call history — only whether a call is going on.</string>
     <string name="perm_desc_read_contacts">Lets a macro look up the number of a contact you chose. Choosing one needs nothing; dialling it later does.</string>
     <string name="perm_desc_read_calendar">Lets a macro read your appointments, and lets you pick a calendar when setting one up. Unlike contacts, there is no system picker to lean on, so this is needed before a calendar node can show you anything.</string>
     <string name="perm_desc_write_calendar">Lets a macro create, change and delete appointments. Reading them is a separate switch above.</string>
@@ -69,6 +71,8 @@
     <string name="perm_rationale_audio_record">Ottomatic needs microphone access to record sound. It opens the microphone only while a recording is running and closes it as soon as the recording ends. Without this, a recording either fails or is saved as silence.</string>
     <string name="perm_rationale_camera_photo">Ottomatic needs camera access to take a photo. It opens the camera only while this action runs, and closes it straight afterwards. Android may still refuse a photo when the phone has been idle in the background for a long time.</string>
     <string name="perm_rationale_notification_listener">Ottomatic needs notification access to see notifications from other apps.</string>
+    <string name="perm_rationale_call_state">Ottomatic needs phone state access to be told when a call starts, is answered and ends. It reads no numbers and no call history. Without it, calls on the mobile network go unnoticed; calls in other apps are covered by notification access instead.</string>
+    <string name="perm_rationale_call_notification">Ottomatic needs notification access to notice calls in Teams, WhatsApp, Discord and other calling apps. None of them tells other apps about a call any other way, and it is also where the caller’s name comes from on an ordinary phone call. Without it, only calls on the mobile network are seen.</string>
     <string name="perm_rationale_dnd_policy">Ottomatic needs Do Not Disturb access to change your ringer mode.</string>
     <string name="perm_rationale_overlay_dialog">Ottomatic needs permission to draw over other apps so this dialog can reach you while you are somewhere else on your phone. Without it the node cancels instead of asking.</string>
     <string name="perm_rationale_nfc_radio">This trigger needs NFC switched on, which is a system-wide setting rather than something Ottomatic can grant itself. Tags are also only read while the screen is on and unlocked — a tap will not reach a phone asleep in your pocket.</string>

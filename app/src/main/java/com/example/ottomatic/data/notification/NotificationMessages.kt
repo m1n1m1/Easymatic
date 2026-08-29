@@ -143,8 +143,12 @@ object NotificationMessages {
      * The app's own name for itself, so a notification reads as "WhatsApp" rather
      * than `com.whatsapp` — the package is still carried separately, because that is
      * what a filter compares.
+     *
+     * Internal rather than private because `NotificationCalls` asks the same question of
+     * the same stream, and two readings of "what is this app called?" would be two
+     * places for it to come out differently.
      */
-    private fun appNameOf(packageName: String, packageManager: PackageManager): String = runCatching {
+    internal fun appNameOf(packageName: String, packageManager: PackageManager): String = runCatching {
         packageManager.getApplicationLabel(packageManager.getApplicationInfo(packageName, 0)).toString()
     }.getOrDefault(packageName)
 }

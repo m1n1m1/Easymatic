@@ -11,6 +11,9 @@ import android.os.PowerManager
 import com.example.ottomatic.core.trigger.TriggerBus
 import com.example.ottomatic.core.trigger.TriggerEvent
 import com.example.ottomatic.core.trigger.TriggerSource
+import com.example.ottomatic.data.call.CallSessions
+import com.example.ottomatic.data.call.DefaultDialer
+import com.example.ottomatic.data.call.toPayload
 
 /**
  * Manifest-registered receiver for Tier 1 system-state broadcasts that can be
@@ -29,8 +32,17 @@ import com.example.ottomatic.core.trigger.TriggerSource
  */
 class SystemStateReceiver : BroadcastReceiver() {
 
+    @Suppress("ReturnCount") // No action, a call handled elsewhere, and nothing mapped.
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
+        // A call is not a Tier 1 system state and stopped being modelled as one: it has a
+        // beginning, a middle and an end that belong to one another, which `SystemState`
+        // has nowhere to carry, and half of it arrives from notifications rather than
+        // from any broadcast. `CallSessions` owns that; this just feeds it.
+        if (action == ACTION_PHONE_STATE_CHANGED) {
+            emitCall(context, intent)
+            return
+        }
         val mapping = ACTION_MAPPINGS[action]
         val event = resolveEvent(action, intent, context)
         if (mapping == null || event == null) return
@@ -44,6 +56,38 @@ class SystemStateReceiver : BroadcastReceiver() {
                     put(KEY_TIMESTAMP, System.currentTimeMillis().toString())
                     mapping.detailExtractor(intent)?.let { put(KEY_DETAIL, it) }
                 },
+            ),
+        )
+    }
+
+    /**
+     * The cellular half of a call, handed to [CallSessions] to be merged with whatever
+     * the call app's own notification said about it.
+     *
+     * The broadcast spells its states in capitals (`RINGING`, `OFFHOOK`, `IDLE`);
+     * [CallSessions] lower-cases them. That mismatch is what made the old
+     * `trigger.call_state` filter dead — the payload carried `"RINGING"` and the trigger
+     * compared it against the enum entry lower-cased, so every selected filter matched
+     * nothing and only "Any" ever fired.
+     *
+     * A missing state extra is **not** read as idle, which is what this used to do: idle
+     * closes a session and reports a call ended, and inventing that from an
+     * unintelligible broadcast would end a call that is still going on.
+     */
+    private fun emitCall(context: Context, intent: Intent) {
+        val state = intent.getStringExtra(EXTRA_PHONE_STATE) ?: return
+        val dialerPackage = DefaultDialer.packageName(context)
+        val transition = CallSessions.onTelephony(
+            state = state,
+            nowMs = System.currentTimeMillis(),
+            dialerPackage = dialerPackage,
+            dialerAppName = DefaultDialer.appName(context, dialerPackage),
+        ) ?: return
+        TriggerBus.emitOrHoldBroadcast(
+            TriggerEvent(
+                source = TriggerSource.CALL,
+                triggerNodeId = NodeId.BROADCAST,
+                payload = transition.toPayload(),
             ),
         )
     }
@@ -62,7 +106,6 @@ class SystemStateReceiver : BroadcastReceiver() {
         ACTION_BT_ACL_DISCONNECTED -> "disconnected"
         Intent.ACTION_AIRPLANE_MODE_CHANGED ->
             if (intent.getBooleanExtra(EXTRA_AIRPLANE_STATE, false)) "on" else "off"
-        ACTION_PHONE_STATE_CHANGED -> intent.getStringExtra(EXTRA_PHONE_STATE) ?: "idle"
         else -> null
     }
 
@@ -196,10 +239,6 @@ class SystemStateReceiver : BroadcastReceiver() {
             put(
                 Intent.ACTION_AIRPLANE_MODE_CHANGED,
                 ActionMapping(TriggerSource.CONNECTIVITY, "airplane_mode"),
-            )
-            put(
-                ACTION_PHONE_STATE_CHANGED,
-                ActionMapping(TriggerSource.CONNECTIVITY, "call_state"),
             )
             // Hardware
             put(

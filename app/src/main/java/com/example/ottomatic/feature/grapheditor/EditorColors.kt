@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.BatteryChargingFull
@@ -239,6 +240,7 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     NodeIcon.SCHEDULE -> Icons.Filled.Schedule
     NodeIcon.NOTIFICATION -> Icons.Filled.NotificationsActive
     NodeIcon.SMS -> Icons.Filled.Sms
+    NodeIcon.CALL -> Icons.Filled.Call
     NodeIcon.SEND -> Icons.AutoMirrored.Filled.Send
     NodeIcon.MAIL -> Icons.Filled.Mail
     NodeIcon.HTTP -> Icons.Filled.Http

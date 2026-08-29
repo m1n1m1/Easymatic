@@ -89,7 +89,50 @@ interface DeviceState {
      * the same way.
      */
     fun isTorchOn(): Boolean?
+
+    /**
+     * The call going on right now, or null when the question cannot be answered.
+     *
+     * "No call" is a [CallStatus] with nothing active in it, **not** null, which is the
+     * distinction the pull side is built on: a value that answers null falls back to the
+     * consumer's form value, and "there is no call" is a real answer that should be
+     * compared rather than fallen back from. Null is kept for the case where nothing can
+     * be known — no telephony grant and no session ever seen.
+     *
+     * Cheap and repeatable for [isTorchOn]'s reason and by the same means: a cache the
+     * broadcast receiver and the notification listener keep warm, so this is a map lookup
+     * rather than a platform call. That is what makes it legal on the pull side, where
+     * `value.ha_state` sits and `value.light_state` cannot.
+     *
+     * The fallback beneath the cache is `TelecomManager.isInCall`, which knows about the
+     * cellular radio *and* about VoIP apps that register a self-managed connection —
+     * WhatsApp, Signal and Telegram all do. It carries no identity, so it fills [active]
+     * and leaves the rest empty. It exists because the cache is process-local and a call
+     * can outlive the process that was watching it.
+     */
+    fun currentCall(): CallStatus?
 }
+
+/**
+ * A call in progress, as [DeviceState] reports it.
+ *
+ * Lives here rather than being the `CallEvent` item because `core` may not import
+ * `domain` — the same reason `MessengerRecipe` is declared beside [SystemServices]. The
+ * value nodes map one to the other.
+ *
+ * [ringing] and [active] are separate rather than one three-state field because the
+ * question `value.call_active` answers is a yes-or-no one, and "is the phone ringing?"
+ * is a different yes-or-no question somebody may want later.
+ */
+data class CallStatus(
+    val active: Boolean,
+    val ringing: Boolean,
+    val caller: String = "",
+    val appName: String = "",
+    val packageName: String = "",
+    val incoming: Boolean = true,
+    val video: Boolean = false,
+)
 
 /**
  * A [DeviceState] that knows nothing, for environments with no device behind it
@@ -113,4 +156,5 @@ object UnknownDeviceState : DeviceState {
     override fun isDocked(): Boolean? = null
     override fun isNightMode(): Boolean? = null
     override fun isTorchOn(): Boolean? = null
+    override fun currentCall(): CallStatus? = null
 }

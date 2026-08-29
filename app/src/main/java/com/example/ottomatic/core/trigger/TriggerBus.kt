@@ -26,6 +26,20 @@ enum class TriggerSource {
      * reads as a message produces this as well.
      */
     MESSAGE,
+
+    /**
+     * A phone call starting, connecting or ending — on the cellular radio *or* in any
+     * app that places calls.
+     *
+     * Separate from [CONNECTIVITY] and [NOTIFICATION] for [MESSAGE]'s reason, and it
+     * earns the separation twice over because it is the one source fed from **two**
+     * places: `SystemStateReceiver` forwards the telephony broadcast, and
+     * `NotificationListener` forwards the call notifications every third-party call app
+     * posts. `CallSessions` merges the two into one session before anything reaches the
+     * bus, so a node reading this source never has to know which half it came from —
+     * and `trigger.notification` still sees every post exactly as it always did.
+     */
+    CALL,
     BATTERY,
     BOOT,
     GEOFENCE,

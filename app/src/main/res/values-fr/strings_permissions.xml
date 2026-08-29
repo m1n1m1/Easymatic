@@ -20,6 +20,7 @@
     <string name="perm_title_receive_sms">Recevoir des SMS</string>
     <string name="perm_title_send_sms">Envoyer des SMS</string>
     <string name="perm_title_call_phone">Passer des appels</string>
+    <string name="perm_title_read_phone_state">État du téléphone</string>
     <string name="perm_title_read_contacts">Contacts</string>
     <string name="perm_title_read_calendar">Agenda</string>
     <string name="perm_title_write_calendar">Modifier votre agenda</string>
@@ -47,6 +48,7 @@
     <string name="perm_desc_receive_sms">Permet à une macro de s\'exécuter à l\'arrivée d\'un SMS, et de lire son expéditeur et son contenu.</string>
     <string name="perm_desc_send_sms">Permet à une macro d\'envoyer un SMS en ton nom.</string>
     <string name="perm_desc_call_phone">Permet à une macro de passer un appel sans que tu le confirmes.</string>
+    <string name="perm_desc_read_phone_state">Permet à une macro de savoir quand un appel commence, est décroché et se termine. Elle ne lit ni les numéros ni le journal d’appels, seulement s’il y a un appel en cours.</string>
     <string name="perm_desc_read_contacts">Permet à une macro de retrouver le numéro d\'un contact que tu as choisi. Le choisir ne demande rien ; le composer plus tard, si.</string>
     <string name="perm_desc_read_calendar">Permet à une macro de lire vos rendez-vous, et vous permet de choisir un agenda lors de la configuration. Contrairement aux contacts, il n\'existe pas de sélecteur système sur lequel s\'appuyer : c\'est donc nécessaire avant qu\'un nœud d\'agenda puisse vous montrer quoi que ce soit.</string>
     <string name="perm_desc_write_calendar">Permet à une macro de créer, modifier et supprimer des rendez-vous. Les lire est une autorisation distincte, celle du dessus.</string>
@@ -61,6 +63,8 @@
     <string name="perm_rationale_audio_record">Ottomatic a besoin d\'accéder au micro pour enregistrer du son. Il n\'ouvre le micro que pendant un enregistrement et le referme dès qu\'il se termine. Sans cela, un enregistrement échoue ou est sauvegardé en silence.</string>
     <string name="perm_rationale_camera_photo">Ottomatic a besoin de l\'accès à l\'appareil photo pour prendre une photo. Il ne l\'ouvre que pendant l\'exécution de cette action et le referme aussitôt après. Android peut malgré tout refuser une photo lorsque le téléphone est resté longtemps inactif en arrière-plan.</string>
     <string name="perm_rationale_notification_listener">Ottomatic a besoin de l\'accès aux notifications pour voir celles des autres applications.</string>
+    <string name="perm_rationale_call_state">Ottomatic a besoin de l’accès à l’état du téléphone pour savoir quand un appel commence, est décroché et se termine. Ni les numéros ni le journal d’appels ne sont lus. Sans cette autorisation, les appels du réseau mobile passent inaperçus ; ceux des autres applications sont couverts par l’accès aux notifications.</string>
+    <string name="perm_rationale_call_notification">Ottomatic a besoin de l’accès aux notifications pour repérer les appels dans Teams, WhatsApp, Discord et les autres applications d’appel. Aucune d’elles ne signale un appel autrement, et c’est aussi de là que vient le nom de l’appelant lors d’un appel téléphonique ordinaire. Sans cet accès, seuls les appels du réseau mobile sont vus.</string>
     <string name="perm_rationale_dnd_policy">Ottomatic a besoin de l\'accès à Ne pas déranger pour changer ton mode sonnerie.</string>
     <string name="perm_rationale_overlay_dialog">Ottomatic a besoin de l\'autorisation d\'afficher par-dessus les autres applications pour que cette boîte de dialogue puisse t\'atteindre quand tu es ailleurs sur ton téléphone. Sans elle, le nœud annule au lieu de demander.</string>
     <string name="perm_rationale_nfc_radio">Ce déclencheur a besoin que le NFC soit activé, ce qui est un réglage système et non quelque chose qu\'Ottomatic peut s\'accorder. De plus, les tags ne sont lus que si l\'écran est allumé et déverrouillé : un contact n\'atteindra pas un téléphone endormi dans une poche.</string>

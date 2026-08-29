@@ -146,6 +146,7 @@ data class PermissionRequirement(
             manifestPermission == Permissions.ACCESS_BACKGROUND_LOCATION.manifest ->
                 "location access set to \"Allow all the time\""
             manifestPermission == Permissions.CALL_PHONE.manifest -> "permission to make calls"
+            manifestPermission == Permissions.READ_PHONE_STATE.manifest -> "phone state access"
             manifestPermission == Permissions.SEND_SMS.manifest -> "permission to send texts"
             manifestPermission == Permissions.RECEIVE_SMS.manifest -> "permission to receive texts"
             manifestPermission == Permissions.CAMERA.manifest -> "camera access"
