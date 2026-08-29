@@ -26,7 +26,7 @@ import org.junit.Test
  * refused microphone is reported and the macro carries on, and a stop nobody started says
  * so rather than answering silently.
  */
-class AiListenPairTest {
+class TranscribePairTest {
 
     private val logs = mutableListOf<LogEntry>()
     private val ai = FakeAi()
@@ -37,12 +37,12 @@ class AiListenPairTest {
         microphone = microphone,
         logger = { logs += it },
     )
-    private val start = AiListenStartAction()
-    private val stop = AiListenStopAction()
+    private val start = TranscribeStartAction()
+    private val stop = TranscribeEndAction()
 
     @Test
     fun `starting opens the microphone with the configured bounds and asks nothing`() = runBlocking {
-        start.execute(AiListenStartConfig(maxSeconds = 90, silenceSeconds = 4), context)
+        start.execute(TranscribeStartConfig(maxSeconds = 90, silenceSeconds = 4), context)
 
         val asked = microphone.begunCaptures.single()
         assertEquals(90, asked.maxSeconds)
@@ -57,7 +57,7 @@ class AiListenPairTest {
      */
     @Test
     fun `starting does not stop on silence unless asked to`() = runBlocking {
-        start.execute(AiListenStartConfig(), context)
+        start.execute(TranscribeStartConfig(), context)
 
         assertEquals(0, microphone.begunCaptures.single().silenceSeconds)
     }
@@ -66,7 +66,7 @@ class AiListenPairTest {
     fun `a microphone that is busy is reported and the macro carries on`() = runBlocking {
         microphone.captureProblem = "A recording is already running"
 
-        val out = start.execute(AiListenStartConfig(), context)
+        val out = start.execute(TranscribeStartConfig(), context)
 
         assertEquals(Unit, out.value)
         assertTrue(logs.any { it.level == LogLevel.ERROR && it.message.contains("already running") })
@@ -76,9 +76,9 @@ class AiListenPairTest {
     fun `stopping collects the clip and sends it to the model`() = runBlocking {
         ai.reply = AiReply(text = "they said yes")
 
-        val out = stop.execute(AiListenStopConfig(modelRef = MODEL), context)
+        val out = stop.executeRaw(TranscribeEndConfig(), transcribeInput(), context)
 
-        assertEquals("they said yes", out.value)
+        assertEquals("they said yes", out.answer())
         assertEquals(1, microphone.endedCaptures)
         val clip = ai.requests.single().audio.single()
         assertEquals("AAAA", clip.base64)
@@ -87,7 +87,7 @@ class AiListenPairTest {
 
     @Test
     fun `an empty question reaches the facade empty`() = runBlocking {
-        stop.execute(AiListenStopConfig(modelRef = MODEL), context)
+        stop.executeRaw(TranscribeEndConfig(), transcribeInput(), context)
 
         assertEquals("", ai.requests.single().prompt)
     }
@@ -97,9 +97,9 @@ class AiListenPairTest {
     fun `stopping what was never started lands on the fallback and says so`() = runBlocking {
         microphone.captured = CaptureOutcome(error = "Nothing is listening")
 
-        val out = stop.execute(AiListenStopConfig(modelRef = MODEL, fallback = "idle"), context)
+        val out = stop.executeRaw(TranscribeEndConfig(fallback = "idle"), transcribeInput(), context)
 
-        assertEquals("idle", out.value)
+        assertEquals("idle", out.answer())
         assertEquals(emptyList<Any>(), ai.requests)
         assertTrue(logs.any { it.level == LogLevel.ERROR && it.message.contains("Nothing is listening") })
     }
@@ -109,9 +109,13 @@ class AiListenPairTest {
     fun `a quiet room is not an error on this node either`() = runBlocking {
         microphone.captured = CaptureOutcome(base64 = "AAAA", mediaType = "audio/wav", heard = false)
 
-        val out = stop.execute(AiListenStopConfig(modelRef = MODEL, fallback = "silence"), context)
+        val out = stop.executeRaw(
+            TranscribeEndConfig(fallback = "silence"),
+            transcribeInput(),
+            context,
+        )
 
-        assertEquals("silence", out.value)
+        assertEquals("silence", out.answer())
         assertEquals(emptyList<Any>(), ai.requests)
         assertTrue(logs.none { it.level == LogLevel.ERROR })
     }

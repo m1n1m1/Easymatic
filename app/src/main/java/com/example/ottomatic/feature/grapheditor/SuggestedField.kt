@@ -22,6 +22,7 @@ import com.example.ottomatic.R
 import com.example.ottomatic.domain.model.config.SuggestionSource
 import com.example.ottomatic.domain.registry.Suggestions
 import com.example.ottomatic.feature.mail.MailFolderChooser
+import java.util.Locale
 
 /**
  * An **editable** field with a dropdown of suggestions — the widget for
@@ -95,7 +96,7 @@ internal fun SuggestedField(
     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
         options.forEach { option ->
             DropdownMenuItem(
-                text = { Text(option, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                text = { Text(labelFor(source, option), maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 onClick = {
                     // The stored value is the suggestion itself, never a label. What a chooser
                     // *shows* may differ — Home Assistant renders a door sensor's `on` as
@@ -107,4 +108,35 @@ internal fun SuggestedField(
             )
         }
     }
+}
+
+/**
+ * What a suggestion should *read* as, which is not always what it is.
+ *
+ * **A language tag is the one source whose values are unreadable**, and this is where that
+ * is fixed rather than in `Suggestions`: the stored value must stay the tag — the comment
+ * on the click handler above says why, and it applies with full force here, since
+ * `RecognizerIntent.EXTRA_LANGUAGE` takes `de-DE` and nothing else — so only the rendering
+ * may change. `Locale.forLanguageTag` is plain JVM and needs no table of our own.
+ *
+ * The tag is kept beside the name rather than replaced by it. Two of them can render the
+ * same in a given display language, and somebody who knows they want `en-GB` rather than
+ * `en-US` has to be able to see which row is which.
+ */
+@Composable
+private fun labelFor(source: SuggestionSource, option: String): String = when (source) {
+    SuggestionSource.SPEECH_LANGUAGE, SuggestionSource.RECOGNITION_LANGUAGE -> languageLabel(option)
+    else -> option
+}
+
+@Composable
+private fun languageLabel(tag: String): String {
+    val locale = runCatching { Locale.forLanguageTag(tag) }.getOrNull()
+    val name = locale?.getDisplayName(locale).orEmpty()
+    // A tag the platform cannot parse renders as itself, which is still better than blank.
+    if (name.isBlank() || name == tag) return tag
+    // Through a resource rather than an interpolation, because the separator is punctuation
+    // and punctuation is translated — a locale that does not use a spaced em dash should not
+    // inherit one from this file.
+    return stringResource(R.string.grapheditor_language_name_and_tag, name, tag)
 }

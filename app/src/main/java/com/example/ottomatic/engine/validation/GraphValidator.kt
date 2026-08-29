@@ -29,6 +29,7 @@ import com.example.ottomatic.domain.model.hubIdOf
 import com.example.ottomatic.domain.registry.AiConnections
 import com.example.ottomatic.domain.registry.SmartHomeHubs
 import com.example.ottomatic.domain.registry.aiModelRefKeys
+import com.example.ottomatic.domain.registry.isConfigFieldVisible
 import com.example.ottomatic.domain.registry.macroRefKeys
 import com.example.ottomatic.domain.registry.isOptionalPicker
 import com.example.ottomatic.domain.registry.smartHomeRefFields
@@ -342,6 +343,7 @@ class GraphValidator(private val workflow: Workflow) {
             // case: a service that acts on nothing takes no entity, and every such node was
             // being badged for saying so.
             val fields = smartHomeRefFields(node.typeId)
+                .filter { node.shows(it.key) }
                 .filterNot { it.isOptionalPicker && node.config[it.key].isNullOrBlank() }
             for (field in fields) {
                 val spec = node.config[field.key].orEmpty()
@@ -379,9 +381,22 @@ class GraphValidator(private val workflow: Workflow) {
      * and answers nothing — which is exactly the failure the whole AI credential
      * design is arranged around.
      */
+    /**
+     * Whether this node's form actually shows [key] as it is currently configured.
+     *
+     * **A field nobody was shown cannot be blamed for being blank.** Every warning about an
+     * unset identifier rests on the field having been visible and skipped; a `@VisibleWhen`
+     * field belonging to a mode the user did not choose is not skipped, it is irrelevant —
+     * and badging it offers a fix that consists of filling in something the node will never
+     * read. `action.transcribe_start`'s model, hidden whenever the phone is doing the work,
+     * is the case that found this.
+     */
+    private fun WorkflowNode.shows(key: ConfigKey): Boolean =
+        isConfigFieldVisible(typeId, config, key)
+
     private fun validateAiModelRefs(out: MutableList<ValidationIssue>) {
         for (node in workflow.nodes) {
-            for (key in aiModelRefKeys(node.typeId)) {
+            for (key in aiModelRefKeys(node.typeId).filter { node.shows(it) }) {
                 aiModelProblem(node, node.config[key].orEmpty())?.let { (reason, message) ->
                     out += ValidationIssue(
                         Severity.WARNING,
@@ -438,7 +453,7 @@ class GraphValidator(private val workflow: Workflow) {
      */
     private fun validateVariableRefs(out: MutableList<ValidationIssue>) {
         for (node in workflow.nodes) {
-            for (key in variableRefKeys(node.typeId)) {
+            for (key in variableRefKeys(node.typeId).filter { node.shows(it) }) {
                 val spec = node.config[key].orEmpty()
                 val (reason, message) = when {
                     spec.isBlank() ->

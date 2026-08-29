@@ -5,7 +5,9 @@ import com.example.ottomatic.R
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.sp
+import com.example.ottomatic.core.model.NodeTypeId
 import com.example.ottomatic.domain.model.WorkflowNode
+import com.example.ottomatic.core.model.ConfigKey
 import com.example.ottomatic.domain.registry.decode
 import com.example.ottomatic.domain.registry.nodeSchema
 import com.example.ottomatic.engine.trigger.GeofenceConfig
@@ -15,13 +17,14 @@ import com.example.ottomatic.engine.trigger.GeofenceTrigger
  * A note about a config combination that is valid but does not mean what it
  * looks like, shown under the fields it concerns.
  *
- * Currently one case: a geofence trigger with every switch turned off still
- * fires on enter, because `GeofenceConfig.emittedEvents` falls back to it rather
- * than arming a fence that can never report anything. That fallback is right,
- * but silently disagreeing with the switches the user just turned off is not.
+ * Two cases now: a geofence trigger with every switch turned off still fires on
+ * enter, and a transcription node set to run on the phone depends on a language
+ * pack the phone may not have. Both are configurations that are *correct* and
+ * that behave in a way the fields above do not show.
  */
 @Composable
 internal fun ConfigFormHint(node: WorkflowNode) {
+    OfflineTranscriptionHint(node)
     if (node.typeId != GeofenceTrigger.TYPE_ID) return
     // Decoded rather than read key by key. The first version listed the switch
     // names here and repeated their defaults, so adding "on staying away" to the
@@ -36,3 +39,54 @@ internal fun ConfigFormHint(node: WorkflowNode) {
 }
 
 private val GEOFENCE_SCHEMA = nodeSchema<GeofenceConfig>()
+
+/**
+ * Warns that transcribing on the phone needs a language pack installed.
+ *
+ * **Inline rather than in the Problems panel**, and the precedent is exact:
+ * `NodePermissionNotice.ContactsPermissionNotice` sits in the form because its
+ * requirement is derived from a node's *config* rather than declared on its type, and
+ * `validatePrerequisites`' own KDoc ratifies that split. The same holds here twice over —
+ * only the phone-side engine needs a pack at all, so a node using an AI model must not be
+ * badged, and `capabilities` on a `NodeTypeDefinition` is a flat declaration that cannot
+ * say "only when this dropdown says so".
+ *
+ * It warns rather than refuses, on `AiBaseUrl.isCleartext`'s reasoning: the packs the
+ * phone has are not knowable here — `SpeechLanguages` reports what the recogniser
+ * *supports*, which is not what is *downloaded* — so the honest thing is to say what the
+ * option depends on and let the run log name the language if it turns out to be missing.
+ */
+@Composable
+private fun OfflineTranscriptionHint(node: WorkflowNode) {
+    if (node.typeId !in OFFLINE_CAPABLE) return
+    if (node.config[USING_KEY] != PHONE_VALUE) return
+    Text(
+        text = stringResource(R.string.grapheditor_transcribing_on_this_phone_needs),
+        color = EditorColors.triggerAccent,
+        fontSize = 12.sp,
+    )
+    // A second sentence rather than a second notice: both are about the same choice, and
+    // two amber blocks under one dropdown reads as two problems.
+    if (node.config[LANGUAGE_MODE_KEY] == DETECT_VALUE) {
+        Text(
+            text = stringResource(R.string.grapheditor_detecting_the_language_needs),
+            color = EditorColors.triggerAccent,
+            fontSize = 12.sp,
+        )
+    }
+}
+
+/** The nodes whose engine dropdown can select the phone's own recogniser. */
+private val OFFLINE_CAPABLE = setOf(
+    NodeTypeId("action.transcribe"),
+    NodeTypeId("action.transcribe_start"),
+)
+
+private val USING_KEY = ConfigKey("using")
+private val LANGUAGE_MODE_KEY = ConfigKey("languageMode")
+
+/** `TranscribeLanguage.DETECT`'s serial name, which is what a stored config holds. */
+private const val DETECT_VALUE = "detect"
+
+/** `TranscribeUsing.PHONE`'s serial name, which is what a stored config holds. */
+private const val PHONE_VALUE = "phone"

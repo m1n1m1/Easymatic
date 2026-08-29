@@ -861,6 +861,32 @@ private fun NodeConfigSchema.visibleFor(config: Map<ConfigKey, String>): NodeCon
 }
 
 /**
+ * Whether [key] is shown on [typeId]'s form for [config].
+ *
+ * **Public so the Problems panel can ask it, because a field the form does not show cannot
+ * be "unset".** The validators warn about a chosen identifier that is blank — no model
+ * picked, no variable named — on the argument that a freshly dropped node looks complete
+ * and fails at three in the morning. That argument depends entirely on the user having been
+ * *shown* the field: `action.transcribe_start` hides its model behind an engine dropdown,
+ * so a node transcribing on the phone was being badged for not naming a model it will never
+ * use, and the only way to clear the warning was to fill in a field that does nothing.
+ *
+ * A field with no rule is always visible, so nodes without `@VisibleWhen` are unaffected.
+ */
+@Suppress("ReturnCount") // An unknown node, an unknown field and a real rule each answer
+// the same way for different reasons; folding them hides which one applied.
+fun isConfigFieldVisible(
+    typeId: NodeTypeId,
+    config: Map<ConfigKey, String>,
+    key: ConfigKey,
+): Boolean {
+    val fields = ConfigSchemaRegistry.byId(typeId)?.fields ?: return true
+    val byKey = fields.associateBy { it.key }
+    val field = byKey[key] ?: return true
+    return field.isVisibleFor(config, byKey)
+}
+
+/**
  * Whether this field's whole rule chain holds for [config]: its own rule, its
  * controller's, and so on up to a field that declares none.
  *

@@ -1,4 +1,4 @@
-Transcribe Audio with AI reads a sound file from the phone and puts an AI model's answer
+Transcribe File reads a sound file from the phone and puts an AI model's answer
 about it on the `answer` port. Leave the question empty and you get a transcript; fill it
 in and you get an answer about what was said.
 
@@ -22,7 +22,7 @@ in and you get an answer about what was said.
 ## Example: mail yourself a transcript of a voice note
 
 - Add a Record Audio node with **Seconds** set to 30.
-- Add Transcribe Audio with AI and wire Record Audio's `state` output into **Audio file**
+- Add Transcribe File and wire Record Audio's `state` output into **Audio file**
   through a Break Struct on the `path` field.
 - Pick a **Model**, leave **What to ask** empty.
 - Wire `answer` into a Send Mail node's body.
@@ -58,3 +58,8 @@ sends anything rather than after.
 - A transcript longer than **Longest reply (tokens)** is cut off, reaches the port anyway,
   and says so in the console.
 - The node has no tool switch. Sound reaches a model on the single-question path only.
+- **This is the one node in the family with no offline option**, and it is the platform's
+  limit rather than a gap. The phone's recogniser listens to a live microphone and cannot
+  be pointed at a file: asked to read one, it opens the microphone instead and transcribes
+  the room, with no error to say it did. Transcribe and Start Transcribing offer the
+  offline engine because they are listening live.

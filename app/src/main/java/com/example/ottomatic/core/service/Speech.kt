@@ -89,7 +89,52 @@ interface Speech {
      * rather than inferred from a null.
      */
     suspend fun listen(request: ListenRequest): ListenOutcome
+
+    /**
+     * Begins recognising and returns at once, answering a problem or `""`.
+     *
+     * [Microphone.beginCapture]'s relationship to [Microphone.capture], one facade along
+     * and for the same reason: [listen] suspends for the whole utterance, so a macro
+     * cannot transcribe *while* doing something else. The words arrive at [endListening].
+     *
+     * **This is `SpeechRecognizer.stopListening`'s whole purpose**, and it is the reason
+     * the pair can exist at all. That API is built around somebody who stops talking on
+     * their own; `stopListening` is the escape hatch for a caller who decides instead —
+     * it ends the utterance and the results come back through the same callback, so a
+     * session is the platform's own shape rather than something imposed on it.
+     *
+     * [ListenRequest.maxSeconds] is a limit rather than a length here, on
+     * [Microphone.beginCapture]'s reasoning: a recogniser nobody ends holds the
+     * microphone with the system's indicator lit, and there is no file growing on disk to
+     * make that visible.
+     */
+    suspend fun beginListening(request: ListenRequest): String = NOT_AVAILABLE
+
+    /**
+     * Ends the running recognition and answers with what was heard.
+     *
+     * Reaching this with nothing running is an error rather than silence, on
+     * `action.record_stop`'s rule: a macro that reached a stop it never started is
+     * usually a graph whose branches ran in an order its author did not expect.
+     */
+    suspend fun endListening(): ListenOutcome = ListenOutcome(error = NOT_AVAILABLE)
+
+    /**
+     * Whether a [beginListening] session is open right now.
+     *
+     * [Microphone.isRecording]'s twin, and it exists for one caller: `action`
+     * `.transcribe_end` has to know which of the two sessions Start opened, and asking is
+     * the only answer that cannot disagree with what Start actually did. A second engine
+     * dropdown on the End node could — and a user who changed one and not the other would
+     * get a node that collects nothing, with both cards looking correctly filled in.
+     *
+     * Not suspending and cannot fail, on [isSpeaking]'s reasoning: it reads a flag this
+     * process set itself.
+     */
+    fun isTranscribing(): Boolean = false
 }
+
+private const val NOT_AVAILABLE = "Speech recognition is not available on this phone"
 
 /**
  * What one utterance should be.
@@ -160,6 +205,37 @@ data class ListenRequest(
      * nobody stops holds the microphone with the system's recording indicator lit, and
      * unlike a recording there is no file growing on disk to make that visible.
      */
+    /**
+     * Whether to let the recogniser work the language out and switch to it.
+     *
+     * **Separate from [language] rather than encoded as a blank one**, because the two are
+     * independent on the wire: switching still starts from a language, and a request can
+     * legitimately name one *and* allow the recogniser to move off it. Folding them into a
+     * single "blank means detect" would make those two states unexpressible and would give
+     * the field two meanings, which is the ambiguity the node's own enum exists to remove.
+     *
+     * Honoured from Android 14 and only where the recogniser implements it. Everywhere else
+     * it is silently inert and the request transcribes in [language] — which is the
+     * behaviour that existed before this field, so an unsupported phone loses nothing.
+     */
+    val detect: Boolean = false,
+    /**
+     * Whether to keep listening across pauses until something stops it.
+     *
+     * **An explicit flag rather than "silenceSeconds is zero", and that ambiguity is what
+     * caused the bug this field exists to fix.** Zero means *"let the phone decide"* to
+     * `action.listen`, where the platform's own end-of-speech detection is exactly right,
+     * and *"do not stop early"* to the transcription nodes. One field cannot mean both, and
+     * reading the intent off it made a session that was configured never to stop end at the
+     * first pause.
+     *
+     * `SpeechRecognizer` has no setting for this: it is built around a single utterance, and
+     * every extra that claims otherwise is documented as one the recogniser may ignore — as
+     * segmented session mode turned out to be. So this is honoured by **restarting** the
+     * recogniser each time it ends and joining what it heard, which is how continuous
+     * dictation is done on Android and works on every version.
+     */
+    val continuous: Boolean = false,
     val maxSeconds: Int = 15,
     /**
      * How much silence ends the utterance, in seconds. Zero leaves it to the platform's own
@@ -186,6 +262,16 @@ data class ListenOutcome(
     val heard: Boolean = false,
     val text: String = "",
     val confidence: Float = -1f,
+    /**
+     * The BCP-47 tag the recogniser says it actually used, or blank when it did not say.
+     *
+     * Blank rather than the requested language, on [confidence]'s `-1` rule: "the recogniser
+     * did not report one" and "it used the one I asked for" are different facts, and a node
+     * that filled this in from its own config would be inventing an answer the platform
+     * never gave. Only Android 14 and above reports it, and only when detection was asked
+     * for.
+     */
+    val language: String = "",
     /** Whether [ListenRequest.maxSeconds] ran out with nobody having finished speaking. */
     val timedOut: Boolean = false,
     val error: String = "",
@@ -197,6 +283,9 @@ object NoSpeech : Speech {
     override fun stop(): Boolean = false
     override fun isSpeaking(): Boolean = false
     override suspend fun listen(request: ListenRequest) = ListenOutcome(error = NO_EARS)
+    override suspend fun beginListening(request: ListenRequest) = NO_EARS
+    override suspend fun endListening() = ListenOutcome(error = NO_EARS)
+    override fun isTranscribing(): Boolean = false
 
     private const val NO_VOICE = "Speaking is not available on this phone"
     private const val NO_EARS = "Speech recognition is not available on this phone"

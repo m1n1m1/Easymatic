@@ -1,9 +1,8 @@
-Stop Listening with AI ends the microphone opened by Start Listening with AI, sends what
+End Transcribing ends the microphone opened by Start Transcribing, sends what
 it heard to an AI model, and puts the answer on the `answer` port. Leave the question
 empty and you get a transcript.
 
-- It carries the whole AI half of the pair: the **Model**, the question, the reply limit
-  and the fallback.
+- It has one field, **If it fails**. Everything else was decided on Start Transcribing.
 - It also collects a listen that already ended on its own limit.
 - The sound is discarded once it has been sent. There is nothing to clean up.
 
@@ -20,9 +19,9 @@ empty and you get a transcript.
 
 ## Example: a hands-free note
 
-- Add Start Listening with AI with **Listen for at most** set to 60.
+- Add Start Transcribing with **Listen for at most** set to 60.
 - Wire `out` into whatever should happen while it listens.
-- Wire that into Stop Listening with AI. Pick a **Model** and leave **What to ask** empty.
+- Wire that into End Transcribing. Pick a **Model** and leave **What to ask** empty.
 - Wire `answer` into Write File.
 
 Explanation:
@@ -42,8 +41,10 @@ Explanation:
 
 ## Points to Remember
 
-- The model here is billed, not the one on any other node. There is no model field on the
-  start node to conflict with.
+- The `language` port carries the code the recogniser says it used, and is empty when
+  nothing reported one — every AI transcription, and every phone older than Android 14.
+- This node makes no choices at all. Start Transcribing picked the engine and the model,
+  and this one collects whichever session is open.
 - An empty question is a setting. It routes the sound to the service built for
   transcripts, which is cheaper and works on servers no chat model runs on.
 - Claude cannot hear. Point **Model** at Gemini, OpenAI, OpenRouter or a self-hosted model.

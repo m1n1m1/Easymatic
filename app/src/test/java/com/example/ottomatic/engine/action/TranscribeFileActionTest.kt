@@ -30,7 +30,7 @@ import org.junit.Test
  * default in the node would send every plain transcription down the chat wire instead of
  * the transcription endpoint built for it, silently and on every provider.
  */
-class AiTranscribeActionTest {
+class TranscribeFileActionTest {
 
     private val logs = mutableListOf<LogEntry>()
     private val ai = FakeAi()
@@ -41,14 +41,14 @@ class AiTranscribeActionTest {
         files = files,
         logger = { logs += it },
     )
-    private val action = AiTranscribeAction()
+    private val action = TranscribeFileAction()
 
     @Test
     fun `the clip is read through the file facade and sent as audio`() = runBlocking {
         ai.reply = AiReply(text = "hello there")
 
         val out = action.execute(
-            AiTranscribeConfig(modelRef = MODEL, audio = "Recordings/note.wav"),
+            TranscribeFileConfig(modelRef = MODEL, audio = "Recordings/note.wav"),
             context,
         )
 
@@ -61,7 +61,7 @@ class AiTranscribeActionTest {
     /** The whole reason `readBytes` grew a parameter: one megabyte is nothing in audio. */
     @Test
     fun `it asks for the audio bound rather than the file layer's default`() = runBlocking {
-        action.execute(AiTranscribeConfig(modelRef = MODEL, audio = "Recordings/note.wav"), context)
+        action.execute(TranscribeFileConfig(modelRef = MODEL, audio = "Recordings/note.wav"), context)
 
         val call = files.calls.single { it.member == "readBytes" }
         assertEquals(AudioLimits.MAX_MODEL_BYTES, call.maxBytes)
@@ -74,7 +74,7 @@ class AiTranscribeActionTest {
      */
     @Test
     fun `an empty question reaches the facade empty`() = runBlocking {
-        action.execute(AiTranscribeConfig(modelRef = MODEL, audio = "Recordings/note.wav"), context)
+        action.execute(TranscribeFileConfig(modelRef = MODEL, audio = "Recordings/note.wav"), context)
 
         assertEquals("", ai.requests.single().prompt)
     }
@@ -82,7 +82,7 @@ class AiTranscribeActionTest {
     @Test
     fun `a question that was asked is passed through`() = runBlocking {
         action.execute(
-            AiTranscribeConfig(modelRef = MODEL, audio = "Recordings/note.wav", prompt = "who spoke?"),
+            TranscribeFileConfig(modelRef = MODEL, audio = "Recordings/note.wav", prompt = "who spoke?"),
             context,
         )
 
@@ -91,7 +91,7 @@ class AiTranscribeActionTest {
 
     @Test
     fun `no file chosen never reaches either facade`() = runBlocking {
-        val out = action.execute(AiTranscribeConfig(modelRef = MODEL, fallback = "idle"), context)
+        val out = action.execute(TranscribeFileConfig(modelRef = MODEL, fallback = "idle"), context)
 
         assertEquals("idle", out.value)
         assertEquals(emptyList<Any>(), files.calls)
@@ -103,7 +103,7 @@ class AiTranscribeActionTest {
         files.bytes = FileBytes(error = "There is no file at Recordings/gone.wav")
 
         val out = action.execute(
-            AiTranscribeConfig(modelRef = MODEL, audio = "Recordings/gone.wav", fallback = "nothing"),
+            TranscribeFileConfig(modelRef = MODEL, audio = "Recordings/gone.wav", fallback = "nothing"),
             context,
         )
 
@@ -121,7 +121,7 @@ class AiTranscribeActionTest {
         files.bytes = FileBytes(base64 = "QUFB", mediaType = "")
 
         val out = action.execute(
-            AiTranscribeConfig(modelRef = MODEL, audio = "Recordings/note.xyz", fallback = "no sound"),
+            TranscribeFileConfig(modelRef = MODEL, audio = "Recordings/note.xyz", fallback = "no sound"),
             context,
         )
 
@@ -136,7 +136,7 @@ class AiTranscribeActionTest {
         ai.reply = AiReply(error = "Claude cannot listen to audio")
 
         val out = action.execute(
-            AiTranscribeConfig(modelRef = MODEL, audio = "Recordings/note.wav", fallback = "could not hear"),
+            TranscribeFileConfig(modelRef = MODEL, audio = "Recordings/note.wav", fallback = "could not hear"),
             context,
         )
 
@@ -150,7 +150,7 @@ class AiTranscribeActionTest {
         ai.reply = AiReply(text = "half a sen", truncated = true)
 
         val out = action.execute(
-            AiTranscribeConfig(modelRef = MODEL, audio = "Recordings/note.wav"),
+            TranscribeFileConfig(modelRef = MODEL, audio = "Recordings/note.wav"),
             context,
         )
 

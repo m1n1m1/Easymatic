@@ -8,12 +8,17 @@ import com.example.ottomatic.domain.model.config.Label
 import com.example.ottomatic.domain.model.config.Multiline
 import com.example.ottomatic.domain.model.config.Picker
 import com.example.ottomatic.domain.model.config.PickerKind
+import com.example.ottomatic.domain.model.config.Suggested
+import com.example.ottomatic.domain.model.config.SuggestionSource
+import com.example.ottomatic.domain.model.config.VisibleWhen
 import com.example.ottomatic.domain.model.config.Wired
-import com.example.ottomatic.domain.model.dataOut
-import com.example.ottomatic.engine.Action
 import com.example.ottomatic.engine.ExecutionContext
 import com.example.ottomatic.engine.NodeOutput
-import com.example.ottomatic.engine.actionNode
+import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.domain.model.schema.Item
+import com.example.ottomatic.engine.NodeInput
+import com.example.ottomatic.engine.RawAction
+import com.example.ottomatic.engine.effectNode
 import kotlinx.serialization.Serializable
 
 /**
@@ -38,13 +43,23 @@ import kotlinx.serialization.Serializable
  * exactly, and for its reason.
  */
 @Serializable
-data class AiListenConfig(
-    @Label("Model") @Picker(PickerKind.AI_MODEL) val modelRef: String = "",
-    @Label("What to ask (leave empty to transcribe it)") @Multiline @Wired val prompt: String = "",
+data class TranscribeConfig(
+    @Label("Transcribe with") val using: TranscribeUsing = TranscribeUsing.AI,
+    @Label("Model") @Picker(PickerKind.AI_MODEL) @VisibleWhen("using", "ai") val modelRef: String = "",
+    @Label("What to ask (leave empty to transcribe it)")
+    @Multiline @Wired @VisibleWhen("using", "ai")
+    val prompt: String = "",
+    @Label("Language") @VisibleWhen("using", "phone")
+    val languageMode: TranscribeLanguage = TranscribeLanguage.PHONE,
+    @Label("Which language")
+    @Suggested(SuggestionSource.RECOGNITION_LANGUAGE)
+    @VisibleWhen("languageMode", "chosen")
+    val language: String = "",
     @Label("Listen for at most (seconds)") val maxSeconds: Int = 15,
     @Label("Stop after this much silence (seconds, 0 = listen the whole time)")
     val silenceSeconds: Int = 3,
-    @Label("Longest reply (tokens)") val maxOutputTokens: Int = AiRequest.DEFAULT_MAX_OUTPUT_TOKENS,
+    @Label("Longest reply (tokens)") @VisibleWhen("using", "ai")
+    val maxOutputTokens: Int = AiRequest.DEFAULT_MAX_OUTPUT_TOKENS,
     @Label("If it fails") @Multiline val fallback: String = "",
 )
 
@@ -88,32 +103,54 @@ data class AiListenConfig(
  * that can be absent, so `action.listen`'s `SPEECH_RECOGNITION` would badge this node in
  * the Problems panel on a phone that can run it perfectly.
  */
-class AiListenAction : Action<AiListenConfig, String> {
+class TranscribeAction : RawAction<TranscribeConfig> {
 
-    override val definition = actionNode<AiListenConfig, String>(
-        typeId = "action.ai_listen",
-        displayName = "Listen with AI",
-        // "transcribe" rather than "transcript", and that is the palette's business
-        // rather than prose: `matchesSearch` is a substring match over the description,
-        // and "transcript" does not contain "transcribe" — so the word somebody actually
-        // types has to appear in the word this node uses. `DialogDiscoverabilityTest`'s
-        // rule, one family along.
-        description = "Listens through the microphone and sends what it heard to an AI model " +
-            "to transcribe, or to answer a question about what was said",
+    override val definition = effectNode<TranscribeConfig>(
+        typeId = "action.transcribe",
+        displayName = "Transcribe",
+        description = "Listens through the microphone and transcribes what was said — with an AI " +
+            "model, which can also answer a question about it, or on the phone itself for free",
         category = NodeCategory.AI,
         icon = NodeIcon.MICROPHONE,
-        output = dataOut<String>("answer", label = "Answer"),
+        // Two DATA outputs, so a `RawAction` with `extraPorts` rather than a typed
+        // `actionNode` — `action.listen`'s shape, and the only one the builders offer for
+        // more than one output. The `answer` port keeps its name and schema, so wires drawn
+        // before the second port existed still resolve.
+        extraPorts = transcriptPortsDeclaration(),
         permissions = listOf(RECORD_AUDIO),
     )
 
-    override suspend fun execute(input: AiListenConfig, context: ExecutionContext): NodeOutput<String> {
+    override suspend fun executeRaw(
+        config: TranscribeConfig,
+        input: NodeInput,
+        context: ExecutionContext,
+    ): NodeOutput<Map<PortName, Item>> {
+        // The two engines take the microphone by different routes and neither can be
+        // expressed in terms of the other: a recogniser listens and answers words, where a
+        // model needs a recording handed to it. So the branch is here, at the top, rather
+        // than inside a facade pretending they are one thing.
+        if (config.using == TranscribeUsing.PHONE) {
+            val heard = context.speech.listen(
+                listenRequestFor(
+                    config.languageMode,
+                    config.language,
+                    config.maxSeconds,
+                    config.silenceSeconds,
+                ),
+            )
+            return context.transcribeOnPhone(heard, NAME, config.fallback)
+        }
         val clip = context.microphone.capture(
-            CaptureRequest(maxSeconds = input.maxSeconds, silenceSeconds = input.silenceSeconds),
+            CaptureRequest(maxSeconds = config.maxSeconds, silenceSeconds = config.silenceSeconds),
         )
         return context.askAbout(
             clip = clip,
-            node = "Listen with AI",
-            ask = AiAsk(input.modelRef, input.prompt, input.maxOutputTokens, input.fallback),
+            node = NAME,
+            ask = AiAsk(config.modelRef, config.prompt, config.maxOutputTokens, config.fallback),
         )
+    }
+
+    private companion object {
+        const val NAME = "Transcribe"
     }
 }

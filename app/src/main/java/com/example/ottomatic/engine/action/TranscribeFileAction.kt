@@ -36,7 +36,7 @@ import kotlinx.serialization.Serializable
  * follows everywhere: one field, resolved in code.
  */
 @Serializable
-data class AiTranscribeConfig(
+data class TranscribeFileConfig(
     @Label("Model") @Picker(PickerKind.AI_MODEL) val modelRef: String = "",
     @Label("Audio file") @FilePath @Wired val audio: String = "",
     @Label("What to ask (leave empty to transcribe it)") @Multiline @Wired val prompt: String = "",
@@ -73,14 +73,14 @@ data class AiTranscribeConfig(
  * a turn as text on all three protocols, so media reaches a model through `complete` and
  * not through the tool loop.
  *
- * A failure lands on [AiTranscribeConfig.fallback] and still pulses `out`, which is
+ * A failure lands on [TranscribeFileConfig.fallback] and still pulses `out`, which is
  * `action.script`'s contract for its reason.
  */
-class AiTranscribeAction : Action<AiTranscribeConfig, String> {
+class TranscribeFileAction : Action<TranscribeFileConfig, String> {
 
-    override val definition = actionNode<AiTranscribeConfig, String>(
-        typeId = "action.ai_transcribe",
-        displayName = "Transcribe Audio with AI",
+    override val definition = actionNode<TranscribeFileConfig, String>(
+        typeId = "action.transcribe_file",
+        displayName = "Transcribe File",
         description = "Sends a sound file to an AI model and returns the transcript, " +
             "or the answer to a question about what was said",
         category = NodeCategory.AI,
@@ -89,14 +89,14 @@ class AiTranscribeAction : Action<AiTranscribeConfig, String> {
     )
 
     @Suppress("ReturnCount") // No file, an unreadable one, an unknown kind, a refused answer — four sentences.
-    override suspend fun execute(input: AiTranscribeConfig, context: ExecutionContext): NodeOutput<String> {
+    override suspend fun execute(input: TranscribeFileConfig, context: ExecutionContext): NodeOutput<String> {
         if (input.audio.isBlank()) {
-            context.log("Transcribe Audio with AI: no sound file chosen", LogLevel.ERROR)
+            context.log("Transcribe File: no sound file chosen", LogLevel.ERROR)
             return NodeOutput(input.fallback)
         }
         val clip = context.files.readBytes(input.audio, AudioLimits.MAX_MODEL_BYTES)
         if (clip.error.isNotBlank()) {
-            context.log("Transcribe Audio with AI: ${clip.error}", LogLevel.ERROR)
+            context.log("Transcribe File: ${clip.error}", LogLevel.ERROR)
             return NodeOutput(input.fallback)
         }
         if (clip.mediaType.isBlank()) {
@@ -104,7 +104,7 @@ class AiTranscribeAction : Action<AiTranscribeConfig, String> {
             // comes back as a 400 naming neither the file nor the reason — and the
             // extension is the only thing anybody can actually change.
             context.log(
-                "Transcribe Audio with AI: \"${input.audio}\" does not end in a sound file extension " +
+                "Transcribe File: \"${input.audio}\" does not end in a sound file extension " +
                     "this app recognises — try .wav, .mp3, .m4a, .ogg or .flac",
                 LogLevel.ERROR,
             )
@@ -123,7 +123,7 @@ class AiTranscribeAction : Action<AiTranscribeConfig, String> {
             ),
         )
         if (reply.error.isNotBlank()) {
-            context.log("Transcribe Audio with AI failed: ${reply.error}", LogLevel.ERROR)
+            context.log("Transcribe File failed: ${reply.error}", LogLevel.ERROR)
             return NodeOutput(input.fallback)
         }
         if (reply.truncated) {

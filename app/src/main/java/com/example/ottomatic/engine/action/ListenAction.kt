@@ -82,7 +82,15 @@ class ListenAction : RawAction<ListenConfig> {
     override val definition = effectNode<ListenConfig>(
         typeId = "action.listen",
         displayName = "Listen",
-        description = "Waits for the user to say something and puts what was heard on a port",
+        // **This is the free transcription node, and until 2026-08-29 nothing said so.**
+        // It was described purely as a way to ask the user a question, which is what it is
+        // for — but it is also the only node in the app that turns speech into text
+        // without an AI connection, a key or a network, and the palette searches
+        // descriptions. Somebody typing "transcribe" found the four AI nodes that bill
+        // them and never this one, which is the worst possible ordering: the free option
+        // is invisible exactly to the person comparing the paid ones.
+        description = "Waits for the user to say something and transcribes it to text with the phone's " +
+            "own speech recogniser, needing no AI connection or API key",
         category = NodeCategory.INTERACTION,
         icon = NodeIcon.MICROPHONE,
         execOutputs = ExecOutputs.HEARD,

@@ -17,23 +17,23 @@ import org.junit.Test
 /**
  * The two audio AI nodes' wiring, and mainly what is deliberately **absent** from it.
  *
- * `action.ai_listen` looks like `action.listen` and must not be declared like it. That
+ * `action.transcribe` looks like `action.listen` and must not be declared like it. That
  * node declares `DeviceCapability.SPEECH_RECOGNITION`, because it drives the platform
  * recogniser and a phone without one genuinely cannot run it. This one drives no
  * recogniser at all — it records and sends — so copying the capability across would put a
  * permanent amber badge in the Problems panel on phones that run the node perfectly. That
  * is `value.nfc`'s failure, and it is the mistake most likely to be made here.
  *
- * `action.ai_transcribe` declares no permission for the mirror-image reason: it reads a
+ * `action.transcribe_file` declares no permission for the mirror-image reason: it reads a
  * file that is already on the phone, through the same grants every `action.file_*` node
  * uses, and a microphone requirement on it would ask for access it never touches.
  */
-class AiAudioRegistryTest {
+class TranscribeRegistryTest {
 
-    private val transcribe = NodeTypeId("action.ai_transcribe")
-    private val listen = NodeTypeId("action.ai_listen")
-    private val listenStart = NodeTypeId("action.ai_listen_start")
-    private val listenStop = NodeTypeId("action.ai_listen_stop")
+    private val transcribe = NodeTypeId("action.transcribe_file")
+    private val listen = NodeTypeId("action.transcribe")
+    private val listenStart = NodeTypeId("action.transcribe_start")
+    private val listenStop = NodeTypeId("action.transcribe_end")
     private val all = listOf(transcribe, listen, listenStart, listenStop)
 
     @Test
@@ -85,18 +85,39 @@ class AiAudioRegistryTest {
     }
 
     /**
-     * The split that makes the pair readable: the start node opens the microphone and the
-     * stop node asks the model, so only one of them names a model. Two model fields on one
-     * pair could disagree, with nothing on either card saying which won.
+     * **The pair is set up on Start and collected at End**, which is `action.record_start`
+     * and `action.record_stop`'s shape: every field on the start node, and the stop node
+     * carrying only what is genuinely about stopping.
+     *
+     * It was the other way round — engine on Start, model on End — with each field where
+     * the *code* used it. That is true and useless to fill in: one decision split across
+     * two cards, and an End node asking for a model even when the phone was doing the work,
+     * because a static form cannot know what Start chose.
      */
     @Test
-    fun `only the stop node of the pair names a model`() {
+    fun `the pair is configured on the start node`() {
         val startFields = ConfigSchemaRegistry.byId(listenStart)!!.fields.map { it.key.value }
         val stopFields = ConfigSchemaRegistry.byId(listenStop)!!.fields.map { it.key.value }
 
-        assertFalse("modelRef" in startFields)
-        assertTrue("modelRef" in stopFields)
-        assertTrue("answer" !in startFields)
+        assertTrue("using" in startFields)
+        assertTrue("modelRef" in startFields)
+        assertTrue("prompt" in startFields)
+        // End keeps the one field that is about End: what lands on its port if it fails.
+        assertEquals(listOf("fallback"), stopFields)
+    }
+
+    /**
+     * **The model is hidden unless an AI model is doing the work**, which is what stops the
+     * Problems panel demanding one for a node transcribing on the phone. `GraphValidator`
+     * skips a field the form does not show, so the rule and the warning agree by
+     * construction rather than by both being remembered.
+     */
+    @Test
+    fun `the model field is shown only for the AI engine`() {
+        val model = ConfigSchemaRegistry.byId(listenStart)!!.fields.single { it.key.value == "modelRef" }
+
+        assertEquals("using", model.visibleWhen?.key?.value)
+        assertEquals(setOf("ai"), model.visibleWhen?.values?.toSet())
     }
 
     /** Starting produces no answer; the sound has not been sent anywhere yet. */
@@ -132,20 +153,39 @@ class AiAudioRegistryTest {
     }
 
     /**
-     * Both answer on one Text port, which is what lets a transcript go straight into
-     * `transform.text`, a notification or a mail body with nothing to break apart first.
+     * The transcript is a plain Text port on every node that answers, which is what lets it
+     * go straight into `transform.text`, a notification or a mail body with nothing to
+     * break apart first. A struct carrying the words beside the language would put an
+     * `action.break` in front of every single use for a field most macros never read —
+     * `AiReply`'s stated reasoning, one family along.
      */
     @Test
-    fun `both answer on a single named data output`() {
+    fun `every answering node carries the transcript on the same named port`() {
         listOf(transcribe, listen, listenStop).forEach {
-            val outputs = NodeTypeRegistry.byId(it)!!.ports.filter { port ->
+            val outputs = dataOutputsOf(it)
+            assertTrue("$it must answer on a port called 'answer'", "answer" in outputs)
+        }
+    }
+
+    /**
+     * The two microphone nodes that answer also report **which language** the recogniser
+     * used; the file node does not, because a model never says what it detected.
+     */
+    @Test
+    fun `the two listening answers also carry the detected language`() {
+        listOf(listen, listenStop).forEach {
+            assertEquals(listOf("answer", "language"), dataOutputsOf(it))
+        }
+        assertEquals(listOf("answer"), dataOutputsOf(transcribe))
+    }
+
+    private fun dataOutputsOf(typeId: NodeTypeId): List<String> =
+        NodeTypeRegistry.byId(typeId)!!.ports
+            .filter { port ->
                 port.kind == com.example.ottomatic.domain.model.PortKind.DATA &&
                     port.direction == com.example.ottomatic.domain.model.Direction.OUT
             }
-            assertEquals("$it answers on one port", 1, outputs.size)
-            assertEquals("answer", outputs.single().name.value)
-        }
-    }
+            .map { it.name.value }
 
     /**
      * Both are ordinary actions, so a model allowed "everything" can reach them — which
@@ -179,32 +219,56 @@ class AiAudioRegistryTest {
     }
 
     /**
-     * The other direction is deliberately **not** symmetric. `action.ai_transcribe` reads a
-     * file that is already on the phone and opens no microphone, so putting "listen" or
-     * "microphone" in its description to make the search symmetrical would be a small lie
-     * about what the node does — and the palette subtitle is the same string.
+     * **The free option has to turn up beside the paid ones.**
+     *
+     * `action.listen` is the only node in the app that turns speech into text with no AI
+     * connection, no key and no network, and it lives in a different category under a name
+     * that says none of that. Somebody typing "transcribe" was shown the four nodes that
+     * bill them and not the one that does not — which is the worst possible ordering,
+     * because the person searching is exactly the person comparing.
+     *
+     * It is pinned here rather than beside the dialog family because the reason it matters
+     * is what it sits *next to* in the results.
      */
     @Test
-    fun `the words for opening a microphone find only the nodes that open one`() {
-        val listening = listOf(listen, listenStart, listenStop)
-        for (term in listOf("listen", "microphone")) {
-            val found = NodeTypeRegistry.all.filter { it.matchesSearch(term) }.map { it.typeId }
-            assertTrue("searching '$term' missed ${listening - found.toSet()}", found.containsAll(listening))
-            assertFalse("searching '$term' should not reach the file node", transcribe in found)
-        }
+    fun `searching transcribe also offers the free on-device node`() {
+        val found = NodeTypeRegistry.all.filter { it.matchesSearch("transcribe") }.map { it.typeId }
+
+        assertTrue(
+            "the keyless speech-to-text node must appear beside the ones that need a key",
+            NodeTypeId("action.listen") in found,
+        )
     }
 
     /**
-     * The near miss, pinned by name. A future reword back to "transcript" would pass every
-     * other test in this file and silently un-list three nodes.
+     * "microphone" reaches the three that open one, and not the file node.
+     *
+     * The other direction is deliberately **not** symmetric. `action.transcribe_file` reads
+     * a file that is already on the phone and opens no microphone, so working the word into
+     * its description to make search symmetrical would be a small lie about what the node
+     * does — and that string is the palette subtitle the user reads.
      */
     @Test
-    fun `the word is transcribe, not transcript`() {
-        listOf(listen, listenStart, listenStop).forEach { typeId ->
-            val description = NodeTypeRegistry.byId(typeId)!!.description
+    fun `the word for opening a microphone finds only the nodes that open one`() {
+        val listening = listOf(listen, listenStart, listenStop)
+        val found = NodeTypeRegistry.all.filter { it.matchesSearch("microphone") }.map { it.typeId }
+
+        assertTrue("searching 'microphone' missed ${listening - found.toSet()}", found.containsAll(listening))
+        assertFalse("searching 'microphone' should not reach the file node", transcribe in found)
+    }
+
+    /**
+     * **"Transcribing" does not contain "transcribe" under a substring match**, so the
+     * display names alone would not answer the search that names this whole family. The
+     * typeIds do, and that is the half worth pinning: a rename back to `action.ai_listen*`
+     * would pass every other test in this file and quietly un-list three nodes again.
+     */
+    @Test
+    fun `every node in the family is named so that searching transcribe reaches it`() {
+        all.forEach { typeId ->
             assertTrue(
-                "$typeId must say \"transcribe\" — \"transcript\" does not match a search for it",
-                description.contains("transcribe", ignoreCase = true),
+                "$typeId must answer a search for 'transcribe'",
+                NodeTypeRegistry.byId(typeId)!!.matchesSearch("transcribe"),
             )
         }
     }

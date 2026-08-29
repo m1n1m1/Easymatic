@@ -28,14 +28,36 @@ object SpeechLanguages {
     @Volatile
     private var heard: List<String>? = null
 
+    @Volatile
+    private var installed: List<String>? = null
+
     /** Whether anything has published either list yet; see the class KDoc. */
     val isHydrated: Boolean get() = spoken != null || heard != null
 
     /** The languages a voice is installed for, or empty when nothing has been read. */
     fun forSpeaking(): List<String> = spoken.orEmpty()
 
-    /** The languages recognition is installed for, or empty when nothing has been read. */
-    fun forListening(): List<String> = heard.orEmpty()
+    /**
+     * The languages to offer for listening — what is **installed** where the phone will
+     * say, and what is merely supported where it will not.
+     *
+     * **Three lists rather than two, because "supported" and "installed" are a real and
+     * user-visible difference.** `ACTION_GET_LANGUAGE_DETAILS` answers what the recogniser
+     * *can* do, which on a modern phone is well over a hundred languages; only a handful
+     * have their model downloaded, and picking one of the others transcribes nothing and
+     * fails with a message about a language pack. Offering the long list is offering
+     * mostly wrong answers.
+     *
+     * Installed is only knowable from API 33, where `checkRecognitionSupport` reports it.
+     * Below that — and on any phone whose recogniser declines to answer — this falls back
+     * to the supported list, which is the honest degradation: a longer list of which some
+     * entries need a download beats no list at all, which is what this field showed until
+     * 2026-08-29.
+     */
+    fun forListening(): List<String> = installed?.takeIf { it.isNotEmpty() } ?: heard.orEmpty()
+
+    /** Whether [forListening] is answering installed packs rather than merely supported ones. */
+    fun listeningIsInstalledOnly(): Boolean = !installed.isNullOrEmpty()
 
     /** Publishes the languages the text-to-speech engine reported. */
     fun hydrateSpeaking(languages: List<String>) {
@@ -53,9 +75,22 @@ object SpeechLanguages {
         heard = languages
     }
 
+    /**
+     * Publishes the languages whose recognition model is actually **downloaded**.
+     *
+     * Separate from [hydrateListening] for that function's own reason — the two answers
+     * arrive by different routes at different moments, so one setter would let whichever
+     * came second erase the other — and because they mean different things, which
+     * [forListening] is where it matters.
+     */
+    fun hydrateInstalledListening(languages: List<String>) {
+        installed = languages
+    }
+
     /** Returns to the unhydrated state. Test seam, mirroring [MqttCatalog.reset]. */
     internal fun reset() {
         spoken = null
         heard = null
+        installed = null
     }
 }
