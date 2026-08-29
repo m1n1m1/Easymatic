@@ -2,9 +2,12 @@ package com.example.ottomatic.data
 
 import com.example.ottomatic.core.model.NodeId
 import com.example.ottomatic.core.model.NodeTypeId
+import com.example.ottomatic.core.model.PortName
+import com.example.ottomatic.domain.model.ExecConnection
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowNode
 import com.example.ottomatic.domain.model.WorkflowSummary
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -23,7 +26,10 @@ class WorkflowRepositoryTest {
     @get:Rule
     val tempFolder = TemporaryFolder()
 
-    private fun newRepo(): WorkflowRepository = WorkflowRepository(tempFolder.newFolder())
+    private lateinit var folder: File
+
+    private fun newRepo(): WorkflowRepository =
+        WorkflowRepository(tempFolder.newFolder().also { folder = it })
 
     @Test
     fun `list is empty for a fresh repository`() = runBlocking {
@@ -127,6 +133,59 @@ class WorkflowRepositoryTest {
         assertEquals(true, loaded.enabled)
         assertEquals(1, loaded.nodes.size)
         assertEquals(true, repo.list().first { it.id == workflow.id }.enabled)
+    }
+
+    /**
+     * The fix for a macro that could not be repaired by hand: an unknown node is
+     * never drawn, so it could be reported as a problem but never selected or
+     * deleted. See `pruneUnknownNodes`.
+     */
+    @Test
+    fun `load drops a node whose type this build no longer declares`() = runBlocking {
+        val repo = newRepo()
+        val workflow = repo.create("Stale")
+        repo.save(
+            workflow.copy(
+                nodes = listOf(
+                    WorkflowNode(NodeId("n1"), NodeTypeId("trigger.manual"), "M", 0f, 0f),
+                    WorkflowNode(NodeId("ghost"), NodeTypeId("action.retired"), "G", 0f, 0f),
+                ),
+                execConnections = listOf(
+                    ExecConnection("e1", NodeId("n1"), PortName("out"), NodeId("ghost"), PortName("in")),
+                ),
+            ),
+        )
+        val loaded = repo.load(workflow.id)!!
+        assertEquals(listOf(NodeId("n1")), loaded.nodes.map { it.id })
+        assertTrue(loaded.execConnections.isEmpty())
+    }
+
+    /** Nothing is written back, so the file still holds what a later build could read. */
+    @Test
+    fun `dropping an unknown node does not rewrite the file`() = runBlocking {
+        val repo = newRepo()
+        val workflow = repo.create("Stale")
+        repo.save(
+            workflow.copy(nodes = listOf(WorkflowNode(NodeId("ghost"), NodeTypeId("action.retired"), "G", 0f, 0f))),
+        )
+        repo.load(workflow.id)
+        assertTrue(File(folder, "workflows/${workflow.id}.json").readText().contains("action.retired"))
+    }
+
+    /**
+     * The one ordering constraint among the load-time repairs: `action.ai_agent` is a
+     * retired typeId nothing declares, and `repairAiRefs` carries it forward rather
+     * than letting it strand a macro — so the prune must not get to it first.
+     */
+    @Test
+    fun `a retired AI agent node is rewritten rather than dropped`() = runBlocking {
+        val repo = newRepo()
+        val workflow = repo.create("Agent")
+        repo.save(
+            workflow.copy(nodes = listOf(WorkflowNode(NodeId("n1"), NodeTypeId("action.ai_agent"), "A", 0f, 0f))),
+        )
+        val loaded = repo.load(workflow.id)!!
+        assertEquals(listOf(NodeTypeId("action.ai_prompt")), loaded.nodes.map { it.typeId })
     }
 
     @Test

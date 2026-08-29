@@ -225,6 +225,10 @@ It still blocks nothing, and for a sharper reason than the permission case: ther
 
 Workflows persist as individual JSON files in `{filesDir}/workflows/{id}.json`. Lenient deserialization (`ignoreUnknownKeys`) provides forward compatibility. Schema version gates load — older workflows are discarded, not migrated.
 
+`WorkflowRepository.load` then runs three **repairs**, all in memory and none written back (writing on load would turn `rearmAll` into a boot-time write storm and race the editor's debounced save; each is idempotent, so it costs nothing to reapply). In order: `repairAiRefs`, then `pruneUnknownNodes`, then `repairVariableRefs` — and that order is load-bearing, because `action.ai_agent` is a retired typeId nothing declares and pruning first would delete the nodes the AI repair exists to carry forward.
+
+**A node whose type this build no longer declares is dropped**, with the edges that reached it. `GraphValidator` names it and quarantines it, which is right for a node the user can see — but `GraphCanvas` skips a node it cannot resolve a definition for, so an unknown node is a permanent Problems entry about something that is not on the canvas, unselectable and therefore undeletable. It is the one fault the editor offered no way to fix, and nothing is lost: a node whose type is gone could not have run either. **A `plugin:` typeId is never dropped**, whatever the registry currently says — unhydrated, disabled and uninstalled are indistinguishable from `NodeTypeRegistry`, two of the three are undone by a switch in Settings, and the typeId still names the app to reinstall (`pluginPackageOf`). The test is the prefix, not hydration.
+
 ## Topics that load on demand
 
 These subsystems each have their own file so they are not resident in every session. Read the one you need before changing that area.

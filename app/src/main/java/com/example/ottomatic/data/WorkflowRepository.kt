@@ -4,6 +4,7 @@ import com.example.ottomatic.domain.model.MacroAccent
 import com.example.ottomatic.domain.model.MacroIcon
 import com.example.ottomatic.domain.model.Workflow
 import com.example.ottomatic.domain.model.WorkflowSummary
+import com.example.ottomatic.domain.registry.pruneUnknownNodes
 import com.example.ottomatic.domain.registry.repairAiRefs
 import com.example.ottomatic.domain.registry.repairVariableRefs
 import java.io.File
@@ -96,13 +97,22 @@ class WorkflowRepository(directory: File, private val globals: GlobalVariableRep
 
     /**
      * The graph with any legacy variable *names* turned into references to real
-     * declarations, and those declarations adopted into the global library.
+     * declarations, those declarations adopted into the global library, and any node
+     * whose type this build no longer declares dropped ([pruneUnknownNodes]).
      *
      * The repaired graph is returned **in memory and not written back**. Writing on
      * load would turn `MacroEngineService.rearmAll` — which loads every enabled
      * workflow on boot — into a write storm, and would race the editor's debounced
      * save. The rewritten refs persist on the next ordinary save; until then this
      * reapplies on every load, which is free because it is idempotent.
+     *
+     * That is why the prune deletes nothing from disk, which is a second reason to
+     * want it there: a node dropped because this build forgot its type comes *back*
+     * if the build that declares it is installed again, right up until the next save.
+     * It runs **after** [repairAiRefs] and not before, which is the one ordering
+     * constraint among the three: `action.ai_agent` is a retired typeId that nothing
+     * declares, so pruning first would delete the very nodes that rewrite exists to
+     * carry forward.
      *
      * The adopted *declarations* are persisted immediately, because they are the
      * part that must survive: a ref pointing at a declaration nobody wrote down
@@ -112,8 +122,9 @@ class WorkflowRepository(directory: File, private val globals: GlobalVariableRep
         // Pure and lookup-free, so it runs whether or not a globals library is bound —
         // see `repairAiRefs` for why it needs nothing from the connection repository.
         val withAi = repairAiRefs(workflow)
-        val library = globals ?: return withAi
-        val result = repairVariableRefs(withAi, library.list().associate { it.name to it.id })
+        val pruned = pruneUnknownNodes(withAi).workflow
+        val library = globals ?: return pruned
+        val result = repairVariableRefs(pruned, library.list().associate { it.name to it.id })
         library.adopt(result.adopted)
         return result.workflow
     }
