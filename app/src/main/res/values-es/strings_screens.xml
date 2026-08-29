@@ -57,6 +57,9 @@
     <string name="plugins_back">Atrás</string>
     <string name="plugins_plugins">Complementos</string>
     <string name="plugins_this_app_asks_for">Esta aplicación pide: %1$s</string>
+    <string name="plugins_open_settings">Configurar</string>
+    <string name="plugin_choice_nothing_to_choose">Este complemento no ofrece nada que elegir aquí.</string>
+    <string name="plugin_choice_no_screen">%1$s pide su propia pantalla de selección, pero no proporciona ninguna, así que no hay nada que abrir.</string>
     <string name="contacts_anyone">Cualquiera</string>
     <string name="contacts_choose_a_contact">Elegir un contacto</string>
     <string name="contacts_clear_the_contact_and_type">Quitar el contacto y escribir un número en su lugar</string>

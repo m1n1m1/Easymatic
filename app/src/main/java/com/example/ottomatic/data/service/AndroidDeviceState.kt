@@ -225,9 +225,15 @@ class AndroidDeviceState(private val context: Context) : DeviceState {
                 video = session.video,
             )
         }
-        val inCall = runCatching {
+        // `try`/`catch` rather than `runCatching`, because the exception here is the
+        // documented answer rather than a surprise: `isInCall` needs READ_PHONE_STATE and
+        // throws when it has not been granted. Spelling that out is also what lets lint
+        // see the call is handled — a lambda-shaped catch is invisible to it.
+        val inCall = try {
             context.getSystemService<TelecomManager>()?.isInCall
-        }.getOrNull() ?: return null
+        } catch (@Suppress("SwallowedException") e: SecurityException) {
+            null
+        } ?: return null
         return CallStatus(active = inCall, ringing = false)
     }
 

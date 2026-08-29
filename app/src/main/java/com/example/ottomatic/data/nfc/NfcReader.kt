@@ -49,7 +49,7 @@ object NfcReader {
 
     /**
      * Whether the user has switched tag intents off for Ottomatic specifically
-     * (API 34+), which stops the manifest dispatch dead while leaving everything
+     * (API 36+), which stops the manifest dispatch dead while leaving everything
      * else about NFC working.
      *
      * A fourth way for a tag trigger to look armed and never fire, and the one with
@@ -58,11 +58,13 @@ object NfcReader {
      */
     @Suppress("ReturnCount") // Two "nothing to report" guards ahead of the real answer.
     fun tagIntentsAllowed(context: Context): Boolean {
-        // The *question* arrived in API 34 and the answer only in 35: 34 has
-        // `isTagIntentAppPreferenceSupported` with nothing public to read the
-        // setting with, so there is no honest answer below 35 other than "as far
-        // as anything here can tell, yes".
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) return true
+        // The setting itself has been on the phone since API 34, but both halves of
+        // the question — `isTagIntentAppPreferenceSupported` and `isTagIntentAllowed`
+        // — were `@FlaggedApi` until 36 and are public API only from there. Guarding
+        // on anything lower would be reaching past the SDK for a method the platform
+        // was free to move, so below 36 the honest answer is "as far as anything here
+        // can tell, yes".
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.BAKLAVA) return true
         val adapter = adapter(context) ?: return true
         return runCatching {
             !adapter.isTagIntentAppPreferenceSupported || adapter.isTagIntentAllowed

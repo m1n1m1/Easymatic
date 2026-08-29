@@ -474,8 +474,8 @@ Note the class-level KDoc naming the load-bearing assertion — that convention 
 essentially every test file here, and a per-test comment appears wherever a case encodes
 a past bug.
 
-Verify with `.\gradlew.bat assembleDebug test detekt`. Skip `lintDebug`; it has
-pre-existing errors unrelated to the node system.
+Verify with `.\gradlew.bat assembleDebug test detekt`. `lintDebug` is clean too and is
+worth running when a node adds a layout, a string or a platform call.
 
 ## Pitfalls
 

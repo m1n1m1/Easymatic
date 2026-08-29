@@ -57,6 +57,9 @@
     <string name="plugins_back">戻る</string>
     <string name="plugins_plugins">プラグイン</string>
     <string name="plugins_this_app_asks_for">このアプリが要求する権限: %1$s</string>
+    <string name="plugins_open_settings">設定</string>
+    <string name="plugin_choice_nothing_to_choose">このプラグインには、ここで選べるものがありません。</string>
+    <string name="plugin_choice_no_screen">%1$s は独自の選択画面を要求していますが、それを提供していないため、開けるものがありません。</string>
     <string name="contacts_anyone">すべての相手</string>
     <string name="contacts_choose_a_contact">連絡先を選択</string>
     <string name="contacts_clear_the_contact_and_type">連絡先を消して、代わりに番号を入力する</string>

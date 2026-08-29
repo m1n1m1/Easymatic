@@ -52,7 +52,16 @@ object WifiNetworks {
             WifiSsid.normalise(manager.connectionInfo?.ssid).takeIf { it.isNotBlank() }
         }.getOrNull()
 
-        val scanned = runCatching { manager.scanResults }.getOrNull().orEmpty()
+        // `try`/`catch` rather than `runCatching`: a missing ACCESS_FINE_LOCATION is the
+        // one thing that goes wrong here and the platform says so by throwing, so naming
+        // `SecurityException` is both the honest shape and the one lint can read.
+        val results = try {
+            manager.scanResults
+        } catch (@Suppress("SwallowedException") e: SecurityException) {
+            null
+        }
+
+        val scanned = results.orEmpty()
             .mapNotNull { result ->
                 val ssid = WifiSsid.normalise(result.SSID).takeIf { it.isNotBlank() }
                     ?: return@mapNotNull null

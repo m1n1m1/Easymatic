@@ -6,6 +6,7 @@
     <string name="problem_permission_missing">„%1$s“ benötigt %2$s — nicht erteilt, daher passiert beim Ausführen möglicherweise nichts</string>
     <string name="problem_capability_missing">„%1$s“ benötigt %2$s — dieses Telefon hat das nicht, hier wird es nie funktionieren</string>
     <string name="problem_plugin_permission_missing">„%1$s“ benötigt %2$s — %3$s hat das nicht erhalten, daher passiert beim Ausführen möglicherweise nichts</string>
+    <string name="problem_plugin_not_ready">„%1$s“ tut nichts, solange %2$s nicht bereit ist: %3$s</string>
 
     <string name="problem_macro_unset">Für „%1$s“ ist kein Makro ausgewählt, daher passiert nichts</string>
     <string name="problem_macro_missing">„%1$s“ verweist auf ein Makro, das es nicht mehr gibt</string>

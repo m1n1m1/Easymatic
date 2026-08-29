@@ -57,6 +57,9 @@
     <string name="plugins_back">Retour</string>
     <string name="plugins_plugins">Extensions</string>
     <string name="plugins_this_app_asks_for">Cette application demande : %1$s</string>
+    <string name="plugins_open_settings">Configurer</string>
+    <string name="plugin_choice_nothing_to_choose">Cette extension ne propose rien à choisir ici.</string>
+    <string name="plugin_choice_no_screen">%1$s demande son propre écran de sélection mais n\'en fournit aucun : il n\'y a donc rien à ouvrir.</string>
     <string name="contacts_anyone">N\'importe qui</string>
     <string name="contacts_choose_a_contact">Choisir un contact</string>
     <string name="contacts_clear_the_contact_and_type">Retirer le contact et saisir un numéro à la place</string>

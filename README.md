@@ -36,13 +36,6 @@ Always use the Gradle wrapper:
 Full verification is `.\gradlew.bat assembleDebug test detekt`, which is exactly what
 CI runs.
 
-`lintDebug` is a **CI gate with a known backlog**: 22 errors in `:app` and 1 in
-`:sample-plugin` as of the first CI run. They are not all cosmetic — 6 are `UseAppTint`
-in the widget preview layouts, 6 are `MissingTranslation`, and the remaining 10 are
-`NewApi`, `RestrictedApi`, `MissingPermission` and `WrongConstant` findings worth reading
-individually (`MediaConsents.kt` calls API 30 methods and `NfcReader.kt` API 36 ones at
-`minSdk` 26). CI runs lint as a **separate job** so this red never masks a green build.
-Do not add a lint baseline or `abortOnError = false` — the backlog is meant to stay visible.
 
 The configuration cache is enabled; if a build behaves strangely after structural
 changes, add `--no-configuration-cache`.

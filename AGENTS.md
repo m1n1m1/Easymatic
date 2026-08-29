@@ -28,10 +28,11 @@
 - Run `./gradlew detekt` regularly. It **fails the build on any finding**:
   `buildUponDefaultConfig = true` inherits detekt's default `maxIssues: 0`.
   It passes today because there are genuinely 0 findings across 949 files.
-- `lintDebug` is a CI gate with a known backlog: 22 errors in `:app`, 1 in
-  `:sample-plugin` (6 `UseAppTint`, 6 `MissingTranslation`, 5 `NewApi`, 2 `RestrictedApi`,
-  2 `MissingPermission`, 1 `WrongConstant`). CI runs it as a separate job so a red lint
-  never masks a green build. Do not add a baseline or `abortOnError = false`.
+- `lintDebug` is a CI gate and is clean: 0 errors across all four modules, as of
+  2026-08-29 (it carried a 23-error backlog before that). Every error fails it, old or
+  new — there is no baseline and no `lint {}` block, so AGP's default
+  `abortOnError = true` stands. CI runs it as a separate job so a red lint never masks a
+  green build. Never add a baseline: that is what would make it report new errors only.
 
 <!-- CODEGRAPH_START -->
 ## CodeGraph

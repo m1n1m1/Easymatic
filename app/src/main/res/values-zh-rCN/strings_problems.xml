@@ -3,6 +3,7 @@
     <string name="problem_permission_missing">“%1$s”需要%2$s，而它尚未被授予——运行时可能什么也不做</string>
     <string name="problem_capability_missing">“%1$s”需要%2$s，而这台手机没有——它在这里永远不会工作</string>
     <string name="problem_plugin_permission_missing">“%1$s”需要%2$s，而 %3$s 尚未获得该权限——运行时可能什么也不做</string>
+    <string name="problem_plugin_not_ready">在 %2$s 准备就绪之前，“%1$s”不会执行任何操作：%3$s</string>
     <string name="problem_macro_unset">“%1$s”没有选择宏，因此什么也不会做</string>
     <string name="problem_macro_missing">“%1$s”指向一个已不存在的宏</string>
     <string name="problem_hub_unset">“%1$s”什么也没选，因此什么也不会做</string>

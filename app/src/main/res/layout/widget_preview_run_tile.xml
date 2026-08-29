@@ -6,14 +6,23 @@
     falls back to the app icon. That is why the system palette is not needed
     here: this is inflated by the launcher in its own configuration, so the
     ordinary values/ + values-night/ colours resolve correctly.
+
+    `android:tint` rather than AppCompat's `app:tint` throughout, and that is
+    forced rather than lazy: this layout is inflated by the **launcher**, in the
+    launcher's process, by a plain `LayoutInflater` that has never heard of
+    AppCompat — so `app:tint` would parse, resolve to nothing and leave every
+    icon its own flat colour. `android:tint` has been honoured by the framework
+    ImageView since API 21, and this file is only ever read on API 31+.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_preview_surface"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="10dp">
+    android:padding="10dp"
+    tools:ignore="UseAppTint">
 
     <FrameLayout
         android:layout_width="40dp"

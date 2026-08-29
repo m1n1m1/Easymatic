@@ -57,6 +57,9 @@
     <string name="plugins_back">返回</string>
     <string name="plugins_plugins">插件</string>
     <string name="plugins_this_app_asks_for">此应用申请：%1$s</string>
+    <string name="plugins_open_settings">设置</string>
+    <string name="plugin_choice_nothing_to_choose">此插件在这里没有可供选择的内容。</string>
+    <string name="plugin_choice_no_screen">%1$s 要求使用自己的选择界面，但并未提供，因此没有可打开的内容。</string>
     <string name="contacts_anyone">任何人</string>
     <string name="contacts_choose_a_contact">选择联系人</string>
     <string name="contacts_clear_the_contact_and_type">清除联系人，改为输入号码</string>

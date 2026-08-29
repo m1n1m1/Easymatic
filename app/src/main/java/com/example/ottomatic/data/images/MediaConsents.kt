@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.provider.Settings
+import androidx.annotation.RequiresApi
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.resume
@@ -200,6 +201,15 @@ object MediaConsents {
         }.getOrDefault(false)
     }
 
+    /**
+     * The three up-front request APIs, which arrived together in API 30.
+     *
+     * Annotated rather than guarded: [request] has already ruled out anything older by
+     * the time it gets here, and a second guard inside would be an unreachable branch
+     * claiming there is a pre-30 answer. The annotation says the same thing to the
+     * compiler, to lint and to the next reader without inventing one.
+     */
+    @RequiresApi(Build.VERSION_CODES.R)
     private fun senderFor(context: Context, uris: List<Uri>, kind: ConsentKind): IntentSender {
         val resolver = context.contentResolver
         val pendingIntent: PendingIntent = when (kind) {

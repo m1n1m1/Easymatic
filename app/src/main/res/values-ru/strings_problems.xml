@@ -3,6 +3,7 @@
     <string name="problem_permission_missing">«%1$s» требует %2$s — оно не выдано, поэтому при запуске может ничего не произойти</string>
     <string name="problem_capability_missing">«%1$s» требует %2$s — на этом телефоне такого нет, здесь он никогда не заработает</string>
     <string name="problem_plugin_permission_missing">«%1$s» требует %2$s — приложение %3$s его не получило, поэтому при запуске может ничего не произойти</string>
+    <string name="problem_plugin_not_ready">«%1$s» ничего не сделает, пока приложение %2$s не будет готово: %3$s</string>
     <string name="problem_macro_unset">Для «%1$s» не выбран макрос, поэтому ничего не произойдёт</string>
     <string name="problem_macro_missing">«%1$s» указывает на макрос, которого больше нет</string>
     <string name="problem_hub_unset">Для «%1$s» ничего не выбрано, поэтому ничего не произойдёт</string>

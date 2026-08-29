@@ -1,11 +1,16 @@
 package com.example.ottomatic.feature.widget
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Build
+import androidx.annotation.ColorRes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.core.content.ContextCompat
 import androidx.glance.GlanceTheme
+import androidx.glance.LocalContext
 import androidx.glance.color.ColorProvider
 import androidx.glance.color.ColorProviders
 import androidx.glance.material3.ColorProviders
@@ -49,10 +54,19 @@ fun OttomaticWidgetTheme(content: @Composable () -> Unit) {
  * screen — in dark mode a container tone sits about as bright as `widgetBackground`
  * itself, so a default-accent chip vanished into the card it was on.
  *
- * [ColorProvider] over **resources** rather than `Color`s, so the light and dark
- * values in `values/` and `values-night/` are chosen by the system at draw time.
- * Resolving to one `Color` here would pick a theme inside a composable that has no
- * idea which theme the home screen is in.
+ * Both halves of the pair are **day/night** providers rather than single `Color`s,
+ * because resolving to one colour here would pick a theme inside a composable that
+ * has no idea which theme the home screen is in. The two values still come from
+ * `values/` and `values-night/` — [dayNight] reads each resource twice, once under
+ * each `uiMode` — so the colours stay stated in one place and the *choice* between
+ * them is made where the widget is actually drawn.
+ *
+ * Note which of Glance's two `ColorProvider` factories that is. The resource-taking
+ * one is `@RestrictTo` and says why in its own KDoc: it resolves in whichever process
+ * gets there first, and for a widget that is the launcher's, under the launcher's
+ * configuration rather than this app's. `ColorProvider(day, night)` carries both
+ * answers across the process boundary and picks on arrival, which is the behaviour
+ * this comment used to claim the resource form had.
  *
  * [MacroAccent.SYSTEM] has no resource and resolves to `primary` / `onPrimary` —
  * the same tones taken from the wallpaper, which is the whole promise of that
@@ -77,8 +91,24 @@ fun MacroAccent.widgetColors(): AccentColors = when (this) {
     MacroAccent.PINK -> pair(R.color.macro_container_pink, R.color.macro_on_container_pink)
 }
 
-private fun pair(container: Int, onContainer: Int) =
-    AccentColors(ColorProvider(container), ColorProvider(onContainer))
+@Composable
+private fun pair(@ColorRes container: Int, @ColorRes onContainer: Int): AccentColors {
+    val context = LocalContext.current
+    return AccentColors(context.dayNight(container), context.dayNight(onContainer))
+}
+
+/** One colour resource as the pair of values `values/` and `values-night/` give it. */
+private fun Context.dayNight(@ColorRes id: Int): ColorProvider = ColorProvider(
+    day = Color(ContextCompat.getColor(inNightMode(false), id)),
+    night = Color(ContextCompat.getColor(inNightMode(true), id)),
+)
+
+private fun Context.inNightMode(night: Boolean): Context = createConfigurationContext(
+    Configuration(resources.configuration).apply {
+        uiMode = (uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or
+            if (night) Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
+    },
+)
 
 /**
  * The pre-Android-12 palette.

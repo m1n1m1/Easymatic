@@ -96,8 +96,10 @@ class SampleChoiceActivity : Activity() {
         adapter.notifyDataSetChanged()
     }
 
-    /** Backing out chooses nothing, so the field keeps what it had. */
-    override fun onBackPressed() {
-        finishWithoutChoosing()
-    }
+    // Backing out chooses nothing, so the field keeps what it had — and that needs no
+    // code at all. An Activity that has not called `setResult` finishes with
+    // `RESULT_CANCELED`, which is precisely what [finishWithoutChoosing] sets, so the
+    // back gesture already answers correctly. Overriding `onBackPressed` to say it again
+    // would only opt this screen out of predictive back on API 33+, where the framework
+    // stops calling that method at all.
 }

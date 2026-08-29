@@ -14,12 +14,21 @@ Always use the Gradle wrapper: `.\gradlew.bat <task>` (Windows).
 - **Android lint**: `.\gradlew.bat lintDebug`
 - **Full verification**: `.\gradlew.bat assembleDebug test detekt` — exactly what CI runs
 
-`lintDebug` is a CI gate with a known backlog: **22 errors in `:app`, 1 in
-`:sample-plugin`**. The mix is 6 `UseAppTint`, 6 `MissingTranslation`, 5 `NewApi`,
-2 `RestrictedApi`, 2 `MissingPermission` and 1 `WrongConstant` — so it is not purely
-cosmetic; the `NewApi` ones are calls to API 30/36 members at `minSdk` 26. CI runs lint
-as a *separate job* so a red lint never masks a green build. Do not add a lint baseline
-or `abortOnError = false` to silence it — the backlog is meant to stay visible.
+`lintDebug` is a CI gate and is **clean** — 0 errors across all four modules. It was
+red until 2026-08-29 with a 23-error backlog (6 `UseAppTint`, 6 `MissingTranslation`,
+5 `NewApi`, 2 `RestrictedApi`, 2 `MissingPermission`, 1 `WrongConstant`, plus one
+`GestureBackNavigation` in `:sample-plugin`), and what closed it is worth knowing
+because two of those were real bugs rather than noise: `WidgetTheme` was handing
+Glance a `@RestrictTo` resource-backed `ColorProvider` whose own KDoc says it resolves
+in whichever process gets there first — the launcher's, for a widget — and `NfcReader`
+guarded API 36 members on an API 35 check, because `isTagIntentAllowed` and
+`isTagIntentAppPreferenceSupported` were `@FlaggedApi` until 36. CI still runs lint as a
+*separate job*, so a future red lint cannot mask a green build — separate, not softer:
+**every** error-severity issue fails `lintDebug`, old or new. There is no `lint {}`
+block, no `lint.xml` and no `lint-baseline.xml` in the build, so AGP's default
+`abortOnError = true` stands. Do not add either one: a baseline is precisely the thing
+that would downgrade this gate to "new errors only", by recording today's errors as
+acceptable forever.
 
 Configuration cache is enabled. If builds behave strangely after structural changes, add `--no-configuration-cache`.
 

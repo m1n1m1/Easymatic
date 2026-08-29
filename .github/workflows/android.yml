@@ -72,9 +72,6 @@ jobs:
 
   lint:
     name: Android Lint
-    # Separate from `build` on purpose: lint has a known backlog (dominated by
-    # MissingTranslation) and is expected to be red for a while. Keeping it out of
-    # the build job means a red lint never masks a green assemble/test/detekt.
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -95,7 +92,8 @@ jobs:
       - name: lintDebug
         run: ./gradlew lintDebug --continue --stacktrace
 
-      # Uploaded even on success: these reports are the triage list for the backlog.
+      # Uploaded even on success: with lint green these are the record of what the
+      # warnings still are, and on a red run they are the triage list.
       - name: Upload lint reports
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7

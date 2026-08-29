@@ -3,6 +3,7 @@
     <string name="problem_permission_missing">「%1$s」には%2$sが必要ですが、まだ付与されていません。実行しても何も起きない可能性があります</string>
     <string name="problem_capability_missing">「%1$s」には%2$sが必要ですが、この端末にはありません。ここで動作することはありません</string>
     <string name="problem_plugin_permission_missing">「%1$s」には%2$sが必要ですが、%3$s はそれを取得していません。実行しても何も起きない可能性があります</string>
+    <string name="problem_plugin_not_ready">%2$s の準備が整うまで、「%1$s」は何も行いません: %3$s</string>
     <string name="problem_macro_unset">「%1$s」でマクロが選ばれていないため、何も行われません</string>
     <string name="problem_macro_missing">「%1$s」はすでに存在しないマクロを指しています</string>
     <string name="problem_hub_unset">「%1$s」で何も選ばれていないため、何も行われません</string>

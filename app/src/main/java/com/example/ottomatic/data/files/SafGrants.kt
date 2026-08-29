@@ -1,5 +1,6 @@
 package com.example.ottomatic.data.files
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -94,6 +95,10 @@ object SafGrants {
      * asking for WRITE on a grant that only conveyed READ throws `SecurityException`,
      * which would turn a perfectly good read-only grant into a failed one.
      */
+    // `flags` is masked down to exactly the two constants the parameter accepts one line
+    // above the call, but lint reads the mask's left operand — `Intent.getFlags()`, which
+    // carries a different typedef — and reports the whole expression as the wrong constant.
+    @SuppressLint("WrongConstant")
     fun persist(context: Context, uri: Uri, intent: Intent?) {
         val granted = (intent?.flags ?: 0) and
             (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)

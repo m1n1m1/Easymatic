@@ -3,6 +3,7 @@
     <string name="problem_permission_missing">«%1$s» precisa de %2$s, que não foi concedida: pode não fazer nada ao correr</string>
     <string name="problem_capability_missing">«%1$s» precisa de %2$s, e este telemóvel não o tem: aqui nunca vai funcionar</string>
     <string name="problem_plugin_permission_missing">«%1$s» precisa de %2$s, que %3$s não recebeu: pode não fazer nada ao correr</string>
+    <string name="problem_plugin_not_ready">«%1$s» não fará nada até %2$s estar pronto: %3$s</string>
     <string name="problem_macro_unset">«%1$s» não tem nenhuma macro escolhida, por isso não fará nada</string>
     <string name="problem_macro_missing">«%1$s» aponta para uma macro que já não existe</string>
     <string name="problem_hub_unset">«%1$s» não tem nada escolhido, por isso não fará nada</string>

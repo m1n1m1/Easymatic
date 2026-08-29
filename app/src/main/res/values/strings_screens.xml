@@ -50,7 +50,9 @@
     <string name="permissions_open_settings">Open settings</string>
 
     <!-- feature/grapheditor -->
-    <string name="config_field_wired_from">← %1$s</string>
+    <!-- An arrow and the name of the port the value arrives from: no words of
+         its own, so there is nothing here for a translator to do. -->
+    <string name="config_field_wired_from" translatable="false">← %1$s</string>
     <string name="config_hint_show">Explain %1$s</string>
     <string name="config_hint_hide">Hide the explanation of %1$s</string>
     <string name="cd_palette_collapse_group">Collapse %1$s</string>
