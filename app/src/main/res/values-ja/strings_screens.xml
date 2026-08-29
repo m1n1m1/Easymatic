@@ -567,6 +567,7 @@
     <string name="shortcut_running_named">%1$s を実行中</string>
     <string name="ai_getting_a_key">キーを取得する</string>
     <string name="ai_pointing_at_own_server">自分のサーバーを指定する</string>
+    <string name="ai_running_on_this_phone">この端末でモデルを実行する</string>
     <string name="api_key_copied">キーをコピーしました</string>
     <string name="api_allowed_on">許可日: %1$s</string>
     <string name="geofence_small_radius_warning">%1$d m を下回ると、システムは電池のために位置精度を犠牲にするため、出入りが見逃されたり遅れて通知されたりしがちです。</string>

@@ -9,6 +9,7 @@
     <string name="ai_provider_openai">OpenAI (ChatGPT)</string>
     <string name="ai_provider_openrouter">OpenRouter</string>
     <string name="ai_provider_self_hosted">Self-hosted / OpenAI-compatible</string>
+    <string name="ai_provider_on_device">On-device (Gemini Nano)</string>
 
     <!-- What a new connection is called before it is renamed. -->
     <string name="ai_default_name_gemini">Gemini</string>
@@ -16,6 +17,7 @@
     <string name="ai_default_name_openai">ChatGPT</string>
     <string name="ai_default_name_openrouter">OpenRouter</string>
     <string name="ai_default_name_self_hosted">Self-hosted</string>
+    <string name="ai_default_name_on_device">On-device</string>
 
     <!-- The page the "Open …" button goes to. -->
     <string name="ai_console_gemini">Google AI Studio</string>
@@ -53,6 +55,12 @@
         <item>Copy the key, then come back here and tap the paste button.</item>
         <item>Load the model list below and choose which model each speed setting uses.</item>
     </string-array>
+    <string-array name="ai_steps_on_device">
+        <item>On-device AI needs a phone with AICore — a Pixel 9 or newer, a Galaxy S25 or newer, and a growing list of others.</item>
+        <item>Save this connection. The status below then says whether this phone can run it.</item>
+        <item>Tap Download and wait. The model is large, so use Wi-Fi.</item>
+        <item>Pick a fallback model for each way of asking, so macros still work on phones that cannot run it — and when a node uses tools, which the on-device model cannot.</item>
+    </string-array>
     <string-array name="ai_steps_self_hosted">
         <item>Start your model server — vLLM, Ollama, LM Studio and llama.cpp all work.</item>
         <item>Put its address below, including http:// or https:// and the port.</item>
@@ -66,6 +74,7 @@
     <string name="ai_cost_openai">Prompts are billed to your own OpenAI account, so a macro that asks the AI every minute costs money. You can revoke the key from the same page at any time.</string>
     <string name="ai_cost_openrouter">Prompts are billed to your own OpenRouter credit, and the price depends on which model you choose. You can revoke the key from the same page at any time.</string>
     <string name="ai_cost_self_hosted">Prompts go to your own server and nowhere else, so they cost nothing and leave no network you control. The server has to be reachable whenever the macro runs.</string>
+    <string name="ai_cost_on_device">Prompts cost nothing at all: there is no key, no quota and no network. They work in flight mode, and a macro can ask as often as it likes.</string>
 
     <!-- Where a prompt goes. -->
     <string name="ai_privacy_gemini">Prompts are answered by Google\'s servers, so an Ask AI node takes a moment.</string>
@@ -73,6 +82,7 @@
     <string name="ai_privacy_openai">Prompts are answered by OpenAI\'s servers, so an Ask AI node takes a moment.</string>
     <string name="ai_privacy_openrouter">Prompts go through OpenRouter to whichever provider serves the model you chose, so an Ask AI node takes a moment.</string>
     <string name="ai_privacy_self_hosted">Prompts go only to the server you named above.</string>
+    <string name="ai_privacy_on_device">Prompts never leave this phone. The model is smaller than a hosted one, so answers are shorter and simpler.</string>
 
     <!-- The three speed tiers. -->
     <string name="ai_model_fast">Fast</string>
@@ -93,4 +103,18 @@
     <string name="ai_modality_video">Video</string>
     <string name="ai_modality_file">Files</string>
     <string name="ai_modality_separator">" · "</string>
+
+    <!-- The on-device model: its four states, the download, and the fallback field. -->
+    <string name="ai_on_device_heading">On-device AI</string>
+    <string name="ai_on_device_available">Ready. Prompts are answered on this phone.</string>
+    <string name="ai_on_device_downloadable">Supported, but the model has not been downloaded yet.</string>
+    <string name="ai_on_device_downloading">The model is downloading.</string>
+    <string name="ai_on_device_unsupported">This phone cannot run AI on the device. Macros can still use it if you give each way of asking a fallback below.</string>
+    <string name="ai_on_device_checking">Checking this phone…</string>
+    <string name="ai_download_model">Download model</string>
+    <string name="ai_downloading_percent">Downloading… %1$d%%</string>
+    <string name="ai_on_device_base_model">Model on this phone: %1$s</string>
+    <string name="ai_fallback_model">If this phone cannot run it, ask</string>
+    <string name="ai_fallback_none">Nothing — report it instead</string>
+    <string name="ai_fallback_help">Used when the phone cannot run the model, and whenever a node lets the AI use tools, which the on-device model cannot do.</string>
 </resources>

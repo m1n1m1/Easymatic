@@ -2,6 +2,7 @@ package com.example.ottomatic.data.ai
 
 import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.domain.model.AiBaseUrl
+import com.example.ottomatic.domain.model.isOnDevice
 import com.example.ottomatic.domain.model.needsBaseUrl
 
 /**
@@ -32,7 +33,11 @@ import com.example.ottomatic.domain.model.needsBaseUrl
  * The plaintext key still never leaves `data/`: this takes an id, opens the key
  * itself, and hands back strings.
  */
-class AiModelCatalog(private val connections: AiConnectionRepository) {
+class AiModelCatalog internal constructor(
+    private val connections: AiConnectionRepository,
+    /** Consulted only for the providers that have no `GET {base}/models` to ask. */
+    private val onDevice: OnDeviceAi = NoOnDeviceAi,
+) {
 
     /**
      * The models [connectionId] can reach, or a sentence saying why not.
@@ -45,12 +50,25 @@ class AiModelCatalog(private val connections: AiConnectionRepository) {
     suspend fun list(connectionId: String): AiModels {
         val connection = connections.get(connectionId)
             ?: return AiModels(error = "This connection no longer exists")
+        // The phone has exactly one model and no listing to serve, so the "list" is the
+        // name it answers with. It stays a list rather than becoming a separate call
+        // because the chooser above it wants a list either way, and a one-row chooser is
+        // a better answer than a screen that behaves differently for one provider.
+        if (connection.provider.isOnDevice) {
+            val name = onDevice.baseModelName()
+            return if (name.isBlank()) {
+                AiModels(error = "This phone did not say which on-device model it has")
+            } else {
+                AiModels(models = listOf(AiModelInfo(id = name)))
+            }
+        }
         val key = connections.apiKey(connectionId)
             ?: return AiModels(error = "The key for this connection could not be read")
         if (connection.provider.needsBaseUrl && AiBaseUrl.parse(connection.baseUrl) == null) {
             return AiModels(error = "Add the server address first, then load the models")
         }
         val protocol = protocolFor(connection.provider)
+            ?: return AiModels(error = "This provider publishes no model list")
         val (status, body) = AiTransport.get(
             url = protocol.modelsEndpoint(connection),
             headers = protocol.headers(key),

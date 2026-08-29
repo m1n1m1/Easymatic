@@ -589,6 +589,7 @@
 
     <string name="ai_getting_a_key">Schlüssel besorgen</string>
     <string name="ai_pointing_at_own_server">Auf den eigenen Server zeigen</string>
+    <string name="ai_running_on_this_phone">Das Modell auf diesem Telefon ausführen</string>
     <string name="api_key_copied">Schlüssel kopiert</string>
     <string name="api_allowed_on">Erlaubt am %1$s</string>
     <string name="geofence_small_radius_warning">Unter %1$d m tauscht das System Standortgenauigkeit gegen Akkulaufzeit, weshalb Übergänge oft verpasst oder verspätet gemeldet werden.</string>

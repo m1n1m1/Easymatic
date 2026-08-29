@@ -1,5 +1,6 @@
 package com.example.ottomatic.feature.ai
 
+import androidx.annotation.StringRes
 import androidx.compose.ui.res.stringResource
 import com.example.ottomatic.R
 import androidx.compose.foundation.background
@@ -32,6 +33,7 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -56,8 +58,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.sp
 import com.example.ottomatic.domain.model.AiBaseUrl
+import com.example.ottomatic.data.ai.OnDeviceStatus
 import com.example.ottomatic.domain.model.AiProvider
+import com.example.ottomatic.domain.model.isOnDevice
 import com.example.ottomatic.domain.model.needsBaseUrl
+import com.example.ottomatic.domain.model.needsKey
 import com.example.ottomatic.feature.grapheditor.EditorColors
 import com.example.ottomatic.feature.grapheditor.EditorOverlay
 
@@ -158,11 +163,16 @@ fun AiConnectionEditorOverlay(
                 )
             }
 
-            KeyField(
-                draft = draft,
-                onKeyChange = viewModel::onKeyChange,
-                onPaste = { clipboard.getText()?.text?.let(viewModel::onKeyChange) },
-            )
+            // One or the other, never both: a provider either authenticates or runs here.
+            if (draft.provider.needsKey) {
+                KeyField(
+                    draft = draft,
+                    onKeyChange = viewModel::onKeyChange,
+                    onPaste = { clipboard.getText()?.text?.let(viewModel::onKeyChange) },
+                )
+            } else {
+                OnDeviceStatusRow(draft = draft, onDownload = viewModel::download)
+            }
 
             ModelList(
                 draft = draft,
@@ -388,6 +398,81 @@ private fun KeyField(
             )
         }
     }
+}
+
+/**
+ * What this phone can do about the on-device model, and the one button that changes it.
+ *
+ * **It stands exactly where the key field does for every other provider**, and that is
+ * the shape rather than a coincidence: this is the same question — is this connection
+ * able to answer yet? — asked of a phone instead of a console. The four states each get
+ * their own sentence for `OnDeviceStatus`' stated reason, and the download button appears
+ * only in the one state where pressing it would do something.
+ *
+ * **An unsupported phone is stated plainly and is not an error**, which is why the
+ * sentence names the fallback rather than only the refusal. A connection on a phone that
+ * cannot run the model is still a perfectly good connection: every profile under it works
+ * through its fallback, and saying so here is the difference between a dead end and a
+ * setup step.
+ */
+@Composable
+private fun OnDeviceStatusRow(draft: AiConnectionDraft, onDownload: () -> Unit) {
+    val downloading = draft.downloadPercent != null || draft.onDeviceStatus == OnDeviceStatus.DOWNLOADING
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(R.string.ai_on_device_heading),
+            color = EditorColors.textPrimary,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Text(
+            text = stringResource(statusTextRes(draft.onDeviceStatus)),
+            color = EditorColors.textSecondary,
+            fontSize = 13.sp,
+        )
+        if (draft.baseModelName.isNotBlank()) {
+            Text(
+                text = stringResource(R.string.ai_on_device_base_model, draft.baseModelName),
+                color = EditorColors.textSecondary,
+                fontSize = 12.sp,
+            )
+        }
+        if (draft.onDeviceStatus == OnDeviceStatus.DOWNLOADABLE && !downloading) {
+            OutlinedButton(onClick = onDownload, enabled = !draft.busy) {
+                Text(stringResource(R.string.ai_download_model))
+            }
+        }
+        if (downloading) {
+            // A device that never said how large the download is gives no percentage, and
+            // an indeterminate bar is the honest rendering of that — a confident 0% would
+            // read as a download that has stalled.
+            val percent = draft.downloadPercent
+            if (percent == null) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            } else {
+                Text(
+                    text = stringResource(R.string.ai_downloading_percent, percent),
+                    color = EditorColors.textSecondary,
+                    fontSize = 12.sp,
+                )
+                LinearProgressIndicator(
+                    progress = { percent / PERCENT },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+}
+
+private const val PERCENT = 100f
+
+@StringRes
+private fun statusTextRes(status: OnDeviceStatus?): Int = when (status) {
+    null -> R.string.ai_on_device_checking
+    OnDeviceStatus.AVAILABLE -> R.string.ai_on_device_available
+    OnDeviceStatus.DOWNLOADABLE -> R.string.ai_on_device_downloadable
+    OnDeviceStatus.DOWNLOADING -> R.string.ai_on_device_downloading
+    OnDeviceStatus.UNSUPPORTED -> R.string.ai_on_device_unsupported
 }
 
 /**

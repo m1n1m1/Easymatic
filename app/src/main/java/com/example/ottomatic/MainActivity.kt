@@ -134,6 +134,7 @@ class MainActivity : ComponentActivity() {
             repository = ServiceLocator.aiConnectionRepository,
             ai = ServiceLocator.executionContext.ai,
             catalog = ServiceLocator.aiModelCatalog,
+            onDevice = ServiceLocator.onDeviceSetup,
             appContext = applicationContext,
             macroControl = ServiceLocator.macroControl,
         )
@@ -443,6 +444,13 @@ class MainActivity : ComponentActivity() {
         // can name. A read that fails publishes nothing rather than an empty list — see
         // CalendarDirectory.isHydrated for why those two must not be confused.
         ServiceLocator.refreshCalendars()
+        // The third fact about the phone that only a trip outside the app can change:
+        // AICore updates itself and downloads the on-device model on its own schedule, so
+        // a "cannot run it" cached before that finished would outlive the truth. Dropping
+        // the cache rather than re-reading it, because unlike the two above nothing is
+        // waiting on the answer — the AI screen asks when it opens, and a macro asks when
+        // it runs.
+        ServiceLocator.onDeviceSetup.forget()
         // Surface the battery-optimisation prompt only when a background start
         // actually failed, at least one macro is enabled (no point prompting about
         // a failure to arm nothing), AND the exemption is not already in hand.

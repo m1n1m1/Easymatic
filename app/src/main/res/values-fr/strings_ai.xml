@@ -5,11 +5,13 @@
     <string name="ai_provider_openai">OpenAI (ChatGPT)</string>
     <string name="ai_provider_openrouter">OpenRouter</string>
     <string name="ai_provider_self_hosted">Auto-hébergé / compatible OpenAI</string>
+    <string name="ai_provider_on_device">Sur l’appareil (Gemini Nano)</string>
     <string name="ai_default_name_gemini">Gemini</string>
     <string name="ai_default_name_anthropic">Claude</string>
     <string name="ai_default_name_openai">ChatGPT</string>
     <string name="ai_default_name_openrouter">OpenRouter</string>
     <string name="ai_default_name_self_hosted">Auto-hébergé</string>
+    <string name="ai_default_name_on_device">Sur l’appareil</string>
     <string name="ai_console_gemini">Google AI Studio</string>
     <string name="ai_console_anthropic">la console Anthropic</string>
     <string name="ai_console_openai">la plateforme OpenAI</string>
@@ -20,11 +22,13 @@
     <string name="ai_cost_openai">Les requêtes sont facturées sur ton propre compte OpenAI, donc une macro qui interroge l\'IA chaque minute coûte de l\'argent. Tu peux révoquer la clé depuis la même page à tout moment.</string>
     <string name="ai_cost_openrouter">Les requêtes sont facturées sur ton propre crédit OpenRouter, et le prix dépend du modèle choisi. Tu peux révoquer la clé depuis la même page à tout moment.</string>
     <string name="ai_cost_self_hosted">Les requêtes vont vers ton propre serveur et nulle part ailleurs : elles ne coûtent rien et ne quittent aucun réseau que tu contrôles. Le serveur doit être joignable chaque fois que la macro s\'exécute.</string>
+    <string name="ai_cost_on_device">Les requêtes ne coûtent rien du tout : pas de clé, pas de quota, pas de réseau. Elles fonctionnent en mode avion, et une macro peut demander aussi souvent qu’elle veut.</string>
     <string name="ai_privacy_gemini">Les requêtes sont traitées par les serveurs de Google, donc un nœud Demander à l\'IA prend un moment.</string>
     <string name="ai_privacy_anthropic">Les requêtes sont traitées par les serveurs d\'Anthropic, donc un nœud Demander à l\'IA prend un moment.</string>
     <string name="ai_privacy_openai">Les requêtes sont traitées par les serveurs d\'OpenAI, donc un nœud Demander à l\'IA prend un moment.</string>
     <string name="ai_privacy_openrouter">Les requêtes passent par OpenRouter vers le fournisseur qui sert le modèle choisi, donc un nœud Demander à l\'IA prend un moment.</string>
     <string name="ai_privacy_self_hosted">Les requêtes vont uniquement vers le serveur indiqué ci-dessus.</string>
+    <string name="ai_privacy_on_device">Les requêtes ne quittent jamais ce téléphone. Le modèle est plus petit qu’un modèle hébergé, donc les réponses sont plus courtes et plus simples.</string>
     <string name="ai_model_fast">Rapide</string>
     <string name="ai_model_balanced">Équilibré</string>
     <string name="ai_model_thorough">Approfondi</string>
@@ -59,6 +63,12 @@
         <item>Copie la clé, puis reviens ici et appuie sur le bouton coller.</item>
         <item>Charge la liste des modèles ci-dessous et choisis quel modèle utilise chaque niveau de vitesse.</item>
     </string-array>
+    <string-array name="ai_steps_on_device">
+        <item>L’IA sur l’appareil demande un téléphone avec AICore : un Pixel 9 ou plus récent, un Galaxy S25 ou plus récent, et une liste qui s’allonge.</item>
+        <item>Enregistre cette connexion. L’état ci-dessous dira alors si ce téléphone peut l’exécuter.</item>
+        <item>Appuie sur Télécharger et patiente. Le modèle est volumineux, utilise donc le Wi-Fi.</item>
+        <item>Choisis un modèle de secours pour chaque façon de demander, pour que les macros marchent aussi sur les téléphones qui ne peuvent pas l’exécuter — et quand un nœud utilise des outils, ce que le modèle sur l’appareil ne sait pas faire.</item>
+    </string-array>
     <string-array name="ai_steps_self_hosted">
         <item>Démarre ton serveur de modèles : vLLM, Ollama, LM Studio et llama.cpp fonctionnent tous.</item>
         <item>Indique son adresse ci-dessous, avec http:// ou https:// et le port.</item>
@@ -74,4 +84,18 @@
     <string name="ai_modality_video">Vidéo</string>
     <string name="ai_modality_file">Fichiers</string>
     <string name="ai_modality_separator">" · "</string>
+
+    <!-- The on-device model: its four states, the download, and the fallback field. -->
+    <string name="ai_on_device_heading">IA sur l’appareil</string>
+    <string name="ai_on_device_available">Prêt. Les requêtes sont traitées sur ce téléphone.</string>
+    <string name="ai_on_device_downloadable">Pris en charge, mais le modèle n’a pas encore été téléchargé.</string>
+    <string name="ai_on_device_downloading">Le modèle est en cours de téléchargement.</string>
+    <string name="ai_on_device_unsupported">Ce téléphone ne peut pas exécuter l’IA sur l’appareil. Les macros peuvent quand même l’utiliser si tu donnes un modèle de secours à chaque façon de demander ci-dessous.</string>
+    <string name="ai_on_device_checking">Vérification du téléphone…</string>
+    <string name="ai_download_model">Télécharger le modèle</string>
+    <string name="ai_downloading_percent">Téléchargement… %1$d%%</string>
+    <string name="ai_on_device_base_model">Modèle sur ce téléphone : %1$s</string>
+    <string name="ai_fallback_model">Si ce téléphone ne peut pas l’exécuter, demander à</string>
+    <string name="ai_fallback_none">Rien — le signaler à la place</string>
+    <string name="ai_fallback_help">Utilisé quand le téléphone ne peut pas exécuter le modèle, et chaque fois qu’un nœud laisse l’IA utiliser des outils, ce que le modèle sur l’appareil ne sait pas faire.</string>
 </resources>

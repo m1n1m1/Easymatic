@@ -567,6 +567,7 @@
     <string name="shortcut_running_named">Выполняется «%1$s»</string>
     <string name="ai_getting_a_key">Получение ключа</string>
     <string name="ai_pointing_at_own_server">Подключение к своему серверу</string>
+    <string name="ai_running_on_this_phone">Запуск модели на этом телефоне</string>
     <string name="api_key_copied">Ключ скопирован</string>
     <string name="api_allowed_on">Разрешено %1$s</string>
     <string name="geofence_small_radius_warning">Ниже %1$d м система жертвует точностью местоположения ради батареи, поэтому пересечения часто пропускаются или сообщаются с опозданием.</string>

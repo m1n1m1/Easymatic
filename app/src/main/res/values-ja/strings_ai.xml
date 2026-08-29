@@ -5,11 +5,13 @@
     <string name="ai_provider_openai">OpenAI (ChatGPT)</string>
     <string name="ai_provider_openrouter">OpenRouter</string>
     <string name="ai_provider_self_hosted">セルフホスト / OpenAI 互換</string>
+    <string name="ai_provider_on_device">端末内 (Gemini Nano)</string>
     <string name="ai_default_name_gemini">Gemini</string>
     <string name="ai_default_name_anthropic">Claude</string>
     <string name="ai_default_name_openai">ChatGPT</string>
     <string name="ai_default_name_openrouter">OpenRouter</string>
     <string name="ai_default_name_self_hosted">セルフホスト</string>
+    <string name="ai_default_name_on_device">端末内</string>
     <string name="ai_console_gemini">Google AI Studio</string>
     <string name="ai_console_anthropic">Anthropic コンソール</string>
     <string name="ai_console_openai">OpenAI プラットフォーム</string>
@@ -20,11 +22,13 @@
     <string name="ai_cost_openai">リクエストはあなた自身の OpenAI アカウントに課金されるため、毎分 AI に問い合わせるマクロは費用がかかります。キーは同じページからいつでも失効させられます。</string>
     <string name="ai_cost_openrouter">リクエストはあなた自身の OpenRouter クレジットに課金され、価格は選んだモデルによって変わります。キーは同じページからいつでも失効させられます。</string>
     <string name="ai_cost_self_hosted">リクエストはあなた自身のサーバーにのみ送られ、他のどこにも行きません。費用はかからず、あなたが管理するネットワークから出ることもありません。マクロが実行されるときにサーバーへ到達できる必要があります。</string>
+    <string name="ai_cost_on_device">リクエストの費用はまったくかかりません。キーもクォータもネットワークも不要です。機内モードでも動作し、マクロは何度でも尋ねられます。</string>
     <string name="ai_privacy_gemini">リクエストは Google のサーバーが応答するため、「AI に質問」ノードは少し時間がかかります。</string>
     <string name="ai_privacy_anthropic">リクエストは Anthropic のサーバーが応答するため、「AI に質問」ノードは少し時間がかかります。</string>
     <string name="ai_privacy_openai">リクエストは OpenAI のサーバーが応答するため、「AI に質問」ノードは少し時間がかかります。</string>
     <string name="ai_privacy_openrouter">リクエストは OpenRouter を経由して、選んだモデルを提供するプロバイダーに届くため、「AI に質問」ノードは少し時間がかかります。</string>
     <string name="ai_privacy_self_hosted">リクエストは上で指定したサーバーにのみ送られます。</string>
+    <string name="ai_privacy_on_device">リクエストがこの端末から出ることはありません。モデルはホスト型より小さいため、回答は短く単純になります。</string>
     <string name="ai_model_fast">高速</string>
     <string name="ai_model_balanced">バランス</string>
     <string name="ai_model_thorough">詳細</string>
@@ -59,6 +63,12 @@
         <item>キーをコピーし、ここに戻って貼り付けボタンをタップします。</item>
         <item>下でモデル一覧を読み込み、速度設定ごとに使うモデルを選びます。</item>
     </string-array>
+    <string-array name="ai_steps_on_device">
+        <item>端末内 AI には AICore を備えた端末が必要です。Pixel 9 以降、Galaxy S25 以降、その他対応機種は増えています。</item>
+        <item>この接続を保存してください。下の状態が、この端末で実行できるかどうかを示します。</item>
+        <item>「モデルをダウンロード」をタップして待ちます。モデルは大きいので Wi-Fi を使ってください。</item>
+        <item>尋ね方ごとに代替モデルを選んでください。実行できない端末でもマクロが動き、ノードがツールを使うとき（端末内モデルにはできません）にも使われます。</item>
+    </string-array>
     <string-array name="ai_steps_self_hosted">
         <item>モデルサーバーを起動します。vLLM、Ollama、LM Studio、llama.cpp のいずれも使えます。</item>
         <item>下にそのアドレスを入力します。http:// または https:// とポート番号も含めてください。</item>
@@ -74,4 +84,18 @@
     <string name="ai_modality_video">動画</string>
     <string name="ai_modality_file">ファイル</string>
     <string name="ai_modality_separator">"・"</string>
+
+    <!-- The on-device model: its four states, the download, and the fallback field. -->
+    <string name="ai_on_device_heading">端末内 AI</string>
+    <string name="ai_on_device_available">準備完了。リクエストはこの端末で処理されます。</string>
+    <string name="ai_on_device_downloadable">対応していますが、モデルがまだダウンロードされていません。</string>
+    <string name="ai_on_device_downloading">モデルをダウンロード中です。</string>
+    <string name="ai_on_device_unsupported">この端末では AI を端末内で実行できません。下で尋ね方ごとに代替モデルを設定すれば、マクロは引き続き利用できます。</string>
+    <string name="ai_on_device_checking">この端末を確認中…</string>
+    <string name="ai_download_model">モデルをダウンロード</string>
+    <string name="ai_downloading_percent">ダウンロード中… %1$d%%</string>
+    <string name="ai_on_device_base_model">この端末のモデル: %1$s</string>
+    <string name="ai_fallback_model">この端末で実行できないときの問い合わせ先</string>
+    <string name="ai_fallback_none">なし — 代わりに報告する</string>
+    <string name="ai_fallback_help">端末がモデルを実行できないとき、およびノードが AI にツールの使用を許可しているとき（端末内モデルにはできません）に使われます。</string>
 </resources>

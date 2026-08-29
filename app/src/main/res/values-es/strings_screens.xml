@@ -567,6 +567,7 @@
     <string name="shortcut_running_named">Ejecutando %1$s</string>
     <string name="ai_getting_a_key">Conseguir una clave</string>
     <string name="ai_pointing_at_own_server">Apuntar a tu propio servidor</string>
+    <string name="ai_running_on_this_phone">Ejecutar el modelo en este teléfono</string>
     <string name="api_key_copied">Clave copiada</string>
     <string name="api_allowed_on">Autorizado el %1$s</string>
     <string name="geofence_small_radius_warning">Por debajo de %1$d m el sistema sacrifica precisión de ubicación por batería, así que los cruces suelen perderse o notificarse tarde.</string>

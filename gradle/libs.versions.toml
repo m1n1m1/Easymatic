@@ -24,6 +24,7 @@ javamail = "1.6.7"
 exifinterface = "1.4.1"
 okhttp = "4.12.0"
 paho = "1.2.5"
+mlkitGenAiPrompt = "1.0.0-beta2"
 # Pinned to what `:app` already resolves to transitively (via lifecycle-runtime-ktx).
 # `:plugin-sdk` needs it declared rather than inherited: a plugin app depends on the
 # SDK alone and would otherwise have no coroutines at all.
@@ -107,6 +108,19 @@ javamail-android-activation = { group = "com.sun.mail", name = "android-activati
 # for okhttp and paho: one library instead of a version branch whose rarely-taken half
 # is the broken one.
 androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version.ref = "exifinterface" }
+# On-device generative AI, for the `ML_KIT` provider. The one dependency here that is
+# not a network client at all, which is also why it is not hand-rolled the way
+# `AiTransport` and `HueTransport` are: there is no wire to write. It is an AIDL
+# binding to AICore, the Android system service that owns Gemini Nano, and the model
+# weights, their download and their versioning all live outside the app. Written by
+# hand that is not a few hundred lines of framing but a private system interface with
+# no published contract.
+#
+# It is **beta**, and the only non-GA artifact in this list. The exposure is bounded by
+# where it is reachable from: one `OnDeviceAi` implementation behind `RoutingAi`, whose
+# every failure mode already falls back to a cloud profile or reports a sentence, so a
+# breaking change in the SDK cannot reach a node.
+mlkit-genai-prompt = { group = "com.google.mlkit", name = "genai-prompt", version.ref = "mlkitGenAiPrompt" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

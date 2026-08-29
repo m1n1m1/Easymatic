@@ -190,6 +190,53 @@ class AiConnectionRepositoryTest {
         assertEquals("action.notify", profile.tools)
     }
 
+    /**
+     * **An on-device account keeps no key and still round-trips**, together with the one
+     * field only it uses.
+     *
+     * Both halves matter. The provider is persisted by *name*, so a library written by
+     * this build has to survive a reopen with `ML_KIT` intact — an unknown name is a
+     * discarded schema, not a migration. And `fallbackModelRef` is what makes an
+     * unsupported phone usable at all, so a profile that lost it on a save would leave a
+     * macro reporting a refusal where it used to answer.
+     */
+    @Test
+    fun `an on-device connection and its fallback survive a restart`() = runBlocking {
+        val repository = repository()
+        val created = repository.create("On-device", AiProvider.ML_KIT)
+        repository.upsert(
+            repository.get(created.id)!!.copy(
+                models = listOf(
+                    AiModelProfile(id = "nano", name = "Nano", fallbackModelRef = "cloud-profile"),
+                ),
+            ),
+        )
+
+        val reopened = repository().get(created.id)!!
+        assertEquals(AiProvider.ML_KIT, reopened.provider)
+        assertEquals("cloud-profile", reopened.models.single().fallbackModelRef)
+    }
+
+    /**
+     * A library written before the fallback field existed loads with it blank rather than
+     * failing — the `ignoreUnknownKeys` + every-added-property-has-a-default invariant
+     * that `AiConnection`'s KDoc states, checked for the newest property.
+     */
+    @Test
+    fun `a profile written before the fallback field loads with none`() = runBlocking {
+        folder.root.resolve("ai").mkdirs()
+        folder.root.resolve("ai/connections.json").writeText(
+            """
+            [{"id":"c1","name":"Personal","provider":"GEMINI","secret":"",
+              "models":[{"id":"p1","name":"Household","effort":"FAST"}]}]
+            """.trimIndent(),
+        )
+
+        val profile = repository().get("c1")!!.models.single()
+        assertEquals("Household", profile.name)
+        assertEquals("", profile.fallbackModelRef)
+    }
+
     /** Both halves of [AiConnectionRepository.resolve], which every AI node starts from. */
     @Test
     fun `a profile resolves to itself and to the account behind it`() = runBlocking {

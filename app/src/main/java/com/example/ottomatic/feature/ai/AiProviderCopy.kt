@@ -37,6 +37,7 @@ internal fun AiProvider.labelRes(): Int = when (this) {
     AiProvider.OPENAI -> R.string.ai_provider_openai
     AiProvider.OPENROUTER -> R.string.ai_provider_openrouter
     AiProvider.OPENAI_COMPATIBLE -> R.string.ai_provider_self_hosted
+    AiProvider.ML_KIT -> R.string.ai_provider_on_device
 }
 
 /** What a new connection is called before the user renames it. */
@@ -47,6 +48,7 @@ internal fun AiProvider.defaultNameRes(): Int = when (this) {
     AiProvider.OPENAI -> R.string.ai_default_name_openai
     AiProvider.OPENROUTER -> R.string.ai_default_name_openrouter
     AiProvider.OPENAI_COMPATIBLE -> R.string.ai_default_name_self_hosted
+    AiProvider.ML_KIT -> R.string.ai_default_name_on_device
 }
 
 /** Where this provider's keys are minted, or blank when there is no page to open. */
@@ -57,6 +59,10 @@ internal fun AiProvider.consoleUrl(): String = when (this) {
     AiProvider.OPENROUTER -> "https://openrouter.ai/keys"
     // A server the user runs; whatever key it wants, they set it themselves.
     AiProvider.OPENAI_COMPATIBLE -> ""
+
+    // Nothing to open and nowhere to sign up: the model is on the phone, and the only
+    // thing anybody has to do is tap Download.
+    AiProvider.ML_KIT -> ""
 }
 
 /**
@@ -72,6 +78,7 @@ internal fun AiProvider.consoleNameRes(): Int? = when (this) {
     AiProvider.OPENAI -> R.string.ai_console_openai
     AiProvider.OPENROUTER -> R.string.ai_console_openrouter
     AiProvider.OPENAI_COMPATIBLE -> null
+    AiProvider.ML_KIT -> null
 }
 
 /**
@@ -89,6 +96,7 @@ internal fun AiProvider.setupStepsRes(): Int = when (this) {
     AiProvider.OPENAI -> R.array.ai_steps_openai
     AiProvider.OPENROUTER -> R.array.ai_steps_openrouter
     AiProvider.OPENAI_COMPATIBLE -> R.array.ai_steps_self_hosted
+    AiProvider.ML_KIT -> R.array.ai_steps_on_device
 }
 
 /**
@@ -104,6 +112,7 @@ internal fun AiProvider.costNoteRes(): Int = when (this) {
     AiProvider.OPENAI -> R.string.ai_cost_openai
     AiProvider.OPENROUTER -> R.string.ai_cost_openrouter
     AiProvider.OPENAI_COMPATIBLE -> R.string.ai_cost_self_hosted
+    AiProvider.ML_KIT -> R.string.ai_cost_on_device
 }
 
 /**
@@ -117,6 +126,7 @@ internal fun AiProvider.privacyNoteRes(): Int = when (this) {
     AiProvider.OPENAI -> R.string.ai_privacy_openai
     AiProvider.OPENROUTER -> R.string.ai_privacy_openrouter
     AiProvider.OPENAI_COMPATIBLE -> R.string.ai_privacy_self_hosted
+    AiProvider.ML_KIT -> R.string.ai_privacy_on_device
 }
 
 /**

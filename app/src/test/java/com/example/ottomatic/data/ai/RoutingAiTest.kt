@@ -4,6 +4,7 @@ import com.example.ottomatic.core.service.AiAudio
 import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.AiParam
 import com.example.ottomatic.core.service.AiParamSchema
+import com.example.ottomatic.core.service.AiReply
 import com.example.ottomatic.core.service.AiRequest
 import com.example.ottomatic.core.service.AiTool
 import com.example.ottomatic.core.service.AiToolCall
@@ -14,10 +15,12 @@ import com.example.ottomatic.data.security.FakeSecrets
 import com.example.ottomatic.domain.model.AiConnection
 import com.example.ottomatic.domain.model.AiModelProfile
 import com.example.ottomatic.domain.model.AiProvider
+import com.example.ottomatic.domain.model.isOnDevice
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -128,19 +131,29 @@ class RoutingAiTest {
 
     // ---- routing ---------------------------------------------------------------
 
+    /**
+     * **Every provider with a wire has its own protocol; the one without has none.**
+     *
+     * The `distinct()` half is the load-bearing part and predates the on-device provider:
+     * Gemini and Anthropic have their own classes, and the three OpenAI-shaped ones share
+     * a class but must not share an *instance*, or they would share a base URL. The null
+     * arm is the new half, and it is an assertion rather than an exemption — an on-device
+     * provider that acquired a protocol would mean somebody had written five HTTP members
+     * for a request that never touches HTTP.
+     */
     @Test
-    fun `every provider routes to a protocol and no two share one`() {
-        val protocols = AiProvider.entries.map { protocolFor(it) }
-        assertEquals(AiProvider.entries.size, protocols.size)
-        // Gemini and Anthropic have their own; the three OpenAI-shaped ones share a
-        // class but must not share an instance, or they would share a base URL.
-        assertEquals(AiProvider.entries.size, protocols.distinct().size)
+    fun `every wire provider routes to its own protocol, and the on-device one to none`() {
+        val wired = AiProvider.entries.filterNot { it.isOnDevice }
+        val protocols = wired.map { protocolFor(it) }
+        assertEquals(wired.size, protocols.size)
+        assertEquals(wired.size, protocols.filterNotNull().distinct().size)
+        assertNull(protocolFor(AiProvider.ML_KIT))
     }
 
     @Test
     fun `the three OpenAI-shaped providers keep their own endpoints`() {
-        val openAi = protocolFor(AiProvider.OPENAI)
-        val openRouter = protocolFor(AiProvider.OPENROUTER)
+        val openAi = protocolFor(AiProvider.OPENAI)!!
+        val openRouter = protocolFor(AiProvider.OPENROUTER)!!
         val blank = target(com.example.ottomatic.domain.model.AiConnection(id = "x", name = "x"))
         assertNotEquals(openAi.endpoint(blank), openRouter.endpoint(blank))
     }
@@ -458,6 +471,241 @@ class RoutingAiTest {
                 200 to (queue.removeFirstOrNull() ?: ANSWERS)
             },
         )
+    }
+
+    // ---- the on-device provider and its fallback -------------------------------
+
+    /**
+     * An on-device connection with one profile, and optionally somewhere to fall back to.
+     *
+     * Its own helper beside [withModel] because the two differ in the field that matters:
+     * this one has no key at all, which is the first guard the on-device branch has to be
+     * ahead of.
+     */
+    private suspend fun AiConnectionRepository.withOnDevice(
+        fallback: String = "",
+        systemPrompt: String = "",
+    ): String {
+        val created = create("On-device", AiProvider.ML_KIT)
+        val profile = AiModelProfile(
+            id = "${created.id}#nano",
+            name = "Nano",
+            systemPrompt = systemPrompt,
+            fallbackModelRef = fallback,
+        )
+        upsert(get(created.id)!!.copy(models = listOf(profile)))
+        return profile.id
+    }
+
+    /**
+     * The phone answers, and no key is ever asked for.
+     *
+     * The second half is the point: an on-device connection has never had a key, so a
+     * branch placed after the key guard would report "the key could not be read" about a
+     * provider that has none — which is exactly where this was easiest to get wrong.
+     */
+    @Test
+    fun `a ready phone answers on the device, with no key involved`() = runBlocking {
+        val repository = repository()
+        val ref = repository.withOnDevice()
+        val phone = FakeOnDeviceAi(reply = AiReply(text = "42"))
+        val reply = RoutingAi(repository, phone).complete(request(ref))
+        assertEquals("42", reply.text)
+        assertEquals("", reply.error)
+        assertEquals(1, phone.plans.size)
+    }
+
+    /** The profile's persona reaches the phone, exactly as it reaches a wire. */
+    @Test
+    fun `the profile's standing instruction reaches the on-device plan`() = runBlocking {
+        val repository = repository()
+        val ref = repository.withOnDevice(systemPrompt = "Answer in German")
+        val phone = FakeOnDeviceAi()
+        RoutingAi(repository, phone).complete(request(ref))
+        assertEquals("Answer in German", phone.plans.single().systemInstruction)
+    }
+
+    /**
+     * With nothing to fall back to, the refusal *is* the answer — and it is the sentence
+     * `onDeviceProblem` wrote, unchanged. A phone whose owner deliberately wants nothing
+     * to leave it should read why, not a second sentence about a fallback they chose not
+     * to have.
+     */
+    @Test
+    fun `an unsupported phone with no fallback reports the reason and nothing else`() = runBlocking {
+        val repository = repository()
+        val ref = repository.withOnDevice()
+        val phone = FakeOnDeviceAi(status = OnDeviceStatus.UNSUPPORTED)
+        val reply = RoutingAi(repository, phone).complete(request(ref))
+        assertEquals(
+            onDeviceProblem(request(ref), OnDeviceStatus.UNSUPPORTED, wantsTools = false),
+            reply.error,
+        )
+        assertTrue(phone.plans.isEmpty())
+    }
+
+    /**
+     * The re-dispatch resolves the *fallback's own* profile, which is what "the fallback
+     * answers as itself" means. Pinned through a self-hosted account with no model named,
+     * because that refusal happens before the network and names the profile it refused —
+     * so the sentence is proof of which profile was resolved, with nothing sent anywhere.
+     */
+    @Test
+    fun `an unsupported phone re-dispatches to the fallback profile itself`() = runBlocking {
+        val repository = repository()
+        val cloud = repository.withModel("Server", AiProvider.OPENAI_COMPATIBLE)
+        val account = repository.connectionForProfile(cloud)!!
+        repository.upsert(account.copy(baseUrl = "http://192.168.1.5:8000"))
+        // A key, so the fallback gets past its own key guard and reaches the check that
+        // names the profile — which is the thing being pinned.
+        repository.setKey(account.id, "k")
+        val ref = repository.withOnDevice(fallback = cloud)
+        val phone = FakeOnDeviceAi(status = OnDeviceStatus.UNSUPPORTED)
+        val reply = RoutingAi(repository, phone).complete(request(ref))
+        // The fallback profile's own name, from its own provider's configuration check.
+        assertTrue(reply.error, reply.error.contains("has no model chosen"))
+        // And the reason the phone could not answer is still there, first.
+        assertTrue(reply.error, reply.error.contains("cannot run AI on the device"))
+    }
+
+    /**
+     * A model that is merely not downloaded yet takes the fallback too, and never starts a
+     * download of its own — the weights are large enough to be a metered-data decision,
+     * and a macro firing at three in the morning is nobody's chance to make it.
+     */
+    @Test
+    fun `a model that has not been downloaded falls back rather than downloading`() = runBlocking {
+        val repository = repository()
+        val ref = repository.withOnDevice()
+        val phone = FakeOnDeviceAi(status = OnDeviceStatus.DOWNLOADABLE)
+        val reply = RoutingAi(repository, phone).complete(request(ref))
+        assertTrue(reply.error, reply.error.contains("download"))
+        assertTrue(phone.plans.isEmpty())
+    }
+
+    /**
+     * **A failed attempt falls back, where a failed cloud request would not.** The
+     * asymmetry is the point: an on-device attempt costs no quota and no network, so
+     * having tried it and then asking the fallback is strictly better than reporting —
+     * and it is what makes a beta SDK safe to depend on.
+     */
+    @Test
+    fun `a generation that failed on the phone falls back as well`() = runBlocking {
+        val repository = repository()
+        val cloud = repository.withModel("Server", AiProvider.OPENAI_COMPATIBLE)
+        repository.setKey(repository.connectionForProfile(cloud)!!.id, "k")
+        val ref = repository.withOnDevice(fallback = cloud)
+        val phone = FakeOnDeviceAi(reply = AiReply(error = "AICore went away"))
+        val reply = RoutingAi(repository, phone).complete(request(ref))
+        assertEquals(1, phone.plans.size)
+        assertTrue(reply.error, reply.error.contains("AICore went away"))
+        assertTrue(reply.error, reply.error.contains("has no server address"))
+    }
+
+    /** A profile naming itself is a loop, and is refused rather than followed. */
+    @Test
+    fun `a profile whose fallback is itself is refused`() = runBlocking {
+        val repository = repository()
+        val created = repository.create("On-device", AiProvider.ML_KIT)
+        val profile = AiModelProfile(
+            id = "${created.id}#nano",
+            name = "Nano",
+            fallbackModelRef = "${created.id}#nano",
+        )
+        repository.upsert(repository.get(created.id)!!.copy(models = listOf(profile)))
+        val reply = RoutingAi(repository, FakeOnDeviceAi(status = OnDeviceStatus.UNSUPPORTED))
+            .complete(request(profile.id))
+        assertTrue(reply.error, reply.error.contains("same model"))
+    }
+
+    /** One hop and never a chain: a fallback that is itself on-device is refused. */
+    @Test
+    fun `a fallback that also runs on the device is not followed`() = runBlocking {
+        val repository = repository()
+        val second = repository.withOnDevice()
+        val first = repository.withOnDevice(fallback = second)
+        val reply = RoutingAi(repository, FakeOnDeviceAi(status = OnDeviceStatus.UNSUPPORTED))
+            .complete(request(first))
+        assertTrue(reply.error, reply.error.contains("never chained"))
+    }
+
+    /**
+     * **The tool list follows the fallback**, and that is what keeps the whole-re-dispatch
+     * promise honest. `engine/` builds the catalogue from this *before* `converse` is
+     * called, so answering the on-device profile's list would build the tools from one
+     * profile and run them against another, with no later moment to correct it.
+     */
+    @Test
+    fun `the tool list of an on-device profile is its fallback's`() = runBlocking {
+        val repository = repository()
+        val created = repository.create("Server", AiProvider.OPENAI_COMPATIBLE)
+        val cloud = AiModelProfile(id = "${created.id}#p", name = "Model", tools = "value.battery")
+        repository.upsert(repository.get(created.id)!!.copy(models = listOf(cloud)))
+        val ref = repository.withOnDevice(fallback = cloud.id)
+        assertEquals("value.battery", RoutingAi(repository, FakeOnDeviceAi()).toolsFor(ref))
+    }
+
+    /** With no fallback there is nothing an on-device profile could be allowed to do. */
+    @Test
+    fun `an on-device profile with no fallback offers no tools`() = runBlocking {
+        val repository = repository()
+        val ref = repository.withOnDevice()
+        assertEquals("", RoutingAi(repository, FakeOnDeviceAi()).toolsFor(ref))
+    }
+
+    /**
+     * Tools make an otherwise perfectly runnable prompt impossible here, whatever the
+     * phone can do — the Prompt API has no function calling at all.
+     */
+    @Test
+    fun `a tool-using node on a ready phone still takes the fallback path`() = runBlocking {
+        val repository = repository()
+        val ref = repository.withOnDevice()
+        val phone = FakeOnDeviceAi(status = OnDeviceStatus.AVAILABLE)
+        val reply = RoutingAi(repository, phone).converse(
+            request = request(ref),
+            tools = listOf(tool),
+            invoke = { AiToolResult("") },
+        )
+        assertTrue(reply.error, reply.error.contains("cannot use tools"))
+        assertTrue(phone.plans.isEmpty())
+    }
+
+    // ---- what the run log is told about a fallback ------------------------------
+
+    /**
+     * **A fallback that worked is not an error, and must still be recorded.** Every field
+     * on a successful reply says the macro asked and something answered; which model did,
+     * and therefore who was billed, is exactly what this note exists to add — an
+     * unattended macro moving from a free local model to a paid cloud one is what the run
+     * log is for.
+     */
+    @Test
+    fun `a fallback that answered names both the reason and the model`() {
+        val note = askedInsteadText("This phone cannot run AI on the device", "Gemini Flash")
+        assertTrue(note, note.contains("cannot run AI on the device"))
+        assertTrue(note, note.contains("Gemini Flash"))
+    }
+
+    /**
+     * The note says "something else answered this", which on a reply that was not answered
+     * at all is simply untrue — a failed fallback reports both reasons through its error
+     * instead.
+     */
+    @Test
+    fun `a reply that failed keeps its error and gains no note`() {
+        val failed = AiReply(error = "no server address").withNote("asked something else")
+        assertEquals("no server address", failed.error)
+        assertEquals("", failed.note)
+
+        val answered = AiReply(text = "42").withNote("asked something else")
+        assertEquals("asked something else", answered.note)
+    }
+
+    /** Both halves, in the order somebody reads them: what stopped it, then what else did. */
+    @Test
+    fun `two reasons are joined into one sentence pair`() {
+        assertEquals("A. B", withReason("A", "B"))
     }
 
     private companion object {

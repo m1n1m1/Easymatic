@@ -115,6 +115,10 @@ class AiDescribeAction : Action<AiDescribeConfig, String> {
             context.log("Ask AI About a Picture failed: ${reply.error}", LogLevel.ERROR)
             return NodeOutput(input.fallback)
         }
+        // INFO rather than WARN: nothing went wrong — the macro asked, and something
+        // answered. What it records is *which* model did, which is the one thing a
+        // successful reply otherwise says nothing about.
+        if (reply.note.isNotBlank()) context.log("Describe picture: ${reply.note}", LogLevel.INFO)
         if (reply.truncated) {
             context.log(
                 "The reply was cut off at ${input.maxOutputTokens} tokens — raise the reply limit",

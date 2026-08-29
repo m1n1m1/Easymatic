@@ -7,12 +7,14 @@
     <string name="ai_provider_openai">OpenAI (ChatGPT)</string>
     <string name="ai_provider_openrouter">OpenRouter</string>
     <string name="ai_provider_self_hosted">Selbst gehostet / OpenAI-kompatibel</string>
+    <string name="ai_provider_on_device">Auf dem Gerät (Gemini Nano)</string>
 
     <string name="ai_default_name_gemini">Gemini</string>
     <string name="ai_default_name_anthropic">Claude</string>
     <string name="ai_default_name_openai">ChatGPT</string>
     <string name="ai_default_name_openrouter">OpenRouter</string>
     <string name="ai_default_name_self_hosted">Selbst gehostet</string>
+    <string name="ai_default_name_on_device">Auf dem Gerät</string>
 
     <string name="ai_console_gemini">Google AI Studio</string>
     <string name="ai_console_anthropic">die Anthropic Console</string>
@@ -48,6 +50,12 @@
         <item>Kopiere den Schlüssel, komm dann hierher zurück und tippe auf die Einfügen-Schaltfläche.</item>
         <item>Lade unten die Modellliste und wähle, welches Modell jede Geschwindigkeitsstufe verwendet.</item>
     </string-array>
+    <string-array name="ai_steps_on_device">
+        <item>KI auf dem Gerät braucht ein Telefon mit AICore — ein Pixel 9 oder neuer, ein Galaxy S25 oder neuer und eine wachsende Zahl weiterer.</item>
+        <item>Speichere diese Verbindung. Der Status unten sagt dann, ob dieses Telefon sie ausführen kann.</item>
+        <item>Tippe auf Herunterladen und warte. Das Modell ist groß, nutze also WLAN.</item>
+        <item>Wähle für jede Art zu fragen ein Ausweichmodell, damit Makros auch auf Telefonen funktionieren, die es nicht ausführen können — und wenn ein Knoten Werkzeuge nutzt, was das Modell auf dem Gerät nicht kann.</item>
+    </string-array>
     <string-array name="ai_steps_self_hosted">
         <item>Starte deinen Modellserver — vLLM, Ollama, LM Studio und llama.cpp funktionieren alle.</item>
         <item>Trage unten seine Adresse ein, inklusive http:// oder https:// und Port.</item>
@@ -60,12 +68,14 @@
     <string name="ai_cost_openai">Anfragen werden deinem eigenen OpenAI-Konto belastet, ein Makro, das die KI jede Minute fragt, kostet also Geld. Du kannst den Schlüssel jederzeit auf derselben Seite widerrufen.</string>
     <string name="ai_cost_openrouter">Anfragen werden deinem eigenen OpenRouter-Guthaben belastet, und der Preis hängt vom gewählten Modell ab. Du kannst den Schlüssel jederzeit auf derselben Seite widerrufen.</string>
     <string name="ai_cost_self_hosted">Anfragen gehen an deinen eigenen Server und sonst nirgendwohin, kosten also nichts und verlassen kein Netzwerk, das du kontrollierst. Der Server muss erreichbar sein, wann immer das Makro läuft.</string>
+    <string name="ai_cost_on_device">Anfragen kosten überhaupt nichts: kein Schlüssel, kein Kontingent, kein Netzwerk. Sie funktionieren im Flugmodus, und ein Makro darf so oft fragen, wie es will.</string>
 
     <string name="ai_privacy_gemini">Anfragen werden von Googles Servern beantwortet, ein Knoten „KI fragen“ braucht also einen Moment.</string>
     <string name="ai_privacy_anthropic">Anfragen werden von Anthropics Servern beantwortet, ein Knoten „KI fragen“ braucht also einen Moment.</string>
     <string name="ai_privacy_openai">Anfragen werden von OpenAIs Servern beantwortet, ein Knoten „KI fragen“ braucht also einen Moment.</string>
     <string name="ai_privacy_openrouter">Anfragen gehen über OpenRouter an den Anbieter, der das gewählte Modell bereitstellt, ein Knoten „KI fragen“ braucht also einen Moment.</string>
     <string name="ai_privacy_self_hosted">Anfragen gehen nur an den oben angegebenen Server.</string>
+    <string name="ai_privacy_on_device">Anfragen verlassen dieses Telefon nie. Das Modell ist kleiner als ein gehostetes, daher sind Antworten kürzer und einfacher.</string>
 
     <string name="ai_model_fast">Schnell</string>
     <string name="ai_model_balanced">Ausgewogen</string>
@@ -84,4 +94,18 @@
     <string name="ai_modality_video">Video</string>
     <string name="ai_modality_file">Dateien</string>
     <string name="ai_modality_separator">" · "</string>
+
+    <!-- The on-device model: its four states, the download, and the fallback field. -->
+    <string name="ai_on_device_heading">KI auf dem Gerät</string>
+    <string name="ai_on_device_available">Bereit. Anfragen werden auf diesem Telefon beantwortet.</string>
+    <string name="ai_on_device_downloadable">Unterstützt, aber das Modell wurde noch nicht heruntergeladen.</string>
+    <string name="ai_on_device_downloading">Das Modell wird heruntergeladen.</string>
+    <string name="ai_on_device_unsupported">Dieses Telefon kann KI nicht auf dem Gerät ausführen. Makros können sie trotzdem nutzen, wenn du jeder Art zu fragen unten ein Ausweichmodell gibst.</string>
+    <string name="ai_on_device_checking">Telefon wird geprüft…</string>
+    <string name="ai_download_model">Modell herunterladen</string>
+    <string name="ai_downloading_percent">Wird heruntergeladen… %1$d%%</string>
+    <string name="ai_on_device_base_model">Modell auf diesem Telefon: %1$s</string>
+    <string name="ai_fallback_model">Wenn dieses Telefon es nicht ausführen kann, frage</string>
+    <string name="ai_fallback_none">Nichts — stattdessen melden</string>
+    <string name="ai_fallback_help">Wird genutzt, wenn das Telefon das Modell nicht ausführen kann, und immer wenn ein Knoten der KI Werkzeuge erlaubt, was das Modell auf dem Gerät nicht kann.</string>
 </resources>

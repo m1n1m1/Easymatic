@@ -5,11 +5,13 @@
     <string name="ai_provider_openai">OpenAI (ChatGPT)</string>
     <string name="ai_provider_openrouter">OpenRouter</string>
     <string name="ai_provider_self_hosted">Свой сервер / совместимый с OpenAI</string>
+    <string name="ai_provider_on_device">На устройстве (Gemini Nano)</string>
     <string name="ai_default_name_gemini">Gemini</string>
     <string name="ai_default_name_anthropic">Claude</string>
     <string name="ai_default_name_openai">ChatGPT</string>
     <string name="ai_default_name_openrouter">OpenRouter</string>
     <string name="ai_default_name_self_hosted">Свой сервер</string>
+    <string name="ai_default_name_on_device">На устройстве</string>
     <string name="ai_console_gemini">Google AI Studio</string>
     <string name="ai_console_anthropic">консоль Anthropic</string>
     <string name="ai_console_openai">платформу OpenAI</string>
@@ -20,11 +22,13 @@
     <string name="ai_cost_openai">Запросы списываются с вашего счёта OpenAI, поэтому макрос, обращающийся к ИИ каждую минуту, стоит денег. Ключ можно отозвать на той же странице в любой момент.</string>
     <string name="ai_cost_openrouter">Запросы списываются с вашего счёта OpenRouter, а цена зависит от выбранной модели. Ключ можно отозвать на той же странице в любой момент.</string>
     <string name="ai_cost_self_hosted">Запросы уходят только на ваш собственный сервер и никуда больше, поэтому ничего не стоят и не покидают сеть, которую вы контролируете. Сервер должен быть доступен всякий раз, когда выполняется макрос.</string>
+    <string name="ai_cost_on_device">Запросы не стоят ничего: ни ключа, ни квоты, ни сети. Они работают в режиме полёта, и макрос может спрашивать сколько угодно.</string>
     <string name="ai_privacy_gemini">Запросы обрабатываются серверами Google, поэтому узел «Спросить ИИ» занимает некоторое время.</string>
     <string name="ai_privacy_anthropic">Запросы обрабатываются серверами Anthropic, поэтому узел «Спросить ИИ» занимает некоторое время.</string>
     <string name="ai_privacy_openai">Запросы обрабатываются серверами OpenAI, поэтому узел «Спросить ИИ» занимает некоторое время.</string>
     <string name="ai_privacy_openrouter">Запросы идут через OpenRouter к тому провайдеру, который предоставляет выбранную модель, поэтому узел «Спросить ИИ» занимает некоторое время.</string>
     <string name="ai_privacy_self_hosted">Запросы уходят только на сервер, указанный выше.</string>
+    <string name="ai_privacy_on_device">Запросы никогда не покидают этот телефон. Модель меньше размещённой на сервере, поэтому ответы короче и проще.</string>
     <string name="ai_model_fast">Быстрая</string>
     <string name="ai_model_balanced">Сбалансированная</string>
     <string name="ai_model_thorough">Тщательная</string>
@@ -59,6 +63,12 @@
         <item>Скопируйте ключ, затем вернитесь сюда и нажмите кнопку вставки.</item>
         <item>Загрузите список моделей ниже и выберите, какая модель соответствует каждому уровню скорости.</item>
     </string-array>
+    <string-array name="ai_steps_on_device">
+        <item>Для ИИ на устройстве нужен телефон с AICore — Pixel 9 или новее, Galaxy S25 или новее и растущий список других.</item>
+        <item>Сохрани это подключение. Состояние ниже покажет, может ли этот телефон его запустить.</item>
+        <item>Нажми «Скачать модель» и подожди. Модель большая, так что используй Wi-Fi.</item>
+        <item>Выбери запасную модель для каждого способа спрашивать, чтобы макросы работали и на телефонах, которые не могут её запустить, — и когда узел использует инструменты, чего модель на устройстве не умеет.</item>
+    </string-array>
     <string-array name="ai_steps_self_hosted">
         <item>Запустите свой сервер моделей — подойдут vLLM, Ollama, LM Studio и llama.cpp.</item>
         <item>Укажите его адрес ниже, включая http:// или https:// и порт.</item>
@@ -74,4 +84,18 @@
     <string name="ai_modality_video">Видео</string>
     <string name="ai_modality_file">Файлы</string>
     <string name="ai_modality_separator">" · "</string>
+
+    <!-- The on-device model: its four states, the download, and the fallback field. -->
+    <string name="ai_on_device_heading">ИИ на устройстве</string>
+    <string name="ai_on_device_available">Готово. Запросы обрабатываются на этом телефоне.</string>
+    <string name="ai_on_device_downloadable">Поддерживается, но модель ещё не скачана.</string>
+    <string name="ai_on_device_downloading">Модель скачивается.</string>
+    <string name="ai_on_device_unsupported">Этот телефон не может выполнять ИИ на устройстве. Макросы всё равно смогут его использовать, если ниже задать запасную модель для каждого способа спрашивать.</string>
+    <string name="ai_on_device_checking">Проверка телефона…</string>
+    <string name="ai_download_model">Скачать модель</string>
+    <string name="ai_downloading_percent">Скачивание… %1$d%%</string>
+    <string name="ai_on_device_base_model">Модель на этом телефоне: %1$s</string>
+    <string name="ai_fallback_model">Если телефон не сможет её запустить, спросить</string>
+    <string name="ai_fallback_none">Ничего — сообщить об ошибке</string>
+    <string name="ai_fallback_help">Используется, когда телефон не может запустить модель, и всякий раз, когда узел разрешает ИИ использовать инструменты, чего модель на устройстве не умеет.</string>
 </resources>

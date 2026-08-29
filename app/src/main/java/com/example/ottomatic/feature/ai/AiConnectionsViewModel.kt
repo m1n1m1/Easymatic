@@ -14,10 +14,15 @@ import com.example.ottomatic.core.service.CallableMacro
 import com.example.ottomatic.core.service.MacroControl
 import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.data.ai.AiModelCatalog
+import com.example.ottomatic.data.ai.OnDeviceDownload
+import com.example.ottomatic.data.ai.OnDeviceSetup
+import com.example.ottomatic.data.ai.OnDeviceStatus
 import com.example.ottomatic.data.ai.AiModelInfo
 import com.example.ottomatic.domain.model.AiBaseUrl
 import com.example.ottomatic.domain.model.AiConnection
 import com.example.ottomatic.domain.model.AiModelProfile
+import com.example.ottomatic.domain.model.isOnDevice
+import com.example.ottomatic.domain.model.needsKey
 import com.example.ottomatic.domain.model.AiModality
 import com.example.ottomatic.domain.model.AiProvider
 import com.example.ottomatic.domain.model.needsBaseUrl
@@ -75,6 +80,19 @@ data class AiConnectionDraft(
     val editingModel: String? = null,
     /** Whether the id chooser is open over the profile being edited. */
     val choosingModelId: Boolean = false,
+    /**
+     * What this phone can do about the on-device model, or null while it is being asked.
+     *
+     * **Null is "not asked yet" and not "no"**, which is `CapabilityStatus.UNKNOWN`'s rule
+     * in a third place: the question is an inter-process round trip, and a screen that
+     * said "this phone cannot run it" for the frame before the answer arrived would be
+     * telling somebody with a Pixel 11 to go and configure a fallback.
+     */
+    val onDeviceStatus: OnDeviceStatus? = null,
+    /** What the phone calls its own model, once it has said. Blank until then. */
+    val baseModelName: String = "",
+    /** Percentage complete while a download runs, or null when none is. */
+    val downloadPercent: Int? = null,
 ) {
     /**
      * A new connection needs a name and a key; an existing one needs only a name,
@@ -94,7 +112,7 @@ data class AiConnectionDraft(
      */
     val canSave: Boolean
         get() = name.isNotBlank() &&
-            (key.isNotBlank() || (!isNew && !needsKey)) &&
+            (!provider.needsKey || key.isNotBlank() || (!isNew && !needsKey)) &&
             (!provider.needsBaseUrl || AiBaseUrl.parse(baseUrl) != null) &&
             models.all { it.isComplete(provider) }
 
@@ -129,6 +147,8 @@ data class AiModelProfileDraft(
      * emptied to retype it is not the user asking for zero.
      */
     val maxOutputTokens: String = AiModelProfile.DEFAULT_MAX_OUTPUT_TOKENS.toString(),
+    /** Another profile's id to ask when this phone cannot run this one. Blank for none. */
+    val fallbackModelRef: String = "",
 ) {
     /** Whether this row would answer anything — a name to pick it by, and a model to ask. */
     fun isComplete(provider: AiProvider): Boolean =
@@ -172,6 +192,13 @@ class AiConnectionsViewModel(
     private val repository: AiConnectionRepository,
     private val ai: Ai,
     private val catalog: AiModelCatalog,
+    /**
+     * The on-device model's status and download, for the one provider that has them.
+     *
+     * Beside [catalog] rather than folded into it for the same reason [catalog] is beside
+     * [ai]: these are the *editor's* questions. Nothing a macro does can reach either.
+     */
+    private val onDevice: OnDeviceSetup,
     /** Lists the macros a model profile may be allowed to run; null in tests and previews. */
     private val macroControl: MacroControl? = null,
     /**
@@ -207,8 +234,15 @@ class AiConnectionsViewModel(
     /** The profile with [profileId], for the picker field's display name. */
     fun modelProfile(profileId: String): AiModelProfile? = repository.resolve(profileId)?.second
 
-    /** Whether [id]'s key is missing or unreadable — badged on the row. */
-    fun needsKey(id: String): Boolean = repository.needsKey(id)
+    /**
+     * Whether [id]'s key is missing or unreadable — badged on the row.
+     *
+     * A provider that needs no key never needs one pasting in again, however empty its
+     * sealed secret is. Without this the on-device connection would be badged "the key
+     * could not be read" on the list, about a key it has never had.
+     */
+    fun needsKey(id: String): Boolean =
+        repository.get(id)?.provider?.needsKey == true && repository.needsKey(id)
 
     /**
      * A new connection starts with **one** model rather than none.
@@ -301,13 +335,80 @@ class AiConnectionsViewModel(
                         systemPrompt = profile.systemPrompt,
                         tools = profile.tools,
                         maxOutputTokens = profile.maxOutputTokens.toString(),
+                        fallbackModelRef = profile.fallbackModelRef,
                     )
                 },
                 isNew = false,
-                needsKey = repository.needsKey(connection.id),
+                needsKey = needsKey(connection.id),
             ),
         )
+        if (connection.provider.isOnDevice) refreshOnDevice()
     }
+
+    /**
+     * Asks the phone what it can do about the on-device model, and what it calls it.
+     *
+     * **Re-asked on every open rather than held**, because every one of the four answers
+     * can change while this screen is closed: a download finishes, or somebody comes back
+     * from a system update. The engine caches the two answers that genuinely cannot
+     * change, so asking again is free where it is free and correct where it is not.
+     *
+     * The name is read only when the model is actually there — a phone that cannot run it
+     * has no name to give, and asking would be a round trip for a blank.
+     */
+    private fun refreshOnDevice() {
+        viewModelScope.launch {
+            val status = onDevice.status()
+            val name = if (status == OnDeviceStatus.AVAILABLE) onDevice.modelName() else ""
+            editDraft { it.copy(onDeviceStatus = status, baseModelName = name) }
+        }
+    }
+
+    /**
+     * Downloads the model weights, reporting progress into the draft.
+     *
+     * **The one place in the app that starts this**, and deliberately so: it is large
+     * enough to be a metered-data decision, so it belongs to a button somebody pressed
+     * rather than to a macro that fired at three in the morning. A macro meeting an
+     * undownloaded model takes its fallback and says so in the run log.
+     *
+     * A percentage needs a total, and the device does not always give one — a download
+     * with no total reports progress but no percentage, which the screen renders as an
+     * indeterminate bar rather than as a confident zero.
+     */
+    fun download() {
+        viewModelScope.launch {
+            editDraft { it.copy(downloadPercent = 0, message = "", failed = false) }
+            onDevice.download().collect { progress ->
+                when (progress) {
+                    is OnDeviceDownload.Started ->
+                        editDraft { it.copy(downloadPercent = percentOf(0, progress.totalBytes)) }
+
+                    is OnDeviceDownload.Progress -> editDraft {
+                        it.copy(downloadPercent = percentOf(progress.downloadedBytes, progress.totalBytes))
+                    }
+
+                    OnDeviceDownload.Done -> {
+                        editDraft { it.copy(downloadPercent = null) }
+                        refreshOnDevice()
+                    }
+
+                    is OnDeviceDownload.Failed -> editDraft {
+                        it.copy(downloadPercent = null, message = progress.error, failed = true)
+                    }
+                }
+            }
+        }
+    }
+
+    /** Sets a profile's fallback, or clears it when [profileId] is blank. */
+    fun onFallbackChosen(profileId: String) {
+        val editing = state.value.draft?.editingModel ?: return
+        updateModel(editing) { it.copy(fallbackModelRef = profileId) }
+    }
+
+    private fun percentOf(done: Long, total: Long): Int? =
+        if (total <= 0L) null else ((done * PERCENT) / total).toInt().coerceIn(0, PERCENT.toInt())
 
     fun closeEditor() {
         state.value = state.value.copy(draft = null)
@@ -339,8 +440,12 @@ class AiConnectionsViewModel(
             listedModels = emptyList(),
             modalityFilter = emptySet(),
             choosingModelId = false,
+            // Cleared rather than kept: the answer belongs to the provider that was
+            // selected, and a stale "ready" beside a Gemini key would be a lie.
+            onDeviceStatus = null,
+            baseModelName = "",
         )
-    }
+    }.also { if (value.isOnDevice) refreshOnDevice() }
 
     /** Fills a base URL preset in; the host is a placeholder only the user can replace. */
     fun onPresetChosen(url: String) = editDraft { it.copy(baseUrl = url, message = "", failed = false) }
@@ -511,14 +616,20 @@ class AiConnectionsViewModel(
         /** Enough for the one word asked for, and nothing near enough for a paragraph. */
         private const val TEST_MAX_TOKENS = 32
 
+        private const val PERCENT = 100L
+
+        @Suppress("LongParameterList") // Four collaborators and a context; a holder would rename them.
         fun factory(
             repository: AiConnectionRepository,
             ai: Ai,
             catalog: AiModelCatalog,
+            onDevice: OnDeviceSetup,
             appContext: Context,
             macroControl: MacroControl? = null,
         ): ViewModelProvider.Factory = viewModelFactory {
-            initializer { AiConnectionsViewModel(repository, ai, catalog, macroControl, appContext) }
+            initializer {
+                AiConnectionsViewModel(repository, ai, catalog, onDevice, macroControl, appContext)
+            }
         }
     }
 }
@@ -551,6 +662,7 @@ private fun AiConnectionDraft.applyTo(connection: AiConnection): AiConnection = 
             // built-in default instead of to a model that may answer nothing at all.
             maxOutputTokens = profile.maxOutputTokens.trim().toIntOrNull()?.takeIf { it > 0 }
                 ?: AiModelProfile.DEFAULT_MAX_OUTPUT_TOKENS,
+            fallbackModelRef = profile.fallbackModelRef,
         )
     },
 )

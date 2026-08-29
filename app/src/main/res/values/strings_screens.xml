@@ -640,6 +640,7 @@
 
     <string name="ai_getting_a_key">Getting a key</string>
     <string name="ai_pointing_at_own_server">Pointing at your own server</string>
+    <string name="ai_running_on_this_phone">Running the model on this phone</string>
     <string name="api_key_copied">Key copied</string>
     <string name="api_allowed_on">Allowed on %1$s</string>
     <string name="geofence_small_radius_warning">Below %1$d m the system trades location accuracy for battery, so crossings are often missed or reported late.</string>

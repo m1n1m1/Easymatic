@@ -162,6 +162,10 @@ dependencies {
     // EXIF for the image nodes. See the catalogue comment for why the framework
     // ExifInterface is not a substitute at minSdk 26.
     implementation(libs.androidx.exifinterface)
+    // Gemini Nano through AICore, for the on-device AI provider. The one dependency
+    // that is not a wire — see the catalogue entry, including why beta is acceptable
+    // here and nowhere else.
+    implementation(libs.mlkit.genai.prompt)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.play.services.location)
     implementation(libs.play.services.maps)

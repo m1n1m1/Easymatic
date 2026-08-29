@@ -278,6 +278,25 @@ data class AiReply(
     val text: String = "",
     val error: String = "",
     val truncated: Boolean = false,
+    /**
+     * Something that happened on the way to this answer which the run log should record,
+     * or blank when nothing did.
+     *
+     * **[truncated]'s argument, one step further.** That field exists because a reply cut
+     * off at the token bound is real output a macro will happily send on, so the console
+     * has to be able to say it was cut off — an empty [error] and a full [text] would
+     * never reveal it. This is the same shape for the same reason: a request that could
+     * not run on the phone and was answered by its profile's fallback **succeeded**, and
+     * every field above says so, but which model answered has changed and so has who is
+     * being billed. An unattended macro quietly moving from a free local model to a paid
+     * cloud one is exactly what the run log exists to record.
+     *
+     * A **sentence rather than a flag**, unlike [truncated], because there is no fixed
+     * set of things to say: the reason the phone could not answer is one of six, and the
+     * node has nothing to add to any of them. Defaulted blank, which is what makes it
+     * invisible to every existing protocol and every existing test.
+     */
+    val note: String = "",
 )
 
 /**

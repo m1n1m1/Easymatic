@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ottomatic.domain.model.AiProvider
+import com.example.ottomatic.domain.model.isOnDevice
 import com.example.ottomatic.feature.grapheditor.EditorColors
 
 /**
@@ -48,11 +49,15 @@ internal fun SetupInstructions(provider: AiProvider, onOpen: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
+                // Three headings rather than two, because the third setup is neither: a
+                // provider with no key and no server has nothing for either sentence to
+                // name, and "Getting a key" over steps that never mention one is the kind
+                // of stale heading somebody reads instead of the steps.
                 text = stringResource(
-                    if (provider == AiProvider.OPENAI_COMPATIBLE) {
-                        R.string.ai_pointing_at_own_server
-                    } else {
-                        R.string.ai_getting_a_key
+                    when {
+                        provider.isOnDevice -> R.string.ai_running_on_this_phone
+                        provider == AiProvider.OPENAI_COMPATIBLE -> R.string.ai_pointing_at_own_server
+                        else -> R.string.ai_getting_a_key
                     },
                 ),
                 color = EditorColors.textPrimary,

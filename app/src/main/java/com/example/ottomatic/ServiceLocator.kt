@@ -12,7 +12,10 @@ import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.data.AssistantSettingsRepository
 import com.example.ottomatic.data.ai.AiModelCatalog
+import com.example.ottomatic.data.ai.OnDeviceAi
+import com.example.ottomatic.data.ai.OnDeviceSetup
 import com.example.ottomatic.data.ai.RoutingAi
+import com.example.ottomatic.data.ai.ondevice.MlKitAi
 import com.example.ottomatic.data.files.RoutingFiles
 import com.example.ottomatic.data.accessibility.ScreenCapture
 import com.example.ottomatic.data.camera.CameraCapture
@@ -257,6 +260,31 @@ object ServiceLocator {
         private set
 
     /**
+     * The model that answers on the phone itself, for the on-device AI provider.
+     *
+     * Shared by [aiModelCatalog], by the `RoutingAi` the engine reaches and by the AI
+     * settings screen, which is what makes it a field here rather than three
+     * constructions: it caches whether this phone can run the model at all, and three
+     * copies of that cache would be three answers to a question the phone has one answer
+     * to. The screen also needs the two members no macro ever calls — the download and
+     * the model name — which is why it is reached directly rather than through
+     * [com.example.ottomatic.core.service.Ai].
+     */
+    internal lateinit var onDeviceAi: OnDeviceAi
+        private set
+
+    /**
+     * The on-device model's status, name and download, for the AI settings screen.
+     *
+     * A second class over [onDeviceAi] holding the editor's needs and no node's, exactly
+     * as [aiModelCatalog] is over the connection library — and the reason is sharper here
+     * than there: the member it carries starts a multi-gigabyte download, which is the
+     * one thing an unattended macro must never be able to do.
+     */
+    lateinit var onDeviceSetup: OnDeviceSetup
+        private set
+
+    /**
      * Which model the graph assistant asks, remembered between sessions.
      *
      * A preference about the editor rather than a fifth library: it holds one id and no
@@ -432,7 +460,11 @@ object ServiceLocator {
         // a paired bridge — and so an AI key, which the user can regenerate in a
         // browser in ten seconds, is never the reason a light stops working.
         aiConnectionRepository = AiConnectionRepository(appContext.filesDir, KeystoreSecrets(AI_KEY_ALIAS))
-        aiModelCatalog = AiModelCatalog(aiConnectionRepository)
+        // No context: `Generation.getClient` takes none, and ML Kit initialises itself
+        // from its own manifest provider.
+        onDeviceAi = MlKitAi()
+        aiModelCatalog = AiModelCatalog(aiConnectionRepository, onDeviceAi)
+        onDeviceSetup = OnDeviceSetup(onDeviceAi)
         assistantSettingsRepository = AssistantSettingsRepository(appContext.filesDir)
         publishAiConnections()
         publishSmartHomeHubs()
@@ -532,7 +564,7 @@ object ServiceLocator {
             // one must stop working without waiting for the process to die. Which
             // *provider* is therefore also a per-call fact, so one instance serves
             // every connection on the phone and this line names none of them.
-            ai = RoutingAi(aiConnectionRepository),
+            ai = RoutingAi(aiConnectionRepository, onDeviceAi),
             // Resolves the covering grant on every call, on `RoutingAi`'s reasoning
             // and for a case that happens more often: somebody grants a folder on the
             // Folder access screen and runs the macro from the next screen along, and

@@ -44,6 +44,29 @@ enum class AiProvider {
     /** Any server speaking OpenAI's chat-completions API — vLLM, Ollama, LM Studio, llama.cpp. */
     @Label("Self-hosted / OpenAI-compatible")
     OPENAI_COMPATIBLE,
+
+    /**
+     * Gemini Nano, running on this phone through ML Kit's GenAI Prompt API.
+     *
+     * **It earns a member on exactly the ground the paragraph above refuses one to
+     * Ollama.** Those are refused because each *is* [OPENAI_COMPATIBLE] with a different
+     * host — same endpoint, same envelope, same key header — so a member would buy a
+     * prefilled text field and cost a permanent branch. This one has no endpoint, no
+     * envelope, no header and no key: it is an AIDL call into AICore, and there is no
+     * wire at all. That is why [com.example.ottomatic.data.ai.protocolFor] answers
+     * **null** for it rather than an [com.example.ottomatic.data.ai.AiProtocol], and why
+     * the branch that serves it sits one level up in `RoutingAi`.
+     *
+     * **What it costs the user is nothing, and what it costs the app is reach.** No key,
+     * no quota, no network, and the prompt never leaves the phone — which for an app
+     * whose macros fire unattended is the difference between "summarise every
+     * notification" being sensible and being a bill. Against that: it runs only where
+     * AICore does, the model is a large download, and the Prompt API has no function
+     * calling, so it cannot run this app's node tools. Every one of those is answered by
+     * [AiModelProfile.fallbackModelRef] rather than by refusing the request.
+     */
+    @Label("On-device (Gemini Nano)")
+    ML_KIT,
 }
 
 /**
@@ -109,6 +132,32 @@ data class AiModelProfile(
      * [com.example.ottomatic.core.service.AiRequest.DEFAULT_MAX_OUTPUT_TOKENS].
      */
     val maxOutputTokens: Int = DEFAULT_MAX_OUTPUT_TOKENS,
+    /**
+     * Where to ask instead when this phone cannot run the model — another profile's [id].
+     *
+     * **The field an on-device profile exists to have**, and blank everywhere else. A
+     * cloud provider is either reachable or the network is down, and neither is a fact
+     * this library can decide in advance; [AiProvider.ML_KIT] is different in kind,
+     * because "this phone has no AICore", "the model is not downloaded" and "the Prompt
+     * API has no function calling" are all knowable *before* anything is attempted and
+     * all permanent for that request.
+     *
+     * **The re-dispatch is whole.** The named profile answers with its own account, key,
+     * model id, effort, persona, reply limit and tool permissions — nothing of this
+     * profile is merged in. That is the only rule with no seam in it: a merge would have
+     * to say which half wins per field, and every answer to that is a surprise on some
+     * macro. The cost is that a persona has to be written twice to hold in both places,
+     * which is visible in the editor where a silent merge would not be.
+     *
+     * **One hop, never a chain.** `RoutingAi` does not follow the named profile's own
+     * fallback, and refuses a profile naming itself. Both are cycle guards, and both
+     * want a sentence rather than a hang.
+     *
+     * Blank means there is no fallback, which is a legitimate setup rather than an
+     * omission: somebody with a supported phone who wants nothing to leave it gets the
+     * refusal sentence instead, which says what happened.
+     */
+    val fallbackModelRef: String = "",
 ) {
     companion object {
 
@@ -261,6 +310,32 @@ val AiProvider.needsBaseUrl: Boolean get() = this == AiProvider.OPENAI_COMPATIBL
  */
 val AiProvider.needsModelIds: Boolean
     get() = this == AiProvider.OPENAI_COMPATIBLE || this == AiProvider.OPENROUTER
+
+/**
+ * Whether this provider answers on the phone itself rather than over the network.
+ *
+ * **A property rather than `== ML_KIT` written out at each site**, and that is the whole
+ * point of it: every branch that cares — `RoutingAi`'s resolution, `AiModelCatalog`'s
+ * listing, the editor's key field and its fallback field — asks *this* question rather
+ * than naming the member, so a second on-device engine is one line here and nothing
+ * anywhere else. It sits beside [needsBaseUrl] and [needsModelIds] for their stated
+ * reason: three layers ask it and two of them may not import `data`.
+ */
+val AiProvider.isOnDevice: Boolean get() = this == AiProvider.ML_KIT
+
+/**
+ * Whether this provider needs an API key at all.
+ *
+ * Derived from [isOnDevice] rather than declared, because the two can never legitimately
+ * disagree: a provider reached over somebody else's network is one that has to say who is
+ * asking, and one reached through a system service on this phone has nobody to tell.
+ *
+ * What it prevents is the wrong sentence rather than a wrong request. Without it an
+ * on-device connection has no sealed secret, `AiConnectionRepository.needsKey` answers
+ * true, and both the editor and `RoutingAi` report a key that needs pasting in again —
+ * about a provider that has never had one.
+ */
+val AiProvider.needsKey: Boolean get() = !isOnDevice
 
 /**
  * Whether this connection has everything its provider needs of the **account**.

@@ -352,13 +352,26 @@ internal data class AiUpload(
     override fun hashCode(): Int = System.identityHashCode(this)
 }
 
-/** The protocol for [provider]. The one `when` over the enum on the execution path. */
-internal fun protocolFor(provider: AiProvider): AiProtocol = when (provider) {
+/**
+ * The protocol for [provider], or **null** for one that has no wire.
+ *
+ * The one `when` over the enum on the execution path.
+ *
+ * **Null is an answer rather than a failure**, and it is what keeps this file honest. An
+ * on-device provider has no endpoint, no headers, no key and no body, so there is nothing
+ * for the six abstract members above to return; a stub object would have to invent five
+ * URLs and a JSON envelope for a request that is an AIDL call. Both callers —
+ * `RoutingAi.resolve` and `AiModelCatalog.list` — ask
+ * [com.example.ottomatic.domain.model.isOnDevice] first and take a different path
+ * entirely, so this is never dereferenced.
+ */
+internal fun protocolFor(provider: AiProvider): AiProtocol? = when (provider) {
     AiProvider.GEMINI -> GeminiProtocol
     AiProvider.ANTHROPIC -> AnthropicProtocol
     AiProvider.OPENAI -> OpenAiProtocol.OpenAi
     AiProvider.OPENROUTER -> OpenAiProtocol.OpenRouter
     AiProvider.OPENAI_COMPATIBLE -> OpenAiProtocol.SelfHosted
+    AiProvider.ML_KIT -> null
 }
 
 /**

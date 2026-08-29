@@ -31,6 +31,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +48,7 @@ import com.example.ottomatic.core.service.AiModel
 import com.example.ottomatic.core.service.CallableMacro
 import com.example.ottomatic.domain.model.AiModelProfile
 import com.example.ottomatic.domain.model.ToolSpec
+import com.example.ottomatic.domain.model.isOnDevice
 import com.example.ottomatic.domain.model.needsModelIds
 import com.example.ottomatic.feature.grapheditor.EditorColors
 import com.example.ottomatic.feature.grapheditor.EditorOverlay
@@ -104,7 +106,14 @@ internal fun AiModelEditorOverlay(
                 fontSize = 12.sp,
             )
 
-            ModelIdField(draft = draft, profile = profile, viewModel = viewModel)
+            // One or the other. An on-device profile has no model to name — the phone
+            // has exactly one and says so on the connection above — and it is the only
+            // kind that needs somewhere else to send a question it cannot answer.
+            if (draft.provider.isOnDevice) {
+                FallbackField(draft = draft, profile = profile, viewModel = viewModel)
+            } else {
+                ModelIdField(draft = draft, profile = profile, viewModel = viewModel)
+            }
 
             EffortField(profile = profile, viewModel = viewModel)
 
@@ -245,6 +254,143 @@ private fun ModelIdField(
                 )
             }
         }
+    }
+}
+
+/**
+ * Where this profile's questions go when the phone cannot answer them.
+ *
+ * **A picker rather than a typed id**, on the app's standing rule: this is an opaque
+ * profile id, and a mistyped one does not fail loudly — it names nothing, and the node
+ * merely looks broken. The answer set is knowable and complete, which is the other half of
+ * the test a read-only picker has to pass: every profile in the library is right here.
+ *
+ * **On-device profiles are not offered**, which is the editor enforcing what `RoutingAi`
+ * refuses at run time: a fallback that is itself on-device would fail for exactly the same
+ * reason the first one did, and following it would turn one hop into a chain. Offering it
+ * and then refusing it would be a form promising a choice the runtime withholds.
+ *
+ * Blank is a real answer and is offered as a row rather than left as an empty field:
+ * somebody with a supported phone who wants nothing to leave it should be able to say so,
+ * and get the refusal sentence in the run log instead of a silent trip to the network.
+ */
+@Composable
+private fun FallbackField(
+    draft: AiConnectionDraft,
+    profile: AiModelProfileDraft,
+    viewModel: AiConnectionsViewModel,
+) {
+    var choosing by remember { mutableStateOf(false) }
+    val chosen = profile.fallbackModelRef
+        .takeIf { it.isNotBlank() }
+        ?.let { viewModel.modelProfile(it)?.name }
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        OutlinedTextField(
+            value = chosen ?: stringResource(R.string.ai_fallback_none),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.ai_fallback_model)) },
+            enabled = !draft.busy,
+            colors = fieldColors(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { choosing = true },
+        )
+        Text(
+            text = stringResource(R.string.ai_fallback_help),
+            color = EditorColors.textSecondary,
+            fontSize = 12.sp,
+        )
+    }
+    if (choosing) {
+        FallbackPickerOverlay(
+            viewModel = viewModel,
+            selectedId = profile.fallbackModelRef,
+            onPick = { id ->
+                viewModel.updateModel(profile.id) { it.copy(fallbackModelRef = id) }
+                choosing = false
+            },
+            onDismiss = { choosing = false },
+        )
+    }
+}
+
+/**
+ * The wire-backed profiles, flat, with a row for "nowhere".
+ *
+ * **Its own overlay rather than [AiModelPickerOverlay]**, which would have been the
+ * obvious reuse and is the wrong one: that chooser stacks a whole connection editor
+ * beneath itself so a node's picker can add an account on the spot, and this one is
+ * already *inside* that editor — reusing it would render a second connection editor over
+ * the first, on the draft that opened it. A flat list with no "add connection" row is also
+ * the right shape here for a second reason: a fallback is chosen from what already exists,
+ * and adding an account mid-edit would abandon the draft holding this very field.
+ */
+@Composable
+private fun FallbackPickerOverlay(
+    viewModel: AiConnectionsViewModel,
+    selectedId: String,
+    onPick: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val state by viewModel.uiState.collectAsState()
+    val offered = state.connections.filterNot { it.provider.isOnDevice }
+    EditorOverlay(title = stringResource(R.string.ai_choose_a_model), onClose = onDismiss) { _ ->
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            FallbackRow(
+                label = stringResource(R.string.ai_fallback_none),
+                selected = selectedId.isBlank(),
+                onClick = { onPick("") },
+            )
+            offered.forEach { connection ->
+                Text(
+                    text = connection.name,
+                    color = EditorColors.textSecondary,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+                connection.models.forEach { candidate ->
+                    FallbackRow(
+                        label = candidate.name,
+                        selected = candidate.id == selectedId,
+                        onClick = { onPick(candidate.id) },
+                    )
+                }
+            }
+            if (offered.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.ai_no_connections_yet_add_one),
+                    color = EditorColors.textSecondary,
+                    fontSize = 13.sp,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FallbackRow(label: String, selected: Boolean, onClick: () -> Unit) {
+    Surface(
+        color = if (selected) EditorColors.actionAccent else EditorColors.nodeBackground,
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick),
+    ) {
+        Text(
+            text = label,
+            color = EditorColors.textPrimary,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+        )
     }
 }
 

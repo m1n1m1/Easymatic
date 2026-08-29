@@ -5,11 +5,13 @@
     <string name="ai_provider_openai">OpenAI (ChatGPT)</string>
     <string name="ai_provider_openrouter">OpenRouter</string>
     <string name="ai_provider_self_hosted">自建 / 兼容 OpenAI</string>
+    <string name="ai_provider_on_device">设备端 (Gemini Nano)</string>
     <string name="ai_default_name_gemini">Gemini</string>
     <string name="ai_default_name_anthropic">Claude</string>
     <string name="ai_default_name_openai">ChatGPT</string>
     <string name="ai_default_name_openrouter">OpenRouter</string>
     <string name="ai_default_name_self_hosted">自建</string>
+    <string name="ai_default_name_on_device">设备端</string>
     <string name="ai_console_gemini">Google AI Studio</string>
     <string name="ai_console_anthropic">Anthropic 控制台</string>
     <string name="ai_console_openai">OpenAI 平台</string>
@@ -20,11 +22,13 @@
     <string name="ai_cost_openai">请求会从你自己的 OpenAI 账户扣费，所以一个每分钟都询问 AI 的宏是要花钱的。你随时可以在同一页面吊销密钥。</string>
     <string name="ai_cost_openrouter">请求会从你自己的 OpenRouter 余额扣费，价格取决于你选择的模型。你随时可以在同一页面吊销密钥。</string>
     <string name="ai_cost_self_hosted">请求只发往你自己的服务器，不会去别处，因此不花钱，也不会离开你掌控的网络。宏运行时服务器必须可访问。</string>
+    <string name="ai_cost_on_device">请求完全免费：无需密钥、没有配额、不用联网。飞行模式下也能用，宏想问多少次都可以。</string>
     <string name="ai_privacy_gemini">请求由 Google 的服务器应答，因此“询问 AI”节点会花上一点时间。</string>
     <string name="ai_privacy_anthropic">请求由 Anthropic 的服务器应答，因此“询问 AI”节点会花上一点时间。</string>
     <string name="ai_privacy_openai">请求由 OpenAI 的服务器应答，因此“询问 AI”节点会花上一点时间。</string>
     <string name="ai_privacy_openrouter">请求经由 OpenRouter 转发到提供所选模型的服务商，因此“询问 AI”节点会花上一点时间。</string>
     <string name="ai_privacy_self_hosted">请求只发往你在上面填写的服务器。</string>
+    <string name="ai_privacy_on_device">请求永远不会离开这台手机。该模型比云端模型小，因此回答更简短、更简单。</string>
     <string name="ai_model_fast">快速</string>
     <string name="ai_model_balanced">均衡</string>
     <string name="ai_model_thorough">深入</string>
@@ -59,6 +63,12 @@
         <item>复制密钥，然后回到这里点按粘贴按钮。</item>
         <item>加载下面的模型列表，为每个速度档位选择所用的模型。</item>
     </string-array>
+    <string-array name="ai_steps_on_device">
+        <item>设备端 AI 需要带 AICore 的手机 —— Pixel 9 及更新机型、Galaxy S25 及更新机型，支持的机型还在增加。</item>
+        <item>保存此连接。下方状态会告诉你这台手机能否运行它。</item>
+        <item>点按“下载模型”并等待。模型较大，请使用 Wi-Fi。</item>
+        <item>为每种提问方式选一个后备模型，这样在无法运行它的手机上宏依然可用 —— 节点使用工具时也会用到，因为设备端模型不支持工具。</item>
+    </string-array>
     <string-array name="ai_steps_self_hosted">
         <item>启动你的模型服务器：vLLM、Ollama、LM Studio 和 llama.cpp 都可以。</item>
         <item>在下面填写它的地址，包括 http:// 或 https:// 以及端口。</item>
@@ -74,4 +84,18 @@
     <string name="ai_modality_video">视频</string>
     <string name="ai_modality_file">文件</string>
     <string name="ai_modality_separator">"・"</string>
+
+    <!-- The on-device model: its four states, the download, and the fallback field. -->
+    <string name="ai_on_device_heading">设备端 AI</string>
+    <string name="ai_on_device_available">已就绪。请求在这台手机上作答。</string>
+    <string name="ai_on_device_downloadable">支持，但模型尚未下载。</string>
+    <string name="ai_on_device_downloading">正在下载模型。</string>
+    <string name="ai_on_device_unsupported">这台手机无法在设备端运行 AI。只要在下方为每种提问方式设置后备模型，宏仍然可以使用。</string>
+    <string name="ai_on_device_checking">正在检查这台手机…</string>
+    <string name="ai_download_model">下载模型</string>
+    <string name="ai_downloading_percent">正在下载… %1$d%%</string>
+    <string name="ai_on_device_base_model">这台手机上的模型：%1$s</string>
+    <string name="ai_fallback_model">如果这台手机无法运行，改问</string>
+    <string name="ai_fallback_none">不改问 —— 直接报告</string>
+    <string name="ai_fallback_help">当手机无法运行该模型时使用，以及每当节点允许 AI 使用工具时使用 —— 设备端模型无法使用工具。</string>
 </resources>

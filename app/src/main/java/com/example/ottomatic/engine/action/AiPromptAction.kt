@@ -189,6 +189,10 @@ class AiPromptAction : Action<AiPromptConfig, String> {
             context.log("Ask AI failed: ${reply.error}", LogLevel.ERROR)
             return NodeOutput(input.fallback)
         }
+        // INFO rather than WARN: nothing went wrong — the macro asked, and something
+        // answered. What it records is *which* model did, which is the one thing a
+        // successful reply otherwise says nothing about.
+        if (reply.note.isNotBlank()) context.log("Ask AI: ${reply.note}", LogLevel.INFO)
         if (reply.truncated) {
             context.log(
                 "Ask AI: the reply hit the ${input.maxOutputTokens}-token limit and was cut off",

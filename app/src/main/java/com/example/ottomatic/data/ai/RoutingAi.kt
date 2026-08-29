@@ -10,6 +10,7 @@ import com.example.ottomatic.core.service.AiToolLimits
 import com.example.ottomatic.core.service.AiToolResult
 import com.example.ottomatic.data.AiConnectionRepository
 import com.example.ottomatic.domain.model.AiConnection
+import com.example.ottomatic.domain.model.isOnDevice
 
 /**
  * [Ai] over whichever provider the chosen connection names, authenticated with the
@@ -37,13 +38,28 @@ import com.example.ottomatic.domain.model.AiConnection
  * `engine/` has one node, and every endpoint, envelope, header and model id stops in
  * this package. Adding the four providers after Gemini changed nothing above it.
  */
-class RoutingAi(private val connections: AiConnectionRepository) : Ai {
+@Suppress("TooManyFunctions") // Two routes rather than one. Everything past `dispatch` —
+// the on-device attempt, the fallback and the sentence that joins their two reasons — is a
+// step the wire route does not have, and folding any pair of them is what would let the
+// single-prompt path and the tool path disagree about when a fallback fires.
+// The constructor is `internal` because [OnDeviceAi] is: the engine that answers without a
+// network is a fact about this package, and the alternative — publishing it so a public
+// constructor could name it — would put `MlKitPlan` on the public surface too. Nothing
+// outside this module ever built one of these.
+class RoutingAi internal constructor(
+    private val connections: AiConnectionRepository,
+    /**
+     * The engine that answers without a network, for the providers that have no wire.
+     *
+     * Defaulted to [NoOnDeviceAi] so every existing caller and every existing test is
+     * unchanged: that one reports the phone as unsupported, which routes an on-device
+     * profile to its fallback exactly as an unsupported phone does.
+     */
+    private val onDevice: OnDeviceAi = NoOnDeviceAi,
+) : Ai {
 
     override suspend fun complete(request: AiRequest): AiReply =
-        when (val resolved = resolve(request)) {
-            is Resolution.Refused -> AiReply(error = resolved.error)
-            is Resolution.Ready -> resolved.send()
-        }
+        dispatch(request, wantsTools = false) { ready -> ready.send() }
 
     /**
      * One round trip, down whichever wire the request's own shape asks for.
@@ -103,8 +119,22 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
      * has been deleted already fails at [complete] with a sentence naming that, which
      * is the one message worth showing.
      */
-    override suspend fun toolsFor(modelRef: String): String =
-        connections.resolve(modelRef)?.second?.tools.orEmpty()
+    @Suppress("ReturnCount") // Four ways to have no list, each answered with the same blank
+    // and none of them worth a sentence — see the KDoc.
+    override suspend fun toolsFor(modelRef: String): String {
+        val (connection, profile) = connections.resolve(modelRef) ?: return ""
+        if (!connection.provider.isOnDevice) return profile.tools
+        // An on-device model cannot call a tool at all, so a tool-using node pointing at
+        // one will be answered by its fallback — and the list that matters is therefore
+        // the fallback's. Answering this profile's would build the catalogue from one
+        // profile and run it against another, which is the one way the "the fallback
+        // answers as itself" promise could quietly fail: `engine/` asks this *before*
+        // `converse`, so there is no later moment at which it could be corrected.
+        val ref = profile.fallbackModelRef.trim()
+        if (ref.isBlank() || ref == profile.id) return ""
+        val (behind, fallback) = connections.resolve(ref) ?: return ""
+        return if (behind.provider.isOnDevice) "" else fallback.tools
+    }
 
     /**
      * The tool-using exchange.
@@ -120,17 +150,101 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
         invoke: suspend (AiToolCall) -> AiToolResult,
     ): AiReply {
         if (tools.isEmpty()) return complete(request)
-        return when (val resolved = resolve(request)) {
-            is Resolution.Refused -> AiReply(error = resolved.error)
-            is Resolution.Ready -> runToolExchange(
-                protocol = resolved.protocol,
-                request = resolved.request,
-                target = resolved.target,
+        return dispatch(request, wantsTools = true) { ready ->
+            runToolExchange(
+                protocol = ready.protocol,
+                request = ready.request,
+                target = ready.target,
                 tools = tools,
                 maxTurns = maxTurns,
                 invoke = invoke,
-                send = { body -> resolved.post(body) },
+                send = { body -> ready.post(body) },
             )
+        }
+    }
+
+    /**
+     * Resolves [request] and answers it, wherever it is meant to be answered.
+     *
+     * **One function for both public entry points**, with [overWire] the only difference
+     * between them — one round trip for [complete], the turn loop for [converse]. That is
+     * what stops the on-device branch and its fallback being written twice, which is
+     * exactly how the two would eventually disagree about when a fallback fires.
+     *
+     * [wantsTools] is not derived from the request because it cannot be: whether a node
+     * offered the model any tools is the caller's fact, and it is the single thing that
+     * makes an otherwise perfectly runnable prompt impossible on the device.
+     */
+    private suspend fun dispatch(
+        request: AiRequest,
+        wantsTools: Boolean,
+        overWire: suspend (Resolution.Ready) -> AiReply,
+    ): AiReply = when (val resolved = resolve(request)) {
+        is Resolution.Refused -> AiReply(error = resolved.error)
+        is Resolution.Ready -> overWire(resolved)
+        is Resolution.OnDevice -> answerOnDevice(resolved, request, wantsTools, overWire)
+    }
+
+    /**
+     * Asks the phone, and asks the profile's fallback when the phone cannot.
+     *
+     * **A failed attempt falls back too, not only a refused one**, and that asymmetry with
+     * every cloud provider here is deliberate. A cloud failure is reported rather than
+     * retried elsewhere because the request may already have been billed and a retry
+     * spends somebody's quota twice; an on-device attempt costs nothing at all — no
+     * network, no quota, no key — so having tried it and then asking the fallback is
+     * strictly better than reporting. It is also what makes a beta SDK safe to depend on:
+     * whatever it does that `onDeviceProblem` did not foresee, the macro still gets an
+     * answer.
+     */
+    private suspend fun answerOnDevice(
+        resolved: Resolution.OnDevice,
+        original: AiRequest,
+        wantsTools: Boolean,
+        overWire: suspend (Resolution.Ready) -> AiReply,
+    ): AiReply {
+        val problem = onDeviceProblem(resolved.request, onDevice.status(), wantsTools)
+        if (problem != null) return fallBack(resolved, original, problem, overWire)
+        val reply = onDevice.complete(mlKitPlan(resolved.request, resolved.target))
+        return if (reply.error.isBlank()) reply else fallBack(resolved, original, reply.error, overWire)
+    }
+
+    /**
+     * Re-dispatches to the profile's fallback, or reports [problem] when there is none.
+     *
+     * **The re-dispatch is whole**, which is why it starts from [original] rather than
+     * from the request [resolve] already rewrote: running it through the guards again is
+     * what folds in the *fallback's* persona and reply limit rather than carrying the
+     * on-device profile's across. The named profile answers as itself, with its own
+     * account, key, model id and effort.
+     *
+     * **One hop, and two guards make it one.** A profile naming itself and a fallback that
+     * is itself on-device are both refused here rather than followed, because the second
+     * of those is how a chain becomes a loop — and a loop in an unattended macro is a hang
+     * rather than an error. Neither can be reached through the editor, which offers only
+     * wire-backed profiles; both are reachable through a library edited before that field
+     * existed, or a profile whose connection later changed provider.
+     */
+    @Suppress("ReturnCount") // No fallback, a self-reference, a chain and a refusal are four
+    // different sentences, and each names a different thing to fix.
+    private suspend fun fallBack(
+        resolved: Resolution.OnDevice,
+        original: AiRequest,
+        problem: String,
+        overWire: suspend (Resolution.Ready) -> AiReply,
+    ): AiReply {
+        val profile = resolved.target.profile
+        val ref = profile.fallbackModelRef.trim()
+        if (ref.isBlank()) return AiReply(error = problem)
+        if (ref == profile.id) return AiReply(error = withReason(problem, SELF_FALLBACK))
+        return when (val second = resolve(original.copy(modelRef = ref))) {
+            is Resolution.Refused -> AiReply(error = withReason(problem, second.error))
+            // The note rides on the *successful* reply, which is the only place it could
+            // go: a fallback that worked is not an error, and without it the run log
+            // would show a macro answering normally with nothing anywhere saying that a
+            // different model — and a different bill — had answered it.
+            is Resolution.Ready -> overWire(second).withNote(askedInsteadText(problem, second.target.profile.name))
+            is Resolution.OnDevice -> AiReply(error = withReason(problem, CHAINED_FALLBACK))
         }
     }
 
@@ -165,11 +279,22 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
         }
         val (connection, profile) = connections.resolve(request.modelRef)
             ?: return Resolution.Refused(DELETED_MODEL)
-        val key = connections.apiKey(connection.id)
-            ?: return Resolution.Refused(unreadableKeyText(connection))
 
         val target = AiTarget(connection, profile)
+        // The profile's persona and reply limit are folded in on both routes: they are
+        // facts about the saved way of asking, not about how it is transported.
+        val prepared = request.copy(
+            systemInstruction = standingInstruction(profile.systemPrompt, request),
+            maxOutputTokens = replyLimit(request.maxOutputTokens, profile.maxOutputTokens),
+        )
+        // Before the key guard, because an on-device connection has never had a key and
+        // `unreadableKeyText` would otherwise send somebody to paste one in again.
+        if (connection.provider.isOnDevice) return Resolution.OnDevice(target, prepared)
+
+        val key = connections.apiKey(connection.id)
+            ?: return Resolution.Refused(unreadableKeyText(connection))
         val protocol = protocolFor(connection.provider)
+            ?: return Resolution.Refused(NO_WIRE)
         protocol.configurationProblem(target)?.let { return Resolution.Refused(it) }
         // `audioProblem` is deliberately *not* a sixth guard here, and the reason is the
         // one mistake this design is most likely to be "corrected" into. Whether a clip
@@ -183,10 +308,7 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
             target = target,
             key = key,
             protocol = protocol,
-            request = request.copy(
-                systemInstruction = standingInstruction(profile.systemPrompt, request),
-                maxOutputTokens = replyLimit(request.maxOutputTokens, profile.maxOutputTokens),
-            ),
+            request = prepared,
         )
     }
 
@@ -204,6 +326,18 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
         ) : Resolution {
             val connection: AiConnection get() = target.connection
         }
+
+        /**
+         * A request for a provider that answers on this phone.
+         *
+         * Carries no key and no protocol, because there is neither. It has still been
+         * through the same guards and the same rewriting as [Ready] — everything up to the
+         * point where the two routes stop having anything in common.
+         */
+        data class OnDevice(
+            val target: AiTarget,
+            val request: AiRequest,
+        ) : Resolution
     }
 
     /**
@@ -224,6 +358,20 @@ class RoutingAi(private val connections: AiConnectionRepository) : Ai {
 
     private companion object {
         const val DELETED_MODEL = "This node points at an AI model that no longer exists"
+
+        /**
+         * Unreachable while [protocolFor] answers null only for on-device providers, which
+         * `resolve` has already branched on. It exists so that adding a second wireless
+         * provider without teaching this class about it fails as a sentence rather than as
+         * a null-pointer inside a foreground service.
+         */
+        const val NO_WIRE = "This AI provider cannot be reached on this device"
+
+        const val SELF_FALLBACK =
+            "Its fallback is the same model, so there was nowhere else to ask"
+
+        const val CHAINED_FALLBACK =
+            "Its fallback also runs on the device, and fallbacks are never chained"
 
         /** What OpenAI's transcription endpoint calls the uploaded file. */
         const val UPLOAD_FIELD = "file"
@@ -394,3 +542,41 @@ private fun outOfTurnsText(maxTurns: Int): String =
         "raise the turn limit, or give it a clearer prompt"
 
 private const val OUT_OF_TIME = "The AI was still using tools after five minutes and was stopped"
+
+/**
+ * Two sentences: what stopped the on-device model, and what stopped its fallback.
+ *
+ * Both halves are needed and neither alone is enough. The first says why the phone did not
+ * answer, which is the thing to fix if it should have; the second says why the safety net
+ * did not either, which is a different screen and a different fix. Reporting only the
+ * second would leave somebody wondering why a model they set up on their own phone was
+ * reaching for the network at all.
+ *
+ * File-level, with the two below, on [combineInstructions]' and [replyLimit]'s precedent
+ * and for their reason: the wording is the whole behaviour, and it is worth a test that
+ * needs no repository, no key and no network.
+ */
+internal fun withReason(problem: String, reason: String): String = "$problem. $reason"
+
+/**
+ * The line the run log gets when a fallback answered.
+ *
+ * Names **both** the reason and the model that answered instead, because either alone is
+ * the wrong half: the reason without the model does not say who was billed, and the model
+ * without the reason reads as a misconfigured node rather than as the safety net working
+ * exactly as it was set up to.
+ */
+internal fun askedInsteadText(problem: String, profileName: String): String =
+    "$problem. Asked \"$profileName\" instead"
+
+/**
+ * The same reply, carrying [note] — unless it failed.
+ *
+ * **A failure keeps its error and gains nothing**, which is not tidiness: the note says
+ * "something else answered this", and on a reply that was not answered at all that is
+ * simply untrue. The two paths already differ in what they report — a failed fallback
+ * folds both reasons into [AiReply.error] through [withReason] — and this is the guard
+ * that stops the successful wording appearing on the unsuccessful path.
+ */
+internal fun AiReply.withNote(note: String): AiReply =
+    if (error.isNotBlank()) this else copy(note = note)

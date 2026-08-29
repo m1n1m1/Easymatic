@@ -5,11 +5,13 @@
     <string name="ai_provider_openai">OpenAI (ChatGPT)</string>
     <string name="ai_provider_openrouter">OpenRouter</string>
     <string name="ai_provider_self_hosted">Autoalojado / compatible con OpenAI</string>
+    <string name="ai_provider_on_device">En el dispositivo (Gemini Nano)</string>
     <string name="ai_default_name_gemini">Gemini</string>
     <string name="ai_default_name_anthropic">Claude</string>
     <string name="ai_default_name_openai">ChatGPT</string>
     <string name="ai_default_name_openrouter">OpenRouter</string>
     <string name="ai_default_name_self_hosted">Autoalojado</string>
+    <string name="ai_default_name_on_device">En el dispositivo</string>
     <string name="ai_console_gemini">Google AI Studio</string>
     <string name="ai_console_anthropic">la consola de Anthropic</string>
     <string name="ai_console_openai">la plataforma de OpenAI</string>
@@ -20,11 +22,13 @@
     <string name="ai_cost_openai">Las peticiones se cargan a tu propia cuenta de OpenAI, así que una macro que pregunte a la IA cada minuto cuesta dinero. Puedes revocar la clave desde la misma página cuando quieras.</string>
     <string name="ai_cost_openrouter">Las peticiones se cargan a tu propio saldo de OpenRouter, y el precio depende del modelo que elijas. Puedes revocar la clave desde la misma página cuando quieras.</string>
     <string name="ai_cost_self_hosted">Las peticiones van a tu propio servidor y a ningún otro sitio, así que no cuestan nada ni salen de una red que controlas. El servidor tiene que estar accesible siempre que se ejecute la macro.</string>
+    <string name="ai_cost_on_device">Las peticiones no cuestan nada: sin clave, sin cuota y sin red. Funcionan en modo avión, y una macro puede preguntar tantas veces como quiera.</string>
     <string name="ai_privacy_gemini">Las peticiones las responden los servidores de Google, así que un nodo Preguntar a la IA tarda un momento.</string>
     <string name="ai_privacy_anthropic">Las peticiones las responden los servidores de Anthropic, así que un nodo Preguntar a la IA tarda un momento.</string>
     <string name="ai_privacy_openai">Las peticiones las responden los servidores de OpenAI, así que un nodo Preguntar a la IA tarda un momento.</string>
     <string name="ai_privacy_openrouter">Las peticiones pasan por OpenRouter hacia el proveedor que sirva el modelo que elegiste, así que un nodo Preguntar a la IA tarda un momento.</string>
     <string name="ai_privacy_self_hosted">Las peticiones van solo al servidor que indicaste arriba.</string>
+    <string name="ai_privacy_on_device">Las peticiones nunca salen de este teléfono. El modelo es más pequeño que uno alojado, así que las respuestas son más cortas y sencillas.</string>
     <string name="ai_model_fast">Rápido</string>
     <string name="ai_model_balanced">Equilibrado</string>
     <string name="ai_model_thorough">Exhaustivo</string>
@@ -59,6 +63,12 @@
         <item>Copia la clave, vuelve aquí y toca el botón de pegar.</item>
         <item>Carga la lista de modelos de abajo y elige qué modelo usa cada nivel de velocidad.</item>
     </string-array>
+    <string-array name="ai_steps_on_device">
+        <item>La IA en el dispositivo necesita un teléfono con AICore: un Pixel 9 o posterior, un Galaxy S25 o posterior y una lista creciente de otros.</item>
+        <item>Guarda esta conexión. El estado de abajo dirá entonces si este teléfono puede ejecutarla.</item>
+        <item>Toca Descargar y espera. El modelo es grande, así que usa wifi.</item>
+        <item>Elige un modelo de reserva para cada forma de preguntar, para que las macros sigan funcionando en teléfonos que no puedan ejecutarlo, y cuando un nodo use herramientas, algo que el modelo del dispositivo no puede hacer.</item>
+    </string-array>
     <string-array name="ai_steps_self_hosted">
         <item>Arranca tu servidor de modelos: vLLM, Ollama, LM Studio y llama.cpp funcionan todos.</item>
         <item>Pon su dirección abajo, incluyendo http:// o https:// y el puerto.</item>
@@ -74,4 +84,18 @@
     <string name="ai_modality_video">Vídeo</string>
     <string name="ai_modality_file">Archivos</string>
     <string name="ai_modality_separator">" · "</string>
+
+    <!-- The on-device model: its four states, the download, and the fallback field. -->
+    <string name="ai_on_device_heading">IA en el dispositivo</string>
+    <string name="ai_on_device_available">Listo. Las peticiones se responden en este teléfono.</string>
+    <string name="ai_on_device_downloadable">Compatible, pero el modelo todavía no se ha descargado.</string>
+    <string name="ai_on_device_downloading">El modelo se está descargando.</string>
+    <string name="ai_on_device_unsupported">Este teléfono no puede ejecutar la IA en el dispositivo. Las macros aún pueden usarla si das a cada forma de preguntar un modelo de reserva abajo.</string>
+    <string name="ai_on_device_checking">Comprobando este teléfono…</string>
+    <string name="ai_download_model">Descargar modelo</string>
+    <string name="ai_downloading_percent">Descargando… %1$d%%</string>
+    <string name="ai_on_device_base_model">Modelo en este teléfono: %1$s</string>
+    <string name="ai_fallback_model">Si este teléfono no puede ejecutarlo, pregunta a</string>
+    <string name="ai_fallback_none">Nada: informar en su lugar</string>
+    <string name="ai_fallback_help">Se usa cuando el teléfono no puede ejecutar el modelo, y siempre que un nodo deja que la IA use herramientas, algo que el modelo del dispositivo no puede hacer.</string>
 </resources>
