@@ -143,6 +143,8 @@
     <string name="port_trigger_image_saved_path">Ruta</string>
     <string name="cfg_trigger_image_saved_folder">Solo en esta carpeta</string>
     <string name="cfg_trigger_image_saved_pattern">Solo nombres que coincidan con</string>
+    <string name="node_trigger_screenshot_name">Captura de pantalla hecha</string>
+    <string name="node_trigger_screenshot_desc">Se inicia cuando se hace una captura de pantalla en este teléfono</string>
     <string name="port_trigger_screenshot_out">Salida</string>
     <string name="port_trigger_screenshot_image">Imagen</string>
     <string name="port_trigger_screenshot_path">Ruta</string>
@@ -449,6 +451,64 @@
     <string name="cfg_action_ai_describe_prompt">Qué preguntar</string>
     <string name="cfg_action_ai_describe_max_output_tokens">Respuesta más larga (tokens)</string>
     <string name="cfg_action_ai_describe_fallback">Si falla</string>
+    <string name="node_action_transcribe_name">Transcribir</string>
+    <string name="node_action_transcribe_desc">Escucha por el micrófono y transcribe lo dicho — con un modelo de IA, que además puede responder una pregunta sobre ello, o gratis en el propio teléfono</string>
+    <string name="port_action_transcribe_in">Entrada</string>
+    <string name="port_action_transcribe_out">Salida</string>
+    <string name="port_action_transcribe_prompt">Qué preguntar (dejar vacío para transcribir)</string>
+    <string name="port_action_transcribe_answer">Respuesta</string>
+    <string name="port_action_transcribe_language">Idioma</string>
+    <string name="cfg_action_transcribe_using">Transcribir con</string>
+    <string name="opt_action_transcribe_using_ai">Un modelo de IA</string>
+    <string name="opt_action_transcribe_using_phone">Este teléfono, sin conexión</string>
+    <string name="cfg_action_transcribe_model_ref">Modelo</string>
+    <string name="cfg_action_transcribe_prompt">Qué preguntar (dejar vacío para transcribir)</string>
+    <string name="cfg_action_transcribe_language_mode">Idioma</string>
+    <string name="opt_action_transcribe_language_mode_phone">El idioma del teléfono</string>
+    <string name="opt_action_transcribe_language_mode_detect">Detectar automáticamente</string>
+    <string name="opt_action_transcribe_language_mode_chosen">Un idioma que elijo</string>
+    <string name="cfg_action_transcribe_language">Qué idioma</string>
+    <string name="cfg_action_transcribe_max_seconds">Escuchar como mucho (segundos)</string>
+    <string name="cfg_action_transcribe_silence_seconds">Parar tras este silencio (segundos, 0 = escuchar todo el tiempo)</string>
+    <string name="cfg_action_transcribe_max_output_tokens">Respuesta más larga (tokens)</string>
+    <string name="cfg_action_transcribe_fallback">Si falla</string>
+    <string name="node_action_transcribe_start_name">Iniciar transcripción</string>
+    <string name="node_action_transcribe_start_desc">Abre el micrófono y sigue escuchando hasta que «Finalizar transcripción» convierte lo dicho en texto</string>
+    <string name="port_action_transcribe_start_in">Entrada</string>
+    <string name="port_action_transcribe_start_out">Salida</string>
+    <string name="port_action_transcribe_start_prompt">Qué preguntar (dejar vacío para transcribir)</string>
+    <string name="cfg_action_transcribe_start_using">Transcribir con</string>
+    <string name="opt_action_transcribe_start_using_ai">Un modelo de IA</string>
+    <string name="opt_action_transcribe_start_using_phone">Este teléfono, sin conexión</string>
+    <string name="cfg_action_transcribe_start_model_ref">Modelo</string>
+    <string name="cfg_action_transcribe_start_prompt">Qué preguntar (dejar vacío para transcribir)</string>
+    <string name="cfg_action_transcribe_start_max_output_tokens">Respuesta más larga (tokens)</string>
+    <string name="cfg_action_transcribe_start_language_mode">Idioma</string>
+    <string name="opt_action_transcribe_start_language_mode_phone">El idioma del teléfono</string>
+    <string name="opt_action_transcribe_start_language_mode_detect">Detectar automáticamente</string>
+    <string name="opt_action_transcribe_start_language_mode_chosen">Un idioma que elijo</string>
+    <string name="cfg_action_transcribe_start_language">Qué idioma</string>
+    <string name="cfg_action_transcribe_start_max_seconds">Escuchar como mucho (segundos)</string>
+    <string name="cfg_action_transcribe_start_silence_seconds">Parar tras este silencio (segundos, 0 = escuchar todo el tiempo)</string>
+    <string name="node_action_transcribe_end_name">Finalizar transcripción</string>
+    <string name="node_action_transcribe_end_desc">Cierra el micrófono abierto por «Iniciar transcripción» y convierte lo dicho en texto, con un modelo de IA o en el propio teléfono</string>
+    <string name="port_action_transcribe_end_in">Entrada</string>
+    <string name="port_action_transcribe_end_out">Salida</string>
+    <string name="port_action_transcribe_end_answer">Respuesta</string>
+    <string name="port_action_transcribe_end_language">Idioma</string>
+    <string name="cfg_action_transcribe_end_fallback">Si falla</string>
+    <string name="node_action_transcribe_file_name">Transcribir archivo</string>
+    <string name="node_action_transcribe_file_desc">Envía un archivo de sonido a un modelo de IA y devuelve la transcripción, o la respuesta a una pregunta sobre lo dicho</string>
+    <string name="port_action_transcribe_file_in">Entrada</string>
+    <string name="port_action_transcribe_file_out">Salida</string>
+    <string name="port_action_transcribe_file_audio">Archivo de audio</string>
+    <string name="port_action_transcribe_file_prompt">Qué preguntar (dejar vacío para transcribir)</string>
+    <string name="port_action_transcribe_file_answer">Respuesta</string>
+    <string name="cfg_action_transcribe_file_model_ref">Modelo</string>
+    <string name="cfg_action_transcribe_file_audio">Archivo de audio</string>
+    <string name="cfg_action_transcribe_file_prompt">Qué preguntar (dejar vacío para transcribir)</string>
+    <string name="cfg_action_transcribe_file_max_output_tokens">Respuesta más larga (tokens)</string>
+    <string name="cfg_action_transcribe_file_fallback">Si falla</string>
     <string name="node_action_auto_rotate_name">Alternar rotación automática</string>
     <string name="node_action_auto_rotate_desc">Activa o desactiva la rotación automática por acelerómetro</string>
     <string name="port_action_auto_rotate_in">Entrada</string>
@@ -597,6 +657,38 @@
     <string name="cfg_action_dialog_choice_options">Opciones: una por línea</string>
     <string name="cfg_action_dialog_choice_cancel_label">Botón de cancelar</string>
     <string name="cfg_action_dialog_choice_timeout_seconds">Rendirse tras (segundos)</string>
+    <string name="node_action_speak_name">Hablar</string>
+    <string name="node_action_speak_desc">Lee un texto en voz alta por el altavoz del teléfono</string>
+    <string name="port_action_speak_in">Entrada</string>
+    <string name="port_action_speak_out">Salida</string>
+    <string name="port_action_speak_text">Texto</string>
+    <string name="cfg_action_speak_text">Texto</string>
+    <string name="cfg_action_speak_language">Idioma</string>
+    <string name="cfg_action_speak_rate">Velocidad</string>
+    <string name="cfg_action_speak_pitch">Tono</string>
+    <string name="cfg_action_speak_stream">Reproducir por</string>
+    <string name="opt_action_speak_stream_media">Multimedia</string>
+    <string name="opt_action_speak_stream_ring">Sonar</string>
+    <string name="opt_action_speak_stream_alarm">Alarma</string>
+    <string name="opt_action_speak_stream_notification">Notificación</string>
+    <string name="opt_action_speak_stream_system">Sistema</string>
+    <string name="cfg_action_speak_wait_for_completion">Esperar a que termine</string>
+    <string name="cfg_action_speak_queue">Poner en cola tras lo que ya se está diciendo</string>
+    <string name="node_action_speak_stop_name">Dejar de hablar</string>
+    <string name="node_action_speak_stop_desc">Detiene lo que el teléfono esté diciendo en voz alta</string>
+    <string name="port_action_speak_stop_in">Entrada</string>
+    <string name="port_action_speak_stop_out">Salida</string>
+    <string name="node_action_listen_name">Escuchar</string>
+    <string name="node_action_listen_desc">Espera a que el usuario diga algo y pone lo escuchado en una salida</string>
+    <string name="port_action_listen_in">Entrada</string>
+    <string name="port_action_listen_confirmed">Si se dice algo</string>
+    <string name="port_action_listen_cancelled">Si no se dice nada</string>
+    <string name="port_action_listen_timed_out">Si se acaba el tiempo</string>
+    <string name="port_action_listen_text">Escuchado</string>
+    <string name="cfg_action_listen_language">Idioma</string>
+    <string name="cfg_action_listen_max_seconds">Rendirse tras (segundos)</string>
+    <string name="cfg_action_listen_silence_seconds">Parar tras este silencio (segundos, 0 = que decida el teléfono)</string>
+    <string name="cfg_action_listen_prefer_offline">Reconocer en el dispositivo si es posible</string>
     <string name="node_action_disable_macro_name">Desactivar macro</string>
     <string name="node_action_disable_macro_desc">Desactiva otra macro por su id (guarda el estado y desarma sus activadores)</string>
     <string name="port_action_disable_macro_in">Entrada</string>
@@ -683,23 +775,42 @@
     <string name="port_action_launch_app_out">Salida</string>
     <string name="port_action_launch_app_package_name">Aplicación</string>
     <string name="cfg_action_launch_app_package_name">Aplicación</string>
+    <string name="node_action_send_intent_name">Enviar intent</string>
+    <string name="node_action_send_intent_desc">Inicia una actividad en otra app con una acción de intent, datos y extras propios</string>
     <string name="port_action_send_intent_in">Entrada</string>
     <string name="port_action_send_intent_out">Salida</string>
     <string name="port_action_send_intent_action">Acción</string>
     <string name="port_action_send_intent_package_name">Aplicación (opcional)</string>
+    <string name="port_action_send_intent_data_uri">URI de datos (opcional)</string>
+    <string name="port_action_send_intent_mime_type">Tipo MIME (opcional)</string>
+    <string name="port_action_send_intent_category">Categoría (opcional)</string>
+    <string name="port_action_send_intent_extras">Extras — un key=value por línea, count:int=5 para dar un tipo</string>
     <string name="cfg_action_send_intent_action">Acción</string>
     <string name="cfg_action_send_intent_package_name">Aplicación (opcional)</string>
+    <string name="cfg_action_send_intent_data_uri">URI de datos (opcional)</string>
+    <string name="cfg_action_send_intent_mime_type">Tipo MIME (opcional)</string>
+    <string name="cfg_action_send_intent_category">Categoría (opcional)</string>
+    <string name="cfg_action_send_intent_extras">Extras — un key=value por línea, count:int=5 para dar un tipo</string>
+    <string name="node_action_broadcast_intent_name">Enviar broadcast</string>
+    <string name="node_action_broadcast_intent_desc">Envía un intent de broadcast a otra app, con una acción y extras propios</string>
     <string name="port_action_broadcast_intent_in">Entrada</string>
     <string name="port_action_broadcast_intent_out">Salida</string>
     <string name="port_action_broadcast_intent_action">Acción</string>
     <string name="port_action_broadcast_intent_package_name">Aplicación (opcional)</string>
+    <string name="port_action_broadcast_intent_data_uri">URI de datos (opcional)</string>
+    <string name="port_action_broadcast_intent_mime_type">Tipo MIME (opcional)</string>
+    <string name="port_action_broadcast_intent_category">Categoría (opcional)</string>
+    <string name="port_action_broadcast_intent_extras">Extras — un key=value por línea, count:int=5 para dar un tipo</string>
     <string name="cfg_action_broadcast_intent_action">Acción</string>
     <string name="cfg_action_broadcast_intent_package_name">Aplicación (opcional)</string>
+    <string name="cfg_action_broadcast_intent_data_uri">URI de datos (opcional)</string>
+    <string name="cfg_action_broadcast_intent_mime_type">Tipo MIME (opcional)</string>
+    <string name="cfg_action_broadcast_intent_category">Categoría (opcional)</string>
+    <string name="cfg_action_broadcast_intent_extras">Extras — un key=value por línea, count:int=5 para dar un tipo</string>
     <string name="node_action_light_control_name">Controlar luz</string>
     <string name="node_action_light_control_desc">Enciende o apaga una luz, habitación o zona, o ajusta su brillo, color o temperatura — Philips Hue</string>
     <string name="port_action_light_control_in">Entrada</string>
     <string name="port_action_light_control_out">Salida</string>
-    <string name="port_action_light_control_brightness">Brillo %</string>
     <string name="port_action_light_control_colour">Color</string>
     <string name="port_action_light_control_kelvin">Temperatura de color (K)</string>
     <string name="port_action_light_control_state">estado</string>
@@ -711,7 +822,6 @@
     <string name="opt_action_light_control_op_set_brightness">Fijar brillo</string>
     <string name="opt_action_light_control_op_set_colour">Fijar color</string>
     <string name="opt_action_light_control_op_set_temperature">Fijar temperatura de color</string>
-    <string name="cfg_action_light_control_brightness">Brillo %</string>
     <string name="cfg_action_light_control_colour">Color</string>
     <string name="cfg_action_light_control_kelvin">Temperatura de color (K)</string>
     <string name="cfg_action_light_control_only_lights_on">Solo las luces ya encendidas</string>
@@ -832,6 +942,8 @@
     <string name="port_action_file_delete_path">Archivo</string>
     <string name="port_action_file_delete_state">Resultado</string>
     <string name="cfg_action_file_delete_path">Archivo</string>
+    <string name="node_action_screenshot_name">Hacer captura de pantalla</string>
+    <string name="node_action_screenshot_desc">Captura lo que hay ahora en la pantalla y lo guarda como imagen</string>
     <string name="port_action_screenshot_in">Entrada</string>
     <string name="port_action_screenshot_out">Salida</string>
     <string name="port_action_screenshot_to_folder">Guardar en esta carpeta</string>
@@ -1039,7 +1151,6 @@
     <string name="port_action_notify_resumed">Cuando responda</string>
     <string name="port_action_notify_text">Texto</string>
     <string name="port_action_notify_buttons">Botones: uno por línea</string>
-    <string name="port_action_notify_progress">Progreso (%, por debajo de 0 = indeterminado)</string>
     <string name="port_action_notify_tag">Etiqueta: para quitarla manualmente</string>
     <string name="port_action_notify_posted_tag">Publicada como</string>
     <string name="port_action_notify_button">Botón</string>
@@ -1063,7 +1174,6 @@
     <string name="opt_action_notify_accent_violet">Violeta</string>
     <string name="opt_action_notify_accent_pink">Rosa</string>
     <string name="cfg_action_notify_show_progress">Mostrar una barra de progreso</string>
-    <string name="cfg_action_notify_progress">Progreso (%, por debajo de 0 = indeterminado)</string>
     <string name="cfg_action_notify_ongoing">Mantener hasta descartarla</string>
     <string name="cfg_action_notify_tag">Etiqueta: para quitarla manualmente</string>
     <string name="node_action_notify_cancel_name">Quitar notificación</string>
@@ -1409,7 +1519,6 @@
     <string name="port_value_airplane_enabled">Encendido</string>
     <string name="node_value_battery_name">Nivel de batería</string>
     <string name="node_value_battery_desc">La carga actual de la batería en porcentaje, de 0 a 100</string>
-    <string name="port_value_battery_level">Nivel (%)</string>
     <string name="node_value_bluetooth_name">Bluetooth activado</string>
     <string name="node_value_bluetooth_desc">Si el Bluetooth está activado ahora mismo</string>
     <string name="port_value_bluetooth_enabled">Activado</string>
@@ -1445,6 +1554,8 @@
     <string name="node_value_latest_image_name">Última imagen</string>
     <string name="node_value_latest_image_desc">La foto, captura de pantalla o imagen más reciente guardada en este teléfono</string>
     <string name="port_value_latest_image_image">Imagen</string>
+    <string name="node_value_latest_screenshot_name">Última captura de pantalla</string>
+    <string name="node_value_latest_screenshot_desc">La captura de pantalla más reciente guardada en este teléfono</string>
     <string name="port_value_latest_screenshot_image">Imagen</string>
     <string name="node_value_light_name">Luz ambiental</string>
     <string name="node_value_light_desc">El nivel de luz alrededor del dispositivo en lux: una habitación en penumbra ronda los 30, una oficina unos cientos</string>
@@ -1481,6 +1592,12 @@
     <string name="node_value_screen_name">Pantalla encendida</string>
     <string name="node_value_screen_desc">Si la pantalla está encendida y utilizable ahora mismo</string>
     <string name="port_value_screen_on">Encendido</string>
+    <string name="node_value_speaking_name">Hablando</string>
+    <string name="node_value_speaking_desc">Si el teléfono está diciendo algo en voz alta ahora mismo</string>
+    <string name="port_value_speaking_speaking">Hablando</string>
+    <string name="node_value_torch_name">Linterna encendida</string>
+    <string name="node_value_torch_desc">Si la linterna de la cámara está encendida ahora mismo</string>
+    <string name="port_value_torch_on">Encendido</string>
     <string name="node_value_variable_name">Variable</string>
     <string name="node_value_variable_desc">El valor actual de una variable</string>
     <string name="port_value_variable_value">Valor</string>
@@ -1579,42 +1696,9 @@
     <string name="valuetype_date_time">Fecha y hora</string>
     <string name="valuetype_any">Cualquiera</string>
     <string name="config_option_unset">Cualquiera</string>
-    <string name="node_action_speak_name">Hablar</string>
-    <string name="node_action_speak_desc">Lee un texto en voz alta por el altavoz del teléfono</string>
-    <string name="port_action_speak_in">Entrada</string>
-    <string name="port_action_speak_out">Salida</string>
-    <string name="port_action_speak_text">Texto</string>
-    <string name="cfg_action_speak_text">Texto</string>
-    <string name="cfg_action_speak_language">Idioma</string>
-    <string name="cfg_action_speak_rate">Velocidad</string>
-    <string name="cfg_action_speak_pitch">Tono</string>
-    <string name="cfg_action_speak_stream">Reproducir por</string>
-    <string name="opt_action_speak_stream_media">Multimedia</string>
-    <string name="opt_action_speak_stream_ring">Sonar</string>
-    <string name="opt_action_speak_stream_alarm">Alarma</string>
-    <string name="opt_action_speak_stream_notification">Notificación</string>
-    <string name="opt_action_speak_stream_system">Sistema</string>
-    <string name="cfg_action_speak_wait_for_completion">Esperar a que termine</string>
-    <string name="cfg_action_speak_queue">Poner en cola tras lo que ya se está diciendo</string>
-    <string name="node_action_speak_stop_name">Dejar de hablar</string>
-    <string name="node_action_speak_stop_desc">Detiene lo que el teléfono esté diciendo en voz alta</string>
-    <string name="port_action_speak_stop_in">Entrada</string>
-    <string name="port_action_speak_stop_out">Salida</string>
-    <string name="node_action_listen_name">Escuchar</string>
-    <string name="node_action_listen_desc">Espera a que el usuario diga algo y pone lo escuchado en una salida</string>
-    <string name="port_action_listen_in">Entrada</string>
-    <string name="port_action_listen_confirmed">Si se dice algo</string>
-    <string name="port_action_listen_cancelled">Si no se dice nada</string>
-    <string name="port_action_listen_timed_out">Si se acaba el tiempo</string>
-    <string name="port_action_listen_text">Escuchado</string>
-    <string name="cfg_action_listen_language">Idioma</string>
-    <string name="cfg_action_listen_max_seconds">Rendirse tras (segundos)</string>
-    <string name="cfg_action_listen_silence_seconds">Parar tras este silencio (segundos, 0 = que decida el teléfono)</string>
-    <string name="cfg_action_listen_prefer_offline">Reconocer en el dispositivo si es posible</string>
-    <string name="node_value_speaking_name">Hablando</string>
-    <string name="node_value_speaking_desc">Si el teléfono está diciendo algo en voz alta ahora mismo</string>
-    <string name="port_value_speaking_speaking">Hablando</string>
-    <string name="node_value_torch_name">Linterna encendida</string>
-    <string name="node_value_torch_desc">Si la linterna de la cámara está encendida ahora mismo</string>
-    <string name="port_value_torch_on">Encendido</string>
+    <string name="port_action_light_control_brightness" formatted="false">Brillo %</string>
+    <string name="cfg_action_light_control_brightness" formatted="false">Brillo %</string>
+    <string name="port_action_notify_progress" formatted="false">Progreso (%, menos de 0 = ocupado)</string>
+    <string name="cfg_action_notify_progress" formatted="false">Progreso (%, menos de 0 = ocupado)</string>
+    <string name="port_value_battery_level" formatted="false">Nivel (%)</string>
 </resources>

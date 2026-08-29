@@ -663,4 +663,7 @@
     <string name="macro_transfer_need_calendar">一个日历</string>
     <string name="macro_transfer_need_sound">一个声音</string>
     <string name="macro_transfer_need_contact">一个联系人</string>
+    <string name="grapheditor_transcribing_on_this_phone_needs">在本机上转写需要安装对应的语言包。请在手机的语音设置中添加，或改用 AI 模型。</string>
+    <string name="grapheditor_language_name_and_tag">%1$s（%2$s）</string>
+    <string name="grapheditor_detecting_the_language_needs">自动识别语言需要 Android 14 以及所说语言的语言包。更早的系统将使用手机语言进行转写。</string>
 </resources>

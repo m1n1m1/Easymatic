@@ -728,4 +728,7 @@
     <string name="macro_transfer_need_calendar">einen Kalender</string>
     <string name="macro_transfer_need_sound">einen Ton</string>
     <string name="macro_transfer_need_contact">einen Kontakt</string>
+    <string name="grapheditor_transcribing_on_this_phone_needs">Die Transkription auf diesem Telefon erfordert das installierte Sprachpaket. Füge es in den Sprachausgabe-Einstellungen hinzu oder wechsle zu einem KI-Modell.</string>
+    <string name="grapheditor_language_name_and_tag">%1$s — %2$s</string>
+    <string name="grapheditor_detecting_the_language_needs">Die Spracherkennung erfordert Android 14 und die Sprachpakete der gesprochenen Sprachen. Ältere Telefone transkribieren stattdessen in der Telefonsprache.</string>
 </resources>

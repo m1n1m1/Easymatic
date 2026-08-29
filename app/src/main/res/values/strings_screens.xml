@@ -751,4 +751,7 @@
     <string name="macro_transfer_need_calendar">a calendar</string>
     <string name="macro_transfer_need_sound">a sound</string>
     <string name="macro_transfer_need_contact">a contact</string>
+    <string name="grapheditor_transcribing_on_this_phone_needs">Transcribing on this phone needs the language pack for that language to be installed. Add it in the phone\'s voice settings, or switch to an AI model.</string>
+    <string name="grapheditor_language_name_and_tag">%1$s — %2$s</string>
+    <string name="grapheditor_detecting_the_language_needs">Detecting the language needs Android 14 and the packs for the languages spoken. Older phones transcribe in the phone\'s own language instead.</string>
 </resources>

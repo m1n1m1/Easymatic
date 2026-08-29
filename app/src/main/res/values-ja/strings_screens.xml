@@ -663,4 +663,7 @@
     <string name="macro_transfer_need_calendar">カレンダー</string>
     <string name="macro_transfer_need_sound">サウンド</string>
     <string name="macro_transfer_need_contact">連絡先</string>
+    <string name="grapheditor_transcribing_on_this_phone_needs">この端末での文字起こしには言語パックのインストールが必要です。端末の音声設定で追加するか、AIモデルに切り替えてください。</string>
+    <string name="grapheditor_language_name_and_tag">%1$s（%2$s）</string>
+    <string name="grapheditor_detecting_the_language_needs">言語の自動判別には Android 14 と、話される言語の言語パックが必要です。それ以前の端末では端末の言語で文字起こしされます。</string>
 </resources>

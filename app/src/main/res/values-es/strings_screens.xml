@@ -663,4 +663,7 @@
     <string name="macro_transfer_need_calendar">un calendario</string>
     <string name="macro_transfer_need_sound">un sonido</string>
     <string name="macro_transfer_need_contact">un contacto</string>
+    <string name="grapheditor_transcribing_on_this_phone_needs">Transcribir en este teléfono requiere que el paquete de idioma esté instalado. Añádelo en los ajustes de voz del teléfono o cambia a un modelo de IA.</string>
+    <string name="grapheditor_language_name_and_tag">%1$s — %2$s</string>
+    <string name="grapheditor_detecting_the_language_needs">Detectar el idioma requiere Android 14 y los paquetes de los idiomas hablados. Los teléfonos más antiguos transcriben en el idioma del teléfono.</string>
 </resources>
