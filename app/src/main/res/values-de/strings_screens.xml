@@ -732,4 +732,18 @@
     <string name="grapheditor_transcribing_on_this_phone_needs">Die Transkription auf diesem Telefon erfordert das installierte Sprachpaket. Füge es in den Sprachausgabe-Einstellungen hinzu oder wechsle zu einem KI-Modell.</string>
     <string name="grapheditor_language_name_and_tag">%1$s — %2$s</string>
     <string name="grapheditor_detecting_the_language_needs">Die Spracherkennung erfordert Android 14 und die Sprachpakete der gesprochenen Sprachen. Ältere Telefone transkribieren stattdessen in der Telefonsprache.</string>
+    <string name="translate_pick_language">Sprache wählen</string>
+    <string name="translate_filter_languages">Sprachen filtern</string>
+    <string name="translate_models_title">Übersetzungsmodelle</string>
+    <string name="translate_models_loading">Heruntergeladene Sprachen werden gesucht…</string>
+    <string name="translate_models_empty">Noch keine Sprachen heruntergeladen. Füge eine hinzu, um den Übersetzen-Knoten zu verwenden.</string>
+    <string name="translate_models_delete">Löschen</string>
+    <string name="translate_models_pivot_note">Übersetzt wird über Englisch, deshalb müssen für eine Übersetzung zwischen zwei anderen Sprachen beide hinzugefügt sein. Löschst du eine, funktioniert jedes Makro nicht mehr, das in diese Sprache oder aus ihr übersetzt, bis du sie wieder hinzufügst.</string>
+    <string name="setup_translation_models_subtitle">Sprachen, die der Übersetzen-Knoten verwenden kann</string>
+    <string name="translate_models_add">Sprache hinzufügen</string>
+    <string name="translate_models_downloading">%1$s wird heruntergeladen…</string>
+    <string name="translate_models_size_note">Jede Sprache ist etwa 30 MB groß und wird jetzt über die aktuelle Verbindung heruntergeladen.</string>
+    <string name="translate_no_languages_downloaded">Noch keine Sprachen heruntergeladen. Füge unter Übersetzungsmodelle eine hinzu und komm dann zurück.</string>
+    <string name="translate_manage_languages">Übersetzungsmodelle</string>
+    <string name="translate_manage_languages_hint">Sprachen hinzufügen oder entfernen. Verlässt den Editor.</string>
 </resources>

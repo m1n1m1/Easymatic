@@ -24,6 +24,7 @@ import com.example.ottomatic.core.service.NoMedia
 import com.example.ottomatic.core.service.NoMessaging
 import com.example.ottomatic.core.service.NoMicrophone
 import com.example.ottomatic.core.service.NoSpeech
+import com.example.ottomatic.core.service.NoTranslation
 import com.example.ottomatic.core.service.NoNotifications
 import com.example.ottomatic.core.service.Notifications
 import com.example.ottomatic.core.service.NoPrompts
@@ -39,6 +40,7 @@ import com.example.ottomatic.core.service.Prompts
 import com.example.ottomatic.core.service.ScriptEngine
 import com.example.ottomatic.core.service.Variables
 import com.example.ottomatic.core.service.Speech
+import com.example.ottomatic.core.service.Translation
 import com.example.ottomatic.core.service.SystemServices
 import com.example.ottomatic.core.service.UnknownDeviceState
 import com.example.ottomatic.core.service.DelayWaits
@@ -81,6 +83,7 @@ class DefaultExecutionContext(
     override val microphone: Microphone = NoMicrophone,
     override val media: Media = NoMedia,
     override val speech: Speech = NoSpeech,
+    override val translation: Translation = NoTranslation,
     private val logger: (LogEntry) -> Unit = {},
 ) : ExecutionContext {
 

@@ -50,6 +50,7 @@ import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Screenshot
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Psychology
@@ -323,4 +324,5 @@ fun nodeIcon(icon: NodeIcon): ImageVector = when (icon) {
     // Shouted at everyone, no reply. The pair above and below must differ by their icon, since
     // they differ by nothing else on the card.
     NodeIcon.BROADCAST -> Icons.Filled.Campaign
+    NodeIcon.TRANSLATE -> Icons.Filled.Translate
 }

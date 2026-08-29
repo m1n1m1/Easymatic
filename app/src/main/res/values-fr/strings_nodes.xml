@@ -1719,4 +1719,17 @@
     <string name="node_value_current_call_name">Appel en cours</string>
     <string name="node_value_current_call_desc">L’appel en cours, avec qui il a lieu et dans quelle application</string>
     <string name="port_value_current_call_call">Appel</string>
+    <string name="node_action_translate_name">Traduire</string>
+    <string name="node_action_translate_desc">Traduit du texte dans une autre langue sur le téléphone lui-même, hors ligne et sans compte IA, en déterminant la langue dans laquelle il est écrit</string>
+    <string name="port_action_translate_in">Entrée</string>
+    <string name="port_action_translate_out">Sortie</string>
+    <string name="port_action_translate_text">Texte</string>
+    <string name="port_action_translate_translation">Traduction</string>
+    <string name="cfg_action_translate_text">Texte</string>
+    <string name="cfg_action_translate_source_mode">Traduire depuis</string>
+    <string name="opt_action_translate_source_mode_detect">Détecter automatiquement</string>
+    <string name="opt_action_translate_source_mode_chosen">Une langue que je choisis</string>
+    <string name="cfg_action_translate_source_language">Quelle langue</string>
+    <string name="cfg_action_translate_target_language">Traduire vers</string>
+    <string name="cfg_action_translate_fallback">En cas d’échec</string>
 </resources>

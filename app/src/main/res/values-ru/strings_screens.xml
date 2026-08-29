@@ -667,4 +667,18 @@
     <string name="grapheditor_transcribing_on_this_phone_needs">Для распознавания на этом телефоне нужен установленный языковой пакет. Добавьте его в настройках голоса или переключитесь на модель ИИ.</string>
     <string name="grapheditor_language_name_and_tag">%1$s — %2$s</string>
     <string name="grapheditor_detecting_the_language_needs">Автоопределение языка требует Android 14 и языковых пакетов для звучащих языков. На более старых телефонах запись расшифровывается на языке телефона.</string>
+    <string name="translate_pick_language">Выберите язык</string>
+    <string name="translate_filter_languages">Фильтр языков</string>
+    <string name="translate_models_title">Модели перевода</string>
+    <string name="translate_models_loading">Поиск загруженных языков…</string>
+    <string name="translate_models_empty">Языки ещё не загружены. Добавьте один, чтобы использовать узел «Перевести».</string>
+    <string name="translate_models_delete">Удалить</string>
+    <string name="translate_models_pivot_note">Перевод идёт через английский, поэтому для перевода между двумя другими языками нужно добавить оба. Удаление одного остановит все макросы, которые переводят на этот язык или с него, пока вы не добавите его снова.</string>
+    <string name="setup_translation_models_subtitle">Языки, доступные узлу «Перевести»</string>
+    <string name="translate_models_add">Добавить язык</string>
+    <string name="translate_models_downloading">Загрузка: %1$s…</string>
+    <string name="translate_models_size_note">Каждый язык занимает около 30 МБ и загружается сейчас, через то соединение, которое использует телефон.</string>
+    <string name="translate_no_languages_downloaded">Языки ещё не загружены. Добавьте один в разделе «Модели перевода» и вернитесь.</string>
+    <string name="translate_manage_languages">Модели перевода</string>
+    <string name="translate_manage_languages_hint">Добавить или удалить языки. Редактор будет закрыт.</string>
 </resources>

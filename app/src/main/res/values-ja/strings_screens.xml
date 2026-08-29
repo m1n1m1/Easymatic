@@ -667,4 +667,18 @@
     <string name="grapheditor_transcribing_on_this_phone_needs">この端末での文字起こしには言語パックのインストールが必要です。端末の音声設定で追加するか、AIモデルに切り替えてください。</string>
     <string name="grapheditor_language_name_and_tag">%1$s（%2$s）</string>
     <string name="grapheditor_detecting_the_language_needs">言語の自動判別には Android 14 と、話される言語の言語パックが必要です。それ以前の端末では端末の言語で文字起こしされます。</string>
+    <string name="translate_pick_language">言語を選択</string>
+    <string name="translate_filter_languages">言語を絞り込む</string>
+    <string name="translate_models_title">翻訳モデル</string>
+    <string name="translate_models_loading">ダウンロード済みの言語を検索中…</string>
+    <string name="translate_models_empty">まだ言語がダウンロードされていません。翻訳ノードを使うには 1 つ追加してください。</string>
+    <string name="translate_models_delete">削除</string>
+    <string name="translate_models_pivot_note">翻訳は英語を介して行われるため、他の 2 言語間で翻訳するには両方を追加しておく必要があります。1 つ削除すると、その言語へ・から翻訳するすべてのマクロは、再度追加するまで動作しません。</string>
+    <string name="setup_translation_models_subtitle">翻訳ノードが使える言語</string>
+    <string name="translate_models_add">言語を追加</string>
+    <string name="translate_models_downloading">%1$s をダウンロード中…</string>
+    <string name="translate_models_size_note">各言語は約 30 MB で、この端末が現在使用している回線で今すぐダウンロードされます。</string>
+    <string name="translate_no_languages_downloaded">まだ言語がダウンロードされていません。「翻訳モデル」で追加してから戻ってください。</string>
+    <string name="translate_manage_languages">翻訳モデル</string>
+    <string name="translate_manage_languages_hint">言語を追加・削除します。エディタを離れます。</string>
 </resources>

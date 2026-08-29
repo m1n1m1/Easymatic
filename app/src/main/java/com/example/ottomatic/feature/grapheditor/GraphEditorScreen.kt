@@ -82,6 +82,9 @@ import com.example.ottomatic.feature.nfc.LocalNfcTags
 import com.example.ottomatic.feature.nfc.NfcTagsViewModel
 import com.example.ottomatic.feature.smarthome.LocalSmartHome
 import com.example.ottomatic.feature.smarthome.SmartHomeViewModel
+import com.example.ottomatic.feature.translate.LocalTranslationModels
+import com.example.ottomatic.feature.translate.TranslationModelLibrary
+import com.example.ottomatic.feature.translate.TranslationModelsViewModel
 import com.example.ottomatic.feature.variables.GlobalVariablesViewModel
 import com.example.ottomatic.feature.variables.LocalVariables
 import com.example.ottomatic.feature.workflowlist.LocalMacros
@@ -102,6 +105,8 @@ fun GraphEditorScreen(
     smartHome: SmartHomeViewModel,
     aiConnections: AiConnectionsViewModel,
     globalVariables: GlobalVariablesViewModel,
+    translationModels: TranslationModelsViewModel,
+    onOpenTranslationModels: () -> Unit,
     onBack: () -> Unit,
 ) {
     // Published rather than passed down: the `@Picker` config fields and the node
@@ -111,6 +116,11 @@ fun GraphEditorScreen(
         EditorVariableLibrary(viewModel, globalVariables)
     }
     val macros = remember(viewModel) { MacroLibrary(viewModel.macros, viewModel.workflowId) }
+    // The one library the editor cannot edit in place: adding a language is a download, which
+    // belongs on its own screen. So this carries a way *there* rather than a way to do it here.
+    val translations = remember(translationModels, onOpenTranslationModels) {
+        TranslationModelLibrary(translationModels, onOpenTranslationModels)
+    }
     CompositionLocalProvider(
         LocalGeofencePlaces provides geofencePlaces,
         LocalNfcTags provides nfcTags,
@@ -119,6 +129,7 @@ fun GraphEditorScreen(
         LocalAiConnections provides aiConnections,
         LocalVariables provides variables,
         LocalMacros provides macros,
+        LocalTranslationModels provides translations,
     ) {
         GraphEditorContent(viewModel = viewModel, onBack = onBack)
     }

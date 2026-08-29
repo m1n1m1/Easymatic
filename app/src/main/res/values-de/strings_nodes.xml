@@ -1721,4 +1721,17 @@
     <string name="node_value_current_call_name">Aktueller Anruf</string>
     <string name="node_value_current_call_desc">Der laufende Anruf, mit wem er ist und in welcher App</string>
     <string name="port_value_current_call_call">Anruf</string>
+    <string name="node_action_translate_name">Übersetzen</string>
+    <string name="node_action_translate_desc">Übersetzt Text auf dem Telefon selbst in eine andere Sprache, offline und ohne KI-Konto, und erkennt dabei, in welcher Sprache er geschrieben ist</string>
+    <string name="port_action_translate_in">Eingang</string>
+    <string name="port_action_translate_out">Ausgang</string>
+    <string name="port_action_translate_text">Text</string>
+    <string name="port_action_translate_translation">Übersetzung</string>
+    <string name="cfg_action_translate_text">Text</string>
+    <string name="cfg_action_translate_source_mode">Übersetzen aus</string>
+    <string name="opt_action_translate_source_mode_detect">Automatisch erkennen</string>
+    <string name="opt_action_translate_source_mode_chosen">Eine Sprache meiner Wahl</string>
+    <string name="cfg_action_translate_source_language">Welche Sprache</string>
+    <string name="cfg_action_translate_target_language">Übersetzen nach</string>
+    <string name="cfg_action_translate_fallback">Wenn es fehlschlägt</string>
 </resources>

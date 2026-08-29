@@ -63,6 +63,12 @@ object PickerOptions {
         // narrowed, because reading a read-only calendar is exactly what one is for.
         PickerKind.CALENDAR -> CalendarDirectory.writable().map { it.ref }
         PickerKind.CALENDAR_FILTER -> CalendarDirectory.all().map { it.ref }
+        // The **downloaded** languages rather than the supported ones, which is the whole
+        // difference between offering a model a translation that works and one that is
+        // refused on its first run. Translation is the one thing this app does that cannot
+        // happen at all without an asset being present, so the wider list would be a list
+        // of guaranteed failures. Adding a language is the settings screen's job.
+        PickerKind.TRANSLATE_LANGUAGE -> TranslateLanguages.downloaded()
 
         // ---- Deliberately not enumerable, each for its own reason. ----
 

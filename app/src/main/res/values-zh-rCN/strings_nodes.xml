@@ -1719,4 +1719,17 @@
     <string name="node_value_current_call_name">当前通话</string>
     <string name="node_value_current_call_desc">正在进行的通话，包括对方和所在应用</string>
     <string name="port_value_current_call_call">通话</string>
+    <string name="node_action_translate_name">翻译</string>
+    <string name="node_action_translate_desc">在手机本地将文本翻译成另一种语言，离线且无需 AI 账户，并自动识别文本所用的语言</string>
+    <string name="port_action_translate_in">输入</string>
+    <string name="port_action_translate_out">输出</string>
+    <string name="port_action_translate_text">文本</string>
+    <string name="port_action_translate_translation">译文</string>
+    <string name="cfg_action_translate_text">文本</string>
+    <string name="cfg_action_translate_source_mode">源语言</string>
+    <string name="opt_action_translate_source_mode_detect">自动检测</string>
+    <string name="opt_action_translate_source_mode_chosen">由我选择语言</string>
+    <string name="cfg_action_translate_source_language">哪种语言</string>
+    <string name="cfg_action_translate_target_language">目标语言</string>
+    <string name="cfg_action_translate_fallback">如果失败</string>
 </resources>

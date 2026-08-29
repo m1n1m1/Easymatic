@@ -27,7 +27,8 @@ import kotlinx.coroutines.flow.flow
 /**
  * Gemini Nano through ML Kit's GenAI Prompt API.
  *
- * **The only file in the app that imports `com.google.mlkit`**, which is the whole point
+ * **One of the two files in the app that import `com.google.mlkit`** — `MlKitTranslation` is
+ * the other, and follows this file's rule rather than weakening it — which is the whole point
  * of [OnDeviceAi] existing as an interface: everything worth testing about the on-device
  * path — what a tier means, which requests cannot run here, what the request carries — is
  * decided by `mlKitPlan` and `onDeviceProblem` with no device present, and what is left

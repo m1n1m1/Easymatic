@@ -166,6 +166,10 @@ dependencies {
     // that is not a wire — see the catalogue entry, including why beta is acceptable
     // here and nowhere else.
     implementation(libs.mlkit.genai.prompt)
+    // On-device translation and language identification, for `action.translate`. Both GA;
+    // see the catalogue entries for why neither is hand-rolled.
+    implementation(libs.mlkit.translate)
+    implementation(libs.mlkit.language.id)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.play.services.location)
     implementation(libs.play.services.maps)

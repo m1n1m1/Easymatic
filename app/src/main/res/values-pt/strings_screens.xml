@@ -667,4 +667,18 @@
     <string name="grapheditor_transcribing_on_this_phone_needs">Transcrever neste telemóvel requer o pacote de idioma instalado. Adicione-o nas definições de voz do telemóvel ou mude para um modelo de IA.</string>
     <string name="grapheditor_language_name_and_tag">%1$s — %2$s</string>
     <string name="grapheditor_detecting_the_language_needs">Detetar o idioma requer Android 14 e os pacotes dos idiomas falados. Telemóveis mais antigos transcrevem no idioma do telemóvel.</string>
+    <string name="translate_pick_language">Escolher um idioma</string>
+    <string name="translate_filter_languages">Filtrar idiomas</string>
+    <string name="translate_models_title">Modelos de tradução</string>
+    <string name="translate_models_loading">A procurar idiomas transferidos…</string>
+    <string name="translate_models_empty">Ainda não há idiomas transferidos. Adicione um para usar o nó Traduzir.</string>
+    <string name="translate_models_delete">Eliminar</string>
+    <string name="translate_models_pivot_note">A tradução passa pelo inglês, por isso traduzir entre dois outros idiomas exige ter ambos adicionados. Eliminar um para todas as macros que traduzem para esse idioma ou a partir dele, até o voltar a adicionar.</string>
+    <string name="setup_translation_models_subtitle">Idiomas que o nó Traduzir pode usar</string>
+    <string name="translate_models_add">Adicionar um idioma</string>
+    <string name="translate_models_downloading">A transferir %1$s…</string>
+    <string name="translate_models_size_note">Cada idioma ocupa cerca de 30 MB e é transferido agora, pela ligação que este telemóvel estiver a usar.</string>
+    <string name="translate_no_languages_downloaded">Ainda não há idiomas transferidos. Adicione um em Modelos de tradução e volte.</string>
+    <string name="translate_manage_languages">Modelos de tradução</string>
+    <string name="translate_manage_languages_hint">Adicionar ou remover idiomas. Sai do editor.</string>
 </resources>

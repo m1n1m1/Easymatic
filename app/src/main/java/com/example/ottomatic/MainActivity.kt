@@ -40,6 +40,8 @@ import com.example.ottomatic.feature.ai.AiConnectionsViewModel
 import com.example.ottomatic.feature.geofence.GeofencePlacesScreen
 import com.example.ottomatic.feature.geofence.GeofencePlacesViewModel
 import com.example.ottomatic.feature.mail.MailAccountsScreen
+import com.example.ottomatic.feature.translate.TranslationModelsScreen
+import com.example.ottomatic.feature.translate.TranslationModelsViewModel
 import com.example.ottomatic.feature.smarthome.SmartHomeScreen
 import com.example.ottomatic.feature.smarthome.SmartHomeViewModel
 import com.example.ottomatic.feature.mail.MailAccountsViewModel
@@ -100,6 +102,12 @@ class MainActivity : ComponentActivity() {
     // to keep in sync and nothing that could disagree with it.
     private val folderAccessViewModel: FolderAccessViewModel by viewModels {
         FolderAccessViewModel.factory(applicationContext)
+    }
+
+    // Activity-scoped like the rest, and holding no repository for `folderAccessViewModel`'s
+    // reason exactly: ML Kit's own list of downloaded models is the list.
+    private val translationModelsViewModel: TranslationModelsViewModel by viewModels {
+        TranslationModelsViewModel.Factory(ServiceLocator.translationSetup)
     }
 
     // Activity-scoped for the same reason the others are, and with one extra edge
@@ -285,6 +293,7 @@ class MainActivity : ComponentActivity() {
                     onOpenGeofences = { navController.navigate(ROUTE_GEOFENCES) },
                     onOpenNfcTags = { navController.navigate(ROUTE_NFC_TAGS) },
                     onOpenFolders = { navController.navigate(ROUTE_FOLDER_ACCESS) },
+                    onOpenTranslationModels = { navController.navigate(ROUTE_TRANSLATION_MODELS) },
                     onOpenPermissions = { navController.navigate(ROUTE_PERMISSIONS) },
                     onOpenPlugins = { navController.navigate(ROUTE_PLUGINS) },
                     onOpenAppAccess = { navController.navigate(ROUTE_APP_ACCESS) },
@@ -305,6 +314,12 @@ class MainActivity : ComponentActivity() {
             composable(ROUTE_FOLDER_ACCESS) {
                 FolderAccessScreen(
                     viewModel = folderAccessViewModel,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(ROUTE_TRANSLATION_MODELS) {
+                TranslationModelsScreen(
+                    viewModel = translationModelsViewModel,
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -405,6 +420,10 @@ class MainActivity : ComponentActivity() {
                     smartHome = smartHomeViewModel,
                     aiConnections = aiConnectionsViewModel,
                     globalVariables = globalVariablesViewModel,
+                    translationModels = translationModelsViewModel,
+                    // Leaves the editor rather than opening in place, unlike every other
+                    // library the config form can reach — see `TranslationModelLibrary`.
+                    onOpenTranslationModels = { navController.navigate(ROUTE_TRANSLATION_MODELS) },
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -558,6 +577,7 @@ class MainActivity : ComponentActivity() {
         private const val ROUTE_GEOFENCES = "geofences"
         private const val ROUTE_NFC_TAGS = "nfcTags"
         private const val ROUTE_FOLDER_ACCESS = "folderAccess"
+        private const val ROUTE_TRANSLATION_MODELS = "translationModels"
         private const val ROUTE_MAIL_ACCOUNTS = "mailAccounts"
         private const val ROUTE_SMART_HOME = "smartHome"
         private const val ROUTE_AI = "ai"

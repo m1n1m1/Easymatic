@@ -667,4 +667,18 @@
     <string name="grapheditor_transcribing_on_this_phone_needs">La transcription sur ce téléphone nécessite le pack de langue installé. Ajoutez-le dans les paramètres vocaux du téléphone, ou passez à un modèle d\'IA.</string>
     <string name="grapheditor_language_name_and_tag">%1$s — %2$s</string>
     <string name="grapheditor_detecting_the_language_needs">La détection de la langue nécessite Android 14 et les packs des langues parlées. Les téléphones plus anciens transcrivent dans la langue du téléphone.</string>
+    <string name="translate_pick_language">Choisir une langue</string>
+    <string name="translate_filter_languages">Filtrer les langues</string>
+    <string name="translate_models_title">Modèles de traduction</string>
+    <string name="translate_models_loading">Recherche des langues téléchargées…</string>
+    <string name="translate_models_empty">Aucune langue téléchargée pour l’instant. Ajoutez-en une pour utiliser le nœud Traduire.</string>
+    <string name="translate_models_delete">Supprimer</string>
+    <string name="translate_models_pivot_note">La traduction passe par l’anglais : traduire entre deux autres langues suppose donc de les avoir ajoutées toutes les deux. En supprimer une arrête toutes les macros qui traduisent vers cette langue ou depuis elle, jusqu’à ce que vous la rajoutiez.</string>
+    <string name="setup_translation_models_subtitle">Langues utilisables par le nœud Traduire</string>
+    <string name="translate_models_add">Ajouter une langue</string>
+    <string name="translate_models_downloading">Téléchargement de %1$s…</string>
+    <string name="translate_models_size_note">Chaque langue pèse environ 30 Mo et est téléchargée maintenant, via la connexion utilisée par ce téléphone.</string>
+    <string name="translate_no_languages_downloaded">Aucune langue téléchargée pour l’instant. Ajoutez-en une dans Modèles de traduction, puis revenez.</string>
+    <string name="translate_manage_languages">Modèles de traduction</string>
+    <string name="translate_manage_languages_hint">Ajouter ou retirer des langues. Quitte l’éditeur.</string>
 </resources>

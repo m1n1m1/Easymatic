@@ -754,5 +754,19 @@
     <string name="macro_transfer_need_contact">a contact</string>
     <string name="grapheditor_transcribing_on_this_phone_needs">Transcribing on this phone needs the language pack for that language to be installed. Add it in the phone\'s voice settings, or switch to an AI model.</string>
     <string name="grapheditor_language_name_and_tag">%1$s — %2$s</string>
+    <string name="translate_pick_language">Pick a language</string>
+    <string name="translate_filter_languages">Filter languages</string>
+    <string name="translate_models_title">Translation models</string>
+    <string name="translate_models_loading">Looking for downloaded languages…</string>
+    <string name="translate_models_empty">No languages downloaded yet. Add one to use the Translate node.</string>
+    <string name="translate_models_delete">Delete</string>
+    <string name="translate_models_pivot_note">Translation goes through English, so translating between two other languages needs both of them added. Deleting one stops every macro that translates into or out of it until you add it back.</string>
+    <string name="translate_models_add">Add a language</string>
+    <string name="translate_models_downloading">Downloading %1$s…</string>
+    <string name="translate_models_size_note">Each language is about 30 MB and is downloaded now, over whatever connection this phone is using.</string>
+    <string name="translate_no_languages_downloaded">No languages downloaded yet. Add one under Translation models, then come back.</string>
+    <string name="translate_manage_languages">Translation models</string>
+    <string name="translate_manage_languages_hint">Add or remove languages. Leaves the editor.</string>
+    <string name="setup_translation_models_subtitle">Languages the Translate node can use</string>
     <string name="grapheditor_detecting_the_language_needs">Detecting the language needs Android 14 and the packs for the languages spoken. Older phones transcribe in the phone\'s own language instead.</string>
 </resources>

@@ -16,6 +16,8 @@ import com.example.ottomatic.data.ai.OnDeviceAi
 import com.example.ottomatic.data.ai.OnDeviceSetup
 import com.example.ottomatic.data.ai.RoutingAi
 import com.example.ottomatic.data.ai.ondevice.MlKitAi
+import com.example.ottomatic.data.translate.MlKitTranslation
+import com.example.ottomatic.data.translate.TranslationSetup
 import com.example.ottomatic.data.files.RoutingFiles
 import com.example.ottomatic.data.accessibility.ScreenCapture
 import com.example.ottomatic.data.camera.CameraCapture
@@ -285,6 +287,22 @@ object ServiceLocator {
         private set
 
     /**
+     * The translator, for the engine, and the same object for the models screen.
+     *
+     * **One instance, two interfaces**, which is [onDeviceAi] and [onDeviceSetup]'s arrangement
+     * arrived at from the other direction: there the split is two classes over one engine, here
+     * it is two interfaces on one class. Either way the point is that a translator cache and a
+     * models list are one fact about the phone, so the screen that deletes a model is talking to
+     * the very object holding the clients that have it open.
+     *
+     * Typed as the setup half here because that is what has a caller outside the engine; the
+     * execution context takes the same object as `Translation`, which carries no model
+     * management at all.
+     */
+    lateinit var translationSetup: TranslationSetup
+        private set
+
+    /**
      * Which model the graph assistant asks, remembered between sessions.
      *
      * A preference about the editor rather than a fifth library: it holds one id and no
@@ -465,6 +483,17 @@ object ServiceLocator {
         onDeviceAi = MlKitAi()
         aiModelCatalog = AiModelCatalog(aiConnectionRepository, onDeviceAi)
         onDeviceSetup = OnDeviceSetup(onDeviceAi)
+        // No context either, for `MlKitAi`'s reason. Constructing it publishes the *supported*
+        // languages, which is a constant of the library.
+        val translation = MlKitTranslation()
+        translationSetup = translation
+        // The *downloaded* half has to be asked for, and it is asked for here rather than only by
+        // the Translation models screen: the Translate node's language pickers offer what is
+        // downloaded, so a user who has never opened that screen would otherwise find both fields
+        // empty with nothing saying why. Fire-and-forget on `appScope` because nothing waits on
+        // it — `installed()` republishes `TranslateLanguages` as its side effect, and until it
+        // returns the registry answers empty, which narrows nothing.
+        appScope.launch { translation.installed() }
         assistantSettingsRepository = AssistantSettingsRepository(appContext.filesDir)
         publishAiConnections()
         publishSmartHomeHubs()
@@ -584,6 +613,7 @@ object ServiceLocator {
             microphone = microphoneFacade,
             media = AndroidMedia(appContext),
             speech = speechFacade,
+            translation = translation,
             // Both destinations, because they answer different questions: the
             // store is what a user reads in the console, Logcat is what survives
             // a crash and can be pulled off a device over a cable.

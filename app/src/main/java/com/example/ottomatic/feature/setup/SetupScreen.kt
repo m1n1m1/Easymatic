@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -75,6 +76,7 @@ fun SetupScreen(
     onOpenGeofences: () -> Unit,
     onOpenNfcTags: () -> Unit,
     onOpenFolders: () -> Unit,
+    onOpenTranslationModels: () -> Unit,
     onOpenPermissions: () -> Unit,
     onOpenPlugins: () -> Unit,
     onOpenAppAccess: () -> Unit,
@@ -166,6 +168,21 @@ fun SetupScreen(
                     titleRes = R.string.files_folder_access,
                     subtitleRes = R.string.setup_folders_subtitle,
                     onClick = onOpenFolders,
+                )
+            }
+            item {
+                // Libraries rather than System, and the line is worth drawing: System is
+                // what the phone and other apps *allow*, which this app only reports —
+                // its three rows have nothing to delete. These models are this app's own
+                // storage, downloaded on its own account, and a screen with a Delete
+                // button is deciding something. It sits beside Folder access for the
+                // reason given there: not a library of records, but a thing the app is
+                // holding that a macro refers to by name.
+                SetupRow(
+                    icon = Icons.Filled.Translate,
+                    titleRes = R.string.translate_models_title,
+                    subtitleRes = R.string.setup_translation_models_subtitle,
+                    onClick = onOpenTranslationModels,
                 )
             }
 

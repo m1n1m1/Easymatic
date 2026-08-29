@@ -25,6 +25,8 @@ exifinterface = "1.4.1"
 okhttp = "4.12.0"
 paho = "1.2.5"
 mlkitGenAiPrompt = "1.0.0-beta2"
+mlkitTranslate = "17.0.3"
+mlkitLanguageId = "17.0.6"
 # Pinned to what `:app` already resolves to transitively (via lifecycle-runtime-ktx).
 # `:plugin-sdk` needs it declared rather than inherited: a plugin app depends on the
 # SDK alone and would otherwise have no coroutines at all.
@@ -121,6 +123,22 @@ androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterfa
 # every failure mode already falls back to a cloud profile or reports a sentence, so a
 # breaking change in the SDK cannot reach a node.
 mlkit-genai-prompt = { group = "com.google.mlkit", name = "genai-prompt", version.ref = "mlkitGenAiPrompt" }
+# On-device translation and language identification, for `action.translate`. Both are
+# GA, so neither carries the caveat above — that sentence is about `genai-prompt` and
+# stays true: it is still the only non-GA artifact here.
+#
+# They are not network clients either, and for a different reason from `genai-prompt`:
+# the inference runs in-process from a bundled library rather than over AIDL to a system
+# service, so there is nothing to hand-roll and nothing to hand-roll it against. The
+# per-language model files are the one part that is fetched, and the SDK owns that —
+# which is why `MlKitTranslation` can offer a Wi-Fi-only download as a flag rather than
+# as a downloader of its own.
+#
+# `language-id` is a separate artifact because it is a separate model, and it is the
+# smaller half: its model ships *inside* the AAR, so identification works on a phone
+# that has never downloaded anything.
+mlkit-translate = { group = "com.google.mlkit", name = "translate", version.ref = "mlkitTranslate" }
+mlkit-language-id = { group = "com.google.mlkit", name = "language-id", version.ref = "mlkitLanguageId" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

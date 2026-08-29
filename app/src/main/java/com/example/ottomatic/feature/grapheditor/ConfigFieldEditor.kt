@@ -18,6 +18,7 @@ import com.example.ottomatic.domain.model.config.ChoiceChooser
 import com.example.ottomatic.domain.registry.PluginNodeEntry
 import com.example.ottomatic.domain.registry.PluginNodes
 import com.example.ottomatic.engine.plugin.ChoiceList
+import com.example.ottomatic.feature.translate.TranslateLanguagePickerField
 import com.example.ottomatic.feature.plugins.PluginChoiceOverlay
 import com.example.ottomatic.nodeapi.plugin.PluginLimits
 import com.example.ottomatic.nodeapi.wire.NodeCallWire
@@ -822,6 +823,8 @@ private fun PickerField(
         PickerKind.HA_TRIGGER -> HaPickerField(value, onValueChange, HaPickerMode.TRIGGER, scope, labelSlot, colors)
         PickerKind.HA_HUB -> HaPickerField(value, onValueChange, HaPickerMode.HUB, scope, labelSlot, colors)
         PickerKind.MQTT_BROKER -> MqttBrokerPickerField(value, onValueChange, labelSlot, colors)
+        PickerKind.TRANSLATE_LANGUAGE ->
+            TranslateLanguagePickerField(value, onValueChange, labelSlot, colors)
         // One field, the flag flipped, on the app and light kinds' arrangement: the two
         // ask different questions with different answer sets, and only the *writing* side
         // of the chooser differs.

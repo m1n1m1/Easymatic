@@ -88,7 +88,12 @@ data class OptionWire(
  *
  * ## [ChoiceOf] is what that refusal was accidentally also refusing
  *
- * Every `PickerKind` names something of the *user's*, so refusing `@Picker` was right —
+ * Nearly every `PickerKind` names something of the *user's*, so refusing `@Picker` was
+ * right — the exception is `TRANSLATE_LANGUAGE`, which names a constant of a library and
+ * would leak nothing at all. It stays refused anyway, because the refusal is per-kind
+ * capability rather than per-kind judgement and a plugin gains nothing from a list it
+ * could compile in itself. The sentence is qualified rather than deleted because the
+ * argument below rests on it —
  * and it left a plugin no way to offer a list of its **own**, which is why "which of your
  * Pages?" was a text box asking for a sixteen-digit id, the one failure
  * *Identifiers are chosen, not typed* exists to prevent. [ChoiceOf] moves the authority

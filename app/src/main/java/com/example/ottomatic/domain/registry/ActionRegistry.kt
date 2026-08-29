@@ -8,6 +8,7 @@ import com.example.ottomatic.engine.action.TranscribeAction
 import com.example.ottomatic.engine.action.TranscribeEndAction
 import com.example.ottomatic.engine.action.TranscribeFileAction
 import com.example.ottomatic.engine.action.TranscribeStartAction
+import com.example.ottomatic.engine.action.TranslateAction
 import com.example.ottomatic.engine.action.AskChoiceAction
 import com.example.ottomatic.engine.action.AskConfirmAction
 import com.example.ottomatic.engine.action.AskInputAction
@@ -128,6 +129,12 @@ object ActionRegistry {
         TranscribeStartAction(),
         TranscribeEndAction(),
         TranscribeFileAction(),
+        // Last in the AI block, and after the transcribe family rather than before it,
+        // because the palette renders in this order and the four above are one family a
+        // reader scans as a unit. It belongs in the block at all for the reason the
+        // `PHONE` half of `action.transcribe` does: what these have in common is a model
+        // turning one kind of language into another, not an account being billed for it.
+        TranslateAction(),
         // The two rotation nodes together, on the notify pair's reasoning: turning the
         // screen is what somebody comes looking for, and it only holds because it
         // switched the toggle above it off — so the pair is only readable side by side.

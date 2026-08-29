@@ -1719,4 +1719,17 @@
     <string name="node_value_current_call_name">Текущий звонок</string>
     <string name="node_value_current_call_desc">Идущий звонок: с кем он и в каком приложении</string>
     <string name="port_value_current_call_call">Звонок</string>
+    <string name="node_action_translate_name">Перевести</string>
+    <string name="node_action_translate_desc">Переводит текст на другой язык прямо на телефоне, офлайн и без учётной записи ИИ, определяя, на каком языке он написан</string>
+    <string name="port_action_translate_in">Вход</string>
+    <string name="port_action_translate_out">Выход</string>
+    <string name="port_action_translate_text">Текст</string>
+    <string name="port_action_translate_translation">Перевод</string>
+    <string name="cfg_action_translate_text">Текст</string>
+    <string name="cfg_action_translate_source_mode">Перевести с</string>
+    <string name="opt_action_translate_source_mode_detect">Определять автоматически</string>
+    <string name="opt_action_translate_source_mode_chosen">Язык на мой выбор</string>
+    <string name="cfg_action_translate_source_language">Какой язык</string>
+    <string name="cfg_action_translate_target_language">Перевести на</string>
+    <string name="cfg_action_translate_fallback">Если не удалось</string>
 </resources>

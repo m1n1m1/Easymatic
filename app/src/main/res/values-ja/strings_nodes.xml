@@ -1719,4 +1719,17 @@
     <string name="node_value_current_call_name">現在の通話</string>
     <string name="node_value_current_call_desc">進行中の通話。相手と使用アプリを含みます</string>
     <string name="port_value_current_call_call">通話</string>
+    <string name="node_action_translate_name">翻訳</string>
+    <string name="node_action_translate_desc">テキストが何語で書かれているかを判別し、AI アカウントなしでオフラインのまま、端末上で別の言語に翻訳します</string>
+    <string name="port_action_translate_in">入力</string>
+    <string name="port_action_translate_out">出力</string>
+    <string name="port_action_translate_text">テキスト</string>
+    <string name="port_action_translate_translation">翻訳</string>
+    <string name="cfg_action_translate_text">テキスト</string>
+    <string name="cfg_action_translate_source_mode">翻訳元</string>
+    <string name="opt_action_translate_source_mode_detect">自動的に判別</string>
+    <string name="opt_action_translate_source_mode_chosen">自分で選んだ言語</string>
+    <string name="cfg_action_translate_source_language">どの言語</string>
+    <string name="cfg_action_translate_target_language">翻訳先</string>
+    <string name="cfg_action_translate_fallback">失敗した場合</string>
 </resources>

@@ -667,4 +667,18 @@
     <string name="grapheditor_transcribing_on_this_phone_needs">在本机上转写需要安装对应的语言包。请在手机的语音设置中添加，或改用 AI 模型。</string>
     <string name="grapheditor_language_name_and_tag">%1$s（%2$s）</string>
     <string name="grapheditor_detecting_the_language_needs">自动识别语言需要 Android 14 以及所说语言的语言包。更早的系统将使用手机语言进行转写。</string>
+    <string name="translate_pick_language">选择语言</string>
+    <string name="translate_filter_languages">筛选语言</string>
+    <string name="translate_models_title">翻译模型</string>
+    <string name="translate_models_loading">正在查找已下载的语言…</string>
+    <string name="translate_models_empty">尚未下载任何语言。添加一种即可使用翻译节点。</string>
+    <string name="translate_models_delete">删除</string>
+    <string name="translate_models_pivot_note">翻译经由英语进行，因此在其他两种语言之间翻译需要同时添加这两种语言。删除其中一个会使所有译入或译出该语言的宏停止工作，直到重新添加为止。</string>
+    <string name="setup_translation_models_subtitle">翻译节点可用的语言</string>
+    <string name="translate_models_add">添加语言</string>
+    <string name="translate_models_downloading">正在下载 %1$s…</string>
+    <string name="translate_models_size_note">每种语言约 30 MB，将立即通过本机当前使用的网络下载。</string>
+    <string name="translate_no_languages_downloaded">尚未下载任何语言。请在“翻译模型”中添加一种，然后返回。</string>
+    <string name="translate_manage_languages">翻译模型</string>
+    <string name="translate_manage_languages_hint">添加或移除语言。将离开编辑器。</string>
 </resources>

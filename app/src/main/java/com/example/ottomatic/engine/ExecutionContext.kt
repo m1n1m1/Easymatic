@@ -23,7 +23,9 @@ import com.example.ottomatic.core.service.NoMedia
 import com.example.ottomatic.core.service.NoMessaging
 import com.example.ottomatic.core.service.NoMicrophone
 import com.example.ottomatic.core.service.NoSpeech
+import com.example.ottomatic.core.service.NoTranslation
 import com.example.ottomatic.core.service.Speech
+import com.example.ottomatic.core.service.Translation
 import com.example.ottomatic.core.service.NoNotifications
 import com.example.ottomatic.core.service.NoPrompts
 import com.example.ottomatic.core.service.Notifications
@@ -310,6 +312,22 @@ interface ExecutionContext {
      * is a side effect on the room.
      */
     val speech: Speech get() = NoSpeech
+
+    /**
+     * Turns text into another language on the phone — `action.translate`. Defaults to
+     * [NoTranslation], so engine-only tests need no ML Kit and no downloaded models.
+     *
+     * **Action-side only, and the one facade whose absent members are the interesting part.**
+     * There is no way from here to list, fetch or delete a language model: that half lives on
+     * `TranslationSetup`, which the models screen holds and the executor cannot reach. The
+     * reason is `OnDeviceAi`'s, sharpened — anything the executor can reach, a macro can be made
+     * to do, and since `action.translate` is offered to the tool harness like any other action,
+     * anything a macro can do a *model* can decide to do.
+     *
+     * The pull side may not touch it. A first translation for a language pair fetches tens of
+     * megabytes before it answers, and which calls those are is not something the graph can see.
+     */
+    val translation: Translation get() = NoTranslation
 
     /**
      * Plays, pauses and reads whatever media player is running — the two `action.media_*`

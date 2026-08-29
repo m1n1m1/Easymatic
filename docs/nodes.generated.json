@@ -1,5 +1,5 @@
 {
-    "nodeCount": 183,
+    "nodeCount": 184,
     "nodes": [
         {
             "typeId": "trigger.manual",
@@ -4176,6 +4176,110 @@
                     "visibleWhen": null,
                     "options": [],
                     "chooser": null
+                },
+                {
+                    "key": "fallback",
+                    "label": "If it fails",
+                    "type": "MULTILINE",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                }
+            ],
+            "permissions": [],
+            "capabilities": []
+        },
+        {
+            "typeId": "action.translate",
+            "slug": "action_translate",
+            "displayName": "Translate",
+            "description": "Translates text into another language on the phone itself, offline and without an AI account, working out what language it is written in",
+            "kind": "ACTION",
+            "category": "AI",
+            "categoryLabel": "AI",
+            "icon": "TRANSLATE",
+            "hasDynamicPorts": false,
+            "ports": [
+                {
+                    "name": "in",
+                    "label": "in",
+                    "kind": "EXECUTION",
+                    "direction": "IN",
+                    "type": null
+                },
+                {
+                    "name": "out",
+                    "label": "out",
+                    "kind": "EXECUTION",
+                    "direction": "OUT",
+                    "type": null
+                },
+                {
+                    "name": "text",
+                    "label": "Text",
+                    "kind": "DATA",
+                    "direction": "IN",
+                    "type": "String"
+                },
+                {
+                    "name": "translation",
+                    "label": "Translation",
+                    "kind": "DATA",
+                    "direction": "OUT",
+                    "type": "String"
+                }
+            ],
+            "configFields": [
+                {
+                    "key": "text",
+                    "label": "Text",
+                    "type": "MULTILINE",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": null
+                },
+                {
+                    "key": "sourceMode",
+                    "label": "Translate from",
+                    "type": "ENUM",
+                    "defaultValue": "detect",
+                    "visibleWhen": null,
+                    "options": [
+                        {
+                            "value": "detect",
+                            "label": "Detect automatically"
+                        },
+                        {
+                            "value": "chosen",
+                            "label": "A language I choose"
+                        }
+                    ],
+                    "chooser": null
+                },
+                {
+                    "key": "sourceLanguage",
+                    "label": "Which language",
+                    "type": "PICKER",
+                    "defaultValue": "",
+                    "visibleWhen": {
+                        "key": "sourceMode",
+                        "values": [
+                            "chosen"
+                        ]
+                    },
+                    "options": [],
+                    "chooser": "TRANSLATE_LANGUAGE"
+                },
+                {
+                    "key": "targetLanguage",
+                    "label": "Translate to",
+                    "type": "PICKER",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [],
+                    "chooser": "TRANSLATE_LANGUAGE"
                 },
                 {
                     "key": "fallback",

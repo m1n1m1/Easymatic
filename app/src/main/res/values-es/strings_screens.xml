@@ -667,4 +667,18 @@
     <string name="grapheditor_transcribing_on_this_phone_needs">Transcribir en este teléfono requiere que el paquete de idioma esté instalado. Añádelo en los ajustes de voz del teléfono o cambia a un modelo de IA.</string>
     <string name="grapheditor_language_name_and_tag">%1$s — %2$s</string>
     <string name="grapheditor_detecting_the_language_needs">Detectar el idioma requiere Android 14 y los paquetes de los idiomas hablados. Los teléfonos más antiguos transcriben en el idioma del teléfono.</string>
+    <string name="translate_pick_language">Elegir un idioma</string>
+    <string name="translate_filter_languages">Filtrar idiomas</string>
+    <string name="translate_models_title">Modelos de traducción</string>
+    <string name="translate_models_loading">Buscando idiomas descargados…</string>
+    <string name="translate_models_empty">Aún no hay idiomas descargados. Añade uno para usar el nodo Traducir.</string>
+    <string name="translate_models_delete">Eliminar</string>
+    <string name="translate_models_pivot_note">La traducción pasa por el inglés, así que traducir entre otros dos idiomas requiere tener añadidos ambos. Eliminar uno detiene todas las macros que traducen hacia o desde ese idioma hasta que lo vuelvas a añadir.</string>
+    <string name="setup_translation_models_subtitle">Idiomas que puede usar el nodo Traducir</string>
+    <string name="translate_models_add">Añadir un idioma</string>
+    <string name="translate_models_downloading">Descargando %1$s…</string>
+    <string name="translate_models_size_note">Cada idioma ocupa unos 30 MB y se descarga ahora, por la conexión que esté usando este teléfono.</string>
+    <string name="translate_no_languages_downloaded">Aún no hay idiomas descargados. Añade uno en Modelos de traducción y vuelve.</string>
+    <string name="translate_manage_languages">Modelos de traducción</string>
+    <string name="translate_manage_languages_hint">Añade o quita idiomas. Sale del editor.</string>
 </resources>

@@ -707,6 +707,45 @@ enum class PickerKind {
      * "any broker" is not a thing to publish to.
      */
     MQTT_BROKER,
+
+    /**
+     * A BCP-47 tag naming one language the on-device translator handles — `de`, `pt`, `zh`.
+     *
+     * **The one kind here that names nothing of the user's**, and the first thing to say about
+     * it is that this falsifies a sentence written elsewhere rather than sneaking past it: the
+     * refusal of `@Picker` to plugins is argued in `nodeapi/wire/DeclarationWire.kt` on the
+     * ground that every kind names something belonging to the user. That refusal still stands —
+     * a plugin gains nothing from a list it could compile in itself — but its *reason* is now
+     * one case short, and the wire's comment says so.
+     *
+     * **It is read-only because both halves of the test hold.** Legibility says whether a
+     * mistake is visible; completeness says whether a chooser can cover the answers. A language
+     * tag passes the first easily — `de` reads as German, a wrong one reads as wrong — which is
+     * exactly why `SuggestionSource.SPEECH_LANGUAGE` rejects a picker for the *speaking* fields.
+     * That rejection turns on its second leg, not its first: voice data is downloaded on demand,
+     * so `TextToSpeech` reports what is installed right now and a chooser would refuse the tag
+     * of a language the user is about to install.
+     *
+     * Nothing of the sort is true here. `TranslateLanguage.getAllLanguages()` is a constant
+     * compiled into the library: the same sixty-odd tags on every phone, which no download
+     * widens. What a download changes is how long the *first* translation takes, and a model is
+     * not a language. So the set is knowable and complete, which is [HA_ENTITY]'s shape and
+     * therefore a read-only chooser.
+     *
+     * **The tool harness is the half that settles it in practice.** A `SUGGESTED` field reaches
+     * `NodeToolCatalog.parameterFor` as free text, so a model asked to translate something would
+     * invent `de-AT`, the node would find no such language and take its fallback, and the run
+     * would look like a translation that silently did nothing. A picker is handed over as an
+     * enumeration the provider itself enforces. `PickerOptions` was written for exactly this and
+     * this kind is the cleanest case it has: knowable from `domain` with no context, no network
+     * and no suspension point, because it is a compile-time constant.
+     *
+     * Nothing localises the tags themselves — the chooser renders each through
+     * `Locale.forLanguageTag(tag).getDisplayName(locale)`, which is already correct in all eight
+     * locales and is what an `enum` of sixty entries would have paid a hundred-odd generated
+     * string keys to restate.
+     */
+    TRANSLATE_LANGUAGE,
 }
 
 

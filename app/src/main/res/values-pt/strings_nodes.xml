@@ -1719,4 +1719,17 @@
     <string name="node_value_current_call_name">Chamada atual</string>
     <string name="node_value_current_call_desc">A chamada a decorrer, com quem é e em que app</string>
     <string name="port_value_current_call_call">Chamada</string>
+    <string name="node_action_translate_name">Traduzir</string>
+    <string name="node_action_translate_desc">Traduz texto para outro idioma no próprio telemóvel, offline e sem conta de IA, detetando em que idioma está escrito</string>
+    <string name="port_action_translate_in">Entrada</string>
+    <string name="port_action_translate_out">Saída</string>
+    <string name="port_action_translate_text">Texto</string>
+    <string name="port_action_translate_translation">Tradução</string>
+    <string name="cfg_action_translate_text">Texto</string>
+    <string name="cfg_action_translate_source_mode">Traduzir de</string>
+    <string name="opt_action_translate_source_mode_detect">Detetar automaticamente</string>
+    <string name="opt_action_translate_source_mode_chosen">Um idioma à minha escolha</string>
+    <string name="cfg_action_translate_source_language">Que idioma</string>
+    <string name="cfg_action_translate_target_language">Traduzir para</string>
+    <string name="cfg_action_translate_fallback">Se falhar</string>
 </resources>

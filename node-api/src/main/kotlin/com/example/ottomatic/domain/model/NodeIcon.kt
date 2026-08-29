@@ -241,4 +241,20 @@ enum class NodeIcon {
      * broadcast is.
      */
     BROADCAST,
+
+    /**
+     * The two-script glyph, for the node that translates text.
+     *
+     * Its own entry rather than [AI]'s or [TEXT]'s, on [MUSIC_OFF]'s and [BROADCAST]'s argument:
+     * an icon has to be the thing that *differs*. [AI] is the brain worn by the five nodes that
+     * send something to a model you configured, and `action.translate` sits directly beside them
+     * in the palette while needing no account, no key and no network — so borrowing their glyph
+     * would say the one thing about it that is not true. [TEXT] is `transform.text`'s, and says
+     * only "this is about strings", which is equally true of half the palette.
+     *
+     * The two-script mark is also the rare glyph that needs no key: it is what every phone,
+     * browser and map already uses for this, so somebody who has never opened this app reads it
+     * correctly.
+     */
+    TRANSLATE,
 }
