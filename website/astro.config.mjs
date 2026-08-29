@@ -56,13 +56,22 @@ export default defineConfig({
         // *directory name*, so these would read `start`, `concepts` and `extend`.
         // Ordering within a group comes from each page's `sidebar.order` frontmatter,
         // which keeps a page's position next to the page rather than in this file.
-        { label: 'Getting started', items: [{ autogenerate: { directory: 'docs/start' } }] },
-        { label: 'Core concepts', items: [{ autogenerate: { directory: 'docs/concepts' } }] },
-        { label: 'Integrations', items: [{ autogenerate: { directory: 'docs/integrations' } }] },
-        { label: 'Permissions & the phone', items: [{ autogenerate: { directory: 'docs/system' } }] },
-        { label: 'Extending Ottomatic', items: [{ autogenerate: { directory: 'docs/extend' } }] },
+        // `collapsed` throughout, for the reason set out on the Node reference group
+        // below. Starlight opens whichever group holds the current page regardless, so a
+        // reader inside Getting started still sees its siblings.
+        { label: 'Getting started', collapsed: true, items: [{ autogenerate: { directory: 'docs/start' } }] },
+        { label: 'Core concepts', collapsed: true, items: [{ autogenerate: { directory: 'docs/concepts' } }] },
+        { label: 'Integrations', collapsed: true, items: [{ autogenerate: { directory: 'docs/integrations' } }] },
+        { label: 'Permissions & the phone', collapsed: true, items: [{ autogenerate: { directory: 'docs/system' } }] },
+        { label: 'Extending Ottomatic', collapsed: true, items: [{ autogenerate: { directory: 'docs/extend' } }] },
         {
           label: 'Node reference',
+          // The reference is 175 nodes over four kinds and ~30 categories. Fully expanded
+          // it is several screens of links, which buries the four kind headings — the one
+          // division a reader actually navigates by — off the top of the sidebar. So every
+          // level here is closed until asked for, and `writeSidebar` sets the same flag on
+          // the category groups it generates.
+          collapsed: true,
           // Both the pages and the category groups below come from `npm run nodes`,
           // which every command that reads them runs first. It replaced `autogenerate`,
           // which labels a group with its directory name and so headed them `ai`,
@@ -72,13 +81,13 @@ export default defineConfig({
           // Only the four kind names are still written here, because they are the one
           // part of this tree that is the site's own wording rather than the app's.
           items: [
-            { label: 'Triggers', items: nodeSidebar.TRIGGER },
-            { label: 'Actions', items: nodeSidebar.ACTION },
-            { label: 'Values', items: nodeSidebar.VALUE },
-            { label: 'Transforms', items: nodeSidebar.TRANSFORM },
+            { label: 'Triggers', collapsed: true, items: nodeSidebar.TRIGGER },
+            { label: 'Actions', collapsed: true, items: nodeSidebar.ACTION },
+            { label: 'Values', collapsed: true, items: nodeSidebar.VALUE },
+            { label: 'Transforms', collapsed: true, items: nodeSidebar.TRANSFORM },
           ],
         },
-        { label: 'Help', items: [{ autogenerate: { directory: 'docs/help' } }] },
+        { label: 'Help', collapsed: true, items: [{ autogenerate: { directory: 'docs/help' } }] },
       ],
     }),
   ],

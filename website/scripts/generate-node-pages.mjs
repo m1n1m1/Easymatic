@@ -209,6 +209,12 @@ function page(node, prose) {
  *
  * The group label is the one thing that cannot come from frontmatter — it belongs to a
  * directory, and a directory has none — which is the whole reason this file exists.
+ *
+ * Every group is `collapsed`, because the reference is 175 nodes across four kinds and
+ * roughly thirty categories: expanded, the sidebar is several screens of links before the
+ * page even starts, and the four kind headings — the one division a reader navigates by —
+ * are pushed off the top. Starlight still opens whichever group holds the current page,
+ * so this closes the branches nobody is in rather than hiding where you are.
  */
 function writeSidebar(groups) {
   const byKind = {};
@@ -217,6 +223,7 @@ function writeSidebar(groups) {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([categorySlug, group]) => ({
         label: group.label,
+        collapsed: true,
         items: [...group.names]
           .sort((a, b) => a.localeCompare(b))
           .map((name) => ({ slug: `${SLUG_ROOT}/${kind.toLowerCase()}/${categorySlug}/${name}` })),
