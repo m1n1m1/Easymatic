@@ -5,7 +5,10 @@
 - Build: `.\gradlew.bat assembleDebug`
 - Unit tests: `.\gradlew.bat test`
 - Instrumentation tests: `.\gradlew.bat connectedAndroidTest` (device/emulator required)
-- Lint/typecheck/build verification: `.\gradlew.bat build`
+- Android lint: `.\gradlew.bat lintDebug`
+- Full verification: `.\gradlew.bat assembleDebug test detekt` (what CI runs).
+  Do NOT use `build` — it pulls in `lint` and every check task, and is the slowest
+  command in the repo.
 
 ## Project notes
 - Four modules: `:app`, `:node-api` (the plugin-visible node declaration surface),
@@ -22,9 +25,13 @@
   adding it to `ActionRegistry`, `TriggerRegistry`, `ValueRegistry` or
   `TransformRegistry` in `domain/registry/`. `NodeTypeRegistry`/`ConfigSchemaRegistry`
   derive from these definitions — do not edit them to add nodes.
-- Run `./gradlew detekt` regularly (currently configured as warnings).
-- Note: `lintDebug` has pre-existing errors unrelated to the node system;
-  use `assembleDebug test detekt` for verification.
+- Run `./gradlew detekt` regularly. It **fails the build on any finding**:
+  `buildUponDefaultConfig = true` inherits detekt's default `maxIssues: 0`.
+  It passes today because there are genuinely 0 findings across 949 files.
+- `lintDebug` is a CI gate with a known backlog: 22 errors in `:app`, 1 in
+  `:sample-plugin` (6 `UseAppTint`, 6 `MissingTranslation`, 5 `NewApi`, 2 `RestrictedApi`,
+  2 `MissingPermission`, 1 `WrongConstant`). CI runs it as a separate job so a red lint
+  never masks a green build. Do not add a baseline or `abortOnError = false`.
 
 <!-- CODEGRAPH_START -->
 ## CodeGraph

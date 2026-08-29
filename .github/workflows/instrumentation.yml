@@ -1,0 +1,111 @@
+name: Instrumentation tests
+
+# Scheduled rather than per-push: an emulator run costs 10-15 minutes and must not
+# gate a commit. Dispatchable so it can be run on demand after touching the script,
+# overlay or contacts code paths.
+on:
+  schedule:
+    - cron: '0 3 * * 1'   # Mondays 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+
+jobs:
+  connected:
+    name: connectedDebugAndroidTest (API 36, google_apis, x86_64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+          cache-read-only: true
+
+      - name: Enable KVM group permissions
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Cache AVD
+        uses: actions/cache@v6
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api36-google_apis-x86_64-v1
+
+      # google_apis, NOT aosp_atd / google_atd: the ATD images strip the system
+      # WebView, which makes JavaScriptSandbox.isSupported() false and silently skips
+      # all three script tests via their assumeTrue guard.
+      - name: Create AVD and generate snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot."
+
+      # :app:connectedDebugAndroidTest rather than the root task — :sample-plugin has
+      # no androidTest sources and :app declares no androidTestImplementation on it,
+      # so the plugin binder path is not actually exercised on-device today.
+      - name: Run instrumentation tests
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ./gradlew :app:connectedDebugAndroidTest --stacktrace
+
+      # A green run means nothing if JavaScriptSandbox was unsupported: the three
+      # script tests assumeTrue() and vanish, leaving the job green having tested
+      # nothing. OverlayPromptsTest is deliberately exempt — SYSTEM_ALERT_WINDOW is a
+      # Settings toggle no test can grant, so it always takes its skip branch.
+      - name: Fail if the JavaScriptSandbox tests silently skipped
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=app/build/outputs/androidTest-results
+          for suite in WebViewScriptEngineTest WebViewScriptEngineConsoleTest ScriptEnvironmentTest; do
+            file=$(find "$root" -name "*${suite}.xml" 2>/dev/null | head -n 1 || true)
+            if [ -z "$file" ]; then
+              echo "::error::$suite produced no result XML — it did not run"; exit 1
+            fi
+            if grep -q "<skipped" "$file"; then
+              echo "::error::$suite was skipped — JavaScriptSandbox unsupported on this image"; exit 1
+            fi
+          done
+
+      - name: Upload instrumentation reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: instrumentation-reports
+          path: |
+            app/build/reports/androidTests/**
+            app/build/outputs/androidTest-results/**
+          if-no-files-found: warn
+          retention-days: 14

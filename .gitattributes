@@ -1,0 +1,21 @@
+# Line endings are normalised in the index, not left to each machine's
+# core.autocrlf. Every blob in this repo is already LF, so this changes no content —
+# it stops a future clone from committing CRLF into a *generated and byte-compared*
+# artifact. NodeDocsExportTest and NodeStringsSyncTest normalise CRLF before
+# comparing and would survive, but the website's tokens.css drift guard is a raw
+# `git diff --exit-code` and would not, and CRLF in `gradlew` breaks it on Linux.
+* text=auto eol=lf
+
+# Windows batch files are the one thing that genuinely wants CRLF in the working
+# tree. The index copy stays LF.
+*.bat text eol=crlf
+
+# `gradlew` is a shell script executed by the CI runner. Never CRLF.
+gradlew text eol=lf
+
+*.jar binary
+*.png binary
+*.jpg binary
+*.webp binary
+*.ttf binary
+*.woff2 binary

@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+
+  # Reads gradle/libs.versions.toml natively. Grouped so a Compose BOM or AndroidX
+  # bump arrives as one PR rather than a dozen. The build carries one non-GA
+  # dependency (mlkit-genai-prompt 1.0.0-beta2) worth watching.
+  - package-ecosystem: gradle
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      androidx:
+        patterns: ['androidx.*']
+      kotlin:
+        patterns: ['org.jetbrains.kotlin*']
+
+  - package-ecosystem: npm
+    directory: /website
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    groups:
+      astro:
+        patterns: ['astro', '@astrojs/*']

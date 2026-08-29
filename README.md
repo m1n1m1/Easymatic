@@ -30,10 +30,19 @@ Always use the Gradle wrapper:
 .\gradlew.bat test                   # unit tests
 .\gradlew.bat connectedAndroidTest   # instrumentation tests (device/emulator required)
 .\gradlew.bat detekt                 # static analysis
+.\gradlew.bat lintDebug              # Android lint
 ```
 
-Full verification is `.\gradlew.bat assembleDebug test detekt`. Skip `lintDebug` — it has
-pre-existing errors unrelated to the node system.
+Full verification is `.\gradlew.bat assembleDebug test detekt`, which is exactly what
+CI runs.
+
+`lintDebug` is a **CI gate with a known backlog**: 22 errors in `:app` and 1 in
+`:sample-plugin` as of the first CI run. They are not all cosmetic — 6 are `UseAppTint`
+in the widget preview layouts, 6 are `MissingTranslation`, and the remaining 10 are
+`NewApi`, `RestrictedApi`, `MissingPermission` and `WrongConstant` findings worth reading
+individually (`MediaConsents.kt` calls API 30 methods and `NfcReader.kt` API 36 ones at
+`minSdk` 26). CI runs lint as a **separate job** so this red never masks a green build.
+Do not add a lint baseline or `abortOnError = false` — the backlog is meant to stay visible.
 
 The configuration cache is enabled; if a build behaves strangely after structural
 changes, add `--no-configuration-cache`.
@@ -50,6 +59,28 @@ MAPS_API_KEY=AIza…
 Create the key in the Google Cloud Console with **Maps SDK for Android** enabled.
 Without a key everything still builds and runs — the map area just renders blank tiles,
 and every other control in the editor keeps working.
+
+## Continuous integration
+
+Three GitHub Actions workflows, under `.github/workflows/`:
+
+| Workflow | Runs on | What it does |
+| --- | --- | --- |
+| `android.yml` | push to `main`, PRs | `build` job: `assembleDebug test detekt`. `lint` job: `lintDebug`, separate so its known backlog cannot mask the build signal. |
+| `website.yml` | push/PR touching `website/**` or `docs/**` | `npm ci && npm run build`, then fails if the committed `website/src/styles/tokens.css` is stale. |
+| `instrumentation.yml` | weekly, or on demand | `:app:connectedDebugAndroidTest` on an API 36 `google_apis` emulator. |
+
+Two things about it are deliberate and easy to break:
+
+- **CI never passes `-PregenerateNodeStrings` or `-PregenerateNodeDocs`.** Those flags turn
+  `NodeStringsSyncTest` and `NodeDocsExportTest` from guards into writers; a run that set
+  them would go green having silently rewritten committed sources.
+- **`android.yml` has no path filters**, because the unit tests read `docs/nodes.generated.json`
+  and `docs/nodes/*.md`. A docs-only commit can legitimately turn the build red, so filtering
+  would let exactly the riskiest commits skip CI.
+
+`MAPS_API_KEY` is an *optional* repository secret. Without it the build is still green — the
+map just renders no tiles.
 
 ## Documentation
 

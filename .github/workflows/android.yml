@@ -1,0 +1,109 @@
+name: Android
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Deliberately no path filters. The unit tests read docs/nodes.generated.json,
+# docs/nodes/*.md and docs/ADDING_NODES.md, so a docs-only commit can turn
+# NodeDocsExportTest red — filtering would let exactly those commits skip CI.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Optional. app/build.gradle.kts localProperty() reads local.properties (absent
+  # on CI), then the environment, then "". An unset secret leaves the Maps key
+  # blank and the build stays green — the map just renders no tiles.
+  MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
+
+jobs:
+  build:
+    name: Build, unit tests, detekt
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      # Full checkout on purpose. NodeStringsSyncTest, NodeDocsExportTest and
+      # HardcodedFeatureStringTest read the repo tree with paths relative to the
+      # module directory. Never make this sparse and never omit docs/.
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          # MIT and free for private repos. The default 'enhanced' provider is a
+          # commercial library that is only a free *preview* for private repos.
+          cache-provider: basic
+          # cache-read-only left at its default: false on main, true elsewhere.
+
+      # Exactly the command README/CLAUDE.md document as full verification, so CI and
+      # the local loop cannot drift. `test` fans out by name to all four modules and
+      # needs no -x: AGP 9 creates only testDebugUnitTest for the Android modules
+      # (there is no testReleaseUnitTest task), so nothing runs twice. Naming module
+      # tasks explicitly would have been worse — a future module would be skipped
+      # silently until someone remembered to edit this line.
+      #
+      # NEVER add -PregenerateNodeStrings or -PregenerateNodeDocs here: those flags
+      # turn NodeStringsSyncTest and NodeDocsExportTest from guards into writers,
+      # and the run would go green having silently rewritten committed sources.
+      - name: assembleDebug + unit tests + detekt
+        run: ./gradlew assembleDebug test detekt --continue --stacktrace
+
+      - name: Upload test and detekt reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests/**
+            **/build/test-results/**
+            **/build/reports/detekt/**
+          if-no-files-found: warn
+          retention-days: 7
+
+  lint:
+    name: Android Lint
+    # Separate from `build` on purpose: lint has a known backlog (dominated by
+    # MissingTranslation) and is expected to be red for a while. Keeping it out of
+    # the build job means a red lint never masks a green assemble/test/detekt.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+          # The build job owns cache writes for this workflow; two parallel jobs
+          # racing on the same key just waste an upload.
+          cache-read-only: true
+
+      - name: lintDebug
+        run: ./gradlew lintDebug --continue --stacktrace
+
+      # Uploaded even on success: these reports are the triage list for the backlog.
+      - name: Upload lint reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: lint-reports
+          path: |
+            **/build/reports/lint-results-*.html
+            **/build/reports/lint-results-*.xml
+            **/build/reports/lint-results-*.txt
+          if-no-files-found: warn
+          retention-days: 14

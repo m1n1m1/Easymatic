@@ -11,7 +11,15 @@ Always use the Gradle wrapper: `.\gradlew.bat <task>` (Windows).
 - **Single test class**: `.\gradlew.bat test --tests "com.example.ottomatic.domain.registry.NodeSchemaTest"`
 - **Instrumentation tests**: `.\gradlew.bat connectedAndroidTest` (device/emulator required)
 - **Static analysis**: `.\gradlew.bat detekt`
-- **Full verification**: `.\gradlew.bat assembleDebug test detekt` (skip `lintDebug` — it has pre-existing errors unrelated to the node system)
+- **Android lint**: `.\gradlew.bat lintDebug`
+- **Full verification**: `.\gradlew.bat assembleDebug test detekt` — exactly what CI runs
+
+`lintDebug` is a CI gate with a known backlog: **22 errors in `:app`, 1 in
+`:sample-plugin`**. The mix is 6 `UseAppTint`, 6 `MissingTranslation`, 5 `NewApi`,
+2 `RestrictedApi`, 2 `MissingPermission` and 1 `WrongConstant` — so it is not purely
+cosmetic; the `NewApi` ones are calls to API 30/36 members at `minSdk` 26. CI runs lint
+as a *separate job* so a red lint never masks a green build. Do not add a lint baseline
+or `abortOnError = false` to silence it — the backlog is meant to stay visible.
 
 Configuration cache is enabled. If builds behave strangely after structural changes, add `--no-configuration-cache`.
 
