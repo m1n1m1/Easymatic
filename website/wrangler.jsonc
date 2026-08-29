@@ -1,0 +1,22 @@
+/**
+ * Cloudflare Workers static assets.
+ *
+ * `output: 'static'` in astro.config.mjs means there is no server half — this
+ * Worker has no `main`, so Cloudflare serves dist/ straight from the edge and
+ * never invokes any code. Adding SSR later is what would add `main` here and
+ * @astrojs/cloudflare there.
+ *
+ * `name` must stay in step with the workers.dev subdomain: it is what decides
+ * which Worker `wrangler deploy` writes to, so renaming it silently creates a
+ * second one rather than moving the site.
+ */
+{
+  "name": "ottomatic",
+  "compatibility_date": "2026-08-29",
+  "assets": {
+    "directory": "./dist",
+    // Astro writes a real 404.html; without this an unmatched path gets
+    // Cloudflare's own bare 404 instead of the site's.
+    "not_found_handling": "404-page"
+  }
+}

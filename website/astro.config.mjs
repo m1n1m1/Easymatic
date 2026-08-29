@@ -83,13 +83,16 @@ export default defineConfig({
     }),
   ],
 
-  // Static build, no adapter: the deploy target is not chosen yet.
+  // Static build, no adapter: Cloudflare serves dist/ as static assets, so nothing
+  // here runs on a server and @astrojs/cloudflare is not needed. Adding an adapter
+  // is what a future SSR page would cost.
   output: 'static',
 
-  // PLACEHOLDER. Canonical URLs, Open Graph URLs and any future sitemap are all
-  // derived from this, so it has to become the real domain before launch. Now that
-  // Starlight is here it is also on every one of the ~180 docs pages.
-  site: 'https://example.invalid',
+  // The workers.dev subdomain, which is provisional: canonical URLs, Open Graph URLs
+  // and the sitemap Starlight generates are all derived from this, and it reaches
+  // every one of the ~220 built pages. Change it here the day a custom domain is
+  // attached — a redirect at the edge does not fix a canonical baked into the HTML.
+  site: 'https://ottomatic.mathias-weinstabl.workers.dev',
 
   // NOTE: do not set `outDir: 'build'`. The repo root .gitignore has an
   // unanchored `build/` rule (there for the five Gradle modules) that would
