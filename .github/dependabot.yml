@@ -29,3 +29,11 @@ updates:
     groups:
       astro:
         patterns: ['astro', '@astrojs/*']
+    ignore:
+      # TypeScript majors are gated on @astrojs/check, which peers on
+      # `^5.0.0 || ^6.0.0` as of its latest release (0.9.10). A major bump here is
+      # therefore not a bump this repo can take or fix — `npm ci` fails ERESOLVE at
+      # install, so the PR cannot even reach a build. Minors and patches still come
+      # through. Drop this entry the day @astrojs/check widens the peer range.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']

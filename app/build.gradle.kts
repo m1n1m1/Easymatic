@@ -9,10 +9,15 @@ plugins {
 
 android {
     namespace = "com.example.ottomatic"
+    // Deliberately ahead of `targetSdk` below, and that gap is the normal state rather
+    // than drift: compileSdk says which APIs may be *referenced*, targetSdk opts the app
+    // in to new *runtime behaviour*. AndroidX ships `<uses-sdk>` AAR metadata asserting a
+    // floor on the former — androidx.navigation 2.10.0, Compose BOM 2026.08.00 and
+    // okhttp-android 5.5.0 all require 37 — so `checkDebugAarMetadata` fails the build on
+    // 36 whatever targetSdk says. Raising targetSdk is a separate change with its own
+    // behavioural review.
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
+        version = release(37)
     }
 
     defaultConfig {
