@@ -1,0 +1,105 @@
+name: Release
+
+# Cutting a release is: edit CHANGELOG.md, regenerate, commit, then
+#   git tag v1.2.0 && git push origin v1.2.0
+#
+# Everything the release says comes from that one edit — this workflow writes nothing, it
+# only reads `docs/changelog.generated.json`, which ChangelogExportTest exports from
+# CHANGELOG.md and guards byte for byte on every commit.
+on:
+  push:
+    tags: ['v*']
+  # Dispatchable so the extraction can be exercised without pushing a tag. It stops before
+  # publishing anything.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to check, e.g. 1.0.0 (dry run — creates no release)'
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+# Only to create the release. No AAB is built or attached: there is no signing config in
+# this repo yet, and a debug APK on a release page is worse than no artifact at all. The day
+# signing exists, this grows a build job and an `--attach`.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create the GitHub release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Resolve the version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            version='${{ inputs.version }}'
+          else
+            # refs/tags/v1.2.0 -> 1.2.0
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Version: $version"
+
+      # The tag and the changelog are two hands on the same wheel, and this is the step that
+      # stops them disagreeing. A tag naming a version the changelog does not describe would
+      # otherwise produce a release with an empty body — and, worse, an APK whose versionName
+      # came from a different entry, since app/build.gradle.kts reads the newest one.
+      - name: Check the tag names the newest release
+        run: |
+          newest=$(jq -r '.releases[0].version' docs/changelog.generated.json)
+          if [ "$newest" != "${{ steps.version.outputs.version }}" ]; then
+            echo "::error::Tag names ${{ steps.version.outputs.version }}, but the newest" \
+                 "release in CHANGELOG.md is $newest. Tag the commit that adds the entry."
+            exit 1
+          fi
+
+      - name: Extract the release notes
+        run: |
+          jq -r --arg v '${{ steps.version.outputs.version }}' \
+            '.releases[] | select(.version == $v) | .notes' \
+            docs/changelog.generated.json > notes.md
+          if [ ! -s notes.md ]; then
+            echo "::error::No release notes for ${{ steps.version.outputs.version }}."
+            exit 1
+          fi
+          cat notes.md
+
+      # The store text is not published from here — Play is uploaded by hand until there is a
+      # service account — but printing it puts the exact 500-character string in the run log,
+      # ready to paste, next to the notes it was derived from.
+      - name: Show the Play Store text
+        run: |
+          code=$(jq -r --arg v '${{ steps.version.outputs.version }}' \
+            '.releases[] | select(.version == $v) | .versionCode' \
+            docs/changelog.generated.json)
+          echo "versionCode $code — fastlane/metadata/android/en-US/changelogs/$code.txt"
+          cat "fastlane/metadata/android/en-US/changelogs/$code.txt"
+
+      # `--prerelease` comes from the version itself: a semver pre-release suffix is the claim,
+      # so `0.1.0-alpha` is flagged and `1.0.0` is not, with nothing to remember at tag time.
+      - name: Create the release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          prerelease=$(jq -r --arg v "$VERSION" \
+            '.releases[] | select(.version == $v) | .prerelease' \
+            docs/changelog.generated.json)
+          if [ "$prerelease" = "true" ]; then
+            flag=--prerelease
+          else
+            flag=--latest
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Ottomatic $VERSION" \
+            --notes-file notes.md \
+            --verify-tag \
+            "$flag"

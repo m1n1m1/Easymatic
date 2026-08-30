@@ -284,7 +284,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
     links: [
       { label: 'Download', href: '/download', placeholder: true },
       { label: 'Features', href: '#features' },
-      { label: 'Changelog', href: '/changelog', placeholder: true },
+      { label: 'Changelog', href: '/changelog' },
     ],
   },
   {

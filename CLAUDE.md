@@ -246,6 +246,81 @@ Workflows persist as individual JSON files in `{filesDir}/workflows/{id}.json`. 
 
 **A node whose type this build no longer declares is dropped**, with the edges that reached it. `GraphValidator` names it and quarantines it, which is right for a node the user can see — but `GraphCanvas` skips a node it cannot resolve a definition for, so an unknown node is a permanent Problems entry about something that is not on the canvas, unselectable and therefore undeletable. It is the one fault the editor offered no way to fix, and nothing is lost: a node whose type is gone could not have run either. **A `plugin:` typeId is never dropped**, whatever the registry currently says — unhydrated, disabled and uninstalled are indistinguishable from `NodeTypeRegistry`, two of the three are undone by a switch in Settings, and the typeId still names the app to reinstall (`pluginPackageOf`). The test is the prefix, not hydration.
 
+## Changelog and releases
+
+`CHANGELOG.md` is the **only** place release notes are written, and it is also where the app's
+version lives. Four surfaces read it, and none of them is authored a second time: the Play
+Store, the GitHub release, the website's `/changelog` page, and `versionName`/`versionCode` in
+`app/build.gradle.kts`. This is the node-documentation split applied to releases — prose in
+markdown, facts exported and byte-guarded — for the same reason: a release note hand-copied
+into a store listing is one that will eventually describe a version that never shipped.
+
+`ChangelogExportTest` (`app/src/test/.../docs/`) is the generator and the guard in one class,
+the same shape as `NodeDocsExportTest`, and the grammar lives once beside it in `Changelog.kt`.
+It writes two committed artifacts:
+
+- **`docs/changelog.generated.json`** — the machine-readable half. Committed and guarded
+  because its producer (the test) and its consumers (the website build, the release workflow)
+  run in different commands, which is the rule that decides this everywhere in the repo. Each
+  release carries `sections` *and* a rendered `notes` string; the redundancy is deliberate, and
+  reduces the release workflow to a one-line `jq`.
+- **`fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`** — what Play reads. One
+  file per `versionCode`, which is Play's own model; Gradle Play Publisher's
+  `release-notes/<locale>/default.txt` holds only the current release and would throw the
+  history away. English only, because Play falls back to the default listing language and
+  translating every release note eight times is a chore with no reader yet.
+
+```
+.\gradlew.bat :app:testDebugUnitTest --tests "*ChangelogExportTest*" -PregenerateChangelog=true
+```
+
+The website page (`website/src/pages/changelog.astro`) is generated at build time and **not**
+committed, by the same producer-inside-its-consumer test the node reference passes. It
+*imports* the JSON rather than reading it with `node:fs`: a page is bundled into
+`dist/.prerender/` before it runs, so the `import.meta.url` anchoring that
+`generate-node-pages.mjs` relies on resolves to the chunk and fails there.
+
+Three things about the format are decisions rather than details.
+
+**The grammar is strict and fails loudly.** A release is `## [x.y.z] - YYYY-MM-DD`, then
+`code:`, then an optional `Play:` paragraph, then `###` sections from a closed set of six, then
+`- ` bullets. Anything else fails the parse naming its line number. Skipping the unrecognised
+is what would make a mistyped heading show up as an empty release note on the store rather
+than as a build failure — and the store is the one surface nobody can check before shipping.
+
+**A pre-release is a suffix on the version and nothing else.** `0.1.0-alpha` — the first release
+— is flagged `--prerelease` on GitHub and labelled on the website, both derived from `'-' in
+version` rather than from a field somebody has to remember to set; the suffix *is* the claim, and
+a second field saying so could contradict it. It is also the app's real `versionName`, which
+Android accepts as a free string. `comparePrecedence` is what the ordering assertion uses, since
+a pre-release has to sort *below* the same triple without one and a plain string compare gets
+that backwards. Build metadata (`+sha`) is refused: it means "the same release, built
+differently", which is not something a changelog entry can be.
+
+**`code:` is authored, not computed from the version.** Play requires the integer to increase
+across every *upload*, including a re-upload after a rejected release, which carries no version
+change and so has nothing to compute from.
+
+**`Play:` is separate from the bullets** because Play caps release notes at 500 characters and
+the other three surfaces have no limit at all. The cap is an assertion rather than a
+truncation: silently dropping the last entry of a release is worse than a red test.
+
+The build reads only the top heading and its `code:` line (`newestRelease()` in
+`app/build.gradle.kts`), through `providers.fileContents` so the file is a configuration-cache
+input rather than an untracked read — edit the changelog and the cache invalidates by name. It
+hands both values back as test system properties beside the regenerate flags, which is what
+lets `ChangelogExportTest` assert that the build's minimal reading agrees with its full parse.
+Those same properties are why the Test task declares `CHANGELOG.md` and the generated files as
+`inputs.files`: the test reaches them through plain `File`, so without that a changelog-only
+edit leaves the task `UP-TO-DATE` and the guard unrun.
+
+Cutting a release is: edit `CHANGELOG.md`, regenerate, commit, then push a `v<version>` tag.
+`.github/workflows/release.yml` refuses a tag that does not name the newest entry, and creates
+the GitHub release from `notes`. It attaches no artifact — there is no signing config in this
+repo yet — and Play is still uploaded by hand, which is why the workflow prints the store text
+into its own log ready to paste. **`applicationId` is still `com.example.ottomatic`, which Play
+rejects outright**; that rename has to happen before the first upload.
+
 ## Topics that load on demand
 
 These subsystems each have their own file so they are not resident in every session. Read the one you need before changing that area.

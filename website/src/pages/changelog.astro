@@ -1,0 +1,253 @@
+---
+/**
+ * The changelog.
+ *
+ * Layout only — every word comes from `docs/changelog.generated.json`, which
+ * `ChangelogExportTest` exports from `CHANGELOG.md` and guards byte for byte. The Play
+ * Store text and the GitHub release body are generated from the same file, so this page
+ * cannot describe a release the store and the repository disagree about.
+ *
+ * The JSON is *imported* rather than read at render time. A `readFileSync` anchored to
+ * `import.meta.url` is what `scripts/generate-node-pages.mjs` does and it is wrong here: that
+ * script runs unbundled during config evaluation, while this page is bundled into
+ * `dist/.prerender/` first, so `import.meta.url` points at the chunk and the read fails.
+ * Importing hands the resolution to Vite, which inlines the data at build time — the built
+ * page then touches no filesystem at all, and nothing depends on the working directory
+ * Astro was invoked from.
+ *
+ * No generator script and no gitignore entry, unlike the node reference: that one writes
+ * ~180 markdown files for Starlight to pick up, and this is a single page whose producer is
+ * its only consumer.
+ *
+ * Follows the home page's rule — no cards, no borders, nothing rounded. A release is told
+ * apart from the one below it by space and by the weight of its version number.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import changelog from '../../../docs/changelog.generated.json';
+
+interface Section {
+  label: string;
+  entries: string[];
+}
+
+interface Release {
+  version: string;
+  versionCode: number;
+  date: string;
+  prerelease: boolean;
+  play: string;
+  notes: string;
+  sections: Section[];
+}
+
+const { releases } = changelog as { releases: Release[] };
+
+// UTC, because the date in the changelog is a calendar date rather than a moment: rendering
+// it in the build machine's zone is what turns a release "on the 30th" into the 29th.
+const DATE_FORMAT = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+const formatDate = (iso: string) => DATE_FORMAT.format(new Date(`${iso}T00:00:00Z`));
+
+// The four node-kind accents, reused rather than invented: the palette already means
+// something here, and a changelog with six new colours in it would be the only page that
+// disagrees with the rest of the site.
+const ACCENTS: Record<string, string> = {
+  Added: 'var(--accent-trigger)',
+  Changed: 'var(--accent-action)',
+  Fixed: 'var(--accent-value)',
+  Removed: 'var(--accent-transform)',
+  Deprecated: 'var(--on-surface-dim)',
+  Security: 'var(--signal)',
+};
+
+const latest = releases[0];
+---
+
+<BaseLayout
+  title="Changelog"
+  description="Every release of Ottomatic, what changed in it, and when it shipped."
+>
+  <section class="band">
+    <div class="shell">
+      <p class="label eyebrow">Releases</p>
+      <h1 class="page-title">Changelog</h1>
+      <p class="lead measure">
+        Everything that has changed in Ottomatic, newest first. The same notes appear on the
+        Play Store and on each GitHub release — they are all written once, in
+        <a href="https://github.com/m1n1m1/Ottomatic/blob/main/CHANGELOG.md">CHANGELOG.md</a>.
+      </p>
+      {latest && (
+        <p class="current">
+          Current version <strong>{latest.version}</strong>, released {formatDate(latest.date)}.
+          {latest.prerelease && ' It is a pre-release: expect rough edges.'}
+        </p>
+      )}
+    </div>
+  </section>
+
+  <section class="band band-alt">
+    <div class="shell">
+      <ol class="releases">
+        {releases.map((release) => (
+          <li class="release">
+            <div class="stamp">
+              <h2 class="version" id={`v${release.version}`}>{release.version}</h2>
+              {release.prerelease && <span class="tag">Pre-release</span>}
+              <time class="date" datetime={release.date}>{formatDate(release.date)}</time>
+              <span class="code">versionCode {release.versionCode}</span>
+            </div>
+            <div class="body">
+              {release.sections.map((section) => (
+                <div class="group" style={`--accent: ${ACCENTS[section.label] ?? 'var(--on-surface)'}`}>
+                  <h3 class="group-label">{section.label}</h3>
+                  <ul class="entries">
+                    {section.entries.map((entry) => <li>{entry}</li>)}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-title {
+    font: var(--t-display);
+    letter-spacing: var(--track-tight);
+    margin: 0.5rem 0 1.5rem;
+  }
+
+  .measure {
+    max-width: 46rem;
+  }
+
+  .lead {
+    font: var(--t-lead);
+    color: var(--on-surface-dim);
+    margin: 0;
+  }
+
+  .current {
+    font: var(--t-small);
+    color: var(--on-surface-dim);
+    margin: 1.5rem 0 0;
+  }
+
+  .current strong {
+    color: var(--on-surface);
+  }
+
+  .releases {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Space, not a rule: the gap is what separates one release from the next. */
+  .release + .release {
+    margin-top: clamp(3.5rem, 7vw, 6rem);
+  }
+
+  .release {
+    display: grid;
+    gap: clamp(1rem, 3vw, 3rem);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* One column until there is genuinely room for two — the entries are prose and want a
+     comfortable measure more than the version number wants a margin of its own. */
+  @media (min-width: 60rem) {
+    .release {
+      grid-template-columns: 14rem minmax(0, 1fr);
+    }
+
+    .stamp {
+      position: sticky;
+      top: 6rem;
+      align-self: start;
+    }
+  }
+
+  .version {
+    font: var(--t-section);
+    letter-spacing: var(--track-tight);
+    margin: 0;
+  }
+
+  .date,
+  .code {
+    display: block;
+    font: var(--t-small);
+    color: var(--on-surface-dim);
+  }
+
+  .date {
+    margin-top: 0.35rem;
+  }
+
+  /* The one place the page names a colour directly: a pre-release is a warning, and the
+     signal orange is what the rest of the site already uses to say so. Still not a card —
+     it is the word, in the accent, at label weight. */
+  .tag {
+    display: inline-block;
+    font: var(--t-label);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-top: 0.5rem;
+  }
+
+  .code {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    margin-top: 0.15rem;
+  }
+
+  .group + .group {
+    margin-top: 2.25rem;
+  }
+
+  .group-label {
+    font: var(--t-label);
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.75rem;
+  }
+
+  .entries {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: 46rem;
+  }
+
+  .entries li {
+    font: var(--t-body);
+    padding-left: 1.25rem;
+    position: relative;
+  }
+
+  .entries li + li {
+    margin-top: 0.5rem;
+  }
+
+  /* The marker carries the section's colour, which is the only thing telling an Added
+     bullet from a Fixed one once you are reading down the list. */
+  .entries li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 0.4rem;
+    height: 0.4rem;
+    background: var(--accent);
+  }
+</style>

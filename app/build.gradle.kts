@@ -7,6 +7,11 @@ plugins {
     alias(libs.plugins.detekt)
 }
 
+// The app's version is the newest entry in CHANGELOG.md and is written down nowhere else, so a
+// release is cut by editing that file. Declared here rather than inside `defaultConfig` because
+// `buildTypes` already has a `release`. See the "Changelog and releases" section of CLAUDE.md.
+val appVersion = newestRelease()
+
 android {
     namespace = "com.example.ottomatic"
     // Deliberately ahead of `targetSdk` below, and that gap is the normal state rather
@@ -24,8 +29,8 @@ android {
         applicationId = "com.example.ottomatic"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = appVersion.code
+        versionName = appVersion.name
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -208,6 +213,66 @@ tasks.withType<Test>().configureEach {
         "ottomatic.docs.regenerate",
         providers.gradleProperty("regenerateNodeDocs").getOrElse("false"),
     )
+    // And once more for `ChangelogExportTest`, which writes `docs/changelog.generated.json`
+    // and the Play Store's `fastlane/` tree from CHANGELOG.md.
+    systemProperty(
+        "ottomatic.changelog.regenerate",
+        providers.gradleProperty("regenerateChangelog").getOrElse("false"),
+    )
+    // What `newestRelease()` made of the changelog, handed back so ChangelogExportTest — which
+    // parses the whole grammar rather than just the top heading — can assert the two agree.
+    // Without this the build could read a version the export knows nothing about.
+    systemProperty("ottomatic.version.name", appVersion.name)
+    systemProperty("ottomatic.version.code", appVersion.code.toString())
+
+    // ChangelogExportTest reads these through plain `File`, which Gradle cannot see, so a
+    // changelog-only edit would leave the task UP-TO-DATE and the guard unrun. CI never
+    // noticed — it checks out fresh every time — but the local loop is exactly where the
+    // guard has to fire. `fileTree` rather than `dir` so a deleted fastlane/ is an empty
+    // input instead of a configuration failure.
+    inputs.files(
+        rootProject.file("CHANGELOG.md"),
+        rootProject.file("docs/changelog.generated.json"),
+        rootProject.fileTree("fastlane"),
+    ).withPropertyName("changelogSources").withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
+/** The `versionName` and `versionCode` of the newest release in `CHANGELOG.md`. */
+data class AppVersion(val name: String, val code: Int)
+
+/**
+ * Reads the newest release out of `CHANGELOG.md`.
+ *
+ * That file is the single source for release notes and for this app's version — see the
+ * "Changelog and releases" section of CLAUDE.md. Only the first `## [x.y.z] - date` heading and
+ * the `code:` line under it are read here; the full grammar is parsed by `ChangelogExportTest`,
+ * which also asserts that what this returns matches what it found. `## [Unreleased]` carries no
+ * date and is skipped, which is what lets the next release be written up as the work lands.
+ *
+ * Read through `providers` so the file is a configuration-cache *input*: a plain `readText()`
+ * here would be a configuration-time read Gradle does not track, and editing the changelog would
+ * leave a cached configuration serving the previous version.
+ *
+ * A malformed or missing file fails configuration by design. The alternative is an app quietly
+ * built at the wrong version, which is invisible until Play rejects the upload.
+ */
+fun newestRelease(): AppVersion {
+    val file = rootProject.layout.projectDirectory.file("CHANGELOG.md")
+    val text = providers.fileContents(file).asText.orNull
+        ?: error("CHANGELOG.md is missing. The app's version is the newest release in it.")
+
+    // The pre-release suffix is optional and part of the versionName: `0.1.0-alpha` ships as
+    // exactly that string. Kept in step with `VERSION` in the test source's Changelog.kt.
+    val version = """\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?"""
+    val heading = Regex("""^## \[($version)] - \d{4}-\d{2}-\d{2}\s*$""", RegexOption.MULTILINE)
+        .find(text)
+        ?: error("CHANGELOG.md has no released version: expected a `## [x.y.z] - YYYY-MM-DD` heading.")
+
+    val code = Regex("""^code:\s*(\d+)\s*$""", RegexOption.MULTILINE)
+        .find(text, heading.range.last)
+        ?: error("CHANGELOG.md: release ${heading.groupValues[1]} has no `code:` line under it.")
+
+    return AppVersion(heading.groupValues[1], code.groupValues[1].toInt())
 }
 
 /**
