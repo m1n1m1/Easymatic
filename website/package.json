@@ -15,9 +15,9 @@
     "nodes": "node scripts/generate-node-pages.mjs"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.41.7",
+    "@astrojs/starlight": "^0.41.9",
     "@fontsource-variable/archivo": "^5.3.0",
-    "astro": "^7.2.4",
+    "astro": "^7.2.8",
     "astro-icon": "^1.2.0",
     "gsap": "^3.15.0"
   },
