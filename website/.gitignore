@@ -23,8 +23,6 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# generated node reference (npm run nodes) — see scripts/generate-node-pages.mjs
+# generated node reference — written by astro.config.mjs via scripts/generate-node-pages.mjs
 src/content/docs/docs/reference/nodes/
 
-# generated node sidebar (npm run nodes) — see scripts/generate-node-pages.mjs
-src/generated/

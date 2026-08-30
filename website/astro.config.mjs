@@ -2,10 +2,19 @@
 import { defineConfig } from 'astro/config';
 import icon from 'astro-icon';
 import starlight from '@astrojs/starlight';
-// Generated, gitignored, and written before Astro ever loads this file — `npm run nodes`
-// is step one of dev, build and check alike. A missing-module error here means one of
-// those was bypassed by running `astro` directly.
-import nodeSidebar from './src/generated/node-sidebar.mjs';
+// The node reference is generated *here*: importing the generator runs it, and the sidebar
+// it returns is the same pass's second output. It used to be a preceding `npm run nodes`,
+// which made `astro build` a command that could only crash on a clean checkout — and that
+// is exactly the command Cloudflare Workers Builds runs when its build command is left to
+// the framework preset (`npx astro build`), so every pull-request build failed while
+// pushes to main went through `npm run build` and passed. A build step no entry point can
+// skip cannot be skipped by an entry point nobody configured.
+//
+// Astro loads this config before it reads any content collection, so the ~180 pages the
+// generator writes into src/content/docs/ are on disk in time. The sidebar deliberately
+// does NOT travel through a generated file: Vite resolves this config's imports up front,
+// so a module written during the config's own evaluation is still missing when it looks.
+import nodeSidebar from './scripts/generate-node-pages.mjs';
 
 // https://astro.build/config
 export default defineConfig({
@@ -72,8 +81,8 @@ export default defineConfig({
           // level here is closed until asked for, and `writeSidebar` sets the same flag on
           // the category groups it generates.
           collapsed: true,
-          // Both the pages and the category groups below come from `npm run nodes`,
-          // which every command that reads them runs first. It replaced `autogenerate`,
+          // Both the pages and the category groups below come from the generator run at
+          // the top of this file. It replaced `autogenerate`,
           // which labels a group with its directory name and so headed them `ai`,
           // `apps-intents` and `ask-the-user` — the real label lives on the Kotlin
           // category and reaches the generator through the export.
