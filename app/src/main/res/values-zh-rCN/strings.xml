@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_service_label">Ottomatic 按键触发器</string>
+    <string name="accessibility_service_label">Easymatic 按键触发器</string>
     <string name="accessibility_service_summary">让宏在你按下音量键或在指纹传感器上滑动时启动，并让“截屏”动作可以捕获屏幕。</string>
-    <string name="accessibility_service_description">Ottomatic 用它做三件事：检测音量键的按下和指纹传感器上的滑动，好让你的宏可以借此启动；以及在宏执行“截屏”动作时捕获屏幕。它从不监视屏幕上的内容——只有宏提出要求时才捕获——也不会改变任何东西：音量键仍照常工作，指纹解锁也不受影响。</string>
+    <string name="accessibility_service_description">Easymatic 用它做三件事：检测音量键的按下和指纹传感器上的滑动，好让你的宏可以借此启动；以及在宏执行“截屏”动作时捕获屏幕。它从不监视屏幕上的内容——只有宏提出要求时才捕获——也不会改变任何东西：音量键仍照常工作，指纹解锁也不受影响。</string>
     <string name="shortcut_new_macro_short">新建宏</string>
     <string name="shortcut_new_macro_long">新建一个宏</string>
     <string name="widget_run_tile_label">运行磁贴</string>
-    <string name="widget_panel_label">Ottomatic 面板</string>
+    <string name="widget_panel_label">Easymatic 面板</string>
     <string name="widget_run_tile_description">一个宏，一次点按。选一个手动触发器，直接从主屏幕运行它。</string>
     <string name="widget_panel_description">引擎状态、问题、最近一次运行，以及一组手动触发器——显示哪些由你决定。</string>
-    <string name="permission_bind_plugin_label">提供 Ottomatic 节点</string>
-    <string name="permission_bind_plugin_description">允许 Ottomatic 使用此应用提供的额外触发器和动作节点。该应用以自己的权限运行自己的代码；Ottomatic 不会把自己的权限分享给它。</string>
+    <string name="permission_bind_plugin_label">提供 Easymatic 节点</string>
+    <string name="permission_bind_plugin_description">允许 Easymatic 使用此应用提供的额外触发器和动作节点。该应用以自己的权限运行自己的代码；Easymatic 不会把自己的权限分享给它。</string>
 </resources>

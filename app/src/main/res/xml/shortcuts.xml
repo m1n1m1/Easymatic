@@ -16,8 +16,8 @@
         android:shortcutLongLabel="@string/shortcut_new_macro_long"
         android:shortcutShortLabel="@string/shortcut_new_macro_short">
         <intent
-            android:action="com.example.ottomatic.action.NEW_MACRO"
-            android:targetClass="com.example.ottomatic.MainActivity"
-            android:targetPackage="com.example.ottomatic" />
+            android:action="io.github.m1n1m1.easymatic.action.NEW_MACRO"
+            android:targetClass="io.github.m1n1m1.easymatic.MainActivity"
+            android:targetPackage="io.github.m1n1m1.easymatic" />
     </shortcut>
 </shortcuts>

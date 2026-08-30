@@ -103,7 +103,7 @@ visible on the canvas.
 ## What a script cannot do
 
 A script cannot call anything on the app's side or read a reply. The isolate has no DOM,
-no network and no filesystem, and nothing of Ottomatic's is exposed to it.
+no network and no filesystem, and nothing of Easymatic's is exposed to it.
 
 That is deliberate rather than unfinished: an effect a script performs from a text field is
 invisible on the canvas — the same rule that means there is no way to attach a condition

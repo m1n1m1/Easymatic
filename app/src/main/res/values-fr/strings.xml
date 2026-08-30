@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_service_label">Déclencheurs par bouton Ottomatic</string>
+    <string name="accessibility_service_label">Déclencheurs par bouton Easymatic</string>
     <string name="accessibility_service_summary">Permet aux macros de démarrer quand tu appuies sur les boutons de volume ou que tu balaies le lecteur d\'empreintes, et à l\'action Faire une capture d\'écran de capturer l\'écran.</string>
-    <string name="accessibility_service_description">Ottomatic s\'en sert pour trois choses : détecter les appuis sur les boutons de volume et les balayages sur le lecteur d\'empreintes, afin que tes macros puissent démarrer ainsi, et capturer l\'écran quand une macro exécute l\'action Faire une capture d\'écran. Il n\'observe jamais ce qui est à l\'écran — il ne capture que lorsqu\'une macro le demande — et ne change rien : les touches de volume continuent de fonctionner normalement et le déverrouillage par empreinte n\'est pas affecté.</string>
+    <string name="accessibility_service_description">Easymatic s\'en sert pour trois choses : détecter les appuis sur les boutons de volume et les balayages sur le lecteur d\'empreintes, afin que tes macros puissent démarrer ainsi, et capturer l\'écran quand une macro exécute l\'action Faire une capture d\'écran. Il n\'observe jamais ce qui est à l\'écran — il ne capture que lorsqu\'une macro le demande — et ne change rien : les touches de volume continuent de fonctionner normalement et le déverrouillage par empreinte n\'est pas affecté.</string>
     <string name="shortcut_new_macro_short">Nouvelle macro</string>
     <string name="shortcut_new_macro_long">Créer une nouvelle macro</string>
     <string name="widget_run_tile_label">Tuile d\'exécution</string>
-    <string name="widget_panel_label">Panneau Ottomatic</string>
+    <string name="widget_panel_label">Panneau Easymatic</string>
     <string name="widget_run_tile_description">Une macro, un appui. Choisis un déclencheur manuel et lance-le depuis l\'écran d\'accueil.</string>
     <string name="widget_panel_description">État du moteur, problèmes, dernière exécution et une grille de déclencheurs manuels : tu choisis ce qui s\'affiche.</string>
-    <string name="permission_bind_plugin_label">Fournir des nœuds Ottomatic</string>
-    <string name="permission_bind_plugin_description">Permet à Ottomatic d\'utiliser les nœuds de déclencheur et d\'action supplémentaires fournis par cette application. L\'application exécute son propre code avec ses propres autorisations ; Ottomatic ne partage pas les siennes avec elle.</string>
+    <string name="permission_bind_plugin_label">Fournir des nœuds Easymatic</string>
+    <string name="permission_bind_plugin_description">Permet à Easymatic d\'utiliser les nœuds de déclencheur et d\'action supplémentaires fournis par cette application. L\'application exécute son propre code avec ses propres autorisations ; Easymatic ne partage pas les siennes avec elle.</string>
 </resources>

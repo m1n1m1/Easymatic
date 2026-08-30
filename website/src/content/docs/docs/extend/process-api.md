@@ -5,10 +5,10 @@ sidebar:
   order: 1
 ---
 
-Ottomatic can run a macro when another app, a script or a shortcut asks it to. This page
+Easymatic can run a macro when another app, a script or a shortcut asks it to. This page
 is for whoever writes the caller.
 
-**Nothing here needs a library, an AIDL file or a dependency on Ottomatic.**
+**Nothing here needs a library, an AIDL file or a dependency on Easymatic.**
 
 ## The two doors
 
@@ -22,7 +22,7 @@ is for whoever writes the caller.
 
 Use the provider if you are an app. Use the broadcast if you are a script.
 
-## Setting it up, on the Ottomatic side
+## Setting it up, on the Easymatic side
 
 A macro is reachable **only** if it carries a **Called by Another App** trigger. There is
 no way for a caller to make a macro reachable, and nothing is reachable by default.
@@ -44,7 +44,7 @@ one macro — and an app re-signed by a different developer is revoked automatic
 ## Calling it as an app
 
 ```kotlin
-val uri = "content://com.example.ottomatic.triggers".toUri()
+val uri = "content://io.github.m1n1m1.easymatic.triggers".toUri()
 
 // 1. Are we allowed?
 val listed = contentResolver.call(uri, "list", null, null)
@@ -105,7 +105,7 @@ Types are `TEXT`, `NUMBER`, `WHOLE_NUMBER`, `YES_OR_NO`, `DATE_TIME`, or `ANY` f
 untyped port.
 
 `enabled` is the macro's switch. **A disabled macro is listed**, so you can grey it out
-rather than silently omitting something the user can see in Ottomatic.
+rather than silently omitting something the user can see in Easymatic.
 
 ### Statuses
 
@@ -126,8 +126,8 @@ rather than silently omitting something the user can see in Ottomatic.
 
 ```bash
 adb shell am broadcast \
-  -a com.example.ottomatic.action.RUN_MACRO \
-  -p com.example.ottomatic \
+  -a io.github.m1n1m1.easymatic.action.RUN_MACRO \
+  -p io.github.m1n1m1.easymatic \
   --es macroId 3f2b… \
   --es token Yx3… \
   --es in.city Vienna --es in.count 3
@@ -140,7 +140,7 @@ which is what keeps your key from being readable by every app on the phone.
 without it. A macro with two is refused rather than guessed at.
 
 Nothing is answered on this path. A wrong key, a missing macro and a switched-off macro
-are indistinguishable from outside; they differ only in Ottomatic's log.
+are indistinguishable from outside; they differ only in Easymatic's log.
 
 ## Inputs
 

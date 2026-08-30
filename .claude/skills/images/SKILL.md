@@ -24,7 +24,7 @@ This is **not** a breach of the rule against making somebody choose between two 
 
 | Situation | What happens |
 |---|---|
-| Ottomatic's own row | No consent, on every version. This is why `action.image_edit` is free of the whole mechanism. |
+| Easymatic's own row | No consent, on every version. This is why `action.image_edit` is free of the whole mechanism. |
 | API ≤ 28 | `WRITE_EXTERNAL_STORAGE`, an ordinary runtime permission. No consent step. |
 | API 29 | `RecoverableSecurityException` carries the sender — so that rung runs **after** a failure, not before it. |
 | API 30+ | `createWriteRequest` / `createTrashRequest` / `createDeleteRequest` hand over a sender up front. |
@@ -127,13 +127,13 @@ Nodes declare the *modern* name on every API, which keeps `PermissionRequirement
 
 **Capture runs on the accessibility service, not MediaProjection.** `AccessibilityService.takeScreenshot` (API 30+) is the only route to the phone's own screen with no per-run consent dialog. MediaProjection needs a second foreground service — the engine's `specialUse` type cannot carry `mediaProjection` — plus a consent Activity started from the background, which `AndroidSystemServices.canStartActivity` documents as blocked for exactly that kind of service. `performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT)` answers with a boolean and no picture, so a node on it could not say what it produced. The cost, paid knowingly: `accessibility_service_config.xml` now carries `android:canTakeScreenshot="true"`, so the service's old "it cannot see screen content" contract is narrower than it was — it never *watches*, and captures only while an `action.screenshot` node runs. `canRetrieveWindowContent` stays `false`; a frame is not a view tree. The user-facing description strings say so, in all eight locales, because Android lists the capability on the enable screen.
 
-`ScreenCapture` (`data/accessibility/`) reaches the service through `OttomaticAccessibilityService.instance`, a `@Volatile` handle set in `onServiceConnected` and cleared in **both** `onUnbind` and `onDestroy` — a service can be unbound and rebound without being destroyed. It returns a **software** bitmap and closes the `HardwareBuffer` in a `finally`, and it is serialised process-wide because the platform refuses a second screenshot within about a second (`ERROR_TAKE_SCREENSHOT_INTERVAL_TIME_SHORT`).
+`ScreenCapture` (`data/accessibility/`) reaches the service through `EasymaticAccessibilityService.instance`, a `@Volatile` handle set in `onServiceConnected` and cleared in **both** `onUnbind` and `onDestroy` — a service can be unbound and rebound without being destroyed. It returns a **software** bitmap and closes the `HardwareBuffer` in a `finally`, and it is serialised process-wide because the platform refuses a second screenshot within about a second (`ERROR_TAKE_SCREENSHOT_INTERVAL_TIME_SHORT`).
 
 Three consequences worth keeping straight:
 
 - **`action.screenshot` declares accessibility and nothing else** — no `READ_MEDIA_IMAGES`. It writes a row this app creates, which needs no media grant on any version, and the folder lookup falls back without one. Declaring it would badge a working node.
-- **A capture is a row Ottomatic owns**, so the whole consent ladder is bypassed — `action.image_edit`'s property, for the same reason.
-- **The trigger fires on Ottomatic's own captures.** The action saves where the phone saves screenshots, and an owner filter would invent a distinction nobody asked for. Wiring `trigger.screenshot` into `action.screenshot` loops, bounded by the debounce and `MAX_NEW_PER_SCAN`, and visibly so on the canvas.
+- **A capture is a row Easymatic owns**, so the whole consent ladder is bypassed — `action.image_edit`'s property, for the same reason.
+- **The trigger fires on Easymatic's own captures.** The action saves where the phone saves screenshots, and an owner filter would invent a distinction nobody asked for. Wiring `trigger.screenshot` into `action.screenshot` loops, bounded by the debounce and `MAX_NEW_PER_SCAN`, and visibly so on the canvas.
 
 `ImageWatchSpec.kind` (`ANY` / `SCREENSHOT`) is how the trigger narrows the shared observer, applied in `ImageWatchers.matches` **after** the high-water mark advances — the per-node property that lets one observer serve differently-configured nodes. `ImageEventCodec.TYPE_SCREENSHOT` is the first use of the room `TRIGGER_TYPE` was declared to leave.
 

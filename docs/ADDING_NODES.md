@@ -15,12 +15,12 @@ The minimum really is **two files**: the node, and the registry line.
 
 | What | Where |
 |---|---|
-| Write the node | `app/src/main/java/com/example/ottomatic/engine/{action,trigger,value,transform}/<Name>.kt` |
-| Register it | `app/src/main/java/com/example/ottomatic/domain/registry/{Action,Trigger,Value,Transform}Registry.kt` |
-| *If it emits a struct* | `app/src/main/java/com/example/ottomatic/domain/model/items/Items.kt` |
+| Write the node | `app/src/main/java/io/github/m1n1m1/easymatic/engine/{action,trigger,value,transform}/<Name>.kt` |
+| Register it | `app/src/main/java/io/github/m1n1m1/easymatic/domain/registry/{Action,Trigger,Value,Transform}Registry.kt` |
+| *If it emits a struct* | `app/src/main/java/io/github/m1n1m1/easymatic/domain/model/items/Items.kt` |
 | *If it needs a new icon* | `node-api/…/domain/model/NodeIcon.kt` **and** `app/…/feature/grapheditor/EditorColors.kt` |
 | *If it needs a grant* | `permissions =` in the definition, `app/src/main/AndroidManifest.xml`, `app/…/feature/permissions/PermissionCopy.kt` |
-| *If its ports depend on the graph* | `app/src/main/java/com/example/ottomatic/domain/registry/EffectivePorts.kt` |
+| *If its ports depend on the graph* | `app/src/main/java/io/github/m1n1m1/easymatic/domain/registry/EffectivePorts.kt` |
 | Regenerate the docs export | `-PregenerateNodeDocs=true` (below) — `docs/nodes.generated.json` |
 | Document it | `docs/nodes/<typeId>.md`, or one line in `app/src/test/resources/node-docs-todo.txt` |
 
@@ -69,16 +69,16 @@ so the two halves are declared separately and combined at `action.if`.
 `value.now` is the whole of a node, in 36 lines:
 
 ```kotlin
-package com.example.ottomatic.engine.value
+package io.github.m1n1m1.easymatic.engine.value
 
-import com.example.ottomatic.domain.model.NodeCategory
-import com.example.ottomatic.domain.model.NodeIcon
-import com.example.ottomatic.domain.model.config.NoConfig
-import com.example.ottomatic.domain.model.dataOut
-import com.example.ottomatic.domain.model.schema.DateTime
-import com.example.ottomatic.engine.ExecutionContext
-import com.example.ottomatic.engine.ValueNode
-import com.example.ottomatic.engine.valueNode
+import io.github.m1n1m1.easymatic.domain.model.NodeCategory
+import io.github.m1n1m1.easymatic.domain.model.NodeIcon
+import io.github.m1n1m1.easymatic.domain.model.config.NoConfig
+import io.github.m1n1m1.easymatic.domain.model.dataOut
+import io.github.m1n1m1.easymatic.domain.model.schema.DateTime
+import io.github.m1n1m1.easymatic.engine.ExecutionContext
+import io.github.m1n1m1.easymatic.engine.ValueNode
+import io.github.m1n1m1.easymatic.engine.valueNode
 
 /**
  * `value.now` — the current date and time.
@@ -253,7 +253,7 @@ only where the app or the grant happens to be there. Prefer `ACTION_OPEN_DOCUMEN
 second gives a value that works until the editor closes and then fails silently forever.
 Note that `inputExtras` carries **strings only** and does so quietly, so a request needing a
 typed extra to be correct is one it cannot express. It is also the **only** widget a plugin
-may declare besides `@PluginChoice`, since it reaches nothing of the user's that Ottomatic
+may declare besides `@PluginChoice`, since it reaches nothing of the user's that Easymatic
 keeps. Adding a
 widget annotation costs one entry in `NodeSchema.widgetFlags` as well as its branch in
 `stringFormType` — miss that one and two widgets on a property are silently allowed.
@@ -441,9 +441,9 @@ are exactly its event plus its projections — and `NodeTypeRegistryTest` pins u
 the kind prefix and the category invariants.
 
 Beyond those, the convention is a `<Feature>RegistryTest.kt` in
-`app/src/test/java/com/example/ottomatic/domain/registry/` asserting registry
+`app/src/test/java/io/github/m1n1m1/easymatic/domain/registry/` asserting registry
 membership, kind and category, and port shape; plus a behaviour test in
-`app/src/test/java/com/example/ottomatic/engine/<kind>/`.
+`app/src/test/java/io/github/m1n1m1/easymatic/engine/<kind>/`.
 
 There is **no fake `ExecutionContext`**. Tests use the real `DefaultExecutionContext` and
 fake what it depends on — `RecordingSystemServices` is the shared recording

@@ -39,7 +39,7 @@ every macro at once.
 
 ## System
 
-What the phone and other apps allow. Ottomatic only reports these.
+What the phone and other apps allow. Easymatic only reports these.
 
 | | What it is |
 | --- | --- |

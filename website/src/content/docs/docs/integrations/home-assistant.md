@@ -12,7 +12,7 @@ is what makes a trigger and a value node possible where Hue has neither.
 ## Connecting
 
 1. **Setup → Smart home → Add a hub → Home Assistant**.
-2. Ottomatic looks for instances on your Wi-Fi; otherwise type the address, including
+2. Easymatic looks for instances on your Wi-Fi; otherwise type the address, including
    the scheme and port — `http://homeassistant.local:8123`.
 3. Create a **long-lived access token** in Home Assistant: your profile page, at the
    bottom, *Long-lived access tokens → Create token*. The screen has a button that

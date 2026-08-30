@@ -5,7 +5,7 @@ sidebar:
   order: 7
 ---
 
-There is **nothing to configure**. Ottomatic reads and writes through the phone's own
+There is **nothing to configure**. Easymatic reads and writes through the phone's own
 calendar provider, which is the one channel every calendar app already speaks — so
 Google, Exchange, CalDAV and a local calendar all work with no OAuth, no
 `google-services.json` and no network.
@@ -57,7 +57,7 @@ the one case that behaves like none of the others.
 ## All-day appointments
 
 The provider stores an all-day appointment at **midnight UTC**, because a date has no
-hour to be in a timezone. Ottomatic converts in both directions in one place, so an
+hour to be in a timezone. Easymatic converts in both directions in one place, so an
 all-day appointment on the 3rd does not become "starts on the 2nd at 23:00" in Vienna.
 
 If you compare an all-day appointment's times yourself, remember its end is

@@ -18,7 +18,7 @@ those two facts.
 | **Value** | A pure leaf read — "what is it right now?" | **None** | Exactly one output |
 | **Transform** | A pure function of its inputs. | **None** | One or more in, exactly one out |
 
-Ottomatic ships **175** of them: 55 triggers, 80 actions, 29 values and 11 transforms.
+Easymatic ships **175** of them: 55 triggers, 80 actions, 29 values and 11 transforms.
 Every one has a page under [Node reference](/docs/reference/nodes/trigger/manual/manual/).
 
 ## The two kinds of wire

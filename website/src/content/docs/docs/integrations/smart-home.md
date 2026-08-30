@@ -12,7 +12,7 @@ sidebar:
 ## Pairing a bridge
 
 1. **Setup → Smart home → Add a hub → Philips Hue**.
-2. Ottomatic looks for bridges on your Wi-Fi. If none appears, type the bridge's
+2. Easymatic looks for bridges on your Wi-Fi. If none appears, type the bridge's
    address — discovery uses mDNS, which AP isolation, guest VLANs and many mesh routers
    block, and those are exactly the networks hardest to debug.
 3. **Press the round link button on top of the bridge** and tap Connect. You have a
@@ -25,7 +25,7 @@ naming step. Walking away from the form never throws it away.
 ### The certificate prompt
 
 A Hue bridge presents a certificate signed by a root no Android device trusts, at a
-bare LAN address that moves with your DHCP lease. Ottomatic therefore pins the exact
+bare LAN address that moves with your DHCP lease. Easymatic therefore pins the exact
 certificate it saw during pairing, and cross-checks the bridge id it reads back against
 the one mDNS advertised.
 
@@ -59,7 +59,7 @@ lamp to 30 %" and wrong for "warm the living room down for the evening", which s
 not light four lamps nobody had switched on — so the value-setting operations offer
 **Only lights already on**.
 
-That option cannot be one request to the bridge, so Ottomatic reads the states, then
+That option cannot be one request to the bridge, so Easymatic reads the states, then
 writes **one light at a time**, paced. It is also the only path that can report
 *nothing changed* with no error: the hub was reached and had nothing lit to change.
 That is logged as information, not as a warning — a macro that dims the living room
@@ -88,7 +88,7 @@ would light twelve and report success for all twenty.
 
 ## Why there is no "light changed" trigger
 
-A Hue bridge has no push channel Ottomatic uses, so every read is a round trip — slow
+A Hue bridge has no push channel Easymatic uses, so every read is a round trip — slow
 and failable, which is what a pulled value may not be. That is also why **Read light
 state** is an *action* rather than a value node.
 

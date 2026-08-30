@@ -1,6 +1,6 @@
 ---
 name: lists-and-loops
-description: Read before adding, changing or debugging list nodes (transform.split_text, list_count/item/join/contains/index_of/sort/slice, action.list_add/list_clear) or the loop actions (action.for_each, action.repeat, action.while) in the Ottomatic node graph. Covers ANY_LIST, list-ness as an axis separate from type, LoopAction/ConditionalLoopAction, the iteration cap and why loops are acyclic.
+description: Read before adding, changing or debugging list nodes (transform.split_text, list_count/item/join/contains/index_of/sort/slice, action.list_add/list_clear) or the loop actions (action.for_each, action.repeat, action.while) in the Easymatic node graph. Covers ANY_LIST, list-ness as an axis separate from type, LoopAction/ConditionalLoopAction, the iteration cap and why loops are acyclic.
 ---
 
 # Lists and iteration

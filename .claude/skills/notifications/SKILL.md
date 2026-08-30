@@ -1,6 +1,6 @@
 ---
 name: notifications
-description: Read before touching the notifications Ottomatic *posts* — `action.notify`, `action.notify_cancel`, the `Notifications` facade, `AndroidNotifications`, `NotificationResponses`, `NotificationResponseReceiver` and `ForegroundGrant`. Covers why posting is a fork rather than a question, why the answer is data instead of one exec port per button, why being ignored pulses nothing, and why there is still only one channel.
+description: Read before touching the notifications Easymatic *posts* — `action.notify`, `action.notify_cancel`, the `Notifications` facade, `AndroidNotifications`, `NotificationResponses`, `NotificationResponseReceiver` and `ForegroundGrant`. Covers why posting is a fork rather than a question, why the answer is data instead of one exec port per button, why being ignored pulses nothing, and why there is still only one channel.
 ---
 
 # Posting notifications
@@ -136,9 +136,9 @@ node collide there however legal the port rules find them.
 
 ## One channel, on purpose
 
-Everything lands on `ottomatic_default` at `IMPORTANCE_DEFAULT`. Importance is
+Everything lands on `easymatic_default` at `IMPORTANCE_DEFAULT`. Importance is
 channel-bound from Android 8, so a "how loud" field would mean a channel per level, five
-Ottomatic entries in Settings, and — worse — a channel whose importance the user then
+Easymatic entries in Settings, and — worse — a channel whose importance the user then
 edits silently overriding whatever the node says forever after. Worth doing deliberately
 one day rather than as a side effect of this.
 

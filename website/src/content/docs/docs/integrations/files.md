@@ -1,11 +1,11 @@
 ---
 title: Files and folders
-description: Why Ottomatic declares no storage permission, and what that means for where files can live.
+description: Why Easymatic declares no storage permission, and what that means for where files can live.
 sidebar:
   order: 10
 ---
 
-Ottomatic reads and writes files and **declares no storage permission** to do it.
+Easymatic reads and writes files and **declares no storage permission** to do it.
 
 That is not a loophole. The editor's chooser hands back a location Android has
 *granted*, the grant is made to outlive the task and a reboot, and the engine opens it
@@ -49,7 +49,7 @@ Android 11 and later **refuses a folder grant** on:
 - the `Download` directory itself,
 - memory-card roots.
 
-Sub-folders of all three are fine, so `Download/Ottomatic` works where `Download` does
+Sub-folders of all three are fine, so `Download/Easymatic` works where `Download` does
 not. The chooser simply declines, which reads as the app being broken — the Folder
 access screen says so first.
 

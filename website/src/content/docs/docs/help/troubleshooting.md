@@ -111,4 +111,4 @@ A plugin re-signed by a different developer lands back disabled.
 
 Open the failing entry in the console and use its **copy** button — it carries the run id,
 which is the only thing that untangles two interleaved runs — and file it on
-[GitHub](https://github.com/m1n1m1/Ottomatic).
+[GitHub](https://github.com/m1n1m1/Easymatic).

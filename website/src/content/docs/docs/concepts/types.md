@@ -32,7 +32,7 @@ look broken.
 
 ## Autocast
 
-When a data drop fails the type check, Ottomatic asks its conversion table whether the
+When a data drop fails the type check, Easymatic asks its conversion table whether the
 two types convert. If they do, it **drops a pre-configured Convert node into the wire**
 and shows it on the canvas.
 

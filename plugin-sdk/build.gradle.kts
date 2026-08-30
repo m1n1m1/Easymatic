@@ -14,7 +14,7 @@ plugins {
 // device is the entire reason a plugin exists.
 
 android {
-    namespace = "com.example.ottomatic.plugin"
+    namespace = "io.github.m1n1m1.easymatic.plugin"
     compileSdk {
         version = release(37)
     }

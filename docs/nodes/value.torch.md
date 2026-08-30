@@ -8,7 +8,7 @@ every value node it has no execution ports and is never pulsed.
 
 ## Working of the Node
 
-- Android publishes torch changes to Ottomatic as they happen, and the newest one is kept.
+- Android publishes torch changes to Easymatic as they happen, and the newest one is kept.
 - The node hands that back, so the read is a field lookup rather than a camera call.
 - The read is memoised per consuming node, so every port of one node sees one answer while
   a second consumer reads fresh.

@@ -8,7 +8,7 @@ sidebar:
 An automation app is only as good as its ability to still be running an hour later. This
 page is the checklist.
 
-## What Ottomatic does
+## What Easymatic does
 
 The engine runs as a **foreground service**, which is Android's own mechanism for "this
 app is doing something the user asked for". It owns the executor, survives the UI being
@@ -47,7 +47,7 @@ manufacturer and is worth a look before assuming a bug.
 ## Boot
 
 Enabled macros re-arm on boot. That path is where the battery exemption matters most,
-and it is why Ottomatic prompts about the exemption when a boot start has failed *and*
+and it is why Easymatic prompts about the exemption when a boot start has failed *and*
 the exemption is genuinely missing.
 
 On Android 12 and later a boot start can fail for reasons that have nothing to do with

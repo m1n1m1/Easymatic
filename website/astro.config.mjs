@@ -24,8 +24,8 @@ export default defineConfig({
   integrations: [
     icon(),
     starlight({
-      title: 'Ottomatic',
-      // Matches BaseLayout's `${title} · Ottomatic`, so a docs tab and a marketing
+      title: 'Easymatic',
+      // Matches BaseLayout's `${title} · Easymatic`, so a docs tab and a marketing
       // tab are titled the same way.
       titleDelimiter: '·',
       customCss: [
@@ -72,7 +72,7 @@ export default defineConfig({
         { label: 'Core concepts', collapsed: true, items: [{ autogenerate: { directory: 'docs/concepts' } }] },
         { label: 'Integrations', collapsed: true, items: [{ autogenerate: { directory: 'docs/integrations' } }] },
         { label: 'Permissions & the phone', collapsed: true, items: [{ autogenerate: { directory: 'docs/system' } }] },
-        { label: 'Extending Ottomatic', collapsed: true, items: [{ autogenerate: { directory: 'docs/extend' } }] },
+        { label: 'Extending Easymatic', collapsed: true, items: [{ autogenerate: { directory: 'docs/extend' } }] },
         {
           label: 'Node reference',
           // The reference is 175 nodes over four kinds and ~30 categories. Fully expanded
@@ -110,7 +110,7 @@ export default defineConfig({
   // and the sitemap Starlight generates are all derived from this, and it reaches
   // every one of the ~220 built pages. Change it here the day a custom domain is
   // attached — a redirect at the edge does not fix a canonical baked into the HTML.
-  site: 'https://ottomatic.mathias-weinstabl.workers.dev',
+  site: 'https://easymatic.mathias-weinstabl.workers.dev',
 
   // NOTE: do not set `outDir: 'build'`. The repo root .gitignore has an
   // unanchored `build/` rule (there for the five Gradle modules) that would

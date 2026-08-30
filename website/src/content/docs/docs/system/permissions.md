@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Ottomatic asks for a permission when a node needs one, and never up front. **Setup →
+Easymatic asks for a permission when a node needs one, and never up front. **Setup →
 Permissions** is the screen that answers the other question: *what does this app need,
 and what has it got?*
 
@@ -37,7 +37,7 @@ likely to be the reason a macro does nothing.
 | **Alarms & reminders** | Let a schedule fire, and a wait end, **at the minute you asked for**. Without it Android is free to batch it with other work |
 | **Modify system settings** | Change screen brightness, screen timeout and auto-rotate |
 | **Media management** | Change, move or delete photos **without confirming each one**. Optional — without it everything still works, Android just asks every time, which needs you to be holding the phone |
-| **Device administrator** | Be told when somebody enters the wrong PIN, pattern or password. It is the only way Android reports a failed unlock. **While this is on, Ottomatic cannot be uninstalled until you turn it off again** |
+| **Device administrator** | Be told when somebody enters the wrong PIN, pattern or password. It is the only way Android reports a failed unlock. **While this is on, Easymatic cannot be uninstalled until you turn it off again** |
 
 ## Runtime permissions
 
@@ -49,7 +49,7 @@ Two are worth calling out.
 
 **Location in the background** is granted by choosing *"Allow all the time"*, and modern
 Android does not offer it in the first dialog. A geofence needs it to work while
-Ottomatic is closed — which is the only time it is any use — and without it the geofence
+Easymatic is closed — which is the only time it is any use — and without it the geofence
 is simply never registered, with nothing crashing and nothing logged.
 
 **Contacts** is only needed to *dial* a number, not to choose one. Choosing a contact

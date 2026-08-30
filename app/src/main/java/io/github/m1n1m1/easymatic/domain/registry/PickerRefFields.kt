@@ -1,0 +1,156 @@
+package io.github.m1n1m1.easymatic.domain.registry
+
+import io.github.m1n1m1.easymatic.core.model.ConfigKey
+import io.github.m1n1m1.easymatic.core.model.NodeTypeId
+import io.github.m1n1m1.easymatic.domain.model.PhoneRef
+import io.github.m1n1m1.easymatic.domain.model.WorkflowNode
+import io.github.m1n1m1.easymatic.domain.model.config.PickerKind
+
+/**
+ * Which of a node type's config keys hold a reference to something outside the node.
+ *
+ * Each is derived from the node's own config class rather than listed by hand, so a
+ * second node that takes a macro or a phone number is covered by the validator and
+ * the permission notice the moment it declares the annotation — which is the only
+ * registration step the rest of the node system needs either. [variableRefKeys] in
+ * `VariableRepair.kt` is the same idea and came first.
+ */
+
+/**
+ * The config keys of [typeId] whose value was chosen from the [kind] chooser.
+ *
+ * The one lookup every other reader in this file is a special case of. It exists
+ * because the file's own rule — "derived from the node's own config class rather
+ * than listed by hand" — has a second half that only shows up once there are enough
+ * callers: a *kind* must be as underivable-by-hand as a key is. Export walks six
+ * pickers to find what a graph points at, and six near-identical functions would be
+ * exactly the hand-maintained list this file exists to avoid.
+ */
+fun pickerRefKeys(typeId: NodeTypeId, kind: PickerKind): List<ConfigKey> =
+    ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
+        .filter { (it.type as? ConfigFieldType.PICKER)?.kind == kind }
+        .map { it.key }
+
+/** The config keys of [typeId] that hold a macro id. */
+fun macroRefKeys(typeId: NodeTypeId): List<ConfigKey> =
+    pickerRefKeys(typeId, PickerKind.MACRO)
+
+/**
+ * The config keys of [typeId] that hold a reference to something on a smart-home hub —
+ * a [io.github.m1n1m1.easymatic.domain.model.SmartHomeRef] or a
+ * [io.github.m1n1m1.easymatic.domain.model.HomeAssistantRef].
+ *
+ * **All five kinds**, because the question the validator asks of them is one question:
+ * is the hub inside this reference still set up? Which section of which hub the
+ * reference names is the picker's business and not this one's — and that was already
+ * the stated reason the two light kinds shared a list, so Home Assistant's three join
+ * it rather than getting a second function that would ask the same thing.
+ *
+ * The two spec formats are read through
+ * [io.github.m1n1m1.easymatic.domain.model.hubIdOf], which accepts either. Keeping the
+ * parser choice out of here is what stops a sixth kind needing a `when` in two places
+ * with no compiler to notice the second.
+ */
+fun smartHomeRefKeys(typeId: NodeTypeId): List<ConfigKey> =
+    smartHomeRefFields(typeId).map { it.key }
+
+/**
+ * The same fields, unreduced.
+ *
+ * The validator needs more than the key: it has to know whether a **blank** value is an
+ * unfinished field or a real answer, which only the declaration says. Returning the field
+ * rather than adding a second parallel lookup keeps that a property of the one thing that
+ * knows it.
+ */
+fun smartHomeRefFields(typeId: NodeTypeId): List<ConfigField<*>> =
+    ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
+        .filter { (it.type as? ConfigFieldType.PICKER)?.kind in HUB_SCOPED_PICKERS }
+
+/** Whether this field's blank is a real answer rather than an unfinished one. */
+val ConfigField<*>.isOptionalPicker: Boolean
+    get() = (type as? ConfigFieldType.PICKER)?.optional == true
+
+/**
+ * Every picker whose value names something on a hub.
+ *
+ * [PickerKind.HA_TRIGGER] is deliberately **not** one, and this is the list that says why it
+ * matters: these are validated by parsing the value as a `HomeAssistantRef`, and a trigger is
+ * stored as Home Assistant's own bare id instead. Including it would report every configured
+ * trigger as a reference to a hub that has been removed.
+ *
+ * [PickerKind.MQTT_BROKER] **is** one, on the same test read the other way: its value is a
+ * `HubRef`, which `hubIdOf` parses, so the one question this list is for — *is the hub inside
+ * this still set up?* — has an answer. An MQTT topic field beside it is not here for
+ * `HA_TRIGGER`'s exact reason: a topic is a bare string that names no broker.
+ */
+private val HUB_SCOPED_PICKERS = setOf(
+    PickerKind.LIGHT_TARGET,
+    PickerKind.LIGHT_SCENE,
+    PickerKind.HA_ENTITY,
+    PickerKind.HA_SERVICE,
+    PickerKind.HA_HUB,
+    PickerKind.MQTT_BROKER,
+)
+
+/** The config keys of [typeId] that hold an [io.github.m1n1m1.easymatic.domain.model.AiModelProfile] id. */
+fun aiModelRefKeys(typeId: NodeTypeId): List<ConfigKey> =
+    pickerRefKeys(typeId, PickerKind.AI_MODEL)
+
+/**
+ * The config keys of [typeId] that hold a
+ * [io.github.m1n1m1.easymatic.domain.model.ToolOverrides] list.
+ *
+ * One node has this today, and it is still derived rather than named: a second AI node
+ * that adjusts its profile's tools should be covered by having the annotation, not by
+ * being added to a list somewhere else.
+ */
+fun toolListKeys(typeId: NodeTypeId): List<ConfigKey> =
+    ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
+        .filter { it.type is ConfigFieldType.TOOL_LIST }
+        .map { it.key }
+
+/** The config keys of [typeId] that hold a [PhoneRef] spec. */
+fun phoneRefKeys(typeId: NodeTypeId): List<ConfigKey> =
+    ConfigSchemaRegistry.byId(typeId)?.fields.orEmpty()
+        .filter { it.type == ConfigFieldType.PHONE }
+        .map { it.key }
+
+/**
+ * Whether [node] points at a contact, and so needs `READ_CONTACTS` to resolve it
+ * when it runs.
+ *
+ * A **config-dependent** requirement, which is why it is derived here rather than
+ * declared in the node's `NodeTypeDefinition`: the same `action.call` needs contacts
+ * access or does not depending on what the user put in the field, and a static
+ * permission list can only say "always". Declaring it statically would put an amber
+ * card on every call node in the app, including the overwhelmingly common one
+ * holding a number somebody typed — and a warning that is permanently on is one
+ * people learn to scroll past, which is the same failure as a warning nobody can see.
+ */
+fun usesContacts(node: WorkflowNode): Boolean =
+    phoneRefKeys(node.typeId).any { PhoneRef.parse(node.config[it].orEmpty()) is PhoneRef.Contact }
+
+/**
+ * The `content://` values an `@IntentChoice` field of [node] currently holds, given the
+ * [schema] that node was declared with.
+ *
+ * The one member of this file that takes its schema as a parameter rather than looking it
+ * up, and that is forced rather than stylistic: every other reader here asks
+ * [ConfigSchemaRegistry], which answers for the app's own nodes and for plugin nodes alike —
+ * but the only caller of this one already holds the `PluginNodeEntry` whose schema it is,
+ * and going back through a registry to re-find it would be a lookup that can fail for a
+ * node that is demonstrably right there.
+ *
+ * **Only `@IntentChoice` keys.** This is the list `PluginChannel.lend` grants against, so
+ * widening it is widening what a plugin can obtain access to — a scan of every config value
+ * for something URI-shaped would let a plugin get a grant by putting a URI in a text box.
+ * A path, a scanned code and a URL are all skipped: none of them is a grant to lend, and a
+ * path a plugin cannot open is a failure that belongs to the file system rather than here.
+ */
+fun intentChoiceUris(schema: NodeConfigSchema?, config: Map<ConfigKey, String>): List<String> =
+    schema?.fields.orEmpty()
+        .filter { it.type is ConfigFieldType.INTENT_CHOICE }
+        .mapNotNull { field -> config[field.key]?.takeIf { it.startsWith(CONTENT_SCHEME) } }
+
+/** What a URI this app can lend a grant on begins with. Anything else is not one. */
+private const val CONTENT_SCHEME = "content://"

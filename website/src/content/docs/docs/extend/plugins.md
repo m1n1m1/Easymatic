@@ -1,19 +1,19 @@
 ---
 title: Writing a plugin
-description: A separate Android app that adds nodes to Ottomatic's palette.
+description: A separate Android app that adds nodes to Easymatic's palette.
 sidebar:
   order: 2
 ---
 
 A plugin is a **separate Android app** that adds trigger, action, value and transform
-nodes to Ottomatic's palette. It runs its own code, in its own process, under its own
-manifest permissions. **Ottomatic never shares its permissions with it.**
+nodes to Easymatic's palette. It runs its own code, in its own process, under its own
+manifest permissions. **Easymatic never shares its permissions with it.**
 
-You need two modules on your classpath and nothing else of Ottomatic's:
+You need two modules on your classpath and nothing else of Easymatic's:
 
 ```kotlin
 dependencies {
-    implementation("com.example.ottomatic:plugin-sdk:1.0")   // pulls in node-api
+    implementation("io.github.m1n1m1.easymatic:plugin-sdk:1.0")   // pulls in node-api
 }
 ```
 
@@ -50,16 +50,16 @@ class ShoutAction : PluginAction<ShoutConfig, Shouted> {
 Then one service and one manifest entry:
 
 ```kotlin
-class MyPluginService : BaseOttomaticPluginService() {
+class MyPluginService : BaseEasymaticPluginService() {
     override val nodes = listOf(ShoutAction(), /* … */)
 }
 ```
 
 ```xml
 <service android:name=".MyPluginService" android:exported="true"
-         android:permission="com.example.ottomatic.permission.BIND_PLUGIN">
+         android:permission="io.github.m1n1m1.easymatic.permission.BIND_PLUGIN">
     <intent-filter>
-        <action android:name="com.example.ottomatic.action.PLUGIN" />
+        <action android:name="io.github.m1n1m1.easymatic.action.PLUGIN" />
     </intent-filter>
 </service>
 ```
@@ -92,7 +92,7 @@ given), and **forks**.
 
 ## Config classes
 
-The rules are Ottomatic's own, unchanged:
+The rules are Easymatic's own, unchanged:
 
 - one `@Serializable` data class per node;
 - **every property has a default**, so the node can run unconfigured;
@@ -144,7 +144,7 @@ for `routes(...)` when the two branches are outcomes rather than a yes and a no.
 
 Three rules:
 
-- **Declare the "carried on" route first.** Ottomatic lands two things on the first route
+- **Declare the "carried on" route first.** Easymatic lands two things on the first route
   you name: a `route` string your declaration does not contain, and a call it could not
   make at all. That second one is why `error` must not be first — an unreachable plugin
   may well have done the work and failed on the way back, so the host must not claim it
@@ -158,11 +158,11 @@ Three rules:
 ## Saying you are not ready
 
 A plugin holding every permission it asked for and doing nothing because nobody has
-signed in is the failure Ottomatic cannot see from outside: the graph is perfect and the
+signed in is the failure Easymatic cannot see from outside: the graph is perfect and the
 macro looks armed. So say so:
 
 ```kotlin
-class MyPluginService : BaseOttomaticPluginService() {
+class MyPluginService : BaseEasymaticPluginService() {
     override val nodes = listOf(PostAction())
 
     override fun status(): PluginStatusWire = when {
@@ -178,31 +178,31 @@ in starts it working with no edit to the macro.
 
 Asked on every refresh under a **two-second** bound, so keep it local: read a token out of
 your own preferences, do not validate it over the network. A plugin that does not answer
-in time leaves Ottomatic saying nothing at all, which is deliberate — a panel that badges
+in time leaves Easymatic saying nothing at all, which is deliberate — a panel that badges
 every node on a guess is worse than one that waits until it knows.
 
 ## A settings screen
 
-Ottomatic withholds its credential libraries from plugins, so your sign-in lives in your
-own app. Export an Activity under `com.example.ottomatic.action.PLUGIN_SETTINGS` and the
+Easymatic withholds its credential libraries from plugins, so your sign-in lives in your
+own app. Export an Activity under `io.github.m1n1m1.easymatic.action.PLUGIN_SETTINGS` and the
 Plugins screen offers a **Set up** button to it:
 
 ```xml
 <activity android:name=".SettingsActivity" android:exported="true" android:label="Acme Tools">
     <intent-filter>
-        <action android:name="com.example.ottomatic.action.PLUGIN_SETTINGS" />
+        <action android:name="io.github.m1n1m1.easymatic.action.PLUGIN_SETTINGS" />
         <category android:name="android.intent.category.DEFAULT" />
     </intent-filter>
 </activity>
 ```
 
-Ottomatic resolves this against **your package** and launches the result by component —
+Easymatic resolves this against **your package** and launches the result by component —
 never from anything you send over the binder, which is why this is a manifest convention
 rather than a field. The button is offered whether or not the user has enabled you, since
 signing in first is the natural order. Returning from it re-reads your `status()`, so the
 warning above clears on its own.
 
-The Activity needs nothing of Ottomatic's: no SDK class, no theme, no library.
+The Activity needs nothing of Easymatic's: no SDK class, no theme, no library.
 
 ## Next
 

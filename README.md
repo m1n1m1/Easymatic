@@ -1,28 +1,28 @@
 <div align="center">
 
-# Ottomatic
+# Easymatic
 
 **An Android automation app you build by wiring nodes on a canvas.**
 
-[![Android CI](https://github.com/m1n1m1/Ottomatic/actions/workflows/android.yml/badge.svg?branch=main)](https://github.com/m1n1m1/Ottomatic/actions/workflows/android.yml)
-[![Website](https://github.com/m1n1m1/Ottomatic/actions/workflows/website.yml/badge.svg?branch=main)](https://github.com/m1n1m1/Ottomatic/actions/workflows/website.yml)
-[![Instrumentation tests](https://github.com/m1n1m1/Ottomatic/actions/workflows/instrumentation.yml/badge.svg)](https://github.com/m1n1m1/Ottomatic/actions/workflows/instrumentation.yml)
+[![Android CI](https://github.com/m1n1m1/Easymatic/actions/workflows/android.yml/badge.svg?branch=main)](https://github.com/m1n1m1/Easymatic/actions/workflows/android.yml)
+[![Website](https://github.com/m1n1m1/Easymatic/actions/workflows/website.yml/badge.svg?branch=main)](https://github.com/m1n1m1/Easymatic/actions/workflows/website.yml)
+[![Instrumentation tests](https://github.com/m1n1m1/Easymatic/actions/workflows/instrumentation.yml/badge.svg)](https://github.com/m1n1m1/Easymatic/actions/workflows/instrumentation.yml)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 ![minSdk 26](https://img.shields.io/badge/minSdk-26-3DDC84?logo=android&logoColor=white)
 ![Kotlin 2.2](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)
 ![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4)
 
-[Website](https://ottomatic.mathias-weinstabl.workers.dev) ·
-[Documentation](https://ottomatic.mathias-weinstabl.workers.dev/docs/) ·
-[Your first macro](https://ottomatic.mathias-weinstabl.workers.dev/docs/start/first-macro/) ·
-[Node reference](https://ottomatic.mathias-weinstabl.workers.dev/docs/#node-reference)
+[Website](https://easymatic.mathias-weinstabl.workers.dev) ·
+[Documentation](https://easymatic.mathias-weinstabl.workers.dev/docs/) ·
+[Your first macro](https://easymatic.mathias-weinstabl.workers.dev/docs/start/first-macro/) ·
+[Node reference](https://easymatic.mathias-weinstabl.workers.dev/docs/#node-reference)
 
 </div>
 
 ---
 
-Ottomatic turns "when this happens, do that" into a picture. You drag nodes onto a
+Easymatic turns "when this happens, do that" into a picture. You drag nodes onto a
 canvas, connect them with wires, and a foreground service runs the result in the
 background — even when the app is closed.
 
@@ -38,7 +38,7 @@ A macro is built from four kinds of node:
 
 There are **184 nodes** today: 56 triggers, 85 actions, 32 values and 11 transforms.
 Each one has its own page, with ports and settings, in the
-[node reference](https://ottomatic.mathias-weinstabl.workers.dev/docs/#node-reference).
+[node reference](https://easymatic.mathias-weinstabl.workers.dev/docs/#node-reference).
 
 ## Getting the project running in Android Studio
 
@@ -57,12 +57,12 @@ right version (9.6.1) on the first build.
 ### Step 1: Clone the repository
 
 ```
-git clone https://github.com/m1n1m1/Ottomatic.git
+git clone https://github.com/m1n1m1/Easymatic.git
 ```
 
 ### Step 2: Open the root folder
 
-In Android Studio, choose **File → Open** and select the `Ottomatic` folder itself — the
+In Android Studio, choose **File → Open** and select the `Easymatic` folder itself — the
 one holding `settings.gradle.kts`. Do not open `app/`. Opening a subfolder gives you a
 project with no modules and a long list of unresolved references.
 
@@ -75,7 +75,7 @@ about a missing SDK platform, accept it.
 When the sync is done, the project view shows four modules:
 
 ```
-Ottomatic
+Easymatic
 ├── app             the app itself
 ├── node-api        the node declaration surface
 ├── plugin-sdk      what a third-party plugin compiles against
@@ -105,7 +105,7 @@ Pick the **app** run configuration, choose your device, and press **Run**
 
 ### Step 6: Allow what the app asks for
 
-Ottomatic runs your macros from a foreground service, so Android has to let it. After the
+Easymatic runs your macros from a foreground service, so Android has to let it. After the
 first launch, open the **Permissions** screen in the app and grant what your macros need
 — at minimum notifications, so the service can show its status. Every node also states
 its own requirements on its card, and the editor's Problems panel warns you when a grant
@@ -199,7 +199,7 @@ closed testing track rather than production.
 
 > **Note:** this step is still manual. There is no signing configuration in the repository
 > and no Play service account, so nothing is published automatically. The application ID is
-> also still `com.example.ottomatic`, which the Play Console rejects — it has to be renamed
+> also still `io.github.m1n1m1.easymatic`, which the Play Console rejects — it has to be renamed
 > before the first upload.
 
 ## How the project is laid out
@@ -214,7 +214,7 @@ package name does not: whether a third-party plugin can compile against it.
 | `:plugin-sdk` | The Android half a plugin needs: the AIDL both sides compile, the service base class and the six node contracts. |
 | `:sample-plugin` | A worked plugin. Executable documentation — built by `test` and `connectedAndroidTest`, not by `assembleDebug`. |
 
-Inside `:app` the packages under `com.example.ottomatic` are `core/`, `domain/`,
+Inside `:app` the packages under `io.github.m1n1m1.easymatic` are `core/`, `domain/`,
 `engine/`, `data/` and `feature/`, and they may depend on each other in one direction
 only. [`ARCHITECTURE.md`](ARCHITECTURE.md) has the rules.
 
@@ -244,14 +244,14 @@ way a local build does.
 ## Documentation
 
 The full documentation is on the website:
-**<https://ottomatic.mathias-weinstabl.workers.dev/docs/>**
+**<https://easymatic.mathias-weinstabl.workers.dev/docs/>**
 
 | Page | What is in it |
 | --- | --- |
-| [Install and first run](https://ottomatic.mathias-weinstabl.workers.dev/docs/start/install/) | What to install, what to allow, and the two screens the app is made of |
-| [Your first macro](https://ottomatic.mathias-weinstabl.workers.dev/docs/start/first-macro/) | Build, wire, run and arm a working macro from an empty canvas |
-| [The editor](https://ottomatic.mathias-weinstabl.workers.dev/docs/start/editor/) | The canvas, the palette, the node card and the bottom bar |
-| [Node reference](https://ottomatic.mathias-weinstabl.workers.dev/docs/#node-reference) | Every node, with its ports, settings and permissions |
+| [Install and first run](https://easymatic.mathias-weinstabl.workers.dev/docs/start/install/) | What to install, what to allow, and the two screens the app is made of |
+| [Your first macro](https://easymatic.mathias-weinstabl.workers.dev/docs/start/first-macro/) | Build, wire, run and arm a working macro from an empty canvas |
+| [The editor](https://easymatic.mathias-weinstabl.workers.dev/docs/start/editor/) | The canvas, the palette, the node card and the bottom bar |
+| [Node reference](https://easymatic.mathias-weinstabl.workers.dev/docs/#node-reference) | Every node, with its ports, settings and permissions |
 
 In the repository:
 
@@ -261,9 +261,9 @@ In the repository:
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Modules, packages and the dependency rules between them |
 | [`docs/ADDING_NODES.md`](docs/ADDING_NODES.md) | The step-by-step procedure for adding a node |
 | [`docs/PLUGINS.md`](docs/PLUGINS.md) | Writing a plugin app that adds its own nodes |
-| [`docs/EXTERNAL_API.md`](docs/EXTERNAL_API.md) | Driving Ottomatic from another app through the process API |
+| [`docs/EXTERNAL_API.md`](docs/EXTERNAL_API.md) | Driving Easymatic from another app through the process API |
 | [`website/README.md`](website/README.md) | Running and editing the website |
 
 ## License
 
-Ottomatic is released under the MIT License. See [`LICENSE`](LICENSE) for the full text.
+Easymatic is released under the MIT License. See [`LICENSE`](LICENSE) for the full text.

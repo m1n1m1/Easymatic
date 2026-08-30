@@ -5,7 +5,7 @@
             "versionCode": 100,
             "date": "2026-08-30",
             "prerelease": true,
-            "play": "The first alpha of Ottomatic. Build automations by wiring triggers, actions, values and transforms together on a canvas, then let them run in the background — even when the app is closed. Expect rough edges, and expect macros to need rebuilding as things change.",
+            "play": "The first alpha of Easymatic. Build automations by wiring triggers, actions, values and transforms together on a canvas, then let them run in the background — even when the app is closed. Expect rough edges, and expect macros to need rebuilding as things change.",
             "notes": "### Added\n\n- A node graph editor: drag triggers, actions, values and transforms onto a canvas and wire them together.\n- 184 nodes covering sensors, location, messaging, calendar, files, photos, NFC, smart home, Home Assistant, MQTT, AI and more.\n- A foreground service that runs macros in the background and re-arms them after a reboot.\n- Home-screen widgets and launcher shortcuts for running a macro by hand.\n- A JavaScript node for the things no other node covers, sandboxed in a WebView.\n- Plugin support, so a separate app can contribute its own nodes.\n- A process API, so other apps on the phone can start a macro with your consent.\n- Import and export of macros as files.\n- Eight languages: English, German, Spanish, French, Japanese, Portuguese, Russian and Simplified Chinese.\n",
             "sections": [
                 {

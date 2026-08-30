@@ -18,7 +18,7 @@
     that case rather than asking again — see RunTilePin.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:configure="com.example.ottomatic.feature.widget.RunTileConfigActivity"
+    android:configure="io.github.m1n1m1.easymatic.feature.widget.RunTileConfigActivity"
     android:description="@string/widget_run_tile_description"
     android:initialLayout="@layout/widget_loading"
     android:minWidth="110dp"

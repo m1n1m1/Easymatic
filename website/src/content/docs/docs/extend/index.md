@@ -1,5 +1,5 @@
 ---
-title: Extending Ottomatic
+title: Extending Easymatic
 description: Three ways to go past the palette — a script, another app calling in, and a plugin adding nodes.
 sidebar:
   order: 0
@@ -22,14 +22,14 @@ A macro carrying a **Called by Another App** trigger can be started from an Andr
 a shell script, Tasker, Automate, MacroDroid, `adb` or Termux. It takes typed inputs and
 answers what happened.
 
-Nothing about it needs a library or a dependency on Ottomatic. See
+Nothing about it needs a library or a dependency on Easymatic. See
 [The process API](/docs/extend/process-api/).
 
 ## Plugins — new nodes in the palette
 
 A plugin is a **separate Android app** that adds trigger, action, value and transform
 nodes. It runs its own code, in its own process, under its own manifest permissions.
-Ottomatic never shares its permissions with it.
+Easymatic never shares its permissions with it.
 
 Your node appears in the palette, wires up like any other, and is configured with the
 same form widgets. See [Writing a plugin](/docs/extend/plugins/).
@@ -41,4 +41,4 @@ same form widgets. See [Writing a plugin](/docs/extend/plugins/).
 | Compute something no node does | **Run Script** |
 | Trigger a macro from your own app or a shell | **The process API** |
 | Add a reusable node other people can place | **A plugin** |
-| Talk to a service Ottomatic does not know | **A plugin**, or *HTTP Request* plus *Read from JSON* |
+| Talk to a service Easymatic does not know | **A plugin**, or *HTTP Request* plus *Read from JSON* |

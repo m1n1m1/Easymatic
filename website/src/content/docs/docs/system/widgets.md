@@ -11,7 +11,7 @@ The question these answer is: **which macros can I run by hand, and can I run on
 
 **Run tile** is one manual trigger as a button. Place it, pick the macro, tap it to run.
 
-**Ottomatic panel** is everything else — engine status, problem count, last run, and a
+**Easymatic panel** is everything else — engine status, problem count, last run, and a
 grid of triggers — with each section switched on or off per placed widget.
 
 Turn everything off but the triggers and the panel is a trigger deck; turn the triggers

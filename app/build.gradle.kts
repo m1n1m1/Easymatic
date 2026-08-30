@@ -13,7 +13,7 @@ plugins {
 val appVersion = newestRelease()
 
 android {
-    namespace = "com.example.ottomatic"
+    namespace = "io.github.m1n1m1.easymatic"
     // Deliberately ahead of `targetSdk` below, and that gap is the normal state rather
     // than drift: compileSdk says which APIs may be *referenced*, targetSdk opts the app
     // in to new *runtime behaviour*. AndroidX ships `<uses-sdk>` AAR metadata asserting a
@@ -26,7 +26,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.ottomatic"
+        applicationId = "io.github.m1n1m1.easymatic"
         minSdk = 26
         targetSdk = 36
         versionCode = appVersion.code
@@ -89,7 +89,7 @@ android {
     }
     androidResources {
         // Generates res/xml/locales_config.xml from the values-* folders, which is what
-        // puts Ottomatic in Android 13+'s Settings → Apps → Ottomatic → Language. Left
+        // puts Easymatic in Android 13+'s Settings → Apps → Easymatic → Language. Left
         // off while the app shipped one locale, because it would have published a
         // language picker offering exactly one choice; with German present it earns
         // its place. Needs res/resources.properties to name what values/ holds.
@@ -204,26 +204,26 @@ detekt {
 // project read at execution time, which would invalidate the cache on every build.
 tasks.withType<Test>().configureEach {
     systemProperty(
-        "ottomatic.i18n.regenerate",
+        "easymatic.i18n.regenerate",
         providers.gradleProperty("regenerateNodeStrings").getOrElse("false"),
     )
     // The same trick once more, for `NodeDocsExportTest` and `docs/nodes.generated.json`
     // — the facts half of the node documentation. See CLAUDE.md.
     systemProperty(
-        "ottomatic.docs.regenerate",
+        "easymatic.docs.regenerate",
         providers.gradleProperty("regenerateNodeDocs").getOrElse("false"),
     )
     // And once more for `ChangelogExportTest`, which writes `docs/changelog.generated.json`
     // and the Play Store's `fastlane/` tree from CHANGELOG.md.
     systemProperty(
-        "ottomatic.changelog.regenerate",
+        "easymatic.changelog.regenerate",
         providers.gradleProperty("regenerateChangelog").getOrElse("false"),
     )
     // What `newestRelease()` made of the changelog, handed back so ChangelogExportTest — which
     // parses the whole grammar rather than just the top heading — can assert the two agree.
     // Without this the build could read a version the export knows nothing about.
-    systemProperty("ottomatic.version.name", appVersion.name)
-    systemProperty("ottomatic.version.code", appVersion.code.toString())
+    systemProperty("easymatic.version.name", appVersion.name)
+    systemProperty("easymatic.version.code", appVersion.code.toString())
 
     // ChangelogExportTest reads these through plain `File`, which Gradle cannot see, so a
     // changelog-only edit would leave the task UP-TO-DATE and the guard unrun. CI never

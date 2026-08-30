@@ -1,0 +1,582 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
+package io.github.m1n1m1.easymatic.domain.registry
+
+import io.github.m1n1m1.easymatic.core.model.ConfigKey
+import io.github.m1n1m1.easymatic.domain.model.Direction
+import io.github.m1n1m1.easymatic.domain.model.Port
+import io.github.m1n1m1.easymatic.core.model.PortName
+import io.github.m1n1m1.easymatic.domain.model.PortKind
+import io.github.m1n1m1.easymatic.domain.model.config.ApiToken
+import io.github.m1n1m1.easymatic.domain.model.config.ContactName
+import io.github.m1n1m1.easymatic.domain.model.config.FilePath
+import io.github.m1n1m1.easymatic.domain.model.config.Hint
+import io.github.m1n1m1.easymatic.domain.model.config.IntentChoice
+import io.github.m1n1m1.easymatic.domain.model.config.Label
+import io.github.m1n1m1.easymatic.domain.model.config.Multiline
+import io.github.m1n1m1.easymatic.domain.model.config.PhoneNumber
+import io.github.m1n1m1.easymatic.domain.model.config.Picker
+import io.github.m1n1m1.easymatic.domain.model.config.PickerKind
+import io.github.m1n1m1.easymatic.domain.model.config.PluginChoice
+import io.github.m1n1m1.easymatic.domain.model.config.Suggested
+import io.github.m1n1m1.easymatic.domain.model.config.Ports
+import io.github.m1n1m1.easymatic.domain.model.config.TimeOfDay
+import io.github.m1n1m1.easymatic.domain.model.config.Tools
+import io.github.m1n1m1.easymatic.domain.model.config.VisibleWhen
+import io.github.m1n1m1.easymatic.domain.model.config.WifiNetwork
+import io.github.m1n1m1.easymatic.domain.model.config.Wired
+import io.github.m1n1m1.easymatic.domain.model.schema.DateTime
+import io.github.m1n1m1.easymatic.domain.model.schema.Item
+import io.github.m1n1m1.easymatic.domain.model.schema.ItemSchema
+import io.github.m1n1m1.easymatic.domain.model.schema.asText
+import io.github.m1n1m1.easymatic.domain.model.schema.buildSchema
+import io.github.m1n1m1.easymatic.domain.model.schema.jsonElementToString
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.SerialKind
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.serializer
+
+/**
+ * The derived contract of a node's `@Serializable` config class [T].
+ *
+ * This is the single mechanism that replaces every hand-written config key,
+ * form field, default, DATA input port and decode lambda in the codebase. Given
+ * a config class, it derives:
+ *
+ *  - [fields] — the config form, one [ConfigField] per property, in declaration
+ *    order, with the form type taken from the property's Kotlin type, the label
+ *    from `@Label` (or a prettified property name) and the default from the
+ *    property's own default value;
+ *  - [wiredPorts] — one DATA input [Port] per `@Wired` property, with the
+ *    port's [ItemSchema] taken from the property's type;
+ *  - [decode] — the typed value a node's `execute` receives.
+ *
+ * Because the config key and the port name are the *same* property, the two can
+ * no longer disagree, and a value that is not declared cannot be read.
+ *
+ * @throws IllegalStateException at construction (i.e. at registry
+ *   initialisation) if [T] has a property without a default value or with a
+ *   type that cannot be rendered in a form.
+ */
+@Suppress("TooManyFunctions") // The derivation is a chain of small named steps, not one function.
+class NodeSchema<T : Any> @PublishedApi internal constructor(
+    @PublishedApi internal val serializer: KSerializer<T>,
+) {
+
+    private val descriptor: SerialDescriptor = serializer.descriptor
+
+    /** The all-defaults instance of [T]. */
+    val defaults: T = decodeDefaults()
+
+    private val elements: List<ConfigElement> = describeElements()
+
+    /** The config form for this node, in property declaration order. */
+    val fields: List<ConfigField<*>> = elements.map { it.field }
+
+    /** One DATA input port per `@Wired` property. */
+    val wiredPorts: List<Port> = elements.filter { it.wired }.map { it.port() }
+
+    /**
+     * Builds the typed config from a flat [config] map. Each property resolves to
+     * the first available of: the item wired into its port (`@Wired` only), its
+     * form value in [config], or its declared default. Values that fail to parse
+     * fall back to the default rather than failing the run.
+     *
+     * This takes the map rather than a [WorkflowNode] so a caller holding only a
+     * config map — a test, or a decode driven by a form rather than a placed node —
+     * can use it without inventing a node to carry it.
+     */
+    fun decode(config: Map<ConfigKey, String>, data: Map<PortName, Item> = emptyMap()): T {
+        if (elements.isEmpty()) return defaults
+        val encoded = buildMap<String, JsonElement> {
+            for (element in elements) {
+                val wired = if (element.wired) {
+                    data[PortName(element.key)]?.let { element.encode(it.asText()) }
+                } else {
+                    null
+                }
+                val resolved = wired ?: element.encode(config[ConfigKey(element.key)])
+                if (resolved != null) put(element.key, resolved)
+            }
+        }
+        return runCatching { DECODER.decodeFromJsonElement(serializer, JsonObject(encoded)) }
+            .getOrDefault(defaults)
+    }
+
+    private fun decodeDefaults(): T = runCatching {
+        DECODER.decodeFromJsonElement(serializer, JsonObject(emptyMap()))
+    }.getOrElse { cause ->
+        error(
+            "Config class '${descriptor.serialName}' must give every property a default value " +
+                "so the node can run unconfigured (${cause.message})",
+        )
+    }
+
+    private fun describeElements(): List<ConfigElement> {
+        require(descriptor.kind == StructureKind.CLASS || descriptor.kind == StructureKind.OBJECT) {
+            "Config class '${descriptor.serialName}' must be a data class or object, not ${descriptor.kind}"
+        }
+        val defaultValues = defaultValueStrings()
+        return (0 until descriptor.elementsCount).map { index ->
+            val key = descriptor.getElementName(index)
+            val annotations = descriptor.getElementAnnotations(index)
+            val element = descriptor.getElementDescriptor(index)
+            ConfigElement(
+                key = key,
+                wired = annotations.any { it is Wired },
+                elementDescriptor = element,
+                field = ConfigField(
+                    key = ConfigKey(key),
+                    label = annotations.labelOr(key),
+                    hint = annotations.hint(),
+                    type = formTypeOf(
+                        element = element,
+                        multiline = annotations.any { it is Multiline },
+                        picker = annotations.filterIsInstance<Picker>().firstOrNull(),
+                        ports = annotations.any { it is Ports },
+                        tools = annotations.filterIsInstance<Tools>().firstOrNull(),
+                        phone = annotations.any { it is PhoneNumber },
+                        timeOfDay = annotations.any { it is TimeOfDay },
+                        wifi = annotations.any { it is WifiNetwork },
+                        contactName = annotations.any { it is ContactName },
+                        filePath = annotations.any { it is FilePath },
+                        suggested = annotations.filterIsInstance<Suggested>().firstOrNull(),
+                        apiToken = annotations.any { it is ApiToken },
+                        pluginChoice = annotations.filterIsInstance<PluginChoice>().firstOrNull(),
+                        intentChoice = annotations.filterIsInstance<IntentChoice>().firstOrNull(),
+                        key = key,
+                    ),
+                    defaultValue = formDefault(element, defaultValues[key].orEmpty()),
+                    visibleWhen = annotations.visibilityRule(),
+                ),
+            )
+        }
+    }
+
+    /** Default form values, read back from the encoded [defaults] instance. */
+    private fun defaultValueStrings(): Map<String, String> {
+        val encoded = ENCODER.encodeToJsonElement(serializer, defaults) as? JsonObject ?: return emptyMap()
+        return encoded.mapValues { (_, value) -> jsonElementToString(value) }
+    }
+
+    /**
+     * What the *form* shows for a property nothing has been stored for, which is the
+     * encoded default with one exception.
+     *
+     * [DateTime.EPOCH] is how a date property spells **"not set"** — `action.wait_until`,
+     * `action.calendar_add` and `action.calendar_query` all use it that way, and there is
+     * no macro whose author meant the first of January 1970. Encoding it literally put
+     * that date in the box and opened the date picker on it, which is the one default in
+     * the app that looked like a bug because it was one.
+     *
+     * Blank instead, so the field shows its own placeholder and the picker opens on today.
+     * **Nothing changes at run time**: [ConfigElement.encode] already reads a blank value
+     * as absent and substitutes this very property default, so a node left alone still
+     * decodes to [DateTime.EPOCH] and still means whatever it meant.
+     */
+    private fun formDefault(element: SerialDescriptor, encoded: String): String =
+        if (element.serialName == DateTime.SERIAL_NAME && DateTime.parse(encoded) == DateTime.EPOCH) {
+            ""
+        } else {
+            encoded
+        }
+
+    @Suppress("LongParameterList") // One parameter per rendering annotation; they are all independent.
+    private fun formTypeOf(
+        element: SerialDescriptor,
+        multiline: Boolean,
+        picker: Picker?,
+        ports: Boolean,
+        tools: Tools?,
+        phone: Boolean,
+        timeOfDay: Boolean,
+        wifi: Boolean,
+        contactName: Boolean,
+        filePath: Boolean,
+        suggested: Suggested?,
+        apiToken: Boolean,
+        pluginChoice: PluginChoice?,
+        intentChoice: IntentChoice?,
+        key: String,
+    ): ConfigFieldType<*> {
+        // A DateTime reports `STRING`, so it has to be recognised by name before the
+        // kind is consulted or it renders as a plain text field.
+        if (element.serialName == DateTime.SERIAL_NAME) {
+            // Counted rather than spelled out as a chain of `&&`: the list is the same
+            // one [checkWidgetAnnotations] ends with, and a chain here grew by one
+            // term per widget until it was the most complex thing in the function.
+            val widgets =
+                widgetFlags(
+                    picker, ports, tools, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken,
+                    pluginChoice, intentChoice,
+                )
+            check(widgets.none { it }) {
+                "Config property '${descriptor.serialName}.$key' is annotated with a widget but is a date; " +
+                    "dates have their own picker, so the annotation is redundant"
+            }
+            return ConfigFieldType.DATE_TIME
+        }
+        checkWidgetAnnotations(
+            element, picker, ports, tools, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken,
+            pluginChoice, intentChoice, key,
+        )
+        return when (element.kind) {
+            SerialKind.ENUM -> ConfigFieldType.ENUM(enumOptions(element))
+            PrimitiveKind.STRING, PrimitiveKind.CHAR -> stringFormType(
+                multiline, picker, ports, tools, phone, timeOfDay, wifi, contactName, filePath, suggested,
+                apiToken, pluginChoice, intentChoice,
+            )
+            PrimitiveKind.INT, PrimitiveKind.LONG, PrimitiveKind.SHORT, PrimitiveKind.BYTE -> ConfigFieldType.INT
+            PrimitiveKind.BOOLEAN -> ConfigFieldType.BOOL
+            PrimitiveKind.DOUBLE, PrimitiveKind.FLOAT -> ConfigFieldType.DOUBLE
+            else -> error(
+                "Config property '${descriptor.serialName}.$key' of kind ${element.kind} cannot be rendered " +
+                    "in a config form; use a String, a number, a Boolean or an enum",
+            )
+        }
+    }
+
+    /**
+     * Which widget a `String` property gets. Every one of these still *stores* a
+     * plain string — they only replace how it is entered — which is why they can be
+     * one table rather than one type each.
+     *
+     * Split from [formTypeOf] so the Kotlin-type table and the annotation table can
+     * each be read on their own.
+     */
+    // Inherent: one parameter and one branch per widget annotation, which is what this
+    // function is. The same suppression [formTypeOf] and `PickerField` carry, for the same
+    // reason — the complexity is the size of the widget set, not of the logic.
+    @Suppress("LongParameterList", "CyclomaticComplexMethod")
+    private fun stringFormType(
+        multiline: Boolean,
+        picker: Picker?,
+        ports: Boolean,
+        tools: Tools?,
+        phone: Boolean,
+        timeOfDay: Boolean,
+        wifi: Boolean,
+        contactName: Boolean,
+        filePath: Boolean,
+        suggested: Suggested?,
+        apiToken: Boolean,
+        pluginChoice: PluginChoice?,
+        intentChoice: IntentChoice?,
+    ): ConfigFieldType<String> = when {
+        ports -> ConfigFieldType.PORT_LIST
+        tools != null -> ConfigFieldType.TOOL_LIST(tools.scopedBy.toList())
+        apiToken -> ConfigFieldType.API_TOKEN
+        picker != null -> ConfigFieldType.PICKER(picker.kind, picker.scopedBy.toList(), picker.optional)
+        // `providerTypeId` stays blank here and is stamped host-side from the resolved
+        // typeId — a plugin declaring one would be naming somebody else's chooser.
+        pluginChoice != null -> ConfigFieldType.PLUGIN_CHOICE(
+            source = pluginChoice.source,
+            scopedBy = pluginChoice.scopedBy.toList(),
+            chooser = pluginChoice.chooser,
+        )
+        // Copied across whole, with nothing stamped on: unlike a plugin choice there is no
+        // provider to name, because what answers this is whatever app the phone resolves.
+        intentChoice != null -> ConfigFieldType.INTENT_CHOICE(
+            action = intentChoice.action,
+            mimeType = intentChoice.mimeType,
+            category = intentChoice.category,
+            inputExtras = intentChoice.inputExtras.toList(),
+            resultExtra = intentChoice.resultExtra,
+            outputExtra = intentChoice.outputExtra,
+            icon = intentChoice.icon,
+        )
+        phone -> ConfigFieldType.PHONE
+        timeOfDay -> ConfigFieldType.TIME_OF_DAY
+        wifi -> ConfigFieldType.WIFI_NETWORK
+        contactName -> ConfigFieldType.CONTACT_NAME
+        filePath -> ConfigFieldType.FILE_PATH
+        suggested != null -> ConfigFieldType.SUGGESTED(suggested.source, suggested.scopedBy.toList())
+        multiline -> ConfigFieldType.MULTILINE
+        else -> ConfigFieldType.STR
+    }
+
+    /**
+     * The annotations that replace a property's widget all store a plain string and
+     * all claim the whole field, so each needs a `String` and no two may appear
+     * together. Split out from [formTypeOf] to keep the type table readable next to
+     * the rules that guard it.
+     */
+    @Suppress("LongParameterList") // Mirrors [formTypeOf]; one parameter per widget annotation.
+    private fun checkWidgetAnnotations(
+        element: SerialDescriptor,
+        picker: Picker?,
+        ports: Boolean,
+        tools: Tools?,
+        phone: Boolean,
+        timeOfDay: Boolean,
+        wifi: Boolean,
+        contactName: Boolean,
+        filePath: Boolean,
+        suggested: Suggested?,
+        apiToken: Boolean,
+        pluginChoice: PluginChoice?,
+        intentChoice: IntentChoice?,
+        key: String,
+    ) {
+        check(picker == null || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @Picker but is a " +
+                "${element.kind}; a picker stores the chosen thing's identifier, so it must be a String"
+        }
+        check(!ports || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @Ports but is a " +
+                "${element.kind}; a port list is persisted as one 'name:TYPE' line per port, so it must be a String"
+        }
+        check(tools == null || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @Tools but is a " +
+                "${element.kind}; tool overrides are persisted as one line each, so it must be a String"
+        }
+        check(!phone || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @PhoneNumber but is a " +
+                "${element.kind}; a phone field stores a number or a contact reference, so it must be a String"
+        }
+        check(!timeOfDay || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @TimeOfDay but is a " +
+                "${element.kind}; a time of day is persisted as 'HH:mm', so it must be a String"
+        }
+        check(!wifi || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @WifiNetwork but is a " +
+                "${element.kind}; a network field stores an SSID, so it must be a String"
+        }
+        check(suggested == null || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @Suggested but is a " +
+                "${element.kind}; a mailbox field stores a folder name, so it must be a String"
+        }
+        check(!contactName || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @ContactName but is a " +
+                "${element.kind}; a contact-name field stores the name itself, so it must be a String"
+        }
+        check(!apiToken || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @ApiToken but is a " +
+                "${element.kind}; a key is generated text, so it must be a String"
+        }
+        check(!filePath || element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @FilePath but is a " +
+                "${element.kind}; a path field stores the path itself, so it must be a String"
+        }
+        checkPluginChoice(element, pluginChoice, key)
+        checkIntentChoice(element, intentChoice, key)
+        val widgets = widgetFlags(
+            picker, ports, tools, phone, timeOfDay, wifi, contactName, filePath, suggested, apiToken,
+            pluginChoice, intentChoice,
+        ).count { it }
+        check(widgets <= 1) {
+            "Config property '${descriptor.serialName}.$key' is annotated with $widgets widgets " +
+                "(@Picker, @Ports, @Tools, @PhoneNumber, @TimeOfDay, @WifiNetwork, @ContactName, " +
+                "@FilePath, " +
+                "@Suggested, @ApiToken, @PluginChoice, @IntentChoice); a property has one editor"
+        }
+    }
+
+    /**
+     * The two things `@PluginChoice` needs beyond being one widget among many.
+     *
+     * Its own function rather than two more `check`s in the list above, because the second
+     * is not the check every other widget gets: the rest only have to be on a `String`,
+     * while this one additionally carries a value the host will hand straight back to the
+     * plugin. A blank source is a chooser that asks its own node an unanswerable question,
+     * and it fails here — at declaration time, the first time the plugin's service starts
+     * or its own test runs — rather than as an empty list on somebody's phone.
+     */
+    private fun checkPluginChoice(element: SerialDescriptor, pluginChoice: PluginChoice?, key: String) {
+        if (pluginChoice == null) return
+        check(element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @PluginChoice but is a " +
+                "${element.kind}; a choice stores the chosen thing's identifier, so it must be a String"
+        }
+        check(pluginChoice.source.isNotBlank()) {
+            "Config property '${descriptor.serialName}.$key' is annotated @PluginChoice with a blank " +
+                "source; the source is the key your node is asked for, so it has to name something"
+        }
+    }
+
+    /**
+     * The three things `@IntentChoice` needs beyond being one widget among many.
+     *
+     * Its own function on [checkPluginChoice]'s reasoning: the rest of the list only has to
+     * be on a `String`, while this one carries values the host turns into a launch. Each
+     * failure is one nobody could diagnose from the phone — a blank action resolves to
+     * nothing and reads as a dead button; an extra with no `=` in it is a key that silently
+     * never arrives at the app being asked.
+     *
+     * The [IntentChoice.action] is deliberately **not** checked against a list of known
+     * actions. That is the open shape the annotation documents, and a list here would be a
+     * closed set wearing an open set's clothes.
+     */
+    private fun checkIntentChoice(element: SerialDescriptor, intentChoice: IntentChoice?, key: String) {
+        if (intentChoice == null) return
+        check(element.kind == PrimitiveKind.STRING) {
+            "Config property '${descriptor.serialName}.$key' is annotated @IntentChoice but is a " +
+                "${element.kind}; what another app answers with is text, so it must be a String"
+        }
+        check(intentChoice.action.isNotBlank()) {
+            "Config property '${descriptor.serialName}.$key' is annotated @IntentChoice with a blank " +
+                "action; the action is what decides which app is asked, so it has to name one"
+        }
+        val malformed = intentChoice.inputExtras.firstOrNull { !it.contains('=') }
+        check(malformed == null) {
+            "Config property '${descriptor.serialName}.$key' is annotated @IntentChoice with the input " +
+                "extra '$malformed', which has no '='; each entry is one 'key=value' pair"
+        }
+    }
+
+    /**
+     * Which widget annotations are present, as a flat list of flags.
+     *
+     * One list read by both callers, so "the set of things that claim a field's
+     * editor" is written down once. A new widget is one entry here, one branch in
+     * [stringFormType] and one `check` — miss this one and two widgets on a property
+     * would silently be allowed.
+     */
+    @Suppress("LongParameterList") // Mirrors [formTypeOf]; one parameter per widget annotation.
+    private fun widgetFlags(
+        picker: Picker?,
+        ports: Boolean,
+        tools: Tools?,
+        phone: Boolean,
+        timeOfDay: Boolean,
+        wifi: Boolean,
+        contactName: Boolean,
+        filePath: Boolean,
+        suggested: Suggested?,
+        apiToken: Boolean,
+        pluginChoice: PluginChoice?,
+        intentChoice: IntentChoice?,
+    ): List<Boolean> = listOf(
+        picker != null, ports, tools != null, phone, timeOfDay, wifi, contactName, filePath,
+        suggested != null, apiToken, pluginChoice != null, intentChoice != null,
+    )
+
+    private fun enumOptions(element: SerialDescriptor): List<ConfigOption> {
+        val options = enumConfigOptions(element)
+        // A nullable enum means "optional choice"; the blank option clears it.
+        return if (element.isNullable) listOf(ConfigOption(value = "", label = UNSET_LABEL)) + options else options
+    }
+
+    /** One property of the config class: its key, form field, port and parser. */
+    private inner class ConfigElement(
+        val key: String,
+        val wired: Boolean,
+        val elementDescriptor: SerialDescriptor,
+        val field: ConfigField<*>,
+    ) {
+        private val enumValues: Set<String> =
+            if (elementDescriptor.kind == SerialKind.ENUM) {
+                (0 until elementDescriptor.elementsCount).mapTo(mutableSetOf(), elementDescriptor::getElementName)
+            } else {
+                emptySet()
+            }
+
+        fun port(): Port = Port(
+            name = PortName(key),
+            kind = PortKind.DATA,
+            direction = Direction.IN,
+            schema = buildSchema(elementDescriptor, null),
+            label = field.label,
+        )
+
+        /**
+         * Parses a stored/wired string into the JSON form of this property, or
+         * null when it is absent or unparseable (so the default applies).
+         */
+        fun encode(raw: String?): JsonElement? {
+            val value = raw?.takeIf { it.isNotBlank() } ?: return null
+            // A date is normalised here rather than when the form is saved, which is
+            // what gives a stored `18:00` its meaning: this runs once per execution,
+            // so it resolves against *today* every time the node is decoded.
+            return if (elementDescriptor.serialName == DateTime.SERIAL_NAME) {
+                DateTime.parse(value)?.let { JsonPrimitive(it.toString()) }
+            } else {
+                encodeDeclared(value)
+            }
+        }
+
+        /** The parse table for a property whose form is its declared serial kind. */
+        private fun encodeDeclared(value: String): JsonElement? {
+            return when (elementDescriptor.kind) {
+                SerialKind.ENUM -> JsonPrimitive(value).takeIf { value in enumValues }
+                PrimitiveKind.BOOLEAN -> value.toBooleanStrictOrNull()?.let { JsonPrimitive(it) }
+                PrimitiveKind.INT, PrimitiveKind.SHORT, PrimitiveKind.BYTE ->
+                    value.toIntOrNull()?.let { JsonPrimitive(it) }
+                PrimitiveKind.LONG -> value.toLongOrNull()?.let { JsonPrimitive(it) }
+                PrimitiveKind.DOUBLE, PrimitiveKind.FLOAT -> value.toDoubleOrNull()?.let { JsonPrimitive(it) }
+                else -> JsonPrimitive(value)
+            }
+        }
+    }
+
+    companion object {
+        /**
+         * The choice a nullable enum field offers for "leave this unset".
+         *
+         * Public because it is user-facing text: the string generator materialises it
+         * into a single translation key shared by every such field, rather than one
+         * per field, since it is spelled once here.
+         */
+        const val UNSET_LABEL = "Any"
+
+        private val DECODER = Json { ignoreUnknownKeys = true; isLenient = true }
+        private val ENCODER = Json { encodeDefaults = true }
+    }
+}
+
+/** Derives the [NodeSchema] of a node's `@Serializable` config class [T]. */
+inline fun <reified T : Any> nodeSchema(): NodeSchema<T> = NodeSchema(serializer())
+
+/**
+ * The persisted names and form labels of an enum class, as a config field's
+ * options would show them (its `@SerialName`s and [Label]s).
+ *
+ * Exposed because one editor needs an enum's labels without there being a
+ * [ConfigField] for it: the `@Ports` editor offers a
+ * [io.github.m1n1m1.easymatic.domain.model.config.ValueType] per row, and those rows
+ * are not config fields of their own. Sharing this is what keeps "Date & time"
+ * from being spelled a second time in the UI.
+ */
+fun enumConfigOptions(descriptor: SerialDescriptor): List<ConfigOption> =
+    (0 until descriptor.elementsCount).map { index ->
+        val name = descriptor.getElementName(index)
+        ConfigOption(value = name, label = descriptor.getElementAnnotations(index).labelOr(name))
+    }
+
+private fun List<Annotation>.labelOr(name: String): String =
+    filterIsInstance<Label>().firstOrNull()?.value ?: prettify(name)
+
+/** Blank rather than derived: there is nothing to prettify a missing explanation out of. */
+private fun List<Annotation>.hint(): String =
+    filterIsInstance<Hint>().firstOrNull()?.value.orEmpty()
+
+private fun List<Annotation>.visibilityRule(): VisibilityRule? =
+    filterIsInstance<VisibleWhen>().firstOrNull()?.let {
+        VisibilityRule(key = ConfigKey(it.key), values = it.values.toSet())
+    }
+
+/**
+ * Turns a property or enum-entry name into a form label:
+ * `daysOfWeek` → "Days of week", `PLAY_PAUSE` → "Play pause".
+ */
+private fun prettify(name: String): String {
+    val spaced = StringBuilder(name.length + WORD_SLACK)
+    name.forEachIndexed { index, char ->
+        when {
+            char == '_' || char == '-' -> spaced.append(' ')
+            char.isUpperCase() && index > 0 && name[index - 1].isLowerCase() ->
+                spaced.append(' ').append(char.lowercaseChar())
+            else -> spaced.append(char.lowercaseChar())
+        }
+    }
+    return spaced.toString().trim().replaceFirstChar { it.uppercaseChar() }
+}
+
+private const val WORD_SLACK = 8

@@ -22,16 +22,16 @@
 
     <ImageView
         android:id="@+id/prompt_icon"
-        style="@style/Ottomatic.DialogIcon"
+        style="@style/Easymatic.DialogIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:importantForAccessibility="no"
-        android:src="@drawable/ic_dialog_ottomatic" />
+        android:src="@drawable/ic_dialog_easymatic" />
 
     <TextView
         android:id="@+id/prompt_title"
-        style="@style/Ottomatic.DialogTitle"
+        style="@style/Easymatic.DialogTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

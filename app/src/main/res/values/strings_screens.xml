@@ -33,7 +33,7 @@
     <string name="calendar_any_calendar">Any calendar</string>
     <string name="calendar_no_calendars">There are no calendars on this phone.</string>
     <string name="calendar_no_writable_calendars">None of the calendars on this phone can be added to. A subscribed calendar, like a holiday feed, can only be read.</string>
-    <string name="calendar_needs_access">Ottomatic needs calendar access to list your calendars.</string>
+    <string name="calendar_needs_access">Easymatic needs calendar access to list your calendars.</string>
     <string name="calendar_grant_access">Grant</string>
     <string name="category_data">Data</string>
     <string name="category_value_power">Power &amp; Battery</string>
@@ -86,13 +86,13 @@
     <string name="contacts_type_a_number">Type a number</string>
 
     <!-- feature/files -->
-    <string name="files_path_placeholder">A path, or a name for Ottomatic\'s own storage</string>
+    <string name="files_path_placeholder">A path, or a name for Easymatic\'s own storage</string>
     <string name="files_choose">Choose a file or folder</string>
     <string name="files_choose_folder">Choose a folder…</string>
     <string name="files_choose_file">Choose a file…</string>
     <string name="files_folder_access">Folder access</string>
-    <string name="files_no_folders">Ottomatic cannot reach any of your folders yet.</string>
-    <string name="files_no_folders_hint">Choose a folder to let macros read and write the files inside it. Android does not allow granting all of internal storage or the Download folder itself — make or pick a folder inside one, such as Download/Ottomatic.</string>
+    <string name="files_no_folders">Easymatic cannot reach any of your folders yet.</string>
+    <string name="files_no_folders_hint">Choose a folder to let macros read and write the files inside it. Android does not allow granting all of internal storage or the Download folder itself — make or pick a folder inside one, such as Download/Easymatic.</string>
     <string name="files_grant">Choose a folder</string>
     <string name="files_regrant">Grant again</string>
     <string name="files_revoke">Revoke</string>
@@ -104,7 +104,7 @@
     <string name="files_files_heading">Single files</string>
     <string name="files_download_note">Android does not allow granting the Download folder itself. To use something already in it, add that file here with Add a file — or keep downloads in a folder inside it, which can be granted whole.</string>
     <string name="files_read_only_file">Can read this one file</string>
-    <string name="files_own_storage">Ottomatic\'s own storage</string>
+    <string name="files_own_storage">Easymatic\'s own storage</string>
     <string name="files_own_storage_hint">A path with no folder in it, such as report.csv, is kept here. It needs no permission and no macro can be given access to another app\'s files.</string>
 
     <!-- feature/macro -->
@@ -118,7 +118,7 @@
     <string name="permissions_back">Back</string>
     <string name="permissions_disable_battery_optimisation">Disable battery optimisation</string>
     <string name="permissions_not_now">Not now</string>
-    <string name="permissions_ottomatic_itself">Ottomatic itself</string>
+    <string name="permissions_easymatic_itself">Easymatic itself</string>
     <string name="permissions_permissions">Permissions</string>
     <string name="permissions_used_by_your_nodes">Used by your nodes</string>
 
@@ -131,7 +131,7 @@
     <string name="wifi_connected">Connected</string>
     <string name="wifi_grant">Grant</string>
     <string name="wifi_no_networks_found_wi_fi">No networks found. Wi-Fi and Location both have to be switched on to scan, and Android limits how often it will look. You can type a network\'s name instead.</string>
-    <string name="wifi_ottomatic_needs_location_to_list">Ottomatic needs Location to list Wi-Fi networks</string>
+    <string name="wifi_easymatic_needs_location_to_list">Easymatic needs Location to list Wi-Fi networks</string>
     <string name="wifi_rescan">Rescan</string>
 
     <!-- feature/widget -->
@@ -143,7 +143,7 @@
     <string name="widget_no_manual_triggers_yet_n">No manual triggers yet.\n\nOpen a macro and drop a Manual Trigger node onto the canvas — it will show up here.</string>
     <string name="widget_no_manual_triggers_yet_nadd">No manual triggers yet.\nAdd a Manual Trigger node to a macro.</string>
     <string name="widget_nothing_to_show_nlong_press">Nothing to show.\nLong-press to choose what this panel displays.</string>
-    <string name="widget_ottomatic_panel">Ottomatic panel</string>
+    <string name="widget_easymatic_panel">Easymatic panel</string>
     <string name="widget_problems">Problems</string>
     <string name="widget_save">Save</string>
     <string name="widget_show_all_of_them">Show all of them</string>
@@ -154,13 +154,13 @@
     <string name="api_app_access">App access</string>
     <string name="api_back">Back</string>
     <string name="api_copy_the_key">Copy the key</string>
-    <string name="api_it_will_be_able_to">It will be able to see the names of macros you have given a \"Called by Another App\" trigger, and to run them. It cannot see or change anything else in Ottomatic, and macros without that trigger stay out of reach.</string>
+    <string name="api_it_will_be_able_to">It will be able to see the names of macros you have given a \"Called by Another App\" trigger, and to run them. It cannot see or change anything else in Easymatic, and macros without that trigger stay out of reach.</string>
     <string name="api_no_key_approved_apps_only">No key — approved apps only</string>
     <string name="api_not_now">Not now</string>
-    <string name="api_ottomatic_key">Ottomatic key</string>
+    <string name="api_easymatic_key">Easymatic key</string>
     <string name="api_remove_the_key">Remove the key</string>
     <string name="api_revoke">Revoke</string>
-    <string name="api_you_can_withdraw_this_at">You can withdraw this at any time under App access in Ottomatic.</string>
+    <string name="api_you_can_withdraw_this_at">You can withdraw this at any time under App access in Easymatic.</string>
 
     <!-- feature/variables -->
     <string name="variables_back">Back</string>
@@ -192,7 +192,7 @@
     <string name="geofence_search_an_address_or_place">Search an address or place</string>
 
     <!-- feature/nfc -->
-    <string name="nfc_a_link_makes_the_tag">A link makes the tag open in a browser when tapped — and a macro watching this tag will stop running, because Android hands the tag to whichever app claims the link before Ottomatic ever sees it. Text does not do this.</string>
+    <string name="nfc_a_link_makes_the_tag">A link makes the tag open in a browser when tapped — and a macro watching this tag will stop running, because Android hands the tag to whichever app claims the link before Easymatic ever sees it. Text does not do this.</string>
     <string name="nfc_already_in_your_library">Already in your library.</string>
     <string name="nfc_any_tag">Any tag</string>
     <string name="nfc_back">Back</string>
@@ -401,7 +401,7 @@
     <string name="ai_provider_s_default">provider\'s default</string>
     <string name="api_no_macro_can_currently_be">No macro can currently be called from outside.</string>
     <string name="api_no_other_app_can_run">No other app can run your macros. When one asks, you will be shown what it is and can decide then — approvals appear here so you can withdraw them.</string>
-    <string name="api_these_apps_can_see_and">These apps can see and run the macros you have given a \"Called by Another App\" trigger. They cannot see or change anything else in Ottomatic, and an app is only listed here because you allowed it when it asked.</string>
+    <string name="api_these_apps_can_see_and">These apps can see and run the macros you have given a \"Called by Another App\" trigger. They cannot see or change anything else in Easymatic, and an app is only listed here because you allowed it when it asked.</string>
     <string name="apps_other_apps">Other apps</string>
     <string name="geofence_edit_place">Edit place</string>
     <string name="geofence_new_place_2">New place</string>
@@ -419,12 +419,12 @@
     <string name="macro_colour">Colour</string>
     <string name="macro_icon">Icon</string>
     <string name="mail_password_needed">Password needed</string>
-    <string name="nfc_ottomatic_cannot_switch_it_on">Ottomatic cannot switch it on for you — Android only allows that from its own settings.</string>
+    <string name="nfc_easymatic_cannot_switch_it_on">Easymatic cannot switch it on for you — Android only allows that from its own settings.</string>
     <string name="nfc_rename_tag">Rename tag</string>
     <string name="nfc_scan_a_tag">Scan a tag</string>
     <string name="nfc_there_is_nothing_to_scan">There is nothing to scan with. A tag trigger will never fire here.</string>
-    <string name="permissions_ottomatic_couldn_t_resume_your">Ottomatic couldn\'t resume your macros in the background after the last reboot. To keep automation running without intervention, allow Ottomatic to run without battery restrictions. You can change this later under Permissions.</string>
-    <string name="plugins_a_plugin_adds_trigger_and">A plugin adds trigger and action nodes to your palette. It is a separate app: it runs its own code, in its own process, using only the permissions it asks you for itself. Ottomatic does not share its permissions with it.</string>
+    <string name="permissions_easymatic_couldn_t_resume_your">Easymatic couldn\'t resume your macros in the background after the last reboot. To keep automation running without intervention, allow Easymatic to run without battery restrictions. You can change this later under Permissions.</string>
+    <string name="plugins_a_plugin_adds_trigger_and">A plugin adds trigger and action nodes to your palette. It is a separate app: it runs its own code, in its own process, using only the permissions it asks you for itself. Easymatic does not share its permissions with it.</string>
     <string name="plugins_no_plugins_are_installed_a">No plugins are installed. A plugin is a separate app that adds trigger and action nodes to your palette; install one and it will appear here.</string>
     <string name="plugins_provides_no_nodes">Provides no nodes</string>
     <string name="smarthome_address">Address</string>
@@ -602,7 +602,7 @@
     <string name="intent_choice_placeholder">Type it, or ask an app</string>
     <string name="intent_choice_ask_an_app">Ask an app</string>
     <string name="intent_choice_no_app">No app on this phone can answer that. You can still type a value in.</string>
-    <string name="intent_choice_needs_camera">Ottomatic needs camera access before another app can take the picture. Tap to allow it, then tap again.</string>
+    <string name="intent_choice_needs_camera">Easymatic needs camera access before another app can take the picture. Tap to allow it, then tap again.</string>
 
     <string name="variables_edit_variable">Edit variable</string>
     <string name="variables_every_workflow">Every workflow</string>
@@ -635,7 +635,7 @@
 
     <string name="problems_summary_separator"> · </string>
     <string name="ai_model_answered">The model answered: %1$s</string>
-    <string name="mail_choose_account_first">Choose an account on this node first — folders live on the server, so Ottomatic has to know which one to ask.</string>
+    <string name="mail_choose_account_first">Choose an account on this node first — folders live on the server, so Easymatic has to know which one to ask.</string>
     <string name="mail_folder_list_unreadable">The folder list could not be read.</string>
     <string name="mail_no_usable_folders">This account reports no folders that can hold mail.</string>
     <string name="shortcut_macro_gone">That macro no longer exists</string>
@@ -652,14 +652,14 @@
 
     <string name="grapheditor_port_path">%1$s › %2$s</string>
 
-    <!-- MQTT. Ottomatic is a client here and never a broker: every one of these is
+    <!-- MQTT. Easymatic is a client here and never a broker: every one of these is
          about a broker somebody else is running, which the copy says out loud because
          "MQTT support" is ambiguous everywhere else it is written. -->
     <string name="smarthome_mqtt_broker">MQTT broker</string>
     <string name="smarthome_mqtt_broker_subtitle">A broker you already run — Mosquitto, Zigbee2MQTT, EMQX</string>
     <string name="mqtt_connect_a_broker">Connect an MQTT broker</string>
     <string name="mqtt_name_your_broker">Name your broker</string>
-    <string name="mqtt_setup_intro">Ottomatic connects to a broker you already run. It never acts as one itself.</string>
+    <string name="mqtt_setup_intro">Easymatic connects to a broker you already run. It never acts as one itself.</string>
     <string name="mqtt_address">Broker address</string>
     <string name="mqtt_login_optional">Leave these empty if your broker allows anyone on the network to connect, which most home brokers do.</string>
     <string name="mqtt_username">Username</string>
@@ -745,9 +745,9 @@
     <string name="macro_transfer_imported_body">“%1$s” is ready. It stays off until you arm it.</string>
     <string name="macro_transfer_adopted">Added to your libraries: %1$s</string>
     <string name="macro_transfer_needs">Still needs setting up here: %1$s</string>
-    <string name="macro_transfer_unreadable">That file isn\'t an Ottomatic macro.</string>
-    <string name="macro_transfer_too_new">This macro was exported by a newer version of Ottomatic. Update the app to import it.</string>
-    <string name="macro_transfer_too_old">This macro was exported by an older version of Ottomatic and can\'t be read.</string>
+    <string name="macro_transfer_unreadable">That file isn\'t an Easymatic macro.</string>
+    <string name="macro_transfer_too_new">This macro was exported by a newer version of Easymatic. Update the app to import it.</string>
+    <string name="macro_transfer_too_old">This macro was exported by an older version of Easymatic and can\'t be read.</string>
     <string name="macro_transfer_needs_plugin">the %1$s plugin</string>
     <string name="macro_transfer_needs_app">the app %1$s</string>
     <string name="macro_transfer_need_ai_model">an AI model</string>

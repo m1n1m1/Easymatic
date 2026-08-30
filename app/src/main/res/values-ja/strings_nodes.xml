@@ -5,7 +5,7 @@
     <string name="port_trigger_manual_out">出力</string>
     <string name="cfg_trigger_manual_label">ボタンのラベル</string>
     <string name="node_trigger_api_name">他のアプリから呼び出し</string>
-    <string name="node_trigger_api_desc">他のアプリ、スクリプト、ショートカットが Ottomatic に実行を求めたときにワークフローを開始します</string>
+    <string name="node_trigger_api_desc">他のアプリ、スクリプト、ショートカットが Easymatic に実行を求めたときにワークフローを開始します</string>
     <string name="port_trigger_api_out">出力</string>
     <string name="cfg_trigger_api_label">他のアプリに見える名前</string>
     <string name="cfg_trigger_api_inputs">この呼び出しが運ぶ値</string>

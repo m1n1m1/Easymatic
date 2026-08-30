@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_service_label">Activadores por botón de Ottomatic</string>
+    <string name="accessibility_service_label">Activadores por botón de Easymatic</string>
     <string name="accessibility_service_summary">Permite que las macros se inicien al pulsar los botones de volumen o deslizar el dedo por el lector de huellas, y que la acción Hacer captura de pantalla capture la pantalla.</string>
-    <string name="accessibility_service_description">Ottomatic lo usa para tres cosas: detectar pulsaciones de los botones de volumen y deslizamientos sobre el lector de huellas, para que tus macros puedan iniciarse así, y capturar la pantalla cuando una macro ejecuta la acción Hacer captura de pantalla. Nunca observa lo que hay en pantalla —solo captura cuando una macro se lo pide— y no cambia nada: las teclas de volumen siguen funcionando con normalidad y el desbloqueo con huella no se ve afectado.</string>
+    <string name="accessibility_service_description">Easymatic lo usa para tres cosas: detectar pulsaciones de los botones de volumen y deslizamientos sobre el lector de huellas, para que tus macros puedan iniciarse así, y capturar la pantalla cuando una macro ejecuta la acción Hacer captura de pantalla. Nunca observa lo que hay en pantalla —solo captura cuando una macro se lo pide— y no cambia nada: las teclas de volumen siguen funcionando con normalidad y el desbloqueo con huella no se ve afectado.</string>
     <string name="shortcut_new_macro_short">Nueva macro</string>
     <string name="shortcut_new_macro_long">Crear una macro nueva</string>
     <string name="widget_run_tile_label">Botón de ejecución</string>
-    <string name="widget_panel_label">Panel de Ottomatic</string>
+    <string name="widget_panel_label">Panel de Easymatic</string>
     <string name="widget_run_tile_description">Una macro, un toque. Elige un activador manual y ejecútalo desde la pantalla de inicio.</string>
     <string name="widget_panel_description">Estado del motor, problemas, la última ejecución y una cuadrícula de activadores manuales: tú eliges qué se muestra.</string>
-    <string name="permission_bind_plugin_label">Proporcionar nodos de Ottomatic</string>
-    <string name="permission_bind_plugin_description">Permite que Ottomatic use los nodos de activador y acción adicionales que ofrece esta aplicación. La aplicación ejecuta su propio código con sus propios permisos; Ottomatic no comparte los suyos con ella.</string>
+    <string name="permission_bind_plugin_label">Proporcionar nodos de Easymatic</string>
+    <string name="permission_bind_plugin_description">Permite que Easymatic use los nodos de activador y acción adicionales que ofrece esta aplicación. La aplicación ejecuta su propio código con sus propios permisos; Easymatic no comparte los suyos con ella.</string>
 </resources>

@@ -22,12 +22,12 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Ottomatic"
+rootProject.name = "Easymatic"
 include(":app")
 
 // The node declaration surface, shared by the app and by third-party plugin apps.
 // See docs/PLUGINS.md — a plugin compiles against this and against `:plugin-sdk`,
-// and against nothing else of Ottomatic's.
+// and against nothing else of Easymatic's.
 include(":node-api")
 
 // The Android half a plugin app needs: the AIDL both sides compile, the service base

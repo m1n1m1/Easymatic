@@ -1,1 +1,1 @@
-The first alpha of Ottomatic. Build automations by wiring triggers, actions, values and transforms together on a canvas, then let them run in the background — even when the app is closed. Expect rough edges, and expect macros to need rebuilding as things change.
+The first alpha of Easymatic. Build automations by wiring triggers, actions, values and transforms together on a canvas, then let them run in the background — even when the app is closed. Expect rough edges, and expect macros to need rebuilding as things change.

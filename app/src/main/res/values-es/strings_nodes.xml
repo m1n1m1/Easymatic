@@ -5,7 +5,7 @@
     <string name="port_trigger_manual_out">Salida</string>
     <string name="cfg_trigger_manual_label">Texto del botón</string>
     <string name="node_trigger_api_name">Llamada por otra aplicación</string>
-    <string name="node_trigger_api_desc">Inicia el flujo cuando otra aplicación, un script o un acceso directo le pide a Ottomatic que lo ejecute</string>
+    <string name="node_trigger_api_desc">Inicia el flujo cuando otra aplicación, un script o un acceso directo le pide a Easymatic que lo ejecute</string>
     <string name="port_trigger_api_out">Salida</string>
     <string name="cfg_trigger_api_label">Nombre que ven otras aplicaciones</string>
     <string name="cfg_trigger_api_inputs">Valores que lleva esta llamada</string>

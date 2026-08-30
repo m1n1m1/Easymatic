@@ -5,7 +5,7 @@ sidebar:
   order: 5
 ---
 
-Ottomatic talks IMAP and SMTP directly. There is no OAuth and no vendor SDK, which is
+Easymatic talks IMAP and SMTP directly. There is no OAuth and no vendor SDK, which is
 why any mail server works — and why **you almost certainly need an app password rather
 than your normal one**.
 

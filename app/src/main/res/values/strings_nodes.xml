@@ -7,7 +7,7 @@
     <string name="port_trigger_manual_out">out</string>
     <string name="cfg_trigger_manual_label">Button label</string>
     <string name="node_trigger_api_name">Called by Another App</string>
-    <string name="node_trigger_api_desc">Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it</string>
+    <string name="node_trigger_api_desc">Starts the workflow when another app, a script or a shortcut asks Easymatic to run it</string>
     <string name="port_trigger_api_out">out</string>
     <string name="cfg_trigger_api_label">Name other apps see</string>
     <string name="cfg_trigger_api_inputs">Values this call carries</string>

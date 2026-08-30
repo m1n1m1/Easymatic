@@ -11,7 +11,7 @@
  * second one rather than moving the site.
  */
 {
-  "name": "ottomatic",
+  "name": "easymatic",
   "compatibility_date": "2026-08-29",
   "assets": {
     "directory": "./dist",

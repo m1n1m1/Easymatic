@@ -15,7 +15,7 @@ Tasmota's. So `SmartHomeKind.MQTT` has **no `SmartHomeVendor` at all**, the thre
 nodes are not offered a broker, and turning a lamp on is `action.mqtt_publish` with the
 topic that lamp's own software documents.
 
-**Ottomatic is a client and never a broker.** Nothing listens for connections; every
+**Easymatic is a client and never a broker.** Nothing listens for connections; every
 member of the `Mqtt` facade (`core/service/`) is something said to, or heard from, a
 broker somebody else runs. That is stated on the facade itself because "MQTT support" is
 ambiguous everywhere else it is written, and the ambiguity is expensive — a broker is a

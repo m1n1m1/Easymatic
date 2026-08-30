@@ -16,13 +16,13 @@ so a third-party plugin has something to compile against.
 | `:plugin-sdk` | The Android half a plugin needs: the AIDL, the service base class and the six node contracts. |
 | `:sample-plugin` | A worked plugin, built by `test` and `connectedAndroidTest`. |
 
-The packages under `com.example.ottomatic` are shared across `:node-api` and `:app`. So
+The packages under `io.github.m1n1m1.easymatic` are shared across `:node-api` and `:app`. So
 the module a file is in answers a different question from the package it is in: **the
 package says what the code does, the module says whether a plugin can see it.**
 
 ## Package structure
 
-Inside `com.example.ottomatic`:
+Inside `io.github.m1n1m1.easymatic`:
 
 | Package | What belongs in it |
 | --- | --- |

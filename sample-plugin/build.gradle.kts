@@ -7,7 +7,7 @@ plugins {
 // A worked plugin, and the only thing that keeps the SDK honest as it changes.
 //
 // It is a real, installable app rather than a fixture: it exports the same service a
-// third party's would, over the same AIDL, under a package name Ottomatic has never
+// third party's would, over the same AIDL, under a package name Easymatic has never
 // heard of. That is what makes the instrumented test meaningful — nothing here is
 // privileged, and if this stops working, so has every plugin anybody else has written.
 //
@@ -15,13 +15,13 @@ plugins {
 // own declaration test) and by `connectedAndroidTest`.
 
 android {
-    namespace = "com.example.ottomatic.sample"
+    namespace = "io.github.m1n1m1.easymatic.sample"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.example.ottomatic.sample"
+        applicationId = "io.github.m1n1m1.easymatic.sample"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -43,7 +43,7 @@ android {
 }
 
 dependencies {
-    // The two modules, and nothing else of Ottomatic's. That is the whole dependency a
+    // The two modules, and nothing else of Easymatic's. That is the whole dependency a
     // plugin author takes on, and this module exists partly to prove it stays true.
     implementation(project(":plugin-sdk"))
     testImplementation(libs.junit)

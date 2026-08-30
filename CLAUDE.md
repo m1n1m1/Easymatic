@@ -8,7 +8,7 @@ Always use the Gradle wrapper: `.\gradlew.bat <task>` (Windows).
 
 - **Build**: `.\gradlew.bat assembleDebug`
 - **Unit tests**: `.\gradlew.bat test`
-- **Single test class**: `.\gradlew.bat test --tests "com.example.ottomatic.domain.registry.NodeSchemaTest"`
+- **Single test class**: `.\gradlew.bat test --tests "io.github.m1n1m1.easymatic.domain.registry.NodeSchemaTest"`
 - **Instrumentation tests**: `.\gradlew.bat connectedAndroidTest` (device/emulator required)
 - **Static analysis**: `.\gradlew.bat detekt`
 - **Android lint**: `.\gradlew.bat lintDebug`
@@ -44,11 +44,11 @@ Create it in Google Cloud Console with **Maps SDK for Android** enabled. Without
 
 ## Architecture
 
-Ottomatic is an Android automation app built on a **node-based workflow graph**. Users wire together Triggers (event sources) and Actions (handlers) in a visual editor; a foreground service executes them in the background.
+Easymatic is an Android automation app built on a **node-based workflow graph**. Users wire together Triggers (event sources) and Actions (handlers) in a visual editor; a foreground service executes them in the background.
 
 ### Package dependency rules
 
-The five top-level packages under `com.example.ottomatic` are `core/`, `domain/`, `engine/`, `data/` and `feature/`. What each contains is visible from its contents; what is not visible is which may depend on which, and that is strict: `domain ← core only` · `engine ← domain + core` · `data ← domain + core` · `feature ← domain + engine + core`
+The five top-level packages under `io.github.m1n1m1.easymatic` are `core/`, `domain/`, `engine/`, `data/` and `feature/`. What each contains is visible from its contents; what is not visible is which may depend on which, and that is strict: `domain ← core only` · `engine ← domain + core` · `data ← domain + core` · `feature ← domain + engine + core`
 
 Those packages now span **two Gradle modules**, and which module a file is in says something the package name does not: whether it is part of the surface a third-party plugin compiles against. `:node-api` holds the *declaration* half — ids, permissions, item schemas, ports, config annotations and `NodeSchema` — as a plain Kotlin JVM library with one dependency and no `android.jar` on its classpath, which is what turns "no Android imports in `domain/`" from a convention `ARCHITECTURE.md` wrongly claimed detekt enforced into a compile error. `:app` holds everything else. Two more modules exist for plugins only: `:plugin-sdk` (the AIDL, the service base class, the six plugin node contracts) and `:sample-plugin`.
 
@@ -236,7 +236,7 @@ A node whose declared **permission** has not been granted is the third of that f
 
 A node needing **hardware this phone does not have** is the fourth (`validateCapabilities`), and it is a second *axis* rather than a fourth entry on the first — `DeviceCapability` and `DeviceCapabilities` beside `PermissionRequirement` and `GrantedPrerequisites`. The reason not to make it a thirteenth `PrerequisiteType` is written down already, on the other side: `AndroidPermissionChecker` answers **satisfied** for `PrerequisiteType.NFC` on a phone with no NFC chip, because the Permissions screen asks "what does the app need and what has it got?" and a row that can never go green is not an answer to it. A capability is exactly the thing that can never go green, so it is invisible to `PermissionCatalogue` and the Permissions screen and visible only where the *node* is. **A permission is something the user can go and fix; a capability is a fact about the phone.**
 
-It still blocks nothing, and for a sharper reason than the permission case: there is no Settings page here either, so nothing will ever start it working — but the macro is not broken, it is **portable**, and quarantining the node would take out work on the phone that can run it. The one genuinely new piece is that `CapabilityChecker` answers a **tri-state**. `trigger.fingerprint_gesture` is what forced it: whether the reader reports swipes can only be asked of a *bound* accessibility service, so before that there is no answer, and `UNKNOWN` has to read as silence rather than as a warning. `DeviceCapabilities.hydrateFrom` therefore publishes everything that is not definitively `UNAVAILABLE`, and `OttomaticAccessibilityService` republishes on connect and on `onGestureDetectionAvailabilityChanged` — a third hydration site the permission axis has no need of, because that one is only ever learned by leaving the app.
+It still blocks nothing, and for a sharper reason than the permission case: there is no Settings page here either, so nothing will ever start it working — but the macro is not broken, it is **portable**, and quarantining the node would take out work on the phone that can run it. The one genuinely new piece is that `CapabilityChecker` answers a **tri-state**. `trigger.fingerprint_gesture` is what forced it: whether the reader reports swipes can only be asked of a *bound* accessibility service, so before that there is no answer, and `UNKNOWN` has to read as silence rather than as a warning. `DeviceCapabilities.hydrateFrom` therefore publishes everything that is not definitively `UNAVAILABLE`, and `EasymaticAccessibilityService` republishes on connect and on `onGestureDetectionAvailabilityChanged` — a third hydration site the permission axis has no need of, because that one is only ever learned by leaving the app.
 
 ### Persistence
 
@@ -318,7 +318,7 @@ Cutting a release is: edit `CHANGELOG.md`, regenerate, commit, then push a `v<ve
 `.github/workflows/release.yml` refuses a tag that does not name the newest entry, and creates
 the GitHub release from `notes`. It attaches no artifact — there is no signing config in this
 repo yet — and Play is still uploaded by hand, which is why the workflow prints the store text
-into its own log ready to paste. **`applicationId` is still `com.example.ottomatic`, which Play
+into its own log ready to paste. **`applicationId` is still `io.github.m1n1m1.easymatic`, which Play
 rejects outright**; that rename has to happen before the first upload.
 
 ## Topics that load on demand
@@ -348,4 +348,4 @@ These subsystems each have their own file so they are not resident in every sess
 - **Plugins** (`:node-api`, `:plugin-sdk`, the wire format, `PluginNodes`, `PluginRegistry`, the Plugins screen) — `plugins` skill; the author-facing guide is `docs/PLUGINS.md`
 - **The process API** (`trigger.api`, `ApiTriggerProvider`, `ApiTriggerReceiver`, `ApiCallers`, the consent and App access screens) — `external-api` skill; the author-facing guide is `docs/EXTERNAL_API.md`
 - **The Permissions screen** (`PermissionCatalogue`, `PrerequisiteType`, `PermissionChecker`, the battery-optimisation prompt) — `permissions-screen` skill
-- **The editor UI** (the bottom bar, its three surfaces, `EditorOverlay`) — `app/src/main/java/com/example/ottomatic/feature/CLAUDE.md`, loaded when working under `feature/`
+- **The editor UI** (the bottom bar, its three surfaces, `EditorOverlay`) — `app/src/main/java/io/github/m1n1m1/easymatic/feature/CLAUDE.md`, loaded when working under `feature/`

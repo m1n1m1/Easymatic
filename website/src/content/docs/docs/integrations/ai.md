@@ -81,7 +81,7 @@ per way of asking:
 
 ## What the model is allowed to do
 
-A profile carries a **tool allowance**: which of Ottomatic's own nodes the model may
+A profile carries a **tool allowance**: which of Easymatic's own nodes the model may
 run on your behalf.
 
 The screen offers the **whole candidate set**, ticked or not, so "allow everything" and

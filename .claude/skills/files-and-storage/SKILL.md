@@ -5,7 +5,7 @@ description: Read before touching the file nodes or storage — the six `action.
 
 # Files and storage
 
-**Ottomatic can read and write files, and it declares no storage permission to do it.** That is not a loophole — it is the same road `action.play_sound` has always taken: the editor's chooser hands back a URI the app has been *granted*, `takePersistableUriPermission` makes that grant outlive the task and a reboot, and the engine opens it days later from the foreground service. The rule generalises: **choosing needs an Activity; using does not.** Everything below follows from taking that one-file arrangement and widening it to a folder.
+**Easymatic can read and write files, and it declares no storage permission to do it.** That is not a loophole — it is the same road `action.play_sound` has always taken: the editor's chooser hands back a URI the app has been *granted*, `takePersistableUriPermission` makes that grant outlive the task and a reboot, and the engine opens it days later from the foreground service. The rule generalises: **choosing needs an Activity; using does not.** Everything below follows from taking that one-file arrangement and widening it to a folder.
 
 ## The limit that cannot be designed away
 
@@ -13,7 +13,7 @@ Android will not open a path this app has not been granted. `MANAGE_EXTERNAL_STO
 
 Three consequences belong in user-facing copy, not only in comments:
 
-- Android 11+ **refuses a tree grant** on the root of internal storage, on the `Download` directory itself, and on memory-card roots. Sub-folders of all three are fine, so `Download/Ottomatic` works where `Download` does not. The chooser simply declines, which reads as the app being broken — the Folder access screen says so first, and `SafFileStore.noGrant` gives `Download` its own sentence because the ordinary "add the folder" advice is an instruction that cannot be carried out there.
+- Android 11+ **refuses a tree grant** on the root of internal storage, on the `Download` directory itself, and on memory-card roots. Sub-folders of all three are fine, so `Download/Easymatic` works where `Download` does not. The chooser simply declines, which reads as the app being broken — the Folder access screen says so first, and `SafFileStore.noGrant` gives `Download` its own sentence because the ordinary "add the folder" advice is an instruction that cannot be carried out there.
 - **`Download` therefore has an escape hatch, and it is the only reason single-file grants exist.** `ACTION_OPEN_DOCUMENT` hands over one file at a time with no such restriction, so `SafGrants.files` keeps those grants and `SafFileStore.uriOf` checks them *before* looking for a covering folder. They are read-only by nature rather than by policy — the single-document chooser conveys read access and nothing asks it for more — so they serve `action.file_read` and `action.file_info` and never a write or a delete.
 - **MediaStore is not the answer for `Download`, which is worth knowing before somebody proposes it.** On Android 13+ there is no runtime permission that reads *non-media* files another app put there: `READ_EXTERNAL_STORAGE` no longer applies and the `READ_MEDIA_*` split covers images, video and audio only. A PDF or a CSV in `Download` is reachable through SAF or not at all. MediaStore would still serve files this app created itself, which is a much smaller feature than it sounds.
 - `Android/data`, `Android/obb` and every other app's private storage are unreachable by any route.

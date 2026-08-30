@@ -1,6 +1,6 @@
 ---
 name: run-log
-description: Read before touching the Ottomatic run log or the editor console — ExecutionContext.log, LogSource attribution, RunLogStore, LogEntry, ConsolePanel. Covers the DEBUG/INFO/WARN/ERROR contract, why attribution is a scoped context copy rather than a mutable field, the two size bounds, and why persistence sets encodeDefaults.
+description: Read before touching the Easymatic run log or the editor console — ExecutionContext.log, LogSource attribution, RunLogStore, LogEntry, ConsolePanel. Covers the DEBUG/INFO/WARN/ERROR contract, why attribution is a scoped context copy rather than a mutable field, the two size bounds, and why persistence sets encodeDefaults.
 ---
 
 # The run log

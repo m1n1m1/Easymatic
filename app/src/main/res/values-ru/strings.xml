@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_service_label">Кнопочные триггеры Ottomatic</string>
+    <string name="accessibility_service_label">Кнопочные триггеры Easymatic</string>
     <string name="accessibility_service_summary">Позволяет запускать макросы нажатием кнопок громкости или свайпом по сканеру отпечатка, а действию «Сделать снимок экрана» — снимать экран.</string>
-    <string name="accessibility_service_description">Ottomatic использует это для трёх вещей: чтобы замечать нажатия кнопок громкости и свайпы по сканеру отпечатка и запускать по ним ваши макросы, и чтобы снять экран, когда макрос выполняет действие «Сделать снимок экрана». Экран никогда не отслеживается — снимок делается только по запросу макроса, — и ничего не меняется: клавиши громкости продолжают работать как обычно, а разблокировка по отпечатку не затрагивается.</string>
+    <string name="accessibility_service_description">Easymatic использует это для трёх вещей: чтобы замечать нажатия кнопок громкости и свайпы по сканеру отпечатка и запускать по ним ваши макросы, и чтобы снять экран, когда макрос выполняет действие «Сделать снимок экрана». Экран никогда не отслеживается — снимок делается только по запросу макроса, — и ничего не меняется: клавиши громкости продолжают работать как обычно, а разблокировка по отпечатку не затрагивается.</string>
     <string name="shortcut_new_macro_short">Новый макрос</string>
     <string name="shortcut_new_macro_long">Создать новый макрос</string>
     <string name="widget_run_tile_label">Плитка запуска</string>
-    <string name="widget_panel_label">Панель Ottomatic</string>
+    <string name="widget_panel_label">Панель Easymatic</string>
     <string name="widget_run_tile_description">Один макрос, одно нажатие. Выберите ручной триггер и запускайте его прямо с главного экрана.</string>
     <string name="widget_panel_description">Состояние движка, проблемы, последний запуск и сетка ручных триггеров — что именно показывать, решаете вы.</string>
-    <string name="permission_bind_plugin_label">Предоставлять узлы Ottomatic</string>
-    <string name="permission_bind_plugin_description">Позволяет Ottomatic использовать дополнительные узлы-триггеры и узлы-действия из этого приложения. Приложение выполняет собственный код со своими разрешениями; Ottomatic не делится с ним своими.</string>
+    <string name="permission_bind_plugin_label">Предоставлять узлы Easymatic</string>
+    <string name="permission_bind_plugin_description">Позволяет Easymatic использовать дополнительные узлы-триггеры и узлы-действия из этого приложения. Приложение выполняет собственный код со своими разрешениями; Easymatic не делится с ним своими.</string>
 </resources>

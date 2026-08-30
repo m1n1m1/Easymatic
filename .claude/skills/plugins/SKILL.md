@@ -1,6 +1,6 @@
 ---
 name: plugins
-description: Read before touching Ottomatic's plugin system — the `:node-api` and `:plugin-sdk` modules, the wire format (`SchemaWire`/`ItemWire`/`NodeDeclarationWire`/`ExecOutputsWire`), `PluginDeclarationValidator`, `PluginNodeContracts`, `PluginNodes`, `PluginRegistry`/`PluginConnections`/`BinderPluginChannel`, `PluginNodeRunner`, `PluginChoiceReader`, `PluginTriggerBridge` and the Plugins screen. Covers why a plugin node is not an `ExecutableAction`, why the wire carries no capabilities, why `PrimitiveWire` is closed but the icon is a string, why the first execution route is the fallback, why `@PluginChoice` moves the authority rather than the boundary, why readiness is per plugin and null means silence, and why recovery is re-arming rather than resuming.
+description: Read before touching Easymatic's plugin system — the `:node-api` and `:plugin-sdk` modules, the wire format (`SchemaWire`/`ItemWire`/`NodeDeclarationWire`/`ExecOutputsWire`), `PluginDeclarationValidator`, `PluginNodeContracts`, `PluginNodes`, `PluginRegistry`/`PluginConnections`/`BinderPluginChannel`, `PluginNodeRunner`, `PluginChoiceReader`, `PluginTriggerBridge` and the Plugins screen. Covers why a plugin node is not an `ExecutableAction`, why the wire carries no capabilities, why `PrimitiveWire` is closed but the icon is a string, why the first execution route is the fallback, why `@PluginChoice` moves the authority rather than the boundary, why readiness is per plugin and null means silence, and why recovery is re-arming rather than resuming.
 ---
 
 # Plugins
@@ -157,7 +157,7 @@ cache the name inside the stored spec. It is not done, and it is the obvious nex
 ## `@IntentChoice`: the one widget that was never the host's to withhold
 
 `ConfigFieldTypeWire` refuses nine of the host's widgets, and every refusal has the same
-shape — the field would reach something *Ottomatic keeps on the user's behalf*. `@IntentChoice`
+shape — the field would reach something *Easymatic keeps on the user's behalf*. `@IntentChoice`
 (protocol 3) reaches none of it. It asks another app on the phone: a document provider, the
 ringtone chooser, a camera, a scanner. A plugin could already have asked the same app itself,
 from a `chooser = SCREEN` Activity, under its own uid — so withholding it protected nothing
@@ -268,7 +268,7 @@ getting it wrong is invisible from the host: the field renders, the chooser open
 empty forever, indistinguishable from a workspace with nothing in it.
 
 So it lives in `:plugin-sdk`, with two callers for the reason `NodeDeclarationRules` has
-three: `BaseOttomaticPluginService` at manifest-build time, and a plugin author's own test.
+three: `BaseEasymaticPluginService` at manifest-build time, and a plugin author's own test.
 **Reported, never thrown** — a throw from `declarations()` reaches the host as a dead
 transaction it can only report as *"Could not be reached"*, the least useful sentence
 available and one that points at the wrong thing.
@@ -323,7 +323,7 @@ chosen: its only caller is `awaitClose`, which runs during cancellation.
 ## The seam that makes any of this testable
 
 The bridges take `PluginChannel` (pure Kotlin, in `:node-api`), never
-`IOttomaticPlugin`. Every AIDL stub throws `Stub!` under plain JUnit, so without it the
+`IEasymaticPlugin`. Every AIDL stub throws `Stub!` under plain JUnit, so without it the
 failures most worth testing — a timeout, a dead process, an unparseable reply, an
 undeclared route — would each need a device and a second installed APK. The **timeouts
 live in `PluginNodeRunner`, not in `BinderPluginChannel`**, for exactly the same reason.

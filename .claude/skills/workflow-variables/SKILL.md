@@ -1,6 +1,6 @@
 ---
 name: workflow-variables
-description: Read before touching Ottomatic variables (action.set_variable, value.variable, trigger.variable_change, VariableStore, VariableRef, VariableDeclaration, local vs global scope, BoundVariables) or the geofence place library (GeofencePlace, trigger.geofence). Covers declaration-before-use, id-based references, per-arm binding, constants, and the legacy-name repair pass.
+description: Read before touching Easymatic variables (action.set_variable, value.variable, trigger.variable_change, VariableStore, VariableRef, VariableDeclaration, local vs global scope, BoundVariables) or the geofence place library (GeofencePlace, trigger.geofence). Covers declaration-before-use, id-based references, per-arm binding, constants, and the legacy-name repair pass.
 ---
 
 # Variables

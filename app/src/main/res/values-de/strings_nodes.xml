@@ -7,7 +7,7 @@
     <string name="port_trigger_manual_out">Ausgang</string>
     <string name="cfg_trigger_manual_label">Beschriftung der Schaltfläche</string>
     <string name="node_trigger_api_name">Von einer anderen App aufgerufen</string>
-    <string name="node_trigger_api_desc">Startet den Workflow, wenn eine andere App, ein Skript oder eine Verknüpfung Ottomatic darum bittet</string>
+    <string name="node_trigger_api_desc">Startet den Workflow, wenn eine andere App, ein Skript oder eine Verknüpfung Easymatic darum bittet</string>
     <string name="port_trigger_api_out">Ausgang</string>
     <string name="cfg_trigger_api_label">Name, den andere Apps sehen</string>
     <string name="cfg_trigger_api_inputs">Werte, die dieser Aufruf mitbringt</string>

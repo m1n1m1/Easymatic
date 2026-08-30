@@ -81,7 +81,7 @@
     <string name="permissions_back">Zurück</string>
     <string name="permissions_disable_battery_optimisation">Akku-Optimierung deaktivieren</string>
     <string name="permissions_not_now">Jetzt nicht</string>
-    <string name="permissions_ottomatic_itself">Ottomatic selbst</string>
+    <string name="permissions_easymatic_itself">Easymatic selbst</string>
     <string name="permissions_permissions">Berechtigungen</string>
     <string name="permissions_used_by_your_nodes">Von deinen Knoten verwendet</string>
 
@@ -94,7 +94,7 @@
     <string name="wifi_connected">Verbunden</string>
     <string name="wifi_grant">Erteilen</string>
     <string name="wifi_no_networks_found_wi_fi">Keine Netzwerke gefunden. Zum Suchen müssen WLAN und Standort eingeschaltet sein, und Android begrenzt, wie oft gesucht wird. Du kannst den Namen eines Netzwerks stattdessen eintippen.</string>
-    <string name="wifi_ottomatic_needs_location_to_list">Ottomatic braucht Standort, um WLAN-Netzwerke aufzulisten</string>
+    <string name="wifi_easymatic_needs_location_to_list">Easymatic braucht Standort, um WLAN-Netzwerke aufzulisten</string>
     <string name="wifi_rescan">Erneut suchen</string>
 
     <!-- feature/widget -->
@@ -106,7 +106,7 @@
     <string name="widget_no_manual_triggers_yet_n">Noch keine manuellen Auslöser.\n\nÖffne ein Makro und zieh einen Knoten „Manueller Auslöser“ auf die Arbeitsfläche — dann erscheint er hier.</string>
     <string name="widget_no_manual_triggers_yet_nadd">Noch keine manuellen Auslöser.\nFüge einem Makro einen manuellen Auslöser hinzu.</string>
     <string name="widget_nothing_to_show_nlong_press">Nichts anzuzeigen.\nLange drücken, um auszuwählen, was dieses Panel zeigt.</string>
-    <string name="widget_ottomatic_panel">Ottomatic-Panel</string>
+    <string name="widget_easymatic_panel">Easymatic-Panel</string>
     <string name="widget_problems">Probleme</string>
     <string name="widget_save">Speichern</string>
     <string name="widget_show_all_of_them">Alle anzeigen</string>
@@ -117,13 +117,13 @@
     <string name="api_app_access">App-Zugriff</string>
     <string name="api_back">Zurück</string>
     <string name="api_copy_the_key">Schlüssel kopieren</string>
-    <string name="api_it_will_be_able_to">Sie wird die Namen der Makros sehen können, denen du einen Auslöser „Von einer anderen App aufgerufen“ gegeben hast, und sie ausführen können. Sonst kann sie in Ottomatic nichts sehen oder ändern, und Makros ohne diesen Auslöser bleiben unerreichbar.</string>
+    <string name="api_it_will_be_able_to">Sie wird die Namen der Makros sehen können, denen du einen Auslöser „Von einer anderen App aufgerufen“ gegeben hast, und sie ausführen können. Sonst kann sie in Easymatic nichts sehen oder ändern, und Makros ohne diesen Auslöser bleiben unerreichbar.</string>
     <string name="api_no_key_approved_apps_only">Kein Schlüssel — nur freigegebene Apps</string>
     <string name="api_not_now">Jetzt nicht</string>
-    <string name="api_ottomatic_key">Ottomatic-Schlüssel</string>
+    <string name="api_easymatic_key">Easymatic-Schlüssel</string>
     <string name="api_remove_the_key">Schlüssel entfernen</string>
     <string name="api_revoke">Entziehen</string>
-    <string name="api_you_can_withdraw_this_at">Du kannst das jederzeit unter „App-Zugriff“ in Ottomatic widerrufen.</string>
+    <string name="api_you_can_withdraw_this_at">Du kannst das jederzeit unter „App-Zugriff“ in Easymatic widerrufen.</string>
 
     <!-- feature/variables -->
     <string name="variables_back">Zurück</string>
@@ -155,7 +155,7 @@
     <string name="geofence_search_an_address_or_place">Adresse oder Ort suchen</string>
 
     <!-- feature/nfc -->
-    <string name="nfc_a_link_makes_the_tag">Ein Link sorgt dafür, dass der Tag beim Antippen im Browser öffnet — und ein Makro, das diesen Tag überwacht, läuft dann nicht mehr, weil Android den Tag an die App weitergibt, die den Link beansprucht, bevor Ottomatic ihn überhaupt sieht. Bei Text passiert das nicht.</string>
+    <string name="nfc_a_link_makes_the_tag">Ein Link sorgt dafür, dass der Tag beim Antippen im Browser öffnet — und ein Makro, das diesen Tag überwacht, läuft dann nicht mehr, weil Android den Tag an die App weitergibt, die den Link beansprucht, bevor Easymatic ihn überhaupt sieht. Bei Text passiert das nicht.</string>
     <string name="nfc_already_in_your_library">Bereits in deiner Bibliothek.</string>
     <string name="nfc_any_tag">Beliebiger Tag</string>
     <string name="nfc_back">Zurück</string>
@@ -364,7 +364,7 @@
     <string name="ai_provider_s_default">Standard des Anbieters</string>
     <string name="api_no_macro_can_currently_be">Derzeit kann kein Makro von außen aufgerufen werden.</string>
     <string name="api_no_other_app_can_run">Keine andere App kann deine Makros ausführen. Wenn eine fragt, wird dir gezeigt, worum es sich handelt, und du entscheidest dann — erteilte Freigaben erscheinen hier, damit du sie zurücknehmen kannst.</string>
-    <string name="api_these_apps_can_see_and">Diese Apps können die Makros sehen und ausführen, denen du einen Auslöser „Von einer anderen App aufgerufen“ gegeben hast. Sonst können sie in Ottomatic nichts sehen oder ändern, und eine App steht hier nur, weil du es erlaubt hast, als sie gefragt hat.</string>
+    <string name="api_these_apps_can_see_and">Diese Apps können die Makros sehen und ausführen, denen du einen Auslöser „Von einer anderen App aufgerufen“ gegeben hast. Sonst können sie in Easymatic nichts sehen oder ändern, und eine App steht hier nur, weil du es erlaubt hast, als sie gefragt hat.</string>
     <string name="apps_other_apps">Andere Apps</string>
     <string name="geofence_edit_place">Ort bearbeiten</string>
     <string name="geofence_new_place_2">Neuer Ort</string>
@@ -382,12 +382,12 @@
     <string name="macro_colour">Farbe</string>
     <string name="macro_icon">Symbol</string>
     <string name="mail_password_needed">Passwort erforderlich</string>
-    <string name="nfc_ottomatic_cannot_switch_it_on">Ottomatic kann es nicht für dich einschalten — Android erlaubt das nur in den eigenen Einstellungen.</string>
+    <string name="nfc_easymatic_cannot_switch_it_on">Easymatic kann es nicht für dich einschalten — Android erlaubt das nur in den eigenen Einstellungen.</string>
     <string name="nfc_rename_tag">Tag umbenennen</string>
     <string name="nfc_scan_a_tag">Tag scannen</string>
     <string name="nfc_there_is_nothing_to_scan">Es gibt nichts zum Scannen. Ein Tag-Auslöser wird hier nie auslösen.</string>
-    <string name="permissions_ottomatic_couldn_t_resume_your">Ottomatic konnte deine Makros nach dem letzten Neustart im Hintergrund nicht fortsetzen. Damit die Automatisierung ohne Zutun weiterläuft, erlaube Ottomatic den Betrieb ohne Akku-Einschränkungen. Du kannst das später unter „Berechtigungen“ ändern.</string>
-    <string name="plugins_a_plugin_adds_trigger_and">Ein Plugin fügt deiner Palette Auslöser- und Aktionsknoten hinzu. Es ist eine eigene App: Sie führt ihren eigenen Code in ihrem eigenen Prozess aus und nutzt nur die Berechtigungen, die sie selbst bei dir anfragt. Ottomatic teilt seine Berechtigungen nicht mit ihr.</string>
+    <string name="permissions_easymatic_couldn_t_resume_your">Easymatic konnte deine Makros nach dem letzten Neustart im Hintergrund nicht fortsetzen. Damit die Automatisierung ohne Zutun weiterläuft, erlaube Easymatic den Betrieb ohne Akku-Einschränkungen. Du kannst das später unter „Berechtigungen“ ändern.</string>
+    <string name="plugins_a_plugin_adds_trigger_and">Ein Plugin fügt deiner Palette Auslöser- und Aktionsknoten hinzu. Es ist eine eigene App: Sie führt ihren eigenen Code in ihrem eigenen Prozess aus und nutzt nur die Berechtigungen, die sie selbst bei dir anfragt. Easymatic teilt seine Berechtigungen nicht mit ihr.</string>
     <string name="plugins_no_plugins_are_installed_a">Es sind keine Plugins installiert. Ein Plugin ist eine eigene App, die deiner Palette Auslöser- und Aktionsknoten hinzufügt; installiere eines und es erscheint hier.</string>
     <string name="plugins_provides_no_nodes">Stellt keine Knoten bereit</string>
     <string name="smarthome_address">Adresse</string>
@@ -551,7 +551,7 @@
     <string name="intent_choice_placeholder">Eintippen oder eine App fragen</string>
     <string name="intent_choice_ask_an_app">Eine App fragen</string>
     <string name="intent_choice_no_app">Keine App auf diesem Telefon kann das beantworten. Du kannst den Wert trotzdem eintippen.</string>
-    <string name="intent_choice_needs_camera">Ottomatic braucht Kamerazugriff, bevor eine andere App das Bild aufnehmen kann. Zum Erlauben tippen, dann erneut tippen.</string>
+    <string name="intent_choice_needs_camera">Easymatic braucht Kamerazugriff, bevor eine andere App das Bild aufnehmen kann. Zum Erlauben tippen, dann erneut tippen.</string>
 
     <string name="variables_edit_variable">Variable bearbeiten</string>
     <string name="variables_every_workflow">Alle Workflows</string>
@@ -584,7 +584,7 @@
 
     <string name="problems_summary_separator"> · </string>
     <string name="ai_model_answered">Das Modell hat geantwortet: %1$s</string>
-    <string name="mail_choose_account_first">Wähle zuerst ein Konto an diesem Knoten — Ordner liegen auf dem Server, Ottomatic muss also wissen, welchen es fragen soll.</string>
+    <string name="mail_choose_account_first">Wähle zuerst ein Konto an diesem Knoten — Ordner liegen auf dem Server, Easymatic muss also wissen, welchen es fragen soll.</string>
     <string name="mail_folder_list_unreadable">Die Ordnerliste konnte nicht gelesen werden.</string>
     <string name="mail_no_usable_folders">Dieses Konto meldet keine Ordner, die Mail enthalten können.</string>
     <string name="shortcut_macro_gone">Dieses Makro gibt es nicht mehr</string>
@@ -636,7 +636,7 @@
     <string name="smarthome_mqtt_broker_subtitle">Ein Broker, den du schon betreibst – Mosquitto, Zigbee2MQTT, EMQX</string>
     <string name="mqtt_connect_a_broker">MQTT-Broker verbinden</string>
     <string name="mqtt_name_your_broker">Benenne deinen Broker</string>
-    <string name="mqtt_setup_intro">Ottomatic verbindet sich mit einem Broker, den du schon betreibst. Die App ist selbst nie einer.</string>
+    <string name="mqtt_setup_intro">Easymatic verbindet sich mit einem Broker, den du schon betreibst. Die App ist selbst nie einer.</string>
     <string name="mqtt_address">Broker-Adresse</string>
     <string name="mqtt_login_optional">Lass diese Felder leer, wenn dein Broker jeden im Netz zulässt – so sind die meisten Broker zu Hause eingestellt.</string>
     <string name="mqtt_username">Benutzername</string>
@@ -656,22 +656,22 @@
     <string name="calendar_any_calendar">Jeder Kalender</string>
     <string name="calendar_no_calendars">Auf diesem Telefon gibt es keine Kalender.</string>
     <string name="calendar_no_writable_calendars">In keinen der Kalender auf diesem Telefon kann eingetragen werden. Ein abonnierter Kalender, etwa ein Feiertagskalender, lässt sich nur lesen.</string>
-    <string name="calendar_needs_access">Ottomatic braucht Kalenderzugriff, um deine Kalender aufzulisten.</string>
+    <string name="calendar_needs_access">Easymatic braucht Kalenderzugriff, um deine Kalender aufzulisten.</string>
     <string name="calendar_grant_access">Erteilen</string>
-    <string name="files_path_placeholder">Ein Pfad oder ein Name für Ottomatics eigenen Speicher</string>
+    <string name="files_path_placeholder">Ein Pfad oder ein Name für Easymatics eigenen Speicher</string>
     <string name="files_choose">Datei oder Ordner wählen</string>
     <string name="files_choose_folder">Ordner wählen…</string>
     <string name="files_choose_file">Datei wählen…</string>
     <string name="files_folder_access">Ordnerzugriff</string>
-    <string name="files_no_folders">Ottomatic kann noch auf keinen deiner Ordner zugreifen.</string>
-    <string name="files_no_folders_hint">Wähle einen Ordner, damit Makros die Dateien darin lesen und schreiben können. Android erlaubt es nicht, den gesamten internen Speicher oder den Download-Ordner selbst freizugeben – lege stattdessen einen Ordner darin an oder wähle einen aus, etwa Download/Ottomatic.</string>
+    <string name="files_no_folders">Easymatic kann noch auf keinen deiner Ordner zugreifen.</string>
+    <string name="files_no_folders_hint">Wähle einen Ordner, damit Makros die Dateien darin lesen und schreiben können. Android erlaubt es nicht, den gesamten internen Speicher oder den Download-Ordner selbst freizugeben – lege stattdessen einen Ordner darin an oder wähle einen aus, etwa Download/Easymatic.</string>
     <string name="files_grant">Ordner wählen</string>
     <string name="files_regrant">Erneut freigeben</string>
     <string name="files_revoke">Entziehen</string>
     <string name="files_read_only">Kann nur lesen</string>
     <string name="files_read_write">Kann lesen und schreiben</string>
     <string name="files_missing">Diesen Ordner gibt es nicht mehr. Gib ihn erneut frei oder entziehe den Zugriff.</string>
-    <string name="files_own_storage">Ottomatics eigener Speicher</string>
+    <string name="files_own_storage">Easymatics eigener Speicher</string>
     <string name="files_own_storage_hint">Ein Pfad ohne Ordner darin, etwa report.csv, wird hier gespeichert. Er braucht keine Berechtigung, und kein Makro kann auf die Dateien einer anderen App zugreifen.</string>
     <string name="files_no_path">Diese Datei hat keinen Ort auf diesem Telefon, deshalb kann ein Makro sie nicht benennen. Online gespeicherte Dateien und manche Downloads lassen sich so nicht verwenden – kopiere sie zuerst in einen Ordner auf dem Telefon.</string>
     <string name="files_add_file">Datei hinzufügen</string>
@@ -722,9 +722,9 @@
     <string name="macro_transfer_imported_body">„%1$s“ ist bereit. Es bleibt aus, bis du es aktivierst.</string>
     <string name="macro_transfer_adopted">Zu deinen Bibliotheken hinzugefügt: %1$s</string>
     <string name="macro_transfer_needs">Muss hier noch eingerichtet werden: %1$s</string>
-    <string name="macro_transfer_unreadable">Diese Datei ist kein Ottomatic-Makro.</string>
-    <string name="macro_transfer_too_new">Dieses Makro wurde mit einer neueren Ottomatic-Version exportiert. Aktualisiere die App, um es zu importieren.</string>
-    <string name="macro_transfer_too_old">Dieses Makro wurde mit einer älteren Ottomatic-Version exportiert und kann nicht gelesen werden.</string>
+    <string name="macro_transfer_unreadable">Diese Datei ist kein Easymatic-Makro.</string>
+    <string name="macro_transfer_too_new">Dieses Makro wurde mit einer neueren Easymatic-Version exportiert. Aktualisiere die App, um es zu importieren.</string>
+    <string name="macro_transfer_too_old">Dieses Makro wurde mit einer älteren Easymatic-Version exportiert und kann nicht gelesen werden.</string>
     <string name="macro_transfer_needs_plugin">das Plug-in %1$s</string>
     <string name="macro_transfer_needs_app">die App %1$s</string>
     <string name="macro_transfer_need_ai_model">ein KI-Modell</string>

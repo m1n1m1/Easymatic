@@ -7,7 +7,7 @@ sidebar:
 
 ## Does it need root?
 
-No. Nothing in Ottomatic requires root, and nothing behaves differently with it.
+No. Nothing in Easymatic requires root, and nothing behaves differently with it.
 
 ## Does it need an internet connection?
 
@@ -56,7 +56,7 @@ an editable field *with* a chooser beside it.
 ## Why is there a Convert node in my wire?
 
 You dropped a value into a port of a different type, and a conversion existed, so
-Ottomatic inserted one **visibly** rather than converting behind your back. Retype it or
+Easymatic inserted one **visibly** rather than converting behind your back. Retype it or
 delete it. See [Autocast](/docs/concepts/types/#autocast).
 
 ## Why does my macro still run when it has a problem?
@@ -117,4 +117,4 @@ Each workflow is a JSON file in the app's private storage. There is no export sc
 
 The app ships eight locales, and node text is generated from the declarations into
 standard Android string resources. Contributions go through the
-[repository](https://github.com/m1n1m1/Ottomatic).
+[repository](https://github.com/m1n1m1/Easymatic).

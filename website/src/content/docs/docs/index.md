@@ -1,11 +1,11 @@
 ---
 title: Documentation
-description: How Ottomatic's node graph works, how to configure every integration, and a reference for all 175 nodes.
+description: How Easymatic's node graph works, how to configure every integration, and a reference for all 175 nodes.
 sidebar:
   order: 0
 ---
 
-Ottomatic automates a phone by wiring nodes together. A **trigger** says when something
+Easymatic automates a phone by wiring nodes together. A **trigger** says when something
 happens, an **action** does something about it, and **values** and **transforms** feed
 them the data they need. A foreground service runs the result in the background.
 

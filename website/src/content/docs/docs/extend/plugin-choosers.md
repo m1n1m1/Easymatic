@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-Ottomatic's rule is that **an identifier a human would have to type is never a text
+Easymatic's rule is that **an identifier a human would have to type is never a text
 field**, because a mistyped id does not fail loudly — it names something else, or
 nothing, and the node just looks broken.
 
@@ -16,7 +16,7 @@ that which do not breach it.
 ## `@PluginChoice` — a chooser over **your** lists
 
 This is what you almost certainly wanted `@Picker` for. It **moves the authority rather
-than the boundary**: Ottomatic asks *you*, and hands you nothing.
+than the boundary**: Easymatic asks *you*, and hands you nothing.
 
 ```kotlin
 @Serializable
@@ -41,11 +41,11 @@ class PostAction : PluginAction<PostConfig, Posted>, PluginChoiceSource<PostConf
 }
 ```
 
-- **`source` is yours.** Ottomatic never interprets it; it hands it straight back, which
+- **`source` is yours.** Easymatic never interprets it; it hands it straight back, which
   is what lets one node offer several lists.
 - **`config` carries the fields you named in `scopedBy`**, and nothing else — everything
   else holds its default. That is what makes the scope work, and it is deliberately not
-  the whole form: Ottomatic clears a chosen value when a field it is *declared* to depend
+  the whole form: Easymatic clears a chosen value when a field it is *declared* to depend
   on changes, so a chooser narrowing on an undeclared sibling would keep an answer that is
   no longer valid.
 - **Called from the editor, never during a run**, while somebody is waiting on a dialog.
@@ -80,7 +80,7 @@ Export **one Activity** for all your `SCREEN` fields — it dispatches on `sourc
 ```xml
 <activity android:name=".ChoiceActivity" android:exported="true" android:label="Choose a card">
     <intent-filter>
-        <action android:name="com.example.ottomatic.action.PLUGIN_CHOICE" />
+        <action android:name="io.github.m1n1m1.easymatic.action.PLUGIN_CHOICE" />
         <category android:name="android.intent.category.DEFAULT" />
     </intent-filter>
 </activity>
@@ -109,10 +109,10 @@ What changes and what does not:
 - **The authority does not move.** Both ways ask you, and hand you the same nothing. A
   `SCREEN` chooser gets `PluginChoiceRequest`'s three strings — no facade, no host
   library, no variable, no place — and answers with an id.
-- **Ottomatic finds your Activity, you do not send it.** The action is resolved against
+- **Easymatic finds your Activity, you do not send it.** The action is resolved against
   *your* package and started by component, the same rule the settings screen follows. A
   component name is a thing to launch, so it never travels on the wire.
-- **One string comes back.** Ottomatic reads `EXTRA_VALUE` out of your result `Intent` and
+- **One string comes back.** Easymatic reads `EXTRA_VALUE` out of your result `Intent` and
   drops the rest — it is never started and never granted from.
 - **You answer with the id, not a name.** A node's config is one string per property, so
   there is nowhere for a label to live; the field shows the stored id either way.
@@ -128,7 +128,7 @@ answers the question — a document provider for a file, the ringtone chooser fo
 the contacts app for a contact.
 
 You get it for the same reason you are refused `@Picker`: **because of what it reaches.**
-It touches nothing of Ottomatic's, and everything it can obtain is something your own
+It touches nothing of Easymatic's, and everything it can obtain is something your own
 Activity could have asked for under your own uid. All it saves you is having to ship that
 Activity.
 
@@ -156,7 +156,7 @@ data class AttachConfig(
 ```
 
 You write no Activity, no `startActivityForResult`, no result parsing, no `<queries>`
-entry and no grant handling. Ottomatic builds the launch from what you declared, reads the
+entry and no grant handling. Easymatic builds the launch from what you declared, reads the
 answer and stores it.
 
 What to know before you use it:
@@ -166,7 +166,7 @@ What to know before you use it:
   why it composes with `@Wired`.
 - **Reach for `OPEN_DOCUMENT`, not `GET_CONTENT`.** `GET_CONTENT`'s grant dies with the
   editor's task, so the macro works once and then **fails silently forever**.
-  `OPEN_DOCUMENT`'s is persistable and Ottomatic takes it.
+  `OPEN_DOCUMENT`'s is persistable and Easymatic takes it.
 - **Where the answer is depends on the action.** `resultExtra` names the extra to read;
   leave it blank for the result `Intent`'s own `data` URI, which is what every document
   and pick action answers with. Set `outputExtra` when the app needs somewhere to *write*
@@ -177,7 +177,7 @@ What to know before you use it:
   you asked reads it, sees the default, and behaves as though you had said nothing. A
   request that needs a typed extra to be correct is one this cannot express.
 - **A `content://` value is readable in your process for the length of the call and no
-  longer.** Ottomatic lends the grant by package immediately before your `execute` and
+  longer.** Easymatic lends the grant by package immediately before your `execute` and
   takes it back in a `finally`, so open the stream inside the call — a URI you keep for
   later is dead. Everything else is a plain string and needs nothing.
 - **Nothing you declare is a component or a package.** The launch is always implicit and
@@ -207,7 +207,7 @@ Two that people reach for first, neither of which is guaranteed:
   Barcode Scanner and the apps that copied its contract — so on a phone without one your
   field is a text box, which for a code somebody is holding under a camera is close to
   useless.
-- **Taking a photograph** needs a camera app (near-universal) *and* Ottomatic's camera
+- **Taking a photograph** needs a camera app (near-universal) *and* Easymatic's camera
   grant, which is not automatic: Android requires it even though another app takes the
   picture. The chooser asks for the grant, so nothing is required of you — but the field
   does nothing until it is given.

@@ -56,7 +56,7 @@ Battery is {A}%
 Wire Break Struct's `level` output into Build text's `a` input.
 
 The drop is refused if the types do not match — but here they do not have to. `level`
-is a whole number and `a` takes text, so Ottomatic drops a **Convert** node into the
+is a whole number and `a` takes text, so Easymatic drops a **Convert** node into the
 wire for you and shows it on the canvas. That is
 [autocast](/docs/concepts/types/#autocast): the conversion is a node you can see, retype
 or delete, never something that happens invisibly.

@@ -99,7 +99,7 @@ jobs:
             flag=--latest
           fi
           gh release create "$GITHUB_REF_NAME" \
-            --title "Ottomatic $VERSION" \
+            --title "Easymatic $VERSION" \
             --notes-file notes.md \
             --verify-tag \
             "$flag"

@@ -15,7 +15,7 @@ export interface NavLink {
   placeholder?: boolean;
 }
 
-export const GITHUB_URL = 'https://github.com/m1n1m1/Ottomatic';
+export const GITHUB_URL = 'https://github.com/m1n1m1/Easymatic';
 
 export const NAV: NavLink[] = [
   { label: 'Use cases', href: '#use-cases' },
@@ -28,7 +28,7 @@ export const HERO = {
   eyebrow: 'Android automation',
   title: 'Your mobile always-on assistant. Built for humans, enhanced with AI',
   lead:
-    'Ottomatic is a visual, node-based automation app for Android. Your automations run 24/7 in the background, wherever you go. The power of AI where you want, manual control where you need it.',
+    'Easymatic is a visual, node-based automation app for Android. Your automations run 24/7 in the background, wherever you go. The power of AI where you want, manual control where you need it.',
   facts: ['Android 8.0+', 'Open source, MIT', '8 languages'],
 } as const;
 
@@ -72,10 +72,10 @@ export const SHOWCASE: ShowcaseItem[] = [
     accent: 'var(--accent-value)',
     title: 'Autonomous AI Agent',
     body:
-      'Connect triggers to an AI agent and have your requests automatically be executed in the background. The AI has access to all features of Ottomatic.',
+      'Connect triggers to an AI agent and have your requests automatically be executed in the background. The AI has access to all features of Easymatic.',
     image: '/img/showcase/ai-agent.webp',
     imageAlt: 
-      'An Ottomatic macro: an incoming message runs an AI agent, which branches into sending the answer or just logging it.',
+      'An Easymatic macro: an incoming message runs an AI agent, which branches into sending the answer or just logging it.',
   },
   {
     id: 'messaging',
@@ -86,7 +86,7 @@ export const SHOWCASE: ShowcaseItem[] = [
       'React to incoming messages. Send automated replies and create appointments. Manage your email accounts.',
     image: '/img/showcase/messaging.webp',
     imageAlt: 
-      'An Ottomatic macro: an incoming message branches on who sent it, then adds a calendar entry and acknowledges it, or posts a notification.',
+      'An Easymatic macro: an incoming message branches on who sent it, then adds a calendar entry and acknowledges it, or posts a notification.',
   },
   {
     id: 'smart-home',
@@ -94,10 +94,10 @@ export const SHOWCASE: ShowcaseItem[] = [
     accent: 'var(--signal)',
     title: 'Smart Home',
     body:
-      'Integrate with various Smart Home protocols and systems. Ottomatic can react to incoming events and also control smart devices.',
+      'Integrate with various Smart Home protocols and systems. Easymatic can react to incoming events and also control smart devices.',
     image: '/img/showcase/smart-home.webp',
     imageAlt: 
-      'An Ottomatic macro: a Home Assistant door sensor branches on the light level, then turns on a hall light or publishes to MQTT.',
+      'An Easymatic macro: a Home Assistant door sensor branches on the light level, then turns on a hall light or publishes to MQTT.',
   },
   {
     id: 'location-time',
@@ -108,7 +108,7 @@ export const SHOWCASE: ShowcaseItem[] = [
       'Automatically execute actions based on your location or the current time.',
     image: '/img/showcase/location-time.webp',
     imageAlt: 
-      'An Ottomatic macro: leaving a geofenced office branches on the weekday, then notifies and turns Wi-Fi on, or waits.',
+      'An Easymatic macro: leaving a geofenced office branches on the weekday, then notifies and turns Wi-Fi on, or waits.',
   },
   {
     id: 'sensors',
@@ -119,7 +119,7 @@ export const SHOWCASE: ShowcaseItem[] = [
       'Unleash the possibilities of your phones sensors. Control your phone with gestures. Monitor your phones status.',
     image: '/img/showcase/sensors.webp',
     imageAlt: 
-      'An Ottomatic macro: shaking the phone branches on ambient light to turn the torch on or buzz, and a proximity trigger shortens the screen timeout.',
+      'An Easymatic macro: shaking the phone branches on ambient light to turn the torch on or buzz, and a proximity trigger shortens the screen timeout.',
   },
 ];
 
@@ -248,7 +248,7 @@ export const EXTENSIBILITY = [
     icon: 'material-symbols:extension-sharp',
     title: 'Plugins',
     body:
-      'A plugin is a separate Android app that adds triggers, actions, values and transforms to the palette. It runs in its own process under its own permissions — Ottomatic never lends it any of its own.',
+      'A plugin is a separate Android app that adds triggers, actions, values and transforms to the palette. It runs in its own process under its own permissions — Easymatic never lends it any of its own.',
     linkLabel: 'Read the plugin guide',
     href: '/docs/',
   },
@@ -266,7 +266,7 @@ export const EXTENSIBILITY = [
 export const CLOSING = {
   title: 'Build your first macro.',
   body:
-    'Ottomatic is free and open source. Grab a build, wire something together, and see how far the graph goes.',
+    'Easymatic is free and open source. Grab a build, wire something together, and see how far the graph goes.',
   note: 'Not on the Play Store yet — a download lands here when the first release is cut.',
 } as const;
 

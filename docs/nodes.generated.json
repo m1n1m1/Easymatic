@@ -39,7 +39,7 @@
             "typeId": "trigger.api",
             "slug": "trigger_api",
             "displayName": "Called by Another App",
-            "description": "Starts the workflow when another app, a script or a shortcut asks Ottomatic to run it",
+            "description": "Starts the workflow when another app, a script or a shortcut asks Easymatic to run it",
             "kind": "TRIGGER",
             "category": "MANUAL",
             "categoryLabel": "Manual",
@@ -5222,7 +5222,7 @@
                     "label": "Title",
                     "hint": null,
                     "type": "STR",
-                    "defaultValue": "Ottomatic",
+                    "defaultValue": "Easymatic",
                     "visibleWhen": null,
                     "options": [],
                     "chooser": null
@@ -5321,7 +5321,7 @@
                     "label": "Title",
                     "hint": null,
                     "type": "STR",
-                    "defaultValue": "Ottomatic",
+                    "defaultValue": "Easymatic",
                     "visibleWhen": null,
                     "options": [],
                     "chooser": null
@@ -5444,7 +5444,7 @@
                     "label": "Title",
                     "hint": null,
                     "type": "STR",
-                    "defaultValue": "Ottomatic",
+                    "defaultValue": "Easymatic",
                     "visibleWhen": null,
                     "options": [],
                     "chooser": null
@@ -5640,7 +5640,7 @@
                     "label": "Title",
                     "hint": null,
                     "type": "STR",
-                    "defaultValue": "Ottomatic",
+                    "defaultValue": "Easymatic",
                     "visibleWhen": null,
                     "options": [],
                     "chooser": null
@@ -9597,7 +9597,7 @@
                     "label": "Title",
                     "hint": null,
                     "type": "STR",
-                    "defaultValue": "Ottomatic",
+                    "defaultValue": "Easymatic",
                     "visibleWhen": null,
                     "options": [],
                     "chooser": null

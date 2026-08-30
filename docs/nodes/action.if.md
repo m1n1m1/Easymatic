@@ -1,4 +1,4 @@
-If is the only decision-making node in Ottomatic. It compares two values and sends
+If is the only decision-making node in Easymatic. It compares two values and sends
 execution down one of two paths.
 
 - The comparison runs when execution reaches the node.

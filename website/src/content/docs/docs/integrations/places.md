@@ -31,7 +31,7 @@ The **Geofence** trigger points at a place and has four switches:
 | **On staying away** | After a number of minutes outside, default 30 |
 
 Exit is the *moment* of leaving; away is the *state* of having been gone a while. The
-platform offers nothing that means "outside for a while", so *away* is Ottomatic's own
+platform offers nothing that means "outside for a while", so *away* is Easymatic's own
 timer — started when the exit arrives, cancelled when an enter does.
 
 With all four switched off the node registers nothing and can never fire. The editor

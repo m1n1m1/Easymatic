@@ -5,7 +5,7 @@
     <string name="port_trigger_manual_out">Выход</string>
     <string name="cfg_trigger_manual_label">Надпись на кнопке</string>
     <string name="node_trigger_api_name">Вызов из другого приложения</string>
-    <string name="node_trigger_api_desc">Запускает сценарий, когда другое приложение, скрипт или ярлык просит Ottomatic его выполнить</string>
+    <string name="node_trigger_api_desc">Запускает сценарий, когда другое приложение, скрипт или ярлык просит Easymatic его выполнить</string>
     <string name="port_trigger_api_out">Выход</string>
     <string name="cfg_trigger_api_label">Название, видимое другим приложениям</string>
     <string name="cfg_trigger_api_inputs">Значения, которые несёт этот вызов</string>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Which tags Ottomatic offers to handle.
+  Which tags Easymatic offers to handle.
 
   The matching rule is worth knowing before editing this: within one <tech-list>
   the tag must support *every* tech listed (AND), between lists any one group is
@@ -13,7 +13,7 @@
     EMV payment card   [IsoDep, NfcA]                           matches nothing
 
   Never list bare NfcA/NfcB/IsoDep here: each of those would catch every payment
-  card on the phone, and Ottomatic would start appearing in the tag-handling
+  card on the phone, and Easymatic would start appearing in the tag-handling
   chooser every time somebody taps their wallet.
 
   Ndef and NdefFormatable never co-exist on one tag — a tag is either formatted or

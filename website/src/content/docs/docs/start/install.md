@@ -5,9 +5,9 @@ sidebar:
   order: 1
 ---
 
-Ottomatic needs Android 8.0 (API 26) or later. Get the APK from the project's
-[releases](https://github.com/m1n1m1/Ottomatic/releases), or build it yourself from the
-[repository](https://github.com/m1n1m1/Ottomatic).
+Easymatic needs Android 8.0 (API 26) or later. Get the APK from the project's
+[releases](https://github.com/m1n1m1/Easymatic/releases), or build it yourself from the
+[repository](https://github.com/m1n1m1/Easymatic).
 
 ## The two tabs
 
@@ -24,21 +24,21 @@ search bar sits above the list.
 | --- | --- | --- |
 | Connections | Smart home, AI, Mail accounts | Things outside the phone, each of which can fail in ways you have to go and fix |
 | Libraries | Global variables, Geofences, NFC tags, Folder access | Your own records, which macros refer to by name |
-| System | Permissions, Plugins, App access | What the phone and other apps allow — Ottomatic only reports these, it does not decide them |
+| System | Permissions, Plugins, App access | What the phone and other apps allow — Easymatic only reports these, it does not decide them |
 
 You do not have to set any of it up before writing your first macro. A node that needs
 something you have not configured says so on its own card and in the Problems panel.
 
 ## What to allow first
 
-Ottomatic asks for permissions the way every node asks: **only when a node needs one**.
+Easymatic asks for permissions the way every node asks: **only when a node needs one**.
 There is no wall of requests at first launch, and a macro that only reads the battery
 level and posts a notification needs almost nothing.
 
 Two grants are worth giving straight away anyway, because both fail *silently* and
 neither belongs to any one node.
 
-**Notifications** (`POST_NOTIFICATIONS`, Android 13+). Ottomatic runs its engine as a
+**Notifications** (`POST_NOTIFICATIONS`, Android 13+). Easymatic runs its engine as a
 foreground service, and a foreground service needs a notification to show. Without the
 grant the service still runs, but you lose the one indicator that says it is running.
 

@@ -14,7 +14,7 @@
       The calendar nodes, and the calendar chooser in their config forms.
 
       Unlike READ_CONTACTS above there is no transient grant to lean on: the platform
-      offers no calendar picker, so Ottomatic lists the calendars itself and needs the
+      offers no calendar picker, so Easymatic lists the calendars itself and needs the
       read grant before a form can show anything at all. WRITE_CALENDAR is declared
       only by the two nodes that create or change an event; reading and writing are
       separate grants to the platform, and the difference between "reads my meetings"
@@ -155,7 +155,7 @@
     -->
     <queries>
         <intent>
-            <action android:name="com.example.ottomatic.action.PLUGIN" />
+            <action android:name="io.github.m1n1m1.easymatic.action.PLUGIN" />
         </intent>
         <!--
           A plugin's own settings screen, where it signs in to whatever it talks to.
@@ -164,7 +164,7 @@
           nothing on API 30+ and the button never appears.
         -->
         <intent>
-            <action android:name="com.example.ottomatic.action.PLUGIN_SETTINGS" />
+            <action android:name="io.github.m1n1m1.easymatic.action.PLUGIN_SETTINGS" />
         </intent>
         <!--
           A plugin's own chooser screen, opened by a @PluginChoice(chooser = SCREEN) field.
@@ -173,7 +173,7 @@
           rather than one it can prevent.
         -->
         <intent>
-            <action android:name="com.example.ottomatic.action.PLUGIN_CHOICE" />
+            <action android:name="io.github.m1n1m1.easymatic.action.PLUGIN_CHOICE" />
         </intent>
         <!--
           The text-to-speech engine `action.speak` binds, and the recognition service
@@ -195,7 +195,7 @@
       it and drive somebody's plugin.
 
       protectionLevel="normal" rather than "signature", and this is the decision worth
-      recording: a third-party plugin is by definition not signed by Ottomatic's key,
+      recording: a third-party plugin is by definition not signed by Easymatic's key,
       so a signature-level permission would silently restrict the entire mechanism to
       plugins we published ourselves — the opposite of the point. "normal" is granted
       at install without prompting, which is right for something whose only power is
@@ -205,12 +205,12 @@
       no nodes at all until the user enables it on the Plugins screen.
     -->
     <permission
-        android:name="com.example.ottomatic.permission.BIND_PLUGIN"
+        android:name="io.github.m1n1m1.easymatic.permission.BIND_PLUGIN"
         android:label="@string/permission_bind_plugin_label"
         android:description="@string/permission_bind_plugin_description"
         android:protectionLevel="normal" />
 
-    <uses-permission android:name="com.example.ottomatic.permission.BIND_PLUGIN" />
+    <uses-permission android:name="io.github.m1n1m1.easymatic.permission.BIND_PLUGIN" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <!--
@@ -270,7 +270,7 @@
       itself explains why that has to be app-wide and what it costs.
     -->
     <application
-        android:name=".OttomaticApplication"
+        android:name=".EasymaticApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -279,7 +279,7 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Ottomatic">
+        android:theme="@style/Theme.Easymatic">
 
         <!-- Key for the geofence editor's map, injected from local.properties at
              build time (see app/build.gradle.kts). Blank when unset: the map
@@ -291,7 +291,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.Ottomatic"
+            android:theme="@style/Theme.Easymatic"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -374,7 +374,7 @@
              nothing to grant: the whole API is call(). -->
         <provider
             android:name=".engine.service.ApiTriggerProvider"
-            android:authorities="com.example.ottomatic.triggers"
+            android:authorities="io.github.m1n1m1.easymatic.triggers"
             android:exported="true"
             android:grantUriPermissions="false" />
 
@@ -419,7 +419,7 @@
             android:name=".engine.service.ApiTriggerReceiver"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.example.ottomatic.action.RUN_MACRO" />
+                <action android:name="io.github.m1n1m1.easymatic.action.RUN_MACRO" />
             </intent-filter>
         </receiver>
 
@@ -496,7 +496,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:host="ha-auth"
-                    android:scheme="ottomatic" />
+                    android:scheme="easymatic" />
             </intent-filter>
         </activity>
 
@@ -550,7 +550,7 @@
         <activity
             android:name=".feature.widget.RunTileConfigActivity"
             android:exported="true"
-            android:theme="@style/Theme.Ottomatic">
+            android:theme="@style/Theme.Easymatic">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
@@ -559,7 +559,7 @@
         <activity
             android:name=".feature.widget.PanelConfigActivity"
             android:exported="true"
-            android:theme="@style/Theme.Ottomatic">
+            android:theme="@style/Theme.Easymatic">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
@@ -616,8 +616,8 @@
             android:name=".data.trigger.GeofenceReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.example.ottomatic.GEOFENCE_TRANSITION" />
-                <action android:name="com.example.ottomatic.GEOFENCE_AWAY" />
+                <action android:name="io.github.m1n1m1.easymatic.GEOFENCE_TRANSITION" />
+                <action android:name="io.github.m1n1m1.easymatic.GEOFENCE_AWAY" />
             </intent-filter>
         </receiver>
 
@@ -625,7 +625,7 @@
             android:name=".data.trigger.AlarmReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.example.ottomatic.SCHEDULE_ALARM" />
+                <action android:name="io.github.m1n1m1.easymatic.SCHEDULE_ALARM" />
             </intent-filter>
         </receiver>
 
@@ -637,7 +637,7 @@
             android:name=".data.wait.WaitAlarmReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.example.ottomatic.WAIT_ALARM" />
+                <action android:name="io.github.m1n1m1.easymatic.WAIT_ALARM" />
             </intent-filter>
         </receiver>
 
@@ -699,14 +699,14 @@
             android:name=".data.notification.NotificationResponseReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.example.ottomatic.action.NOTIFICATION_RESPONSE" />
+                <action android:name="io.github.m1n1m1.easymatic.action.NOTIFICATION_RESPONSE" />
             </intent-filter>
         </receiver>
 
         <service
             android:name=".data.trigger.NotificationListener"
             android:exported="false"
-            android:label="Ottomatic Notification Listener"
+            android:label="Easymatic Notification Listener"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
@@ -714,9 +714,9 @@
         </service>
 
         <!-- The only way an app can observe key events it did not receive
-             itself. Never consumes them: see OttomaticAccessibilityService. -->
+             itself. Never consumes them: see EasymaticAccessibilityService. -->
         <service
-            android:name=".data.accessibility.OttomaticAccessibilityService"
+            android:name=".data.accessibility.EasymaticAccessibilityService"
             android:exported="true"
             android:label="@string/accessibility_service_label"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">

@@ -14,7 +14,7 @@ So the light nodes are not offered a broker. Turning a lamp on is **Publish to M
 with the topic that lamp's own software documents.
 
 :::note
-**Ottomatic is a client and never a broker.** Nothing listens for connections. You need
+**Easymatic is a client and never a broker.** Nothing listens for connections. You need
 a broker somebody else runs — Mosquitto, EMQX, the one inside Home Assistant, or the
 one Zigbee2MQTT talks to.
 :::
@@ -61,7 +61,7 @@ value" command, so a cache that covered everything would mean subscribing to `#`
 receiving every message in the house — including the broker's own statistics several
 times a second — to serve the handful of topics a macro names.
 
-So Ottomatic subscribes to exactly what something asked for: one subscription per armed
+So Easymatic subscribes to exactly what something asked for: one subscription per armed
 trigger's filter (ten triggers on one filter cost one subscription), and one per topic a
 value node has ever read.
 

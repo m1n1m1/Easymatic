@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    The Ottomatic panel: engine status, problems, last run and a grid of manual
+    The Easymatic panel: engine status, problems, last run and a grid of manual
     triggers, each section switched on or off per widget.
 
     This replaces the separate "Trigger deck" and "Engine status" providers. They
@@ -19,7 +19,7 @@
     collecting. A poll would be strictly worse than the push that exists.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:configure="com.example.ottomatic.feature.widget.PanelConfigActivity"
+    android:configure="io.github.m1n1m1.easymatic.feature.widget.PanelConfigActivity"
     android:description="@string/widget_panel_description"
     android:initialLayout="@layout/widget_loading"
     android:minWidth="250dp"

@@ -1,12 +1,12 @@
-# Ottomatic website
+# Easymatic website
 
-The marketing site and the documentation for [Ottomatic](../README.md), built with
+The marketing site and the documentation for [Easymatic](../README.md), built with
 [Astro](https://astro.build) and [Starlight](https://starlight.astro.build). The output is
 static — there is no server half — and Cloudflare Workers serves `dist/` straight from the
 edge.
 
-Live at **<https://ottomatic.mathias-weinstabl.workers.dev>**, with the documentation at
-[`/docs/`](https://ottomatic.mathias-weinstabl.workers.dev/docs/).
+Live at **<https://easymatic.mathias-weinstabl.workers.dev>**, with the documentation at
+[`/docs/`](https://easymatic.mathias-weinstabl.workers.dev/docs/).
 
 > **Note:** This directory is invisible to the Gradle build. `settings.gradle.kts`
 > includes only the four Android modules, so nothing here affects

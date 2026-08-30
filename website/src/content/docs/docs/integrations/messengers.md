@@ -48,7 +48,7 @@ with it the only way to answer.**
 
 The practical consequence is to put *Reply to Message* **before** anything that takes
 time. A reply after a five-minute Wait is a reply into a chat that has very likely been
-read — and Ottomatic reports that case in words rather than as a mysterious failure.
+read — and Easymatic reports that case in words rather than as a mysterious failure.
 
 ## Two fields that look alike
 
@@ -98,12 +98,12 @@ well, so *Make Call* and *Send SMS* are left alone.
 A messenger updates **one notification per chat** rather than posting one per message,
 and re-posts it whenever it so much as refreshes a badge. So the question is never "have
 I seen this notification?" but "have I seen it showing *this message*?" — which is what
-Ottomatic tracks.
+Easymatic tracks.
 
 Group summaries ("3 messages from 2 chats") and ongoing notifications (a call in
 progress) are dropped before any of that.
 
-## Notifications Ottomatic posts
+## Notifications Easymatic posts
 
 **Show Notification** posts one of your own, and it is more than a message box:
 

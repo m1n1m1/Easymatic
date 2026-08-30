@@ -1,6 +1,6 @@
 ---
 name: widgets-and-shortcuts
-description: Read before touching Ottomatic's home-screen widgets or launcher shortcuts — the two Glance widgets (Run tile and the Ottomatic panel), PanelConfig, MacroSnapshots, MacroTile, RunFeedback, MacroShortcuts, RunTilePin, RunTriggerActivity, and the MacroIcon/MacroAccent appearance a macro carries. Covers why widgets follow the system theme while the app does not, why every manual run — tile, shortcut and the editor's own card button — goes through runFromTrigger, why "Add to home screen" places a widget rather than a pinned shortcut and how the trigger reaches it, why the update traffic runs feature-ward, why appearance was added without a schema bump, and why a widget's config must be read back before it is shown.
+description: Read before touching Easymatic's home-screen widgets or launcher shortcuts — the two Glance widgets (Run tile and the Easymatic panel), PanelConfig, MacroSnapshots, MacroTile, RunFeedback, MacroShortcuts, RunTilePin, RunTriggerActivity, and the MacroIcon/MacroAccent appearance a macro carries. Covers why widgets follow the system theme while the app does not, why every manual run — tile, shortcut and the editor's own card button — goes through runFromTrigger, why "Add to home screen" places a widget rather than a pinned shortcut and how the trigger reaches it, why the update traffic runs feature-ward, why appearance was added without a schema bump, and why a widget's config must be read back before it is shown.
 ---
 
 # Widgets and shortcuts
@@ -31,7 +31,7 @@ The **accent tints the glyph and its chip, never a surface**. On a widget the su
 
 ## Widgets follow the system; the app does not
 
-`MainActivity` forces `darkTheme = true, dynamicColor = false` because the editor canvas is a fixed dark surface. A widget is not on that canvas, and the precedent already in the repo is `Theme.Ottomatic.Dialog` in `themes.xml`: surfaces that appear *outside* the app take `Theme.Material3.DayNight` with dynamic colour. `OttomaticWidgetTheme` is the same argument with the same answer — dynamic on API 31+, an explicit fallback built around `dialog_accent` below it. The config activities are the counter-example and are deliberately fixed-dark: they are the app, not the home screen.
+`MainActivity` forces `darkTheme = true, dynamicColor = false` because the editor canvas is a fixed dark surface. A widget is not on that canvas, and the precedent already in the repo is `Theme.Easymatic.Dialog` in `themes.xml`: surfaces that appear *outside* the app take `Theme.Material3.DayNight` with dynamic colour. `EasymaticWidgetTheme` is the same argument with the same answer — dynamic on API 31+, an explicit fallback built around `dialog_accent` below it. The config activities are the counter-example and are deliberately fixed-dark: they are the app, not the home screen.
 
 Every widget surface is a **shape drawable tinted through a `ColorFilter`**, never `background(ColorProvider)`. Glance's `cornerRadius` is a no-op below API 31 and minSdk is 26, so the plain-colour route draws square cards for a third of the supported range. `drawable-v31/` restates each shape at the system widget radius.
 
@@ -52,7 +52,7 @@ A **deck cell draws no card of its own**, because the widget's card is already `
 
 Two layout traps, both of which produced visible bugs. Glance's `Row` **wraps its content unless told to `fillMaxWidth()`**, so a `defaultWeight()` inside one has nothing to expand into — that is how the status header rendered as "Engine running5 · 1 armed". And in Compose UI, `LazyVerticalGrid` measures items at a **fixed cell width**, so `Modifier.size()` on the item cannot make it narrower; the Edit dialog's round colour swatches came out as ovals until each was centred inside a full-width cell.
 
-Widgets are unstyled Material by default in one more place: the app's `OttomaticTheme` still carries the Android Studio template's purple scheme, so any *in-app* Material control that is not explicitly coloured renders purple. `editorTextButtonColors()`, `darkFieldColors()` and `editorSwitchColors()` exist for that, and dialog buttons need one of them.
+Widgets are unstyled Material by default in one more place: the app's `EasymaticTheme` still carries the Android Studio template's purple scheme, so any *in-app* Material control that is not explicitly coloured renders purple. `editorTextButtonColors()`, `darkFieldColors()` and `editorSwitchColors()` exist for that, and dialog buttons need one of them.
 
 ## Running from outside the app
 
@@ -87,7 +87,7 @@ Decay is a **function of the clock, not stored state**: `displayState(entry, now
 
 ## The update traffic runs feature-ward
 
-The obvious design — repository redraws widgets on write, engine redraws them on run — is forbidden by the package rule. Neither component that knows something changed may know widgets exist. So `WorkflowRepository.changes` and `RunFeedback`/`MacroEngineService.engineRunning` are plain flows, `WidgetUpdater` collects them, and `OttomaticApplication` calls `attach` — the root package being the one place allowed to introduce them.
+The obvious design — repository redraws widgets on write, engine redraws them on run — is forbidden by the package rule. Neither component that knows something changed may know widgets exist. So `WorkflowRepository.changes` and `RunFeedback`/`MacroEngineService.engineRunning` are plain flows, `WidgetUpdater` collects them, and `EasymaticApplication` calls `attach` — the root package being the one place allowed to introduce them.
 
 `WidgetUpdater` `drop(1)`s the StateFlows (a new collector replays the current value, which is not news) and debounces, because saves and runs both arrive in bursts. One extra delayed redraw fires after `SETTLE_MS` because nothing *emits* when a finished run decays.
 

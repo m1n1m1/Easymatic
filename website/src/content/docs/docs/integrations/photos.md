@@ -37,7 +37,7 @@ file node.
 **Change Picture Details**, **Move or Copy Picture** and **Delete Picture** modify rows
 that belong to *other* apps, and Android insists the user approve each one.
 
-That approval is a system dialog, which needs a screen — and Ottomatic's engine is a
+That approval is a system dialog, which needs a screen — and Easymatic's engine is a
 background service. So those three also declare **permission to draw over other apps**,
 which is what allows the dialog to be raised from the background at all.
 
@@ -51,7 +51,7 @@ Three outcomes are kept apart, and it matters:
 Folding the last into a plain error would make a locked screen indistinguishable from a
 decision.
 
-**Edit Picture** is free of all of this, because it writes a *new* file that Ottomatic
+**Edit Picture** is free of all of this, because it writes a *new* file that Easymatic
 owns.
 
 ## Taking a screenshot
@@ -60,7 +60,7 @@ owns.
 what makes it usable from a background macro: screen projection raises a consent dialog
 every time and cannot be started headlessly.
 
-Turn Ottomatic's accessibility service on in Settings — the node's card has a button
+Turn Easymatic's accessibility service on in Settings — the node's card has a button
 that takes you there.
 
 ## The picture trigger and the first arm

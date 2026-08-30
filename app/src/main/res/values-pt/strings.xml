@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_service_label">Acionadores por botão do Ottomatic</string>
+    <string name="accessibility_service_label">Acionadores por botão do Easymatic</string>
     <string name="accessibility_service_summary">Permite que as macros arranquem quando premes os botões de volume ou deslizas o dedo no leitor de impressões digitais, e que a ação Tirar captura de ecrã capture o ecrã.</string>
-    <string name="accessibility_service_description">O Ottomatic usa isto para três coisas: detetar pressões nos botões de volume e deslizes no leitor de impressões digitais, para que as tuas macros possam arrancar assim, e capturar o ecrã quando uma macro executa a ação Tirar captura de ecrã. Nunca observa o que está no ecrã — só captura quando uma macro o pede — e não altera nada: as teclas de volume continuam a funcionar normalmente e o desbloqueio por impressão digital não é afetado.</string>
+    <string name="accessibility_service_description">O Easymatic usa isto para três coisas: detetar pressões nos botões de volume e deslizes no leitor de impressões digitais, para que as tuas macros possam arrancar assim, e capturar o ecrã quando uma macro executa a ação Tirar captura de ecrã. Nunca observa o que está no ecrã — só captura quando uma macro o pede — e não altera nada: as teclas de volume continuam a funcionar normalmente e o desbloqueio por impressão digital não é afetado.</string>
     <string name="shortcut_new_macro_short">Nova macro</string>
     <string name="shortcut_new_macro_long">Criar uma macro nova</string>
     <string name="widget_run_tile_label">Mosaico de execução</string>
-    <string name="widget_panel_label">Painel do Ottomatic</string>
+    <string name="widget_panel_label">Painel do Easymatic</string>
     <string name="widget_run_tile_description">Uma macro, um toque. Escolhe um acionador manual e executa-o a partir do ecrã principal.</string>
     <string name="widget_panel_description">Estado do motor, problemas, a última execução e uma grelha de acionadores manuais: escolhes tu o que aparece.</string>
-    <string name="permission_bind_plugin_label">Fornecer nós do Ottomatic</string>
-    <string name="permission_bind_plugin_description">Permite que o Ottomatic use os nós de acionador e de ação adicionais fornecidos por esta aplicação. A aplicação executa o seu próprio código com as suas próprias permissões; o Ottomatic não partilha as dele com ela.</string>
+    <string name="permission_bind_plugin_label">Fornecer nós do Easymatic</string>
+    <string name="permission_bind_plugin_description">Permite que o Easymatic use os nós de acionador e de ação adicionais fornecidos por esta aplicação. A aplicação executa o seu próprio código com as suas próprias permissões; o Easymatic não partilha as dele com ela.</string>
 </resources>

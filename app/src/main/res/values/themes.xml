@@ -3,7 +3,7 @@
 
      <!-- The app renders a fixed dark palette; a light window background flashes
          through during navigation transitions. -->
-    <style name="Theme.Ottomatic" parent="android:Theme.Material.NoActionBar">
+    <style name="Theme.Easymatic" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/canvas_background</item>
     </style>
 
@@ -12,28 +12,28 @@
 
         Deliberately NOT the editor's fixed dark palette. This window appears over
         whatever app the user is in, so it should look like it belongs to the
-        phone rather than to Ottomatic: `DayNight` follows the system light/dark
+        phone rather than to Easymatic: `DayNight` follows the system light/dark
         setting, and on Android 12+ `DynamicColors` repaints it from the
         wallpaper. `colorPrimary` here is only the fallback for older devices,
         where there is no system palette to take.
     -->
-    <style name="Theme.Ottomatic.Dialog" parent="Theme.Material3.DayNight">
-        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Ottomatic.Dialog</item>
+    <style name="Theme.Easymatic.Dialog" parent="Theme.Material3.DayNight">
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Easymatic.Dialog</item>
         <item name="colorPrimary">@color/dialog_accent</item>
     </style>
 
     <!--
         `Centered` is the Material 3 dialog shape that stacks an icon above the
         title, which is the layout that component gives branding — so the single
-        Ottomatic cue on this dialog is also the most standard thing about it.
+        Easymatic cue on this dialog is also the most standard thing about it.
     -->
-    <style name="ThemeOverlay.Ottomatic.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog.Centered">
-        <item name="materialAlertDialogTitleIconStyle">@style/Ottomatic.DialogIcon</item>
+    <style name="ThemeOverlay.Easymatic.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog.Centered">
+        <item name="materialAlertDialogTitleIconStyle">@style/Easymatic.DialogIcon</item>
     </style>
 
     <!-- Referenced by the theme *and* by dialog_prompt_header.xml, so the icon a
          list dialog draws itself is the icon every other dialog is given. -->
-    <style name="Ottomatic.DialogIcon" parent="MaterialAlertDialog.Material3.Title.Icon.CenterStacked" />
+    <style name="Easymatic.DialogIcon" parent="MaterialAlertDialog.Material3.Title.Icon.CenterStacked" />
 
-    <style name="Ottomatic.DialogTitle" parent="MaterialAlertDialog.Material3.Title.Text.CenterStacked" />
+    <style name="Easymatic.DialogTitle" parent="MaterialAlertDialog.Material3.Title.Text.CenterStacked" />
 </resources>

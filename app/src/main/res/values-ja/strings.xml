@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="accessibility_service_label">Ottomatic のボタントリガー</string>
+    <string name="accessibility_service_label">Easymatic のボタントリガー</string>
     <string name="accessibility_service_summary">音量ボタンを押したときや指紋センサーをスワイプしたときにマクロを開始できるようにし、「スクリーンショットを撮る」アクションで画面を取り込めるようにします。</string>
-    <string name="accessibility_service_description">Ottomatic はこれを 3 つの目的で使用します。音量ボタンの押下と指紋センサー上のスワイプを検知してマクロを開始できるようにすることと、マクロが「スクリーンショットを撮る」アクションを実行したときに画面を取り込むことです。画面を監視することは決してなく、取り込むのはマクロが要求したときだけです。また何も変更しません。音量キーはこれまでどおり機能し、指紋によるロック解除にも影響しません。</string>
+    <string name="accessibility_service_description">Easymatic はこれを 3 つの目的で使用します。音量ボタンの押下と指紋センサー上のスワイプを検知してマクロを開始できるようにすることと、マクロが「スクリーンショットを撮る」アクションを実行したときに画面を取り込むことです。画面を監視することは決してなく、取り込むのはマクロが要求したときだけです。また何も変更しません。音量キーはこれまでどおり機能し、指紋によるロック解除にも影響しません。</string>
     <string name="shortcut_new_macro_short">新しいマクロ</string>
     <string name="shortcut_new_macro_long">新しいマクロを作成</string>
     <string name="widget_run_tile_label">実行タイル</string>
-    <string name="widget_panel_label">Ottomatic パネル</string>
+    <string name="widget_panel_label">Easymatic パネル</string>
     <string name="widget_run_tile_description">1 つのマクロを 1 タップで。手動トリガーを選んで、ホーム画面から実行できます。</string>
     <string name="widget_panel_description">エンジンの状態、問題、最後の実行、手動トリガーのグリッド。どれを表示するかは自由に選べます。</string>
-    <string name="permission_bind_plugin_label">Ottomatic のノードを提供</string>
-    <string name="permission_bind_plugin_description">このアプリが提供する追加のトリガーノードとアクションノードを Ottomatic が使えるようにします。アプリは自身の権限で自身のコードを実行します。Ottomatic が自身の権限を共有することはありません。</string>
+    <string name="permission_bind_plugin_label">Easymatic のノードを提供</string>
+    <string name="permission_bind_plugin_description">このアプリが提供する追加のトリガーノードとアクションノードを Easymatic が使えるようにします。アプリは自身の権限で自身のコードを実行します。Easymatic が自身の権限を共有することはありません。</string>
 </resources>
