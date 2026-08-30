@@ -1,61 +1,90 @@
 # Architecture
 
-This document defines the rules that every developer (including AI agents) must follow.
+This page collects the rules every contributor follows — human or AI. Read it before you
+write new code. It is short on purpose: the procedures live in
+[`docs/ADDING_NODES.md`](docs/ADDING_NODES.md), and only the rules are here.
 
 ## Modules
-- `:node-api`   - The node **declaration** surface: ids, permissions, item schemas,
-                  ports, config annotations and the `NodeSchema` derivation. A plain
-                  Kotlin JVM library — no AGP, no `android.jar`, one dependency
-                  (kotlinx-serialization-json). Third-party plugin apps compile
-                  against this.
-- `:app`        - Everything else: the executor, the platform adapters and the UI.
 
-Packages under `com.example.ottomatic` are shared across the two modules; which
-module a file is in says whether it is part of the plugin-visible declaration
-surface, not which package it belongs to.
+The project is split into four Gradle modules. Two of them carry the app; two exist only
+so a third-party plugin has something to compile against.
 
-## Package Structure
-- core/      - Infrastructure (DI, logging, permissions, base interfaces)
-- domain/    - Pure business models and contracts (no Android)
-- engine/    - Workflow execution logic
-- data/      - Repositories, DAOs, workers, system adapters
-- feature/   - Vertical feature slices (UI + ViewModels)
-- integration/ - External service adapters
+| Module | What it holds |
+| --- | --- |
+| `:node-api` | The node **declaration** surface: ids, permissions, item schemas, ports, config annotations and the `NodeSchema` derivation. A plain Kotlin JVM library — no AGP, no `android.jar`, one dependency (`kotlinx-serialization-json`). |
+| `:app` | Everything else: the executor, the platform adapters and the UI. |
+| `:plugin-sdk` | The Android half a plugin needs: the AIDL, the service base class and the six node contracts. |
+| `:sample-plugin` | A worked plugin, built by `test` and `connectedAndroidTest`. |
 
-## Dependency Rules (strict)
-- domain  ← only core
-- engine  ← domain + core
-- data    ← domain + core
-- feature ← domain + engine + core
-- No Android imports allowed in domain/ — **now a compile error** for everything
-  that lives in `:node-api`, which is compiled without `android.jar` on the
-  classpath. The parts of `core/` and `domain/` still in `:app` remain convention.
+The packages under `com.example.ottomatic` are shared across `:node-api` and `:app`. So
+the module a file is in answers a different question from the package it is in: **the
+package says what the code does, the module says whether a plugin can see it.**
 
-## Extension Points
-- **See `docs/ADDING_NODES.md`** for the full procedure. In summary:
-- Every node (Trigger, Action, Value or Transform) is declared **exactly once**,
-  in its own implementation file under `engine/`, as a single definition that
-  bundles typeId, palette metadata, ports, config fields and the typed contract:
-  - Actions: `actionNode<I, O>` / `effectNode<I>` / `adaptiveNode<I>` / `loopNode<I>`
-  - Triggers: `triggerNode<C, O>` / `pulseTriggerNode<C>`
-  - Values: `valueNode<C, O>` / `adaptiveValueNode<C>`
-  - Transforms: `transformNode<C, O>` / `rawTransformNode<C>` / `adaptiveTransformNode<C>`
+## Package structure
 
-  All eleven builders live in `engine/NodeDefinition.kt`; the contracts they pair
-  with live in `engine/NodeContracts.kt` and `engine/trigger/Trigger.kt`.
-- The **only** registration step is adding the node to `ActionRegistry`,
-  `TriggerRegistry`, `ValueRegistry` or `TransformRegistry` (in `domain/registry/`).
-  `NodeTypeRegistry` and `ConfigSchemaRegistry` are derived views of those
-  definitions — never add entries to them directly.
-- `typeId`, port names, config keys and defaults must each appear exactly
-  once (inside the definition).
+Inside `com.example.ottomatic`:
 
-## Enforcement
-- The `domain`-has-no-Android rule is enforced by the `:node-api` module boundary
-  (see above) for everything that module holds.
-- The remaining layering rules are convention, checked in review. `detekt.yml`
-  carries no architecture ruleset; `./gradlew detekt` runs the naming, complexity,
-  style and potential-bug rules only.
-- The node declaration contract is enforced by `NodeDeclarationContractTest`, and
-  the same rules are applied to third-party declarations at runtime by
-  `PluginDeclarationValidator` — one rule set, three callers.
+| Package | What belongs in it |
+| --- | --- |
+| `core/` | Infrastructure — DI, logging, permissions, base interfaces |
+| `domain/` | Pure business models and contracts, with no Android in them |
+| `engine/` | Workflow execution logic |
+| `data/` | Repositories, DAOs, workers and system adapters |
+| `feature/` | Vertical feature slices — UI plus ViewModels |
+| `integration/` | External service adapters |
+
+## Dependency rules
+
+These are strict. A package may only reach the ones listed beside it:
+
+| Package | May depend on |
+| --- | --- |
+| `domain` | `core` |
+| `engine` | `domain`, `core` |
+| `data` | `domain`, `core` |
+| `feature` | `domain`, `engine`, `core` |
+
+On top of that, **`domain/` uses no Android APIs**. For everything that lives in
+`:node-api` this is no longer a convention but a compile error, because that module is
+built without `android.jar` on the classpath. The parts of `core/` and `domain/` that are
+still in `:app` remain convention, checked in review.
+
+## Extension points
+
+Adding a node is the common change, and it stays two edits. The full procedure is in
+[`docs/ADDING_NODES.md`](docs/ADDING_NODES.md); in summary:
+
+**1. Declare the node exactly once**, in its own file under `engine/`. One definition
+bundles the typeId, the palette metadata, the ports, the config fields and the typed
+contract:
+
+| Kind | Builders |
+| --- | --- |
+| Actions | `actionNode<I, O>` · `effectNode<I>` · `adaptiveNode<I>` · `loopNode<I>` |
+| Triggers | `triggerNode<C, O>` · `pulseTriggerNode<C>` |
+| Values | `valueNode<C, O>` · `adaptiveValueNode<C>` |
+| Transforms | `transformNode<C, O>` · `rawTransformNode<C>` · `adaptiveTransformNode<C>` |
+
+All eleven builders live in `engine/NodeDefinition.kt`. The contracts they pair with are
+in `engine/NodeContracts.kt` and `engine/trigger/Trigger.kt`.
+
+**2. Register it in one place.** Add the node to `ActionRegistry`, `TriggerRegistry`,
+`ValueRegistry` or `TransformRegistry` in `domain/registry/`. That is the whole
+registration step.
+
+> **Note:** `NodeTypeRegistry` and `ConfigSchemaRegistry` are **derived views** of those
+> four registries. Never add entries to them by hand.
+
+**One fact, one place.** A typeId, a port name, a config key and a default each appear
+exactly once — inside the definition.
+
+## What enforces all this
+
+| Rule | Enforced by |
+| --- | --- |
+| No Android in the declaration surface | The `:node-api` module boundary — it compiles without `android.jar` |
+| The remaining layering rules | Convention, checked in review |
+| The node declaration contract | `NodeDeclarationContractTest`, plus `PluginDeclarationValidator` for third-party declarations at runtime — one rule set, three callers |
+
+`detekt.yml` carries no architecture ruleset, so `.\gradlew.bat detekt` checks naming,
+complexity, style and potential bugs only. It does not check layering, and it never has.

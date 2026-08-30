@@ -1,108 +1,150 @@
 # Ottomatic website
 
-Marketing/showcase site and documentation for [Ottomatic](../README.md), built with
-[Astro](https://astro.build). Static output, no adapter — the deploy target is not
-chosen yet.
+The marketing site and the documentation for [Ottomatic](../README.md), built with
+[Astro](https://astro.build) and [Starlight](https://starlight.astro.build). The output is
+static — there is no server half — and Cloudflare Workers serves `dist/` straight from the
+edge.
 
-This directory is invisible to the Gradle build: `settings.gradle.kts` includes only
-the four Android modules, so nothing here affects `.\gradlew.bat assembleDebug`.
+Live at **<https://ottomatic.mathias-weinstabl.workers.dev>**, with the documentation at
+[`/docs/`](https://ottomatic.mathias-weinstabl.workers.dev/docs/).
 
-## Commands
+> **Note:** This directory is invisible to the Gradle build. `settings.gradle.kts`
+> includes only the four Android modules, so nothing here affects
+> `.\gradlew.bat assembleDebug`. The reverse is not true any more: the site reads
+> `../docs/`, which is covered under [Node reference](#node-reference) below.
 
-Run from this directory. Requires Node ≥ 22.12.
+## Getting it running
 
-| Command | Does |
+You need **Node 22.12 or newer**. CI uses the version in `.node-version` (24.13). Run
+everything from this directory:
+
+```
+cd website
+npm install
+npm run dev
+```
+
+That serves the site on <http://localhost:4321>.
+
+| Command | What it does |
 | --- | --- |
-| `npm install` | Install dependencies |
+| `npm install` | Installs the dependencies |
 | `npm run dev` | Dev server on http://localhost:4321 |
-| `npm run build` | Regenerate tokens, then build to `dist/` |
-| `npm run preview` | Serve the built `dist/` locally |
-| `npm run check` | Typecheck (`astro check`) |
-| `npm run tokens` | Regenerate `src/styles/tokens.css` only |
+| `npm run build` | Regenerates the design tokens, then builds to `dist/` |
+| `npm run preview` | Serves the built `dist/` locally |
+| `npm run check` | Typechecks with `astro check` |
+| `npm run tokens` | Regenerates `src/styles/tokens.css` only |
+| `npm run nodes` | Generates the node reference pages on their own |
+
+## Deployment
+
+`wrangler.jsonc` points Cloudflare Workers at `dist/` as static assets. Two things there
+matter:
+
+- The Worker has **no `main`**, because `output: 'static'` means there is no code to run.
+  Adding SSR later is what would add `main` here and `@astrojs/cloudflare` in
+  `astro.config.mjs`.
+- **`name` must stay in step with the workers.dev subdomain.** It decides which Worker
+  `wrangler deploy` writes to, so renaming it creates a second site instead of moving
+  this one.
+
+The `site` value in `astro.config.mjs` is the provisional workers.dev subdomain. Canonical
+URLs, Open Graph URLs and the sitemap are all derived from it, and it is baked into every
+one of the ~220 built pages — so change it there the day a custom domain is attached. A
+redirect at the edge does not fix a canonical that is already in the HTML.
 
 ## Design system
 
-The site is editorial rather than Material: **near-black, neutral**, very heavy type,
-and **no cards**. Almost nothing has a `border-radius` and nothing at all has a border.
-`.band`, `.band-alt` and `.shell` in `global.css` are the whole layout system — a band
-is a full-bleed section with a centred measure inside it.
+The site is editorial rather than Material: **near-black, neutral**, very heavy type and
+**no cards**. Almost nothing has a `border-radius` and nothing at all has a border.
+`.band`, `.band-alt` and `.shell` in `global.css` are the whole layout system — a band is
+a full-bleed section with a centred measure inside it.
 
-Sections used to alternate cream and near-black, and that alternation *was* the
-separation system. It was also five luminance swings on one scroll, the widest 18:1,
-which is what made the page tiring. Sections still alternate — `.band` and `.band-alt`
-— but the swing is **1.05:1**, enough to see a seam and nowhere near enough to make the
-eye re-adapt. `--surface-raised` is a separate job: **objects** that sit on a section,
-never a section itself, so a panel keeps its contrast wherever it lands.
+Sections used to alternate cream and near-black, and that alternation *was* the separation
+system. It was also five luminance swings on one scroll, the widest 18:1, which is what
+made the page tiring. Sections still alternate — `.band` and `.band-alt` — but the swing is
+**1.05:1**: enough to see a seam, nowhere near enough to make the eye re-adapt.
+`--surface-raised` is a separate job. It is for **objects** that sit on a section, never
+for a section itself, so a panel keeps its contrast wherever it lands.
 
-One consequence worth knowing before you touch layout: **`.band` padding is symmetric,
-half a rhythm each side.** Two neighbours contribute one full gap between them and no
-section is lopsided — which is what the tinted sections need, since with top-only
-padding a `.band-alt` block would begin a whole rhythm above its text and stop dead at
-the bottom of it. `.tight` is zero, for the one pair that shares a ground and reads as
-one thought.
+> **Note:** `.band` padding is symmetric, half a rhythm each side. Two neighbours
+> contribute one full gap between them and no section is lopsided. The tinted sections
+> need this: with top-only padding, a `.band-alt` block would begin a whole rhythm above
+> its text and then stop dead at the bottom of it. `.tight` is zero, for the one pair that
+> shares a ground and reads as a single thought.
 
-Icons come from **Material Symbols** via `astro-icon` and `@iconify-json/material-symbols`
-(a devDependency — only the glyphs actually referenced are inlined into the page, so the
-set never ships). Use the **Sharp** cut: the site has no rounded corners outside the
-buttons, and `material-symbols:home-sharp` is the *filled* sharp variant — `-outline-sharp`
-is the hollow one. Where a glyph has an equivalent on the canvas, take the same one the
-node wears: `NodeIcon` (`node-api/.../NodeIcon.kt`) maps to concrete Material icons in the
+### Icons
+
+Icons come from **Material Symbols** through `astro-icon` and
+`@iconify-json/material-symbols`. That package is a devDependency: only the glyphs
+actually referenced are inlined into the page, so the ~15 000-icon set never ships.
+
+Use the **Sharp** cut. The site has no rounded corners outside the buttons, and
+`material-symbols:home-sharp` is the *filled* sharp variant — `-outline-sharp` is the
+hollow one. Where a glyph has an equivalent on the canvas, take the same one the node
+wears: `NodeIcon` (`node-api/.../NodeIcon.kt`) maps to concrete Material icons in the
 `when` in `EditorColors.kt`.
 
-Imagery in `public/img/` is **real editor capture**, taken on an emulator in portrait
-at 1600x2560 and exported as WebP (~40 KB each). Two kinds, and they are cropped
-differently on purpose:
+### Imagery
+
+Everything in `public/img/` is **real editor capture**, taken on an emulator in portrait at
+1600×2560 and exported as WebP (~40 KB each). There are two kinds, cropped differently on
+purpose:
 
 - `hero-editor.webp` is the whole phone — app bar, zoom column, Problems bar and all,
   because the hero's job is to show that this is an app.
 - `showcase/*.webp` are **the graph alone**. Status bar, app bar, zoom column and the
-  floating buttons are all cropped away, so a use-case pane is nodes and wires and
-  nothing else.
+  floating buttons are cropped away, so a use-case pane is nodes and wires and nothing
+  else.
 
-Both are portrait, so both are sized by `max-block-size` and centred rather than
-stretched to their column: at the hero's column width a 5:8 picture would run to nearly
-a thousand pixels and dwarf the copy beside it.
+Both are portrait, so both are sized by `max-block-size` and centred rather than stretched
+to their column. At the hero's column width a 5:8 picture would run to nearly a thousand
+pixels and dwarf the copy beside it.
 
-The graphs are laid out for a tall frame — the flow runs top to bottom and a branch
-throws its arms left and right — which is what makes the crop portrait. A branch puts
-two cards side by side and so fixes the width; only the number of rows can change the
-shape, which is why each use-case graph is six rows deep.
+The graphs are laid out for a tall frame: the flow runs top to bottom and a branch throws
+its arms left and right. That is what makes the crop portrait. A branch puts two cards side
+by side and so fixes the width, which leaves the number of rows as the only thing that can
+change the shape — hence six rows deep for every use-case graph.
 
-Re-taking them is scripted rather than manual: the graphs are authored as workflow JSON
-and pushed into the app with `run-as`, the emulator is driven by row taps, and the crop
-finds the graph by block-mean brightness (a node card and the canvas dot grid are six
-levels apart, so no per-pixel threshold separates them). The scripts are not in the repo
-— they seed a throwaway hub/AI/place library so no node renders with a Problems badge,
-which is emulator state rather than site content.
+Re-taking them is scripted rather than manual. The graphs are authored as workflow JSON and
+pushed into the app with `run-as`, the emulator is driven by row taps, and the crop finds
+the graph by block-mean brightness (a node card and the canvas dot grid are six levels
+apart, so no per-pixel threshold separates them). The scripts are not in the repo: they seed
+a throwaway hub, AI and place library so no node renders with a Problems badge, which is
+emulator state rather than site content.
 
-The face is **Archivo Variable**, self-hosted via `@fontsource-variable/archivo`.
-Display sizes live in `--t-*` tokens and run to weight 800 with negative tracking;
-weight is what carries hierarchy here, not colour or containers.
+### Type and theme
 
-The site **commits to one look** — there is no light mode, and `color-scheme: dark`
-says so, so form controls, scrollbars and the viewport ground are painted to match
-instead of ringing a dark page in light chrome. `theme-color` in `BaseLayout.astro`
-carries `--surface` and has to be edited by hand when that changes.
+The face is **Archivo Variable**, self-hosted through `@fontsource-variable/archivo`.
+Display sizes live in `--t-*` tokens and run to weight 800 with negative tracking. Weight is
+what carries hierarchy here — not colour, and not containers.
+
+The site **commits to one look**. There is no light mode, and `color-scheme: dark` says so,
+so form controls, scrollbars and the viewport ground are painted to match instead of ringing
+a dark page in light chrome. `theme-color` in `BaseLayout.astro` carries `--surface` and has
+to be edited by hand when that changes.
 
 ## Colour
 
-`src/styles/tokens.css` is **generated and committed** — do not edit it by hand. Run
-`npm run tokens` (`npm run build` does it first, so a stale file cannot ship). It seeds
-a full Material 3 tonal ramp from `#E06C4F` (`EditorColors.triggerAccent` in the app).
+> **Note:** `src/styles/tokens.css` is **generated and committed** — do not edit it by hand.
+> Run `npm run tokens` to regenerate it. `npm run build` does that first, so a stale file
+> cannot ship.
 
-**Nothing in that file is consumed by the site any more** — not the 54
-`--md-sys-color-*` roles and not the four `--brand-*` accents either. The palette below,
-in `global.css`, is the whole of it. `tokens.css` is left generated because the script
-derives those roles by reflection and unpicking it is a separate change.
+That file seeds a full Material 3 tonal ramp from `#E06C4F`
+(`EditorColors.triggerAccent` in the app). **Nothing in it is consumed by the site any
+more** — not the 54 `--md-sys-color-*` roles, and not the four `--brand-*` accents either.
+The palette below, in `global.css`, is the whole of it. `tokens.css` is left generated
+because the script derives those roles by reflection, and unpicking that is a separate
+change.
 
-Three surfaces, each with a job. Every one is a pure grey — all three channels equal —
-so the only hue on the page comes from the accents:
+There are three surfaces, each with a job. Every one is a pure grey — all three channels
+equal — so the only hue on the page comes from the accents:
 
 | Surface | Value | Job |
 | --- | --- | --- |
-| `--surface` | `#0a0a0a` | the default section ground |
-| `--surface-alt` | `#111111` | every other section — **1.05:1** away |
-| `--surface-raised` | `#1d1d1d` | objects: panels, pictures, `<pre>`, the footer slab, the scrolled header |
+| `--surface` | `#0a0a0a` | The default section ground |
+| `--surface-alt` | `#111111` | Every other section — **1.05:1** away |
+| `--surface-raised` | `#1d1d1d` | Objects: panels, pictures, `<pre>`, the footer slab, the scrolled header |
 
 | Ink | Value | On surface | On alt | On raised |
 | --- | --- | --- | --- | --- |
@@ -114,98 +156,110 @@ so the only hue on the page comes from the accents:
 | `--accent-value` | `#cf94ff` | 8.8:1 | 8.4:1 | 7.5:1 |
 | `--accent-transform` | `#9fadff` | 9.3:1 | 8.9:1 | 7.9:1 |
 
-Five things here are decisions rather than values:
+Five things in that table are decisions rather than values:
 
-- **The neutrals are neutral.** An earlier pass tinted the ground toward the brand
-  orange and the whole site read as yellow. Hue belongs to the things that mean
-  something, not to the paper.
+- **The neutrals are neutral.** An earlier pass tinted the ground toward the brand orange
+  and the whole site read as yellow. Hue belongs to the things that mean something, not to
+  the paper.
 - **Near-black, so an OLED can switch the pixels off.** Not `#000000`: at true black a
   scrolling page smears, and the step up to a raised panel has nowhere to come from.
 - **Text is `#dedede`, not white.** White on near-black is ~19:1, and that extreme is a
-  halation source rather than a virtue. A deeper ground pushes every ratio up, so the
-  ink comes down to compensate.
+  halation source rather than a virtue. A deeper ground pushes every ratio up, so the ink
+  comes down to compensate.
 - **`raised` clears the bar against *both* grounds** — 1.17:1 from the base, 1.12:1 from
-  alt. The second is the one that binds, because most of the panels are on alt sections.
-  1.09:1 is the reference: the old ink/ink-raised step, which the showcase's open row
-  proved is visible.
-- **One accent per node kind.** They used to come in *pairs* — a bright half for ink and
-  a deep half for cream — and that whole axis went away with the second ground. Each
-  keeps the hue of the app's own value (`EditorColors.kt`: `#E06C4F`, `#5B8DEF`,
-  `#C58AF9`, `#8E9CF7`) without being it, because the app's palette is tuned for its own
-  canvas.
+  alt. The second is the one that binds, because most panels sit on alt sections. 1.09:1 is
+  the reference: the old ink/ink-raised step, which the showcase's open row proved is
+  visible.
+- **One accent per node kind.** They used to come in *pairs* — a bright half for ink, a
+  deep half for cream — and that whole axis went away with the second ground. Each keeps
+  the hue of the app's own value (`EditorColors.kt`: `#E06C4F`, `#5B8DEF`, `#C58AF9`,
+  `#8E9CF7`) without being it, because the app's palette is tuned for its own canvas.
 
-The worst pairing anywhere is 5.9:1. If you add one, measure it rather than assuming.
+The worst pairing anywhere is 5.9:1. If you add one, measure it rather than assuming it.
 
-Note that the app's own theme files (`ui/theme/Color.kt`) are the **untouched Android
-Studio template purple** and are not the brand; the brand is the graph editor's fixed
-dark palette.
+> **Note:** the app's own theme files (`ui/theme/Color.kt`) are the untouched Android Studio
+> template purple. That is not the brand. The brand is the graph editor's fixed dark
+> palette.
 
-The **use-case showcase** switches with no JavaScript: each row carries its own radio,
-`display: contents` keeps the input, the label and the picture DOM siblings so
-`:checked ~` reaches both, and the same markup is two columns above 64rem and an
-accordion below it. Collapsing uses `grid-template-rows: minmax(0, 0fr)` — **not** a bare
-`0fr`, which is shorthand for `minmax(auto, 0fr)` and floors the track at the inner
-element's padding, leaving a visible strip on every closed row.
+### The use-case showcase
 
-It needs five accents where the graph has four, so its fifth row wears `--signal`. Its
-unchosen rows sit at `opacity: 0.7` rather than 0.6, because flattening `--signal` at
-0.6 lands under the 3:1 bar those large bold titles qualify for, and just under is
-still under.
+It switches with no JavaScript. Each row carries its own radio, `display: contents` keeps
+the input, the label and the picture DOM siblings so `:checked ~` reaches both, and the same
+markup is two columns above 64rem and an accordion below it.
+
+Collapsing uses `grid-template-rows: minmax(0, 0fr)` — **not** a bare `0fr`, which is
+shorthand for `minmax(auto, 0fr)` and floors the track at the inner element's padding,
+leaving a visible strip on every closed row.
+
+The showcase needs five accents where the graph has four, so its fifth row wears
+`--signal`. Its unchosen rows sit at `opacity: 0.7` rather than 0.6, because flattening
+`--signal` at 0.6 lands under the 3:1 bar those large bold titles qualify for — and just
+under is still under.
 
 ## Documentation
 
-Docs are **Starlight**, at `/docs/`. It was hand-built layouts for a while, on the
-argument that marketing and docs should share one design system with no seam — the
-sidebar, table of contents and search were "still to come". They were still to come
-because they are the expensive part, and a reference of 175 node pages needs all
-three on day one.
+The docs are **Starlight**, served from `/docs/`. They were hand-built layouts for a while,
+on the argument that marketing and docs should share one design system with no seam; the
+sidebar, table of contents and search were "still to come". They were still to come because
+they are the expensive part, and a reference of 180-odd node pages needs all three on day
+one.
 
-One design system survives that, just held somewhere else: `global.css` is still the
-only palette, and `src/styles/starlight-theme.css` maps it onto Starlight's own
-`--sl-*` properties. Edit a colour there instead of in `global.css` and the two
-halves of the site start to drift. Starlight's own values sit in `@layer starlight.*`
-and ours do not, which is what makes the mapping win regardless of source order.
+One design system survives that, just held somewhere else. `global.css` is still the only
+palette, and `src/styles/starlight-theme.css` maps it onto Starlight's own `--sl-*`
+properties. Edit a colour there instead of in `global.css` and the two halves of the site
+start to drift. Starlight's own values sit in `@layer starlight.*` and ours do not, which is
+what makes the mapping win regardless of source order.
 
 Three things about that setup look like mistakes and are not:
 
-- **`src/content/docs/docs/`** is doubled on purpose. Starlight's `docsLoader()`
-  reads `src/content/docs/` with no way to point it elsewhere, and maps each file's
-  path within it straight to a URL. Nesting one level deeper is the only way to serve
-  from `/docs/` rather than from `/`, which `src/pages/index.astro` already holds.
-- **`Header` and `Footer` are wrapped, not replaced.** Starlight's default Header
-  carries the search box and the small-screen menu toggle; replacing it outright
-  removes both silently.
-- **The theme toggle is replaced with an empty component *and* the dark values are
-  repeated under `[data-theme='light']`.** Hiding the toggle is not enough on its
-  own — Starlight's ThemeProvider reads a `starlight-theme` entry from localStorage,
-  so anyone carrying a stale `light` from another Starlight site would get a
-  half-light page.
+- **`src/content/docs/docs/` is doubled on purpose.** Starlight's `docsLoader()` reads
+  `src/content/docs/` with no way to point it elsewhere, and maps each file's path within it
+  straight to a URL. Nesting one level deeper is the only way to serve from `/docs/` rather
+  than from `/`, which `src/pages/index.astro` already holds.
+- **`Header` is replaced, not wrapped.** Wrapping stacked two bars inside the one fixed,
+  `--sl-nav-height`-tall box Starlight draws, and the second overflowed onto the sidebar and
+  the content. `DocsHeader` is a single bar that renders Starlight's own search inside it.
+  `Footer` is deliberately **not** overridden: Starlight's own is what carries the
+  previous/next pagination across the whole node reference.
+- **The theme toggle is replaced with an empty component *and* the dark values are repeated
+  under `[data-theme='light']`.** Hiding the toggle is not enough on its own. Starlight's
+  ThemeProvider reads a `starlight-theme` entry from localStorage, so anyone carrying a
+  stale `light` from another Starlight site would otherwise get a half-light page.
 
 ### Node reference
 
 `/docs/reference/nodes/` is generated, and its source is deliberately split in two:
 
-| Half | Where | Written by |
+| Half | Where it lives | Written by |
 | --- | --- | --- |
 | Facts — ports, config rows, permissions, the one-line description | [`../docs/nodes.generated.json`](../docs/nodes.generated.json) | `NodeDocsExportTest`, from the Kotlin declarations |
-| Prose — the multi-paragraph explanation | [`../docs/nodes/`](../docs/nodes/) | by hand, one plain-CommonMark file per node |
+| Prose — the multi-paragraph explanation | [`../docs/nodes/`](../docs/nodes/) | By hand, one plain-CommonMark file per node |
 
-`npm run nodes` composes the two into one page per node. A node with no prose file
-still gets a full page from its facts, so the reference is complete and the prose
-lands node by node.
+`scripts/generate-node-pages.mjs` composes the two into one page per node. A node with no
+prose file still gets a full page from its facts, so the reference is complete while the
+prose lands node by node.
 
-The split is **prose versus facts, not app versus web**: the app will later render
-the same prose files on a node's config sheet, which is why they are restricted to a
-subset of CommonMark — no tables, no images, no raw HTML, no MDX. `NodeDocsExportTest`
-enforces that, so an unrenderable construct fails the Android build rather than
-being discovered a year later.
+The generator runs from **`astro.config.mjs` itself**: importing it runs it, and the sidebar
+it returns is the same pass's second output. It used to be a preceding `npm run nodes`,
+which made `astro build` a command that could only crash on a clean checkout — and that is
+exactly the command Cloudflare Workers Builds runs when the build command is left to the
+framework preset (`npx astro build`). Every pull-request build failed there while pushes to
+main went through `npm run build` and passed. A build step that no entry point can skip
+cannot be skipped by an entry point nobody configured. `npm run nodes` still exists for
+running the generator on its own.
 
-Consequences worth knowing: `npm run build`, `dev` and `check` all run `npm run nodes`
-first, and the generated pages are **gitignored** — unlike `tokens.css`, because their
-producer runs in the same command as their consumer and so they cannot go stale. The
-JSON is the opposite case and is committed and byte-compared. This directory is still
-invisible to Gradle, but it is no longer self-contained: the build reads `../docs/`.
+The split is **prose versus facts, not app versus web**. The app will later render the same
+prose files on a node's config sheet, which is why they are restricted to a subset of
+CommonMark: no tables, no images, no raw HTML, no MDX. `NodeDocsExportTest` enforces that,
+so an unrenderable construct fails the Android build instead of being discovered a year
+later.
 
-The remaining hand-written guides are still at [`../docs/`](../docs/) —
-`PLUGINS.md` and `EXTERNAL_API.md` are the two externally-facing ones, not yet
-brought across.
+Two consequences are worth knowing:
+
+- The generated pages are **gitignored**, unlike `tokens.css`, because their producer runs
+  in the same command as their consumer and so they cannot go stale.
+- `nodes.generated.json` is the opposite case: committed, and byte-compared on every
+  `test` run.
+
+The remaining hand-written guides are still at [`../docs/`](../docs/). `PLUGINS.md` and
+`EXTERNAL_API.md` are the two externally-facing ones, not yet brought across.
