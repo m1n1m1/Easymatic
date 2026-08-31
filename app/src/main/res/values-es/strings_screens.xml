@@ -640,6 +640,10 @@
     <string name="setup_permissions_subtitle">Lo que el teléfono permite hacer a tus macros</string>
     <string name="setup_plugins_subtitle">Aplicaciones que añaden nodos</string>
     <string name="setup_app_access_subtitle">Otras aplicaciones que pueden ejecutar tus macros</string>
+
+    <string name="setup_section_about">Información</string>
+    <string name="setup_privacy_policy">Política de privacidad</string>
+    <string name="setup_privacy_policy_subtitle">Qué sale de tu teléfono y adónde va</string>
     <string name="workflowlist_search_placeholder">Buscar macros</string>
     <string name="workflowlist_clear_search">Borrar la búsqueda</string>
     <string name="workflowlist_no_matches">Ninguna macro coincide.</string>

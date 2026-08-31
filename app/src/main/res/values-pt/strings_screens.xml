@@ -640,6 +640,10 @@
     <string name="setup_permissions_subtitle">O que o telemóvel permite às tuas macros fazer</string>
     <string name="setup_plugins_subtitle">Aplicações que adicionam nós</string>
     <string name="setup_app_access_subtitle">Outras aplicações autorizadas a executar as tuas macros</string>
+
+    <string name="setup_section_about">Acerca de</string>
+    <string name="setup_privacy_policy">Política de privacidade</string>
+    <string name="setup_privacy_policy_subtitle">O que sai do teu telemóvel e para onde vai</string>
     <string name="workflowlist_search_placeholder">Procurar macros</string>
     <string name="workflowlist_clear_search">Limpar a pesquisa</string>
     <string name="workflowlist_no_matches">Nenhuma macro corresponde.</string>

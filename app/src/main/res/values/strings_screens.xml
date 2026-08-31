@@ -727,6 +727,10 @@
     <string name="setup_plugins_subtitle">Apps that add nodes</string>
     <string name="setup_app_access_subtitle">Other apps allowed to run your macros</string>
 
+    <string name="setup_section_about">About</string>
+    <string name="setup_privacy_policy">Privacy policy</string>
+    <string name="setup_privacy_policy_subtitle">What leaves your phone, and where it goes</string>
+
     <!-- The workflow list's search bar. -->
     <string name="workflowlist_search_placeholder">Search macros</string>
     <string name="workflowlist_clear_search">Clear search</string>

@@ -640,6 +640,10 @@
     <string name="setup_permissions_subtitle">Что телефон разрешает вашим макросам</string>
     <string name="setup_plugins_subtitle">Приложения, которые добавляют узлы</string>
     <string name="setup_app_access_subtitle">Другие приложения, которым разрешено запускать ваши макросы</string>
+
+    <string name="setup_section_about">О приложении</string>
+    <string name="setup_privacy_policy">Политика конфиденциальности</string>
+    <string name="setup_privacy_policy_subtitle">Что покидает ваш телефон и куда попадает</string>
     <string name="workflowlist_search_placeholder">Поиск макросов</string>
     <string name="workflowlist_clear_search">Очистить поиск</string>
     <string name="workflowlist_no_matches">Нет подходящих макросов.</string>

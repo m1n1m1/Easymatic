@@ -640,6 +640,10 @@
     <string name="setup_permissions_subtitle">端末がマクロに許可していること</string>
     <string name="setup_plugins_subtitle">ノードを追加するアプリ</string>
     <string name="setup_app_access_subtitle">あなたのマクロを実行できる他のアプリ</string>
+
+    <string name="setup_section_about">このアプリについて</string>
+    <string name="setup_privacy_policy">プライバシーポリシー</string>
+    <string name="setup_privacy_policy_subtitle">端末から出ていくデータと、その送信先</string>
     <string name="workflowlist_search_placeholder">マクロを検索</string>
     <string name="workflowlist_clear_search">検索をクリア</string>
     <string name="workflowlist_no_matches">一致するマクロはありません。</string>

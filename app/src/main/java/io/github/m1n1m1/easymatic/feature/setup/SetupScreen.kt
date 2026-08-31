@@ -1,5 +1,6 @@
 package io.github.m1n1m1.easymatic.feature.setup
 
+import android.content.Intent
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tag
@@ -33,11 +35,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import io.github.m1n1m1.easymatic.R
 import io.github.m1n1m1.easymatic.feature.grapheditor.EditorColors
 
@@ -213,8 +217,44 @@ fun SetupScreen(
                     onClick = onOpenAppAccess,
                 )
             }
+
+            item { SectionHeader(R.string.setup_section_about) }
+            item {
+                // The one row that is not a destination in this app, so it is also the
+                // one that resolves its own click rather than taking a lambda from
+                // `MainActivity`: there is no `NavController` route to a web page, and
+                // threading a twelfth parameter through `HomeScreen` for something that
+                // *leaves* the app would say it is navigation when it is not.
+                //
+                // The policy is hosted rather than bundled because Play requires a
+                // public URL for the store listing either way, and two copies of it
+                // would eventually disagree.
+                PrivacyPolicyRow()
+            }
         }
     }
+}
+
+/**
+ * Opens the hosted privacy policy in whatever the phone uses for the web.
+ *
+ * `runCatching` because `ACTION_VIEW` throws when nothing on the device handles
+ * https — rare, but a phone with no browser is not a phone this screen should crash
+ * on. There is nothing useful to say when it happens: the row simply does nothing,
+ * which is the same outcome as a browser that opens and fails to load.
+ */
+@Composable
+private fun PrivacyPolicyRow() {
+    val context = LocalContext.current
+    SetupRow(
+        icon = Icons.Filled.PrivacyTip,
+        titleRes = R.string.setup_privacy_policy,
+        subtitleRes = R.string.setup_privacy_policy_subtitle,
+        onClick = {
+            val intent = Intent(Intent.ACTION_VIEW, PRIVACY_POLICY_URL.toUri())
+            runCatching { context.startActivity(intent) }
+        },
+    )
 }
 
 @Composable
@@ -276,3 +316,9 @@ private val BAR_HEIGHT = 60.dp
 
 /** The horizontal inset every row on both tabs uses. */
 private val ROW_INSET = 18.dp
+
+/**
+ * Where the privacy policy lives. The same URL is given to Play as the listing's
+ * policy link, and is generated from `website/src/pages/privacy.astro`.
+ */
+private const val PRIVACY_POLICY_URL = "https://easymatic.mathias-weinstabl.workers.dev/privacy"
