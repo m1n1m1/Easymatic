@@ -43,20 +43,30 @@ import kotlinx.coroutines.withContext
  * scanned code, a URL — is legible enough to read back and see is wrong. The one thing that
  * is not legible is a `content://` row id, and that is what [supportingText] is for.
  *
- * ## Three failures it exists to make visible
+ * ## Two failures it exists to make visible
  *
- * Each of these silently did nothing before there was somewhere to say so, and all three
- * look identical from the outside — a button that appears to be dead:
+ * Each of these silently did nothing before there was somewhere to say so, and both look
+ * identical from the outside — a button that appears to be dead:
  *
- *  - **Nothing on this phone answers the action.** `startActivityForResult` with nothing to
- *    start reports `RESULT_CANCELED`, which is also what backing out of a gallery reports —
- *    so it is asked *before* the launch, never inferred after it.
  *  - **The camera refuses because this app has not been granted CAMERA.** See
  *    [Permissions.CAMERA]: Easymatic declares it for the torch and never opens a camera, and
  *    that declaration alone is what makes `ACTION_IMAGE_CAPTURE` fail. This is the single
  *    place the field is not generic over its declaration, and the platform forces it.
  *  - **A destination nobody wrote to.** A capture that is cancelled leaves the pending row
  *    behind, which would surface in a gallery as a zero-byte photograph. It is abandoned.
+ *
+ * There used to be a third — **nothing on this phone answers the action** — asked before the
+ * launch, because `startActivityForResult` with nothing to start reports `RESULT_CANCELED`,
+ * exactly as backing out of a gallery does. It went with `QUERY_ALL_PACKAGES`, which was
+ * dropped for Play policy: the question is asked with `queryIntentActivities`, and without
+ * the blanket grant that sees only what the manifest's `<queries>` block declares.
+ * `@IntentChoice` is a *plugin's* widget — no first-party node declares one — so the actions
+ * are not knowable at build time and cannot be listed there, which leaves the query answering
+ * "nothing can do that" about apps that are plainly installed.
+ *
+ * A field greyed out at random is worse than one that always launches, because the platform's
+ * own "no app can perform this action" at least names the real problem. So the check is gone
+ * rather than left to fail open in place, and the ambiguity it existed to resolve is back.
  */
 @Composable
 fun IntentChoiceField(
@@ -68,10 +78,6 @@ fun IntentChoiceField(
 ) {
     val context = LocalContext.current
 
-    // Whether any app answers this at all. Read once per declaration rather than per
-    // recomposition: it is a PackageManager query, and the answer only changes when
-    // something is installed or removed — which the editor is not open across.
-    val answerable = remember(type, context) { IntentRequests.isAnswerable(context, type) }
     val needsCamera = remember(type) { type.action == MediaStore.ACTION_IMAGE_CAPTURE }
     val camera = rememberPermissionState(if (needsCamera) listOf(Permissions.CAMERA) else emptyList())
 
@@ -116,15 +122,12 @@ fun IntentChoiceField(
                 overflow = TextOverflow.Ellipsis,
             )
         },
-        isError = !answerable,
         supportingText = supportingText(
-            answerable = answerable,
             needsCameraGrant = needsCamera && !camera.allGranted,
             name = name,
         ),
         trailingIcon = {
             IconButton(
-                enabled = answerable,
                 onClick = {
                     when {
                         // Asked for, not merely reported: the grant is one tap away and the
@@ -167,13 +170,9 @@ fun IntentChoiceField(
  */
 @Composable
 private fun supportingText(
-    answerable: Boolean,
     needsCameraGrant: Boolean,
     name: String,
 ): (@Composable () -> Unit)? = when {
-    !answerable -> {
-        { Text(stringResource(R.string.intent_choice_no_app)) }
-    }
     needsCameraGrant -> {
         { Text(stringResource(R.string.intent_choice_needs_camera)) }
     }

@@ -23,3 +23,11 @@ opencode.json.bak-*
 __pycache__/
 *.pyc
 opencode.json
+
+# The Play upload key and its passwords. Belt and braces: the key should live outside
+# the checkout entirely (keystore.properties names an absolute path), but a keystore
+# committed once is a keystore that has to be rotated in the Play Console, so the
+# extensions are ignored here too.
+keystore.properties
+*.jks
+*.keystore

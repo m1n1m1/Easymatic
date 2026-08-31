@@ -10,15 +10,20 @@ import io.github.m1n1m1.easymatic.core.trigger.TriggerEvent
 import io.github.m1n1m1.easymatic.core.trigger.TriggerSource
 
 /**
- * Receives SMS_DELIVER/SMS_RECEIVED broadcasts and pushes a [TriggerEvent]
- * onto the [TriggerBus]. Manifest-registered so it works from a killed app.
+ * Receives SMS_RECEIVED broadcasts and pushes a [TriggerEvent] onto the
+ * [TriggerBus]. Manifest-registered so it works from a killed app.
  *
- * Requires the RECEIVE_SMS permission.
+ * Requires the RECEIVE_SMS permission, and SMS_RECEIVED is exactly the broadcast
+ * that permission grants. Its neighbour SMS_DELIVER is *not*: the platform sends
+ * that one to the default SMS app and to nothing else, so listening for it made
+ * this trigger unfireable while still asking for a Play-restricted permission.
+ * See the receiver's manifest entry for why becoming the default SMS app is not
+ * the alternative.
  */
 class SmsReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != Telephony.Sms.Intents.SMS_DELIVER_ACTION) return
+        if (intent.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
         val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent) ?: return
         val sender = messages.firstOrNull()?.displayOriginatingAddress.orEmpty()
         val body = messages.joinToString("") { it.displayMessageBody.orEmpty() }

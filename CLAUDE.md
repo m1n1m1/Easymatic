@@ -316,10 +316,24 @@ edit leaves the task `UP-TO-DATE` and the guard unrun.
 
 Cutting a release is: edit `CHANGELOG.md`, regenerate, commit, then push a `v<version>` tag.
 `.github/workflows/release.yml` refuses a tag that does not name the newest entry, and creates
-the GitHub release from `notes`. It attaches no artifact — there is no signing config in this
-repo yet — and Play is still uploaded by hand, which is why the workflow prints the store text
-into its own log ready to paste. **`applicationId` is still `io.github.m1n1m1.easymatic`, which Play
-rejects outright**; that rename has to happen before the first upload.
+the GitHub release from `notes`. It attaches no artifact and Play is still uploaded by hand,
+which is why the workflow prints the store text into its own log ready to paste.
+
+The bundle itself is `.\gradlew.bat :app:bundleRelease` — with the `:app:` prefix, since a bare
+`assembleRelease` also builds `:sample-plugin`, a second application module that must never be
+uploaded. Signing reads a gitignored `keystore.properties` through `keystoreProperty`, which is
+`localProperty`'s shape against a separate file: `local.properties` is rewritten by Android
+Studio, and the upload key's passwords should not sit in a file another tool edits. **A missing
+keystore leaves the release variant unsigned rather than failing configuration**, because CI
+builds only the debug variant and a fresh clone has to configure — the failure lands at upload,
+on one person, instead of on everybody's build.
+
+**`applicationId` is `io.github.m1n1m1.easymatic` and stays that way.** README and this file both
+used to assert that Play rejects it outright; no Play policy says so, package-name registration
+for developer verification is automatic for Play-distributed apps, and the claim was never
+tested against the console. It is worth knowing that it is *unverified in both directions* until
+the app entry is created, because the ID is permanent from the first upload — but a rename on
+the strength of a claim nobody could source would have been the worse mistake.
 
 ## Topics that load on demand
 

@@ -550,7 +550,6 @@
     <string name="config_none_selected">Nichts ausgewählt</string>
     <string name="intent_choice_placeholder">Eintippen oder eine App fragen</string>
     <string name="intent_choice_ask_an_app">Eine App fragen</string>
-    <string name="intent_choice_no_app">Keine App auf diesem Telefon kann das beantworten. Du kannst den Wert trotzdem eintippen.</string>
     <string name="intent_choice_needs_camera">Easymatic braucht Kamerazugriff, bevor eine andere App das Bild aufnehmen kann. Zum Erlauben tippen, dann erneut tippen.</string>
 
     <string name="variables_edit_variable">Variable bearbeiten</string>

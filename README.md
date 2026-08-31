@@ -193,14 +193,28 @@ does not name the newest entry is refused.
 
 ### Step 4: Upload to Play
 
-Build the bundle, then upload it together with the generated text in
-`fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`. A pre-release belongs on a
-closed testing track rather than production.
+Build the bundle with `.\gradlew.bat :app:bundleRelease`, then upload it together with the
+generated text in `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`. A
+pre-release belongs on a closed testing track rather than production.
 
-> **Note:** this step is still manual. There is no signing configuration in the repository
-> and no Play service account, so nothing is published automatically. The application ID is
-> also still `io.github.m1n1m1.easymatic`, which the Play Console rejects — it has to be renamed
-> before the first upload.
+Signing reads `keystore.properties` at the repository root — gitignored, the same shape as
+`local.properties`:
+
+```
+storeFile=C:/path/outside/the/repo/upload-key.jks
+storePassword=…
+keyAlias=upload
+keyPassword=…
+```
+
+Create the key once with `keytool -genkeypair -v -keystore upload-key.jks -keyalg RSA
+-keysize 2048 -validity 10000 -alias upload`, keep it outside the checkout, and back it up.
+Enrol in Play App Signing so Google holds the key the shipped app is signed with; this one
+only proves who uploaded the bundle, and can be replaced through the console if it is lost.
+
+> **Note:** the upload itself is still manual. There is no Play service account and no
+> publisher plugin, so nothing is pushed automatically. Without a `keystore.properties` the
+> release variant still builds — it is simply unsigned, which Play rejects at upload.
 
 ## How the project is laid out
 

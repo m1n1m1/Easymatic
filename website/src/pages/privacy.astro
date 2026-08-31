@@ -1,0 +1,355 @@
+---
+/**
+ * The privacy policy.
+ *
+ * Required by Play — a store listing cannot be submitted without a public URL for one —
+ * and required *specifically* here, because Easymatic asks for accessibility, notification
+ * access, SMS, location in the background and photo access, and every one of those carries
+ * its own prominent-disclosure obligation on top of the policy itself.
+ *
+ * Hand-written prose rather than generated, unlike `/changelog`. There is no machine-readable
+ * source for it: the Data Safety form in Play Console is the other consumer of these facts and
+ * it is filled in by hand, so a generator would have one producer and one reader that cannot
+ * import it. What keeps the two honest is that both are written from the same list — the
+ * destinations named below are exactly the transports under `data/`, and adding a transport
+ * means editing this page in the same change.
+ *
+ * The structural claim the page rests on: Easymatic has no server. Every destination named
+ * here is one the person using the app configured, and none of them is the developer's, so
+ * there is no "we collect" section to write because there is no "we" in the data path at all.
+ *
+ * Follows the house rules — no cards, no borders, nothing rounded; sections separated by
+ * space and by the weight of their headings.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const UPDATED = '30 August 2026';
+
+interface Destination {
+  name: string;
+  what: string;
+}
+
+// Every off-device destination the app has, each one traceable to a transport under `data/`.
+// A new transport is a new row here; that is the whole maintenance rule for this page.
+const DESTINATIONS: Destination[] = [
+  {
+    name: 'An AI provider you choose',
+    what:
+      'Anthropic, OpenAI, Google, OpenRouter, or any OpenAI-compatible server you run yourself. ' +
+      'Receives the prompt a macro sends, and — depending on the node — a photo or screenshot, ' +
+      'or a recording from the microphone. Your API key is sent to authenticate the request.',
+  },
+  {
+    name: 'Your Home Assistant',
+    what:
+      'Receives the service calls your macros make, and sends back the entity states they read. ' +
+      'Authenticated with a token issued by your own instance.',
+  },
+  {
+    name: 'Your MQTT broker',
+    what: 'Receives whatever your macros publish, and delivers the topics they subscribe to.',
+  },
+  {
+    name: 'Your mail server',
+    what:
+      'IMAP and SMTP, for the mail trigger and the mail action. Message bodies and your ' +
+      'mailbox credentials go to the server you named and nowhere else.',
+  },
+  {
+    name: 'Your Philips Hue bridge',
+    what: 'On your local network only. Never leaves the LAN.',
+  },
+  {
+    name: 'Any address an HTTP node points at',
+    what:
+      'The Make HTTP Request and Open URL nodes send exactly what you configured them to send, ' +
+      'to exactly the address you typed.',
+  },
+  {
+    name: 'Google Maps and Google Play services',
+    what:
+      'The map in the place editor loads tiles from Google. Geofences are registered with ' +
+      'Play services location, which is how they keep working while the app is closed. ' +
+      "Google's own privacy policy governs both.",
+  },
+  {
+    name: 'Google ML Kit',
+    what:
+      'Translation and language detection run on the device. The models they use are downloaded ' +
+      'from Google the first time they are needed.',
+  },
+  {
+    name: 'Google cloud backup',
+    what:
+      "Android's automatic backup is enabled, so your macros are included in your device backup " +
+      'if you have that turned on. Stored credentials are sealed with a key that cannot leave ' +
+      'the device, so they are unreadable anywhere else.',
+  },
+];
+
+interface Sensitive {
+  grant: string;
+  why: string;
+}
+
+// The grants that carry a prominent-disclosure obligation, in the same words the in-app
+// disclosure dialogs use. If those two ever disagree, the dialogs are the ones that are wrong.
+const SENSITIVE: Sensitive[] = [
+  {
+    grant: 'Accessibility service',
+    why:
+      'Optional, and off until you turn it on. Android exposes three things nowhere else, and ' +
+      'they are the only reasons this service exists: starting a macro from a hardware key, ' +
+      'starting one from a swipe across the fingerprint reader, and the screenshot action. It ' +
+      'does not read window content. Easymatic is not built for users with disabilities and ' +
+      'does not declare itself an accessibility tool.',
+  },
+  {
+    grant: 'Notification access',
+    why:
+      'Optional, and off until you turn it on. It lets a macro react to notifications other ' +
+      'apps post — the message and notification triggers, replying to a chat, and knowing a ' +
+      'call is ringing. Sender and text are matched against the filters you configured, in ' +
+      'memory, on the device.',
+  },
+  {
+    grant: 'Location, including in the background',
+    why:
+      'Used by the geofence trigger and the location value. Background access is what lets ' +
+      '"when I get home" fire while the app is closed; without it a geofence macro simply ' +
+      'never runs. Your position is compared against the places you saved and is not sent ' +
+      'anywhere unless a macro you built sends it.',
+  },
+  {
+    grant: 'SMS',
+    why:
+      'Incoming messages are matched against your SMS trigger nodes. Outgoing messages are ' +
+      'sent only by an action you placed on a canvas. Easymatic does not read your message ' +
+      'history — it holds no permission that could.',
+  },
+  {
+    grant: 'Contacts, calendar, photos, camera, microphone',
+    why:
+      'Each is requested only when a node that needs it runs, and used only for that node. A ' +
+      'contact is resolved to dial or message it; a calendar is read or written by the calendar ' +
+      'nodes; a photo is read by the image nodes; the camera and microphone are used by the ' +
+      'nodes that capture from them.',
+  },
+  {
+    grant: 'Device administrator',
+    why:
+      'Optional, and requested for one policy only: being told that a screen unlock failed, ' +
+      'which is what the failed-login trigger fires on. It grants no other administrative ' +
+      'power. While it is enabled Android will not let the app be uninstalled, so turn it off ' +
+      'first if you want to remove Easymatic.',
+  },
+];
+---
+
+<BaseLayout
+  title="Privacy"
+  description="What Easymatic does with your data: no account, no analytics, no server of ours in the path."
+>
+  <section class="band">
+    <div class="shell">
+      <p class="label eyebrow">Legal</p>
+      <h1 class="page-title">Privacy policy</h1>
+      <p class="lead measure">
+        Easymatic has no server. There is no account to create, nothing is collected about you,
+        and no data is sent anywhere except to destinations you configured yourself.
+      </p>
+      <p class="updated">Last updated {UPDATED}.</p>
+    </div>
+  </section>
+
+  <section class="band band-alt">
+    <div class="shell">
+      <div class="prose measure">
+        <h2>The short version</h2>
+        <ul>
+          <li>There is no sign-up, no login and no user account.</li>
+          <li>
+            There is no analytics SDK, no crash reporting, no advertising and no advertising
+            identifier. None at all, not an optional one.
+          </li>
+          <li>The developer operates no server and receives no data from the app. Ever.</li>
+          <li>
+            Your macros, your run history and your credentials stay on the device. Credentials
+            are encrypted with a key held in the device's hardware keystore, which cannot be
+            exported.
+          </li>
+          <li>
+            Data leaves your phone only when a macro you built tells it to, and only to an
+            address you entered.
+          </li>
+        </ul>
+
+        <h2>Where data can go</h2>
+        <p>
+          Easymatic is an automation app, so sending data somewhere is a thing you can build. Every
+          destination below is one you set up. None of them belongs to the developer, and nothing
+          is sent to any of them until a macro of yours runs a node that does so.
+        </p>
+      </div>
+
+      <dl class="rows">
+        {DESTINATIONS.map((destination) => (
+          <div class="row">
+            <dt>{destination.name}</dt>
+            <dd>{destination.what}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="shell">
+      <div class="prose measure">
+        <h2>The permissions that need explaining</h2>
+        <p>
+          Easymatic asks for a lot, because an automation app can only react to what it is allowed
+          to see. Every one of these is optional, every one is requested when you first build a
+          macro that needs it, and the app tells you what it is for before Android asks.
+        </p>
+      </div>
+
+      <dl class="rows">
+        {SENSITIVE.map((item) => (
+          <div class="row">
+            <dt>{item.grant}</dt>
+            <dd>{item.why}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section class="band band-alt">
+    <div class="shell">
+      <div class="prose measure">
+        <h2>Other apps on your phone</h2>
+        <p>
+          Two features cross the boundary to another app, and both are gated by you. A
+          <strong>plugin</strong> is a separate app that contributes its own nodes; it can only be
+          reached after you enable it in Settings, and it receives only the values the node you
+          placed hands it. The <strong>process API</strong> lets another app start one of your
+          macros; every calling app has to be approved by you the first time it asks, and you can
+          withdraw that at any time.
+        </p>
+
+        <h2>Children</h2>
+        <p>
+          Easymatic is not directed at children and is not designed for use by them.
+        </p>
+
+        <h2>Changes to this policy</h2>
+        <p>
+          If the app gains a new destination or a new sensitive permission, this page changes in
+          the same release. The date at the top is when it last did.
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+          Questions, or a correction to this page:
+          <a href="https://github.com/m1n1m1/Easymatic/issues" rel="noopener">open an issue</a> on
+          the project's GitHub, where the whole app is open source under the MIT licence.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-title {
+    font: var(--t-display);
+    letter-spacing: var(--track-tight);
+    margin: 0.5rem 0 1.5rem;
+  }
+
+  .measure {
+    max-width: 46rem;
+  }
+
+  .lead {
+    font: var(--t-lead);
+    color: var(--on-surface-dim);
+    margin: 0;
+  }
+
+  .updated {
+    font: var(--t-small);
+    color: var(--on-surface-dim);
+    margin: 1.5rem 0 0;
+  }
+
+  .prose h2 {
+    font: var(--t-section);
+    letter-spacing: var(--track-tight);
+    margin: 0 0 1rem;
+  }
+
+  .prose > * + h2 {
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .prose p,
+  .prose li {
+    font: var(--t-body);
+    color: var(--on-surface-dim);
+  }
+
+  .prose p {
+    margin: 0 0 1rem;
+  }
+
+  .prose ul {
+    margin: 0 0 1rem;
+    padding-left: 1.25rem;
+  }
+
+  .prose li + li {
+    margin-top: 0.5rem;
+  }
+
+  .prose strong {
+    color: var(--on-surface);
+  }
+
+  /* Space and weight, not a table: each row is a term and its explanation, and the only
+     thing distinguishing one from the next is the gap between them. */
+  .rows {
+    margin: clamp(2rem, 4vw, 3rem) 0 0;
+    padding: 0;
+  }
+
+  .row {
+    display: grid;
+    gap: 0.5rem clamp(1rem, 3vw, 3rem);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .row + .row {
+    margin-top: 2rem;
+  }
+
+  .rows dt {
+    font: 700 1.0625rem/1.3 var(--font);
+    letter-spacing: var(--track-snug);
+    color: var(--on-surface);
+  }
+
+  .rows dd {
+    margin: 0;
+    font: var(--t-body);
+    color: var(--on-surface-dim);
+    max-width: 46rem;
+  }
+
+  @media (min-width: 60rem) {
+    .row {
+      grid-template-columns: 16rem minmax(0, 1fr);
+    }
+  }
+</style>

@@ -601,7 +601,6 @@
     <!-- An @IntentChoice field: the chooser another app on the phone draws. -->
     <string name="intent_choice_placeholder">Type it, or ask an app</string>
     <string name="intent_choice_ask_an_app">Ask an app</string>
-    <string name="intent_choice_no_app">No app on this phone can answer that. You can still type a value in.</string>
     <string name="intent_choice_needs_camera">Easymatic needs camera access before another app can take the picture. Tap to allow it, then tap again.</string>
 
     <string name="variables_edit_variable">Edit variable</string>

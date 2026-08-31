@@ -42,6 +42,33 @@ android {
         manifestPlaceholders["MAPS_API_KEY"] = localProperty("MAPS_API_KEY")
     }
 
+    // The upload key for Play. Play App Signing holds the *app* signing key, so this one
+    // only proves who uploaded a bundle and is replaceable through the console if lost —
+    // which is the whole reason to enrol rather than sign the shipped artifact directly.
+    //
+    // A missing keystore leaves the release variant *unsigned* rather than failing
+    // configuration. That is deliberate: CI builds `assembleDebug` only, and a contributor
+    // who has cloned the repo must still be able to configure it. The failure mode is a
+    // bundle Play refuses at upload, which is loud and happens to one person, rather than a
+    // build everybody cannot run.
+    val uploadKeystore = keystoreProperty("storeFile")
+        .takeIf { it.isNotEmpty() }
+        // Resolved against the repository root, not `app/`, so `keystore.properties` can
+        // name a path outside the checkout — which is where the key should actually live.
+        ?.let(rootProject::file)
+        ?.takeIf { it.exists() }
+
+    signingConfigs {
+        if (uploadKeystore != null) {
+            create("release") {
+                storeFile = uploadKeystore
+                storePassword = keystoreProperty("storePassword")
+                keyAlias = keystoreProperty("keyAlias")
+                keyPassword = keystoreProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             // Generates the en-XA (accented, ~30 % longer) and ar-XB (mirrored)
@@ -51,6 +78,10 @@ android {
             isPseudoLocalesEnabled = true
         }
         release {
+            // Null when there is no keystore, which leaves the variant unsigned. See the
+            // `signingConfigs` block above for why that is the chosen failure.
+            signingConfig = signingConfigs.findByName("release")
+
             // Shrinking is off, so `proguard-rules.pro` is deliberately NOT wired
             // here — a `proguardFiles` line that reads as active and is not would
             // be worse than none. The file exists and is the thing to wire the day
@@ -288,4 +319,29 @@ fun localProperty(key: String): String {
         properties.getProperty(key)?.let { return it }
     }
     return System.getenv(key).orEmpty()
+}
+
+/**
+ * Reads [key] from the gitignored `keystore.properties`, falling back to the
+ * matching `EASYMATIC_KEYSTORE_*` environment variable and then to an empty
+ * string. Same shape as [localProperty] and for the same reason, but a separate
+ * file: `local.properties` is rewritten by Android Studio whenever the SDK path
+ * changes, and the upload key's passwords should not be in a file another tool
+ * edits. The environment fallback is what a CI runner would set, from secrets.
+ */
+fun keystoreProperty(key: String): String {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) {
+        val properties = Properties()
+        file.inputStream().use(properties::load)
+        properties.getProperty(key)?.let { return it }
+    }
+    val environmentName = when (key) {
+        "storeFile" -> "EASYMATIC_KEYSTORE_FILE"
+        "storePassword" -> "EASYMATIC_KEYSTORE_PASSWORD"
+        "keyAlias" -> "EASYMATIC_KEY_ALIAS"
+        "keyPassword" -> "EASYMATIC_KEY_PASSWORD"
+        else -> error("Unknown keystore property: $key")
+    }
+    return System.getenv(environmentName).orEmpty()
 }

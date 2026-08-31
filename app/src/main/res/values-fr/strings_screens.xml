@@ -532,7 +532,6 @@
     <string name="config_none_selected">Rien de sélectionné</string>
     <string name="intent_choice_placeholder">Saisissez-le, ou demandez à une application</string>
     <string name="intent_choice_ask_an_app">Demander à une application</string>
-    <string name="intent_choice_no_app">Aucune application de ce téléphone ne peut répondre à cela. Vous pouvez tout de même saisir une valeur.</string>
     <string name="intent_choice_needs_camera">Easymatic a besoin de l’accès à l’appareil photo avant qu’une autre application puisse prendre la photo. Touchez pour l’autoriser, puis touchez à nouveau.</string>
     <string name="variables_edit_variable">Modifier la variable</string>
     <string name="variables_every_workflow">Tous les flux</string>

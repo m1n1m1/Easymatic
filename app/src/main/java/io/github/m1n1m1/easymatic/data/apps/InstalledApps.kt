@@ -61,6 +61,14 @@ object InstalledApps {
         // reach a package with no launcher activity — which is most of what posts
         // notifications, and therefore most of what a notification filter is for —
         // while only a launcher query can say which of them can actually be opened.
+        //
+        // Both are bounded by package visibility, and since QUERY_ALL_PACKAGES was
+        // dropped for Play policy that bound is the manifest's <queries> block. It
+        // declares the launcher intent, so the second query is unaffected; the first
+        // one now returns roughly the same set rather than every installed package,
+        // so the notification picker's "Other" section is thinner than it was. Keeping
+        // both queries is still right — the split is what fills `launchable`, and the
+        // day a package becomes visible some other way it is reached again for free.
         val launchable = runCatching {
             manager.queryIntentActivities(
                 Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),

@@ -3,7 +3,6 @@ package io.github.m1n1m1.easymatic.feature.intent
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.activity.result.ActivityResult
@@ -163,25 +162,6 @@ internal object IntentRequests {
         mimeType = mimeType.ifBlank { "image/jpeg" },
         whenExists = WhenExists.KEEP_BOTH,
     )
-
-    /**
-     * Whether any app on this phone answers [type] at all.
-     *
-     * Asked *before* the launch rather than inferred from a cancelled result, because the two
-     * are indistinguishable afterwards — `startActivityForResult` with nothing to start
-     * reports `RESULT_CANCELED`, exactly as backing out of a gallery does. Without this, "no
-     * barcode app installed" and "I changed my mind" are the same silence, and the button
-     * reads as broken.
-     *
-     * Works today because `QUERY_ALL_PACKAGES` is held. If that permission is ever dropped
-     * this answers false for everything outside the manifest's `<queries>` block, and the
-     * field would report "nothing can do that" about apps that are plainly there.
-     */
-    fun isAnswerable(context: Context, type: ConfigFieldType.INTENT_CHOICE): Boolean = runCatching {
-        context.packageManager
-            .queryIntentActivities(intentFor(type), PackageManager.MATCH_DEFAULT_ONLY)
-            .isNotEmpty()
-    }.getOrDefault(false)
 
     /**
      * What to call a stored value on screen.

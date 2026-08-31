@@ -44,7 +44,7 @@ export default defineConfig({
         // Starlight's own Search inside it.
         //
         // Footer is NOT overridden: Starlight's own is what carries the previous/next
-        // pagination across a reference of 175 node pages. SiteFooter used to follow it
+        // pagination across a reference of 184 node pages. SiteFooter used to follow it
         // here and no longer does — its link columns repeat the sidebar and the top bar,
         // which is a lot of page to scroll past to reach the next node.
         Header: './src/components/DocsHeader.astro',
@@ -75,7 +75,7 @@ export default defineConfig({
         { label: 'Extending Easymatic', collapsed: true, items: [{ autogenerate: { directory: 'docs/extend' } }] },
         {
           label: 'Node reference',
-          // The reference is 175 nodes over four kinds and ~30 categories. Fully expanded
+          // The reference is 184 nodes over four kinds and ~30 categories. Fully expanded
           // it is several screens of links, which buries the four kind headings — the one
           // division a reader actually navigates by — off the top of the sidebar. So every
           // level here is closed until asked for, and `writeSidebar` sets the same flag on

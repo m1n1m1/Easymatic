@@ -304,6 +304,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
       { label: 'GitHub', href: GITHUB_URL },
       { label: 'Issues', href: GITHUB_URL + '/issues' },
       { label: 'MIT licence', href: GITHUB_URL + '/blob/main/LICENSE' },
+      { label: 'Privacy', href: '/privacy' },
     ],
   },
 ];

@@ -97,7 +97,6 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
 
     <!--
       The image nodes: trigger.image_saved, value.latest_image and the six
@@ -145,15 +144,33 @@
     <uses-permission android:name="android.permission.MANAGE_MEDIA" />
 
     <!--
-      Plugin discovery.
+      Package visibility. This block used to be belt-and-braces behind
+      QUERY_ALL_PACKAGES; that permission is gone and this is now the whole of it.
 
-      QUERY_ALL_PACKAGES already makes this work, so the <queries> block below is
-      belt-and-braces on purpose: that permission is Play-policy-restricted and a
-      plausible future removal, and the day it goes, discovery has to keep working.
-      A narrow declaration naming exactly the one action we look for is also a better
-      posture than the blanket grant, and is what the app should be left with.
+      It went because Play's permitted uses for the blanket grant are device search,
+      antivirus, file managers and browsers, plus narrow gambling and financial
+      exceptions — device automation is on none of those lists, and the policy names
+      "not directly related to the core purpose of the app" as an invalid use. It was
+      the single likeliest cause of a first-release rejection, and every declaration
+      here recovers a specific thing it was masking.
     -->
     <queries>
+        <!--
+          Every app with a launcher entry: what `action.launch_app` opens, and the bulk
+          of what a notification filter names. Without this the app pickers see almost
+          nothing on API 30+.
+
+          What this does NOT recover is `getInstalledApplications`' reach to packages
+          with *no* launcher activity — see InstalledApps.load, which queries twice for
+          exactly that reason. Those are still invisible, so the notification picker's
+          "Other" section is now the apps this one query returns rather than everything
+          installed. That is the accepted price of dropping the blanket grant.
+        -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <!-- Plugin discovery: the service a plugin app exports for the host to bind. -->
         <intent>
             <action android:name="io.github.m1n1m1.easymatic.action.PLUGIN" />
         </intent>
@@ -179,8 +196,8 @@
           The text-to-speech engine `action.speak` binds, and the recognition service
           `action.listen` binds. Both are other apps, so on API 30+ they are invisible
           without this and the two nodes report "this phone has none" on a phone that has
-          both. QUERY_ALL_PACKAGES masks it today, which is exactly why it is declared:
-          the day that grant goes, speech has to keep working.
+          both. QUERY_ALL_PACKAGES used to mask that, which is exactly why these were
+          declared ahead of its removal — speech keeps working without it.
         -->
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />
@@ -257,12 +274,33 @@
          sensors stop reporting. Normal permission: no runtime grant needed. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!--
+      Every implied feature, neutralised. A permission implies `required="true"` on the
+      feature behind it, and the Play Store filters the app off every device lacking one —
+      so an omission here is not a warning anywhere, it is a phone that cannot find
+      Easymatic at all. The list is the platform's table, not a guess, and it has to be
+      read to the end: several permissions imply *two* features, and the second one is
+      where this was previously short.
+
+      Note that the merged manifest is not where to check this. The merger copies what is
+      written; the implication is applied by Play at upload, so the only place the gap
+      shows up is the device-count on the release page, after the fact.
+    -->
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <!-- ACCESS_COARSE_LOCATION's own implication, and the generic one both location
+         permissions imply on top of their specific provider. -->
+    <uses-feature android:name="android.hardware.location.network" android:required="false" />
+    <uses-feature android:name="android.hardware.location" android:required="false" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- CAMERA implies this one as well, and a phone with a fixed-focus camera is a real
+         phone: the torch is what this app actually uses the grant for. -->
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
     <uses-feature android:name="android.hardware.fingerprint" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
+    <!-- Implied by BLUETOOTH, which is declared for the connected-device nodes. -->
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
 
     <!--
       android:networkSecurityConfig permits cleartext HTTP, so a self-hosted AI
@@ -565,12 +603,29 @@
             </intent-filter>
         </activity>
 
+        <!--
+          SMS_RECEIVED, not SMS_DELIVER. The two look interchangeable and are not: the
+          platform delivers SMS_DELIVER to the *default SMS app alone*, and Easymatic
+          declares none of the four components (a WAP_PUSH_DELIVER receiver, a SENDTO
+          activity, a RESPOND_VIA_MESSAGE service, a RoleManager request) that becoming
+          one requires — nor should it, since replacing the user's messenger is a
+          preposterous price for a trigger. SMS_RECEIVED is the broadcast RECEIVE_SMS
+          actually grants, and it goes to every app holding that permission.
+
+          It is also one of the implicit broadcasts exempted from the Android 8
+          manifest-registration ban, so this still fires from a killed app — which is the
+          whole point of registering it here rather than in the engine.
+
+          The permission attribute names who may *send* to this receiver, and BROADCAST_SMS
+          is correct for both actions: it is what the system holds when it fans an incoming
+          message out, so nothing else on the device can forge one.
+        -->
         <receiver
             android:name=".data.trigger.SmsReceiver"
             android:exported="true"
             android:permission="android.permission.BROADCAST_SMS">
             <intent-filter>
-                <action android:name="android.provider.Telephony.SMS_DELIVER" />
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
 

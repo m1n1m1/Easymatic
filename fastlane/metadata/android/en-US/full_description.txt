@@ -1,0 +1,34 @@
+Easymatic is a FREE automation app for Android, with AI integration. You decide what your phone should do and when, and it takes care of the rest by itself, in the background, every day, even when the app is closed. No account, no ads, no subscription.
+
+
+Set it up once, then forget about it
+
+Tell Easymatic what to watch for and what should happen next. When you get home. When a message arrives. When your battery runs low. When you tap an NFC sticker on your desk. You build it once and never think about it again.
+
+Put it together by dragging, not by coding
+
+Your automations are something you can see. Drag a trigger onto the canvas, connect it to an action, and you are done. More than 180 building blocks are ready to use, covering location, sensors, messages, calls, calendar, photos, files, Wi-Fi, Bluetooth and much more.
+
+Bring your own AI
+
+Connect Gemini, Claude, ChatGPT, OpenRouter or a model you host yourself. Have it summarise an email, describe a photo or turn what you said into text, then let its answer decide what happens next.
+
+Let the AI act, not just answer
+
+You can hand the model your own blocks and macros as tools. Then it actually sends the message, actually sets the reminder, actually turns on the light. You choose exactly what it is allowed to touch.
+
+Have your automation built for you
+
+Describe what you want to happen. The built-in assistant lays out the blocks and wires them together while you watch. Everything it makes is yours to adjust afterwards.
+
+Works with what you already own
+
+Home Assistant, MQTT, Philips Hue, your mailbox over IMAP and SMTP, and any HTTP address you like. Translation runs on the phone itself, offline and without an account.
+
+Private because there is nowhere else for it to go
+
+There is no account and nothing to sign up for. No analytics, no crash reporting, no advertising. Your macros stay on your phone. Data leaves it only when a macro of yours sends it, and only to a destination you entered yourself: your Home Assistant, your broker, your mailbox, your AI provider.
+
+Open source under the MIT licence. Available in English, German, Spanish, French, Japanese, Portuguese, Russian and Chinese.
+
+This is an early alpha. Some of it is still rough, and some macros will need rebuilding in later versions.

@@ -587,29 +587,31 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
      * very little.
      *
      * `sendBroadcast` returns `void` and succeeds whether or not anybody is listening, so the
-     * only honest signal available is asked for **beforehand**, which is
-     * `IntentRequests.isAnswerable`'s argument one mechanism over. Both caveats are on
-     * [LaunchOutcome.NoReceiver]: the query cannot see receivers registered in code, and it
-     * *can* see a manifest receiver that Android 8's implicit-broadcast rule will not deliver
-     * to. It errs in both directions, so the broadcast is sent regardless of what it answers.
+     * only signal available was asked for **beforehand**, with `queryBroadcastReceivers` —
+     * `IntentRequests.isAnswerable`'s argument one mechanism over. That query is **gone**, and
+     * with it [LaunchOutcome.NoReceiver] from this path.
      *
-     * The query **fails open**. It leans on `QUERY_ALL_PACKAGES`, which is Play-policy
-     * restricted and a plausible future removal; the day it goes, a query that failed closed
-     * would put a spurious warning on every broadcast anybody sends.
+     * It went with `QUERY_ALL_PACKAGES`, which was dropped for Play policy. Without the
+     * blanket grant the query sees only what the manifest's `<queries>` block makes visible,
+     * so an empty result stopped meaning "nobody is listening" and started meaning "nobody
+     * *visible* is listening" — which is true of very nearly every broadcast this node sends,
+     * and is not something to warn anybody about. A warning on every single broadcast is worse
+     * than no warning at all: it is the kind that teaches people to stop reading the log.
+     *
+     * Nothing else is lost. The query was already caveated in both directions — it could not
+     * see receivers registered in code, and it *could* see a manifest receiver that Android 8's
+     * implicit-broadcast rule would never deliver to — and the broadcast was sent regardless of
+     * what it answered. [LaunchOutcome.NoReceiver] itself stays: it is part of the port, and
+     * `ForegroundLaunch` still maps it to a WARN for any other producer.
      *
      * A `SecurityException` here is a protected broadcast and nothing else — see
      * [LaunchOutcome.Refused].
      */
-    private fun broadcastForNode(intent: Intent): LaunchOutcome {
-        val heard = runCatching {
-            context.packageManager.queryBroadcastReceivers(intent, 0).isNotEmpty()
-        }.getOrDefault(true)
-        return runCatching {
-            context.sendBroadcast(intent)
-            if (heard) LaunchOutcome.Launched else LaunchOutcome.NoReceiver
-        }.getOrElse { error ->
-            if (error is SecurityException) LaunchOutcome.Refused else LaunchOutcome.NoHandler
-        }
+    private fun broadcastForNode(intent: Intent): LaunchOutcome = runCatching {
+        context.sendBroadcast(intent)
+        LaunchOutcome.Launched
+    }.getOrElse { error ->
+        if (error is SecurityException) LaunchOutcome.Refused else LaunchOutcome.NoHandler
     }
 
     /**

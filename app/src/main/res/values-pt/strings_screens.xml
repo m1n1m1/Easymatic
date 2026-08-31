@@ -532,7 +532,6 @@
     <string name="config_none_selected">Nada selecionado</string>
     <string name="intent_choice_placeholder">Escreva ou peça a uma app</string>
     <string name="intent_choice_ask_an_app">Pedir a uma app</string>
-    <string name="intent_choice_no_app">Nenhuma app neste telemóvel consegue responder a isso. Ainda assim pode escrever um valor.</string>
     <string name="intent_choice_needs_camera">O Easymatic precisa de acesso à câmara antes de outra app poder tirar a fotografia. Toque para permitir e toque novamente.</string>
     <string name="variables_edit_variable">Editar variável</string>
     <string name="variables_every_workflow">Todos os fluxos</string>
