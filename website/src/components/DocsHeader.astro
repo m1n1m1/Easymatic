@@ -17,16 +17,14 @@
  */
 import Search from '@astrojs/starlight/components/Search.astro';
 import { NAV, GITHUB_URL, PLACEHOLDER_TITLE } from '../data/home';
+import Wordmark from './Wordmark.astro';
 
 /** The home page's in-page anchors have to leave the docs first. */
 const target = (href: string) => (href.startsWith('#') ? `/${href}` : href);
 ---
 
 <div class="bar">
-  <a class="wordmark" href="/">
-    <span class="mark" aria-hidden="true"></span>
-    Easymatic
-  </a>
+  <Wordmark />
 
   <div class="search print:hidden">
     <Search />
@@ -66,23 +64,19 @@ const target = (href: string) => (href.startsWith('#') ? `/${href}` : href);
     block-size: 100%;
   }
 
+  /* Placement in the bar only. How the wordmark is put together internally --
+     the baseline alignment and the gap that sets the mark beside the letters --
+     belongs to Wordmark.astro. Both rules land on the same element at the same
+     specificity, because Astro scopes with a zero-specificity `:where()`, so
+     anything declared in both would be settled by bundle order rather than by
+     intent. They are split so that never comes up. */
   .wordmark {
-    display: inline-flex;
     flex: none;
-    align-items: center;
-    gap: 0.625rem;
     font: 800 clamp(1.25rem, 1.6vw, 1.5rem) / 1 var(--font);
     letter-spacing: var(--track-tight);
-    text-decoration: none;
     color: var(--on-surface);
   }
 
-  /* Stands in for a logo that does not exist yet, as it does on every other page. */
-  .mark {
-    inline-size: 0.875rem;
-    block-size: 0.875rem;
-    background: var(--signal);
-  }
 
   /* Takes the slack, so the nav and the CTA sit at the bar's end. `min-inline-size: 0`
      is what stops a flex item refusing to shrink below its content. */

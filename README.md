@@ -1,6 +1,6 @@
 <div align="center">
 
-# Easymatic
+<img src="art/wordmark.png" alt="Easymatic" width="420">
 
 **An Android automation app you build by wiring nodes on a canvas.**
 

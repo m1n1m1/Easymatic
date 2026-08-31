@@ -76,6 +76,16 @@
      button fill; it no longer gets a full-bleed band of its own. */
   --signal: #ff6a2b;
 
+  /* The three colours inside the app's mark besides --signal: the bars and socket
+     ring, the socket's centre, and the extrusion under the card. The ink is the
+     page ink rather than the icon's cream, because the mark sits beside the word
+     and a cream beside white letters reads as a third colour nothing else uses;
+     the pin is the ground, so the socket reads as a hole; the shade is the icon's
+     own, since nothing on the page has a colour to lend it. */
+  --mark-ink: var(--on-surface);
+  --mark-pin: var(--surface);
+  --mark-shade: #8a2f0d;
+
   /* One accent per node kind, each keeping the hue of the app's own value so a
      trigger still reads as orange. These used to come in *pairs* — a bright
      half for ink and a deep half for cream — and that whole axis went away

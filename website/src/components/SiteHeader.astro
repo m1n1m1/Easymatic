@@ -12,14 +12,12 @@
  * screen-reader behaviour for free.
  */
 import { NAV, GITHUB_URL, PLACEHOLDER_TITLE } from '../data/home';
+import Wordmark from './Wordmark.astro';
 ---
 
 <header class="header" data-site-header>
   <div class="shell bar">
-    <a class="wordmark" href="/">
-      <span class="mark" aria-hidden="true"></span>
-      Easymatic
-    </a>
+    <Wordmark />
 
     <nav class="desktop" aria-label="Main">
       {
@@ -97,23 +95,18 @@ import { NAV, GITHUB_URL, PLACEHOLDER_TITLE } from '../data/home';
     min-block-size: 5rem;
   }
 
+  /* Placement in the bar only. How the wordmark is put together internally --
+     the baseline alignment and the gap that sets the mark beside the letters --
+     belongs to Wordmark.astro. Both rules land on the same element at the same
+     specificity, because Astro scopes with a zero-specificity `:where()`, so
+     anything declared in both would be settled by bundle order rather than by
+     intent. They are split so that never comes up. */
   .wordmark {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.625rem;
     margin-inline-end: auto;
     font: 800 clamp(1.375rem, 2vw, 1.75rem) / 1 var(--font);
     letter-spacing: var(--track-tight);
-    text-decoration: none;
   }
 
-  /* Stands in for a logo that does not exist yet. A hard-edged square in the
-     signal orange reads as a mark rather than as a missing image. */
-  .mark {
-    inline-size: 1rem;
-    block-size: 1rem;
-    background: var(--signal);
-  }
 
   .desktop {
     display: none;

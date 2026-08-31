@@ -1,0 +1,87 @@
+---
+/**
+ * The app's mark beside its name.
+ *
+ * ### Why this is markup rather than an image
+ *
+ * `art/wordmark.png` exists and is what the README uses, because a README cannot set
+ * type. A page can. So the letters here are live text in Archivo — they inherit the
+ * header's weight and tracking, resize with `clamp()`, stay selectable and searchable,
+ * and never go soft on a high-density screen. Only the mark is drawn.
+ *
+ * ### The mark
+ *
+ * It is the launcher icon's: a node card with its output socket bulging out of the
+ * right edge, lifted off the page by a darker extrusion. The geometry is the same
+ * numbers as `art/icon.svg`, which `art/generate-icons.py` writes; if that script
+ * changes the mark, this path data changes with it. The gradient and the highlight
+ * the icon carries are left out on purpose — at header size they are one pixel of
+ * noise, and a flat `--signal` is what the rest of the page is built on.
+ *
+ * ### The two things that make it belong to the word
+ *
+ * The card is `1.39ex` tall. That is not an approximation of the cap height — `ex` is
+ * the font's own x-height, and Archivo's capitals run about 1.39 of it. Sizing off
+ * the *font* rather than off a pixel value means the mark tracks the text through
+ * every breakpoint on its own. The socket and the extrusion hang off that box, so the
+ * SVG is a little wider and taller than the card and the viewBox says by how much.
+ *
+ * And `align-items: baseline` sits the card on the baseline with the letters, the
+ * extrusion hanging just below it the way a descender would. Centring it — which is
+ * what the placeholder square it replaced did — is what makes a mark look parked next
+ * to a name instead of part of it.
+ *
+ * The gap is 0.22em: wider than a letter-space, narrower than a word-space, which is
+ * the distance at which a mark reads as belonging to the name. `--track-tight` comes
+ * off it because the letters are tracked and a flex gap is not.
+ *
+ * The label is on the anchor and the parts are hidden from assistive technology, so
+ * this announces as "Easymatic" rather than as an image followed by a word.
+ */
+interface Props {
+  /** Extra classes from the header or footer that owns this instance. */
+  class?: string;
+  href?: string;
+}
+
+const { class: extra, href = '/' } = Astro.props;
+---
+
+<a class:list={['wordmark', extra]} href={href} aria-label="Easymatic">
+  <svg class="glyph" viewBox="100 126 316 272" aria-hidden="true" focusable="false">
+    <path d="M170 138 H306 A62 62 0 0 1 368 200 V212 A56 56 0 1 1 368 324 V336 A62 62 0 0 1 306 398 H170 A62 62 0 0 1 108 336 V200 A62 62 0 0 1 170 138 Z" fill="var(--mark-shade)"></path>
+    <path d="M162 126 H298 A62 62 0 0 1 360 188 V200 A56 56 0 1 1 360 312 V324 A62 62 0 0 1 298 386 H162 A62 62 0 0 1 100 324 V188 A62 62 0 0 1 162 126 Z" fill="var(--signal)"></path>
+    <g fill="var(--mark-ink)">
+      <rect x="160" y="184" width="126" height="34" rx="17"></rect>
+      <rect x="160" y="239" width="90" height="34" rx="17"></rect>
+      <rect x="160" y="294" width="126" height="34" rx="17"></rect>
+      <circle cx="360" cy="256" r="30"></circle>
+    </g>
+    <circle cx="360" cy="256" r="16" fill="var(--mark-pin)"></circle>
+  </svg><span aria-hidden="true">Easymatic</span>
+</a>
+
+<style>
+  .wordmark {
+    display: inline-flex;
+    align-items: baseline;
+    /* 0.22em is the optical gap; the tracking is subtracted because the letters
+       beside it are tracked and the flex gap is not, so without it the mark would
+       sit looser than the word. */
+    gap: calc(0.22em + var(--track-tight));
+    text-decoration: none;
+  }
+
+  .glyph {
+    /* 1.39ex is Archivo's cap height, and it is the *card's* height: the viewBox is
+       272 tall of which the card is 260, and 316 wide of which the card is 260. Blocks,
+       not inline, so the SVG carries no descender gap of its own under the baseline;
+       the small negative margin drops the card's bottom edge onto the baseline and
+       lets the 12-unit extrusion hang below it. */
+    block-size: calc(1.39ex * 272 / 260);
+    inline-size: calc(1.39ex * 316 / 260);
+    margin-block-end: calc(-1.39ex * 12 / 260);
+    display: block;
+    flex: none;
+  }
+</style>

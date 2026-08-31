@@ -8,6 +8,7 @@
  * cream baseline strip underneath it.
  */
 import { FOOTER_COLUMNS, GITHUB_URL, PLACEHOLDER_TITLE } from '../data/home';
+import Wordmark from './Wordmark.astro';
 
 const year = 2026;
 ---
@@ -16,10 +17,7 @@ const year = 2026;
   <div class="links">
     <div class="shell inner">
       <div class="about">
-        <a class="wordmark" href="/">
-          <span class="mark" aria-hidden="true"></span>
-          Easymatic
-        </a>
+        <Wordmark />
         <p>
           Node-based automation for Android. Wire triggers and actions together
           on a canvas; a foreground service runs them in the background.
@@ -87,20 +85,17 @@ const year = 2026;
     color: var(--on-surface-dim);
   }
 
+  /* Placement in the bar only. How the wordmark is put together internally --
+     the baseline alignment and the gap that sets the mark beside the letters --
+     belongs to Wordmark.astro. Both rules land on the same element at the same
+     specificity, because Astro scopes with a zero-specificity `:where()`, so
+     anything declared in both would be settled by bundle order rather than by
+     intent. They are split so that never comes up. */
   .wordmark {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
     font: 800 1.5rem/1 var(--font);
     letter-spacing: var(--track-tight);
-    text-decoration: none;
   }
 
-  .mark {
-    inline-size: 0.875rem;
-    block-size: 0.875rem;
-    background: var(--signal);
-  }
 
   .columns {
     display: grid;
