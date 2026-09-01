@@ -24,7 +24,7 @@ javamail = "1.6.7"
 exifinterface = "1.4.2"
 okhttp = "5.5.0"
 paho = "1.2.5"
-mlkitGenAiPrompt = "1.0.0-beta2"
+mlkitGenAiPrompt = "1.0.0-beta4"
 mlkitTranslate = "17.0.3"
 mlkitLanguageId = "17.0.6"
 # Pinned to what `:app` already resolves to transitively (via lifecycle-runtime-ktx).
