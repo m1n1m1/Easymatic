@@ -734,6 +734,7 @@
     <!-- The workflow list's search bar. -->
     <string name="workflowlist_search_placeholder">Search macros</string>
     <string name="workflowlist_clear_search">Clear search</string>
+    <string name="workflowlist_search">Search</string>
     <string name="workflowlist_no_matches">No macros match that.</string>
     <string name="macro_transfer_macros">Macros</string>
     <string name="macro_transfer_duplicate">Duplicate</string>

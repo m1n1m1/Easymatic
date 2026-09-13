@@ -711,6 +711,7 @@
     <string name="setup_privacy_policy_subtitle">Was dein Handy verlässt und wohin es geht</string>
     <string name="workflowlist_search_placeholder">Makros suchen</string>
     <string name="workflowlist_clear_search">Suche leeren</string>
+    <string name="workflowlist_search">Suchen</string>
     <string name="workflowlist_no_matches">Keine Makros passen dazu.</string>
     <string name="macro_transfer_macros">Makros</string>
     <string name="macro_transfer_duplicate">Duplizieren</string>

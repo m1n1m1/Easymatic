@@ -646,6 +646,7 @@
     <string name="setup_privacy_policy_subtitle">O que sai do teu telemóvel e para onde vai</string>
     <string name="workflowlist_search_placeholder">Procurar macros</string>
     <string name="workflowlist_clear_search">Limpar a pesquisa</string>
+    <string name="workflowlist_search">Procurar</string>
     <string name="workflowlist_no_matches">Nenhuma macro corresponde.</string>
     <string name="macro_transfer_macros">Macros</string>
     <string name="macro_transfer_duplicate">Duplicar</string>

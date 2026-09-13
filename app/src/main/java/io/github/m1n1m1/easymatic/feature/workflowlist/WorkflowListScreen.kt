@@ -43,7 +43,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TopSearchBar
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -80,7 +79,16 @@ import kotlinx.coroutines.launch
  * file said in a comment that three targets was the ceiling. Those ten destinations
  * are rows on the Setup tab now
  * ([io.github.m1n1m1.easymatic.feature.setup.SetupScreen]), and the row they vacated is
- * where the search bar sits — so this screen is back to being about macros.
+ * a regular app bar — the app's icon, its name, and a search action — so this screen is
+ * back to being about macros. The search itself is Material's full-screen search bar,
+ * and it grows out of that action rather than out of a collapsed pill of its own: the
+ * action's coordinates are handed to the [SearchBarState] as its collapsed bounds, which
+ * is the one thing the expansion animation reads.
+ *
+ * Collapsing the search keeps the query, so picking a result and coming back lands on the
+ * list still narrowed to it — but with no pill on the screen the query would then be a
+ * filter nobody can see. [ActiveFilterChip] is what keeps it visible: the query under the
+ * bar, with a ✕ to drop it and a tap to reopen the search.
  *
  * The query lives here rather than in the ViewModel. Switching tabs drops this
  * composition and clears it, which is the right default: a filter you cannot see is
@@ -112,6 +120,7 @@ fun WorkflowListScreen(
 
     val transfer = rememberMacroTransfer(viewModel)
 
+    val scope = rememberCoroutineScope()
     val searchBarState = rememberSearchBarState()
     val textFieldState = rememberTextFieldState()
     val barColors = searchBarColors()
@@ -142,11 +151,14 @@ fun WorkflowListScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             // Supplies its own window insets, which already include the status bar —
             // so this screen no longer pads for it itself.
-            TopSearchBar(
-                state = searchBarState,
-                inputField = inputField,
-                colors = barColors,
-            )
+            WorkflowListTopBar(searchBarState = searchBarState)
+            if (query.isNotEmpty()) {
+                ActiveFilterChip(
+                    query = query,
+                    onClear = { textFieldState.clearText() },
+                    onOpenSearch = { scope.launch { searchBarState.animateToExpanded() } },
+                )
+            }
 
             // Three states, not two: a phone with no macros at all and a search that
             // matched none of them are different facts, and one message for both

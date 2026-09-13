@@ -646,6 +646,7 @@
     <string name="setup_privacy_policy_subtitle">端末から出ていくデータと、その送信先</string>
     <string name="workflowlist_search_placeholder">マクロを検索</string>
     <string name="workflowlist_clear_search">検索をクリア</string>
+    <string name="workflowlist_search">検索</string>
     <string name="workflowlist_no_matches">一致するマクロはありません。</string>
     <string name="macro_transfer_macros">マクロ</string>
     <string name="macro_transfer_duplicate">複製</string>
