@@ -5,9 +5,6 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +23,8 @@ import io.github.m1n1m1.easymatic.R
 import io.github.m1n1m1.easymatic.feature.BottomNavigationBar
 import io.github.m1n1m1.easymatic.feature.BottomNavigationBarIcon
 import io.github.m1n1m1.easymatic.feature.BottomNavigationBarItem
+import io.github.m1n1m1.easymatic.feature.sharedAxisSlidePx
+import io.github.m1n1m1.easymatic.feature.sharedAxisX
 import io.github.m1n1m1.easymatic.feature.grapheditor.EditorColors
 import io.github.m1n1m1.easymatic.feature.setup.SetupScreen
 import io.github.m1n1m1.easymatic.feature.workflowlist.WorkflowListScreen
@@ -82,9 +81,10 @@ fun HomeScreen(
             .fillMaxSize()
             .background(EditorColors.canvasBackground),
     ) {
+        val slidePx = sharedAxisSlidePx()
         AnimatedContent(
             targetState = tab,
-            transitionSpec = { homeTabTransition() },
+            transitionSpec = { homeTabTransition(slidePx) },
             label = "homeTab",
             // weight(1f), never fillMaxSize(): the latter would measure the bar below
             // to nothing. Same rule as the editor's bottom bar.
@@ -146,24 +146,15 @@ private fun HomeBottomBar(selected: HomeTab, onSelect: (HomeTab) -> Unit) {
 }
 
 /**
- * How the region above the bar moves when the tab changes: horizontally, following
- * the order of the bar's items, so tapping something to the right of what is open
- * brings it in from the right.
+ * How the region above the bar moves when the tab changes: Material's shared axis,
+ * following the order of the bar's items, so tapping something to the right of what
+ * is open brings it in from the right.
  *
- * This is the horizontal half of the editor's `surfaceTransition`, and deliberately a
- * sibling of it rather than a shared generic — that one is typed to `EditorTab?` and
- * carries two vertical cases for a surface rising over the canvas, neither of which
- * happens here. Nothing is being covered on this screen; you are stepping along a
- * row, and the tween matches so that stepping feels the same in both places.
+ * This is the horizontal half of the editor's `surfaceTransition`, and both call the
+ * same [sharedAxisX] so that a step sideways feels the same in both places. Nothing
+ * is being covered on this screen; you are stepping along a row — which is why the
+ * slide is short and the content fades, rather than the full-width slide that
+ * `MainActivity` uses to say you have left home for a screen of its own.
  */
-private fun AnimatedContentTransitionScope<HomeTab>.homeTabTransition(): ContentTransform {
-    val rightwards = targetState.ordinal > initialState.ordinal
-    return ContentTransform(
-        targetContentEnter = slideInHorizontally(tween(TAB_SWITCH_MS)) { if (rightwards) it else -it },
-        initialContentExit = slideOutHorizontally(tween(TAB_SWITCH_MS)) { if (rightwards) -it else it },
-        targetContentZIndex = 1f,
-    )
-}
-
-/** Matched to the editor's tab switch, so a step sideways costs the same everywhere. */
-private const val TAB_SWITCH_MS = 200
+private fun AnimatedContentTransitionScope<HomeTab>.homeTabTransition(slidePx: Int): ContentTransform =
+    sharedAxisX(rightwards = targetState.ordinal > initialState.ordinal, slidePx = slidePx)

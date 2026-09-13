@@ -11,7 +11,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +34,7 @@ import io.github.m1n1m1.easymatic.data.permissions.AndroidPermissionChecker
 import io.github.m1n1m1.easymatic.domain.registry.DeviceCapabilities
 import io.github.m1n1m1.easymatic.domain.registry.GrantedPrerequisites
 import io.github.m1n1m1.easymatic.engine.service.MacroEngineService
+import io.github.m1n1m1.easymatic.feature.ScreenTransitions
 import io.github.m1n1m1.easymatic.feature.ai.AiConnectionsScreen
 import io.github.m1n1m1.easymatic.feature.ai.AiConnectionsViewModel
 import io.github.m1n1m1.easymatic.feature.geofence.GeofencePlacesScreen
@@ -274,13 +274,22 @@ class MainActivity : ComponentActivity() {
         NavHost(
             navController = navController,
             startDestination = ROUTE_HOME,
-            // Mid-slide neither screen covers the full width; the gap shows
-            // the window background, which Theme.Easymatic pins to the
-            // canvas colour so nothing flashes at the edge.
-            enterTransition = { slideIntoContainer(SlideDirection.Left) },
-            exitTransition = { slideOutOfContainer(SlideDirection.Left) },
-            popEnterTransition = { slideIntoContainer(SlideDirection.Right) },
-            popExitTransition = { slideOutOfContainer(SlideDirection.Right) },
+            // Material's forward-and-backward pattern — see `ScreenTransitions`.
+            // While the screen underneath dims, the window background shows
+            // through it, which Theme.Easymatic pins to the canvas colour so
+            // nothing flashes.
+            enterTransition = { ScreenTransitions.forwardEnter },
+            exitTransition = { ScreenTransitions.forwardExit },
+            popEnterTransition = { ScreenTransitions.backEnter },
+            popExitTransition = { ScreenTransitions.backExit },
+            // The back *gesture* scrubs a pop of its own, and NavHost does not
+            // default it to the pop above: left alone, a swipe shrinks the screen
+            // to 70 % and fades where the arrow slides it aside, so the same
+            // action looked like two. Naming the pop pair here is what makes the
+            // arrow and the gesture one animation (`enableOnBackInvokedCallback`
+            // in the manifest is what lets the gesture reach here at all).
+            predictivePopEnterTransition = { ScreenTransitions.backEnter },
+            predictivePopExitTransition = { ScreenTransitions.backExit },
         ) {
             composable(ROUTE_HOME) {
                 HomeScreen(
@@ -435,13 +444,13 @@ class MainActivity : ComponentActivity() {
         // prompt was raised and somewhere that implied opening that macro had
         // caused it.
         if (showBatteryPrompt) {
-            BatteryOptimisationDialog(
-                onDismiss = { showBatteryPrompt = false },
-                onConfirm = {
-                    showBatteryPrompt = false
-                    requestBatteryOptimizationExemption()
-                },
-            )
+                BatteryOptimisationDialog(
+                    onDismiss = { showBatteryPrompt = false },
+                    onConfirm = {
+                        showBatteryPrompt = false
+                        requestBatteryOptimizationExemption()
+                    },
+                )
         }
     }
 
@@ -562,6 +571,8 @@ class MainActivity : ComponentActivity() {
     }
 
     companion object {
+        private const val ROUTE_HOME = "home"
+        private const val ROUTE_GRAPH_EDITOR = "graphEditor"
         /**
          * The launcher's static "New macro" shortcut (`res/xml/shortcuts.xml`).
          *
@@ -572,8 +583,6 @@ class MainActivity : ComponentActivity() {
          */
         const val ACTION_NEW_MACRO = "io.github.m1n1m1.easymatic.action.NEW_MACRO"
 
-        private const val ROUTE_HOME = "home"
-        private const val ROUTE_GRAPH_EDITOR = "graphEditor"
         private const val ROUTE_GEOFENCES = "geofences"
         private const val ROUTE_NFC_TAGS = "nfcTags"
         private const val ROUTE_FOLDER_ACCESS = "folderAccess"

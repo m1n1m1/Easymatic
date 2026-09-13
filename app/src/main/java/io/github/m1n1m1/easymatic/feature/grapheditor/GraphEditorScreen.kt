@@ -2,6 +2,7 @@ package io.github.m1n1m1.easymatic.feature.grapheditor
 
 import androidx.compose.ui.platform.LocalContext
 import io.github.m1n1m1.easymatic.R
+import io.github.m1n1m1.easymatic.feature.sharedAxisSlidePx
 import androidx.compose.ui.res.stringResource
 import io.github.m1n1m1.easymatic.core.model.PortName
 import io.github.m1n1m1.easymatic.core.model.NodeId
@@ -217,6 +218,7 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
         // reach its gesture detectors through the panel. It also gives the three
         // surfaces one transition to share; see `surfaceTransition` for which way
         // each one moves and why.
+        val slidePx = sharedAxisSlidePx()
         AnimatedContent(
             targetState = openTab,
             modifier = Modifier
@@ -229,7 +231,7 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
                 // applied in here mean what it says.
                 .consumeWindowInsets(PaddingValues(bottom = bottomBarHeight)),
             label = stringResource(R.string.grapheditor_editor_surface),
-            transitionSpec = { surfaceTransition() },
+            transitionSpec = { surfaceTransition(slidePx) },
         ) { tab ->
             if (tab != null) {
                 EditorTabPanel(

@@ -64,6 +64,7 @@ import io.github.m1n1m1.easymatic.domain.registry.matchesSearch
 import io.github.m1n1m1.easymatic.feature.i18n.label
 import io.github.m1n1m1.easymatic.feature.i18n.labelRes
 import io.github.m1n1m1.easymatic.feature.i18n.rememberNodeText
+import io.github.m1n1m1.easymatic.ui.theme.Motion
 
 /**
  * Below this many matching nodes the whole palette opens expanded: a list this
@@ -367,7 +368,7 @@ private fun PaletteGroupRows(
 ) {
     val chevronRotation by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
-        animationSpec = tween(220),
+        animationSpec = tween(Motion.DurationShort4, easing = Motion.Standard),
         label = "chevronRotation",
     )
     // The only moving color cue: an open category tints towards its kind.
@@ -407,8 +408,10 @@ private fun PaletteGroupRows(
     }
     AnimatedVisibility(
         visible = isExpanded,
-        enter = expandVertically(tween(220)) + fadeIn(tween(180)),
-        exit = shrinkVertically(tween(220)) + fadeOut(tween(180)),
+        enter = expandVertically(tween(Motion.DurationMedium1, easing = Motion.EmphasizedDecelerate)) +
+            fadeIn(tween(Motion.DurationShort4, easing = Motion.StandardDecelerate)),
+        exit = shrinkVertically(tween(Motion.DurationShort4, easing = Motion.EmphasizedAccelerate)) +
+            fadeOut(tween(Motion.DurationShort3, easing = Motion.StandardAccelerate)),
     ) {
         Column {
             definitions.forEach { definition ->

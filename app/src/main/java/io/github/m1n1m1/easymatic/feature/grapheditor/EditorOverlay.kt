@@ -2,6 +2,7 @@ package io.github.m1n1m1.easymatic.feature.grapheditor
 
 import androidx.compose.ui.res.stringResource
 import io.github.m1n1m1.easymatic.R
+import io.github.m1n1m1.easymatic.ui.theme.Motion
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animate
@@ -98,8 +99,10 @@ fun EditorOverlay(
     ) {
         AnimatedVisibility(
             visibleState = visibleState,
-            enter = slideInVertically(animationSpec = tween(OVERLAY_ENTER_MS)) { it },
-            exit = slideOutVertically(animationSpec = tween(OVERLAY_EXIT_MS)) { it },
+            // Material's pair for things that arrive and leave: land softly, get
+            // out of the way quickly.
+            enter = slideInVertically(tween(OVERLAY_ENTER_MS, easing = Motion.EmphasizedDecelerate)) { it },
+            exit = slideOutVertically(tween(OVERLAY_EXIT_MS, easing = Motion.EmphasizedAccelerate)) { it },
         ) {
             Surface(
                 modifier = Modifier
@@ -117,9 +120,9 @@ fun EditorOverlay(
     }
 }
 
-private const val OVERLAY_ENTER_MS = 260
-private const val OVERLAY_EXIT_MS = 220
-private const val SETTLE_MS = 200
+private const val OVERLAY_ENTER_MS = Motion.DurationMedium2
+private const val OVERLAY_EXIT_MS = Motion.DurationMedium1
+private const val SETTLE_MS = Motion.DurationShort4
 
 /** How far the panel must be pulled down to close on release. */
 private val SWIPE_DISMISS_DISTANCE = 140.dp
@@ -181,7 +184,11 @@ private fun rememberSwipeDownToDismiss(
                     // from wherever the finger left it.
                     currentOnDismiss()
                 } else {
-                    animate(offset.floatValue, 0f, animationSpec = tween(SETTLE_MS)) { value, _ ->
+                    animate(
+                        offset.floatValue,
+                        0f,
+                        animationSpec = tween(SETTLE_MS, easing = Motion.EmphasizedDecelerate),
+                    ) { value, _ ->
                         offset.floatValue = value
                     }
                 }

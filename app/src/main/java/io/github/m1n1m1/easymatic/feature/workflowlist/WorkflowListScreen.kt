@@ -171,20 +171,26 @@ fun WorkflowListScreen(
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(matches, key = { it.id }) { summary ->
                         val triggers = state.triggers[summary.id].orEmpty()
-                        WorkflowRow(
-                            summary = summary,
-                            errors = state.errors[summary.id] ?: 0,
-                            onOpen = { onOpenWorkflow(summary.id) },
-                            onToggleEnabled = { viewModel.setEnabled(summary.id, it) },
-                            onEdit = { editing = summary },
-                            onDelete = { deleting = summary },
-                            onDuplicate = { viewModel.duplicate(summary.id) },
-                            onExport = { transfer.export(summary.id, summary.name) },
-                            onShare = { viewModel.share(summary.id, summary.name) },
-                            manualTriggers = triggers,
-                            onPin = { pinner.pin(triggers) },
-                        )
-                        HorizontalDivider(color = EditorColors.chromeBorder, thickness = 1.dp)
+                        // Keyed rows plus animateItem: a deleted macro collapses out,
+                        // a duplicated one grows in beside its original, and a filter
+                        // typed in the search bar reflows what is left rather than
+                        // snapping it.
+                        Column(modifier = Modifier.animateItem()) {
+                            WorkflowRow(
+                                summary = summary,
+                                errors = state.errors[summary.id] ?: 0,
+                                onOpen = { onOpenWorkflow(summary.id) },
+                                onToggleEnabled = { viewModel.setEnabled(summary.id, it) },
+                                onEdit = { editing = summary },
+                                onDelete = { deleting = summary },
+                                onDuplicate = { viewModel.duplicate(summary.id) },
+                                onExport = { transfer.export(summary.id, summary.name) },
+                                onShare = { viewModel.share(summary.id, summary.name) },
+                                manualTriggers = triggers,
+                                onPin = { pinner.pin(triggers) },
+                            )
+                            HorizontalDivider(color = EditorColors.chromeBorder, thickness = 1.dp)
+                        }
                     }
                 }
             }

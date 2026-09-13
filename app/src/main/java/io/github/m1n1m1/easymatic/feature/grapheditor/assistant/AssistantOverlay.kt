@@ -91,6 +91,7 @@ import io.github.m1n1m1.easymatic.feature.ai.AiModelPickerOverlay
 import io.github.m1n1m1.easymatic.feature.ai.LocalAiConnections
 import io.github.m1n1m1.easymatic.feature.grapheditor.EditorColors
 import io.github.m1n1m1.easymatic.feature.i18n.rememberNodeText
+import io.github.m1n1m1.easymatic.ui.theme.Motion
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -175,8 +176,10 @@ internal fun BoxScope.AssistantOverlay(
 
     AnimatedVisibility(
         visible = state.isOpen,
-        enter = slideInVertically(tween(ENTER_MS)) { it } + fadeIn(tween(ENTER_MS)),
-        exit = slideOutVertically(tween(EXIT_MS)) { it } + fadeOut(tween(EXIT_MS)),
+        enter = slideInVertically(tween(ENTER_MS, easing = Motion.EmphasizedDecelerate)) { it } +
+            fadeIn(tween(ENTER_MS, easing = Motion.StandardDecelerate)),
+        exit = slideOutVertically(tween(EXIT_MS, easing = Motion.EmphasizedAccelerate)) { it } +
+            fadeOut(tween(EXIT_MS, easing = Motion.StandardAccelerate)),
         modifier = Modifier.align(Alignment.BottomCenter),
     ) {
         Panel(
@@ -236,8 +239,8 @@ internal fun BoxScope.AssistantOverlay(
 private fun Scrim(visible: Boolean, alpha: () -> Float, onTap: (() -> Unit)?, modifier: Modifier = Modifier) {
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(tween(ENTER_MS)),
-        exit = fadeOut(tween(EXIT_MS)),
+        enter = fadeIn(tween(ENTER_MS, easing = Motion.StandardDecelerate)),
+        exit = fadeOut(tween(EXIT_MS, easing = Motion.StandardAccelerate)),
         modifier = modifier,
     ) {
         Box(
@@ -722,8 +725,8 @@ private val SCRIM = Color(0xB3000000)
 private val SCRIM_HEIGHT = 4_000.dp
 
 private val TRANSCRIPT_MAX_HEIGHT = 260.dp
-private const val ENTER_MS = 220
-private const val EXIT_MS = 180
+private const val ENTER_MS = Motion.DurationMedium1
+private const val EXIT_MS = Motion.DurationShort4
 private const val INPUT_MAX_LINES = 5
 private val SMALL_ICON = 18.dp
 private val SMALL_ICON_BUTTON = 32.dp
