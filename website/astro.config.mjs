@@ -106,11 +106,12 @@ export default defineConfig({
   // is what a future SSR page would cost.
   output: 'static',
 
-  // The workers.dev subdomain, which is provisional: canonical URLs, Open Graph URLs
-  // and the sitemap Starlight generates are all derived from this, and it reaches
-  // every one of the ~220 built pages. Change it here the day a custom domain is
-  // attached — a redirect at the edge does not fix a canonical baked into the HTML.
-  site: 'https://easymatic.mathias-weinstabl.workers.dev',
+  // The custom domain, attached to the Worker by the `routes` in wrangler.jsonc.
+  // Canonical URLs, Open Graph URLs and the sitemap Starlight generates are all derived
+  // from this, and it reaches every one of the ~220 built pages — which is why the
+  // provisional workers.dev subdomain had to be replaced here rather than redirected:
+  // a redirect at the edge does not fix a canonical baked into the HTML.
+  site: 'https://easymatic.app',
 
   // NOTE: do not set `outDir: 'build'`. The repo root .gitignore has an
   // unanchored `build/` rule (there for the five Gradle modules) that would

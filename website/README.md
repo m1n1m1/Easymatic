@@ -5,8 +5,8 @@ The marketing site and the documentation for [Easymatic](../README.md), built wi
 static — there is no server half — and Cloudflare Workers serves `dist/` straight from the
 edge.
 
-Live at **<https://easymatic.mathias-weinstabl.workers.dev>**, with the documentation at
-[`/docs/`](https://easymatic.mathias-weinstabl.workers.dev/docs/).
+Live at **<https://easymatic.app>**, with the documentation at
+[`/docs/`](https://easymatic.app/docs/).
 
 > **Note:** This directory is invisible to the Gradle build. `settings.gradle.kts`
 > includes only the four Android modules, so nothing here affects
@@ -44,14 +44,17 @@ matter:
 - The Worker has **no `main`**, because `output: 'static'` means there is no code to run.
   Adding SSR later is what would add `main` here and `@astrojs/cloudflare` in
   `astro.config.mjs`.
-- **`name` must stay in step with the workers.dev subdomain.** It decides which Worker
-  `wrangler deploy` writes to, so renaming it creates a second site instead of moving
-  this one.
+- **`name` decides which Worker `wrangler deploy` writes to**, so renaming it creates a
+  second site instead of moving this one, and leaves the custom domains on the old one.
+- **`routes` attaches `easymatic.app` and `www.easymatic.app`** as custom domains. Cloudflare
+  creates the DNS records and certificate on deploy. The www → apex redirect is a Redirect
+  Rule on the zone, not something in this repo.
 
-The `site` value in `astro.config.mjs` is the provisional workers.dev subdomain. Canonical
-URLs, Open Graph URLs and the sitemap are all derived from it, and it is baked into every
-one of the ~220 built pages — so change it there the day a custom domain is attached. A
-redirect at the edge does not fix a canonical that is already in the HTML.
+The `site` value in `astro.config.mjs` is `https://easymatic.app`. Canonical URLs, Open
+Graph URLs and the sitemap are all derived from it and baked into every one of the ~220
+built pages, which is why the old workers.dev subdomain was replaced there rather than
+redirected. That subdomain stays enabled, because shipped app builds open the privacy
+policy through it.
 
 ## Design system
 

@@ -6,13 +6,26 @@
  * never invokes any code. Adding SSR later is what would add `main` here and
  * @astrojs/cloudflare there.
  *
- * `name` must stay in step with the workers.dev subdomain: it is what decides
- * which Worker `wrangler deploy` writes to, so renaming it silently creates a
- * second one rather than moving the site.
+ * `name` is what decides which Worker `wrangler deploy` writes to, so renaming it
+ * silently creates a second one rather than moving the site — and the custom
+ * domains below would stay attached to the old one.
+ *
+ * `routes` with `custom_domain` is the declarative form of the dashboard's
+ * "Domains & Routes → Custom Domain": on deploy Cloudflare creates the DNS records
+ * and the certificate itself, provided the easymatic.app zone is in the same
+ * account. Both hostnames serve the site; the www → apex redirect is a Redirect
+ * Rule on the zone, which needs the www record these routes create in order to
+ * fire. The provisional easymatic.mathias-weinstabl.workers.dev hostname stays
+ * enabled on purpose: shipped app builds open the privacy policy through it, and
+ * without a zone there is nowhere to hang a redirect for it.
  */
 {
   "name": "easymatic",
   "compatibility_date": "2026-08-29",
+  "routes": [
+    { "pattern": "easymatic.app", "custom_domain": true },
+    { "pattern": "www.easymatic.app", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./dist",
     // Astro writes a real 404.html; without this an unmatched path gets

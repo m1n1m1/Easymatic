@@ -321,4 +321,4 @@ private val ROW_INSET = 18.dp
  * Where the privacy policy lives. The same URL is given to Play as the listing's
  * policy link, and is generated from `website/src/pages/privacy.astro`.
  */
-private const val PRIVACY_POLICY_URL = "https://easymatic.mathias-weinstabl.workers.dev/privacy"
+private const val PRIVACY_POLICY_URL = "https://easymatic.app/privacy"

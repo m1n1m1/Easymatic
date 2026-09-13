@@ -13,10 +13,10 @@
 ![Kotlin 2.2](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)
 ![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4)
 
-[Website](https://easymatic.mathias-weinstabl.workers.dev) ·
-[Documentation](https://easymatic.mathias-weinstabl.workers.dev/docs/) ·
-[Your first macro](https://easymatic.mathias-weinstabl.workers.dev/docs/start/first-macro/) ·
-[Node reference](https://easymatic.mathias-weinstabl.workers.dev/docs/#node-reference)
+[Website](https://easymatic.app) ·
+[Documentation](https://easymatic.app/docs/) ·
+[Your first macro](https://easymatic.app/docs/start/first-macro/) ·
+[Node reference](https://easymatic.app/docs/#node-reference)
 
 </div>
 
@@ -38,7 +38,7 @@ A macro is built from four kinds of node:
 
 There are **184 nodes** today: 56 triggers, 85 actions, 32 values and 11 transforms.
 Each one has its own page, with ports and settings, in the
-[node reference](https://easymatic.mathias-weinstabl.workers.dev/docs/#node-reference).
+[node reference](https://easymatic.app/docs/#node-reference).
 
 ## Getting the project running in Android Studio
 
@@ -258,14 +258,14 @@ way a local build does.
 ## Documentation
 
 The full documentation is on the website:
-**<https://easymatic.mathias-weinstabl.workers.dev/docs/>**
+**<https://easymatic.app/docs/>**
 
 | Page | What is in it |
 | --- | --- |
-| [Install and first run](https://easymatic.mathias-weinstabl.workers.dev/docs/start/install/) | What to install, what to allow, and the two screens the app is made of |
-| [Your first macro](https://easymatic.mathias-weinstabl.workers.dev/docs/start/first-macro/) | Build, wire, run and arm a working macro from an empty canvas |
-| [The editor](https://easymatic.mathias-weinstabl.workers.dev/docs/start/editor/) | The canvas, the palette, the node card and the bottom bar |
-| [Node reference](https://easymatic.mathias-weinstabl.workers.dev/docs/#node-reference) | Every node, with its ports, settings and permissions |
+| [Install and first run](https://easymatic.app/docs/start/install/) | What to install, what to allow, and the two screens the app is made of |
+| [Your first macro](https://easymatic.app/docs/start/first-macro/) | Build, wire, run and arm a working macro from an empty canvas |
+| [The editor](https://easymatic.app/docs/start/editor/) | The canvas, the palette, the node card and the bottom bar |
+| [Node reference](https://easymatic.app/docs/#node-reference) | Every node, with its ports, settings and permissions |
 
 In the repository:
 
