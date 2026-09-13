@@ -31,3 +31,8 @@ opencode.json
 keystore.properties
 *.jks
 *.keystore
+
+# Screenshot pipeline intermediates: raw emulator captures and the font cut
+# derived from the website's node_modules. Both are rebuilt by the scripts.
+/tools/screenshots/raw/
+/tools/screenshots/fonts/

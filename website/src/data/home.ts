@@ -47,7 +47,7 @@ export interface ShowcaseItem {
   icon: string;
   title: string;
   body: string;
-  /** The macro's graph, cropped out of an editor capture. 1100x1236. */
+  /** A whole phone screen showing the macro in the editor, corners rounded. 900x2000. */
   image: string;
   imageAlt: string;
 }
@@ -75,7 +75,7 @@ export const SHOWCASE: ShowcaseItem[] = [
       'Connect triggers to an AI agent and have your requests automatically be executed in the background. The AI has access to all features of Easymatic.',
     image: '/img/showcase/ai-agent.webp',
     imageAlt: 
-      'An Easymatic macro: an incoming message runs an AI agent, which branches into sending the answer or just logging it.',
+      'A phone showing an Easymatic macro: an incoming message is handed to an AI agent, whose answer is wired into a reply and also shown as a notification, then the message is marked read.',
   },
   {
     id: 'messaging',
@@ -86,7 +86,7 @@ export const SHOWCASE: ShowcaseItem[] = [
       'React to incoming messages. Send automated replies and create appointments. Manage your email accounts.',
     image: '/img/showcase/messaging.webp',
     imageAlt: 
-      'An Easymatic macro: an incoming message branches on who sent it, then adds a calendar entry and acknowledges it, or posts a notification.',
+      'A phone showing an Easymatic macro: an incoming message is compared on its sender, then either added to the calendar and acknowledged or shown as a notification, and a summary is mailed either way.',
   },
   {
     id: 'smart-home',
@@ -97,7 +97,7 @@ export const SHOWCASE: ShowcaseItem[] = [
       'Integrate with various Smart Home protocols and systems. Easymatic can react to incoming events and also control smart devices.',
     image: '/img/showcase/smart-home.webp',
     imageAlt: 
-      'An Easymatic macro: a Home Assistant door sensor branches on the light level, then turns on a hall light or publishes to MQTT.',
+      'A phone showing an Easymatic macro: a Home Assistant door sensor opening branches on the time of day, then turns the hall light on and sets the heating, or opens the blinds, and posts a notification.',
   },
   {
     id: 'location-time',
@@ -108,7 +108,7 @@ export const SHOWCASE: ShowcaseItem[] = [
       'Automatically execute actions based on your location or the current time.',
     image: '/img/showcase/location-time.webp',
     imageAlt: 
-      'An Easymatic macro: leaving a geofenced office branches on the weekday, then notifies and turns Wi-Fi on, or waits.',
+      'A phone showing an Easymatic macro: leaving the office geofence or a schedule at six branches on the time, then notifies and texts a partner, or waits ten minutes, before saying drive safely.',
   },
   {
     id: 'sensors',
@@ -119,7 +119,7 @@ export const SHOWCASE: ShowcaseItem[] = [
       'Unleash the possibilities of your phones sensors. Control your phone with gestures. Monitor your phones status.',
     image: '/img/showcase/sensors.webp',
     imageAlt: 
-      'An Easymatic macro: shaking the phone branches on ambient light to turn the torch on or buzz, and a proximity trigger shortens the screen timeout.',
+      'A phone showing an Easymatic macro: shaking the phone or double-tapping its back branches on the light level, then turns the torch on for a minute or buzzes instead.',
   },
 ];
 

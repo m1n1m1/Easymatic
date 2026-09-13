@@ -1,0 +1,11 @@
+[
+  {
+    "id": "ai-demo",
+    "name": "Gemini",
+    "provider": "GEMINI",
+    "secret": "demo",
+    "models": [
+      { "id": "ai-demo-fast", "name": "Fast", "modelId": "gemini-2.5-flash", "effort": "FAST" }
+    ]
+  }
+]

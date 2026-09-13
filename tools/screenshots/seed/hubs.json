@@ -1,0 +1,27 @@
+[
+  {
+    "id": "hue-demo",
+    "kind": "HUE",
+    "name": "Hue Bridge",
+    "host": "192.168.1.20",
+    "certSha256": "demo",
+    "secret": "demo",
+    "resources": [
+      { "kind": "LIGHT", "rid": "l1", "name": "Hall", "room": "Hall" },
+      { "kind": "GROUP", "rid": "g1", "name": "Living room" }
+    ]
+  },
+  {
+    "id": "ha-demo",
+    "kind": "HOME_ASSISTANT",
+    "name": "Home",
+    "host": "http://homeassistant.local:8123",
+    "secret": "demo",
+    "entities": [
+      { "entityId": "binary_sensor.front_door", "name": "Front door", "domain": "binary_sensor", "deviceClass": "door" },
+      { "entityId": "cover.living_room_blinds", "name": "Living room blinds", "domain": "cover" },
+      { "entityId": "climate.hallway", "name": "Hallway thermostat", "domain": "climate" },
+      { "entityId": "alarm_control_panel.house", "name": "House alarm", "domain": "alarm_control_panel" }
+    ]
+  }
+]

@@ -57,9 +57,9 @@ import {
         <img
           class="shot"
           src="/img/hero-editor.webp"
-          alt="The Easymatic editor: a macro that fires on joining the home Wi-Fi, branches on how dark it is, and speaks, switches Wi-Fi on, clears Do Not Disturb and posts a notification."
+          alt="A phone running the Easymatic editor: a macro that starts on joining the home Wi-Fi, compares the current time against 9 pm, then either turns the hall light on and silences the phone or says welcome home, and posts a notification either way."
           width="1000"
-          height="1600"
+          height="2120"
           fetchpriority="high"
           decoding="async"
           data-hero-part
@@ -117,8 +117,8 @@ import {
                   <img
                     src={item.image}
                     alt={item.imageAlt}
-                    width="1100"
-                    height="1236"
+                    width="900"
+                    height="2000"
                     loading="lazy"
                     decoding="async"
                   />
@@ -350,20 +350,20 @@ import {
   }
 
   /* ---- Screenshot ------------------------------------------------------ */
-  /* A portrait phone capture, so it is capped by *height* and centred in its
-     column rather than filling the width: at the hero's column width a 5:8
-     picture would run to nearly a thousand pixels and dwarf the copy beside
-     it. The width/height attributes still reserve the box, so nothing
-     reflows while it loads. */
+  /* A phone drawn around a portrait capture, so it is capped by *height* and
+     centred in its column rather than filling the width: at the hero's column
+     width a 1:2 picture would run to over a thousand pixels and dwarf the copy
+     beside it. The width/height attributes still reserve the box, so nothing
+     reflows while it loads. No fill behind it: the picture is transparent
+     around the phone, and a box would show as a slab behind the bezel. */
   .shot {
     display: block;
     inline-size: auto;
     max-inline-size: 100%;
     block-size: auto;
-    max-block-size: min(34rem, 70vh);
+    max-block-size: min(36rem, 72vh);
     margin-inline: auto;
-    aspect-ratio: 1000 / 1600;
-    background: var(--surface-raised);
+    aspect-ratio: 1000 / 2120;
   }
 
   /* ---- Showcase ----------------------------------------------------------- */
@@ -471,10 +471,10 @@ import {
     outline-offset: 2px;
   }
 
-  /* These are cropped to the graph itself — no status bar, no app bar, no
-     zoom column, no floating buttons — so there is no device frame to keep
-     flush with anything, and the picture is free to be capped and centred.
-     No fill behind it either: the crop's own ground already matches. */
+  /* A whole phone screen with its corners rounded off and nothing drawn
+     around it — the hero already shows the bezel, and a second one here would
+     make the rail's picture compete with it. Capped and centred like the hero.
+     No fill behind it: the corners are transparent. */
   .pane img {
     display: block;
     inline-size: auto;

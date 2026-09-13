@@ -1,0 +1,4 @@
+[
+  { "id": "home", "name": "Home", "latitude": 47.0707, "longitude": 15.4395, "radiusMeters": 150.0 },
+  { "id": "office", "name": "Office", "latitude": 47.0667, "longitude": 15.4500, "radiusMeters": 200.0 }
+]

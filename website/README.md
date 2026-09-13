@@ -87,31 +87,39 @@ wears: `NodeIcon` (`node-api/.../NodeIcon.kt`) maps to concrete Material icons i
 
 ### Imagery
 
-Everything in `public/img/` is **real editor capture**, taken on an emulator in portrait at
-1600×2560 and exported as WebP (~40 KB each). There are two kinds, cropped differently on
-purpose:
+Everything in `public/img/` is **real editor capture**, taken on an emulator at a phone's
+native 1080×2400 and exported as WebP (~40 KB each). There are two kinds, dressed
+differently on purpose:
 
-- `hero-editor.webp` is the whole phone — app bar, zoom column, Problems bar and all,
-  because the hero's job is to show that this is an app.
-- `showcase/*.webp` are **the graph alone**. Status bar, app bar, zoom column and the
-  floating buttons are cropped away, so a use-case pane is nodes and wires and nothing
-  else.
+- `hero-editor.webp` is the capture inside a drawn phone — bezel, rounded screen, side
+  buttons, transparent around it — because the hero's job is to show that this is an app
+  running on a phone.
+- `showcase/*.webp` are the whole screen with its corners rounded and nothing drawn around
+  it. The hero already shows the bezel; a second one in the rail would compete with it.
 
 Both are portrait, so both are sized by `max-block-size` and centred rather than stretched
-to their column. At the hero's column width a 5:8 picture would run to nearly a thousand
+to their column. At the hero's column width a 1:2 picture would run to over a thousand
 pixels and dwarf the copy beside it.
 
-The graphs are laid out for a tall frame: the flow runs top to bottom and a branch throws
-its arms left and right. That is what makes the crop portrait. A branch puts two cards side
-by side and so fixes the width, which leaves the number of rows as the only thing that can
-change the shape — hence six rows deep for every use-case graph.
+The graphs are laid out for a phone: a trunk column with two arms one card width to either
+side, so every graph is 420 dp wide and the editor's fit-to-screen lands on the same zoom
+for all of them. Node names are at most **16 characters** — the card's title line holds
+about that at 13 sp, and anything longer is ellipsized on the canvas.
 
-Re-taking them is scripted rather than manual. The graphs are authored as workflow JSON and
-pushed into the app with `run-as`, the emulator is driven by row taps, and the crop finds
-the graph by block-mean brightness (a node card and the canvas dot grid are six levels
-apart, so no per-pixel threshold separates them). The scripts are not in the repo: they seed
-a throwaway hub, AI and place library so no node renders with a Problems badge, which is
-emulator state rather than site content.
+Re-taking them is scripted, and the scripts are in the repo under `tools/screenshots/`:
+
+1. `graphs.py` holds the six macros as workflow JSON.
+2. `capture.py` seeds the app's private storage with a throwaway AI connection, two hubs
+   and two places (so no card wears a Problems badge), pushes the workflows with `run-as`,
+   puts the status bar in demo mode, drives the editor by `uiautomator` text lookups and
+   captures each graph at native resolution. Needs a running emulator with a debug build.
+3. `compose.py` draws the phone frame, rounds the showcase corners, and also writes the
+   9:16 Play Store pictures under `fastlane/metadata/android/en-US/images/phoneScreenshots/`
+   — a 9:20 capture is taller than the 2:1 Play accepts, so the framed phone goes onto a
+   1080×1920 canvas with one line of copy above it.
+
+> **Note:** the store pictures are generated from the same captures, so the website and
+> the listing can never show two different versions of a macro.
 
 ### Type and theme
 
