@@ -22,10 +22,11 @@ every app, a rounded square with a socket on it is this one. That is what has to
 survive 32 pixels, and it is why the socket is a bump in the *outline* rather than a
 dot painted on the card.
 
-  * The card is 260 square at (100,126), radius 62, on a 512 canvas. The socket is a
-    circle of radius 56 centred on the card's right edge at y=256, so it sits between
-    the corner arcs (which end at y=188 and start at y=324) and the union is one clean
-    outline with no overlap to hide.
+  * The card is authored 260 square at (100,126), radius 62, on a 512 canvas, and
+    every length below is then scaled by MARK_SCALE about the centre (see "The one
+    number worth understanding"). The socket is a circle of radius 56 centred on the
+    card's right edge at y=256, so it sits between the corner arcs (which end at y=188
+    and start at y=324) and the union is one clean outline with no overlap to hide.
   * The socket is drawn as a cream ring around a dark centre, not a flat dot. A flat
     dot on an orange bump smears to nothing at 32px; a hole in the shape survives any
     amount of blur.
@@ -35,8 +36,9 @@ dot painted on the card.
     white line under the top edge is its light, and a soft orange glow sits behind it
     on every *opaque* output. The socket stays flat so it reads as a hole in the
     surface rather than as a second object.
-  * The mark's ink spans x 100..416, y 126..398 (the extrusion included). That is what
-    the favicon and the wordmark crop to.
+  * The mark's ink is INK_BOX (the extrusion included): authored x 100..416,
+    y 126..398, scaled to 69..448 by 100..426. That is what the favicon and the
+    wordmark crop to, so neither of them moves when MARK_SCALE does.
 
 ### Where a ground is drawn, and where it is not
 
@@ -60,14 +62,20 @@ SAFE_SCALE like the foreground, the status icon fills its 24dp canvas edge to ed
 across, which puts the card at the 20dp a status glyph stands, because a launcher
 shrinks its layer and the status bar does not.
 
-### The one number worth understanding
+### The two numbers worth understanding
 
 SAFE_SCALE shrinks the mark inside the adaptive layers. An adaptive icon is 108dp, of
 which a launcher shows the inner 72dp and guarantees only a 66dp circle. The 512
 canvas here *is* the 72dp visible area -- every raster output treats it that way --
 so the vector layers scale it by exactly 72/108 about the centre, and the adaptive
-icon shows the same proportions as the Play icon and the mipmaps. The mark's farthest
-point is then 26.7dp from the centre, inside the 33dp the strictest mask keeps.
+icon shows the same proportions as the Play icon and the mipmaps.
+
+MARK_SCALE decides how much of that canvas the mark fills, and it is the one to
+touch if the icon looks small or crowded. Play draws a square mark on a 384 keyline,
+75% of the 512; the mark as authored was 316 wide, 62%, with air around it that no
+mask asked for. At 1.2 the card is 379 wide, on the keyline, and the farthest point of
+the mark -- the extruded bottom-left corner -- is 30dp from the centre, inside the 33dp
+the strictest launcher mask keeps. 1.3 would put it on the mask; do not go past 1.25.
 """
 
 import math
@@ -93,17 +101,37 @@ GROUND_EDGE = "#0d0b0a"     # ... and its edge (the website's --surface, near en
 HIGHLIGHT_ALPHA = 0.32
 GLOW_ALPHA = 0.20
 
-CARD = (100, 126, 260, 260)
-RADIUS = 62
-SOCKET = (360, 256)
-SOCKET_R = 56
-RING_R = 30
-PIN_R = 16
-LIFT = (8, 12)
-BARS = [(160, 184, 126, 34), (160, 239, 90, 34), (160, 294, 126, 34)]
-BAR_RADIUS = 17
-HIGHLIGHT = ((162, 133), (298, 133))
-HIGHLIGHT_WIDTH = 10
+# The mark is authored on the numbers in the module docstring and then scaled by
+# MARK_SCALE about the canvas centre, so one number decides how much of the 512 it
+# fills. 1.2 puts the card on Play's 384 keyline (75% of the canvas, where the
+# authored 316 sat at 62%) and keeps the adaptive layers 3dp inside the mask.
+MARK_SCALE = 1.2
+
+
+def _len(v):
+    """An authored length, scaled."""
+    return round(v * MARK_SCALE)
+
+
+def _pt(x, y):
+    """An authored point, scaled about the canvas centre."""
+    c = CANVAS / 2
+    return round(c + (x - c) * MARK_SCALE), round(c + (y - c) * MARK_SCALE)
+
+
+CARD = _pt(100, 126) + (_len(260), _len(260))
+RADIUS = _len(62)
+# On the card's right edge, halfway down: derived, so rounding cannot pull it off.
+SOCKET = (CARD[0] + CARD[2], CARD[1] + CARD[3] // 2)
+SOCKET_R = _len(56)
+RING_R = _len(30)
+PIN_R = _len(16)
+LIFT = (_len(8), _len(12))
+BARS = [_pt(x, y) + (_len(w), _len(h))
+        for x, y, w, h in [(160, 184, 126, 34), (160, 239, 90, 34), (160, 294, 126, 34)]]
+BAR_RADIUS = _len(17)
+HIGHLIGHT = (_pt(162, 133), _pt(298, 133))
+HIGHLIGHT_WIDTH = _len(10)
 GLOW = (256, 270, 200, 190)  # centre and radii of the ellipse behind the card
 GLOW_BLUR = 36
 GROUND_RADIAL = (0.5, 0.32, 0.8)  # centre (fractions of the canvas) and radius
