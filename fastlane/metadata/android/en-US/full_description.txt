@@ -1,34 +1,33 @@
-Easymatic is a FREE automation app for Android, with AI integration. You decide what your phone should do and when, and it takes care of the rest by itself, in the background, every day, even when the app is closed. No account, no ads, no subscription.
+Easymatic is a free automation app for Android with AI built in. You tell it what your phone should do and when, and it runs in the background, even with the app closed. No account, no ads, no subscription.
 
+What's in it
 
-Set it up once, then forget about it
+Over 180 blocks for location, schedules, NFC tags, sensors, Wi-Fi, Bluetooth, battery, calls, SMS, notifications, calendar, email, photos, files, media, volume, flashlight, screenshots, text to speech, HTTP and more. You set everything up by dragging blocks onto a canvas and connecting them, so you can see the whole automation at a glance instead of digging through menus.
 
-Tell Easymatic what to watch for and what should happen next. When you get home. When a message arrives. When your battery runs low. When you tap an NFC sticker on your desk. You build it once and never think about it again.
+AI
 
-Put it together by dragging, not by coding
+You can connect Gemini, Claude, ChatGPT, OpenRouter or a model you run yourself. Use it to summarise mails, describe photos, transcribe voice messages or write replies. It can also use your own blocks as tools, so it can send messages, set reminders or switch lights for you. You choose what it is allowed to use.
 
-Your automations are something you can see. Drag a trigger onto the canvas, connect it to an action, and you are done. More than 180 building blocks are ready to use, covering location, sensors, messages, calls, calendar, photos, files, Wi-Fi, Bluetooth and much more.
+There is also an assistant that builds automations for you. Type what you want and it puts the blocks on the canvas. You can change anything it made afterwards.
 
-Bring your own AI
+Smart home
 
-Connect Gemini, Claude, ChatGPT, OpenRouter or a model you host yourself. Have it summarise an email, describe a photo or turn what you said into text, then let its answer decide what happens next.
+Home Assistant, MQTT and Philips Hue are supported out of the box. Anything with an HTTP API works too.
 
-Let the AI act, not just answer
+Also included
 
-You can hand the model your own blocks and macros as tools. Then it actually sends the message, actually sets the reminder, actually turns on the light. You choose exactly what it is allowed to touch.
+• Widgets and shortcuts to start a macro from the home screen
+• A JavaScript block for the special cases
+• Import and export of macros
+• Plugins, so other apps can add their own blocks
+• Other apps can start your macros if you allow it
+• Offline translation
+• Macros keep working after a reboot
 
-Have your automation built for you
+Privacy
 
-Describe what you want to happen. The built-in assistant lays out the blocks and wires them together while you watch. Everything it makes is yours to adjust afterwards.
+There is no account, no analytics, no crash reporting and no ads. Your macros stay on your phone. Data only leaves it when one of your macros sends it somewhere you set up yourself, like your Home Assistant, your mail server or your AI provider.
 
-Works with what you already own
+Easymatic is open source (MIT) and available in English, German, Spanish, French, Japanese, Portuguese, Russian and Chinese.
 
-Home Assistant, MQTT, Philips Hue, your mailbox over IMAP and SMTP, and any HTTP address you like. Translation runs on the phone itself, offline and without an account.
-
-Private because there is nowhere else for it to go
-
-There is no account and nothing to sign up for. No analytics, no crash reporting, no advertising. Your macros stay on your phone. Data leaves it only when a macro of yours sends it, and only to a destination you entered yourself: your Home Assistant, your broker, your mailbox, your AI provider.
-
-Open source under the MIT licence. Available in English, German, Spanish, French, Japanese, Portuguese, Russian and Chinese.
-
-This is an early alpha. Some of it is still rough, and some macros will need rebuilding in later versions.
+Please note: this is an early alpha. Some things are still rough and some macros may need to be rebuilt in later versions. If something doesn't work or you are missing a block, open an issue on GitHub.
