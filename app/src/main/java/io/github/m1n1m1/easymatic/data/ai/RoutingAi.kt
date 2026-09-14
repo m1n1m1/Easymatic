@@ -10,6 +10,7 @@ import io.github.m1n1m1.easymatic.core.service.AiToolLimits
 import io.github.m1n1m1.easymatic.core.service.AiToolResult
 import io.github.m1n1m1.easymatic.data.AiConnectionRepository
 import io.github.m1n1m1.easymatic.domain.model.AiConnection
+import io.github.m1n1m1.easymatic.domain.model.AiModelProfile
 import io.github.m1n1m1.easymatic.domain.model.isOnDevice
 
 /**
@@ -59,7 +60,17 @@ class RoutingAi internal constructor(
 ) : Ai {
 
     override suspend fun complete(request: AiRequest): AiReply =
-        dispatch(request, wantsTools = false) { ready -> ready.send() }
+        dispatch(request, wantsTools = false, stored) { ready -> ready.send() }
+
+    /**
+     * [complete] through a connection as the editor has it, saved or not — the Test
+     * button's route. It sends what Save would store: [unsaved] is the draft applied to
+     * the connection, and [typedKey] stands in for the stored key only when it is not
+     * blank. Same guards, same on-device attempt, same fallback; the draft is laid over
+     * the library rather than replacing it. Not on [Ai], because no node has a draft.
+     */
+    suspend fun complete(request: AiRequest, unsaved: AiConnection, typedKey: String): AiReply =
+        dispatch(request, wantsTools = false, Overlaid(unsaved, typedKey)) { ready -> ready.send() }
 
     /**
      * One round trip, down whichever wire the request's own shape asks for.
@@ -150,7 +161,7 @@ class RoutingAi internal constructor(
         invoke: suspend (AiToolCall) -> AiToolResult,
     ): AiReply {
         if (tools.isEmpty()) return complete(request)
-        return dispatch(request, wantsTools = true) { ready ->
+        return dispatch(request, wantsTools = true, stored) { ready ->
             runToolExchange(
                 protocol = ready.protocol,
                 request = ready.request,
@@ -174,15 +185,19 @@ class RoutingAi internal constructor(
      * [wantsTools] is not derived from the request because it cannot be: whether a node
      * offered the model any tools is the caller's fact, and it is the single thing that
      * makes an otherwise perfectly runnable prompt impossible on the device.
+     *
+     * [library] is where the connection, profile and key come from — [stored] for every
+     * node, the editor's draft over it for Test — and is threaded through to the fallback.
      */
     private suspend fun dispatch(
         request: AiRequest,
         wantsTools: Boolean,
+        library: Library,
         overWire: suspend (Resolution.Ready) -> AiReply,
-    ): AiReply = when (val resolved = resolve(request)) {
+    ): AiReply = when (val resolved = resolve(request, library)) {
         is Resolution.Refused -> AiReply(error = resolved.error)
         is Resolution.Ready -> overWire(resolved)
-        is Resolution.OnDevice -> answerOnDevice(resolved, request, wantsTools, overWire)
+        is Resolution.OnDevice -> answerOnDevice(resolved, request, wantsTools, library, overWire)
     }
 
     /**
@@ -201,12 +216,13 @@ class RoutingAi internal constructor(
         resolved: Resolution.OnDevice,
         original: AiRequest,
         wantsTools: Boolean,
+        library: Library,
         overWire: suspend (Resolution.Ready) -> AiReply,
     ): AiReply {
         val problem = onDeviceProblem(resolved.request, onDevice.status(), wantsTools)
-        if (problem != null) return fallBack(resolved, original, problem, overWire)
+        if (problem != null) return fallBack(resolved, original, problem, library, overWire)
         val reply = onDevice.complete(mlKitPlan(resolved.request, resolved.target))
-        return if (reply.error.isBlank()) reply else fallBack(resolved, original, reply.error, overWire)
+        return if (reply.error.isBlank()) reply else fallBack(resolved, original, reply.error, library, overWire)
     }
 
     /**
@@ -231,13 +247,14 @@ class RoutingAi internal constructor(
         resolved: Resolution.OnDevice,
         original: AiRequest,
         problem: String,
+        library: Library,
         overWire: suspend (Resolution.Ready) -> AiReply,
     ): AiReply {
         val profile = resolved.target.profile
         val ref = profile.fallbackModelRef.trim()
         if (ref.isBlank()) return AiReply(error = problem)
         if (ref == profile.id) return AiReply(error = withReason(problem, SELF_FALLBACK))
-        return when (val second = resolve(original.copy(modelRef = ref))) {
+        return when (val second = resolve(original.copy(modelRef = ref), library)) {
             is Resolution.Refused -> AiReply(error = withReason(problem, second.error))
             // The note rides on the *successful* reply, which is the only place it could
             // go: a fallback that worked is not an error, and without it the run log
@@ -266,7 +283,7 @@ class RoutingAi internal constructor(
      * twice is how one of the two eventually loses a check.
      */
     @Suppress("ReturnCount") // Guards that must never reach the network, then the resolved request.
-    private fun resolve(request: AiRequest): Resolution {
+    private fun resolve(request: AiRequest, library: Library): Resolution {
         // A blank prompt *with sound* is not an empty request — it is "just transcribe
         // this", which is both the commonest thing to ask of a recording and the thing a
         // transcription endpoint takes literally. Refusing it here would have made the
@@ -277,7 +294,7 @@ class RoutingAi internal constructor(
         if (request.modelRef.isBlank()) {
             return Resolution.Refused("No AI model chosen on this node")
         }
-        val (connection, profile) = connections.resolve(request.modelRef)
+        val (connection, profile) = library.resolve(request.modelRef)
             ?: return Resolution.Refused(DELETED_MODEL)
 
         val target = AiTarget(connection, profile)
@@ -291,7 +308,7 @@ class RoutingAi internal constructor(
         // `unreadableKeyText` would otherwise send somebody to paste one in again.
         if (connection.provider.isOnDevice) return Resolution.OnDevice(target, prepared)
 
-        val key = connections.apiKey(connection.id)
+        val key = library.apiKey(connection)
             ?: return Resolution.Refused(unreadableKeyText(connection))
         val protocol = protocolFor(connection.provider)
             ?: return Resolution.Refused(NO_WIRE)
@@ -310,6 +327,34 @@ class RoutingAi internal constructor(
             protocol = protocol,
             request = prepared,
         )
+    }
+
+    /**
+     * Where [resolve] reads the connection, profile and key from, so the editor's draft
+     * meets exactly the guards a macro's request does.
+     */
+    private interface Library {
+        fun resolve(modelRef: String): Pair<AiConnection, AiModelProfile>?
+        fun apiKey(connection: AiConnection): String?
+    }
+
+    /** The persisted library, which is what every node reads. */
+    private val stored = object : Library {
+        override fun resolve(modelRef: String) = connections.resolve(modelRef)
+        override fun apiKey(connection: AiConnection) = connections.apiKey(connection.id)
+    }
+
+    /**
+     * [stored] with [unsaved] laid over it: the draft's own profiles resolve to the draft,
+     * everything else falls through, so a fallback on another connection still works.
+     */
+    private inner class Overlaid(private val unsaved: AiConnection, private val typedKey: String) : Library {
+        override fun resolve(modelRef: String): Pair<AiConnection, AiModelProfile>? =
+            unsaved.models.firstOrNull { it.id == modelRef }?.let { unsaved to it }
+                ?: connections.resolve(modelRef)
+
+        override fun apiKey(connection: AiConnection): String? =
+            connections.keyFor(connection, typedIn = if (connection.id == unsaved.id) typedKey else "")
     }
 
     private sealed interface Resolution {
@@ -542,6 +587,13 @@ private fun outOfTurnsText(maxTurns: Int): String =
         "raise the turn limit, or give it a clearer prompt"
 
 private const val OUT_OF_TIME = "The AI was still using tools after five minutes and was stopped"
+
+/**
+ * The key [connection] would use after Save: [typedIn] when not blank, else the stored
+ * one. Shared by Test and List models, and trimmed as [AiConnectionRepository.setKey] trims.
+ */
+internal fun AiConnectionRepository.keyFor(connection: AiConnection, typedIn: String): String? =
+    typedIn.trim().ifBlank { null } ?: apiKey(connection.id)
 
 /**
  * Two sentences: what stopped the on-device model, and what stopped its fallback.

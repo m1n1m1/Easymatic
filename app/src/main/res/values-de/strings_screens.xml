@@ -242,7 +242,6 @@
     <string name="ai_paste_key">Schlüssel einfügen</string>
     <string name="ai_provider">Anbieter</string>
     <string name="ai_save">Speichern</string>
-    <string name="ai_save_the_connection_first_then">Speichere zuerst die Verbindung, dann prüfe mit „Testen“, ob der Schlüssel funktioniert.</string>
     <string name="ai_sent_ahead_of_every_prompt">Wird jeder Anfrage über diese Verbindung vorangestellt. Die eigene Anweisung eines Knotens „KI fragen“ wird danach ergänzt und ersetzt sie nicht.</string>
     <string name="ai_server_address">Serveradresse</string>
     <string name="ai_standing_instruction_optional">Dauerhafte Anweisung (optional)</string>
@@ -346,7 +345,8 @@
     <string name="ai_model_name_placeholder">Haushalt</string>
     <string name="ai_model_not_finished">Unfertig — gib ihm einen Namen und ein Modell</string>
     <string name="ai_model_provider_default">%1$s · das Modell des Anbieters</string>
-    <string name="ai_no_model_to_test">Füge erst ein Modell hinzu und speichere, dann kannst du testen.</string>
+    <string name="ai_no_model_to_test">Füge erst ein Modell hinzu oder vervollständige es, dann kannst du testen.</string>
+    <string name="ai_paste_the_key_first">Füge zuerst den API-Schlüssel ein.</string>
     <string name="ai_no_models_on_this_account">Für dieses Konto gibt es noch keine Modelle.</string>
     <string name="ai_no_models_yet">Noch keine Modelle. Füge eines hinzu, damit Makros darauf zeigen können.</string>
     <string name="ai_tools_allow_everything">Alles erlauben</string>

@@ -262,6 +262,13 @@ object ServiceLocator {
         private set
 
     /**
+     * The AI facade — `Ai` to the engine, the concrete class to the AI settings screen,
+     * whose Test button needs the one member the interface must not carry.
+     */
+    lateinit var routingAi: RoutingAi
+        private set
+
+    /**
      * The model that answers on the phone itself, for the on-device AI provider.
      *
      * Shared by [aiModelCatalog], by the `RoutingAi` the engine reaches and by the AI
@@ -482,6 +489,9 @@ object ServiceLocator {
         // from its own manifest provider.
         onDeviceAi = MlKitAi()
         aiModelCatalog = AiModelCatalog(aiConnectionRepository, onDeviceAi)
+        // Resolves the connection on every call, so a key pasted in or revoked mid-run
+        // takes effect on the next prompt; one instance serves every connection.
+        routingAi = RoutingAi(aiConnectionRepository, onDeviceAi)
         onDeviceSetup = OnDeviceSetup(onDeviceAi)
         // No context either, for `MlKitAi`'s reason. Constructing it publishes the *supported*
         // languages, which is a constant of the library.
@@ -588,12 +598,8 @@ object ServiceLocator {
             // the protocol — so the connection is opened on demand when it is not already
             // up, which is the same guarantee reached differently.
             mqtt = AndroidMqtt(smartHomeHubRepository, mqttConnections),
-            // Resolves the connection on every call for the same reason: a key
-            // pasted in mid-run must be the one the next prompt uses, and a revoked
-            // one must stop working without waiting for the process to die. Which
-            // *provider* is therefore also a per-call fact, so one instance serves
-            // every connection on the phone and this line names none of them.
-            ai = RoutingAi(aiConnectionRepository, onDeviceAi),
+            // The same instance the AI settings screen tests through — see [routingAi].
+            ai = routingAi,
             // Resolves the covering grant on every call, on `RoutingAi`'s reasoning
             // and for a case that happens more often: somebody grants a folder on the
             // Folder access screen and runs the macro from the next screen along, and

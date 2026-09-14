@@ -186,14 +186,6 @@ fun AiConnectionEditorOverlay(
                 onDelete = { viewModel.delete(draft.id) },
             )
 
-            if (draft.isNew) {
-                Text(
-                    text = stringResource(R.string.ai_save_the_connection_first_then),
-                    color = EditorColors.textSecondary,
-                    fontSize = 12.sp,
-                )
-            }
-
             if (draft.message.isNotBlank()) {
                 Surface(
                     color = EditorColors.nodeBackground,
@@ -569,16 +561,17 @@ private fun ModelRow(
     }
 }
 
-/** Test and Delete, both of which need the connection to exist first. */
+/**
+ * Test and Delete. Test works on an unsaved connection too — it sends what Save would
+ * store — and its refusals are worded in the message box rather than by greying it out.
+ */
 @Composable
 private fun ActionButtons(
     draft: AiConnectionDraft,
     onTest: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    // Enabled only once the connection exists, because the test sends through what
-    // is *stored* rather than what is in the box — which is what a macro will use.
-    val canTest = !draft.busy && !draft.isNew
+    val canTest = !draft.busy
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         TextButton(onClick = onTest, enabled = canTest) {
             Text(

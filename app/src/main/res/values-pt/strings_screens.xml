@@ -246,7 +246,8 @@
     <string name="ai_model_provider_default">%1$s · o modelo do próprio fornecedor</string>
     <string name="ai_no_models_yet">Ainda não há modelos. Adicione um para as macros terem para onde apontar.</string>
     <string name="ai_no_models_on_this_account">Ainda não há modelos nesta conta.</string>
-    <string name="ai_no_model_to_test">Adicione um modelo e guarde primeiro; depois teste.</string>
+    <string name="ai_no_model_to_test">Adicione ou conclua um modelo primeiro; depois teste.</string>
+    <string name="ai_paste_the_key_first">Cole primeiro a chave de API.</string>
     <string name="ai_choose_a_model">Escolher um modelo</string>
     <string name="ai_tools_title">Ferramentas</string>
     <string name="ai_tools_none_allowed">Nada permitido: este modelo só pode responder</string>
@@ -272,7 +273,6 @@
     <string name="ai_paste_key">Colar chave</string>
     <string name="ai_provider">Fornecedor</string>
     <string name="ai_save">Guardar</string>
-    <string name="ai_save_the_connection_first_then">Guarda primeiro a ligação e depois toca em Testar para confirmares que a chave funciona.</string>
     <string name="ai_sent_ahead_of_every_prompt">Enviada antes de cada pedido feito por esta ligação. A instrução própria de um nó Perguntar à IA é acrescentada a seguir, não a substitui.</string>
     <string name="ai_server_address">Endereço do servidor</string>
     <string name="ai_standing_instruction_optional">Instrução permanente (opcional)</string>

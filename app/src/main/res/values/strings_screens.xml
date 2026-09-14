@@ -289,7 +289,8 @@
     <string name="ai_model_provider_default">%1$s · the provider\'s own model</string>
     <string name="ai_no_models_yet">No models yet. Add one to give macros something to point at.</string>
     <string name="ai_no_models_on_this_account">No models on this account yet.</string>
-    <string name="ai_no_model_to_test">Add a model and save first, then test.</string>
+    <string name="ai_no_model_to_test">Add or finish a model first, then test.</string>
+    <string name="ai_paste_the_key_first">Paste the API key first.</string>
     <string name="ai_choose_a_model">Choose a model</string>
     <string name="ai_tools_title">Tools</string>
     <string name="ai_tools_none_allowed">Nothing allowed — this model can only answer</string>
@@ -315,7 +316,6 @@
     <string name="ai_paste_key">Paste key</string>
     <string name="ai_provider">Provider</string>
     <string name="ai_save">Save</string>
-    <string name="ai_save_the_connection_first_then">Save the connection first, then Test to check the key works.</string>
     <string name="ai_sent_ahead_of_every_prompt">Sent ahead of every prompt through this connection. An Ask AI node\'s own standing instruction is added after it rather than replacing it.</string>
     <string name="ai_server_address">Server address</string>
     <string name="ai_standing_instruction_optional">Standing instruction (optional)</string>

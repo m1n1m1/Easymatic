@@ -21,6 +21,9 @@ section of CLAUDE.md for why.
 
 ## [Unreleased]
 
+### Fixed
+- An AI connection can be tested, and its models listed, before it is saved. A new connection no longer has to be saved, closed and reopened before a model can be chosen or the key checked.
+
 ## [0.1.0-alpha] - 2026-08-30
 code: 100
 

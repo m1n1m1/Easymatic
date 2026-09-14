@@ -305,6 +305,66 @@ class RoutingAiTest {
         assertFalse(reply.error.contains("connection"))
     }
 
+    // ---- the editor's Test button: a connection that is not saved yet ----------
+
+    /**
+     * The whole point of the draft entry: a connection the library has never seen
+     * resolves from the form, passes the key guard on the key in the box, and is
+     * stopped only by what the form actually left blank — here the address, which is
+     * the guard right after the key's. Nothing about it is "no longer exists".
+     */
+    @Test
+    fun `an unsaved connection is answered from the form and not the library`() = runBlocking {
+        val profile = AiModelProfile(id = "draft#p", name = "Model", modelId = "m")
+        val unsaved = AiConnection(
+            id = "",
+            name = "Local",
+            provider = AiProvider.OPENAI_COMPATIBLE,
+            models = listOf(profile),
+        )
+        val reply = RoutingAi(repository()).complete(request(modelRef = profile.id), unsaved, typedKey = "typed")
+        assertTrue(reply.error, reply.error.contains("server address"))
+        assertFalse(reply.error.contains("no longer exists"))
+    }
+
+    /**
+     * The key rule is the screen's own: the box when it has something in it, the stored
+     * key when it does not. A blank box over nothing stored is refused at the key guard
+     * with the "paste" sentence; a typed key gets past it with nothing stored at all; and
+     * once a key is stored the blank box means "leave it alone" and gets past it too.
+     */
+    @Test
+    fun `the key in the box beats the stored one and a blank box falls back to it`() = runBlocking {
+        val repository = repository()
+        val modelRef = repository.withModel("Local", AiProvider.OPENAI_COMPATIBLE, modelId = "m")
+        val stored = repository.connectionForProfile(modelRef)!!
+        val ai = RoutingAi(repository)
+
+        assertTrue(ai.complete(request(modelRef), stored, typedKey = "").error.contains("paste"))
+        assertTrue(ai.complete(request(modelRef), stored, typedKey = " typed ").error.contains("server address"))
+
+        repository.setKey(stored.id, "stored")
+        assertTrue(ai.complete(request(modelRef), stored, typedKey = "").error.contains("server address"))
+    }
+
+    /**
+     * An edited connection that is also on disk answers with the *draft's* profile, not
+     * the stored one — what was typed a moment ago is what is being tested. The profile
+     * is renamed in the draft and left without a model id, so the refusal names the
+     * draft's name and never reaches the network.
+     */
+    @Test
+    fun `an edited connection's own profiles resolve to the draft rather than to disk`() = runBlocking {
+        val repository = repository()
+        val modelRef = repository.withModel("Local", AiProvider.OPENAI_COMPATIBLE, modelId = "")
+        val stored = repository.connectionForProfile(modelRef)!!.copy(baseUrl = "http://192.168.1.5:8000/v1")
+        val edited = stored.copy(models = stored.models.map { it.copy(name = "Renamed") })
+
+        val error = RoutingAi(repository).complete(request(modelRef), edited, typedKey = "k").error
+        assertTrue(error, error.contains("Renamed"))
+        assertTrue(error, error.contains("no model chosen"))
+    }
+
     /**
      * The tool list crosses from the library as text, which is the seam that keeps
      * `engine/` from reaching into `data/`. A profile that is gone answers **blank**

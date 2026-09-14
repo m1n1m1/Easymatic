@@ -246,7 +246,8 @@
     <string name="ai_model_provider_default">%1$s · собственная модель провайдера</string>
     <string name="ai_no_models_yet">Моделей пока нет. Добавьте одну, чтобы макросам было на что ссылаться.</string>
     <string name="ai_no_models_on_this_account">В этой учётной записи пока нет моделей.</string>
-    <string name="ai_no_model_to_test">Сначала добавьте модель и сохраните, затем проверяйте.</string>
+    <string name="ai_no_model_to_test">Сначала добавьте или заполните модель, затем проверяйте.</string>
+    <string name="ai_paste_the_key_first">Сначала вставьте ключ API.</string>
     <string name="ai_choose_a_model">Выберите модель</string>
     <string name="ai_tools_title">Инструменты</string>
     <string name="ai_tools_none_allowed">Ничего не разрешено — эта модель может только отвечать</string>
@@ -272,7 +273,6 @@
     <string name="ai_paste_key">Вставить ключ</string>
     <string name="ai_provider">Провайдер</string>
     <string name="ai_save">Сохранить</string>
-    <string name="ai_save_the_connection_first_then">Сначала сохраните подключение, затем нажмите «Проверить», чтобы убедиться, что ключ работает.</string>
     <string name="ai_sent_ahead_of_every_prompt">Отправляется перед каждым запросом через это подключение. Собственная постоянная инструкция узла «Спросить ИИ» добавляется после неё, а не заменяет её.</string>
     <string name="ai_server_address">Адрес сервера</string>
     <string name="ai_standing_instruction_optional">Постоянная инструкция (необязательно)</string>

@@ -246,7 +246,8 @@
     <string name="ai_model_provider_default">%1$s · 供应商自带的模型</string>
     <string name="ai_no_models_yet">还没有模型。添加一个，宏才有可指向的对象。</string>
     <string name="ai_no_models_on_this_account">此帐户下还没有模型。</string>
-    <string name="ai_no_model_to_test">请先添加模型并保存，然后再测试。</string>
+    <string name="ai_no_model_to_test">请先添加或完成模型，然后再测试。</string>
+    <string name="ai_paste_the_key_first">请先粘贴 API 密钥。</string>
     <string name="ai_choose_a_model">选择模型</string>
     <string name="ai_tools_title">工具</string>
     <string name="ai_tools_none_allowed">未允许任何工具：此模型只能回答</string>
@@ -272,7 +273,6 @@
     <string name="ai_paste_key">粘贴密钥</string>
     <string name="ai_provider">服务商</string>
     <string name="ai_save">保存</string>
-    <string name="ai_save_the_connection_first_then">请先保存连接，再点按“测试”确认密钥可用。</string>
     <string name="ai_sent_ahead_of_every_prompt">通过此连接发出的每个请求前都会先发送它。“询问 AI”节点自身的常驻指令会追加在它之后，而不是取代它。</string>
     <string name="ai_server_address">服务器地址</string>
     <string name="ai_standing_instruction_optional">常驻指令（可选）</string>

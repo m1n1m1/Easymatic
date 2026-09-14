@@ -246,7 +246,8 @@
     <string name="ai_model_provider_default">%1$s · プロバイダー既定のモデル</string>
     <string name="ai_no_models_yet">まだモデルがありません。マクロから指定できるように一つ追加してください。</string>
     <string name="ai_no_models_on_this_account">このアカウントにはまだモデルがありません。</string>
-    <string name="ai_no_model_to_test">先にモデルを追加して保存してからテストしてください。</string>
+    <string name="ai_no_model_to_test">先にモデルを追加または完成させてからテストしてください。</string>
+    <string name="ai_paste_the_key_first">先に API キーを貼り付けてください。</string>
     <string name="ai_choose_a_model">モデルを選ぶ</string>
     <string name="ai_tools_title">ツール</string>
     <string name="ai_tools_none_allowed">何も許可されていません—このモデルは答えることしかできません</string>
@@ -272,7 +273,6 @@
     <string name="ai_paste_key">キーを貼り付け</string>
     <string name="ai_provider">プロバイダー</string>
     <string name="ai_save">保存</string>
-    <string name="ai_save_the_connection_first_then">先に接続を保存してから、「テスト」でキーが使えるか確認してください。</string>
     <string name="ai_sent_ahead_of_every_prompt">この接続を通るすべてのリクエストの前に送られます。「AI に質問」ノード自身の常設指示は、これを置き換えるのではなく後ろに追加されます。</string>
     <string name="ai_server_address">サーバーアドレス</string>
     <string name="ai_standing_instruction_optional">常設指示（任意）</string>

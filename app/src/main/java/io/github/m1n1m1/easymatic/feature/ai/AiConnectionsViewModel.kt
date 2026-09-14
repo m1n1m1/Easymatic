@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import io.github.m1n1m1.easymatic.core.service.Ai
 import io.github.m1n1m1.easymatic.core.service.AiModel
 import io.github.m1n1m1.easymatic.core.service.AiRequest
 import io.github.m1n1m1.easymatic.core.service.CallableMacro
@@ -17,6 +16,7 @@ import io.github.m1n1m1.easymatic.data.ai.AiModelCatalog
 import io.github.m1n1m1.easymatic.data.ai.OnDeviceDownload
 import io.github.m1n1m1.easymatic.data.ai.OnDeviceSetup
 import io.github.m1n1m1.easymatic.data.ai.OnDeviceStatus
+import io.github.m1n1m1.easymatic.data.ai.RoutingAi
 import io.github.m1n1m1.easymatic.data.ai.AiModelInfo
 import io.github.m1n1m1.easymatic.domain.model.AiBaseUrl
 import io.github.m1n1m1.easymatic.domain.model.AiConnection
@@ -112,9 +112,13 @@ data class AiConnectionDraft(
      */
     val canSave: Boolean
         get() = name.isNotBlank() &&
-            (!provider.needsKey || key.isNotBlank() || (!isNew && !needsKey)) &&
+            !keyMissing &&
             (!provider.needsBaseUrl || AiBaseUrl.parse(baseUrl) != null) &&
             models.all { it.isComplete(provider) }
+
+    /** Whether neither the box nor storage holds a key. One reading for Save, Test and List models. */
+    val keyMissing: Boolean
+        get() = provider.needsKey && key.isBlank() && (isNew || needsKey)
 
     /** Whether the address, as typed, would send an API key unencrypted. */
     val cleartext: Boolean get() = AiBaseUrl.isCleartext(baseUrl)
@@ -177,11 +181,12 @@ data class AiConnectionsUiState(
  * standalone screen is showing, since "paste the key again" is a fix somebody may
  * reach for from either place.
  *
- * **The test button is why this holds an [Ai] at all**, and it earns its place: a
+ * **The test button is why this holds a [RoutingAi] at all**, and it earns its place: a
  * mistyped or already-revoked key is otherwise discovered by a macro failing
  * silently at three in the morning, which is exactly the failure this whole
  * integration is meant not to have. It sends the shortest prompt that still proves
- * the round trip — the key, the network, the model and the parsing.
+ * the round trip — the key, the network, the model and the parsing. The concrete class
+ * rather than `Ai`, because testing an unsaved connection is kept off the engine's interface.
  *
  * The [AiModelCatalog] is here for the same shape of reason and a different need:
  * naming a model is choosing an identifier, and the app's standing rule is that an
@@ -190,7 +195,7 @@ data class AiConnectionsUiState(
 @Suppress("TooManyFunctions") // One member per thing the form does; the editor's fields set the count.
 class AiConnectionsViewModel(
     private val repository: AiConnectionRepository,
-    private val ai: Ai,
+    private val ai: RoutingAi,
     private val catalog: AiModelCatalog,
     /**
      * The on-device model's status and download, for the one provider that has them.
@@ -453,10 +458,8 @@ class AiConnectionsViewModel(
     /**
      * Asks the connection's own server which models its key may use.
      *
-     * Reads through what is **stored** rather than what is in the form, exactly as
-     * [test] does and for the same reason: the key is only ever in the repository,
-     * and a listing that used an unsaved address would answer about a server the
-     * macro will not be talking to.
+     * Reads the form as it stands, as [test] does: the listing is what finishes a new
+     * connection, so it has to work before Save. The key is the box, or the stored one.
      *
      * A failure is a message and nothing more. Several perfectly good servers do not
      * serve a listing at all, so the field stays editable and the name can be typed
@@ -464,10 +467,13 @@ class AiConnectionsViewModel(
      */
     fun loadModels() {
         val draft = state.value.draft ?: return
-        if (draft.id.isBlank()) return
+        if (draft.keyMissing) {
+            editDraft { it.copy(message = appContext.getString(R.string.ai_paste_the_key_first), failed = true) }
+            return
+        }
         editDraft { it.copy(busy = true, message = appContext.getString(R.string.ai_loading_models), failed = false) }
         viewModelScope.launch {
-            val models = catalog.list(draft.id)
+            val models = catalog.list(draftConnection(draft), typedKey = draft.key)
             editDraft {
                 it.copy(
                     busy = false,
@@ -543,29 +549,34 @@ class AiConnectionsViewModel(
     }
 
     /**
-     * Asks the model the cheapest question there is, through the connection being
-     * edited, and reports what came back.
+     * Asks the model the cheapest question there is, through the connection as the form
+     * has it, and reports what came back. It sends what Save would store and writes nothing;
+     * going through what *was* stored forced a save-close-reopen before a first test.
      *
      * The reply's *text* is shown rather than a bare tick, because the useful
      * failure is the one where everything succeeds and the answer is nonsense — and
      * because seeing the model actually say something is what makes the feature
      * believable before any macro has been built on it.
      */
-    @Suppress("ReturnCount") // Nothing to test, nothing saved, no model — three distinct refusals.
+    @Suppress("ReturnCount") // Nothing to test, no finished model, no key — three distinct refusals.
     fun test() {
         val draft = state.value.draft ?: return
-        if (draft.id.isBlank()) return
-        // Through the **stored** first model, for the reason the test exists at all: a
-        // request built from the form would prove a route no macro will ever take.
-        val modelRef = repository.get(draft.id)?.models?.firstOrNull()?.id
-        if (modelRef == null) {
+        // The first complete model: an unfinished row could not be saved, so it proves nothing.
+        val profile = draft.models.firstOrNull { it.isComplete(draft.provider) }
+        if (profile == null) {
             editDraft { it.copy(message = appContext.getString(R.string.ai_no_model_to_test), failed = true) }
+            return
+        }
+        if (draft.keyMissing) {
+            editDraft { it.copy(message = appContext.getString(R.string.ai_paste_the_key_first), failed = true) }
             return
         }
         editDraft { it.copy(busy = true, message = appContext.getString(R.string.ai_asking_the_model), failed = false) }
         viewModelScope.launch {
             val reply = ai.complete(
-                AiRequest(modelRef = modelRef, prompt = TEST_PROMPT, maxOutputTokens = TEST_MAX_TOKENS),
+                AiRequest(modelRef = profile.id, prompt = TEST_PROMPT, maxOutputTokens = TEST_MAX_TOKENS),
+                unsaved = draftConnection(draft),
+                typedKey = draft.key,
             )
             editDraft {
                 it.copy(
@@ -584,6 +595,10 @@ class AiConnectionsViewModel(
     private fun editDraft(transform: (AiConnectionDraft) -> AiConnectionDraft) {
         state.value.draft?.let { state.value = state.value.copy(draft = transform(it)) }
     }
+
+    /** The connection exactly as [save] would write it, through the same [applyTo], without writing it. */
+    private fun draftConnection(draft: AiConnectionDraft): AiConnection =
+        draft.applyTo(repository.get(draft.id) ?: AiConnection(id = draft.id, name = draft.name))
 
     /**
      * A fresh profile, named after the tier it starts on.
@@ -621,7 +636,7 @@ class AiConnectionsViewModel(
         @Suppress("LongParameterList") // Four collaborators and a context; a holder would rename them.
         fun factory(
             repository: AiConnectionRepository,
-            ai: Ai,
+            ai: RoutingAi,
             catalog: AiModelCatalog,
             onDevice: OnDeviceSetup,
             appContext: Context,

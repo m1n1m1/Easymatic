@@ -246,7 +246,8 @@
     <string name="ai_model_provider_default">%1$s · le modèle du fournisseur</string>
     <string name="ai_no_models_yet">Aucun modèle pour l\'instant. Ajoutez-en un pour que les macros aient quelque chose à viser.</string>
     <string name="ai_no_models_on_this_account">Aucun modèle sur ce compte pour l\'instant.</string>
-    <string name="ai_no_model_to_test">Ajoutez un modèle et enregistrez d\'abord, puis testez.</string>
+    <string name="ai_no_model_to_test">Ajoutez ou complétez d\'abord un modèle, puis testez.</string>
+    <string name="ai_paste_the_key_first">Collez d\'abord la clé API.</string>
     <string name="ai_choose_a_model">Choisir un modèle</string>
     <string name="ai_tools_title">Outils</string>
     <string name="ai_tools_none_allowed">Rien d\'autorisé : ce modèle peut seulement répondre</string>
@@ -272,7 +273,6 @@
     <string name="ai_paste_key">Coller la clé</string>
     <string name="ai_provider">Fournisseur</string>
     <string name="ai_save">Enregistrer</string>
-    <string name="ai_save_the_connection_first_then">Enregistre d\'abord la connexion, puis appuie sur Tester pour vérifier que la clé fonctionne.</string>
     <string name="ai_sent_ahead_of_every_prompt">Envoyée avant chaque requête passant par cette connexion. L\'instruction propre d\'un nœud Demander à l\'IA s\'ajoute après, elle ne la remplace pas.</string>
     <string name="ai_server_address">Adresse du serveur</string>
     <string name="ai_standing_instruction_optional">Instruction permanente (facultatif)</string>

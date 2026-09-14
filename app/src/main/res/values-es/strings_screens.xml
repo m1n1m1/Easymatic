@@ -246,7 +246,8 @@
     <string name="ai_model_provider_default">%1$s · el modelo propio del proveedor</string>
     <string name="ai_no_models_yet">Todavía no hay modelos. Añade uno para que las macros tengan a qué apuntar.</string>
     <string name="ai_no_models_on_this_account">Todavía no hay modelos en esta cuenta.</string>
-    <string name="ai_no_model_to_test">Añade un modelo y guarda primero; después prueba.</string>
+    <string name="ai_no_model_to_test">Añade o completa un modelo primero; después prueba.</string>
+    <string name="ai_paste_the_key_first">Pega primero la clave de API.</string>
     <string name="ai_choose_a_model">Elegir un modelo</string>
     <string name="ai_tools_title">Herramientas</string>
     <string name="ai_tools_none_allowed">Nada permitido: este modelo solo puede responder</string>
@@ -272,7 +273,6 @@
     <string name="ai_paste_key">Pegar clave</string>
     <string name="ai_provider">Proveedor</string>
     <string name="ai_save">Guardar</string>
-    <string name="ai_save_the_connection_first_then">Guarda primero la conexión y luego pulsa Probar para comprobar que la clave funciona.</string>
     <string name="ai_sent_ahead_of_every_prompt">Se envía antes de cada petición por esta conexión. La instrucción propia de un nodo Preguntar a la IA se añade después, no la sustituye.</string>
     <string name="ai_server_address">Dirección del servidor</string>
     <string name="ai_standing_instruction_optional">Instrucción permanente (opcional)</string>

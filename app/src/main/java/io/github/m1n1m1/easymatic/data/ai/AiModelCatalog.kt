@@ -2,6 +2,7 @@ package io.github.m1n1m1.easymatic.data.ai
 
 import io.github.m1n1m1.easymatic.data.AiConnectionRepository
 import io.github.m1n1m1.easymatic.domain.model.AiBaseUrl
+import io.github.m1n1m1.easymatic.domain.model.AiConnection
 import io.github.m1n1m1.easymatic.domain.model.isOnDevice
 import io.github.m1n1m1.easymatic.domain.model.needsBaseUrl
 
@@ -30,8 +31,9 @@ import io.github.m1n1m1.easymatic.domain.model.needsBaseUrl
  * read-only field would make those unreachable. The list is a suggestion; the answer
  * set is every model that server will accept.
  *
- * The plaintext key still never leaves `data/`: this takes an id, opens the key
- * itself, and hands back strings.
+ * It reads the connection as the editor has it, not as stored — a new OpenRouter
+ * connection cannot be saved until a model is named, so the listing has to work first.
+ * The plaintext key still never travels upward out of `data/`.
  */
 class AiModelCatalog internal constructor(
     private val connections: AiConnectionRepository,
@@ -40,16 +42,15 @@ class AiModelCatalog internal constructor(
 ) {
 
     /**
-     * The models [connectionId] can reach, or a sentence saying why not.
+     * The models [connection] can reach with [typedKey] — or, when that is blank, with
+     * its stored key — or a sentence saying why not.
      *
      * Nothing throws, and a failure is worded rather than typed, because every way
      * this fails ends in the same place: the field stays editable and the user types
      * the name themselves.
      */
     @Suppress("ReturnCount") // Each exit names a distinct thing to fix; folding them loses the diagnosis.
-    suspend fun list(connectionId: String): AiModels {
-        val connection = connections.get(connectionId)
-            ?: return AiModels(error = "This connection no longer exists")
+    suspend fun list(connection: AiConnection, typedKey: String): AiModels {
         // The phone has exactly one model and no listing to serve, so the "list" is the
         // name it answers with. It stays a list rather than becoming a separate call
         // because the chooser above it wants a list either way, and a one-row chooser is
@@ -62,8 +63,15 @@ class AiModelCatalog internal constructor(
                 AiModels(models = listOf(AiModelInfo(id = name)))
             }
         }
-        val key = connections.apiKey(connectionId)
-            ?: return AiModels(error = "The key for this connection could not be read")
+        // Never had a key versus has one this phone cannot read: paste, versus paste again.
+        val key = connections.keyFor(connection, typedIn = typedKey)
+            ?: return AiModels(
+                error = if (connection.secret.isBlank()) {
+                    "Paste the API key first, then load the models"
+                } else {
+                    "The key for this connection could not be read"
+                },
+            )
         if (connection.provider.needsBaseUrl && AiBaseUrl.parse(connection.baseUrl) == null) {
             return AiModels(error = "Add the server address first, then load the models")
         }

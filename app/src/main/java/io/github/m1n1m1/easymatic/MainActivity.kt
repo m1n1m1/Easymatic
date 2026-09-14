@@ -140,7 +140,7 @@ class MainActivity : ComponentActivity() {
     private val aiConnectionsViewModel: AiConnectionsViewModel by viewModels {
         AiConnectionsViewModel.factory(
             repository = ServiceLocator.aiConnectionRepository,
-            ai = ServiceLocator.executionContext.ai,
+            ai = ServiceLocator.routingAi,
             catalog = ServiceLocator.aiModelCatalog,
             onDevice = ServiceLocator.onDeviceSetup,
             appContext = applicationContext,

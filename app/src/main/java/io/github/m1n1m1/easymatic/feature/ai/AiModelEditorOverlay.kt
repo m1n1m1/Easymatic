@@ -222,11 +222,13 @@ private fun ModelIdField(
                 colors = fieldColors(),
                 modifier = Modifier.weight(1f),
             )
-            OutlinedButton(onClick = viewModel::loadModels, enabled = !draft.busy && !draft.isNew) {
+            // Works on an unsaved connection: a new OpenRouter connection cannot be
+            // saved until a model is named, and this is how one is named.
+            OutlinedButton(onClick = viewModel::loadModels, enabled = !draft.busy) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.FormatListBulleted,
                     contentDescription = stringResource(R.string.ai_list_models),
-                    tint = if (draft.isNew) EditorColors.textSecondary else EditorColors.textPrimary,
+                    tint = EditorColors.textPrimary,
                     modifier = Modifier.size(18.dp),
                 )
             }
