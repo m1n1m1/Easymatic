@@ -1,5 +1,6 @@
 package io.github.m1n1m1.easymatic.data.plugin
 
+import io.github.m1n1m1.easymatic.data.ReloadableLibrary
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
@@ -36,7 +37,7 @@ private data class EnabledPlugins(val plugins: List<EnabledPlugin> = emptyList()
  * updates on its own schedule and a stale cached declaration is a node that renders
  * perfectly and calls something that is no longer there.
  */
-class PluginRepository(filesDir: File) {
+class PluginRepository(filesDir: File) : ReloadableLibrary {
 
     private val file = File(File(filesDir, DIRECTORY).apply { mkdirs() }, FILE_NAME)
     private val json = Json { prettyPrint = true; ignoreUnknownKeys = true }
@@ -66,6 +67,11 @@ class PluginRepository(filesDir: File) {
      */
     fun disable(packageName: String) {
         write(state.value.filterNot { it.packageName == packageName })
+    }
+
+    /** Re-reads the file after a restore replaced it — see [ReloadableLibrary]. */
+    override suspend fun reload() {
+        state.value = read()
     }
 
     private fun write(plugins: List<EnabledPlugin>) {

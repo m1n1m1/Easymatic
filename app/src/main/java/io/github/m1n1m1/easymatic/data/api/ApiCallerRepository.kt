@@ -1,5 +1,6 @@
 package io.github.m1n1m1.easymatic.data.api
 
+import io.github.m1n1m1.easymatic.data.ReloadableLibrary
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
@@ -41,7 +42,7 @@ private data class ApprovedCallers(val callers: List<ApprovedCaller> = emptyList
  * all — approval is package-wide and the reachable set is whatever `trigger.api` nodes
  * exist right now — so there is no stale copy of anything to go wrong.
  */
-class ApiCallerRepository(filesDir: File) {
+class ApiCallerRepository(filesDir: File) : ReloadableLibrary {
 
     private val file = File(File(filesDir, DIRECTORY).apply { mkdirs() }, FILE_NAME)
     private val json = Json { prettyPrint = true; ignoreUnknownKeys = true }
@@ -73,6 +74,11 @@ class ApiCallerRepository(filesDir: File) {
      */
     fun revoke(packageName: String) {
         write(state.value.filterNot { it.packageName == packageName })
+    }
+
+    /** Re-reads the file after a restore replaced it — see [ReloadableLibrary]. */
+    override suspend fun reload() {
+        state.value = read()
     }
 
     private fun write(callers: List<ApprovedCaller>) {

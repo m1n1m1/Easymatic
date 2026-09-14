@@ -24,7 +24,7 @@ private data class AssistantSettings(val modelRef: String = "")
  * Deleting the connection does not need to reach in here — the picker resolves the id
  * on every open, and one that names nothing renders as nothing chosen.
  */
-class AssistantSettingsRepository(filesDir: File) {
+class AssistantSettingsRepository(filesDir: File) : ReloadableLibrary {
 
     private val file = File(File(filesDir, DIRECTORY).apply { mkdirs() }, FILE_NAME)
     private val json = Json { ignoreUnknownKeys = true }
@@ -37,6 +37,11 @@ class AssistantSettingsRepository(filesDir: File) {
     fun choose(modelRef: String) {
         state.value = modelRef
         runCatching { file.writeText(json.encodeToString(AssistantSettings(modelRef))) }
+    }
+
+    /** Re-reads the file after a restore replaced it — see [ReloadableLibrary]. */
+    override suspend fun reload() {
+        state.value = read().modelRef
     }
 
     /**

@@ -1,5 +1,6 @@
 package io.github.m1n1m1.easymatic.data
 
+import io.github.m1n1m1.easymatic.data.security.EscrowedLibrary
 import io.github.m1n1m1.easymatic.data.security.Secrets
 import io.github.m1n1m1.easymatic.domain.model.HaEntity
 import io.github.m1n1m1.easymatic.domain.model.HaService
@@ -42,7 +43,9 @@ import kotlinx.serialization.json.Json
 class SmartHomeHubRepository(
     directory: File,
     private val secrets: Secrets,
-) {
+) : ReloadableLibrary, EscrowedLibrary {
+
+    override val escrowName: String = ESCROW_NAME
 
     private val json = Json {
         prettyPrint = true
@@ -276,6 +279,41 @@ class SmartHomeHubRepository(
         get(id)?.let { upsert(it.copy(topics = topics, resourcesRefreshedAtEpochMs = refreshedAtEpochMs)) }
     }
 
+    /** Re-reads the file after a restore replaced it — see [ReloadableLibrary]. */
+    override suspend fun reload() {
+        mutex.withLock { cache.value = withContext(Dispatchers.IO) { readFile() } }
+    }
+
+    /**
+     * For the escrow only — see [EscrowedLibrary]. A hub holds up to three sealed
+     * fields, so the key is the hub id for [SmartHomeHub.secret] and the id plus a
+     * suffix for the stream key and the refresh token.
+     */
+    override fun openSecrets(): Map<String, String> = buildMap {
+        for (hub in list()) {
+            applicationKey(hub.id)?.let { put(hub.id, it) }
+            hub.streamSecret.takeIf { it.isNotBlank() }?.let(secrets::open)?.let { put(hub.id + STREAM_SUFFIX, it) }
+            refreshToken(hub.id)?.let { put(hub.id + REFRESH_SUFFIX, it) }
+        }
+    }
+
+    /** A field this phone will not seal keeps what it had, on [setKeys]' rule. */
+    override suspend fun sealSecrets(plaintexts: Map<String, String>) {
+        for (hub in list()) {
+            val main = plaintexts[hub.id]?.let(secrets::seal)
+            val stream = plaintexts[hub.id + STREAM_SUFFIX]?.let(secrets::seal)
+            val refresh = plaintexts[hub.id + REFRESH_SUFFIX]?.let(secrets::seal)
+            if (main == null && stream == null && refresh == null) continue
+            upsert(
+                hub.copy(
+                    secret = main ?: hub.secret,
+                    streamSecret = stream ?: hub.streamSecret,
+                    refreshSecret = refresh ?: hub.refreshSecret,
+                ),
+            )
+        }
+    }
+
     private suspend fun mutate(transform: (List<SmartHomeHub>) -> List<SmartHomeHub>) {
         mutex.withLock {
             val updated = transform(cache.value).sortedBy { it.name.lowercase() }
@@ -296,5 +334,8 @@ class SmartHomeHubRepository(
     private companion object {
         const val DIR_NAME = "smarthome"
         const val FILE_NAME = "hubs.json"
+        const val ESCROW_NAME = "smarthome"
+        const val STREAM_SUFFIX = "#stream"
+        const val REFRESH_SUFFIX = "#refresh"
     }
 }

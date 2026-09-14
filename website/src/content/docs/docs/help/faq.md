@@ -110,8 +110,10 @@ discarded rather than migrated — so back up anything irreplaceable.
 
 ## Where are macros stored, and can I back them up?
 
-Each workflow is a JSON file in the app's private storage. There is no export screen yet;
-`adb backup` or a rooted copy of the app's data directory is the current answer.
+Each workflow is a JSON file in the app's private storage. **Setup → Backup and restore**
+writes every macro and library to one file and reads one back, and the same set is part
+of Android's own backup, so a new phone set up from the old one brings them along. See
+[Backup and restore](/docs/system/backup/).
 
 ## Can I translate it?
 

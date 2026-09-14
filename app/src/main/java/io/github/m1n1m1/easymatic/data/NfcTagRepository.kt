@@ -24,7 +24,7 @@ import kotlinx.serialization.json.Json
  * `create` taking a name and minting an id — [upsert] is the whole write API, and
  * scanning a tag that is already saved updates it in place.
  */
-class NfcTagRepository(directory: File) {
+class NfcTagRepository(directory: File) : ReloadableLibrary {
 
     private val json = Json {
         prettyPrint = true
@@ -58,6 +58,11 @@ class NfcTagRepository(directory: File) {
     /** Removes the tag with [uid]; a no-op when it does not exist. */
     suspend fun delete(uid: String) {
         mutate { current -> current.filterNot { it.uid == uid } }
+    }
+
+    /** Re-reads the file after a restore replaced it — see [ReloadableLibrary]. */
+    override suspend fun reload() {
+        mutex.withLock { cache.value = withContext(Dispatchers.IO) { readFile() } }
     }
 
     private suspend fun mutate(transform: (List<NfcTag>) -> List<NfcTag>) {

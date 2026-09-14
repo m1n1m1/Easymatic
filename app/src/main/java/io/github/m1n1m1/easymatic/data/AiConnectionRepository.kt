@@ -1,6 +1,7 @@
 package io.github.m1n1m1.easymatic.data
 
 import io.github.m1n1m1.easymatic.core.service.AiModel
+import io.github.m1n1m1.easymatic.data.security.EscrowedLibrary
 import io.github.m1n1m1.easymatic.data.security.Secrets
 import io.github.m1n1m1.easymatic.domain.model.AiConnection
 import io.github.m1n1m1.easymatic.domain.model.AiModelProfile
@@ -41,7 +42,9 @@ import kotlinx.serialization.json.Json
 class AiConnectionRepository(
     directory: File,
     private val secrets: Secrets,
-) {
+) : ReloadableLibrary, EscrowedLibrary {
+
+    override val escrowName: String = ESCROW_NAME
 
     private val json = Json {
         prettyPrint = true
@@ -146,6 +149,23 @@ class AiConnectionRepository(
         if (connection == null || sealed == null) return false
         upsert(connection.copy(secret = sealed))
         return true
+    }
+
+    /**
+     * Re-reads the file after a restore replaced it — see [ReloadableLibrary]. The read
+     * runs the profile upconvert against the restored marker, which is why a restore
+     * replaces this whole directory rather than one file in it.
+     */
+    override suspend fun reload() {
+        mutex.withLock { cache.value = withContext(Dispatchers.IO) { readFile() } }
+    }
+
+    /** For the escrow only — see [EscrowedLibrary]. Keyed by connection id. */
+    override fun openSecrets(): Map<String, String> =
+        list().mapNotNull { connection -> apiKey(connection.id)?.let { connection.id to it } }.toMap()
+
+    override suspend fun sealSecrets(plaintexts: Map<String, String>) {
+        for ((id, plaintext) in plaintexts) setKey(id, plaintext)
     }
 
     private suspend fun mutate(transform: (List<AiConnection>) -> List<AiConnection>) {
@@ -275,5 +295,6 @@ class AiConnectionRepository(
         const val LEGACY_FILE_NAME = "key.json"
         const val PROFILES_MARKER_NAME = ".profiles"
         const val LEGACY_NAME = "Gemini"
+        const val ESCROW_NAME = "ai"
     }
 }

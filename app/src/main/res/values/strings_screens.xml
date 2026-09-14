@@ -731,6 +731,58 @@
     <string name="setup_privacy_policy">Privacy policy</string>
     <string name="setup_privacy_policy_subtitle">What leaves your phone, and where it goes</string>
 
+    <!-- The Backup and restore screen and its Setup row. backup_confirm_body takes the
+         macro count, the date the file was saved and the app version that wrote it. -->
+    <string name="setup_section_data">Data</string>
+    <string name="setup_backup_subtitle">Save your macros and settings to a file, or bring them back</string>
+    <string name="backup_title">Backup and restore</string>
+    <string name="backup_back">Back</string>
+    <string name="backup_holds_title">What a backup holds</string>
+    <string name="backup_holds_body">Every macro, your global variables and their values, and every library: places, NFC tags, mail accounts, smart home hubs, AI connections, and which plugins and apps you have allowed.</string>
+    <string name="backup_not_included_body">Not included: the run log, files your macros wrote into Easymatic\'s own folder, and unfinished recordings. Folder access is granted on the phone and is not in the file.</string>
+    <string name="backup_secrets_title">Passwords and keys</string>
+    <string name="backup_secrets_body">Every backup file is encrypted with a password you choose when you make it. Nothing in it can be read without that password, and after a restore it puts every mail password, hub key and AI key back. Android\'s own backup carries the credentials under the password you last used, so set one here if you rely on Android\'s backup alone.</string>
+    <string name="backup_android_title">Android backs this up too</string>
+    <string name="backup_android_body">The same set is part of Android\'s own backup and device-to-device transfer, so a new phone set up from this one brings your macros along.</string>
+    <string name="backup_save">Back up to a file</string>
+    <string name="backup_restore">Restore from a file</string>
+    <string name="backup_confirm_title">Restore this backup?</string>
+    <string name="backup_confirm_body">%1$d macros, saved %2$s with Easymatic %3$s.</string>
+    <string name="backup_confirm_effect">Your libraries and settings will be replaced by the file\'s. Macros are added; a macro that already exists here is kept, and the file\'s version is added as a copy, switched off.</string>
+    <string name="backup_confirm_action">Restore</string>
+    <string name="backup_cancel">Cancel</string>
+    <string name="backup_ok">OK</string>
+    <string name="backup_saved_title">Backup saved</string>
+    <string name="backup_saved_body">%1$d macros were written to the file.</string>
+    <string name="backup_save_failed">Couldn\'t write that file.</string>
+    <string name="backup_restored_title">Backup restored</string>
+    <string name="backup_restored_body">%1$d macros added, %2$d of them as copies. Libraries and settings were replaced.</string>
+    <string name="backup_restored_secrets">Mail accounts, hubs and AI connections from another phone need their passwords and keys entered again.</string>
+    <string name="backup_unreadable">That file isn\'t an Easymatic backup.</string>
+    <string name="backup_too_new">This backup was made by a newer version of Easymatic. Update the app to restore it.</string>
+    <string name="backup_too_old">This backup was made by an older version of Easymatic and can\'t be restored.</string>
+    <string name="backup_restore_failed">The backup couldn\'t be restored. Nothing was changed.</string>
+    <!-- The backup password: the card's two other states, its buttons, and the two dialogs. -->
+    <string name="backup_password_set_body">Passwords, hub keys and AI keys are kept under your backup password, in every backup file and in Android\'s own backup. After a restore, that one password puts them all back.</string>
+    <string name="backup_password_locked_body">Passwords and keys from a backup are locked. Enter the backup password that was set when the backup was made to unlock them all at once.</string>
+    <string name="backup_password_set">Set backup password</string>
+    <string name="backup_password_change">Change password</string>
+    <string name="backup_password_enter">Enter password</string>
+    <string name="backup_password_dialog_title">Backup password</string>
+    <string name="backup_password_field">Password</string>
+    <string name="backup_password_repeat">Repeat password</string>
+    <string name="backup_password_mismatch">The two passwords differ.</string>
+    <string name="backup_password_wrong">That is not the backup password.</string>
+    <string name="backup_password_save">Save</string>
+    <string name="backup_password_unlock">Unlock</string>
+    <string name="backup_password_later">Later</string>
+    <string name="backup_unlock_prompt_body">Passwords and keys restored from a backup are locked. Enter your backup password to unlock them all at once.</string>
+    <string name="backup_restored_locked">Enter your backup password to unlock the restored passwords and keys.</string>
+    <string name="backup_confirm_password">Enter the password this backup was made with.</string>
+    <string name="backup_password_continue">Continue</string>
+    <string name="backup_password_unrecoverable">At least %1$d characters. A forgotten password cannot be recovered: the file cannot be read without it.</string>
+    <string name="backup_password_too_short">Use at least %1$d characters.</string>
+
     <!-- The workflow list's search bar. -->
     <string name="workflowlist_search_placeholder">Search macros</string>
     <string name="workflowlist_clear_search">Clear search</string>

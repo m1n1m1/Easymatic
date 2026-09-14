@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.SettingsBackupRestore
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Translate
@@ -84,6 +85,7 @@ fun SetupScreen(
     onOpenPermissions: () -> Unit,
     onOpenPlugins: () -> Unit,
     onOpenAppAccess: () -> Unit,
+    onOpenBackup: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -215,6 +217,19 @@ fun SetupScreen(
                     titleRes = R.string.workflowlist_app_access,
                     subtitleRes = R.string.setup_app_access_subtitle,
                     onClick = onOpenAppAccess,
+                )
+            }
+
+            item { SectionHeader(R.string.setup_section_data) }
+            item {
+                // Neither a Library (nothing a macro refers to by id) nor System (this app
+                // decides it, the phone does not): the one row about the app's own data as
+                // a whole, so it gets a section of its own, as About does.
+                SetupRow(
+                    icon = Icons.Filled.SettingsBackupRestore,
+                    titleRes = R.string.backup_title,
+                    subtitleRes = R.string.setup_backup_subtitle,
+                    onClick = onOpenBackup,
                 )
             }
 

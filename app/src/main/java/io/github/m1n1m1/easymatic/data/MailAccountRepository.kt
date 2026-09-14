@@ -1,6 +1,7 @@
 package io.github.m1n1m1.easymatic.data
 
 import io.github.m1n1m1.easymatic.data.mail.MailSecrets
+import io.github.m1n1m1.easymatic.data.security.EscrowedLibrary
 import io.github.m1n1m1.easymatic.domain.model.MailAccount
 import java.io.File
 import java.util.UUID
@@ -38,10 +39,13 @@ import kotlinx.serialization.json.Json
  * device has forgotten degrades to "type your password again" instead of taking
  * `Application.onCreate` down with it.
  */
+@Suppress("TooManyFunctions") // One member per thing the library stores or updates; the model sets the count.
 class MailAccountRepository(
     directory: File,
     private val secrets: MailSecrets,
-) {
+) : ReloadableLibrary, EscrowedLibrary {
+
+    override val escrowName: String = ESCROW_NAME
 
     private val json = Json {
         prettyPrint = true
@@ -126,6 +130,19 @@ class MailAccountRepository(
         return true
     }
 
+    /** Re-reads the file after a restore replaced it — see [ReloadableLibrary]. */
+    override suspend fun reload() {
+        mutex.withLock { cache.value = withContext(Dispatchers.IO) { readFile() } }
+    }
+
+    /** For the escrow only — see [EscrowedLibrary]. Keyed by account id. */
+    override fun openSecrets(): Map<String, String> =
+        list().mapNotNull { account -> password(account.id)?.let { account.id to it } }.toMap()
+
+    override suspend fun sealSecrets(plaintexts: Map<String, String>) {
+        for ((id, plaintext) in plaintexts) setPassword(id, plaintext)
+    }
+
     private suspend fun mutate(transform: (List<MailAccount>) -> List<MailAccount>) {
         mutex.withLock {
             val updated = transform(cache.value).sortedBy { it.name.lowercase() }
@@ -146,5 +163,6 @@ class MailAccountRepository(
     private companion object {
         const val DIR_NAME = "mail"
         const val FILE_NAME = "accounts.json"
+        const val ESCROW_NAME = "mail"
     }
 }

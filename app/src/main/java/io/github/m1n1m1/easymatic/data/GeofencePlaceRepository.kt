@@ -31,7 +31,7 @@ import kotlinx.serialization.json.Json
  * A missing or corrupt file decodes to an empty library rather than throwing —
  * losing the places is bad, but crashing the app on startup is worse.
  */
-class GeofencePlaceRepository(directory: File) {
+class GeofencePlaceRepository(directory: File) : ReloadableLibrary {
 
     private val json = Json {
         prettyPrint = true
@@ -93,6 +93,11 @@ class GeofencePlaceRepository(directory: File) {
             address = address,
         ),
     )
+
+    /** Re-reads the file after a restore replaced it — see [ReloadableLibrary]. */
+    override suspend fun reload() {
+        mutex.withLock { cache.value = withContext(Dispatchers.IO) { readFile() } }
+    }
 
     /**
      * Applies [transform] to the library and rewrites the file. Serialised by

@@ -13,9 +13,9 @@ import javax.crypto.spec.GCMParameterSpec
  * Seals a credential, so the JSON on disk holds ciphertext and nothing else.
  *
  * **What this defends against**, which is not nothing: the app's own files are
- * backed up. `android:allowBackup` is on and the backup rules are empty, so
- * everything under `filesDir` goes to cloud backup as it stands — a plaintext
- * password file would be uploaded to Google Drive. Sealing makes that copy, and an
+ * backed up. `android:allowBackup` is on and the backup rules include every library
+ * file (`BackupContents`), so each of them goes to cloud backup as it stands — a
+ * plaintext password file would be uploaded to Google Drive. Sealing makes that copy, and an
  * `adb backup`, and a device-to-device transfer, and a forensic image of the data
  * partition, all worthless: the key is generated inside the AndroidKeyStore, is
  * non-exportable, and on every device this app targets lives in a TEE the kernel

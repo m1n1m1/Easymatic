@@ -43,6 +43,7 @@ import java.util.concurrent.ConcurrentHashMap
  * on whatever dispatcher their macro is on, and read synchronously by
  * `value.variable` on the pull side of a different one.
  */
+@Suppress("TooManyFunctions") // One member per way a value enters or leaves the store.
 object VariableStore : Variables {
 
     private val values = ConcurrentHashMap<String, String>()
@@ -145,6 +146,20 @@ object VariableStore : Variables {
     fun adoptLegacy(name: String, key: String) {
         val legacy = values.remove(name) ?: return
         values.putIfAbsent(key, legacy)
+        storage?.save { values.toMap() }
+    }
+
+    /**
+     * Replaces every value at once, after a restore rewrote the libraries from outside.
+     *
+     * **Emits no change event**, deliberately, and this is the line someone will later
+     * want to "fix": a restore is not a macro writing a variable, and firing
+     * `trigger.variable_change` on every armed macro mid-restore would run them against
+     * half-replaced libraries. The re-arm that follows a restore re-reads everything.
+     */
+    fun replaceAll(replacement: Map<String, String>) {
+        values.clear()
+        values.putAll(replacement)
         storage?.save { values.toMap() }
     }
 

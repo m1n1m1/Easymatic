@@ -1,19 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+    Android 12+ backup rules (android:dataExtractionRules), for cloud backup and for
+    device-to-device transfer alike. backup_rules.xml is the pre-12 spelling of the
+    same list.
+
+    Include-only, on purpose: the list is domain/backup/BackupContents.kt, and
+    BackupContentsTest pins both sections of this file to it.
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <include domain="file" path="workflows"/>
+        <include domain="file" path="variables.json"/>
+        <include domain="file" path="variables"/>
+        <include domain="file" path="places"/>
+        <include domain="file" path="nfc"/>
+        <include domain="file" path="mail"/>
+        <include domain="file" path="smarthome"/>
+        <include domain="file" path="ai"/>
+        <include domain="file" path="api"/>
+        <include domain="file" path="plugins"/>
+        <include domain="file" path="secrets"/>
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <include domain="file" path="workflows"/>
+        <include domain="file" path="variables.json"/>
+        <include domain="file" path="variables"/>
+        <include domain="file" path="places"/>
+        <include domain="file" path="nfc"/>
+        <include domain="file" path="mail"/>
+        <include domain="file" path="smarthome"/>
+        <include domain="file" path="ai"/>
+        <include domain="file" path="api"/>
+        <include domain="file" path="plugins"/>
+        <include domain="file" path="secrets"/>
     </device-transfer>
-    -->
 </data-extraction-rules>

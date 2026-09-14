@@ -47,6 +47,8 @@ import io.github.m1n1m1.easymatic.data.mail.MailRuntime
 import io.github.m1n1m1.easymatic.data.mail.MailSeenStore
 import io.github.m1n1m1.easymatic.data.GlobalVariableRepository
 import io.github.m1n1m1.easymatic.data.MacroTransferRepository
+import io.github.m1n1m1.easymatic.data.backup.BackupRepository
+import io.github.m1n1m1.easymatic.data.security.SecretEscrow
 import io.github.m1n1m1.easymatic.domain.registry.GlobalVariables
 import io.github.m1n1m1.easymatic.domain.registry.HaCatalog
 import io.github.m1n1m1.easymatic.domain.registry.MqttCatalog
@@ -93,6 +95,7 @@ import kotlinx.coroutines.launch
  * [MainActivity] with the application context. Holds the single shared
  * instances of every infrastructure component.
  */
+@Suppress("TooManyFunctions") // One publisher per registry that has to be kept in step; the registries set the count.
 object ServiceLocator {
 
     /**
@@ -124,6 +127,24 @@ object ServiceLocator {
      * dangling references.
      */
     lateinit var macroTransferRepository: MacroTransferRepository
+        private set
+
+    /**
+     * Reads every library out to one backup file and back, for the Backup screen.
+     *
+     * Built last in [init], because it holds every library there is — including the two
+     * trust lists `publishPluginNodes` builds — and asks each to re-read its file after a
+     * restore has replaced it.
+     */
+    lateinit var backupRepository: BackupRepository
+        private set
+
+    /**
+     * Every credential again, under the backup password, so one typed password puts
+     * them all back after a restore. Built after the three libraries it escrows and
+     * kept in step with them by [publishEscrow].
+     */
+    lateinit var secretEscrow: SecretEscrow
         private set
 
     /** The geofence place library, shared by the editor UI and the trigger host. */
@@ -485,6 +506,14 @@ object ServiceLocator {
         // a paired bridge — and so an AI key, which the user can regenerate in a
         // browser in ten seconds, is never the reason a light stops working.
         aiConnectionRepository = AiConnectionRepository(appContext.filesDir, KeystoreSecrets(AI_KEY_ALIAS))
+        // A fourth alias, for the derived backup key: revoking it must never touch a
+        // credential, and a credential's alias must never be the one a backup file names.
+        secretEscrow = SecretEscrow(
+            appContext.filesDir,
+            KeystoreSecrets(BACKUP_KEY_ALIAS),
+            listOf(mailAccountRepository, smartHomeHubRepository, aiConnectionRepository),
+        )
+        publishEscrow()
         // No context: `Generation.getClient` takes none, and ML Kit initialises itself
         // from its own manifest provider.
         onDeviceAi = MlKitAi()
@@ -636,6 +665,41 @@ object ServiceLocator {
         publishGrantedPrerequisites(appContext)
         refreshCalendars()
         publishPluginNodes(appContext)
+        // Last, for the reason its KDoc gives: it holds every library built above it.
+        // Staging goes under the cache directory, which Auto Backup never carries.
+        backupRepository = BackupRepository(
+            filesDir = appContext.filesDir,
+            stagingRoot = appContext.cacheDir,
+            workflows = workflowRepository,
+            libraries = listOf(
+                globalVariableRepository,
+                geofencePlaceRepository,
+                nfcTagRepository,
+                mailAccountRepository,
+                smartHomeHubRepository,
+                aiConnectionRepository,
+                assistantSettingsRepository,
+                apiCallerRepository,
+                pluginRepository,
+                // Last, so the credentials it puts back land in libraries that have
+                // already re-read their restored files.
+                secretEscrow,
+            ),
+            appVersion = appVersionOf(appContext),
+        )
+    }
+
+    /**
+     * Keeps the escrow in step with the three credential libraries, on
+     * [publishSmartHomeHubs]' shape: a password typed, a bridge paired or a key pasted
+     * long after start-up must reach the escrow, or the next backup would carry the
+     * old one. `refresh` writes nothing when nothing changed, so the initial emissions
+     * cost no I/O.
+     */
+    private fun publishEscrow() {
+        appScope.launch { mailAccountRepository.accounts.collect { secretEscrow.refresh() } }
+        appScope.launch { smartHomeHubRepository.hubs.collect { secretEscrow.refresh() } }
+        appScope.launch { aiConnectionRepository.connections.collect { secretEscrow.refresh() } }
     }
 
     /**
@@ -834,4 +898,7 @@ object ServiceLocator {
      * parse branch rather than a schema bump.
      */
     private const val AI_KEY_ALIAS = "easymatic.ai.v1"
+
+    /** The AndroidKeyStore alias the escrow seals the derived backup key under. */
+    private const val BACKUP_KEY_ALIAS = "easymatic.backup.v1"
 }

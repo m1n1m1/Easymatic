@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-   Sample backup rules file; uncomment and customize as necessary.
-   See https://developer.android.com/guide/topics/data/autobackup
-   for details.
-   Note: This file is ignored for devices older than API 31
-   See https://developer.android.com/about/versions/12/backup-restore
+    Android 7-11 Auto Backup rules (android:fullBackupContent). API 31+ reads
+    data_extraction_rules.xml instead; both say the same thing.
+
+    Include-only, on purpose: the list is domain/backup/BackupContents.kt, and
+    BackupContentsTest pins this file to it. See that object for why an exclude
+    list is the wrong shape here.
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <include domain="file" path="workflows"/>
+    <include domain="file" path="variables.json"/>
+    <include domain="file" path="variables"/>
+    <include domain="file" path="places"/>
+    <include domain="file" path="nfc"/>
+    <include domain="file" path="mail"/>
+    <include domain="file" path="smarthome"/>
+    <include domain="file" path="ai"/>
+    <include domain="file" path="api"/>
+    <include domain="file" path="plugins"/>
+    <include domain="file" path="secrets"/>
 </full-backup-content>

@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -55,6 +56,10 @@ import io.github.m1n1m1.easymatic.feature.variables.GlobalVariablesScreen
 import io.github.m1n1m1.easymatic.feature.permissions.BatteryOptimisationDialog
 import io.github.m1n1m1.easymatic.feature.permissions.PermissionsScreen
 import io.github.m1n1m1.easymatic.feature.api.ApiAccessScreen
+import io.github.m1n1m1.easymatic.data.security.EscrowState
+import io.github.m1n1m1.easymatic.feature.backup.BackupScreen
+import io.github.m1n1m1.easymatic.feature.backup.BackupViewModel
+import io.github.m1n1m1.easymatic.feature.backup.UnlockBackupDialog
 import io.github.m1n1m1.easymatic.feature.plugins.PluginsScreen
 import io.github.m1n1m1.easymatic.engine.api.listApiTriggers
 import io.github.m1n1m1.easymatic.feature.variables.GlobalVariablesViewModel
@@ -103,6 +108,24 @@ class MainActivity : ComponentActivity() {
     private val folderAccessViewModel: FolderAccessViewModel by viewModels {
         FolderAccessViewModel.factory(applicationContext)
     }
+
+    // Activity-scoped like the rest. The plugin refresh is handed in rather than reached
+    // for, so the ViewModel holds a repository and a callback and no locator.
+    private val backupViewModel: BackupViewModel by viewModels {
+        BackupViewModel.factory(
+            backups = ServiceLocator.backupRepository,
+            escrow = ServiceLocator.secretEscrow,
+            afterRestore = { ServiceLocator.pluginRegistry.refresh() },
+            appContext = applicationContext,
+        )
+    }
+
+    // Raised in onResume when credentials that came back through Android's own restore
+    // are waiting for the backup password. Once per process: "Later" means later, and
+    // the Backup screen's card is the durable answer, as the Permissions row is for the
+    // battery prompt.
+    private var showUnlockPrompt by mutableStateOf(false)
+    private var unlockPromptDismissed = false
 
     // Activity-scoped like the rest, and holding no repository for `folderAccessViewModel`'s
     // reason exactly: ML Kit's own list of downloaded models is the list.
@@ -306,6 +329,7 @@ class MainActivity : ComponentActivity() {
                     onOpenPermissions = { navController.navigate(ROUTE_PERMISSIONS) },
                     onOpenPlugins = { navController.navigate(ROUTE_PLUGINS) },
                     onOpenAppAccess = { navController.navigate(ROUTE_APP_ACCESS) },
+                    onOpenBackup = { navController.navigate(ROUTE_BACKUP) },
                 )
             }
             composable(ROUTE_GEOFENCES) {
@@ -323,6 +347,12 @@ class MainActivity : ComponentActivity() {
             composable(ROUTE_FOLDER_ACCESS) {
                 FolderAccessScreen(
                     viewModel = folderAccessViewModel,
+                    onBack = { navController.popBackStack() },
+                )
+            }
+            composable(ROUTE_BACKUP) {
+                BackupScreen(
+                    viewModel = backupViewModel,
                     onBack = { navController.popBackStack() },
                 )
             }
@@ -452,6 +482,18 @@ class MainActivity : ComponentActivity() {
                     },
                 )
         }
+        // Same placement, same reasoning: an Android restore lands the user on whatever
+        // screen they open first, and the locked credentials are about the app as a whole.
+        if (showUnlockPrompt) {
+            UnlockBackupDialog(
+                body = stringResource(R.string.backup_unlock_prompt_body),
+                onUnlock = { ServiceLocator.secretEscrow.unlock(it) },
+                onDismiss = {
+                    showUnlockPrompt = false
+                    unlockPromptDismissed = true
+                },
+            )
+        }
     }
 
     override fun onResume() {
@@ -479,6 +521,10 @@ class MainActivity : ComponentActivity() {
         // waiting on the answer — the AI screen asks when it opens, and a macro asks when
         // it runs.
         ServiceLocator.onDeviceSetup.forget()
+        // Credentials Android's own restore brought back are unreadable until the backup
+        // password is typed; the first resume after that restore is where to ask.
+        showUnlockPrompt = !unlockPromptDismissed &&
+            ServiceLocator.secretEscrow.state.value is EscrowState.Locked
         // Surface the battery-optimisation prompt only when a background start
         // actually failed, at least one macro is enabled (no point prompting about
         // a failure to arm nothing), AND the exemption is not already in hand.
@@ -594,6 +640,7 @@ class MainActivity : ComponentActivity() {
         private const val ROUTE_PERMISSIONS = "permissions"
         private const val ROUTE_PLUGINS = "plugins"
         private const val ROUTE_APP_ACCESS = "appAccess"
+        private const val ROUTE_BACKUP = "backup"
         private const val ARG_WORKFLOW_ID = "workflowId"
     }
 }

@@ -70,6 +70,7 @@ fun HomeScreen(
     onOpenPermissions: () -> Unit,
     onOpenPlugins: () -> Unit,
     onOpenAppAccess: () -> Unit,
+    onOpenBackup: () -> Unit,
 ) {
     var tab by rememberSaveable { mutableStateOf(HomeTab.WORKFLOWS) }
     // Material's rule for bottom navigation: back from any other tab returns to the
@@ -107,6 +108,7 @@ fun HomeScreen(
                     onOpenPermissions = onOpenPermissions,
                     onOpenPlugins = onOpenPlugins,
                     onOpenAppAccess = onOpenAppAccess,
+                    onOpenBackup = onOpenBackup,
                 )
             }
         }

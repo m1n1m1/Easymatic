@@ -21,6 +21,10 @@ section of CLAUDE.md for why.
 
 ## [Unreleased]
 
+### Added
+- Backup and restore under Setup: every macro and library to a single file and back, and the same set is included in Android's own backup and device-to-device transfer.
+- A backup password. Every backup file is encrypted with one, asked for before it is written and before it is restored; nothing in the file can be read without it, and after a restore on another phone that one password puts every mail password, hub key and AI key back.
+
 ### Fixed
 - An AI connection can be tested, and its models listed, before it is saved. A new connection no longer has to be saved, closed and reopened before a model can be chosen or the key checked.
 

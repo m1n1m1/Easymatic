@@ -266,6 +266,12 @@ tasks.withType<Test>().configureEach {
         rootProject.file("docs/changelog.generated.json"),
         rootProject.fileTree("fastlane"),
     ).withPropertyName("changelogSources").withPathSensitivity(PathSensitivity.RELATIVE)
+    // The same reason once more, for BackupContentsTest, which pins the two Auto Backup
+    // rule files to `BackupContents` by reading them as plain files.
+    inputs.files(
+        file("src/main/res/xml/backup_rules.xml"),
+        file("src/main/res/xml/data_extraction_rules.xml"),
+    ).withPropertyName("backupRules").withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 /** The `versionName` and `versionCode` of the newest release in `CHANGELOG.md`. */

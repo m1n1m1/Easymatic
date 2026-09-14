@@ -3,6 +3,7 @@ package io.github.m1n1m1.easymatic.data
 import io.github.m1n1m1.easymatic.data.trigger.VariableStore
 import io.github.m1n1m1.easymatic.domain.model.VariableDeclaration
 import io.github.m1n1m1.easymatic.domain.model.VariableRef
+import io.github.m1n1m1.easymatic.domain.registry.GlobalVariables
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +32,7 @@ import kotlinx.serialization.json.Json
  * A missing or corrupt file decodes to an empty library rather than throwing —
  * losing the declarations is bad, crashing the app on startup is worse.
  */
-class GlobalVariableRepository(directory: File) {
+class GlobalVariableRepository(directory: File) : ReloadableLibrary {
 
     private val json = Json {
         prettyPrint = true
@@ -92,6 +93,19 @@ class GlobalVariableRepository(directory: File) {
         fresh.forEach { VariableStore.adoptLegacy(it.name, VariableRef.storeKey(VariableRef.Global(it.id), "")) }
         cache.value = (cache.value + fresh).sortedBy { it.name.lowercase() }
         writeFile(cache.value)
+    }
+
+    /**
+     * Re-reads the file after a restore replaced it — see [ReloadableLibrary] — and
+     * republishes [GlobalVariables], which `ServiceLocator` hydrates once at start-up
+     * and nothing else keeps in step: a restored declaration that never reached the
+     * registry would resolve as deleted in every config form.
+     */
+    override suspend fun reload() {
+        mutex.withLock {
+            cache.value = withContext(Dispatchers.IO) { readFile() }
+            GlobalVariables.hydrate(cache.value)
+        }
     }
 
     private suspend fun mutate(transform: (List<VariableDeclaration>) -> List<VariableDeclaration>) {
