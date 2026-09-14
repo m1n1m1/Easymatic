@@ -39,7 +39,7 @@ object BootFailureNotifier {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
         val notification = Notification.Builder(app, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_easymatic)
             .setContentTitle("Easymatic macros paused")
             .setContentText("Tap to resume background automation.")
             .setContentIntent(pi)

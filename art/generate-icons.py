@@ -7,9 +7,9 @@ Run from anywhere:
 
 ### Why a script rather than a drawing
 
-The mark has to exist in six incompatible formats: an SVG master, three Android vector
-drawables, five densities of legacy WebP, a 512 PNG for Play, an SVG favicon and an
-ICO one. Hand-cut, those drift -- the SVG gains a rounder corner and the launcher
+The mark has to exist in seven incompatible formats: an SVG master, three Android
+vector drawables for the launcher and one for the status bar, five densities of legacy
+WebP, a 512 PNG for Play, an SVG favicon and an ICO one. Hand-cut, those drift -- the SVG gains a rounder corner and the launcher
 keeps the old one, and nobody notices until the two are seen side by side. So the
 geometry is written once, here, and everything else is output. `art/icon.svg` is
 *generated*, not authored; edit this file instead.
@@ -44,8 +44,21 @@ GROUND -- a warm radial dark -- is composited only where an opaque, full-bleed i
 is required: the Play store icon, the adaptive icon's *background* layer, the legacy
 mipmaps, and the feature graphic. The glow goes with it, because a glow on a
 transparent ground is invisible. The SVG master, the adaptive *foreground*, the
-monochrome layer and both favicons stay transparent, because transparency is what
-lets a launcher mask work.
+monochrome layer, the status-bar icon and both favicons stay transparent, because
+transparency is what lets a launcher mask work.
+
+### Two places Android keeps only the alpha
+
+A themed launcher icon (Android 13, "Themed icons" in the launcher) and a notification's
+small icon -- the status bar, the always-on display, the shade -- are both drawn by
+tinting one colour through the drawable's alpha. Neither can be the coloured mark: a
+gradient card with cream bars on it flattens into a single blob, which is what
+`R.mipmap.ic_launcher` as a small icon looked like. Both therefore share one geometry,
+the silhouette with its bars and socket ring punched out as holes (`monochrome_data`).
+They differ only in framing: the themed layer sits in the adaptive 108dp canvas at
+SAFE_SCALE like the foreground, the status icon fills its 24dp canvas edge to edge
+across, which puts the card at the 20dp a status glyph stands, because a launcher
+shrinks its layer and the status bar does not.
 
 ### The one number worth understanding
 
@@ -457,6 +470,15 @@ def write_foreground(path):
     _write(path, "\n".join(lines))
 
 
+def monochrome_data():
+    """The mark as one evenOdd path: the silhouette, with the bars and the socket ring
+    punched out as holes and the socket's centre filled back in. No extrusion and no
+    highlight: both are light, and a tinted icon has none."""
+    return " ".join([outline()] + [_rounded_path(x, y, w, h, BAR_RADIUS) for x, y, w, h in BARS]
+                    + [_circle_path(SOCKET[0], SOCKET[1], RING_R),
+                       _circle_path(SOCKET[0], SOCKET[1], PIN_R)])
+
+
 def write_monochrome(path):
     comment = [
         'The themed-icon layer: Android 13 tints this one colour and keeps only its',
@@ -464,15 +486,62 @@ def write_monochrome(path):
         'tints into a single blob. This is the silhouette with the bars and the socket',
         'ring punched out as holes (evenOdd), and the socket\'s centre filled back in.',
         'No extrusion and no highlight: both are light, and a themed icon has none.',
+        'Same framing as the foreground, so the launcher shows the two at one size.',
     ]
-    data = " ".join([outline()] + [_rounded_path(x, y, w, h, BAR_RADIUS) for x, y, w, h in BARS]
-                    + [_circle_path(SOCKET[0], SOCKET[1], RING_R),
-                       _circle_path(SOCKET[0], SOCKET[1], PIN_R)])
     lines = _vector_open(comment, CANVAS) + _scaled_group_open() + [
         '        <path',
-        '            android:pathData="{}"'.format(data),
+        '            android:pathData="{}"'.format(monochrome_data()),
         '            android:fillType="evenOdd"',
         '            android:fillColor="{}" />'.format(INK),
+        '    </group>',
+        '</vector>',
+        '',
+    ]
+    _write(path, "\n".join(lines))
+
+
+STATUS_DP = 24
+STATUS_INSET_DP = 0  # see write_status_icon: the mark is wide, so the inset is on the height
+
+
+def write_status_icon(path):
+    """The notification small icon: the same alpha-only geometry as the themed layer,
+    framed for a 24dp status icon rather than a 108dp launcher layer."""
+    comment = [
+        'The notification small icon, for the status bar, the always-on display and',
+        'the shade. Android keeps only the alpha and tints it, exactly as a themed',
+        'launcher icon is drawn, so this is the monochrome layer\'s geometry framed',
+        'for a status icon: the mark\'s ink box scaled to fill 24dp minus the 2dp',
+        'inset every system status icon keeps. White, so a preview without a tint',
+        'still reads on the dark surfaces this icon is shown on.',
+    ]
+    # The mark without its extrusion: the outline's box, not INK_BOX.
+    x0, y0 = CARD[0], CARD[1]
+    x1, y1 = SOCKET[0] + SOCKET_R, CARD[1] + CARD[3]
+    w, h = x1 - x0, y1 - y0
+    usable = CANVAS * (STATUS_DP - 2 * STATUS_INSET_DP) / STATUS_DP
+    scale = usable / max(w, h)
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    lines = list(VECTOR_HEAD)
+    lines += ['    ' + line if line else '' for line in comment]
+    lines += [
+        '-->',
+        '<vector xmlns:android="http://schemas.android.com/apk/res/android"',
+        '    android:width="{}dp"'.format(STATUS_DP),
+        '    android:height="{}dp"'.format(STATUS_DP),
+        '    android:viewportWidth="{}"'.format(CANVAS),
+        '    android:viewportHeight="{}">'.format(CANVAS),
+        '    <group',
+        '        android:pivotX="{:g}"'.format(cx),
+        '        android:pivotY="{:g}"'.format(cy),
+        '        android:scaleX="{:.6f}"'.format(scale),
+        '        android:scaleY="{:.6f}"'.format(scale),
+        '        android:translateX="{:g}"'.format(CANVAS / 2 - cx),
+        '        android:translateY="{:g}">'.format(CANVAS / 2 - cy),
+        '        <path',
+        '            android:pathData="{}"'.format(monochrome_data()),
+        '            android:fillType="evenOdd"',
+        '            android:fillColor="#ffffff" />',
         '    </group>',
         '</vector>',
         '',
@@ -751,6 +820,7 @@ def main():
     write_foreground(at("app", "src", "main", "res", "drawable", "ic_launcher_foreground.xml"))
     write_monochrome(at("app", "src", "main", "res", "drawable", "ic_launcher_monochrome.xml"))
     write_background(at("app", "src", "main", "res", "drawable", "ic_launcher_background.xml"))
+    write_status_icon(at("app", "src", "main", "res", "drawable", "ic_stat_easymatic.xml"))
     for name in ("ic_launcher.xml", "ic_launcher_round.xml"):
         write_adaptive(at("app", "src", "main", "res", "mipmap-anydpi", name))
 

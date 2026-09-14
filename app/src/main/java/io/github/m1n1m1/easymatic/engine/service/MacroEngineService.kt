@@ -419,7 +419,7 @@ class MacroEngineService : Service() {
     private fun buildNotification(activeCount: Int): Notification {
         val text = if (activeCount == 0) "Standing by" else "$activeCount macro(s) armed"
         val builder = Notification.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_easymatic)
             .setContentTitle("Easymatic")
             .setContentText(text)
             .setContentIntent(openAppIntent())
