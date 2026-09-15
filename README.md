@@ -44,12 +44,12 @@ Each one has its own page, with ports and settings, in the
 
 ### What you need first
 
-| Requirement | Version | Note |
-| --- | --- | --- |
-| Android Studio | A current stable release | It has to understand Android Gradle Plugin 9.2. If the IDE refuses to sync, update it before anything else. |
-| JDK | 21 | Android Studio ships one, so you rarely install this yourself. CI uses Temurin 21. |
-| Android SDK | Platform 37 | Android Studio offers to install it during the first sync. |
-| A device | Android 8.0 (API 26) or newer | A real phone beats an emulator here — see the note at the end of this section. |
+| Requirement | Version | Note                                                                                                        |
+| --- | --- |-------------------------------------------------------------------------------------------------------------|
+| Android Studio | A current stable release | It has to understand Android Gradle Plugin 9.4. If the IDE refuses to sync, update it before anything else. |
+| JDK | 21 | Android Studio ships one, so you rarely install this yourself. CI uses Temurin 21.                          |
+| Android SDK | Platform 37 | Android Studio offers to install it during the first sync.                                                  |
+| A device | Android 8.0 (API 26) or newer | A real phone beats an emulator here — see the note at the end of this section.                              |
 
 Gradle itself is **not** a prerequisite. The wrapper in the repository downloads the
 right version (9.6.1) on the first build.
