@@ -1,6 +1,41 @@
 {
     "releases": [
         {
+            "version": "0.1.1-alpha",
+            "versionCode": 101,
+            "date": "2026-09-15",
+            "prerelease": true,
+            "play": "Backup and restore: every macro and library to one password-encrypted file and back. Search on the macro list, a privacy policy link under Setup, a themed launcher icon and a proper status-bar icon. Screens now animate between each other, the back gesture included. Fixed: the SMS trigger never fired, and AI connections can be tested before they are saved. The app no longer asks to see every installed package.",
+            "notes": "### Added\n\n- Backup and restore under Setup: every macro and library to a single file and back, and the same set is included in Android's own backup and device-to-device transfer.\n- A backup password. Every backup file is encrypted with one, asked for before it is written and before it is restored; nothing in the file can be read without it, and after a restore on another phone that one password puts every mail password, hub key and AI key back.\n- Search on the macro list, from a proper app bar on the main screen.\n- A link to the privacy policy under Setup.\n- A themed (monochrome) launcher icon, and a dedicated status-bar icon for the service notification instead of the launcher icon.\n\n### Changed\n\n- Screens now move as a stack: a new screen slides in over the old one, and the back button and the back gesture play the same animation.\n- The app no longer requests to see every installed package. App pickers list the apps that have a launcher entry, so the \"Other\" section of the notification filter shows fewer apps than before.\n- The launcher icon has a larger cutout.\n\n### Fixed\n\n- The SMS trigger never fired: it listened for the broadcast only the default SMS app receives, and now listens for the one every app with the SMS permission gets.\n- An AI connection can be tested, and its models listed, before it is saved. A new connection no longer has to be saved, closed and reopened before a model can be chosen or the key checked.\n",
+            "sections": [
+                {
+                    "label": "Added",
+                    "entries": [
+                        "Backup and restore under Setup: every macro and library to a single file and back, and the same set is included in Android's own backup and device-to-device transfer.",
+                        "A backup password. Every backup file is encrypted with one, asked for before it is written and before it is restored; nothing in the file can be read without it, and after a restore on another phone that one password puts every mail password, hub key and AI key back.",
+                        "Search on the macro list, from a proper app bar on the main screen.",
+                        "A link to the privacy policy under Setup.",
+                        "A themed (monochrome) launcher icon, and a dedicated status-bar icon for the service notification instead of the launcher icon."
+                    ]
+                },
+                {
+                    "label": "Changed",
+                    "entries": [
+                        "Screens now move as a stack: a new screen slides in over the old one, and the back button and the back gesture play the same animation.",
+                        "The app no longer requests to see every installed package. App pickers list the apps that have a launcher entry, so the \"Other\" section of the notification filter shows fewer apps than before.",
+                        "The launcher icon has a larger cutout."
+                    ]
+                },
+                {
+                    "label": "Fixed",
+                    "entries": [
+                        "The SMS trigger never fired: it listened for the broadcast only the default SMS app receives, and now listens for the one every app with the SMS permission gets.",
+                        "An AI connection can be tested, and its models listed, before it is saved. A new connection no longer has to be saved, closed and reopened before a model can be chosen or the key checked."
+                    ]
+                }
+            ]
+        },
+        {
             "version": "0.1.0-alpha",
             "versionCode": 100,
             "date": "2026-08-30",

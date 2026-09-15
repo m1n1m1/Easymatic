@@ -21,11 +21,25 @@ section of CLAUDE.md for why.
 
 ## [Unreleased]
 
+## [0.1.1-alpha] - 2026-09-15
+code: 101
+
+Play: Backup and restore: every macro and library to one password-encrypted file and back. Search on the macro list, a privacy policy link under Setup, a themed launcher icon and a proper status-bar icon. Screens now animate between each other, the back gesture included. Fixed: the SMS trigger never fired, and AI connections can be tested before they are saved. The app no longer asks to see every installed package.
+
 ### Added
 - Backup and restore under Setup: every macro and library to a single file and back, and the same set is included in Android's own backup and device-to-device transfer.
 - A backup password. Every backup file is encrypted with one, asked for before it is written and before it is restored; nothing in the file can be read without it, and after a restore on another phone that one password puts every mail password, hub key and AI key back.
+- Search on the macro list, from a proper app bar on the main screen.
+- A link to the privacy policy under Setup.
+- A themed (monochrome) launcher icon, and a dedicated status-bar icon for the service notification instead of the launcher icon.
+
+### Changed
+- Screens now move as a stack: a new screen slides in over the old one, and the back button and the back gesture play the same animation.
+- The app no longer requests to see every installed package. App pickers list the apps that have a launcher entry, so the "Other" section of the notification filter shows fewer apps than before.
+- The launcher icon has a larger cutout.
 
 ### Fixed
+- The SMS trigger never fired: it listened for the broadcast only the default SMS app receives, and now listens for the one every app with the SMS permission gets.
 - An AI connection can be tested, and its models listed, before it is saved. A new connection no longer has to be saved, closed and reopened before a model can be chosen or the key checked.
 
 ## [0.1.0-alpha] - 2026-08-30
