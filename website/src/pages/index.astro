@@ -17,12 +17,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { Icon } from 'astro-icon/components';
 import {
   CLOSING,
+  DOWNLOAD_URL,
   EXTENSIBILITY,
   FEATURES,
   FEATURES_LABEL,
   HERO,
   HERO_POINTS,
-  PLACEHOLDER_TITLE,
   SHOWCASE,
   SHOWCASE_LABEL,
 } from '../data/home';
@@ -44,7 +44,7 @@ import {
           <h1 data-hero-part data-reveal>{HERO.title}</h1>
           <p class="lead" data-hero-part data-reveal>{HERO.lead}</p>
           <div class="cta-row" data-hero-part data-reveal>
-            <a class="btn btn-solid" href="/download" data-placeholder title={PLACEHOLDER_TITLE}>
+            <a class="btn btn-solid" href={DOWNLOAD_URL} rel="noopener">
               Download
             </a>
             <a class="btn-bare" href="/docs/">Read the docs →</a>
@@ -174,7 +174,7 @@ import {
       <h2>{CLOSING.title}</h2>
       <div class="closing-side">
         <p class="closing-lead">{CLOSING.body}</p>
-        <a class="btn btn-solid" href="/download" data-placeholder title={PLACEHOLDER_TITLE}>
+        <a class="btn btn-solid" href={DOWNLOAD_URL} rel="noopener">
           Download
         </a>
         <p class="note">{CLOSING.note}</p>

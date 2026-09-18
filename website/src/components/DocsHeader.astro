@@ -16,7 +16,7 @@
  * it, so the site's links go into the mobile sidebar instead — see `DocsMobileMenu`.
  */
 import Search from '@astrojs/starlight/components/Search.astro';
-import { NAV, GITHUB_URL, PLACEHOLDER_TITLE } from '../data/home';
+import { NAV, GITHUB_URL, DOWNLOAD_URL, PLACEHOLDER_TITLE } from '../data/home';
 import Wordmark from './Wordmark.astro';
 
 /** The home page's in-page anchors have to leave the docs first. */
@@ -45,12 +45,7 @@ const target = (href: string) => (href.startsWith('#') ? `/${href}` : href);
     <a href={GITHUB_URL} rel="noopener">GitHub</a>
   </nav>
 
-  <a
-    class="btn btn-solid cta"
-    href="/download"
-    data-placeholder
-    title={PLACEHOLDER_TITLE}
-  >
+  <a class="btn btn-solid cta" href={DOWNLOAD_URL} rel="noopener">
     Download
   </a>
 </div>
