@@ -16,7 +16,15 @@
  * it, so the site's links go into the mobile sidebar instead — see `DocsMobileMenu`.
  */
 import Search from '@astrojs/starlight/components/Search.astro';
-import { NAV, GITHUB_URL, DOWNLOAD_URL, PLACEHOLDER_TITLE } from '../data/home';
+import {
+  NAV,
+  GITHUB_URL,
+  DOWNLOAD_URL,
+  DOWNLOAD_LABEL,
+  BETA_URL,
+  BETA_LABEL,
+  PLACEHOLDER_TITLE,
+} from '../data/home';
 import Wordmark from './Wordmark.astro';
 
 /** The home page's in-page anchors have to leave the docs first. */
@@ -45,9 +53,14 @@ const target = (href: string) => (href.startsWith('#') ? `/${href}` : href);
     <a href={GITHUB_URL} rel="noopener">GitHub</a>
   </nav>
 
-  <a class="btn btn-solid cta" href={DOWNLOAD_URL} rel="noopener">
-    Download
-  </a>
+  <div class="cta-pair">
+    <a class="btn btn-solid cta" href={DOWNLOAD_URL} rel="noopener">
+      {DOWNLOAD_LABEL}
+    </a>
+    <a class="btn btn-ink cta cta-beta" href={BETA_URL} rel="noopener">
+      {BETA_LABEL}
+    </a>
+  </div>
 </div>
 
 <style>
@@ -100,6 +113,11 @@ const target = (href: string) => (href.startsWith('#') ? `/${href}` : href);
     opacity: 1;
   }
 
+  .cta-pair {
+    display: flex;
+    gap: 0.5rem;
+  }
+
   .cta {
     display: none;
     padding: 0.625rem 1.25rem;
@@ -121,6 +139,17 @@ const target = (href: string) => (href.startsWith('#') ? `/${href}` : href);
      Download is still one tap away in the footer of every page. */
   @media (min-width: 68.75rem) {
     .cta {
+      display: flex;
+    }
+
+    .cta-beta {
+      display: none;
+    }
+  }
+
+  /* The second pill waits again, for the same reason the first one did. */
+  @media (min-width: 80rem) {
+    .cta-beta {
       display: flex;
     }
   }

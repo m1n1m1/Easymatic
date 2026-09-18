@@ -11,7 +11,15 @@
  * broken by a bundle that failed to load, and it gets keyboard and
  * screen-reader behaviour for free.
  */
-import { NAV, GITHUB_URL, DOWNLOAD_URL, PLACEHOLDER_TITLE } from '../data/home';
+import {
+  NAV,
+  GITHUB_URL,
+  DOWNLOAD_URL,
+  DOWNLOAD_LABEL,
+  BETA_URL,
+  BETA_LABEL,
+  PLACEHOLDER_TITLE,
+} from '../data/home';
 import Wordmark from './Wordmark.astro';
 ---
 
@@ -34,9 +42,14 @@ import Wordmark from './Wordmark.astro';
       <a href={GITHUB_URL} rel="noopener">GitHub</a>
     </nav>
 
-    <a class="btn btn-solid cta" href={DOWNLOAD_URL} rel="noopener">
-      Download
-    </a>
+    <div class="cta-pair">
+      <a class="btn btn-solid cta" href={DOWNLOAD_URL} rel="noopener">
+        {DOWNLOAD_LABEL}
+      </a>
+      <a class="btn btn-ink cta cta-beta" href={BETA_URL} rel="noopener">
+        {BETA_LABEL}
+      </a>
+    </div>
 
     <details class="menu">
       <summary aria-label="Menu"><span class="bars" aria-hidden="true"></span></summary>
@@ -53,7 +66,8 @@ import Wordmark from './Wordmark.astro';
           ))
         }
         <a href={GITHUB_URL} rel="noopener">GitHub</a>
-        <a href={DOWNLOAD_URL} rel="noopener">Download</a>
+        <a href={DOWNLOAD_URL} rel="noopener">{DOWNLOAD_LABEL}</a>
+        <a href={BETA_URL} rel="noopener">{BETA_LABEL}</a>
       </div>
     </details>
   </div>
@@ -118,6 +132,11 @@ import Wordmark from './Wordmark.astro';
 
   .desktop a:hover {
     opacity: 1;
+  }
+
+  .cta-pair {
+    display: flex;
+    gap: 0.625rem;
   }
 
   .cta {
@@ -197,8 +216,19 @@ import Wordmark from './Wordmark.astro';
       display: flex;
     }
 
+    .cta-beta {
+      display: none;
+    }
+
     .menu {
       display: none;
+    }
+  }
+
+  /* The second pill waits for room. Below this the footer still carries it. */
+  @media (min-width: 68.75rem) {
+    .cta-beta {
+      display: flex;
     }
   }
 </style>

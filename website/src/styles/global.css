@@ -243,6 +243,17 @@ a:hover {
   background: var(--on-surface);
 }
 
+/* The second pill of a pair. Still a solid fill, in the ink the signal one
+   hovers to, so two side by side do not shout equally. */
+.btn-ink {
+  background: var(--on-surface);
+  color: var(--surface);
+}
+
+.btn-ink:hover {
+  background: var(--signal);
+}
+
 /* A text button is an underline that thickens, not an outlined box. */
 .btn-bare {
   display: inline-flex;

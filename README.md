@@ -13,8 +13,8 @@
 ![Kotlin 2.2](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)
 ![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4)
 
-[![Join the internal test on Google Play](https://img.shields.io/badge/Google%20Play-join%20the%20internal%20test-414141?logo=googleplay&logoColor=white)](https://docs.google.com/forms/d/e/1FAIpQLSdByFiJnVd0S7y1falC04_USkwDktAt8hCLRcSR7hzvYvDsuA/viewform?usp=dialog)
-[![Download the APK from GitHub](https://img.shields.io/github/v/release/m1n1m1/Easymatic?include_prereleases&label=APK&logo=github&color=414141)](https://github.com/m1n1m1/Easymatic/releases)
+[![Get beta access on Google Play](https://img.shields.io/badge/Google%20Play-beta%20access-414141?logo=googleplay&logoColor=white)](https://groups.google.com/g/easymatic-beta)
+[![Download the .apk from GitHub](https://img.shields.io/github/v/release/m1n1m1/Easymatic?include_prereleases&label=download%20.apk&logo=github&color=414141)](https://github.com/m1n1m1/Easymatic/releases)
 
 [Website](https://easymatic.app) ·
 [Documentation](https://easymatic.app/docs/) ·
@@ -45,23 +45,26 @@ Each one has its own page, with ports and settings, in the
 
 ## Testers wanted
 
-Easymatic is on Google Play's internal testing track. Testers get every release from the
-store, with updates. And you also help the development :)
+Easymatic is in a closed test on Google Play. Testers get every release from the store,
+with updates. And you also help the development :)
 
-1. Fill in the [sign-up form](https://docs.google.com/forms/d/e/1FAIpQLSdByFiJnVd0S7y1falC04_USkwDktAt8hCLRcSR7hzvYvDsuA/viewform?usp=dialog). It only asks for the
-   Google account you use on your phone.
-2. Wait for the invitation mail from Google Play. Testers are added by hand, so it can
-   take a day.
-3. Open the link in the invitation on the phone and install the app from the store.
+Beta access goes through a Google Group. Everyone in the group is a tester.
 
-> **Note:** The form records the Google account you are signed in with. Use the one that
-> is on the phone you want to test with, or the store will not show you the app.
+1. Join the [easymatic-beta Google Group](https://groups.google.com/g/easymatic-beta).
+2. Open the [tester page on Google Play](https://play.google.com/apps/testing/io.github.m1n1m1.easymatic)
+   and tap **Become a tester**.
+3. Install the app from the store on your phone.
+
+> **Note:** Join the group with the Google account that is on the phone you want to test
+> with, or the store will not show you the app.
+
+You can also reach the group by mail, at `easymatic-beta@googlegroups.com`.
 
 ## Download the APK from GitHub
 
 Every release also carries an installable APK on its
 [GitHub release](https://github.com/m1n1m1/Easymatic/releases). This is the way in if you
-do not want to wait for the Play invitation, or do not use Google Play at all.
+do not want to join the beta, or do not use Google Play at all.
 
 1. Open the [releases page](https://github.com/m1n1m1/Easymatic/releases) on your phone
    and pick the newest release.
@@ -71,7 +74,7 @@ do not want to wait for the Play invitation, or do not use Google Play at all.
 
 > **Note:** The APK and the Play Store build are signed with different keys, so Android
 > treats them as two different apps. A phone cannot update from one to the other. If you
-> later join the internal test, uninstall the APK first and install from the store.
+> later join the closed test, uninstall the APK first and install from the store.
 
 ## Getting the project running in Android Studio
 

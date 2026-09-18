@@ -5,9 +5,15 @@ sidebar:
   order: 1
 ---
 
-Easymatic needs Android 8.0 (API 26) or later. Get the APK from the project's
-[releases](https://github.com/m1n1m1/Easymatic/releases), or build it yourself from the
-[repository](https://github.com/m1n1m1/Easymatic).
+Easymatic needs Android 8.0 (API 26) or later. There are three ways to get it:
+
+- **Download the .apk** from the project's
+  [releases](https://github.com/m1n1m1/Easymatic/releases).
+- **Get beta access** on Google Play: join the
+  [easymatic-beta Google Group](https://groups.google.com/g/easymatic-beta), then
+  follow the steps in the
+  [README](https://github.com/m1n1m1/Easymatic#testers-wanted).
+- **Build it yourself** from the [repository](https://github.com/m1n1m1/Easymatic).
 
 ## The two tabs
 
