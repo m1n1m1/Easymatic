@@ -9,7 +9,7 @@
  * reachable from. Rendered by `Sidebar` inside a `md:sl-hidden` wrapper, so it is
  * absent on the widths where `DocsHeader` shows the links itself.
  */
-import { NAV, GITHUB_URL, PLACEHOLDER_TITLE } from '../data/home';
+import { NAV, GITHUB_URL, DOWNLOAD_URL, PLACEHOLDER_TITLE } from '../data/home';
 
 const target = (href: string) => (href.startsWith('#') ? `/${href}` : href);
 ---
@@ -27,7 +27,7 @@ const target = (href: string) => (href.startsWith('#') ? `/${href}` : href);
     ))
   }
   <a href={GITHUB_URL} rel="noopener">GitHub</a>
-  <a href="/download" data-placeholder title={PLACEHOLDER_TITLE}>Download</a>
+  <a href={DOWNLOAD_URL} rel="noopener">Download</a>
 </nav>
 
 <style>

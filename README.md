@@ -4,14 +4,17 @@
 
 **An Android automation app you build by wiring nodes on a canvas.**
 
-[![Android CI](https://github.com/m1n1m1/Easymatic/actions/workflows/android.yml/badge.svg?branch=main)](https://github.com/m1n1m1/Easymatic/actions/workflows/android.yml)
-[![Website](https://github.com/m1n1m1/Easymatic/actions/workflows/website.yml/badge.svg?branch=main)](https://github.com/m1n1m1/Easymatic/actions/workflows/website.yml)
+[![Android CI](https://github.com/m1n1m1/Easymatic/actions/workflows/android.yml/badge.svg?branch=develop)](https://github.com/m1n1m1/Easymatic/actions/workflows/android.yml)
+[![Website](https://github.com/m1n1m1/Easymatic/actions/workflows/website.yml/badge.svg?branch=develop)](https://github.com/m1n1m1/Easymatic/actions/workflows/website.yml)
 [![Instrumentation tests](https://github.com/m1n1m1/Easymatic/actions/workflows/instrumentation.yml/badge.svg)](https://github.com/m1n1m1/Easymatic/actions/workflows/instrumentation.yml)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 ![minSdk 26](https://img.shields.io/badge/minSdk-26-3DDC84?logo=android&logoColor=white)
 ![Kotlin 2.2](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)
 ![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4)
+
+[![Join the internal test on Google Play](https://img.shields.io/badge/Google%20Play-join%20the%20internal%20test-414141?logo=googleplay&logoColor=white)](https://docs.google.com/forms/d/e/1FAIpQLSdByFiJnVd0S7y1falC04_USkwDktAt8hCLRcSR7hzvYvDsuA/viewform?usp=dialog)
+[![Download the APK from GitHub](https://img.shields.io/github/v/release/m1n1m1/Easymatic?include_prereleases&label=APK&logo=github&color=414141)](https://github.com/m1n1m1/Easymatic/releases)
 
 [Website](https://easymatic.app) ·
 [Documentation](https://easymatic.app/docs/) ·
@@ -39,6 +42,36 @@ A macro is built from four kinds of node:
 There are **184 nodes** today: 56 triggers, 85 actions, 32 values and 11 transforms.
 Each one has its own page, with ports and settings, in the
 [node reference](https://easymatic.app/docs/#node-reference).
+
+## Testers wanted
+
+Easymatic is on Google Play's internal testing track. Testers get every release from the
+store, with updates. And you also help the development :)
+
+1. Fill in the [sign-up form](https://docs.google.com/forms/d/e/1FAIpQLSdByFiJnVd0S7y1falC04_USkwDktAt8hCLRcSR7hzvYvDsuA/viewform?usp=dialog). It only asks for the
+   Google account you use on your phone.
+2. Wait for the invitation mail from Google Play. Testers are added by hand, so it can
+   take a day.
+3. Open the link in the invitation on the phone and install the app from the store.
+
+> **Note:** The form records the Google account you are signed in with. Use the one that
+> is on the phone you want to test with, or the store will not show you the app.
+
+## Download the APK from GitHub
+
+Every release also carries an installable APK on its
+[GitHub release](https://github.com/m1n1m1/Easymatic/releases). This is the way in if you
+do not want to wait for the Play invitation, or do not use Google Play at all.
+
+1. Open the [releases page](https://github.com/m1n1m1/Easymatic/releases) on your phone
+   and pick the newest release.
+2. Under **Assets**, tap the `.apk` file to download it.
+3. Open the download. Android asks you to allow installs from your browser the first
+   time; allow it, then install.
+
+> **Note:** The APK and the Play Store build are signed with different keys, so Android
+> treats them as two different apps. A phone cannot update from one to the other. If you
+> later join the internal test, uninstall the APK first and install from the store.
 
 ## Getting the project running in Android Studio
 
@@ -136,85 +169,53 @@ Before you push, run the same three tasks CI runs:
 > **Note:** the configuration cache is enabled. If a build behaves strangely after you
 > move files around, add `--no-configuration-cache` once.
 
+## Contributing
+
+The repository follows git-flow. Three kinds of branch exist, and each has one job:
+
+| Branch | What it holds |
+| --- | --- |
+| `main` | Released code only. Every commit on it is a tagged release. |
+| `develop` | The integration branch, and the repository's default. Every feature lands here first. |
+| `feature/<feature_name>` | One change, made by one contributor, opened as a pull request into `develop`. |
+
+### Step 1: Branch from develop
+
+```
+git checkout develop
+git pull
+git checkout -b feature/geofence_dwell_time
+```
+
+Name the branch after the change, with underscores between words. Keep one change per
+branch; a second change is a second branch.
+
+### Step 2: Check before you push
+
+Run the same three tasks CI runs, then Android Lint:
+
+```
+.\gradlew.bat assembleDebug test detekt
+.\gradlew.bat lintDebug
+```
+
+If you touched user-facing strings, node declarations or `CHANGELOG.md`, regenerate the
+derived files first. The tests fail with the exact command otherwise.
+
+### Step 3: Open a pull request into develop
+
+Push the branch and open the pull request against `develop`, never `main`. CI runs on the
+pull request, and the change is squash-merged once it is green and reviewed. The feature
+branch is deleted on merge, so there is nothing to clean up.
+
+> **Note:** `main` and `develop` accept signed commits only. The squash commit GitHub makes
+> on merge is signed by GitHub itself, so a pull request passes without you setting up
+> signing. Only a maintainer pushing to those branches directly needs a signing key.
+
 ## Cutting a release
 
-Release notes are written in one place, [`CHANGELOG.md`](CHANGELOG.md). The Play Store
-text, the GitHub release and the website's changelog page are all generated from it, and
-so is the app's own version number. You never edit a version in `build.gradle.kts`.
-
-### Step 1: Write the entry
-
-Add a section at the top of `CHANGELOG.md`, under `## [Unreleased]`:
-
-```
-## [0.2.0-alpha] - 2026-09-14
-code: 200
-
-Play: One short paragraph for the Play Store. 500 characters at most.
-
-### Added
-- What you added, one line per bullet.
-
-### Fixed
-- What you fixed.
-```
-
-`code:` is the Play `versionCode`. It has to be higher than every release before it —
-Play rejects an upload that repeats one. Section headings come from a fixed list: Added,
-Changed, Fixed, Removed, Deprecated and Security.
-
-The version may carry a pre-release suffix, as `0.2.0-alpha` does. That suffix is the only
-thing marking a release as a pre-release: the GitHub release is flagged from it, and the
-website labels it. Drop the suffix and the same release is a final one.
-
-> **Note:** the `Play:` paragraph is separate from the bullets because the Play Store cuts
-> release notes off at 500 characters, and the other places have no limit. Leave it out and
-> the bullets are used instead — which fails the build if they do not fit.
-
-### Step 2: Regenerate
-
-```
-.\gradlew.bat :app:testDebugUnitTest --tests "*ChangelogExportTest*" -PregenerateChangelog=true
-```
-
-This writes `docs/changelog.generated.json` and the Play text under `fastlane/`. Both are
-committed, and the same test fails the build when they no longer match `CHANGELOG.md`.
-
-### Step 3: Commit and tag
-
-```
-git commit -am "Release 0.2.0-alpha"
-git tag v0.2.0-alpha
-git push origin main v0.2.0-alpha
-```
-
-The tag creates the GitHub release, with the notes taken from the changelog. A tag that
-does not name the newest entry is refused.
-
-### Step 4: Upload to Play
-
-Build the bundle with `.\gradlew.bat :app:bundleRelease`, then upload it together with the
-generated text in `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`. A
-pre-release belongs on a closed testing track rather than production.
-
-Signing reads `keystore.properties` at the repository root — gitignored, the same shape as
-`local.properties`:
-
-```
-storeFile=C:/path/outside/the/repo/upload-key.jks
-storePassword=…
-keyAlias=upload
-keyPassword=…
-```
-
-Create the key once with `keytool -genkeypair -v -keystore upload-key.jks -keyalg RSA
--keysize 2048 -validity 10000 -alias upload`, keep it outside the checkout, and back it up.
-Enrol in Play App Signing so Google holds the key the shipped app is signed with; this one
-only proves who uploaded the bundle, and can be replaced through the console if it is lost.
-
-> **Note:** the upload itself is still manual. There is no Play service account and no
-> publisher plugin, so nothing is pushed automatically. Without a `keystore.properties` the
-> release variant still builds — it is simply unsigned, which Play rejects at upload.
+Releases are cut by a maintainer, from `CHANGELOG.md`, and the procedure is in
+[`docs/RELEASING.md`](docs/RELEASING.md). Contributors never need it.
 
 ## How the project is laid out
 
@@ -239,7 +240,7 @@ badges at the top of this page report the first two.
 
 | Workflow | Runs on | What it does |
 | --- | --- | --- |
-| `android.yml` | Push to `main`, pull requests | Two jobs. **Build**: `assembleDebug test detekt`. **Android Lint**: `lintDebug`, kept separate so a lint failure can never hide the build result. |
+| `android.yml` | Push to `main` or `develop`, pull requests | Two jobs. **Build**: `assembleDebug test detekt`. **Android Lint**: `lintDebug`, kept separate so a lint failure can never hide the build result. |
 | `website.yml` | Push or PR touching `website/**` or `docs/**` | `npm ci && npm run build`, then fails if the committed `website/src/styles/tokens.css` is stale. |
 | `instrumentation.yml` | Mondays at 03:00 UTC, or on demand | `:app:connectedDebugAndroidTest` on an API 36 `google_apis` emulator. One run costs 10–15 minutes, which is why it does not gate a commit. |
 
@@ -274,6 +275,7 @@ In the repository:
 | [`CHANGELOG.md`](CHANGELOG.md) | Every release, and the only place release notes are written |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Modules, packages and the dependency rules between them |
 | [`docs/ADDING_NODES.md`](docs/ADDING_NODES.md) | The step-by-step procedure for adding a node |
+| [`docs/RELEASING.md`](docs/RELEASING.md) | Cutting a release: changelog, tag, Play upload and the GitHub APK |
 | [`docs/PLUGINS.md`](docs/PLUGINS.md) | Writing a plugin app that adds its own nodes |
 | [`docs/EXTERNAL_API.md`](docs/EXTERNAL_API.md) | Driving Easymatic from another app through the process API |
 | [`website/README.md`](website/README.md) | Running and editing the website |

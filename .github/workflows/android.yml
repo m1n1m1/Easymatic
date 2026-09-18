@@ -2,9 +2,9 @@ name: Android
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 # Deliberately no path filters. The unit tests read docs/nodes.generated.json,
 # docs/nodes/*.md and docs/ADDING_NODES.md, so a docs-only commit can turn

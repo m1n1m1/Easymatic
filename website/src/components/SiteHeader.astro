@@ -11,7 +11,7 @@
  * broken by a bundle that failed to load, and it gets keyboard and
  * screen-reader behaviour for free.
  */
-import { NAV, GITHUB_URL, PLACEHOLDER_TITLE } from '../data/home';
+import { NAV, GITHUB_URL, DOWNLOAD_URL, PLACEHOLDER_TITLE } from '../data/home';
 import Wordmark from './Wordmark.astro';
 ---
 
@@ -34,12 +34,7 @@ import Wordmark from './Wordmark.astro';
       <a href={GITHUB_URL} rel="noopener">GitHub</a>
     </nav>
 
-    <a
-      class="btn btn-solid cta"
-      href="/download"
-      data-placeholder
-      title={PLACEHOLDER_TITLE}
-    >
+    <a class="btn btn-solid cta" href={DOWNLOAD_URL} rel="noopener">
       Download
     </a>
 
@@ -58,7 +53,7 @@ import Wordmark from './Wordmark.astro';
           ))
         }
         <a href={GITHUB_URL} rel="noopener">GitHub</a>
-        <a href="/download" data-placeholder title={PLACEHOLDER_TITLE}>Download</a>
+        <a href={DOWNLOAD_URL} rel="noopener">Download</a>
       </div>
     </details>
   </div>

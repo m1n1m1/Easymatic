@@ -21,9 +21,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
-# Only to create the release. No AAB is built or attached: there is no signing config in
-# this repo yet, and a debug APK on a release page is worse than no artifact at all. The day
-# signing exists, this grows a build job and an `--attach`.
+# Only to create the release. Nothing is built or attached here: the signed APK is built
+# locally with `:app:assembleRelease` and uploaded by hand afterwards (docs/RELEASING.md,
+# step 5). Automating that means a build job with the keystore as a base64 secret
+# and the four EASYMATIC_KEYSTORE_* variables that app/build.gradle.kts already reads from
+# the environment when keystore.properties is absent.
 permissions:
   contents: write
 

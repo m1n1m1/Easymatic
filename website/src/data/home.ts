@@ -17,6 +17,9 @@ export interface NavLink {
 
 export const GITHUB_URL = 'https://github.com/m1n1m1/Easymatic';
 
+/** Every release carries an installable APK, so the download is the releases page. */
+export const DOWNLOAD_URL = GITHUB_URL + '/releases';
+
 export const NAV: NavLink[] = [
   { label: 'Use cases', href: '#use-cases' },
   { label: 'Features', href: '#features' },
@@ -267,7 +270,7 @@ export const CLOSING = {
   title: 'Build your first macro.',
   body:
     'Easymatic is free and open source. Grab a build, wire something together, and see how far the graph goes.',
-  note: 'Not on the Play Store yet — a download lands here when the first release is cut.',
+  note: 'The download is the APK on the newest GitHub release. Not on the Play Store yet — the README says how to join the internal test.',
 } as const;
 
 export interface FooterColumn {
@@ -282,7 +285,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
     heading: 'Product',
     accent: 'var(--accent-trigger)',
     links: [
-      { label: 'Download', href: '/download', placeholder: true },
+      { label: 'Download', href: DOWNLOAD_URL },
       { label: 'Features', href: '#features' },
       { label: 'Changelog', href: '/changelog' },
     ],
