@@ -9,6 +9,7 @@ import io.github.m1n1m1.easymatic.domain.registry.NodeTypeRegistry
 import io.github.m1n1m1.easymatic.engine.trigger.ManualTrigger
 import io.github.m1n1m1.easymatic.engine.validation.GraphValidator
 import io.github.m1n1m1.easymatic.feature.i18n.NodeText
+import io.github.m1n1m1.easymatic.feature.i18n.inAppLanguage
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -154,6 +155,6 @@ private val untouchedNodeNames: Set<String>
     get() {
         val definition = NodeTypeRegistry.byId(ManualTrigger.TYPE_ID) ?: return emptySet()
         val translated = ServiceLocator.appContextOrNull
-            ?.let { NodeText.of(it.resources).name(definition) }
+            ?.let { NodeText.of(it.inAppLanguage().resources).name(definition) }
         return setOfNotNull(definition.displayName, translated)
     }

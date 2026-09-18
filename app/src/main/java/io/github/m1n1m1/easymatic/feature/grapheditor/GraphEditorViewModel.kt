@@ -54,6 +54,7 @@ import io.github.m1n1m1.easymatic.engine.validation.GraphValidator
 import io.github.m1n1m1.easymatic.feature.grapheditor.assistant.AssistantEditor
 import io.github.m1n1m1.easymatic.feature.grapheditor.assistant.AssistantSession
 import io.github.m1n1m1.easymatic.feature.i18n.NodeText
+import io.github.m1n1m1.easymatic.feature.i18n.inAppLanguage
 import io.github.m1n1m1.easymatic.feature.macro.MacroOperations
 import io.github.m1n1m1.easymatic.feature.variables.VariableScope
 import io.github.m1n1m1.easymatic.feature.variables.specFor
@@ -204,8 +205,12 @@ class GraphEditorViewModel(
      * is user-editable and is the user's own label for that card. The cost is that
      * changing locale does not retitle nodes on existing macros, and that is the same
      * thing that already happens when a node type is renamed between releases.
+     *
+     * Through `inAppLanguage` because this is the application context, which below
+     * API 33 does not follow the App language setting. Read once: the editor is popped
+     * before the Language screen is reachable, so it cannot go stale.
      */
-    private val nodeText = NodeText.of(appContext.resources)
+    private val nodeText = NodeText.of(appContext.inAppLanguage().resources)
 
     /**
      * This workflow's console, and the state around it.

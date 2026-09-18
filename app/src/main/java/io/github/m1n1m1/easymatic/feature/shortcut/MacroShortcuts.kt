@@ -15,6 +15,7 @@ import io.github.m1n1m1.easymatic.domain.model.MacroAccent
 import io.github.m1n1m1.easymatic.domain.model.MacroIcon
 import io.github.m1n1m1.easymatic.feature.macro.colorRes
 import io.github.m1n1m1.easymatic.feature.macro.drawableRes
+import io.github.m1n1m1.easymatic.feature.i18n.inAppLanguage
 import io.github.m1n1m1.easymatic.feature.widget.ManualTriggerRef
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
@@ -78,7 +79,10 @@ object MacroShortcuts {
                 if (trigger.macroName == trigger.label) {
                     trigger.label
                 } else {
-                    context.getString(R.string.shortcut_macro_and_trigger, trigger.macroName, trigger.label)
+                    // The application context, which below API 33 does not follow the
+                    // App language setting on its own.
+                    context.inAppLanguage()
+                        .getString(R.string.shortcut_macro_and_trigger, trigger.macroName, trigger.label)
                 },
             )
             .setIcon(adaptiveIcon(context, trigger.icon, trigger.accent))

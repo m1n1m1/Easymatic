@@ -5,7 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import android.graphics.Color
 import android.provider.Settings
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -61,6 +61,7 @@ import io.github.m1n1m1.easymatic.feature.backup.BackupScreen
 import io.github.m1n1m1.easymatic.feature.backup.BackupViewModel
 import io.github.m1n1m1.easymatic.feature.backup.UnlockBackupDialog
 import io.github.m1n1m1.easymatic.feature.plugins.PluginsScreen
+import io.github.m1n1m1.easymatic.feature.language.LanguageScreen
 import io.github.m1n1m1.easymatic.engine.api.listApiTriggers
 import io.github.m1n1m1.easymatic.feature.variables.GlobalVariablesViewModel
 import io.github.m1n1m1.easymatic.feature.home.HomeScreen
@@ -69,7 +70,7 @@ import io.github.m1n1m1.easymatic.ui.theme.EasymaticTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val listViewModel: WorkflowListViewModel by viewModels {
         WorkflowListViewModel.factory(
@@ -329,6 +330,7 @@ class MainActivity : ComponentActivity() {
                     onOpenPermissions = { navController.navigate(ROUTE_PERMISSIONS) },
                     onOpenPlugins = { navController.navigate(ROUTE_PLUGINS) },
                     onOpenAppAccess = { navController.navigate(ROUTE_APP_ACCESS) },
+                    onOpenLanguage = { navController.navigate(ROUTE_LANGUAGE) },
                     onOpenBackup = { navController.navigate(ROUTE_BACKUP) },
                 )
             }
@@ -409,6 +411,9 @@ class MainActivity : ComponentActivity() {
                     reachableMacros = reachable,
                     onBack = { navController.popBackStack() },
                 )
+            }
+            composable(ROUTE_LANGUAGE) {
+                LanguageScreen(onBack = { navController.popBackStack() })
             }
             composable(ROUTE_PERMISSIONS) {
                 // No ViewModel: the state is a handful of synchronous platform
@@ -641,6 +646,7 @@ class MainActivity : ComponentActivity() {
         private const val ROUTE_PLUGINS = "plugins"
         private const val ROUTE_APP_ACCESS = "appAccess"
         private const val ROUTE_BACKUP = "backup"
+        private const val ROUTE_LANGUAGE = "language"
         private const val ARG_WORKFLOW_ID = "workflowId"
     }
 }

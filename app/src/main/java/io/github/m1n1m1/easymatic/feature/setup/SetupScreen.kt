@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Nfc
@@ -62,7 +63,8 @@ import io.github.m1n1m1.easymatic.feature.grapheditor.EditorColors
  * **Connections** reach something outside the phone, and each can fail in ways the
  * user has to go and fix. **Libraries** are the user's own records, which macros
  * refer to by id. **System** is what the phone and other apps allow, which is not
- * something this app decides at all — it only reports it.
+ * something this app decides at all — it only reports it. App language is the one
+ * exception, kept there because it is where every Settings app puts it.
  *
  * Every row navigates to a screen that already existed and is unchanged; this screen
  * holds no state of its own. The subtitles are static and say what a screen is *for*,
@@ -85,6 +87,7 @@ fun SetupScreen(
     onOpenPermissions: () -> Unit,
     onOpenPlugins: () -> Unit,
     onOpenAppAccess: () -> Unit,
+    onOpenLanguage: () -> Unit,
     onOpenBackup: () -> Unit,
 ) {
     Column(
@@ -217,6 +220,17 @@ fun SetupScreen(
                     titleRes = R.string.workflowlist_app_access,
                     subtitleRes = R.string.setup_app_access_subtitle,
                     onClick = onOpenAppAccess,
+                )
+            }
+            item {
+                // The one System row that is this app's own decision rather than the
+                // phone's. It sits here anyway because System is where every Settings
+                // app puts Language, and that is where a hand goes looking for it.
+                SetupRow(
+                    icon = Icons.Filled.Language,
+                    titleRes = R.string.language_title,
+                    subtitleRes = R.string.setup_language_subtitle,
+                    onClick = onOpenLanguage,
                 )
             }
 
