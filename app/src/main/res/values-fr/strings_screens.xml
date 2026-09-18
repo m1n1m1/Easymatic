@@ -640,6 +640,7 @@
     <string name="setup_permissions_subtitle">Ce que le téléphone autorise tes macros à faire</string>
     <string name="setup_plugins_subtitle">Applications qui ajoutent des nœuds</string>
     <string name="setup_app_access_subtitle">Autres applications autorisées à lancer tes macros</string>
+    <string name="setup_language_subtitle">La langue dans laquelle Easymatic s\'affiche</string>
 
     <string name="setup_section_about">À propos</string>
     <string name="setup_privacy_policy">Politique de confidentialité</string>
@@ -738,4 +739,11 @@
     <string name="translate_no_languages_downloaded">Aucune langue téléchargée pour l’instant. Ajoutez-en une dans Modèles de traduction, puis revenez.</string>
     <string name="translate_manage_languages">Modèles de traduction</string>
     <string name="translate_manage_languages_hint">Ajouter ou retirer des langues. Quitte l’éditeur.</string>
+
+    <!-- App language screen — see LanguageScreen.kt -->
+    <string name="language_title">Langue de l\'application</string>
+    <string name="language_back">Retour</string>
+    <string name="language_intro">Choisissez la langue dans laquelle Easymatic s\'affiche.</string>
+    <string name="language_system_default">Par défaut du système</string>
+    <string name="language_widgets_note">Sur cette version d\'Android, les widgets de l\'écran d\'accueil gardent la langue du téléphone.</string>
 </resources>

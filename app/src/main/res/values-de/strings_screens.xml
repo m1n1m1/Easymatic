@@ -705,6 +705,7 @@
     <string name="setup_permissions_subtitle">Was das Telefon deinen Makros erlaubt</string>
     <string name="setup_plugins_subtitle">Apps, die Knoten hinzufügen</string>
     <string name="setup_app_access_subtitle">Andere Apps, die deine Makros ausführen dürfen</string>
+    <string name="setup_language_subtitle">In welcher Sprache Easymatic angezeigt wird</string>
 
     <string name="setup_section_about">Info</string>
     <string name="setup_privacy_policy">Datenschutzerklärung</string>
@@ -803,4 +804,11 @@
     <string name="translate_no_languages_downloaded">Noch keine Sprachen heruntergeladen. Füge unter Übersetzungsmodelle eine hinzu und komm dann zurück.</string>
     <string name="translate_manage_languages">Übersetzungsmodelle</string>
     <string name="translate_manage_languages_hint">Sprachen hinzufügen oder entfernen. Verlässt den Editor.</string>
+
+    <!-- App language screen — see LanguageScreen.kt -->
+    <string name="language_title">App-Sprache</string>
+    <string name="language_back">Zurück</string>
+    <string name="language_intro">Wähle, in welcher Sprache Easymatic angezeigt wird.</string>
+    <string name="language_system_default">Systemstandard</string>
+    <string name="language_widgets_note">Widgets auf dem Startbildschirm behalten auf dieser Android-Version die Sprache des Telefons.</string>
 </resources>

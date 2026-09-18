@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-     <!-- The app renders a fixed dark palette; a light window background flashes
-         through during navigation transitions. -->
-    <style name="Theme.Easymatic" parent="android:Theme.Material.NoActionBar">
+    <!-- The app renders a fixed dark palette; a light window background flashes
+         through during navigation transitions. An AppCompat descendant because the
+         App language setting applies below API 33 through AppCompatActivity, which
+         refuses any other parent. -->
+    <style name="Theme.Easymatic" parent="Theme.Material3.Dark.NoActionBar">
         <item name="android:windowBackground">@color/canvas_background</item>
     </style>
 

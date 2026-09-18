@@ -640,6 +640,7 @@
     <string name="setup_permissions_subtitle">Что телефон разрешает вашим макросам</string>
     <string name="setup_plugins_subtitle">Приложения, которые добавляют узлы</string>
     <string name="setup_app_access_subtitle">Другие приложения, которым разрешено запускать ваши макросы</string>
+    <string name="setup_language_subtitle">Язык интерфейса Easymatic</string>
 
     <string name="setup_section_about">О приложении</string>
     <string name="setup_privacy_policy">Политика конфиденциальности</string>
@@ -738,4 +739,11 @@
     <string name="translate_no_languages_downloaded">Языки ещё не загружены. Добавьте один в разделе «Модели перевода» и вернитесь.</string>
     <string name="translate_manage_languages">Модели перевода</string>
     <string name="translate_manage_languages_hint">Добавить или удалить языки. Редактор будет закрыт.</string>
+
+    <!-- App language screen — see LanguageScreen.kt -->
+    <string name="language_title">Язык приложения</string>
+    <string name="language_back">Назад</string>
+    <string name="language_intro">Выберите язык интерфейса Easymatic.</string>
+    <string name="language_system_default">Как в системе</string>
+    <string name="language_widgets_note">В этой версии Android виджеты на главном экране остаются на языке телефона.</string>
 </resources>

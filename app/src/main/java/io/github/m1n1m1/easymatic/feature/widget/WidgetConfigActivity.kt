@@ -7,7 +7,7 @@ import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -66,7 +66,7 @@ import kotlinx.coroutines.launch
  * else on back-press leaves a placed, unconfigured widget on the home screen, and
  * the launcher only removes it if the cancel is explicit.
  */
-abstract class WidgetConfigActivity : ComponentActivity() {
+abstract class WidgetConfigActivity : AppCompatActivity() {
 
     protected var appWidgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
         private set

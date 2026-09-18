@@ -21,6 +21,9 @@ section of CLAUDE.md for why.
 
 ## [Unreleased]
 
+### Added
+- An App language setting under Setup: choose which of the eight languages Easymatic is shown in, or follow the phone. On Android 13 and later the same choice appears in the phone's own Settings → Apps → Easymatic → Language.
+
 ## [0.1.1-alpha] - 2026-09-15
 code: 101
 

@@ -726,6 +726,7 @@
     <string name="setup_permissions_subtitle">What the phone lets your macros do</string>
     <string name="setup_plugins_subtitle">Apps that add nodes</string>
     <string name="setup_app_access_subtitle">Other apps allowed to run your macros</string>
+    <string name="setup_language_subtitle">Which language Easymatic is shown in</string>
 
     <string name="setup_section_about">About</string>
     <string name="setup_privacy_policy">Privacy policy</string>
@@ -829,4 +830,11 @@
     <string name="translate_manage_languages_hint">Add or remove languages. Leaves the editor.</string>
     <string name="setup_translation_models_subtitle">Languages the Translate node can use</string>
     <string name="grapheditor_detecting_the_language_needs">Detecting the language needs Android 14 and the packs for the languages spoken. Older phones transcribe in the phone\'s own language instead.</string>
+
+    <!-- App language screen — see LanguageScreen.kt -->
+    <string name="language_title">App language</string>
+    <string name="language_back">Back</string>
+    <string name="language_intro">Choose the language Easymatic is shown in.</string>
+    <string name="language_system_default">System default</string>
+    <string name="language_widgets_note">Home-screen widgets keep the phone\'s language on this version of Android.</string>
 </resources>

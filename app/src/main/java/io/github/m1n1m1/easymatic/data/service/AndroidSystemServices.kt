@@ -8,6 +8,7 @@ import android.content.ContentResolver
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
@@ -631,6 +632,11 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
      * country only in the sense that it parses it correctly and hands it back — the
      * leading `+` wins over the region, so a contact stored as `+43…` on a German SIM
      * is untouched.
+     *
+     * The fallback reads the *system* configuration, not this context's: the App
+     * language setting replaces the app's locale list, and six of its eight tags carry
+     * no country, so `.country` would turn blank and every national number would
+     * stop formatting on a SIM-less phone that had merely switched language.
      */
     override fun toInternationalNumber(number: String): String? = runCatching {
         PhoneNumberUtils.formatNumberToE164(number.trim(), region())
@@ -639,7 +645,7 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
     private fun region(): String {
         val telephony = context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
         val sim = telephony?.simCountryIso?.takeIf { it.isNotBlank() }
-        val configured = ConfigurationCompat.getLocales(context.resources.configuration)[0]?.country
+        val configured = ConfigurationCompat.getLocales(Resources.getSystem().configuration)[0]?.country
         return (sim ?: configured.orEmpty()).uppercase(Locale.ROOT)
     }
 

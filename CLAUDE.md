@@ -101,7 +101,7 @@ A DATA input derived from a `@Wired` property is **hidden until opted in** with 
 
 ### Node text and translation
 
-Every user-facing string resolves through Android string resources, and the app ships eight locales. `res/values/strings_nodes.xml` and `feature/i18n/NodeStringIds.kt` are **generated and committed** — never hand-edit them. Regenerate with
+Every user-facing string resolves through Android string resources, and the app ships eight locales. The user can override the phone's language under Setup → System → App language, through `AppCompatDelegate` (`feature/language/`, and `Context.inAppLanguage()` for the two application-context readers); the `node-text-and-translation` skill has the details. `res/values/strings_nodes.xml` and `feature/i18n/NodeStringIds.kt` are **generated and committed** — never hand-edit them. Regenerate with
 
 ```
 .\gradlew.bat :app:testDebugUnitTest --tests "*NodeStringsSyncTest*" -PregenerateNodeStrings=true

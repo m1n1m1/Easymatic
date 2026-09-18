@@ -4,7 +4,7 @@ import androidx.compose.ui.res.stringResource
 import io.github.m1n1m1.easymatic.R
 import android.app.Activity
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,7 +51,7 @@ import io.github.m1n1m1.easymatic.ui.theme.EasymaticTheme
  * "Called by Another App" trigger on. That is the per-macro half of the gate, and it
  * was decided before this screen was ever reached.
  */
-class ApiConsentActivity : ComponentActivity() {
+class ApiConsentActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
