@@ -1,0 +1,1 @@
+Choose the language Easymatic is shown in under Setup: any of its eight languages, or follow the phone. The app also no longer asks for notification, location and Do Not Disturb access the moment it opens. A permission is asked for on the node that needs it, and the Permissions screen shows what is granted and what is missing.
