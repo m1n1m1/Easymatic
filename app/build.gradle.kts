@@ -185,6 +185,10 @@ dependencies {
     // and a view-model store stood up by hand — so it uses the Material 3 dialog
     // the view toolkit already ships, including its dynamic-colour support.
     implementation(libs.material)
+    // The App language setting. The platform has a LocaleManager only from API 33;
+    // AppCompatDelegate spans minSdk 26 to 36, storing the choice itself below 33 and
+    // handing it to the system above, which is why the UI Activities are AppCompat ones.
+    implementation(libs.androidx.appcompat)
     // SMTP and IMAP for the mail nodes. Roughly 600-800 KB of dex, which makes it the
     // largest single dependency after the Maps SDK — the trade for not hand-rolling
     // MIME parsing, RFC 2047 decoding and a literal-aware IMAP response reader, all of

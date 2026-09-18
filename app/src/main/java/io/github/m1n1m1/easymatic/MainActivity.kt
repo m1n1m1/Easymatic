@@ -1,11 +1,10 @@
 package io.github.m1n1m1.easymatic
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.graphics.Color
 import android.provider.Settings
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,12 +25,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import io.github.m1n1m1.easymatic.core.permissions.PermissionStatus
-import io.github.m1n1m1.easymatic.core.permissions.Permissions
 import io.github.m1n1m1.easymatic.core.permissions.PrerequisiteType
 import io.github.m1n1m1.easymatic.data.BootFailureStore
 import io.github.m1n1m1.easymatic.data.location.AndroidLocationLookup
-import io.github.m1n1m1.easymatic.data.permissions.AndroidPermissionChecker
 import io.github.m1n1m1.easymatic.domain.registry.DeviceCapabilities
 import io.github.m1n1m1.easymatic.domain.registry.GrantedPrerequisites
 import io.github.m1n1m1.easymatic.engine.service.MacroEngineService
@@ -61,6 +57,7 @@ import io.github.m1n1m1.easymatic.feature.backup.BackupScreen
 import io.github.m1n1m1.easymatic.feature.backup.BackupViewModel
 import io.github.m1n1m1.easymatic.feature.backup.UnlockBackupDialog
 import io.github.m1n1m1.easymatic.feature.plugins.PluginsScreen
+import io.github.m1n1m1.easymatic.feature.language.LanguageScreen
 import io.github.m1n1m1.easymatic.engine.api.listApiTriggers
 import io.github.m1n1m1.easymatic.feature.variables.GlobalVariablesViewModel
 import io.github.m1n1m1.easymatic.feature.home.HomeScreen
@@ -69,7 +66,7 @@ import io.github.m1n1m1.easymatic.ui.theme.EasymaticTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val listViewModel: WorkflowListViewModel by viewModels {
         WorkflowListViewModel.factory(
@@ -181,37 +178,10 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private val permissionChecker by lazy { AndroidPermissionChecker(this, this) }
-
     // Set in onResume when BootFailureStore has a pending flag and a macro is
     // enabled. Rendered as a battery-optimisation dialog over whichever screen
     // is showing.
     private var showBatteryPrompt by mutableStateOf(false)
-
-    private val requestForegroundLocation =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
-            val fineGranted = result[Permissions.ACCESS_FINE_LOCATION.manifest] == true ||
-                permissionChecker.status(Permissions.ACCESS_FINE_LOCATION) is PermissionStatus.Granted
-            if (fineGranted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                requestBackgroundPermissionIfNeeded()
-            }
-        }
-
-    private val requestBackgroundLocation =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { _ ->
-            // Result is ignored; the user can grant it later via Settings.
-        }
-
-    private val requestNotificationPermission =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { _ ->
-            // Result is ignored; the user can grant it later via Settings.
-        }
-
-    private val requestDndPolicyAccess =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { _ ->
-            // Result is ignored; the user grants access in the system Settings
-            // page and returns. They can always re-open it via the DND node.
-        }
 
     // The result code is meaningless here — the dialog reports RESULT_CANCELED
     // whichever button was pressed — so the only way to know what happened is to
@@ -232,9 +202,6 @@ class MainActivity : ComponentActivity() {
         // ServiceLocator is initialised in EasymaticApplication.onCreate(), which
         // runs before any Activity or manifest receiver, so it is ready here.
         super.onCreate(savedInstanceState)
-        requestNotificationPermissionIfNeeded()
-        requestForegroundLocationPermissionIfNeeded()
-        requestDndPermissionIfNeeded()
         // The app uses a fixed dark palette, so force light system bar icons.
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
@@ -329,6 +296,7 @@ class MainActivity : ComponentActivity() {
                     onOpenPermissions = { navController.navigate(ROUTE_PERMISSIONS) },
                     onOpenPlugins = { navController.navigate(ROUTE_PLUGINS) },
                     onOpenAppAccess = { navController.navigate(ROUTE_APP_ACCESS) },
+                    onOpenLanguage = { navController.navigate(ROUTE_LANGUAGE) },
                     onOpenBackup = { navController.navigate(ROUTE_BACKUP) },
                 )
             }
@@ -409,6 +377,9 @@ class MainActivity : ComponentActivity() {
                     reachableMacros = reachable,
                     onBack = { navController.popBackStack() },
                 )
+            }
+            composable(ROUTE_LANGUAGE) {
+                LanguageScreen(onBack = { navController.popBackStack() })
             }
             composable(ROUTE_PERMISSIONS) {
                 // No ViewModel: the state is a handful of synchronous platform
@@ -582,40 +553,6 @@ class MainActivity : ComponentActivity() {
         ServiceLocator.permissionChecker
             .isPrerequisiteSatisfied(PrerequisiteType.BATTERY_OPTIMISATION)
 
-    private fun requestNotificationPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
-        if (permissionChecker.status(Permissions.POST_NOTIFICATIONS) is PermissionStatus.Granted) return
-        requestNotificationPermission.launch(Permissions.POST_NOTIFICATIONS.manifest)
-    }
-
-    private fun requestForegroundLocationPermissionIfNeeded() {
-        val fine = permissionChecker.status(Permissions.ACCESS_FINE_LOCATION)
-        if (fine is PermissionStatus.Granted) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                requestBackgroundPermissionIfNeeded()
-            }
-            return
-        }
-        requestForegroundLocation.launch(
-            arrayOf(
-                Permissions.ACCESS_FINE_LOCATION.manifest,
-                Permissions.ACCESS_COARSE_LOCATION.manifest,
-            ),
-        )
-    }
-
-    private fun requestBackgroundPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
-        if (permissionChecker.status(Permissions.ACCESS_BACKGROUND_LOCATION) is PermissionStatus.Granted) return
-        requestBackgroundLocation.launch(Permissions.ACCESS_BACKGROUND_LOCATION.manifest)
-    }
-
-    private fun requestDndPermissionIfNeeded() {
-        if (permissionChecker.status(Permissions.ACCESS_NOTIFICATION_POLICY) is PermissionStatus.Granted) return
-        val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
-        requestDndPolicyAccess.launch(intent)
-    }
-
     companion object {
         private const val ROUTE_HOME = "home"
         private const val ROUTE_GRAPH_EDITOR = "graphEditor"
@@ -641,6 +578,7 @@ class MainActivity : ComponentActivity() {
         private const val ROUTE_PLUGINS = "plugins"
         private const val ROUTE_APP_ACCESS = "appAccess"
         private const val ROUTE_BACKUP = "backup"
+        private const val ROUTE_LANGUAGE = "language"
         private const val ARG_WORKFLOW_ID = "workflowId"
     }
 }

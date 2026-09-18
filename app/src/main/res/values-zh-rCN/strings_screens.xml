@@ -640,6 +640,7 @@
     <string name="setup_permissions_subtitle">手机允许你的宏做什么</string>
     <string name="setup_plugins_subtitle">添加节点的应用</string>
     <string name="setup_app_access_subtitle">获准运行你的宏的其他应用</string>
+    <string name="setup_language_subtitle">Easymatic 的显示语言</string>
 
     <string name="setup_section_about">关于</string>
     <string name="setup_privacy_policy">隐私政策</string>
@@ -738,4 +739,11 @@
     <string name="translate_no_languages_downloaded">尚未下载任何语言。请在“翻译模型”中添加一种，然后返回。</string>
     <string name="translate_manage_languages">翻译模型</string>
     <string name="translate_manage_languages_hint">添加或移除语言。将离开编辑器。</string>
+
+    <!-- App language screen — see LanguageScreen.kt -->
+    <string name="language_title">应用语言</string>
+    <string name="language_back">返回</string>
+    <string name="language_intro">选择 Easymatic 的显示语言。</string>
+    <string name="language_system_default">跟随系统</string>
+    <string name="language_widgets_note">在此版本的 Android 上，主屏幕小部件保持手机的语言。</string>
 </resources>

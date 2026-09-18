@@ -19,6 +19,7 @@ mapsCompose = "8.5.0"
 fragment = "1.9.0"
 javascriptengine = "1.1.0"
 material = "1.14.0"
+appcompat = "1.7.1"
 glance = "1.1.1"
 javamail = "1.6.7"
 exifinterface = "1.4.2"
@@ -64,6 +65,7 @@ androidx-glance-material3 = { group = "androidx.glance", name = "glance-material
 # Material Components (views), for the one screen that cannot be Compose: the
 # dialog `OverlayPrompts` puts on screen from a background service.
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 # SMTP and IMAP, for the mail nodes. The Android port of JavaMail rather than the
 # Jakarta-namespace org.eclipse.angus:jakarta.mail: Angus resolves its StreamProvider
 # through ServiceLoader, which R8 strips and Android resource merging breaks, and

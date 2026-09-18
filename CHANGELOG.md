@@ -21,6 +21,17 @@ section of CLAUDE.md for why.
 
 ## [Unreleased]
 
+## [0.1.2-alpha] - 2026-09-18
+code: 102
+
+Play: Choose the language Easymatic is shown in under Setup: any of its eight languages, or follow the phone. The app also no longer asks for notification, location and Do Not Disturb access the moment it opens. A permission is asked for on the node that needs it, and the Permissions screen shows what is granted and what is missing.
+
+### Added
+- An App language setting under Setup: choose which of the eight languages Easymatic is shown in, or follow the phone. On Android 13 and later the same choice appears in the phone's own Settings → Apps → Easymatic → Language.
+
+### Changed
+- The app no longer asks for notification, location and Do Not Disturb access the moment it opens. A permission is asked for on the node that needs it, and the Permissions screen shows what is granted and what is missing.
+
 ## [0.1.1-alpha] - 2026-09-15
 code: 101
 

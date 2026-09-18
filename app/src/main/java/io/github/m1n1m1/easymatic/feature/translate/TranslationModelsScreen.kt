@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.m1n1m1.easymatic.R
 import io.github.m1n1m1.easymatic.feature.SettingsTopBar
+import io.github.m1n1m1.easymatic.feature.language.AppLanguages
 import io.github.m1n1m1.easymatic.feature.grapheditor.EditorColors
 import io.github.m1n1m1.easymatic.feature.grapheditor.EditorOverlay
 import java.util.Locale
@@ -255,7 +256,7 @@ private fun ModelCard(tag: String, enabled: Boolean, onDelete: () -> Unit) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = languageName(tag),
+                    text = AppLanguages.nameOf(tag),
                     color = EditorColors.textPrimary,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,
@@ -284,10 +285,4 @@ private fun matchesFilter(filter: String, tag: String, label: String): Boolean {
     val needle = filter.trim().lowercase(Locale.getDefault())
     return label.lowercase(Locale.getDefault()).contains(needle) ||
         tag.lowercase(Locale.getDefault()).contains(needle)
-}
-
-/** A tag as its own language's name for it, falling back to the tag. */
-private fun languageName(tag: String): String {
-    val locale = runCatching { Locale.forLanguageTag(tag) }.getOrNull() ?: return tag
-    return locale.getDisplayName(locale).ifBlank { tag }
 }

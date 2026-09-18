@@ -96,7 +96,7 @@ class SystemStateReceiver : BroadcastReceiver() {
         return resolveConnectivityEvent(action, intent)
             ?: resolveHardwareEvent(action, intent)
             ?: resolveDisplayEvent(action, intent, context)
-            ?: resolveSystemEvent(action)
+            ?: resolveSystemEvent(action, intent)
     }
 
     private fun resolveConnectivityEvent(action: String, intent: Intent): String? = when (action) {
@@ -153,10 +153,14 @@ class SystemStateReceiver : BroadcastReceiver() {
 
     // The two clock actions share the `clock_change` trigger type and are told
     // apart by their event, so `trigger.clock_changed` can filter between them.
-    private fun resolveSystemEvent(action: String): String? = when (action) {
+    private fun resolveSystemEvent(action: String, intent: Intent): String? = when (action) {
         Intent.ACTION_TIMEZONE_CHANGED -> "timezone_changed"
         Intent.ACTION_DATE_CHANGED -> "date_changed"
-        Intent.ACTION_LOCALE_CHANGED -> "changed"
+        // A per-app language change — the App language setting, or the phone's own
+        // page for this app — arrives as the same action with the app named in
+        // EXTRA_PACKAGE_NAME, where a change to the phone's language names nobody.
+        // The phone's language did not change, so `trigger.locale_change` stays quiet.
+        Intent.ACTION_LOCALE_CHANGED -> if (intent.hasExtra(Intent.EXTRA_PACKAGE_NAME)) null else "changed"
         Intent.ACTION_SHUTDOWN -> "shutdown"
         else -> null
     }

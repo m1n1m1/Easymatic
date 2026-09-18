@@ -70,6 +70,7 @@ fun HomeScreen(
     onOpenPermissions: () -> Unit,
     onOpenPlugins: () -> Unit,
     onOpenAppAccess: () -> Unit,
+    onOpenLanguage: () -> Unit,
     onOpenBackup: () -> Unit,
 ) {
     var tab by rememberSaveable { mutableStateOf(HomeTab.WORKFLOWS) }
@@ -108,6 +109,7 @@ fun HomeScreen(
                     onOpenPermissions = onOpenPermissions,
                     onOpenPlugins = onOpenPlugins,
                     onOpenAppAccess = onOpenAppAccess,
+                    onOpenLanguage = onOpenLanguage,
                     onOpenBackup = onOpenBackup,
                 )
             }
