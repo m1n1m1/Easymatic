@@ -78,7 +78,7 @@ object Permissions {
     /**
      * Do-Not-Disturb policy access. Not a standard runtime permission — the
      * user must grant it on the `ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS`
-     * page (see `MainActivity.requestDndPermissionIfNeeded`). The
+     * page, which the Permissions screen opens. The
      * [PermissionChecker] handles this name specially via
      * `NotificationManager.isNotificationPolicyAccessGranted`.
      */
