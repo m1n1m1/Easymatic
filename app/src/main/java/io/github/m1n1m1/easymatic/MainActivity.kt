@@ -58,6 +58,7 @@ import io.github.m1n1m1.easymatic.feature.backup.BackupViewModel
 import io.github.m1n1m1.easymatic.feature.backup.UnlockBackupDialog
 import io.github.m1n1m1.easymatic.feature.plugins.PluginsScreen
 import io.github.m1n1m1.easymatic.feature.language.LanguageScreen
+import io.github.m1n1m1.easymatic.feature.setup.InfoScreen
 import io.github.m1n1m1.easymatic.engine.api.listApiTriggers
 import io.github.m1n1m1.easymatic.feature.variables.GlobalVariablesViewModel
 import io.github.m1n1m1.easymatic.feature.home.HomeScreen
@@ -298,6 +299,7 @@ class MainActivity : AppCompatActivity() {
                     onOpenAppAccess = { navController.navigate(ROUTE_APP_ACCESS) },
                     onOpenLanguage = { navController.navigate(ROUTE_LANGUAGE) },
                     onOpenBackup = { navController.navigate(ROUTE_BACKUP) },
+                    onOpenInfo = { navController.navigate(ROUTE_INFO) },
                 )
             }
             composable(ROUTE_GEOFENCES) {
@@ -380,6 +382,9 @@ class MainActivity : AppCompatActivity() {
             }
             composable(ROUTE_LANGUAGE) {
                 LanguageScreen(onBack = { navController.popBackStack() })
+            }
+            composable(ROUTE_INFO) {
+                InfoScreen(onBack = { navController.popBackStack() })
             }
             composable(ROUTE_PERMISSIONS) {
                 // No ViewModel: the state is a handful of synchronous platform
@@ -579,6 +584,7 @@ class MainActivity : AppCompatActivity() {
         private const val ROUTE_APP_ACCESS = "appAccess"
         private const val ROUTE_BACKUP = "backup"
         private const val ROUTE_LANGUAGE = "language"
+        private const val ROUTE_INFO = "info"
         private const val ARG_WORKFLOW_ID = "workflowId"
     }
 }
