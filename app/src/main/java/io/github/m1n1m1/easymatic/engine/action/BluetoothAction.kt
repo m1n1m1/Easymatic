@@ -1,6 +1,7 @@
 package io.github.m1n1m1.easymatic.engine.action
 
 import io.github.m1n1m1.easymatic.core.service.LogLevel
+import io.github.m1n1m1.easymatic.domain.model.PlatformWarning
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
 import io.github.m1n1m1.easymatic.domain.model.NodeIcon
 import io.github.m1n1m1.easymatic.domain.model.dataOut
@@ -24,6 +25,7 @@ class BluetoothAction : Action<ToggleConfig, BluetoothState> {
         typeId = "action.bluetooth",
         displayName = "Toggle Bluetooth",
         description = "Requests Bluetooth on or off; Android 13+ blocks automatic changes for ordinary apps",
+        platformWarnings = listOf(PlatformWarning.BLUETOOTH_TOGGLE),
         category = NodeCategory.DEVICE_SETTINGS,
         icon = NodeIcon.BLUETOOTH,
         permissions = listOf(BLUETOOTH_PERMISSION),

@@ -2,6 +2,7 @@ package io.github.m1n1m1.easymatic.engine.action
 
 import io.github.m1n1m1.easymatic.core.permissions.PermissionRequirement
 import io.github.m1n1m1.easymatic.core.permissions.PrerequisiteType
+import io.github.m1n1m1.easymatic.domain.model.PlatformWarning
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
 import io.github.m1n1m1.easymatic.domain.model.NodeIcon
 import io.github.m1n1m1.easymatic.domain.model.config.FilePath
@@ -86,6 +87,7 @@ class ScreenshotAction : Action<ScreenshotConfig, ImageResultItem> {
         typeId = "action.screenshot",
         displayName = "Take Screenshot",
         description = "Captures what is on the screen right now and saves it as a picture",
+        platformWarnings = listOf(PlatformWarning.SCREENSHOT_UNAVAILABLE),
         category = NodeCategory.IMAGES,
         icon = NodeIcon.SCREENSHOT,
         output = dataOut<ImageResultItem>("state", label = "Result"),

@@ -12,6 +12,7 @@ import io.github.m1n1m1.easymatic.domain.model.DataOut
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
 import io.github.m1n1m1.easymatic.domain.model.NodeIcon
 import io.github.m1n1m1.easymatic.domain.model.NodeKind
+import io.github.m1n1m1.easymatic.domain.model.PlatformWarning
 import io.github.m1n1m1.easymatic.domain.model.NodeTypeDefinition
 import io.github.m1n1m1.easymatic.core.model.NodeTypeId
 import io.github.m1n1m1.easymatic.domain.model.Port
@@ -50,6 +51,7 @@ class ActionNodeDefinition<I : Any, O : Any> @PublishedApi internal constructor(
     val hasDynamicPorts: Boolean,
     val permissions: List<PermissionRequirement> = emptyList(),
     val capabilities: List<DeviceCapability> = emptyList(),
+    val platformWarnings: List<PlatformWarning> = emptyList(),
 ) {
     /** Static metadata view for [io.github.m1n1m1.easymatic.domain.registry.NodeTypeRegistry]. */
     val nodeType: NodeTypeDefinition
@@ -65,6 +67,7 @@ class ActionNodeDefinition<I : Any, O : Any> @PublishedApi internal constructor(
             hasDynamicPorts = hasDynamicPorts,
             permissionRequirements = permissions,
             capabilities = capabilities,
+            platformWarnings = platformWarnings,
         )
 
     /** Static config-form view for [io.github.m1n1m1.easymatic.domain.registry.ConfigSchemaRegistry]. */
@@ -451,6 +454,7 @@ inline fun <reified I : Any, O : Any> actionNode(
     execOutputs: ExecOutputs = ExecOutputs.SINGLE,
     permissions: List<PermissionRequirement> = emptyList(),
     capabilities: List<DeviceCapability> = emptyList(),
+    platformWarnings: List<PlatformWarning> = emptyList(),
 ): ActionNodeDefinition<I, O> = ActionNodeDefinition(
     typeId = NodeTypeId(typeId),
     displayName = displayName,
@@ -464,6 +468,7 @@ inline fun <reified I : Any, O : Any> actionNode(
     hasDynamicPorts = false,
     permissions = permissions,
     capabilities = capabilities,
+    platformWarnings = platformWarnings,
 )
 
 /**

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="platform_warning_wifi">Android 10 and newer block automatic Wi-Fi changes for this app. Granting permissions will not enable this action. Change Wi-Fi in system settings instead.</string>
+    <string name="platform_warning_bluetooth">Android 13 and newer block automatic Bluetooth changes for this app. Nearby devices permission does not remove this restriction. Change Bluetooth in system settings instead.</string>
+    <string name="platform_warning_dnd">On Android 15 and newer, this action controls only the app’s own Do Not Disturb rule. Other active modes can keep Do Not Disturb on after this action turns it off.</string>
+    <string name="platform_warning_screenshot">Taking screenshots requires Android 11 or newer. This action cannot capture the screen on this device, even with accessibility access.</string>
+    <string name="platform_warning_picture_bin">Android 10 and older have no recoverable picture bin. On this device, choosing “Move to the bin” deletes the picture permanently.</string>
+</resources>

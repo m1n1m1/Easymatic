@@ -9,6 +9,8 @@ import io.github.m1n1m1.easymatic.domain.registry.PluginNodes
 import io.github.m1n1m1.easymatic.engine.ai.NodeCatalog
 import io.github.m1n1m1.easymatic.feature.i18n.slug
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
@@ -268,6 +270,9 @@ private data class NodeDoc(
     val configFields: List<ConfigFieldDoc>,
     val permissions: List<PermissionDoc>,
     val capabilities: List<String>,
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val platformWarnings: List<String> = emptyList(),
 )
 
 @Serializable
@@ -363,6 +368,7 @@ private fun NodeTypeDefinition.toDoc(): NodeDoc = NodeDoc(
         )
     },
     capabilities = capabilities.map { it.name },
+    platformWarnings = platformWarnings.map { it.name },
 )
 
 private fun ConfigField<*>.toDoc(): ConfigFieldDoc = ConfigFieldDoc(

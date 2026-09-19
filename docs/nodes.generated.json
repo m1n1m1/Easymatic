@@ -4641,7 +4641,10 @@
                     "label": "BLUETOOTH_CONNECT"
                 }
             ],
-            "capabilities": []
+            "capabilities": [],
+            "platformWarnings": [
+                "BLUETOOTH_TOGGLE"
+            ]
         },
         {
             "typeId": "action.brightness",
@@ -6132,7 +6135,10 @@
                     "label": "Do Not Disturb access"
                 }
             ],
-            "capabilities": []
+            "capabilities": [],
+            "platformWarnings": [
+                "DND_GLOBAL_CONTROL"
+            ]
         },
         {
             "typeId": "action.enable_macro",
@@ -8021,7 +8027,10 @@
                     "label": "accessibility access"
                 }
             ],
-            "capabilities": []
+            "capabilities": [],
+            "platformWarnings": [
+                "SCREENSHOT_UNAVAILABLE"
+            ]
         },
         {
             "typeId": "action.camera_photo",
@@ -9092,7 +9101,10 @@
                     "label": "permission to draw over other apps"
                 }
             ],
-            "capabilities": []
+            "capabilities": [],
+            "platformWarnings": [
+                "PICTURE_BIN_UNAVAILABLE"
+            ]
         },
         {
             "typeId": "action.record_audio",
@@ -12452,7 +12464,10 @@
                 }
             ],
             "permissions": [],
-            "capabilities": []
+            "capabilities": [],
+            "platformWarnings": [
+                "WIFI_TOGGLE"
+            ]
         },
         {
             "typeId": "action.break",

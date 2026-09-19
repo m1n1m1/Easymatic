@@ -1,6 +1,7 @@
 package io.github.m1n1m1.easymatic.engine.action
 
 import io.github.m1n1m1.easymatic.core.service.LogLevel
+import io.github.m1n1m1.easymatic.domain.model.PlatformWarning
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
 import io.github.m1n1m1.easymatic.domain.model.NodeIcon
 import io.github.m1n1m1.easymatic.domain.model.dataOut
@@ -24,6 +25,7 @@ class WifiAction : Action<ToggleConfig, WifiState> {
         typeId = "action.wifi",
         displayName = "Toggle Wi-Fi",
         description = "Requests Wi-Fi on or off; Android 10+ blocks automatic changes for ordinary apps",
+        platformWarnings = listOf(PlatformWarning.WIFI_TOGGLE),
         category = NodeCategory.DEVICE_SETTINGS,
         icon = NodeIcon.WIFI,
         output = dataOut<WifiState>("state"),

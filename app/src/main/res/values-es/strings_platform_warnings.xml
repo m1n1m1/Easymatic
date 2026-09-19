@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="platform_warning_wifi">Android 10 y posteriores bloquean los cambios automáticos de Wi-Fi para esta app. Conceder permisos no habilita esta acción. Cambia el Wi-Fi en los ajustes del sistema.</string>
+    <string name="platform_warning_bluetooth">Android 13 y posteriores bloquean los cambios automáticos de Bluetooth para esta app. El permiso de dispositivos cercanos no elimina esta restricción. Cambia el Bluetooth en los ajustes del sistema.</string>
+    <string name="platform_warning_dnd">En Android 15 y posteriores, esta acción solo controla la regla No molestar de la propia app. Otros modos activos pueden mantener No molestar activado después de que esta acción lo desactive.</string>
+    <string name="platform_warning_screenshot">Las capturas de pantalla requieren Android 11 o posterior. Esta acción no puede capturar la pantalla en este dispositivo, ni siquiera con acceso de accesibilidad.</string>
+    <string name="platform_warning_picture_bin">Android 10 y anteriores no tienen una papelera de imágenes recuperables. En este dispositivo, elegir «Mover a la papelera» elimina la imagen permanentemente.</string>
+</resources>

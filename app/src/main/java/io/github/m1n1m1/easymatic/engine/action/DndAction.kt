@@ -3,6 +3,7 @@ package io.github.m1n1m1.easymatic.engine.action
 import io.github.m1n1m1.easymatic.core.service.LogLevel
 import io.github.m1n1m1.easymatic.core.service.DndLevel
 import io.github.m1n1m1.easymatic.core.service.OnOff
+import io.github.m1n1m1.easymatic.domain.model.PlatformWarning
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
 import io.github.m1n1m1.easymatic.domain.model.NodeIcon
 import io.github.m1n1m1.easymatic.domain.model.config.Hint
@@ -40,6 +41,7 @@ class DndAction : Action<DndConfig, DndState> {
         typeId = "action.dnd",
         displayName = "Do Not Disturb",
         description = "Toggles Do-Not-Disturb on or off with a chosen policy level",
+        platformWarnings = listOf(PlatformWarning.DND_GLOBAL_CONTROL),
         category = NodeCategory.DEVICE_SETTINGS,
         icon = NodeIcon.DND,
         permissions = listOf(DND_POLICY_PERMISSION),
