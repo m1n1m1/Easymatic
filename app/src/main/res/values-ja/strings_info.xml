@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="info_title">アプリ情報</string>
+    <string name="info_back">戻る</string>
+    <string name="info_version">バージョン</string>
+    <string name="info_build_number">ビルド番号</string>
+    <string name="setup_info_subtitle">アプリのバージョンとビルド番号</string>
+    <string name="setup_section_links">リンク</string>
+    <string name="setup_website">ウェブサイト</string>
+    <string name="setup_website_subtitle">Easymatic を知る</string>
+    <string name="setup_docs">ドキュメント</string>
+    <string name="setup_docs_subtitle">ガイドとノードリファレンス</string>
+    <string name="setup_github">GitHub</string>
+    <string name="setup_github_subtitle">ソースコード、リリース、不具合報告</string>
+</resources>

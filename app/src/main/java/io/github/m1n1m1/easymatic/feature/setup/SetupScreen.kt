@@ -16,6 +16,9 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Key
@@ -89,6 +92,7 @@ fun SetupScreen(
     onOpenAppAccess: () -> Unit,
     onOpenLanguage: () -> Unit,
     onOpenBackup: () -> Unit,
+    onOpenInfo: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -249,23 +253,44 @@ fun SetupScreen(
 
             item { SectionHeader(R.string.setup_section_about) }
             item {
-                // The one row that is not a destination in this app, so it is also the
-                // one that resolves its own click rather than taking a lambda from
-                // `MainActivity`: there is no `NavController` route to a web page, and
-                // threading a twelfth parameter through `HomeScreen` for something that
-                // *leaves* the app would say it is navigation when it is not.
-                //
-                // The policy is hosted rather than bundled because Play requires a
-                // public URL for the store listing either way, and two copies of it
-                // would eventually disagree.
-                PrivacyPolicyRow()
+                SetupRow(
+                    icon = Icons.Filled.Info,
+                    titleRes = R.string.info_title,
+                    subtitleRes = R.string.setup_info_subtitle,
+                    onClick = onOpenInfo,
+                )
+            }
+            item {
+                WebLinkRow(
+                    Icons.Filled.PrivacyTip, R.string.setup_privacy_policy,
+                    R.string.setup_privacy_policy_subtitle, PRIVACY_POLICY_URL,
+                )
+            }
+            item { SectionHeader(R.string.setup_section_links) }
+            item {
+                WebLinkRow(
+                    Icons.Filled.Language, R.string.setup_website,
+                    R.string.setup_website_subtitle, "https://easymatic.app",
+                )
+            }
+            item {
+                WebLinkRow(
+                    Icons.AutoMirrored.Filled.MenuBook, R.string.setup_docs,
+                    R.string.setup_docs_subtitle, "https://easymatic.app/docs/",
+                )
+            }
+            item {
+                WebLinkRow(
+                    Icons.Filled.Code, R.string.setup_github,
+                    R.string.setup_github_subtitle, "https://github.com/m1n1m1/Easymatic",
+                )
             }
         }
     }
 }
 
 /**
- * Opens the hosted privacy policy in whatever the phone uses for the web.
+ * Opens a hosted page in whatever the phone uses for the web.
  *
  * `runCatching` because `ACTION_VIEW` throws when nothing on the device handles
  * https — rare, but a phone with no browser is not a phone this screen should crash
@@ -273,14 +298,19 @@ fun SetupScreen(
  * which is the same outcome as a browser that opens and fails to load.
  */
 @Composable
-private fun PrivacyPolicyRow() {
+private fun WebLinkRow(
+    icon: ImageVector,
+    @StringRes titleRes: Int,
+    @StringRes subtitleRes: Int,
+    url: String,
+) {
     val context = LocalContext.current
     SetupRow(
-        icon = Icons.Filled.PrivacyTip,
-        titleRes = R.string.setup_privacy_policy,
-        subtitleRes = R.string.setup_privacy_policy_subtitle,
+        icon = icon,
+        titleRes = titleRes,
+        subtitleRes = subtitleRes,
         onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, PRIVACY_POLICY_URL.toUri())
+            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             runCatching { context.startActivity(intent) }
         },
     )
