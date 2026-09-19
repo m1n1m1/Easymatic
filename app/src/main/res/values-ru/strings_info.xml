@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="info_title">Информация</string>
+    <string name="info_back">Назад</string>
+    <string name="info_version">Версия</string>
+    <string name="info_build_number">Номер сборки</string>
+    <string name="setup_info_subtitle">Версия приложения и номер сборки</string>
+    <string name="setup_section_links">Ссылки</string>
+    <string name="setup_website">Сайт</string>
+    <string name="setup_website_subtitle">Знакомство с Easymatic</string>
+    <string name="setup_docs">Документация</string>
+    <string name="setup_docs_subtitle">Руководства и справочник узлов</string>
+    <string name="setup_github">GitHub</string>
+    <string name="setup_github_subtitle">Исходный код, выпуски и сообщения об ошибках</string>
+</resources>
