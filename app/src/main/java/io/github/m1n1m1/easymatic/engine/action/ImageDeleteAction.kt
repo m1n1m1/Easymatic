@@ -1,5 +1,6 @@
 package io.github.m1n1m1.easymatic.engine.action
 
+import io.github.m1n1m1.easymatic.domain.model.PlatformWarning
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
 import io.github.m1n1m1.easymatic.domain.model.NodeIcon
 import io.github.m1n1m1.easymatic.domain.model.config.FilePath
@@ -66,6 +67,7 @@ class ImageDeleteAction : Action<ImageDeleteConfig, ImageResultItem> {
         typeId = "action.image_delete",
         displayName = "Delete Picture",
         description = "Moves a photo to the bin, or deletes it for good",
+        platformWarnings = listOf(PlatformWarning.PICTURE_BIN_UNAVAILABLE),
         category = NodeCategory.IMAGES,
         icon = NodeIcon.IMAGE,
         output = dataOut<ImageResultItem>("state", label = "Result"),

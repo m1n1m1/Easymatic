@@ -462,6 +462,7 @@ private fun PaletteRow(
                 style = MaterialTheme.typography.bodySmall,
                 color = EditorColors.textSecondary,
             )
+            NodePlatformWarnings(definition)
         }
     }
 }

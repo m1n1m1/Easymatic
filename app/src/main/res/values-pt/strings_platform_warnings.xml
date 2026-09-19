@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="platform_warning_wifi">O Android 10 e versões posteriores bloqueiam alterações automáticas de Wi-Fi para esta app. Conceder permissões não ativa esta ação. Altere o Wi-Fi nas definições do sistema.</string>
+    <string name="platform_warning_bluetooth">O Android 13 e versões posteriores bloqueiam alterações automáticas de Bluetooth para esta app. A permissão de dispositivos próximos não remove esta restrição. Altere o Bluetooth nas definições do sistema.</string>
+    <string name="platform_warning_dnd">No Android 15 e versões posteriores, esta ação controla apenas a regra Não incomodar da própria app. Outros modos ativos podem manter Não incomodar ligado depois de esta ação o desligar.</string>
+    <string name="platform_warning_screenshot">As capturas de ecrã requerem Android 11 ou posterior. Esta ação não pode capturar o ecrã neste dispositivo, mesmo com acesso de acessibilidade.</string>
+    <string name="platform_warning_picture_bin">O Android 10 e versões anteriores não têm um caixote de imagens recuperáveis. Neste dispositivo, escolher «Mover para o caixote» elimina a imagem permanentemente.</string>
+</resources>

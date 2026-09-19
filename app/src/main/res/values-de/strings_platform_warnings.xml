@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="platform_warning_wifi">Android 10 und neuer blockieren automatische WLAN-Änderungen für diese App. Berechtigungen heben diese Einschränkung nicht auf. Ändere WLAN in den Systemeinstellungen.</string>
+    <string name="platform_warning_bluetooth">Android 13 und neuer blockieren automatische Bluetooth-Änderungen für diese App. Die Berechtigung für Geräte in der Nähe hebt diese Einschränkung nicht auf. Ändere Bluetooth in den Systemeinstellungen.</string>
+    <string name="platform_warning_dnd">Unter Android 15 und neuer steuert diese Aktion nur die eigene „Nicht stören“-Regel der App. Andere aktive Modi können „Nicht stören“ eingeschaltet lassen, nachdem diese Aktion es ausschaltet.</string>
+    <string name="platform_warning_screenshot">Screenshots erfordern Android 11 oder neuer. Diese Aktion kann auf diesem Gerät auch mit Bedienungshilfen-Zugriff keine Screenshots aufnehmen.</string>
+    <string name="platform_warning_picture_bin">Android 10 und älter haben keinen Papierkorb für wiederherstellbare Bilder. Auf diesem Gerät löscht „In den Papierkorb verschieben“ das Bild endgültig.</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="platform_warning_wifi">Android 10及更高版本禁止此应用自动切换Wi-Fi。授予权限也无法启用此操作。请在系统设置中切换Wi-Fi。</string>
+    <string name="platform_warning_bluetooth">Android 13及更高版本禁止此应用自动切换蓝牙。授予附近设备权限不会解除此限制。请在系统设置中切换蓝牙。</string>
+    <string name="platform_warning_dnd">在Android 15及更高版本中，此操作仅控制应用自身的勿扰规则。即使此操作关闭了勿扰模式，其他已启用的模式仍可能使勿扰保持开启。</string>
+    <string name="platform_warning_screenshot">截屏需要Android 11或更高版本。在此设备上，即使授予无障碍权限，此操作也无法截屏。</string>
+    <string name="platform_warning_picture_bin">Android 10及更早版本没有可恢复图片的回收站。在此设备上，选择“移至回收站”会永久删除图片。</string>
+</resources>

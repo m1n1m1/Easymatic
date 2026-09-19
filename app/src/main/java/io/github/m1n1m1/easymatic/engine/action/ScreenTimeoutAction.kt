@@ -1,5 +1,6 @@
 package io.github.m1n1m1.easymatic.engine.action
 
+import io.github.m1n1m1.easymatic.core.service.LogLevel
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
 import io.github.m1n1m1.easymatic.domain.model.NodeIcon
 import io.github.m1n1m1.easymatic.domain.model.config.Label
@@ -32,6 +33,7 @@ class ScreenTimeoutAction : Action<ScreenTimeoutConfig, ScreenTimeoutState> {
         description = "Sets the screen-off timeout in milliseconds",
         category = NodeCategory.DEVICE_SETTINGS,
         icon = NodeIcon.TIMER,
+        permissions = listOf(WRITE_SETTINGS_PERMISSION),
         output = dataOut<ScreenTimeoutState>("state"),
     )
 
@@ -40,6 +42,12 @@ class ScreenTimeoutAction : Action<ScreenTimeoutConfig, ScreenTimeoutState> {
         context: ExecutionContext,
     ): NodeOutput<ScreenTimeoutState> {
         val result = context.systemServices.setScreenTimeout(input.timeoutMs)
+        if (result?.changed != true) {
+            context.log(
+                "ScreenTimeout: no device setting change was reported; check permissions and device restrictions",
+                LogLevel.WARN,
+            )
+        }
         return NodeOutput(ScreenTimeoutState(ms = result?.ms ?: input.timeoutMs, changed = result?.changed ?: false))
     }
 }

@@ -580,7 +580,7 @@
     <string name="opt_action_screen_rotation_rotation_landscape_left">Landscape left</string>
     <string name="opt_action_screen_rotation_rotation_landscape_right">Landscape right</string>
     <string name="node_action_bluetooth_name">Toggle Bluetooth</string>
-    <string name="node_action_bluetooth_desc">Turns Bluetooth on or off and reports the resulting state</string>
+    <string name="node_action_bluetooth_desc">Requests Bluetooth on or off; Android 13+ blocks automatic changes for ordinary apps</string>
     <string name="port_action_bluetooth_in">in</string>
     <string name="port_action_bluetooth_out">out</string>
     <string name="port_action_bluetooth_state">state</string>
@@ -1587,7 +1587,7 @@
     <string name="cfg_action_volume_value">Value</string>
     <string name="hint_action_volume_value">0-100, only when mode is set</string>
     <string name="node_action_wifi_name">Toggle Wi-Fi</string>
-    <string name="node_action_wifi_desc">Turns Wi-Fi on or off and reports the resulting state</string>
+    <string name="node_action_wifi_desc">Requests Wi-Fi on or off; Android 10+ blocks automatic changes for ordinary apps</string>
     <string name="port_action_wifi_in">in</string>
     <string name="port_action_wifi_out">out</string>
     <string name="port_action_wifi_state">state</string>

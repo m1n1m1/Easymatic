@@ -601,6 +601,7 @@ private fun NodeConfigOverlay(
                 fontSize = 12.sp,
             )
             Spacer(modifier = Modifier.height(12.dp))
+            NodePlatformWarnings(definition)
             NodePermissionNotice(definition = definition, node = node)
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(

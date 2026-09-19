@@ -14,7 +14,7 @@ interface SystemServices {
     // something and none of them waits for a reply — and waiting is most of what that
     // node now does. See [Prompts] for the same boundary drawn for the same reason.
 
-    /** Toggles Wi-Fi. Returns the new state, or null if it could not be changed. */
+    /** Requests Wi-Fi on/off. Returns the accepted target state, or null on rejection. Transition is asynchronous. */
     fun setWifi(enabled: Boolean): Boolean?
 
     /** Performs an HTTP request. */
@@ -256,7 +256,7 @@ data class HttpResponse(
  * - [mode]: the requested change.
  * - [volume]: resulting volume index.
  * - [maxVolume]: maximum index for the stream.
- * - [changed]: whether the call was accepted.
+ * - [changed]: whether a volume or mute-state change was observed.
  */
 data class VolumeResult(
     val stream: AudioStream,
@@ -271,7 +271,7 @@ data class VolumeResult(
  *
  * - [enabled]: whether DND is now active.
  * - [level]: policy in effect ([DndLevel.ALL] when DND is off).
- * - [changed]: whether the call was accepted.
+ * - [changed]: whether the observed global filter matches the request.
  */
 data class DndResult(
     val enabled: Boolean,

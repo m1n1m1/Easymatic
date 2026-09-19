@@ -156,6 +156,7 @@ internal fun rationaleRes(requirement: PermissionRequirement): Int? =
         // sentence from reading a message, and the card is on the node.
         "call.notification" -> R.string.perm_rationale_call_notification
         "dnd.policy" -> R.string.perm_rationale_dnd_policy
+        "settings.write" -> R.string.perm_desc_write_settings
         "overlay.dialog" -> R.string.perm_rationale_overlay_dialog
         "nfc.radio" -> R.string.perm_rationale_nfc_radio
         "alarm.exact" -> R.string.perm_rationale_alarm_exact

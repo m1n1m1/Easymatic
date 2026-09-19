@@ -1,5 +1,6 @@
 package io.github.m1n1m1.easymatic.engine.action
 
+import io.github.m1n1m1.easymatic.core.service.LogLevel
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
 import io.github.m1n1m1.easymatic.domain.model.NodeIcon
 import io.github.m1n1m1.easymatic.domain.model.dataOut
@@ -22,11 +23,18 @@ class AutoRotateAction : Action<ToggleConfig, AutoRotateState> {
         description = "Turns accelerometer auto-rotation on or off",
         category = NodeCategory.DEVICE_SETTINGS,
         icon = NodeIcon.BOLT,
+        permissions = listOf(WRITE_SETTINGS_PERMISSION),
         output = dataOut<AutoRotateState>("state"),
     )
 
     override suspend fun execute(input: ToggleConfig, context: ExecutionContext): NodeOutput<AutoRotateState> {
         val result = context.systemServices.setAutoRotate(input.enabled)
+        if (result?.changed != true) {
+            context.log(
+                "AutoRotate: no device setting change was reported; check permissions and device restrictions",
+                LogLevel.WARN,
+            )
+        }
         return NodeOutput(
             AutoRotateState(
                 enabled = result?.enabled ?: input.enabled,
