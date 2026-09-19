@@ -1,5 +1,6 @@
 package io.github.m1n1m1.easymatic.engine.action
 
+import io.github.m1n1m1.easymatic.core.service.LogLevel
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
 import io.github.m1n1m1.easymatic.domain.model.NodeIcon
 import io.github.m1n1m1.easymatic.domain.model.dataOut
@@ -22,17 +23,25 @@ class BluetoothAction : Action<ToggleConfig, BluetoothState> {
     override val definition = actionNode<ToggleConfig, BluetoothState>(
         typeId = "action.bluetooth",
         displayName = "Toggle Bluetooth",
-        description = "Turns Bluetooth on or off and reports the resulting state",
+        description = "Requests Bluetooth on or off; Android 13+ blocks automatic changes for ordinary apps",
         category = NodeCategory.DEVICE_SETTINGS,
         icon = NodeIcon.BLUETOOTH,
+        permissions = listOf(BLUETOOTH_PERMISSION),
         output = dataOut<BluetoothState>("state"),
     )
 
     override suspend fun execute(input: ToggleConfig, context: ExecutionContext): NodeOutput<BluetoothState> {
         val result = context.systemServices.setBluetooth(input.enabled)
+        if (result?.changed != true) {
+            context.log(
+                "Bluetooth change refused. Check Nearby devices permission. Android 13+ blocks automatic " +
+                    "changes for ordinary apps; change Bluetooth in system settings.",
+                LogLevel.WARN,
+            )
+        }
         return NodeOutput(
             BluetoothState(
-                enabled = result?.enabled ?: input.enabled,
+                enabled = result?.enabled ?: context.deviceState.isBluetoothEnabled() ?: input.enabled,
                 changed = result?.changed ?: false,
             ),
         )

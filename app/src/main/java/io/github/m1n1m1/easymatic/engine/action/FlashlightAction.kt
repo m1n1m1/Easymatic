@@ -46,6 +46,7 @@ class FlashlightAction : Action<FlashlightConfig, TorchState> {
         description = "Turns the camera torch (flashlight) on, off or to the opposite of its current state",
         category = NodeCategory.DEVICE_SETTINGS,
         icon = NodeIcon.BOLT,
+        permissions = listOf(TORCH_CAMERA_PERMISSION),
         output = dataOut<TorchState>("state"),
     )
 
@@ -56,6 +57,12 @@ class FlashlightAction : Action<FlashlightConfig, TorchState> {
             return NodeOutput(TorchState(enabled = false, changed = false))
         }
         val result = context.systemServices.setTorch(wanted)
+        if (result?.changed != true) {
+            context.log(
+                "Flashlight: no device setting change was reported; check permissions and device restrictions",
+                LogLevel.WARN,
+            )
+        }
         return NodeOutput(TorchState(enabled = result?.enabled ?: wanted, changed = result?.changed ?: false))
     }
 }

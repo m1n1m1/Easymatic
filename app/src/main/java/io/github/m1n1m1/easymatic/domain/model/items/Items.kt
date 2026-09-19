@@ -128,7 +128,7 @@ data class WifiState(
  * - [mode]: what was done.
  * - [volume]: resulting volume index (0..[maxVolume]).
  * - [maxVolume]: maximum index for the stream.
- * - [changed]: whether the system accepted the change.
+ * - [changed]: whether a volume or mute-state change was observed.
  */
 @Serializable
 data class VolumeState(
@@ -144,7 +144,7 @@ data class VolumeState(
  *
  * - [enabled]: whether DND is now active.
  * - [level]: DND policy in effect ([DndLevel.ALL] when disabled).
- * - [changed]: whether the system accepted the change (requires the
+ * - [changed]: whether the observed global filter matches the request (requires the
  *   `ACCESS_NOTIFICATION_POLICY` permission).
  */
 @Serializable

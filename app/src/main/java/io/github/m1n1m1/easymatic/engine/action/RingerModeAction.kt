@@ -1,5 +1,6 @@
 package io.github.m1n1m1.easymatic.engine.action
 
+import io.github.m1n1m1.easymatic.core.service.LogLevel
 import io.github.m1n1m1.easymatic.core.service.RingerMode
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
 import io.github.m1n1m1.easymatic.domain.model.NodeIcon
@@ -32,11 +33,18 @@ class RingerModeAction : Action<RingerModeConfig, RingerModeState> {
         description = "Sets the ringer mode to normal, silent or vibrate",
         category = NodeCategory.DEVICE_SETTINGS,
         icon = NodeIcon.BOLT,
+        permissions = listOf(DND_POLICY_PERMISSION),
         output = dataOut<RingerModeState>("state"),
     )
 
     override suspend fun execute(input: RingerModeConfig, context: ExecutionContext): NodeOutput<RingerModeState> {
         val result = context.systemServices.setRingerMode(input.mode)
+        if (result?.changed != true) {
+            context.log(
+                "RingerMode: no device setting change was reported; check permissions and device restrictions",
+                LogLevel.WARN,
+            )
+        }
         return NodeOutput(RingerModeState(mode = result?.mode ?: input.mode, changed = result?.changed ?: false))
     }
 }

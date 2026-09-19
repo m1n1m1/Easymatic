@@ -4497,7 +4497,14 @@
                     "chooser": null
                 }
             ],
-            "permissions": [],
+            "permissions": [
+                {
+                    "key": "WRITE_SETTINGS",
+                    "type": "WRITE_SETTINGS",
+                    "manifestPermission": null,
+                    "label": "permission to change system settings"
+                }
+            ],
             "capabilities": []
         },
         {
@@ -4562,14 +4569,21 @@
                     "chooser": null
                 }
             ],
-            "permissions": [],
+            "permissions": [
+                {
+                    "key": "WRITE_SETTINGS",
+                    "type": "WRITE_SETTINGS",
+                    "manifestPermission": null,
+                    "label": "permission to change system settings"
+                }
+            ],
             "capabilities": []
         },
         {
             "typeId": "action.bluetooth",
             "slug": "action_bluetooth",
             "displayName": "Toggle Bluetooth",
-            "description": "Turns Bluetooth on or off and reports the resulting state",
+            "description": "Requests Bluetooth on or off; Android 13+ blocks automatic changes for ordinary apps",
             "kind": "ACTION",
             "category": "DEVICE_SETTINGS",
             "categoryLabel": "Device Settings",
@@ -4619,7 +4633,14 @@
                     "chooser": null
                 }
             ],
-            "permissions": [],
+            "permissions": [
+                {
+                    "key": "android.permission.BLUETOOTH_CONNECT",
+                    "type": "RUNTIME",
+                    "manifestPermission": "android.permission.BLUETOOTH_CONNECT",
+                    "label": "BLUETOOTH_CONNECT"
+                }
+            ],
             "capabilities": []
         },
         {
@@ -4677,7 +4698,14 @@
                     "chooser": null
                 }
             ],
-            "permissions": [],
+            "permissions": [
+                {
+                    "key": "WRITE_SETTINGS",
+                    "type": "WRITE_SETTINGS",
+                    "manifestPermission": null,
+                    "label": "permission to change system settings"
+                }
+            ],
             "capabilities": []
         },
         {
@@ -6096,7 +6124,14 @@
                     "chooser": null
                 }
             ],
-            "permissions": [],
+            "permissions": [
+                {
+                    "key": "NOTIFICATION_POLICY",
+                    "type": "NOTIFICATION_POLICY",
+                    "manifestPermission": null,
+                    "label": "Do Not Disturb access"
+                }
+            ],
             "capabilities": []
         },
         {
@@ -6212,7 +6247,14 @@
                     "chooser": null
                 }
             ],
-            "permissions": [],
+            "permissions": [
+                {
+                    "key": "android.permission.CAMERA",
+                    "type": "RUNTIME",
+                    "manifestPermission": "android.permission.CAMERA",
+                    "label": "camera access"
+                }
+            ],
             "capabilities": []
         },
         {
@@ -11826,7 +11868,14 @@
                     "chooser": null
                 }
             ],
-            "permissions": [],
+            "permissions": [
+                {
+                    "key": "NOTIFICATION_POLICY",
+                    "type": "NOTIFICATION_POLICY",
+                    "manifestPermission": null,
+                    "label": "Do Not Disturb access"
+                }
+            ],
             "capabilities": []
         },
         {
@@ -11874,7 +11923,14 @@
                     "chooser": null
                 }
             ],
-            "permissions": [],
+            "permissions": [
+                {
+                    "key": "WRITE_SETTINGS",
+                    "type": "WRITE_SETTINGS",
+                    "manifestPermission": null,
+                    "label": "permission to change system settings"
+                }
+            ],
             "capabilities": []
         },
         {
@@ -12331,14 +12387,21 @@
                     "chooser": null
                 }
             ],
-            "permissions": [],
+            "permissions": [
+                {
+                    "key": "NOTIFICATION_POLICY",
+                    "type": "NOTIFICATION_POLICY",
+                    "manifestPermission": null,
+                    "label": "Do Not Disturb access"
+                }
+            ],
             "capabilities": []
         },
         {
             "typeId": "action.wifi",
             "slug": "action_wifi",
             "displayName": "Toggle Wi-Fi",
-            "description": "Turns Wi-Fi on or off and reports the resulting state",
+            "description": "Requests Wi-Fi on or off; Android 10+ blocks automatic changes for ordinary apps",
             "kind": "ACTION",
             "category": "DEVICE_SETTINGS",
             "categoryLabel": "Device Settings",
