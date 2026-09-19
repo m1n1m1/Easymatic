@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="info_title">Informations</string>
+    <string name="info_back">Retour</string>
+    <string name="info_version">Version</string>
+    <string name="info_build_number">Numéro de build</string>
+    <string name="setup_info_subtitle">Version et numéro de build de l’application</string>
+    <string name="setup_section_links">Liens</string>
+    <string name="setup_website">Site web</string>
+    <string name="setup_website_subtitle">Découvrir Easymatic</string>
+    <string name="setup_docs">Documentation</string>
+    <string name="setup_docs_subtitle">Guides et référence des nœuds</string>
+    <string name="setup_github">GitHub</string>
+    <string name="setup_github_subtitle">Code source, versions et signalements</string>
+</resources>
