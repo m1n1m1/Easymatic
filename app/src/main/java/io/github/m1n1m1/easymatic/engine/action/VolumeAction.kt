@@ -1,5 +1,6 @@
 package io.github.m1n1m1.easymatic.engine.action
 
+import io.github.m1n1m1.easymatic.core.service.LogLevel
 import io.github.m1n1m1.easymatic.core.service.AudioStream
 import io.github.m1n1m1.easymatic.core.service.VolumeMode
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
@@ -42,11 +43,18 @@ class VolumeAction : Action<VolumeConfig, VolumeState> {
         description = "Adjusts an audio stream's volume (up, down, set, mute or unmute)",
         category = NodeCategory.DEVICE_SETTINGS,
         icon = NodeIcon.VOLUME,
+        permissions = listOf(DND_POLICY_PERMISSION),
         output = dataOut<VolumeState>("state"),
     )
 
     override suspend fun execute(input: VolumeConfig, context: ExecutionContext): NodeOutput<VolumeState> {
         val result = context.systemServices.setVolume(input.stream, input.mode, input.value)
+        if (result?.changed != true) {
+            context.log(
+                "Volume: no device setting change was reported; check permissions and device restrictions",
+                LogLevel.WARN,
+            )
+        }
         return NodeOutput(
             VolumeState(
                 stream = result?.stream ?: input.stream,

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="info_title">应用信息</string>
+    <string name="info_back">返回</string>
+    <string name="info_version">版本</string>
+    <string name="info_build_number">构建编号</string>
+    <string name="setup_info_subtitle">应用版本和构建编号</string>
+    <string name="setup_section_links">链接</string>
+    <string name="setup_website">网站</string>
+    <string name="setup_website_subtitle">了解 Easymatic</string>
+    <string name="setup_docs">文档</string>
+    <string name="setup_docs_subtitle">指南和节点参考</string>
+    <string name="setup_github">GitHub</string>
+    <string name="setup_github_subtitle">源代码、发行版本和问题反馈</string>
+</resources>

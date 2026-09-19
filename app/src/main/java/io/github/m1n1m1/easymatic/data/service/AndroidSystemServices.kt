@@ -72,6 +72,7 @@ import java.net.URL
 import java.util.Collections
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
+import kotlin.math.roundToInt
 
 /**
  * Android-backed implementation of [SystemServices]. Bridges the pure-Kotlin
@@ -102,7 +103,7 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         @Suppress("DEPRECATION")
         val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
         @Suppress("DEPRECATION")
-        wifiManager.setWifiEnabled(enabled)
+        if (wifiManager.setWifiEnabled(enabled)) enabled else null
     }.getOrNull()
 
     override fun httpRequest(request: HttpRequest): HttpResponse = runCatching {
@@ -127,6 +128,9 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val streamType = audioStreamType(stream)
         val maxVolume = audioManager.getStreamMaxVolume(streamType)
+        if (audioManager.isVolumeFixed) return@runCatching null
+        val before = audioManager.getStreamVolume(streamType)
+        val wasMuted = audioManager.isStreamMute(streamType)
         when (mode) {
             VolumeMode.UP -> audioManager.adjustStreamVolume(
                 streamType, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI,
@@ -135,7 +139,8 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
                 streamType, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI,
             )
             VolumeMode.SET -> {
-                val clamped = value.coerceIn(0, maxVolume)
+                val clamped = (value.coerceIn(0, VOLUME_PERCENT_MAX) * maxVolume.toDouble() /
+                    VOLUME_PERCENT_MAX).roundToInt()
                 audioManager.setStreamVolume(streamType, clamped, AudioManager.FLAG_SHOW_UI)
             }
             VolumeMode.MUTE -> audioManager.adjustStreamVolume(
@@ -146,7 +151,8 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
             )
         }
         val current = audioManager.getStreamVolume(streamType)
-        VolumeResult(stream, mode, current, maxVolume, changed = true)
+        val changed = current != before || audioManager.isStreamMute(streamType) != wasMuted
+        VolumeResult(stream, mode, current, maxVolume, changed = changed)
     }.getOrNull()
 
     override fun setDnd(enabled: Boolean, level: DndLevel): DndResult? = runCatching {
@@ -162,14 +168,15 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
             NotificationManager.INTERRUPTION_FILTER_ALL
         }
         notificationManager.setInterruptionFilter(filter)
-        val active = filter != NotificationManager.INTERRUPTION_FILTER_ALL
-        val effective = when (filter) {
+        val applied = notificationManager.currentInterruptionFilter
+        val active = applied != NotificationManager.INTERRUPTION_FILTER_ALL
+        val effective = when (applied) {
             NotificationManager.INTERRUPTION_FILTER_PRIORITY -> DndLevel.PRIORITY
             NotificationManager.INTERRUPTION_FILTER_ALARMS -> DndLevel.ALARMS
             NotificationManager.INTERRUPTION_FILTER_NONE -> DndLevel.SILENCE
             else -> DndLevel.ALL
         }
-        DndResult(enabled = active, level = effective, changed = true)
+        DndResult(enabled = active, level = effective, changed = applied == filter)
     }.getOrNull()
 
     override fun setBluetooth(enabled: Boolean): BluetoothResult? = runCatching {
@@ -184,12 +191,10 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         if (ContextCompat.checkSelfPermission(context, perm) != PackageManager.PERMISSION_GRANTED) {
             return@runCatching null
         }
-        // Deprecated since API 33 with no direct replacement: the sanctioned path is
-        // an ACTION_REQUEST_ENABLE intent, which cannot run unattended as a workflow
-        // action must. Still functional on the OEM builds that permit it.
+        // A successful call accepts an asynchronous transition; false is a rejection.
         @Suppress("DEPRECATION")
-        if (enabled) adapter.enable() else adapter.disable()
-        BluetoothResult(enabled = enabled, changed = true)
+        val accepted = if (enabled) adapter.enable() else adapter.disable()
+        BluetoothResult(enabled = if (accepted) enabled else adapter.isEnabled, changed = accepted)
     }.getOrNull()
 
     override fun setRingerMode(mode: RingerMode): RingerResult? = runCatching {
@@ -211,26 +216,23 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
             AudioManager.RINGER_MODE_VIBRATE -> RingerMode.VIBRATE
             else -> RingerMode.NORMAL
         }
-        RingerResult(mode = effective, changed = true)
+        RingerResult(mode = effective, changed = effective == mode)
     }.getOrNull()
 
     override fun setBrightness(value: Int, auto: Boolean): BrightnessResult? = runCatching {
         if (!canWriteSettings()) return@runCatching null
         if (auto) {
-            Settings.System.putInt(
-                context.contentResolver,
+            writeSetting(
                 Settings.System.SCREEN_BRIGHTNESS_MODE,
                 Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC,
             )
         } else {
-            Settings.System.putInt(
-                context.contentResolver,
+            writeSetting(
                 Settings.System.SCREEN_BRIGHTNESS_MODE,
                 Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL,
             )
             val clamped = value.coerceIn(MIN_BRIGHTNESS, MAX_BRIGHTNESS)
-            Settings.System.putInt(
-                context.contentResolver,
+            writeSetting(
                 Settings.System.SCREEN_BRIGHTNESS,
                 clamped,
             )
@@ -245,14 +247,14 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
             Settings.System.SCREEN_BRIGHTNESS,
             MIN_BRIGHTNESS,
         )
-        BrightnessResult(value = appliedValue, auto = appliedAuto, changed = true)
+        val applied = appliedAuto == auto && (auto || appliedValue == value.coerceIn(MIN_BRIGHTNESS, MAX_BRIGHTNESS))
+        BrightnessResult(value = appliedValue, auto = appliedAuto, changed = applied)
     }.getOrNull()
 
     override fun setScreenTimeout(ms: Int): ScreenTimeoutResult? = runCatching {
         if (!canWriteSettings()) return@runCatching null
         val clamped = ms.coerceAtLeast(MIN_SCREEN_TIMEOUT_MS)
-        Settings.System.putInt(
-            context.contentResolver,
+        writeSetting(
             Settings.System.SCREEN_OFF_TIMEOUT,
             clamped,
         )
@@ -261,13 +263,12 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
             Settings.System.SCREEN_OFF_TIMEOUT,
             clamped,
         )
-        ScreenTimeoutResult(ms = applied, changed = true)
+        ScreenTimeoutResult(ms = applied, changed = applied == clamped)
     }.getOrNull()
 
     override fun setAutoRotate(enabled: Boolean): AutoRotateResult? = runCatching {
         if (!canWriteSettings()) return@runCatching null
-        Settings.System.putInt(
-            context.contentResolver,
+        writeSetting(
             Settings.System.ACCELEROMETER_ROTATION,
             if (enabled) 1 else 0,
         )
@@ -276,7 +277,7 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
             Settings.System.ACCELEROMETER_ROTATION,
             0,
         ) == 1
-        AutoRotateResult(enabled = applied, changed = true)
+        AutoRotateResult(enabled = applied, changed = applied == enabled)
     }.getOrNull()
 
     override fun setScreenRotation(rotation: ScreenRotation): ScreenRotationResult? = runCatching {
@@ -285,13 +286,11 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         // Auto-rotation first, and not as a courtesy: USER_ROTATION is only read while
         // ACCELEROMETER_ROTATION is off, so writing it on its own leaves a call that
         // reports success and a screen that never moves.
-        Settings.System.putInt(
-            context.contentResolver,
+        writeSetting(
             Settings.System.ACCELEROMETER_ROTATION,
             0,
         )
-        Settings.System.putInt(
-            context.contentResolver,
+        writeSetting(
             Settings.System.USER_ROTATION,
             wanted,
         )
@@ -300,7 +299,7 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
             Settings.System.USER_ROTATION,
             wanted,
         )
-        ScreenRotationResult(rotation = screenRotationOf(applied) ?: rotation, changed = true)
+        ScreenRotationResult(rotation = screenRotationOf(applied) ?: rotation, changed = applied == wanted)
     }.getOrNull()
 
     override fun setTorch(enabled: Boolean): TorchResult? = runCatching {
@@ -761,6 +760,11 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         true
     }.getOrDefault(false)
 
+    private fun writeSetting(name: String, value: Int) {
+        check(Settings.System.putInt(context.contentResolver, name, value)) { "Android refused setting $name" }
+        check(Settings.System.getInt(context.contentResolver, name) == value) { "Setting $name was not applied" }
+    }
+
     private fun canWriteSettings(): Boolean = Settings.System.canWrite(context)
 
     /**
@@ -803,6 +807,7 @@ class AndroidSystemServices(private val context: Context) : SystemServices {
         private const val TIMEOUT_MS = 15_000
         private const val MIN_BRIGHTNESS = 0
         private const val MAX_BRIGHTNESS = 255
+        private const val VOLUME_PERCENT_MAX = 100
         private const val MIN_SCREEN_TIMEOUT_MS = 1_000
 
         /** `VibrationEffect` repeat index meaning "play the waveform once". */

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="platform_warning_wifi">Android 10以降では、このアプリによるWi-Fiの自動切り替えが制限されています。権限を付与してもこの操作は有効になりません。システム設定でWi-Fiを切り替えてください。</string>
+    <string name="platform_warning_bluetooth">Android 13以降では、このアプリによるBluetoothの自動切り替えが制限されています。付近のデバイスの権限を付与しても制限は解除されません。システム設定でBluetoothを切り替えてください。</string>
+    <string name="platform_warning_dnd">Android 15以降では、この操作はアプリ自身のサイレントモードのルールのみを制御します。この操作でオフにしても、他の有効なモードによってサイレントモードがオンのままになる場合があります。</string>
+    <string name="platform_warning_screenshot">スクリーンショットの撮影にはAndroid 11以降が必要です。この端末では、ユーザー補助へのアクセスを許可しても、この操作で画面を撮影できません。</string>
+    <string name="platform_warning_picture_bin">Android 10以前には画像を復元できるゴミ箱がありません。この端末で「ゴミ箱に移動」を選ぶと、画像は完全に削除されます。</string>
+</resources>

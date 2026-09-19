@@ -1,5 +1,6 @@
 package io.github.m1n1m1.easymatic.engine.action
 
+import io.github.m1n1m1.easymatic.core.service.LogLevel
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
 import io.github.m1n1m1.easymatic.domain.model.NodeIcon
 import io.github.m1n1m1.easymatic.domain.model.config.Hint
@@ -36,11 +37,18 @@ class BrightnessAction : Action<BrightnessConfig, BrightnessState> {
         description = "Sets screen brightness (absolute value or auto)",
         category = NodeCategory.DEVICE_SETTINGS,
         icon = NodeIcon.BOLT,
+        permissions = listOf(WRITE_SETTINGS_PERMISSION),
         output = dataOut<BrightnessState>("state"),
     )
 
     override suspend fun execute(input: BrightnessConfig, context: ExecutionContext): NodeOutput<BrightnessState> {
         val result = context.systemServices.setBrightness(input.value, input.auto)
+        if (result?.changed != true) {
+            context.log(
+                "Brightness: no device setting change was reported; check permissions and device restrictions",
+                LogLevel.WARN,
+            )
+        }
         return NodeOutput(
             BrightnessState(
                 value = result?.value ?: input.value,

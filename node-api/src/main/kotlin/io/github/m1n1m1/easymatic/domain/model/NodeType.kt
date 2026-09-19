@@ -173,6 +173,8 @@ data class NodeTypeDefinition(
      * which surfaces each one reaches.
      */
     val capabilities: List<DeviceCapability> = emptyList(),
+    /** Restrictions and partial support to explain in the picker and configuration form. */
+    val platformWarnings: List<PlatformWarning> = emptyList(),
 ) {
     /** All input ports (any kind). */
     val inputPorts: List<Port> get() = ports.filter { it.direction == Direction.IN }

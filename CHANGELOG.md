@@ -21,6 +21,20 @@ section of CLAUDE.md for why.
 
 ## [Unreleased]
 
+## [0.1.3-alpha] - 2026-09-19
+code: 103
+
+Play: Setup now shows the app version and build number, with links to the website, documentation and GitHub. Nodes warn when your Android version restricts an action. Device controls report refused changes more accurately, and setting the volume now uses the advertised percentage.
+
+### Added
+- An Info screen under Setup showing the app version and build number, plus Setup links to the website, documentation and GitHub.
+- Android version warnings when adding and configuring nodes for Wi-Fi, Bluetooth, Do Not Disturb, screenshots and picture deletion.
+- Beta access links on the website and in the installation guide.
+
+### Fixed
+- Device controls report refused changes more accurately instead of reporting success when Android blocks a request.
+- Setting the volume interprets the configured value as a percentage of the stream's maximum volume.
+
 ## [0.1.2-alpha] - 2026-09-18
 code: 102
 

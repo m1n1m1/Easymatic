@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="info_title">Info</string>
+    <string name="info_back">Back</string>
+    <string name="info_version">Version</string>
+    <string name="info_build_number">Build number</string>
+    <string name="setup_info_subtitle">App version and build number</string>
+    <string name="setup_section_links">Links</string>
+    <string name="setup_website">Website</string>
+    <string name="setup_website_subtitle">Discover Easymatic</string>
+    <string name="setup_docs">Documentation</string>
+    <string name="setup_docs_subtitle">Guides and node reference</string>
+    <string name="setup_github">GitHub</string>
+    <string name="setup_github_subtitle">Source code, releases and issues</string>
+</resources>

@@ -1,5 +1,6 @@
 package io.github.m1n1m1.easymatic.engine.action
 
+import io.github.m1n1m1.easymatic.core.service.LogLevel
 import io.github.m1n1m1.easymatic.core.service.ScreenRotation
 import io.github.m1n1m1.easymatic.domain.model.NodeCategory
 import io.github.m1n1m1.easymatic.domain.model.NodeIcon
@@ -42,6 +43,7 @@ class ScreenRotationAction : Action<ScreenRotationConfig, ScreenRotationState> {
         description = "Turns the screen to portrait or landscape and stops it rotating on its own",
         category = NodeCategory.DEVICE_SETTINGS,
         icon = NodeIcon.ORIENTATION,
+        permissions = listOf(WRITE_SETTINGS_PERMISSION),
         output = dataOut<ScreenRotationState>("state"),
     )
 
@@ -50,6 +52,12 @@ class ScreenRotationAction : Action<ScreenRotationConfig, ScreenRotationState> {
         context: ExecutionContext,
     ): NodeOutput<ScreenRotationState> {
         val result = context.systemServices.setScreenRotation(input.rotation)
+        if (result?.changed != true) {
+            context.log(
+                "ScreenRotation: no device setting change was reported; check permissions and device restrictions",
+                LogLevel.WARN,
+            )
+        }
         return NodeOutput(
             ScreenRotationState(
                 rotation = result?.rotation ?: input.rotation,

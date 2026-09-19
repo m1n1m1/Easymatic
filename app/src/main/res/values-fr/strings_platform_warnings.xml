@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="platform_warning_wifi">Android 10 et les versions ultérieures bloquent les changements automatiques du Wi-Fi pour cette application. Accorder des autorisations ne débloque pas cette action. Modifiez le Wi-Fi dans les paramètres du système.</string>
+    <string name="platform_warning_bluetooth">Android 13 et les versions ultérieures bloquent les changements automatiques du Bluetooth pour cette application. L’autorisation des appareils à proximité ne lève pas cette restriction. Modifiez le Bluetooth dans les paramètres du système.</string>
+    <string name="platform_warning_dnd">Sous Android 15 et les versions ultérieures, cette action contrôle uniquement la règle Ne pas déranger de cette application. D’autres modes actifs peuvent maintenir Ne pas déranger activé après sa désactivation par cette action.</string>
+    <string name="platform_warning_screenshot">Les captures d’écran nécessitent Android 11 ou une version ultérieure. Cette action ne peut pas capturer l’écran sur cet appareil, même avec l’accès aux fonctions d’accessibilité.</string>
+    <string name="platform_warning_picture_bin">Android 10 et les versions antérieures ne disposent pas de corbeille permettant de récupérer les images. Sur cet appareil, « Déplacer vers la corbeille » supprime définitivement l’image.</string>
+</resources>

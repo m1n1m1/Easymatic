@@ -1,0 +1,1 @@
+Setup now shows the app version and build number, with links to the website, documentation and GitHub. Nodes warn when your Android version restricts an action. Device controls report refused changes more accurately, and setting the volume now uses the advertised percentage.
