@@ -159,6 +159,9 @@ class AndroidTriggerHost(
     @Suppress("UnusedPrivateProperty") // Kept alive so its callback stays registered.
     private val wifiNetworkBridge = WifiNetworkBridge(appContext)
 
+    @Suppress("UnusedPrivateProperty") // Process-lifetime callback; absorbs the initial audio inventory.
+    private val audioDeviceBridge = AudioDeviceBridge(appContext)
+
     // One per process, holding the poll registrations and (once IDLE lands) the
     // connections, reference-counted per account. Owned here for SensorBridge's
     // reason: a trigger is handed a host and nothing else.

@@ -1,6 +1,7 @@
 package io.github.m1n1m1.easymatic.engine.value
 
 import io.github.m1n1m1.easymatic.core.service.DeviceState
+import io.github.m1n1m1.easymatic.core.service.AudioDeviceType
 import io.github.m1n1m1.easymatic.core.service.UnknownDeviceState
 import io.github.m1n1m1.easymatic.domain.model.config.NoConfig
 import io.github.m1n1m1.easymatic.engine.DefaultExecutionContext
@@ -26,7 +27,7 @@ class DeviceValuesTest {
         val state = FakeState(powerSave = true, headset = true, docked = false, night = true)
 
         assertEquals(true, PowerSaveValue().read(NoConfig, contextOf(state)))
-        assertEquals(true, HeadsetValue().read(NoConfig, contextOf(state)))
+        assertEquals(true, AudioDeviceConnectedValue().read(AudioDeviceConfig(), contextOf(state)))
         assertEquals(false, DockValue().read(NoConfig, contextOf(state)))
         assertEquals(true, DarkModeValue().read(NoConfig, contextOf(state)))
     }
@@ -40,7 +41,7 @@ class DeviceValuesTest {
         val context = contextOf(UnknownDeviceState)
 
         assertNull(PowerSaveValue().read(NoConfig, context))
-        assertNull(HeadsetValue().read(NoConfig, context))
+        assertNull(AudioDeviceConnectedValue().read(AudioDeviceConfig(), context))
         assertNull(DockValue().read(NoConfig, context))
         assertNull(DarkModeValue().read(NoConfig, context))
     }
@@ -76,7 +77,7 @@ private class FakeState(
     private val night: Boolean,
 ) : DeviceState by UnknownDeviceState {
     override fun isPowerSaveMode(): Boolean = powerSave
-    override fun isHeadsetPlugged(): Boolean = headset
+    override fun isAudioDeviceConnected(type: AudioDeviceType): Boolean = headset
     override fun isDocked(): Boolean = docked
     override fun isNightMode(): Boolean = night
 }

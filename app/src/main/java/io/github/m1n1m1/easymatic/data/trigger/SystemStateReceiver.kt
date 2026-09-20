@@ -122,11 +122,6 @@ class SystemStateReceiver : BroadcastReceiver() {
     }
 
     private fun resolveHardwareEvent(action: String, intent: Intent): String? = when (action) {
-        Intent.ACTION_HEADSET_PLUG -> when (intent.getIntExtra(EXTRA_HEADSET_STATE, -1)) {
-            HEADSET_PLUGGED -> "plugged"
-            HEADSET_UNPLUGGED -> "unplugged"
-            else -> null
-        }
         ACTION_USB_ATTACHED -> "connected"
         ACTION_USB_DETACHED -> "disconnected"
         Intent.ACTION_DOCK_EVENT -> when (intent.getIntExtra(EXTRA_DOCK_STATE, -1)) {
@@ -196,11 +191,6 @@ class SystemStateReceiver : BroadcastReceiver() {
         const val WIFI_STATE_DISABLED = 1
         const val ACTION_WIFI_STATE_CHANGED = "android.net.wifi.WIFI_STATE_CHANGED"
 
-        // Headset plug constants
-        const val EXTRA_HEADSET_STATE = "state"
-        const val HEADSET_PLUGGED = 1
-        const val HEADSET_UNPLUGGED = 0
-
         // Dock event constants
         const val EXTRA_DOCK_STATE = "android.intent.extra.DOCK_STATE"
         const val DOCK_UNDOCKED = 0
@@ -245,12 +235,6 @@ class SystemStateReceiver : BroadcastReceiver() {
                 ActionMapping(TriggerSource.CONNECTIVITY, "airplane_mode"),
             )
             // Hardware
-            put(
-                Intent.ACTION_HEADSET_PLUG,
-                ActionMapping(TriggerSource.HARDWARE, "headset") {
-                    if (it.getIntExtra("microphone", 0) == 1) "headset_with_mic" else "headphones"
-                },
-            )
             put(
                 ACTION_USB_ATTACHED,
                 ActionMapping(TriggerSource.HARDWARE, "usb_device"),
