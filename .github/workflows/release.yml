@@ -1,7 +1,8 @@
 name: Release
 
-# Cutting a release is: edit CHANGELOG.md, regenerate, commit, then
-#   git tag v1.2.0 && git push origin v1.2.0
+# Prepare notes on a feature branch and merge into develop first, fast-forward main,
+# then create release-<version without prerelease suffix> from main and tag it.
+# Push develop and main, then the release branch, then the tag (docs/RELEASING.md).
 #
 # Everything the release says comes from that one edit — this workflow writes nothing, it
 # only reads `docs/changelog.generated.json`, which ChangelogExportTest exports from
@@ -36,18 +37,41 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Resolve the version
         id: version
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            version='${{ inputs.version }}'
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            version="$REQUESTED_VERSION"
           else
             # refs/tags/v1.2.0 -> 1.2.0
             version="${GITHUB_REF_NAME#v}"
           fi
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Invalid release version."
+            exit 1
+          fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "Version: $version"
+
+      - name: Check release branch and integration branches
+        if: github.event_name == 'push'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          release_branch="release-${VERSION%%-*}"
+          git fetch origin develop main "$release_branch"
+          commit=$(git rev-parse "${GITHUB_REF}^{commit}")
+          for branch in develop main "$release_branch"; do
+            if ! git merge-base --is-ancestor "$commit" "refs/remotes/origin/$branch"; then
+              echo "::error::The tagged commit must be present on $branch before publishing. See docs/RELEASING.md."
+              exit 1
+            fi
+          done
 
       # The tag and the changelog are two hands on the same wheel, and this is the step that
       # stops them disagreeing. A tag naming a version the changelog does not describe would

@@ -1,0 +1,1 @@
+Open documentation inside the app from the workflow list, graph editor and Setup. Filter Call State by incoming or outgoing calls. Audio Device Connected now supports wired, USB, Bluetooth, HDMI/digital and dock outputs, with device-type filters for both the trigger and value node.

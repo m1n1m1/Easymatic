@@ -6,6 +6,10 @@ so is the app's own version number. You never edit a version in `build.gradle.kt
 
 ## Step 1: Write the entry
 
+Fetch remote changes and fast-forward local `develop` and `main` before starting.
+Create a `feature/release-<version>` branch from the updated `develop`; make all
+release-note and workflow edits there, then merge them into `develop` in step 3.
+
 Add a section at the top of `CHANGELOG.md`, under `## [Unreleased]`:
 
 ```
@@ -42,25 +46,53 @@ website labels it. Drop the suffix and the same release is a final one.
 This writes `docs/changelog.generated.json` and the Play text under `fastlane/`. Both are
 committed, and the same test fails the build when they no longer match `CHANGELOG.md`.
 
-## Step 3: Commit, merge and tag
+## Step 3: Update develop, then main, then create the release branch
 
-Day-to-day work lands on `develop`. A release is cut on a `release-<version>` branch,
-merged into `main`, and tagged there:
+`develop` always contains the newest work, including release notes. `main` holds the
+latest released state. Only after updating both do we create `release-<version>`
+(without the pre-release suffix) from `main`, preserving the state at release time.
+Run verification on the preparation branch before merging:
 
 ```
-git checkout -b release-0.2.0 develop
-git commit -am "Release 0.2.0-alpha"
-git checkout main
-git merge --no-ff release-0.2.0
-git tag v0.2.0-alpha
-git push origin main release-0.2.0 v0.2.0-alpha
-git checkout develop
-git merge main
+.\gradlew.bat assembleDebug test detekt lintDebug
+git add CHANGELOG.md docs/changelog.generated.json fastlane/metadata/android/en-US/changelogs/200.txt
+git commit -m "Release 0.2.0-alpha"
+git switch develop
+git merge --ff-only feature/release-0.2.0-alpha
+git push origin develop
+git switch main
+git merge --ff-only develop
+git push origin main
+git switch -c release-0.2.0 main
+git push -u origin release-0.2.0
+git tag -a v0.2.0-alpha -m "Easymatic 0.2.0-alpha"
+git push origin v0.2.0-alpha
 ```
+
+These commands describe the branch order. When branch protection requires a pull request,
+push the preparation branch and merge an approved PR into `develop` instead of pushing
+directly. A locked `main` requires a maintainer to authorize and perform its update;
+restore the lock afterwards. Do not disable protections as part of the release workflow.
+
+Include any release-process edits in the preparation commit as well. If a fast-forward
+fails, reconcile the branches on a feature branch and merge that into `develop` first.
+Do not reset a branch or overwrite newer remote work.
 
 The tag creates the GitHub release, with the notes taken from the changelog. A tag that
-does not name the newest entry is refused. The release branch stays, so a hotfix to that
-version has a home.
+does not name the newest entry on its tagged commit is refused. The workflow also
+requires that commit to be reachable from `develop`, `main` and its release branch.
+Push the branches before the tag. Manual workflow dispatch checks the notes without
+publishing and does not require these branch checks.
+
+The release branch stays at its release state until a hotfix is needed; never merge
+ongoing development into it. Prepare a hotfix on a feature branch based on the release
+branch, then merge the fix and its regenerated notes back into the release branch.
+Use a new version, version code and tag; never move an existing tag. A suffix-only
+update (for example `0.2.0-alpha.1`) uses the same `release-0.2.0` branch. If the numeric
+version changes, create the corresponding release branch at the hotfix commit too.
+Merge the hotfix ancestry into `develop` and `main` before pushing its tag, keeping any
+newer release first in their changelogs and preserving the latest release state on
+`main`. Resolve conflicts on feature branches before updating these integration branches.
 
 ## Step 4: Upload to Play
 
