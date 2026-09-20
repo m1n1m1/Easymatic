@@ -2136,12 +2136,12 @@
         {
             "typeId": "trigger.headset",
             "slug": "trigger_headset",
-            "displayName": "Headset Plugged",
-            "description": "Starts when a wired headset is plugged or unplugged",
+            "displayName": "Audio Device Connected",
+            "description": "Starts when an external audio output of the selected type connects or disconnects. Supports Bluetooth audio. Excludes built-in speakers and microphones.",
             "kind": "TRIGGER",
             "category": "CONNECTIVITY",
             "categoryLabel": "Connectivity",
-            "icon": "BOLT",
+            "icon": "HEADSET",
             "hasDynamicPorts": false,
             "ports": [
                 {
@@ -2174,11 +2174,46 @@
                         },
                         {
                             "value": "PLUGGED",
-                            "label": "Plugged"
+                            "label": "Connected"
                         },
                         {
                             "value": "UNPLUGGED",
-                            "label": "Unplugged"
+                            "label": "Disconnected"
+                        }
+                    ],
+                    "chooser": null
+                },
+                {
+                    "key": "deviceType",
+                    "label": "Device type",
+                    "hint": null,
+                    "type": "ENUM",
+                    "defaultValue": "ANY",
+                    "visibleWhen": null,
+                    "options": [
+                        {
+                            "value": "ANY",
+                            "label": "Any"
+                        },
+                        {
+                            "value": "WIRED",
+                            "label": "Wired (AUX)"
+                        },
+                        {
+                            "value": "USB",
+                            "label": "USB"
+                        },
+                        {
+                            "value": "BLUETOOTH",
+                            "label": "Bluetooth"
+                        },
+                        {
+                            "value": "DIGITAL",
+                            "label": "HDMI / Digital"
+                        },
+                        {
+                            "value": "DOCK",
+                            "label": "Dock"
                         }
                     ],
                     "chooser": null
@@ -12892,8 +12927,8 @@
         {
             "typeId": "value.headset",
             "slug": "value_headset",
-            "displayName": "Headset plugged in",
-            "description": "Whether a wired or USB headset is currently plugged in",
+            "displayName": "Audio Device Connected",
+            "description": "Whether an external audio output of the selected type is connected. Supports Bluetooth audio. Excludes built-in speakers and microphones.",
             "kind": "VALUE",
             "category": "VALUE_CONNECTIVITY",
             "categoryLabel": "Connectivity",
@@ -12902,13 +12937,49 @@
             "ports": [
                 {
                     "name": "plugged",
-                    "label": "Plugged in",
+                    "label": "Connected",
                     "kind": "DATA",
                     "direction": "OUT",
                     "type": "Boolean"
                 }
             ],
-            "configFields": [],
+            "configFields": [
+                {
+                    "key": "deviceType",
+                    "label": "Device type",
+                    "hint": null,
+                    "type": "ENUM",
+                    "defaultValue": "ANY",
+                    "visibleWhen": null,
+                    "options": [
+                        {
+                            "value": "ANY",
+                            "label": "Any"
+                        },
+                        {
+                            "value": "WIRED",
+                            "label": "Wired (AUX)"
+                        },
+                        {
+                            "value": "USB",
+                            "label": "USB"
+                        },
+                        {
+                            "value": "BLUETOOTH",
+                            "label": "Bluetooth"
+                        },
+                        {
+                            "value": "DIGITAL",
+                            "label": "HDMI / Digital"
+                        },
+                        {
+                            "value": "DOCK",
+                            "label": "Dock"
+                        }
+                    ],
+                    "chooser": null
+                }
+            ],
             "permissions": [],
             "capabilities": []
         },

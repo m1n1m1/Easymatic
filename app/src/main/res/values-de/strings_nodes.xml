@@ -236,8 +236,8 @@
     <string name="port_trigger_call_state_out">Ausgang</string>
     <string name="cfg_trigger_call_state_event">Ereignis</string>
     <string name="opt_trigger_call_state_event_ringing">Klingelt</string>
-    <string name="node_trigger_headset_name">Headset angeschlossen</string>
-    <string name="node_trigger_headset_desc">Startet, wenn ein kabelgebundenes Headset ein- oder ausgesteckt wird</string>
+    <string name="node_trigger_headset_name">Audiogerät verbunden</string>
+    <string name="node_trigger_headset_desc">Startet, wenn ein externer Audioausgang des gewählten Typs verbunden oder getrennt wird. Unterstützt Bluetooth-Audio. Integrierte Lautsprecher und Mikrofone sind ausgeschlossen.</string>
     <string name="port_trigger_headset_out">Ausgang</string>
     <string name="port_trigger_headset_state">Status</string>
     <string name="cfg_trigger_headset_event">Ereignis</string>
@@ -1596,8 +1596,8 @@
     <string name="port_value_ha_state_state">Status</string>
     <string name="cfg_value_ha_state_entity">Entität</string>
     <string name="cfg_value_ha_state_attribute">Attribut (optional)</string>
-    <string name="node_value_headset_name">Headset angeschlossen</string>
-    <string name="node_value_headset_desc">Ob gerade ein kabelgebundenes oder USB-Headset angeschlossen ist</string>
+    <string name="node_value_headset_name">Audiogerät verbunden</string>
+    <string name="node_value_headset_desc">Ob ein externer Audioausgang des gewählten Typs verbunden ist. Unterstützt Bluetooth-Audio. Integrierte Lautsprecher und Mikrofone sind ausgeschlossen.</string>
     <string name="port_value_headset_plugged">Angeschlossen</string>
     <string name="node_value_latest_image_name">Neuestes Bild</string>
     <string name="node_value_latest_image_desc">Das zuletzt auf diesem Telefon gespeicherte Foto, Bild oder Screenshot</string>
@@ -1796,4 +1796,18 @@
     <string name="cfg_trigger_call_state_direction">Richtung</string>
     <string name="opt_trigger_call_state_direction_incoming">Eingehend</string>
     <string name="opt_trigger_call_state_direction_outgoing">Ausgehend</string>
+    <string name="cfg_trigger_headset_device_type">Gerätetyp</string>
+    <string name="opt_trigger_headset_device_type_any">Beliebig</string>
+    <string name="opt_trigger_headset_device_type_wired">Kabelgebunden (AUX)</string>
+    <string name="opt_trigger_headset_device_type_usb">USB</string>
+    <string name="opt_trigger_headset_device_type_bluetooth">Bluetooth</string>
+    <string name="opt_trigger_headset_device_type_digital">HDMI / Digital</string>
+    <string name="opt_trigger_headset_device_type_dock">Dock</string>
+    <string name="cfg_value_headset_device_type">Gerätetyp</string>
+    <string name="opt_value_headset_device_type_any">Beliebig</string>
+    <string name="opt_value_headset_device_type_wired">Kabelgebunden (AUX)</string>
+    <string name="opt_value_headset_device_type_usb">USB</string>
+    <string name="opt_value_headset_device_type_bluetooth">Bluetooth</string>
+    <string name="opt_value_headset_device_type_digital">HDMI / Digital</string>
+    <string name="opt_value_headset_device_type_dock">Dock</string>
 </resources>

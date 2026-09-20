@@ -66,7 +66,6 @@ trigger.bluetooth_connect
 trigger.airplane_mode
 trigger.call_state
 trigger.call_ended
-trigger.headset
 trigger.usb_device
 trigger.dock
 trigger.screen
@@ -168,7 +167,6 @@ value.orientation
 value.dnd
 value.dock
 value.ha_state
-value.headset
 value.latest_image
 value.latest_screenshot
 value.light

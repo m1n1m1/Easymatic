@@ -68,8 +68,8 @@ interface DeviceState {
     /** Whether battery saver is on. */
     fun isPowerSaveMode(): Boolean?
 
-    /** Whether a wired headset or headphones are plugged in. */
-    fun isHeadsetPlugged(): Boolean?
+    /** Whether an external audio output matching [type] is connected. */
+    fun isAudioDeviceConnected(type: AudioDeviceType = AudioDeviceType.ANY): Boolean?
 
     /** Whether the device is sitting in a dock. */
     fun isDocked(): Boolean?
@@ -152,7 +152,7 @@ object UnknownDeviceState : DeviceState {
     override fun isDndEnabled(): Boolean? = null
     override fun ringerMode(): RingerMode? = null
     override fun isPowerSaveMode(): Boolean? = null
-    override fun isHeadsetPlugged(): Boolean? = null
+    override fun isAudioDeviceConnected(type: AudioDeviceType): Boolean? = null
     override fun isDocked(): Boolean? = null
     override fun isNightMode(): Boolean? = null
     override fun isTorchOn(): Boolean? = null

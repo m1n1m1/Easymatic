@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
 import android.hardware.camera2.CameraManager
-import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.net.wifi.WifiManager
 import android.nfc.NfcAdapter
@@ -18,6 +17,7 @@ import android.provider.Settings
 import android.telecom.TelecomManager
 import androidx.core.content.getSystemService
 import io.github.m1n1m1.easymatic.core.service.CallStatus
+import io.github.m1n1m1.easymatic.core.service.AudioDeviceType
 import io.github.m1n1m1.easymatic.core.service.DeviceState
 import io.github.m1n1m1.easymatic.core.service.RingerMode
 import io.github.m1n1m1.easymatic.data.call.CallPhase
@@ -165,15 +165,14 @@ class AndroidDeviceState(private val context: Context) : DeviceState {
     }.getOrNull()
 
     /**
-     * Whether anything headphone-shaped is plugged into the jack or the USB
-     * port. `AudioManager.isWiredHeadsetOn` would be the obvious call and is
-     * deprecated precisely because it answers about routing rather than about
-     * what is attached; enumerating the output devices is the sanctioned way and
-     * is also the only one that notices a USB-C headset.
+     * Whether a matching external device is available as an audio output.
+     * Enumerating outputs detects connected devices without requiring active playback.
      */
-    override fun isHeadsetPlugged(): Boolean? = runCatching {
+    override fun isAudioDeviceConnected(type: AudioDeviceType): Boolean? = runCatching {
         val manager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        manager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).any { it.type in WIRED_HEADSET_TYPES }
+        manager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).any {
+            AudioDeviceTypes.classify(it.type, it.isSink)?.let(type::matches) == true
+        }
     }.getOrNull()
 
     /**
@@ -239,13 +238,6 @@ class AndroidDeviceState(private val context: Context) : DeviceState {
 
     private companion object {
         const val PERCENT = 100
-
-        /** Output devices that mean "headphones are plugged in". */
-        val WIRED_HEADSET_TYPES = setOf(
-            AudioDeviceInfo.TYPE_WIRED_HEADSET,
-            AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
-            AudioDeviceInfo.TYPE_USB_HEADSET,
-        )
 
         /** `Settings.Global.ZEN_MODE` is `@hide`; the key itself is stable. */
         const val ZEN_MODE = "zen_mode"

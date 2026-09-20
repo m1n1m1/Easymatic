@@ -215,20 +215,6 @@ class PowerSaveValue : DeviceValue<Boolean>() {
     override fun readValue(context: ExecutionContext) = context.deviceState.isPowerSaveMode()
 }
 
-/** `value.headset` — whether wired headphones are plugged in. */
-class HeadsetValue : DeviceValue<Boolean>() {
-    override val definition = valueNode<NoConfig, Boolean>(
-        typeId = "value.headset",
-        displayName = "Headset plugged in",
-        description = "Whether a wired or USB headset is currently plugged in",
-        category = NodeCategory.VALUE_CONNECTIVITY,
-        icon = NodeIcon.HEADSET,
-        output = dataOut("plugged", label = "Plugged in"),
-    )
-
-    override fun readValue(context: ExecutionContext) = context.deviceState.isHeadsetPlugged()
-}
-
 /** `value.dock` — whether the device is docked. */
 class DockValue : DeviceValue<Boolean>() {
     override val definition = valueNode<NoConfig, Boolean>(

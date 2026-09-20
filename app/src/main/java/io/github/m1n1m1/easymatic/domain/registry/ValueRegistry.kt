@@ -15,7 +15,7 @@ import io.github.m1n1m1.easymatic.engine.value.DeviceOrientationValue
 import io.github.m1n1m1.easymatic.engine.value.DndValue
 import io.github.m1n1m1.easymatic.engine.value.DockValue
 import io.github.m1n1m1.easymatic.engine.value.HaStateValue
-import io.github.m1n1m1.easymatic.engine.value.HeadsetValue
+import io.github.m1n1m1.easymatic.engine.value.AudioDeviceConnectedValue
 import io.github.m1n1m1.easymatic.engine.value.LatestImageValue
 import io.github.m1n1m1.easymatic.engine.value.LatestScreenshotValue
 import io.github.m1n1m1.easymatic.engine.value.LightLevelValue
@@ -69,7 +69,7 @@ object ValueRegistry {
         DndValue(),
         DockValue(),
         HaStateValue(),
-        HeadsetValue(),
+        AudioDeviceConnectedValue(),
         LatestImageValue(),
         LatestScreenshotValue(),
         LightLevelValue(),
