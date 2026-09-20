@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="help_open">Ajuda</string>
+    <string name="help_title">Documentação</string>
+    <string name="help_close">Fechar documentação</string>
+    <string name="help_browser">Abrir no navegador</string>
+    <string name="help_load_failed">Não foi possível carregar a documentação. Verifique sua conexão e tente novamente.</string>
+    <string name="help_unavailable">O visualizador web do aplicativo está indisponível. Você pode abrir a documentação no navegador.</string>
+    <string name="help_retry">Tentar novamente</string>
+    <string name="help_no_browser">Nenhum aplicativo disponível para abrir este link.</string>
+</resources>

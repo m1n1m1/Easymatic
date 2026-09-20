@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="help_open">ヘルプ</string>
+    <string name="help_title">ドキュメント</string>
+    <string name="help_close">ドキュメントを閉じる</string>
+    <string name="help_browser">ブラウザで開く</string>
+    <string name="help_load_failed">ドキュメントを読み込めませんでした。接続を確認して、もう一度お試しください。</string>
+    <string name="help_unavailable">アプリ内のウェブビューを利用できません。ブラウザでドキュメントを開けます。</string>
+    <string name="help_retry">再試行</string>
+    <string name="help_no_browser">このリンクを開くアプリがありません。</string>
+</resources>

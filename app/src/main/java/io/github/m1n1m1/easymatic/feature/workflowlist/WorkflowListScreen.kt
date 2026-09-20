@@ -98,6 +98,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 fun WorkflowListScreen(
     viewModel: WorkflowListViewModel,
+    onOpenHelp: () -> Unit,
     onOpenWorkflow: (String) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -151,7 +152,7 @@ fun WorkflowListScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             // Supplies its own window insets, which already include the status bar —
             // so this screen no longer pads for it itself.
-            WorkflowListTopBar(searchBarState = searchBarState)
+            WorkflowListTopBar(searchBarState = searchBarState, onOpenHelp = onOpenHelp)
             if (query.isNotEmpty()) {
                 ActiveFilterChip(
                     query = query,

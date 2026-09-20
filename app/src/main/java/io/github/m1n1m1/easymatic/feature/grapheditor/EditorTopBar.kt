@@ -86,6 +86,7 @@ import io.github.m1n1m1.easymatic.feature.macro.editorTextButtonColors
 @Suppress("LongParameterList") // Two bars' worth of controls; see the mode split above.
 fun EditorTopBar(
     title: String,
+    onOpenHelp: () -> Unit,
     nodeCount: Int,
     /** The selection's description, or null when nothing is selected — which is also the mode. */
     selectionLabel: String?,
@@ -139,6 +140,7 @@ fun EditorTopBar(
             ) { label ->
                 if (label == null) {
                     WorkflowBar(
+                        onOpenHelp = onOpenHelp,
                         title = title,
                         nodeCount = nodeCount,
                         isMacroEnabled = isMacroEnabled,
@@ -223,6 +225,7 @@ private const val MODE_FADE_MS = 150
 
 @Composable
 private fun WorkflowBar(
+    onOpenHelp: () -> Unit,
     title: String,
     nodeCount: Int,
     isMacroEnabled: Boolean,
@@ -272,6 +275,7 @@ private fun WorkflowBar(
             colors = editorSwitchColors(),
             modifier = Modifier.semantics { contentDescription = enabledLabel },
         )
+        io.github.m1n1m1.easymatic.feature.help.HelpButton(onOpenHelp)
         WorkflowMenu(
             canPin = canPin,
             onEdit = onEdit,

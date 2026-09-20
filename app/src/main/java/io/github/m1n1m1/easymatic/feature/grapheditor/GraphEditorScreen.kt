@@ -100,6 +100,7 @@ import kotlin.math.roundToInt
 @Composable
 fun GraphEditorScreen(
     viewModel: GraphEditorViewModel,
+    onOpenHelp: () -> Unit,
     geofencePlaces: GeofencePlacesViewModel,
     nfcTags: NfcTagsViewModel,
     mailAccounts: MailAccountsViewModel,
@@ -132,12 +133,12 @@ fun GraphEditorScreen(
         LocalMacros provides macros,
         LocalTranslationModels provides translations,
     ) {
-        GraphEditorContent(viewModel = viewModel, onBack = onBack)
+        GraphEditorContent(viewModel = viewModel, onBack = onBack, onOpenHelp = onOpenHelp)
     }
 }
 
 @Composable
-private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Unit) {
+private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Unit, onOpenHelp: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
     val density = LocalDensity.current.density
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
@@ -256,6 +257,7 @@ private fun GraphEditorContent(viewModel: GraphEditorViewModel, onBack: () -> Un
             }
             Column(modifier = Modifier.fillMaxSize()) {
                 EditorTopBar(
+                    onOpenHelp = onOpenHelp,
                     title = state.workflow.name,
                     nodeCount = state.workflow.nodes.size,
                     selectionLabel = state.selection

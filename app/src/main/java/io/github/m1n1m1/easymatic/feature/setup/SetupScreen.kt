@@ -80,6 +80,7 @@ import io.github.m1n1m1.easymatic.feature.grapheditor.EditorColors
 @Suppress("LongParameterList") // One parameter per destination; the list is the screen.
 fun SetupScreen(
     onOpenSmartHome: () -> Unit,
+    onOpenHelp: () -> Unit,
     onOpenAi: () -> Unit,
     onOpenMailAccounts: () -> Unit,
     onOpenVariables: () -> Unit,
@@ -274,9 +275,11 @@ fun SetupScreen(
                 )
             }
             item {
-                WebLinkRow(
-                    Icons.AutoMirrored.Filled.MenuBook, R.string.setup_docs,
-                    R.string.setup_docs_subtitle, "https://easymatic.app/docs/",
+                SetupRow(
+                    icon = Icons.AutoMirrored.Filled.MenuBook,
+                    titleRes = R.string.setup_docs,
+                    subtitleRes = R.string.setup_docs_subtitle,
+                    onClick = onOpenHelp,
                 )
             }
             item {

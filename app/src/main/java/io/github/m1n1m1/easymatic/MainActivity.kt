@@ -69,6 +69,10 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
+    private fun openDocumentation() {
+        startActivity(Intent(this, io.github.m1n1m1.easymatic.feature.help.DocumentationActivity::class.java))
+    }
+
     private val listViewModel: WorkflowListViewModel by viewModels {
         WorkflowListViewModel.factory(
             repository = ServiceLocator.workflowRepository,
@@ -284,6 +288,7 @@ class MainActivity : AppCompatActivity() {
         ) {
             composable(ROUTE_HOME) {
                 HomeScreen(
+                    onOpenHelp = ::openDocumentation,
                     listViewModel = listViewModel,
                     onOpenWorkflow = { id -> navController.navigate("$ROUTE_GRAPH_EDITOR/$id") },
                     onOpenSmartHome = { navController.navigate(ROUTE_SMART_HOME) },
@@ -428,6 +433,7 @@ class MainActivity : AppCompatActivity() {
                     ),
                 )
                 GraphEditorScreen(
+                    onOpenHelp = ::openDocumentation,
                     viewModel = editorViewModel,
                     geofencePlaces = geofencePlacesViewModel,
                     nfcTags = nfcTagsViewModel,

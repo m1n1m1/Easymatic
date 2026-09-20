@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="help_open">帮助</string>
+    <string name="help_title">文档</string>
+    <string name="help_close">关闭文档</string>
+    <string name="help_browser">在浏览器中打开</string>
+    <string name="help_load_failed">无法加载文档。请检查网络连接后重试。</string>
+    <string name="help_unavailable">应用内网页浏览功能不可用。你可以在浏览器中打开文档。</string>
+    <string name="help_retry">重试</string>
+    <string name="help_no_browser">没有可用于打开此链接的应用。</string>
+</resources>
