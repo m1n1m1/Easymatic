@@ -1791,4 +1791,7 @@
     <string name="cfg_action_translate_source_language">哪种语言</string>
     <string name="cfg_action_translate_target_language">目标语言</string>
     <string name="cfg_action_translate_fallback">如果失败</string>
+    <string name="cfg_trigger_call_state_direction">方向</string>
+    <string name="opt_trigger_call_state_direction_incoming">来电</string>
+    <string name="opt_trigger_call_state_direction_outgoing">去电</string>
 </resources>

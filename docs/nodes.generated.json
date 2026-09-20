@@ -1992,6 +1992,29 @@
                     "visibleWhen": null,
                     "options": [],
                     "chooser": "APP_FILTER"
+                },
+                {
+                    "key": "direction",
+                    "label": "Direction",
+                    "hint": null,
+                    "type": "ENUM",
+                    "defaultValue": "",
+                    "visibleWhen": null,
+                    "options": [
+                        {
+                            "value": "",
+                            "label": "Any"
+                        },
+                        {
+                            "value": "INCOMING",
+                            "label": "Incoming"
+                        },
+                        {
+                            "value": "OUTGOING",
+                            "label": "Outgoing"
+                        }
+                    ],
+                    "chooser": null
                 }
             ],
             "permissions": [

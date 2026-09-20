@@ -118,6 +118,48 @@ class CallTriggerFilterTest {
     }
 
     @Test
+    fun `call state direction filters all phases and defaults to either direction`() = runBlocking {
+        val events = everyPhase + listOf(call("active", incoming = false), call("ended", incoming = false))
+        val trigger = CallStateTrigger()
+
+        val any = trigger.activate(CallStateConfig(), node, FakeHost(events)).toList()
+        val incoming = trigger.activate(
+            CallStateConfig(direction = CallDirection.INCOMING), node, FakeHost(events),
+        ).toList()
+        val outgoing = trigger.activate(
+            CallStateConfig(direction = CallDirection.OUTGOING), node, FakeHost(events),
+        ).toList()
+
+        assertEquals(5, any.size)
+        assertEquals(listOf("ringing", "active", "ended"), incoming.map { it.value.state })
+        assertEquals(listOf(true, true, true), incoming.map { it.value.incoming })
+        assertEquals(listOf("active", "ended"), outgoing.map { it.value.state })
+        assertEquals(listOf(false, false), outgoing.map { it.value.incoming })
+    }
+
+    @Test
+    fun `call state combines direction event and app filters`() = runBlocking {
+        val events = listOf(
+            call("active", incoming = false),
+            call("ended", incoming = false),
+            call("active", incoming = true),
+            call("active", packageName = "com.discord", incoming = false),
+        )
+        val config = CallStateConfig(
+            event = CallStateEvent.ACTIVE,
+            packageFilter = "com.microsoft.teams",
+            direction = CallDirection.OUTGOING,
+        )
+
+        val fired = CallStateTrigger().activate(config, node, FakeHost(events)).toList()
+
+        assertEquals(1, fired.size)
+        assertEquals("active", fired.single().value.state)
+        assertEquals("com.microsoft.teams", fired.single().value.packageName)
+        assertEquals(false, fired.single().value.incoming)
+    }
+
+    @Test
     fun `call ended ignores every phase but the last`() = runBlocking {
         val fired = CallEndedTrigger()
             .activate(CallEndedConfig(), node, FakeHost(everyPhase))

@@ -32,13 +32,14 @@ enum class CallStateEvent {
     ENDED,
 }
 
-/** Config for `trigger.call_state`; both filters are optional. */
+/** Config for `trigger.call_state`; every filter is optional. */
 @Serializable
 data class CallStateConfig(
     @Label("Event") val event: CallStateEvent? = null,
     @Label("From app")
     @Hint("optional")
     @Picker(PickerKind.APP_FILTER) val packageFilter: String = "",
+    @Label("Direction") val direction: CallDirection? = null,
 )
 
 /**
@@ -88,6 +89,7 @@ class CallStateTrigger : Trigger<CallStateConfig, CallEvent> {
             .filter { it.source == TriggerSource.CALL }
             .map { it.toCallEvent() }
             .filter { call -> config.event == null || config.event.payloadValue == call.state }
+            .filter { call -> config.direction == null || config.direction.matches(call) }
             .filter { call -> packageFilter == null || call.packageName == packageFilter }
             .map { NodeOutput(it) }
     }
