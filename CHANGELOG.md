@@ -21,6 +21,19 @@ section of CLAUDE.md for why.
 
 ## [Unreleased]
 
+## [0.1.4-alpha] - 2026-09-20
+code: 104
+
+Play: Open documentation inside the app from the workflow list, graph editor and Setup. Filter Call State by incoming or outgoing calls. Audio Device Connected now supports wired, USB, Bluetooth, HDMI/digital and dock outputs, with device-type filters for both the trigger and value node.
+
+### Added
+- In-app documentation with help links from the workflow list, graph editor and Setup.
+- Incoming and outgoing direction filters for the Call State trigger.
+
+### Changed
+- Headset nodes are now named Audio Device Connected and support wired, USB, Bluetooth, HDMI/digital and dock outputs, with device-type filters.
+- Audio connection triggers report individual output connections and disconnections; the value node stays connected while any matching output remains available.
+
 ## [0.1.3-alpha] - 2026-09-19
 code: 103
 

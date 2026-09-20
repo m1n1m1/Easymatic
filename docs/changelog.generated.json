@@ -1,6 +1,30 @@
 {
     "releases": [
         {
+            "version": "0.1.4-alpha",
+            "versionCode": 104,
+            "date": "2026-09-20",
+            "prerelease": true,
+            "play": "Open documentation inside the app from the workflow list, graph editor and Setup. Filter Call State by incoming or outgoing calls. Audio Device Connected now supports wired, USB, Bluetooth, HDMI/digital and dock outputs, with device-type filters for both the trigger and value node.",
+            "notes": "### Added\n\n- In-app documentation with help links from the workflow list, graph editor and Setup.\n- Incoming and outgoing direction filters for the Call State trigger.\n\n### Changed\n\n- Headset nodes are now named Audio Device Connected and support wired, USB, Bluetooth, HDMI/digital and dock outputs, with device-type filters.\n- Audio connection triggers report individual output connections and disconnections; the value node stays connected while any matching output remains available.\n",
+            "sections": [
+                {
+                    "label": "Added",
+                    "entries": [
+                        "In-app documentation with help links from the workflow list, graph editor and Setup.",
+                        "Incoming and outgoing direction filters for the Call State trigger."
+                    ]
+                },
+                {
+                    "label": "Changed",
+                    "entries": [
+                        "Headset nodes are now named Audio Device Connected and support wired, USB, Bluetooth, HDMI/digital and dock outputs, with device-type filters.",
+                        "Audio connection triggers report individual output connections and disconnections; the value node stays connected while any matching output remains available."
+                    ]
+                }
+            ]
+        },
+        {
             "version": "0.1.3-alpha",
             "versionCode": 103,
             "date": "2026-09-19",

@@ -316,7 +316,9 @@ Those same properties are why the Test task declares `CHANGELOG.md` and the gene
 `inputs.files`: the test reaches them through plain `File`, so without that a changelog-only
 edit leaves the task `UP-TO-DATE` and the guard unrun.
 
-Cutting a release is: edit `CHANGELOG.md`, regenerate, commit, then push a `v<version>` tag.
+Cutting a release is: prepare `CHANGELOG.md` and regenerate on a feature branch, merge
+into `develop`, fast-forward `main`, then create `release-<version without prerelease suffix>`
+from `main`. Push those branches before pushing the `v<version>` tag. See `docs/RELEASING.md`.
 `.github/workflows/release.yml` refuses a tag that does not name the newest entry, and creates
 the GitHub release from `notes`. It attaches no artifact and Play is still uploaded by hand,
 which is why the workflow prints the store text into its own log ready to paste.
