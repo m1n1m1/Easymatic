@@ -1,5 +1,9 @@
 # AGENTS.md
 
+## Branch workflow
+- Always make changes on a feature branch. Before editing files, create or switch to
+  an appropriate feature branch; never work directly on `develop`, `main`, or `master`.
+
 ## Gradle commands
 - Always use the wrapper: `.\gradlew.bat <task>` (Windows).
 - Build: `.\gradlew.bat assembleDebug`

@@ -25,7 +25,7 @@ enum class CallOutcome {
     MISSED,
 }
 
-/** Which way a finished call was going. */
+/** Whether a call was received or placed. */
 @Serializable
 enum class CallDirection {
     INCOMING,
@@ -95,9 +95,9 @@ class CallEndedTrigger : Trigger<CallEndedConfig, CallEvent> {
         CallOutcome.ANSWERED -> call.answered
         CallOutcome.MISSED -> !call.answered
     }
+}
 
-    private fun CallDirection.matches(call: CallEvent): Boolean = when (this) {
-        CallDirection.INCOMING -> call.incoming
-        CallDirection.OUTGOING -> !call.incoming
-    }
+internal fun CallDirection.matches(call: CallEvent): Boolean = when (this) {
+    CallDirection.INCOMING -> call.incoming
+    CallDirection.OUTGOING -> !call.incoming
 }

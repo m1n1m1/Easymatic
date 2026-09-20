@@ -243,6 +243,9 @@
     <string name="opt_trigger_call_state_event_ended">Ended</string>
     <string name="cfg_trigger_call_state_package_filter">From app</string>
     <string name="hint_trigger_call_state_package_filter">optional</string>
+    <string name="cfg_trigger_call_state_direction">Direction</string>
+    <string name="opt_trigger_call_state_direction_incoming">Incoming</string>
+    <string name="opt_trigger_call_state_direction_outgoing">Outgoing</string>
     <string name="node_trigger_call_ended_name">Call Ended</string>
     <string name="node_trigger_call_ended_desc">Starts when a call finishes, with how long it lasted and whether it was answered — on the phone or in Teams, WhatsApp, Discord or another calling app</string>
     <string name="port_trigger_call_ended_out">out</string>

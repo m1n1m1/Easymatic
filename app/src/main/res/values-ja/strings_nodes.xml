@@ -1791,4 +1791,7 @@
     <string name="cfg_action_translate_source_language">どの言語</string>
     <string name="cfg_action_translate_target_language">翻訳先</string>
     <string name="cfg_action_translate_fallback">失敗した場合</string>
+    <string name="cfg_trigger_call_state_direction">発着信</string>
+    <string name="opt_trigger_call_state_direction_incoming">着信</string>
+    <string name="opt_trigger_call_state_direction_outgoing">発信</string>
 </resources>

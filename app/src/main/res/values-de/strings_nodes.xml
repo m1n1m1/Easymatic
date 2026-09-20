@@ -1793,4 +1793,7 @@
     <string name="cfg_action_translate_source_language">Welche Sprache</string>
     <string name="cfg_action_translate_target_language">Übersetzen nach</string>
     <string name="cfg_action_translate_fallback">Wenn es fehlschlägt</string>
+    <string name="cfg_trigger_call_state_direction">Richtung</string>
+    <string name="opt_trigger_call_state_direction_incoming">Eingehend</string>
+    <string name="opt_trigger_call_state_direction_outgoing">Ausgehend</string>
 </resources>
