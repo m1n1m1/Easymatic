@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="help_open">Help</string>
+    <string name="help_title">Documentation</string>
+    <string name="help_close">Close documentation</string>
+    <string name="help_browser">Open in browser</string>
+    <string name="help_load_failed">Could not load the documentation. Check your connection and try again.</string>
+    <string name="help_unavailable">The in-app web viewer is unavailable. You can open the documentation in your browser.</string>
+    <string name="help_retry">Retry</string>
+    <string name="help_no_browser">No app is available to open this link.</string>
+</resources>

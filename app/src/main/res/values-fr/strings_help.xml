@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="help_open">Aide</string>
+    <string name="help_title">Documentation</string>
+    <string name="help_close">Fermer la documentation</string>
+    <string name="help_browser">Ouvrir dans le navigateur</string>
+    <string name="help_load_failed">Impossible de charger la documentation. Vérifiez votre connexion et réessayez.</string>
+    <string name="help_unavailable">La vue web intégrée est indisponible. Vous pouvez ouvrir la documentation dans votre navigateur.</string>
+    <string name="help_retry">Réessayer</string>
+    <string name="help_no_browser">Aucune application ne peut ouvrir ce lien.</string>
+</resources>

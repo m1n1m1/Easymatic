@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="help_open">Справка</string>
+    <string name="help_title">Документация</string>
+    <string name="help_close">Закрыть документацию</string>
+    <string name="help_browser">Открыть в браузере</string>
+    <string name="help_load_failed">Не удалось загрузить документацию. Проверьте подключение и повторите попытку.</string>
+    <string name="help_unavailable">Встроенный веб-просмотр недоступен. Вы можете открыть документацию в браузере.</string>
+    <string name="help_retry">Повторить</string>
+    <string name="help_no_browser">Нет приложения для открытия этой ссылки.</string>
+</resources>

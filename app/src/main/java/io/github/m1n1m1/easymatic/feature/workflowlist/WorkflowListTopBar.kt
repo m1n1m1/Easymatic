@@ -52,7 +52,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-internal fun WorkflowListTopBar(searchBarState: SearchBarState) {
+internal fun WorkflowListTopBar(searchBarState: SearchBarState, onOpenHelp: () -> Unit) {
     val scope = rememberCoroutineScope()
     TopAppBar(
         title = {
@@ -70,6 +70,7 @@ internal fun WorkflowListTopBar(searchBarState: SearchBarState) {
             )
         },
         actions = {
+            io.github.m1n1m1.easymatic.feature.help.HelpButton(onOpenHelp)
             IconButton(
                 onClick = { scope.launch { searchBarState.animateToExpanded() } },
                 modifier = Modifier.onGloballyPositioned { searchBarState.collapsedCoords = it },

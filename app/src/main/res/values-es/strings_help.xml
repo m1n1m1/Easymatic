@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="help_open">Ayuda</string>
+    <string name="help_title">Documentación</string>
+    <string name="help_close">Cerrar documentación</string>
+    <string name="help_browser">Abrir en el navegador</string>
+    <string name="help_load_failed">No se pudo cargar la documentación. Comprueba tu conexión e inténtalo de nuevo.</string>
+    <string name="help_unavailable">El visor web de la aplicación no está disponible. Puedes abrir la documentación en el navegador.</string>
+    <string name="help_retry">Reintentar</string>
+    <string name="help_no_browser">No hay ninguna aplicación disponible para abrir este enlace.</string>
+</resources>

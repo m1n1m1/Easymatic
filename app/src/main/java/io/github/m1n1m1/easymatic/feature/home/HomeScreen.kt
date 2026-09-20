@@ -58,6 +58,7 @@ import io.github.m1n1m1.easymatic.feature.workflowlist.WorkflowListViewModel
 @Suppress("LongParameterList") // One parameter per destination the Setup tab lists.
 fun HomeScreen(
     listViewModel: WorkflowListViewModel,
+    onOpenHelp: () -> Unit,
     onOpenWorkflow: (String) -> Unit,
     onOpenSmartHome: () -> Unit,
     onOpenAi: () -> Unit,
@@ -96,9 +97,11 @@ fun HomeScreen(
             when (current) {
                 HomeTab.WORKFLOWS -> WorkflowListScreen(
                     viewModel = listViewModel,
+                    onOpenHelp = onOpenHelp,
                     onOpenWorkflow = onOpenWorkflow,
                 )
                 HomeTab.SETUP -> SetupScreen(
+                    onOpenHelp = onOpenHelp,
                     onOpenSmartHome = onOpenSmartHome,
                     onOpenAi = onOpenAi,
                     onOpenMailAccounts = onOpenMailAccounts,
