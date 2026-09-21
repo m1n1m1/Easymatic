@@ -9,7 +9,7 @@
     <string name="port_trigger_api_out">输出</string>
     <string name="cfg_trigger_api_label">其他应用看到的名称</string>
     <string name="cfg_trigger_api_inputs">此次调用携带的值</string>
-    <string name="cfg_trigger_api_token">键</string>
+    <string name="cfg_trigger_api_token">令牌</string>
     <string name="node_trigger_schedule_name">定时计划</string>
     <string name="node_trigger_schedule_desc">按间隔或在一天中的某个时刻启动工作流</string>
     <string name="port_trigger_schedule_out">输出</string>
@@ -809,14 +809,14 @@
     <string name="port_action_send_intent_data_uri">数据 URI（可选）</string>
     <string name="port_action_send_intent_mime_type">MIME 类型（可选）</string>
     <string name="port_action_send_intent_category">类别（可选）</string>
-    <string name="port_action_send_intent_extras">Extras — 每行一个 key=value，count:int=5 可指定类型</string>
+    <string name="port_action_send_intent_extras">Extras</string>
     <string name="cfg_action_send_intent_action">动作</string>
     <string name="cfg_action_send_intent_package_name">应用（可选）</string>
     <string name="cfg_action_send_intent_data_uri">数据 URI（可选）</string>
     <string name="cfg_action_send_intent_mime_type">MIME 类型（可选）</string>
     <string name="cfg_action_send_intent_category">类别（可选）</string>
     <string name="cfg_action_send_intent_extras">Extras</string>
-    <string name="hint_action_send_intent_extras">每行一个 key=value，count:int=5 可指定类型</string>
+    <string name="hint_action_send_intent_extras">每行一个附加参数：名称=值</string>
     <string name="node_action_broadcast_intent_name">发送广播</string>
     <string name="node_action_broadcast_intent_desc">向其他应用发送广播 Intent，可自定义 action 和 extras</string>
     <string name="port_action_broadcast_intent_in">输入</string>
@@ -826,14 +826,14 @@
     <string name="port_action_broadcast_intent_data_uri">数据 URI（可选）</string>
     <string name="port_action_broadcast_intent_mime_type">MIME 类型（可选）</string>
     <string name="port_action_broadcast_intent_category">类别（可选）</string>
-    <string name="port_action_broadcast_intent_extras">Extras — 每行一个 key=value，count:int=5 可指定类型</string>
+    <string name="port_action_broadcast_intent_extras">Extras</string>
     <string name="cfg_action_broadcast_intent_action">动作</string>
     <string name="cfg_action_broadcast_intent_package_name">应用（可选）</string>
     <string name="cfg_action_broadcast_intent_data_uri">数据 URI（可选）</string>
     <string name="cfg_action_broadcast_intent_mime_type">MIME 类型（可选）</string>
     <string name="cfg_action_broadcast_intent_category">类别（可选）</string>
     <string name="cfg_action_broadcast_intent_extras">Extras</string>
-    <string name="hint_action_broadcast_intent_extras">每行一个 key=value，count:int=5 可指定类型</string>
+    <string name="hint_action_broadcast_intent_extras">每行一个附加参数：名称=值</string>
     <string name="node_action_light_control_name">控制灯</string>
     <string name="node_action_light_control_desc">开启或关闭某个灯、房间或区域，或设置它的亮度、颜色或色温 — Philips Hue</string>
     <string name="port_action_light_control_in">输入</string>

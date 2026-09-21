@@ -12,7 +12,7 @@ Nothing here needs a library, an AIDL file or a dependency on Easymatic.
 | Reachable from | an Android app | anything — Tasker, Automate, MacroDroid, `adb`, Termux |
 | Returns | a `Bundle` | nothing |
 | Identifies you | yes, `getCallingPackage()` is verified by the system | no — a broadcast carries no sender at all |
-| Authorised by | the user approving your app, **or** a key | a key, always |
+| Authorised by | the user approving your app, **or** a token | a token, always |
 | Can list the available triggers | yes | no |
 
 Use the provider if you are an app. Use the broadcast if you are a script.
@@ -29,8 +29,8 @@ That node has three settings:
   name, then the macro's.
 - **Values this call carries** — the inputs, one per row, each with a name and a type.
   These become the trigger's output ports in the graph.
-- **Key** — generated when the node is placed, with Copy and Regenerate beside it.
-  Clearing it means *approved apps only*: the macro becomes unreachable by key, which
+- **Token** — generated when the node is placed, with Copy and Regenerate beside it.
+  Clearing it means *approved apps only*: the macro becomes unreachable by token, which
   is the stricter setting and the right one if no script needs it.
 
 ## Calling it as an app
@@ -51,7 +51,7 @@ val payload = listed!!.getString("payload")!!   // JSON, see below
 
 // 3. Run one.
 val result = contentResolver.call(
-    uri, "run", macroId,
+    uri, "run", null,
     bundleOf("nodeId" to nodeId, "in.city" to "Vienna", "in.count" to 3),
 )
 result?.getBoolean("ok")      // true when the run has started
@@ -68,21 +68,21 @@ way the consent screen can name your app. Easymatic refuses a plain `startActivi
 |---|---|---|---|
 | `version` | — | — | no |
 | `list` | — | — | **yes** |
-| `run` | the macro id | `nodeId`, `token`, `in.*` | approval **or** a matching `token` |
+| `run` | `null` | `nodeId` **or** `token`, `in.*` | approval for `nodeId`; none for a matching `token` |
 
-`list` cannot be unlocked with a key, deliberately: a key authorises one trigger where
-`list` describes all of them, and a caller with no key yet is exactly who `list` is
+`list` cannot be unlocked with a token, deliberately: a token authorises one trigger where
+`list` describes all of them, and a caller with no token yet is exactly who `list` is
 for.
 
 ### What `list` answers
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "triggers": [
     {
       "macroId": "3f2b…", "macroName": "Morning",
-      "nodeId": "a91c…", "label": "Start the coffee",
+      "nodeId": "opaque-trigger-id", "label": "Start the coffee",
       "enabled": true, "token": "Yx3…",
       "inputs": [
         { "name": "city",  "type": "TEXT",         "list": false },
@@ -104,10 +104,10 @@ can grey it out rather than silently omitting something the user can see in Easy
 |---|---|
 | `started` | The run is under way. It has **not** finished. |
 | `needs_approval` | Start `approvalIntent` for a result and ask again. |
-| `denied` | Wrong key — or no such macro. The two are the same answer to a caller holding only a key, so this door cannot be used to discover which macro ids exist. |
-| `not_found` | No such macro, or no single API trigger in it. Only told to an approved caller. |
+| `denied` | Wrong token — or no unique matching trigger. The two are the same answer to a caller holding only a token, so this door cannot be used to discover which macro ids exist. |
+| `not_found` | No unique matching API trigger. Only told to an approved caller. |
 | `disabled` | The macro exists and you may run it, but its switch is off. |
-| `invalid` | Malformed — no macro id, unknown method, ambiguous macro. |
+| `invalid` | Malformed — no selector or unknown method. |
 | `rate_limited` | Too many calls. The bucket refills; nothing is revoked. |
 
 `run` answers as soon as the run **starts**, never when it ends. A macro may contain a
@@ -119,18 +119,54 @@ delay or a *Wait Until*, and a binder call cannot sit on either.
 adb shell am broadcast \
   -a io.github.m1n1m1.easymatic.action.RUN_MACRO \
   -p io.github.m1n1m1.easymatic \
-  --es macroId 3f2b… \
   --es token Yx3… \
   --es in.city Vienna --es in.count 3
 ```
 
 **Always set the package** (`-p`, or `setPackage` in code). It makes the intent
-explicit, which is what keeps the key from being readable by every app on the phone.
+explicit, which is what keeps the token from being readable by every app on the phone.
 
-`nodeId` is optional: a macro with exactly one **Called by Another App** trigger
-resolves without it. A macro with two is refused rather than guessed at.
+The token alone identifies and authorises one trigger. No `macroId`, `nodeId`, or
+app approval is needed, even if the macro contains several API triggers.
 
-Nothing is answered on this path. A wrong key, a missing macro and a switched-off
+### Tasker: Send Intent
+
+- **Action:** `io.github.m1n1m1.easymatic.action.RUN_MACRO`
+- **Package:** `io.github.m1n1m1.easymatic`
+- **Target:** Broadcast Receiver
+- **Extra:** `token:<value copied from the trigger's Token field>`
+
+For inputs, add separate extras such as `in.city:Vienna`.
+
+### Easymatic: Broadcast Intent node
+
+Set **Action** to `io.github.m1n1m1.easymatic.action.RUN_MACRO` and **App** to
+`io.github.m1n1m1.easymatic`. In **Extras**, enter one `name=value` per line:
+
+```text
+token=<token copied from the receiving trigger>
+in.city=Vienna
+```
+
+Unlike Tasker, this node uses `=` between the name and value. Values are text by
+default. For apps that require a typed extra, add the type after the name:
+`count:int=5` sends an integer named `count`. Easymatic API inputs also accept
+text and convert it to the type declared on the receiving trigger.
+
+### Approved apps and compatibility
+
+An approved app passes the opaque `nodeId` returned by `list` in the extras, with
+`arg = null`. Store it unchanged: it uniquely identifies the trigger even when a
+macro is duplicated or imported. Internal graph node IDs are only unique within a
+macro and are not the public ID returned by API version 2.
+
+Version 1 calls with `macroId` (or the provider's `arg`) still work. Legacy raw
+node IDs are accepted if they resolve uniquely, or with a macro ID to scope them.
+When multiple selectors are supplied they must all agree; ambiguous matches are
+refused. A broadcast always requires a token. A provider call without a token
+requires app approval, checked before looking up the supplied ID.
+
+Nothing is answered on this path. A wrong token, a missing macro and a switched-off
 macro are indistinguishable from the outside; they differ only in Easymatic's log.
 
 ## Inputs
@@ -167,7 +203,7 @@ app re-signed by a different developer is revoked automatically.
 **Rate limits** are a token bucket: a burst of 10, then 30/minute. Every anonymous
 broadcast caller shares one bucket; each identified app has its own.
 
-**The key travels in the clear over IPC.** That is safe against other apps because the
-intent is explicit and the provider call is point-to-point, but a key checked into a
-public repository or written into a shared script is a key anybody can use. Regenerate
+**The token travels in the clear over IPC.** That is safe against other apps because the
+intent is explicit and the provider call is point-to-point, but a token checked into a
+public repository or written into a shared script is a token anybody can use. Regenerate
 it in the node's config if that happens.

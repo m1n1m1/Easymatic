@@ -13,8 +13,15 @@ import io.github.m1n1m1.easymatic.engine.trigger.ManualTrigger
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
+import kotlinx.coroutines.runBlocking
+import io.github.m1n1m1.easymatic.data.WorkflowRepository
 
 class ApiTriggersTest {
+
+    @get:Rule
+    val folder = TemporaryFolder()
 
     private fun apiNode(
         id: String = "n1",
@@ -100,5 +107,74 @@ class ApiTriggersTest {
     fun `a blank inputs config declares no ports`() {
         val target = apiTriggersIn(workflow(apiNode(config = mapOf(API_INPUTS_KEY to "")))).single()
         assertTrue("a trigger that carries no data is ordinary, unlike a script with no result", target.specs.isEmpty())
+    }
+
+    @Test
+    fun `token alone selects its trigger among several macros and nodes`() {
+        val first = workflow(apiNode(config = mapOf(API_TOKEN_KEY to "first")))
+        val second = workflow(
+            apiNode(id = "a", config = mapOf(API_TOKEN_KEY to "second")),
+            apiNode(id = "b", config = mapOf(API_TOKEN_KEY to "third")),
+        ).copy(id = "w2")
+        val targets = listOf(first, second).flatMap(::apiTriggersIn)
+        assertEquals("b", resolveApiTrigger(targets, token = "third")?.node?.id?.value)
+        assertEquals(null, resolveApiTrigger(targets, token = "wrong"))
+        assertEquals(null, resolveApiTrigger(targets, token = ""))
+        assertEquals(null, resolveApiTrigger(targets))
+    }
+
+    @Test
+    fun `public IDs distinguish copied nodes without a macro ID`() {
+        val original = workflow(apiNode())
+        val targets = listOf(original, original.copy(id = "copy")).flatMap(::apiTriggersIn)
+        for (target in targets) {
+            assertEquals(target, resolveApiTrigger(targets, nodeId = target.callId))
+        }
+        assertEquals(null, resolveApiTrigger(targets, nodeId = "n1"))
+        assertEquals(targets.first(), resolveApiTrigger(targets, macroId = "w1", nodeId = "n1"))
+    }
+
+    @Test
+    fun `duplicate tokens are refused even if one macro is disabled`() {
+        val original = workflow(apiNode(config = mapOf(API_TOKEN_KEY to "same")))
+        val targets = listOf(original, original.copy(id = "copy", enabled = false)).flatMap(::apiTriggersIn)
+        assertEquals(null, resolveApiTrigger(targets, token = "same"))
+    }
+
+    @Test
+    fun `conflicting selectors never run a different target`() {
+        val targets = apiTriggersIn(workflow(
+            apiNode(id = "a", config = mapOf(API_TOKEN_KEY to "first")),
+            apiNode(id = "b", config = mapOf(API_TOKEN_KEY to "second")),
+        ))
+        assertEquals(null, resolveApiTrigger(targets, nodeId = targets.first().callId, token = "second"))
+        assertEquals(null, resolveApiTrigger(targets, macroId = "wrong", token = "first"))
+        assertEquals(null, resolveApiTrigger(targets, macroId = "w1"))
+    }
+
+    @Test
+    fun `legacy macro only calls and unique raw node IDs still resolve`() {
+        val target = apiTriggersIn(workflow(apiNode())).single()
+        assertEquals(target, resolveApiTrigger(listOf(target), macroId = "w1"))
+        assertEquals(target, resolveApiTrigger(listOf(target), nodeId = "n1"))
+        assertEquals(null, resolveApiTrigger(listOf(target), token = ""))
+    }
+
+    @Test
+    fun `listed IDs and tokens resolve from storage and regeneration revokes old token`() = runBlocking {
+        val repository = WorkflowRepository(folder.newFolder())
+        val original = workflow(apiNode(config = mapOf(API_TOKEN_KEY to "original")))
+        val copy = original.copy(id = "copy", nodes = listOf(apiNode(config = mapOf(API_TOKEN_KEY to "copy"))))
+        repository.save(original)
+        repository.save(copy)
+        val listed = listApiTriggers(repository)
+        assertEquals(2, listed.triggers.map { it.nodeId }.distinct().size)
+        for (trigger in listed.triggers) {
+            assertEquals(trigger.macroId, findApiTrigger(repository, null, trigger.nodeId)?.workflow?.id)
+            assertEquals(trigger.macroId, findApiTrigger(repository, null, null, trigger.token)?.workflow?.id)
+        }
+        repository.save(original.copy(nodes = listOf(apiNode(config = mapOf(API_TOKEN_KEY to "new")))))
+        assertEquals(null, findApiTrigger(repository, null, null, "original"))
+        assertEquals("w1", findApiTrigger(repository, null, null, "new")?.workflow?.id)
     }
 }

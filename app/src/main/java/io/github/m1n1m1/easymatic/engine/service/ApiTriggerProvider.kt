@@ -10,7 +10,6 @@ import android.os.Bundle
 import androidx.core.os.bundleOf
 import io.github.m1n1m1.easymatic.ServiceLocator
 import io.github.m1n1m1.easymatic.domain.model.ApiContract
-import io.github.m1n1m1.easymatic.domain.model.ApiTokens
 import io.github.m1n1m1.easymatic.domain.model.ApiTriggerListWire
 import io.github.m1n1m1.easymatic.engine.api.ApiRateLimiter
 import io.github.m1n1m1.easymatic.engine.api.ApiInputs
@@ -34,7 +33,7 @@ import kotlinx.serialization.json.Json
  *
  * ```
  * val out = contentResolver.call("content://io.github.m1n1m1.easymatic.triggers".toUri(),
- *                                "run", macroId, bundleOf("token" to key, "in.city" to "Vienna"))
+ *                                "run", null, bundleOf("token" to token, "in.city" to "Vienna"))
  * ```
  *
  * The one thing it cannot reach is a caller that is not an Android app — a shell
@@ -109,30 +108,20 @@ class ApiTriggerProvider : ContentProvider() {
     private fun run(caller: String, macroId: String?, extras: Bundle?): Bundle {
         val id = macroId?.takeIf { it.isNotBlank() }
             ?: extras?.getString(ApiContract.EXTRA_MACRO_ID)?.takeIf { it.isNotBlank() }
-            ?: return refuse(ApiContract.STATUS_INVALID, "No macro id")
+        val nodeId = extras?.getString(ApiContract.EXTRA_NODE_ID)
+        val token = extras?.getString(ApiContract.EXTRA_TOKEN)
         val isApproved = ServiceLocator.apiCallers.isApproved(caller)
+        // Approval is checked before resolving IDs, so callers cannot probe the macro list.
+        if (!isApproved && token.isNullOrBlank()) return needsApprovalBundle(context)
+        if (id == null && nodeId.isNullOrBlank() && token.isNullOrBlank()) {
+            return refuse(ApiContract.STATUS_INVALID, "Supply nodeId or token")
+        }
         val target = runBlocking {
-            findApiTrigger(ServiceLocator.workflowRepository, id, extras?.getString(ApiContract.EXTRA_NODE_ID))
-        }
-        // The id oracle, closed. To a caller holding only a key, "no such macro" and
-        // "wrong key" are the same answer — otherwise this door would report which
-        // macro ids exist to anybody willing to guess. An approved caller has already
-        // been told the whole list, so it gets the useful answer instead.
-        if (target == null) {
-            return if (isApproved) {
-                refuse(ApiContract.STATUS_NOT_FOUND, "No such macro, or no single API trigger in it")
-            } else {
-                refuse(ApiContract.STATUS_DENIED, "Not allowed")
-            }
-        }
-        if (!isApproved && !ApiTokens.matches(target.token, extras?.getString(ApiContract.EXTRA_TOKEN))) {
-            // A trigger with no key at all cannot be unlocked by presenting one, so
-            // the useful answer is "ask the user" rather than "wrong key".
-            return if (target.token.isBlank()) {
-                needsApprovalBundle(context)
-            } else {
-                refuse(ApiContract.STATUS_DENIED, "Not allowed")
-            }
+            findApiTrigger(ServiceLocator.workflowRepository, id, nodeId, token)
+        } ?: return if (isApproved) {
+            refuse(ApiContract.STATUS_NOT_FOUND, "No unique matching API trigger")
+        } else {
+            refuse(ApiContract.STATUS_DENIED, "Not allowed")
         }
         if (!target.workflow.enabled) {
             return refuse(ApiContract.STATUS_DISABLED, "'${target.workflow.name}' is switched off")

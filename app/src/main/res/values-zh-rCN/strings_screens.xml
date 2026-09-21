@@ -122,12 +122,12 @@
     <string name="api_allow">允许</string>
     <string name="api_app_access">应用访问</string>
     <string name="api_back">返回</string>
-    <string name="api_copy_the_key">复制密钥</string>
+    <string name="api_copy_the_key">复制令牌</string>
     <string name="api_it_will_be_able_to">它将能够看到你添加了“由其他应用调用”触发器的宏的名称，并运行它们。它无法查看或更改 Easymatic 中的其他任何内容，没有该触发器的宏也不在它的可及范围内。</string>
-    <string name="api_no_key_approved_apps_only">无密钥——仅限已批准的应用</string>
+    <string name="api_no_key_approved_apps_only">无令牌——仅限已批准的应用</string>
     <string name="api_not_now">以后再说</string>
-    <string name="api_easymatic_key">Easymatic 密钥</string>
-    <string name="api_remove_the_key">移除密钥</string>
+    <string name="api_easymatic_key">Easymatic 令牌</string>
+    <string name="api_remove_the_key">移除令牌</string>
     <string name="api_revoke">吊销</string>
     <string name="api_you_can_withdraw_this_at">你随时可以在 Easymatic 的“应用访问”中撤回此授权。</string>
     <string name="variables_back">返回</string>
@@ -558,8 +558,8 @@
     <string name="widget_more_hidden">还有 %1$d 个——调整大小即可查看</string>
     <string name="widget_showing_all">正在显示全部 %1$d 个触发器。关闭开关即可自行挑选。</string>
     <string name="api_allow_app_to_run">允许 %1$s 运行你的宏吗？</string>
-    <string name="api_generate_key">生成密钥</string>
-    <string name="api_replace_key">更换密钥</string>
+    <string name="api_generate_key">生成令牌</string>
+    <string name="api_replace_key">更换令牌</string>
     <string name="problems_summary_separator"> ·</string>
     <string name="ai_model_answered">模型回答：%1$s</string>
     <string name="mail_choose_account_first">请先在此节点上选择一个账户——文件夹在服务器上，Easymatic 必须知道该向哪一个查询。</string>
@@ -571,7 +571,7 @@
     <string name="ai_getting_a_key">获取密钥</string>
     <string name="ai_pointing_at_own_server">指向你自己的服务器</string>
     <string name="ai_running_on_this_phone">在这台手机上运行模型</string>
-    <string name="api_key_copied">密钥已复制</string>
+    <string name="api_key_copied">令牌已复制</string>
     <string name="api_allowed_on">授权于 %1$s</string>
     <string name="geofence_small_radius_warning">低于 %1$d 米时，系统会牺牲定位精度以省电，因此进出往往会被漏报或延迟报告。</string>
     <string name="shortcut_macro_and_trigger">%1$s · %2$s</string>
@@ -746,4 +746,5 @@
     <string name="language_intro">选择 Easymatic 的显示语言。</string>
     <string name="language_system_default">跟随系统</string>
     <string name="language_widgets_note">在此版本的 Android 上，主屏幕小部件保持手机的语言。</string>
+    <string name="api_token_call_hint">Tasker：将 token:&lt;值&gt; 作为附加参数发送。无需宏 ID 或授权。</string>
 </resources>

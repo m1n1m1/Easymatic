@@ -34,7 +34,7 @@ object ApiContract {
      * requiring approval to find out whether approval is worth asking for would be
      * a loop.
      */
-    const val VERSION = 1
+    const val VERSION = 2
 
     /** The content provider's authority. */
     const val AUTHORITY = "io.github.m1n1m1.easymatic.triggers"
@@ -59,7 +59,7 @@ object ApiContract {
     const val METHOD_LIST = "list"
 
     /**
-     * Starts one trigger. `arg` is the macro id; [EXTRA_NODE_ID], [EXTRA_TOKEN] and
+     * Starts one trigger. Pass null for `arg`; [EXTRA_NODE_ID], [EXTRA_TOKEN] and
      * the `in.*` inputs travel in the extras.
      *
      * Answers as soon as the run is **under way**, never when it finishes: a macro
@@ -71,15 +71,12 @@ object ApiContract {
     /** The broadcast the Intent front door listens for. Always explicit — set the package. */
     const val ACTION_RUN = "io.github.m1n1m1.easymatic.action.RUN_MACRO"
 
-    /** Which macro. The provider takes it as `call()`'s `arg` too. */
+    /** Optional legacy macro constraint. The provider also accepts it as `call()`'s `arg`. */
     const val EXTRA_MACRO_ID = "macroId"
 
     /**
-     * Which `trigger.api` node within that macro.
-     *
-     * Optional: omitted, a macro with exactly one API trigger runs it, which is what
-     * nearly every caller wants and spares a shell script a second UUID. A macro
-     * with two is ambiguous and is refused rather than guessed at.
+     * Opaque public trigger ID returned by `list`. Sufficient for an approved app.
+     * Legacy raw node IDs also resolve if unique, or scoped by a legacy macro ID.
      */
     const val EXTRA_NODE_ID = "nodeId"
 

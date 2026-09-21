@@ -153,12 +153,12 @@
     <string name="api_allow">Allow</string>
     <string name="api_app_access">App access</string>
     <string name="api_back">Back</string>
-    <string name="api_copy_the_key">Copy the key</string>
+    <string name="api_copy_the_key">Copy the token</string>
     <string name="api_it_will_be_able_to">It will be able to see the names of macros you have given a \"Called by Another App\" trigger, and to run them. It cannot see or change anything else in Easymatic, and macros without that trigger stay out of reach.</string>
-    <string name="api_no_key_approved_apps_only">No key — approved apps only</string>
+    <string name="api_no_key_approved_apps_only">No token — approved apps only</string>
     <string name="api_not_now">Not now</string>
-    <string name="api_easymatic_key">Easymatic key</string>
-    <string name="api_remove_the_key">Remove the key</string>
+    <string name="api_easymatic_key">Easymatic token</string>
+    <string name="api_remove_the_key">Remove the token</string>
     <string name="api_revoke">Revoke</string>
     <string name="api_you_can_withdraw_this_at">You can withdraw this at any time under App access in Easymatic.</string>
 
@@ -629,8 +629,8 @@
     <string name="widget_more_hidden">+%1$d more — resize to see</string>
     <string name="widget_showing_all">Showing all %1$d triggers. Turn the switch off to pick which ones.</string>
     <string name="api_allow_app_to_run">Allow %1$s to run your macros?</string>
-    <string name="api_generate_key">Generate a key</string>
-    <string name="api_replace_key">Replace the key</string>
+    <string name="api_generate_key">Generate a token</string>
+    <string name="api_replace_key">Replace the token</string>
 
     <string name="problems_summary_separator"> · </string>
     <string name="ai_model_answered">The model answered: %1$s</string>
@@ -644,7 +644,7 @@
     <string name="ai_getting_a_key">Getting a key</string>
     <string name="ai_pointing_at_own_server">Pointing at your own server</string>
     <string name="ai_running_on_this_phone">Running the model on this phone</string>
-    <string name="api_key_copied">Key copied</string>
+    <string name="api_key_copied">Token copied</string>
     <string name="api_allowed_on">Allowed on %1$s</string>
     <string name="geofence_small_radius_warning">Below %1$d m the system trades location accuracy for battery, so crossings are often missed or reported late.</string>
     <string name="shortcut_macro_and_trigger">%1$s · %2$s</string>
@@ -837,4 +837,5 @@
     <string name="language_intro">Choose the language Easymatic is shown in.</string>
     <string name="language_system_default">System default</string>
     <string name="language_widgets_note">Home-screen widgets keep the phone\'s language on this version of Android.</string>
+    <string name="api_token_call_hint">Tasker: send token:&lt;value&gt; as an extra. No macro ID or approval needed.</string>
 </resources>

@@ -5,8 +5,8 @@
 
 package io.github.m1n1m1.easymatic.engine.api
 
-import io.github.m1n1m1.easymatic.core.model.NodeId
 import io.github.m1n1m1.easymatic.data.WorkflowRepository
+import io.github.m1n1m1.easymatic.domain.model.ApiTokens
 import io.github.m1n1m1.easymatic.domain.model.ApiInputWire
 import io.github.m1n1m1.easymatic.domain.model.ApiTriggerListWire
 import io.github.m1n1m1.easymatic.domain.model.ApiTriggerWire
@@ -62,36 +62,41 @@ private fun labelOf(workflow: Workflow, node: WorkflowNode): String =
 
 private const val DEFAULT_NODE_NAME = "Called by Another App"
 
-/**
- * The trigger [macroId]/[nodeId] names, or null when there is no such thing.
- *
- * [nodeId] is **optional**, and a macro holding exactly one API trigger resolves
- * without it — which is what nearly every caller wants and what spares a shell
- * script a second UUID. A macro holding two is *ambiguous rather than arbitrary*:
- * it answers null, because picking the first would silently run one of two macros
- * the user deliberately separated, and that is a bug nobody would think to look for.
- */
+/** An opaque, unambiguous public ID, including the owning macro because copies retain node IDs. */
+val ApiTriggerTarget.callId: String
+    get() = "${workflow.id.length}:${workflow.id}${node.id.value}"
+
+/** Resolves either a token or a public node ID; legacy macro IDs remain optional constraints. */
 suspend fun findApiTrigger(
     repository: WorkflowRepository,
-    macroId: String,
+    macroId: String?,
     nodeId: String?,
+    token: String? = null,
 ): ApiTriggerTarget? {
-    val workflow = repository.load(macroId) ?: return null
-    val triggers = apiTriggersIn(workflow)
-    return when {
-        nodeId.isNullOrBlank() -> triggers.singleOrNull()
-        else -> triggers.firstOrNull { it.node.id == NodeId(nodeId) }
+    val workflows = if (!macroId.isNullOrBlank()) {
+        listOfNotNull(repository.load(macroId))
+    } else {
+        repository.list().mapNotNull { repository.load(it.id) }
     }
+    return resolveApiTrigger(workflows.flatMap(::apiTriggersIn), macroId, nodeId, token)
 }
 
-/**
- * Every callable trigger on the device.
- *
- * Loads each workflow in full rather than reading the summaries, because the ports
- * and the key live in a node's config and a summary carries neither. That is a file
- * read per macro, which is why this is on the `list` path — a rare, user-initiated
- * call from a picker — and never on the `run` path, which loads exactly one.
- */
+/** Rejects missing selectors, conflicting selectors and ambiguous matches, including duplicate tokens. */
+internal fun resolveApiTrigger(
+    targets: List<ApiTriggerTarget>,
+    macroId: String? = null,
+    nodeId: String? = null,
+    token: String? = null,
+): ApiTriggerTarget? {
+    if (macroId.isNullOrBlank() && nodeId.isNullOrBlank() && token.isNullOrBlank()) return null
+    return targets.filter { target ->
+        (macroId.isNullOrBlank() || target.workflow.id == macroId) &&
+            (nodeId.isNullOrBlank() || target.callId == nodeId || target.node.id.value == nodeId) &&
+            (token == null || ApiTokens.matches(target.token, token))
+    }.singleOrNull()
+}
+
+/** Every callable trigger on the device, including its opaque public node ID. */
 suspend fun listApiTriggers(repository: WorkflowRepository): ApiTriggerListWire {
     val triggers = repository.list().flatMap { summary ->
         val workflow = repository.load(summary.id) ?: return@flatMap emptyList()
@@ -103,7 +108,7 @@ suspend fun listApiTriggers(repository: WorkflowRepository): ApiTriggerListWire 
 private fun ApiTriggerTarget.toWire(): ApiTriggerWire = ApiTriggerWire(
     macroId = workflow.id,
     macroName = workflow.name,
-    nodeId = node.id.value,
+    nodeId = callId,
     label = label,
     enabled = workflow.enabled,
     token = token,
