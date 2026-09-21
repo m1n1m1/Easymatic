@@ -116,12 +116,12 @@
     <string name="api_allow">Zulassen</string>
     <string name="api_app_access">App-Zugriff</string>
     <string name="api_back">Zurück</string>
-    <string name="api_copy_the_key">Schlüssel kopieren</string>
+    <string name="api_copy_the_key">Token kopieren</string>
     <string name="api_it_will_be_able_to">Sie wird die Namen der Makros sehen können, denen du einen Auslöser „Von einer anderen App aufgerufen“ gegeben hast, und sie ausführen können. Sonst kann sie in Easymatic nichts sehen oder ändern, und Makros ohne diesen Auslöser bleiben unerreichbar.</string>
-    <string name="api_no_key_approved_apps_only">Kein Schlüssel — nur freigegebene Apps</string>
+    <string name="api_no_key_approved_apps_only">Kein Token — nur freigegebene Apps</string>
     <string name="api_not_now">Jetzt nicht</string>
-    <string name="api_easymatic_key">Easymatic-Schlüssel</string>
-    <string name="api_remove_the_key">Schlüssel entfernen</string>
+    <string name="api_easymatic_key">Easymatic-Token</string>
+    <string name="api_remove_the_key">Token entfernen</string>
     <string name="api_revoke">Entziehen</string>
     <string name="api_you_can_withdraw_this_at">Du kannst das jederzeit unter „App-Zugriff“ in Easymatic widerrufen.</string>
 
@@ -578,8 +578,8 @@
     <string name="widget_more_hidden">+%1$d weitere — Größe ändern zum Anzeigen</string>
     <string name="widget_showing_all">Es werden alle %1$d Auslöser angezeigt. Schalte den Schalter aus, um auszuwählen.</string>
     <string name="api_allow_app_to_run">%1$s erlauben, deine Makros auszuführen?</string>
-    <string name="api_generate_key">Schlüssel erzeugen</string>
-    <string name="api_replace_key">Schlüssel ersetzen</string>
+    <string name="api_generate_key">Token erzeugen</string>
+    <string name="api_replace_key">Token ersetzen</string>
 
     <string name="problems_summary_separator"> · </string>
     <string name="ai_model_answered">Das Modell hat geantwortet: %1$s</string>
@@ -593,7 +593,7 @@
     <string name="ai_getting_a_key">Schlüssel besorgen</string>
     <string name="ai_pointing_at_own_server">Auf den eigenen Server zeigen</string>
     <string name="ai_running_on_this_phone">Das Modell auf diesem Telefon ausführen</string>
-    <string name="api_key_copied">Schlüssel kopiert</string>
+    <string name="api_key_copied">Token kopiert</string>
     <string name="api_allowed_on">Erlaubt am %1$s</string>
     <string name="geofence_small_radius_warning">Unter %1$d m tauscht das System Standortgenauigkeit gegen Akkulaufzeit, weshalb Übergänge oft verpasst oder verspätet gemeldet werden.</string>
     <string name="shortcut_macro_and_trigger">%1$s · %2$s</string>
@@ -811,4 +811,5 @@
     <string name="language_intro">Wähle, in welcher Sprache Easymatic angezeigt wird.</string>
     <string name="language_system_default">Systemstandard</string>
     <string name="language_widgets_note">Widgets auf dem Startbildschirm behalten auf dieser Android-Version die Sprache des Telefons.</string>
+    <string name="api_token_call_hint">Tasker: token:&lt;Wert&gt; als Extra senden. Keine Makro-ID oder Freigabe nötig.</string>
 </resources>

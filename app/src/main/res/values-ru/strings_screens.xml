@@ -122,12 +122,12 @@
     <string name="api_allow">Разрешить</string>
     <string name="api_app_access">Доступ приложений</string>
     <string name="api_back">Назад</string>
-    <string name="api_copy_the_key">Скопировать ключ</string>
+    <string name="api_copy_the_key">Скопировать токен</string>
     <string name="api_it_will_be_able_to">Оно сможет видеть названия макросов, которым вы добавили триггер «Вызов из другого приложения», и запускать их. Ничего другого в Easymatic оно не увидит и не изменит, а макросы без этого триггера останутся вне его досягаемости.</string>
-    <string name="api_no_key_approved_apps_only">Без ключа — только одобренные приложения</string>
+    <string name="api_no_key_approved_apps_only">Без токена — только одобренные приложения</string>
     <string name="api_not_now">Не сейчас</string>
-    <string name="api_easymatic_key">Ключ Easymatic</string>
-    <string name="api_remove_the_key">Удалить ключ</string>
+    <string name="api_easymatic_key">Токен Easymatic</string>
+    <string name="api_remove_the_key">Удалить токен</string>
     <string name="api_revoke">Отозвать</string>
     <string name="api_you_can_withdraw_this_at">Это можно отозвать в любой момент в разделе «Доступ приложений» в Easymatic.</string>
     <string name="variables_back">Назад</string>
@@ -558,8 +558,8 @@
     <string name="widget_more_hidden">ещё %1$d — измените размер, чтобы увидеть</string>
     <string name="widget_showing_all">Показаны все триггеры (%1$d). Выключите переключатель, чтобы выбрать нужные.</string>
     <string name="api_allow_app_to_run">Разрешить приложению %1$s запускать ваши макросы?</string>
-    <string name="api_generate_key">Создать ключ</string>
-    <string name="api_replace_key">Заменить ключ</string>
+    <string name="api_generate_key">Создать токен</string>
+    <string name="api_replace_key">Заменить токен</string>
     <string name="problems_summary_separator"> ·</string>
     <string name="ai_model_answered">Модель ответила: %1$s</string>
     <string name="mail_choose_account_first">Сначала выберите аккаунт в этом узле: папки находятся на сервере, поэтому Easymatic должен знать, у какого именно их спрашивать.</string>
@@ -571,7 +571,7 @@
     <string name="ai_getting_a_key">Получение ключа</string>
     <string name="ai_pointing_at_own_server">Подключение к своему серверу</string>
     <string name="ai_running_on_this_phone">Запуск модели на этом телефоне</string>
-    <string name="api_key_copied">Ключ скопирован</string>
+    <string name="api_key_copied">Токен скопирован</string>
     <string name="api_allowed_on">Разрешено %1$s</string>
     <string name="geofence_small_radius_warning">Ниже %1$d м система жертвует точностью местоположения ради батареи, поэтому пересечения часто пропускаются или сообщаются с опозданием.</string>
     <string name="shortcut_macro_and_trigger">%1$s · %2$s</string>
@@ -746,4 +746,5 @@
     <string name="language_intro">Выберите язык интерфейса Easymatic.</string>
     <string name="language_system_default">Как в системе</string>
     <string name="language_widgets_note">В этой версии Android виджеты на главном экране остаются на языке телефона.</string>
+    <string name="api_token_call_hint">Tasker: передайте token:&lt;значение&gt; в дополнительных данных. ID макроса и разрешение не нужны.</string>
 </resources>

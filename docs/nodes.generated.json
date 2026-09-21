@@ -77,7 +77,7 @@
                 },
                 {
                     "key": "token",
-                    "label": "Key",
+                    "label": "Token",
                     "hint": null,
                     "type": "API_TOKEN",
                     "defaultValue": "",
@@ -6782,7 +6782,7 @@
                 {
                     "key": "extras",
                     "label": "Extras",
-                    "hint": "one key=value per line, count:int=5 to type one",
+                    "hint": "One extra per line: name=value",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,
@@ -6922,7 +6922,7 @@
                 {
                     "key": "extras",
                     "label": "Extras",
-                    "hint": "one key=value per line, count:int=5 to type one",
+                    "hint": "One extra per line: name=value",
                     "type": "MULTILINE",
                     "defaultValue": "",
                     "visibleWhen": null,

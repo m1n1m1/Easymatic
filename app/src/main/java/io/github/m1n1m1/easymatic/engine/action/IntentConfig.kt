@@ -75,7 +75,7 @@ data class IntentConfig(
     @Label("Category (optional)") @Wired val category: String = "",
 
     @Label("Extras")
-    @Hint("one key=value per line, count:int=5 to type one")
+    @Hint("One extra per line: name=value")
     @Multiline
     @Wired
     val extras: String = "",

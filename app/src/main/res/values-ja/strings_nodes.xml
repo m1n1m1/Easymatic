@@ -9,7 +9,7 @@
     <string name="port_trigger_api_out">出力</string>
     <string name="cfg_trigger_api_label">他のアプリに見える名前</string>
     <string name="cfg_trigger_api_inputs">この呼び出しが運ぶ値</string>
-    <string name="cfg_trigger_api_token">キー</string>
+    <string name="cfg_trigger_api_token">トークン</string>
     <string name="node_trigger_schedule_name">スケジュール</string>
     <string name="node_trigger_schedule_desc">一定間隔、または 1 日のうちの時刻にワークフローを開始します</string>
     <string name="port_trigger_schedule_out">出力</string>
@@ -809,14 +809,14 @@
     <string name="port_action_send_intent_data_uri">データ URI（省略可）</string>
     <string name="port_action_send_intent_mime_type">MIME タイプ（省略可）</string>
     <string name="port_action_send_intent_category">カテゴリ（省略可）</string>
-    <string name="port_action_send_intent_extras">Extras — 1 行に key=value を 1 つ、型を指定するには count:int=5</string>
+    <string name="port_action_send_intent_extras">Extras</string>
     <string name="cfg_action_send_intent_action">アクション</string>
     <string name="cfg_action_send_intent_package_name">アプリ（任意）</string>
     <string name="cfg_action_send_intent_data_uri">データ URI（省略可）</string>
     <string name="cfg_action_send_intent_mime_type">MIME タイプ（省略可）</string>
     <string name="cfg_action_send_intent_category">カテゴリ（省略可）</string>
     <string name="cfg_action_send_intent_extras">Extras</string>
-    <string name="hint_action_send_intent_extras">1 行に key=value を 1 つ、型を指定するには count:int=5</string>
+    <string name="hint_action_send_intent_extras">1 行に 1 つの追加データ：名前=値</string>
     <string name="node_action_broadcast_intent_name">ブロードキャストを送信</string>
     <string name="node_action_broadcast_intent_desc">独自のアクションと Extras を付けて、他のアプリにブロードキャスト Intent を送ります</string>
     <string name="port_action_broadcast_intent_in">入力</string>
@@ -826,14 +826,14 @@
     <string name="port_action_broadcast_intent_data_uri">データ URI（省略可）</string>
     <string name="port_action_broadcast_intent_mime_type">MIME タイプ（省略可）</string>
     <string name="port_action_broadcast_intent_category">カテゴリ（省略可）</string>
-    <string name="port_action_broadcast_intent_extras">Extras — 1 行に key=value を 1 つ、型を指定するには count:int=5</string>
+    <string name="port_action_broadcast_intent_extras">Extras</string>
     <string name="cfg_action_broadcast_intent_action">アクション</string>
     <string name="cfg_action_broadcast_intent_package_name">アプリ（任意）</string>
     <string name="cfg_action_broadcast_intent_data_uri">データ URI（省略可）</string>
     <string name="cfg_action_broadcast_intent_mime_type">MIME タイプ（省略可）</string>
     <string name="cfg_action_broadcast_intent_category">カテゴリ（省略可）</string>
     <string name="cfg_action_broadcast_intent_extras">Extras</string>
-    <string name="hint_action_broadcast_intent_extras">1 行に key=value を 1 つ、型を指定するには count:int=5</string>
+    <string name="hint_action_broadcast_intent_extras">1 行に 1 つの追加データ：名前=値</string>
     <string name="node_action_light_control_name">照明を操作</string>
     <string name="node_action_light_control_desc">照明、部屋、ゾーンをオン／オフしたり、明るさ・色・色温度を設定したりします — Philips Hue</string>
     <string name="port_action_light_control_in">入力</string>

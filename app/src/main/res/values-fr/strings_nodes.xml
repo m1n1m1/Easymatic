@@ -9,7 +9,7 @@
     <string name="port_trigger_api_out">Sortie</string>
     <string name="cfg_trigger_api_label">Nom vu par les autres applications</string>
     <string name="cfg_trigger_api_inputs">Valeurs transportées par cet appel</string>
-    <string name="cfg_trigger_api_token">Clé</string>
+    <string name="cfg_trigger_api_token">Jeton</string>
     <string name="node_trigger_schedule_name">Programmation</string>
     <string name="node_trigger_schedule_desc">Démarre le flux à intervalle régulier ou à une heure donnée</string>
     <string name="port_trigger_schedule_out">Sortie</string>
@@ -809,14 +809,14 @@
     <string name="port_action_send_intent_data_uri">URI de données (facultatif)</string>
     <string name="port_action_send_intent_mime_type">Type MIME (facultatif)</string>
     <string name="port_action_send_intent_category">Catégorie (facultatif)</string>
-    <string name="port_action_send_intent_extras">Extras — un key=value par ligne, count:int=5 pour typer</string>
+    <string name="port_action_send_intent_extras">Extras</string>
     <string name="cfg_action_send_intent_action">Action</string>
     <string name="cfg_action_send_intent_package_name">Application (facultatif)</string>
     <string name="cfg_action_send_intent_data_uri">URI de données (facultatif)</string>
     <string name="cfg_action_send_intent_mime_type">Type MIME (facultatif)</string>
     <string name="cfg_action_send_intent_category">Catégorie (facultatif)</string>
     <string name="cfg_action_send_intent_extras">Extras</string>
-    <string name="hint_action_send_intent_extras">un key=value par ligne, count:int=5 pour typer</string>
+    <string name="hint_action_send_intent_extras">Un extra par ligne : nom=valeur</string>
     <string name="node_action_broadcast_intent_name">Envoyer un broadcast</string>
     <string name="node_action_broadcast_intent_desc">Envoie un intent de broadcast à une autre app, avec une action et des extras personnalisés</string>
     <string name="port_action_broadcast_intent_in">Entrée</string>
@@ -826,14 +826,14 @@
     <string name="port_action_broadcast_intent_data_uri">URI de données (facultatif)</string>
     <string name="port_action_broadcast_intent_mime_type">Type MIME (facultatif)</string>
     <string name="port_action_broadcast_intent_category">Catégorie (facultatif)</string>
-    <string name="port_action_broadcast_intent_extras">Extras — un key=value par ligne, count:int=5 pour typer</string>
+    <string name="port_action_broadcast_intent_extras">Extras</string>
     <string name="cfg_action_broadcast_intent_action">Action</string>
     <string name="cfg_action_broadcast_intent_package_name">Application (facultatif)</string>
     <string name="cfg_action_broadcast_intent_data_uri">URI de données (facultatif)</string>
     <string name="cfg_action_broadcast_intent_mime_type">Type MIME (facultatif)</string>
     <string name="cfg_action_broadcast_intent_category">Catégorie (facultatif)</string>
     <string name="cfg_action_broadcast_intent_extras">Extras</string>
-    <string name="hint_action_broadcast_intent_extras">un key=value par ligne, count:int=5 pour typer</string>
+    <string name="hint_action_broadcast_intent_extras">Un extra par ligne : nom=valeur</string>
     <string name="node_action_light_control_name">Piloter une lumière</string>
     <string name="node_action_light_control_desc">Allume ou éteint une lumière, une pièce ou une zone, ou règle sa luminosité, sa couleur ou sa température — Philips Hue</string>
     <string name="port_action_light_control_in">Entrée</string>

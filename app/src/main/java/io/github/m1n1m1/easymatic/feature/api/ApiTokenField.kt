@@ -9,6 +9,8 @@ import android.content.Context
 import android.os.Build
 import android.os.PersistableBundle
 import android.widget.Toast
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Autorenew
@@ -57,39 +59,48 @@ fun ApiTokenField(
     val context = LocalContext.current
     // A key is thirty-odd characters of noise that differs from the last one at no fixed
     // position, so an ellipsis tells you nothing about which key you are looking at.
-    ReadOnlyFieldChrome(
-        value = value,
-        colors = colors,
-        label = labelSlot,
-        placeholder = {
-            Text(text =
-                stringResource(R.string.api_no_key_approved_apps_only), maxLines = 1, overflow = TextOverflow.Ellipsis)
-        },
-        trailingIcon = {
-            Row {
-                if (value.isNotBlank()) {
-                    IconButton(onClick = { copyToClipboard(context, value) }) {
-                        Icon(imageVector = Icons.Filled.ContentCopy, contentDescription =
-                            stringResource(R.string.api_copy_the_key))
+    Column {
+        ReadOnlyFieldChrome(
+            value = value,
+            colors = colors,
+            label = labelSlot,
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.api_no_key_approved_apps_only),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
+            trailingIcon = {
+                Row {
+                    if (value.isNotBlank()) {
+                        IconButton(onClick = { copyToClipboard(context, value) }) {
+                            Icon(imageVector = Icons.Filled.ContentCopy, contentDescription =
+                                stringResource(R.string.api_copy_the_key))
+                        }
+                    }
+                    IconButton(onClick = { onValueChange(ApiTokens.generate()) }) {
+                        Icon(
+                            imageVector = Icons.Filled.Autorenew,
+                            contentDescription = stringResource(
+                                if (value.isBlank()) R.string.api_generate_key else R.string.api_replace_key,
+                            ),
+                        )
+                    }
+                    if (value.isNotBlank()) {
+                        IconButton(onClick = { onValueChange("") }) {
+                            Icon(imageVector = Icons.Filled.Clear, contentDescription =
+                                stringResource(R.string.api_remove_the_key))
+                        }
                     }
                 }
-                IconButton(onClick = { onValueChange(ApiTokens.generate()) }) {
-                    Icon(
-                        imageVector = Icons.Filled.Autorenew,
-                        contentDescription = stringResource(
-                            if (value.isBlank()) R.string.api_generate_key else R.string.api_replace_key,
-                        ),
-                    )
-                }
-                if (value.isNotBlank()) {
-                    IconButton(onClick = { onValueChange("") }) {
-                        Icon(imageVector = Icons.Filled.Clear, contentDescription =
-                            stringResource(R.string.api_remove_the_key))
-                    }
-                }
-            }
-        },
-    )
+            },
+        )
+        Text(
+            text = stringResource(R.string.api_token_call_hint),
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
 }
 
 /**

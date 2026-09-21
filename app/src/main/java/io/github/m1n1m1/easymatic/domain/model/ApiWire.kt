@@ -26,7 +26,7 @@ data class ApiTriggerListWire(
     val triggers: List<ApiTriggerWire> = emptyList(),
 )
 
-/** One callable trigger. [macroId] plus [nodeId] is what [ApiContract.METHOD_RUN] takes. */
+/** One callable trigger. [nodeId] alone addresses it for an approved caller. */
 @Serializable
 data class ApiTriggerWire(
     val macroId: String,

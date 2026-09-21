@@ -9,7 +9,7 @@
     <string name="port_trigger_api_out">Выход</string>
     <string name="cfg_trigger_api_label">Название, видимое другим приложениям</string>
     <string name="cfg_trigger_api_inputs">Значения, которые несёт этот вызов</string>
-    <string name="cfg_trigger_api_token">Ключ</string>
+    <string name="cfg_trigger_api_token">Токен</string>
     <string name="node_trigger_schedule_name">Расписание</string>
     <string name="node_trigger_schedule_desc">Запускает сценарий с интервалом или в определённое время суток</string>
     <string name="port_trigger_schedule_out">Выход</string>
@@ -809,14 +809,14 @@
     <string name="port_action_send_intent_data_uri">URI данных (необязательно)</string>
     <string name="port_action_send_intent_mime_type">MIME-тип (необязательно)</string>
     <string name="port_action_send_intent_category">Категория (необязательно)</string>
-    <string name="port_action_send_intent_extras">Extras — по одному key=value в строке, count:int=5 для указания типа</string>
+    <string name="port_action_send_intent_extras">Extras</string>
     <string name="cfg_action_send_intent_action">Действие</string>
     <string name="cfg_action_send_intent_package_name">Приложение (необязательно)</string>
     <string name="cfg_action_send_intent_data_uri">URI данных (необязательно)</string>
     <string name="cfg_action_send_intent_mime_type">MIME-тип (необязательно)</string>
     <string name="cfg_action_send_intent_category">Категория (необязательно)</string>
     <string name="cfg_action_send_intent_extras">Extras</string>
-    <string name="hint_action_send_intent_extras">по одному key=value в строке, count:int=5 для указания типа</string>
+    <string name="hint_action_send_intent_extras">Один параметр на строку: имя=значение</string>
     <string name="node_action_broadcast_intent_name">Отправить broadcast</string>
     <string name="node_action_broadcast_intent_desc">Отправляет broadcast-intent другому приложению со своим действием и extras</string>
     <string name="port_action_broadcast_intent_in">Вход</string>
@@ -826,14 +826,14 @@
     <string name="port_action_broadcast_intent_data_uri">URI данных (необязательно)</string>
     <string name="port_action_broadcast_intent_mime_type">MIME-тип (необязательно)</string>
     <string name="port_action_broadcast_intent_category">Категория (необязательно)</string>
-    <string name="port_action_broadcast_intent_extras">Extras — по одному key=value в строке, count:int=5 для указания типа</string>
+    <string name="port_action_broadcast_intent_extras">Extras</string>
     <string name="cfg_action_broadcast_intent_action">Действие</string>
     <string name="cfg_action_broadcast_intent_package_name">Приложение (необязательно)</string>
     <string name="cfg_action_broadcast_intent_data_uri">URI данных (необязательно)</string>
     <string name="cfg_action_broadcast_intent_mime_type">MIME-тип (необязательно)</string>
     <string name="cfg_action_broadcast_intent_category">Категория (необязательно)</string>
     <string name="cfg_action_broadcast_intent_extras">Extras</string>
-    <string name="hint_action_broadcast_intent_extras">по одному key=value в строке, count:int=5 для указания типа</string>
+    <string name="hint_action_broadcast_intent_extras">Один параметр на строку: имя=значение</string>
     <string name="node_action_light_control_name">Управление светом</string>
     <string name="node_action_light_control_desc">Включает или выключает светильник, комнату либо зону, а также задаёт яркость, цвет или теплоту — Philips Hue</string>
     <string name="port_action_light_control_in">Вход</string>

@@ -122,12 +122,12 @@
     <string name="api_allow">Permitir</string>
     <string name="api_app_access">Acesso de aplicações</string>
     <string name="api_back">Voltar</string>
-    <string name="api_copy_the_key">Copiar a chave</string>
+    <string name="api_copy_the_key">Copiar o token</string>
     <string name="api_it_will_be_able_to">Poderá ver os nomes das macros a que deste um acionador «Chamada por outra aplicação», e executá-las. Não pode ver nem alterar mais nada no Easymatic, e as macros sem esse acionador ficam fora do alcance.</string>
-    <string name="api_no_key_approved_apps_only">Sem chave: apenas aplicações aprovadas</string>
+    <string name="api_no_key_approved_apps_only">Sem token: apenas aplicações aprovadas</string>
     <string name="api_not_now">Agora não</string>
-    <string name="api_easymatic_key">Chave do Easymatic</string>
-    <string name="api_remove_the_key">Remover a chave</string>
+    <string name="api_easymatic_key">Token do Easymatic</string>
+    <string name="api_remove_the_key">Remover o token</string>
     <string name="api_revoke">Revogar</string>
     <string name="api_you_can_withdraw_this_at">Podes retirar isto a qualquer momento em Acesso de aplicações no Easymatic.</string>
     <string name="variables_back">Voltar</string>
@@ -558,8 +558,8 @@
     <string name="widget_more_hidden">+%1$d mais: redimensiona para os veres</string>
     <string name="widget_showing_all">A mostrar os %1$d acionadores. Desliga o interruptor para escolheres quais.</string>
     <string name="api_allow_app_to_run">Permitir que %1$s execute as tuas macros?</string>
-    <string name="api_generate_key">Gerar uma chave</string>
-    <string name="api_replace_key">Substituir a chave</string>
+    <string name="api_generate_key">Gerar um token</string>
+    <string name="api_replace_key">Substituir o token</string>
     <string name="problems_summary_separator"> ·</string>
     <string name="ai_model_answered">O modelo respondeu: %1$s</string>
     <string name="mail_choose_account_first">Escolhe primeiro uma conta neste nó: as pastas estão no servidor, por isso o Easymatic tem de saber a qual perguntar.</string>
@@ -571,7 +571,7 @@
     <string name="ai_getting_a_key">Obter uma chave</string>
     <string name="ai_pointing_at_own_server">Apontar para o teu próprio servidor</string>
     <string name="ai_running_on_this_phone">Executar o modelo neste telemóvel</string>
-    <string name="api_key_copied">Chave copiada</string>
+    <string name="api_key_copied">Token copiado</string>
     <string name="api_allowed_on">Autorizada em %1$s</string>
     <string name="geofence_small_radius_warning">Abaixo de %1$d m o sistema troca precisão de localização por bateria, por isso as passagens são muitas vezes falhadas ou comunicadas tarde.</string>
     <string name="shortcut_macro_and_trigger">%1$s · %2$s</string>
@@ -746,4 +746,5 @@
     <string name="language_intro">Escolha o idioma em que o Easymatic é apresentado.</string>
     <string name="language_system_default">Predefinição do sistema</string>
     <string name="language_widgets_note">Nesta versão do Android, os widgets do ecrã inicial mantêm o idioma do telemóvel.</string>
+    <string name="api_token_call_hint">Tasker: envia token:&lt;valor&gt; como extra. Não é necessário ID da macro nem aprovação.</string>
 </resources>

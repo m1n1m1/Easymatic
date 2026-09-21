@@ -122,12 +122,12 @@
     <string name="api_allow">許可</string>
     <string name="api_app_access">アプリのアクセス</string>
     <string name="api_back">戻る</string>
-    <string name="api_copy_the_key">キーをコピー</string>
+    <string name="api_copy_the_key">トークンをコピー</string>
     <string name="api_it_will_be_able_to">「他のアプリから呼び出し」トリガーを付けたマクロの名前を見ることができ、それらを実行できるようになります。Easymatic 内のそれ以外のものを見たり変更したりすることはできず、そのトリガーがないマクロには手が届きません。</string>
-    <string name="api_no_key_approved_apps_only">キーなし — 承認済みアプリのみ</string>
+    <string name="api_no_key_approved_apps_only">トークンなし — 承認済みアプリのみ</string>
     <string name="api_not_now">後で</string>
-    <string name="api_easymatic_key">Easymatic キー</string>
-    <string name="api_remove_the_key">キーを削除</string>
+    <string name="api_easymatic_key">Easymatic トークン</string>
+    <string name="api_remove_the_key">トークンを削除</string>
     <string name="api_revoke">取り消す</string>
     <string name="api_you_can_withdraw_this_at">この許可は Easymatic の「アプリのアクセス」からいつでも取り消せます。</string>
     <string name="variables_back">戻る</string>
@@ -558,8 +558,8 @@
     <string name="widget_more_hidden">他 %1$d 件 — サイズを変更すると表示されます</string>
     <string name="widget_showing_all">%1$d 件のトリガーをすべて表示しています。スイッチをオフにすると個別に選べます。</string>
     <string name="api_allow_app_to_run">%1$s にマクロの実行を許可しますか？</string>
-    <string name="api_generate_key">キーを生成</string>
-    <string name="api_replace_key">キーを差し替え</string>
+    <string name="api_generate_key">トークンを生成</string>
+    <string name="api_replace_key">トークンを差し替え</string>
     <string name="problems_summary_separator"> ·</string>
     <string name="ai_model_answered">モデルの回答: %1$s</string>
     <string name="mail_choose_account_first">先にこのノードでアカウントを選んでください。フォルダーはサーバー上にあるため、Easymatic はどのサーバーに尋ねるかを知る必要があります。</string>
@@ -571,7 +571,7 @@
     <string name="ai_getting_a_key">キーを取得する</string>
     <string name="ai_pointing_at_own_server">自分のサーバーを指定する</string>
     <string name="ai_running_on_this_phone">この端末でモデルを実行する</string>
-    <string name="api_key_copied">キーをコピーしました</string>
+    <string name="api_key_copied">トークンをコピーしました</string>
     <string name="api_allowed_on">許可日: %1$s</string>
     <string name="geofence_small_radius_warning">%1$d m を下回ると、システムは電池のために位置精度を犠牲にするため、出入りが見逃されたり遅れて通知されたりしがちです。</string>
     <string name="shortcut_macro_and_trigger">%1$s · %2$s</string>
@@ -746,4 +746,5 @@
     <string name="language_intro">Easymatic の表示言語を選択します。</string>
     <string name="language_system_default">システムのデフォルト</string>
     <string name="language_widgets_note">このバージョンの Android では、ホーム画面のウィジェットは端末の言語のままです。</string>
+    <string name="api_token_call_hint">Tasker：追加データに token:&lt;値&gt; を指定してください。マクロ ID や承認は不要です。</string>
 </resources>

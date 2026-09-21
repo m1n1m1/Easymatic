@@ -32,7 +32,7 @@ import kotlinx.serialization.Serializable
 data class ApiTriggerConfig(
     @Label("Name other apps see") val label: String = "",
     @Label("Values this call carries") @Ports val inputs: String = "",
-    @Label("Key") @ApiToken val token: String = "",
+    @Label("Token") @ApiToken val token: String = "",
 )
 
 /**
@@ -42,7 +42,7 @@ data class ApiTriggerConfig(
  * ## It is never activated, and that is the design
  *
  * [activate] returns a flow that nothing ever emits into. A call does not travel
- * through the trigger object at all: it resolves `(macroId, nodeId)` against the
+ * through the trigger object at all: it resolves a public node ID or token against the
  * repository and goes straight to `runFromTrigger`, which is exactly the road
  * `ACTION_RUN_MANUAL` already takes for a widget tap. Three things follow.
  *
@@ -67,14 +67,11 @@ data class ApiTriggerConfig(
  * and never emits, which is the honest description of what this trigger does in the
  * background: nothing, until somebody outside calls.
  *
- * ## The key lives in the config
+ * ## The token lives in the config
  *
- * Which means it lives in the workflow's JSON file, and is therefore included in
- * Android's backup and duplicated along with the macro when it is copied. That is
- * the accepted cost of not needing a second store the dispatcher would have to open
- * and keep consistent — the node is already loaded to be found. It authorises
- * "start this one macro" and nothing else, and **Regenerate** in the config form is
- * how a key that has been somewhere it should not be gets replaced.
+ * The editor generates it when the node is placed. Copying a macro or node reissues
+ * it, and export strips it so importing generates a fresh token. Regenerate in the
+ * config form revokes the old token immediately after the macro is saved.
  */
 class ApiTrigger : Trigger<ApiTriggerConfig, Unit> {
 

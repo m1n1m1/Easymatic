@@ -6,7 +6,6 @@ import android.content.Intent
 import android.util.Log
 import io.github.m1n1m1.easymatic.ServiceLocator
 import io.github.m1n1m1.easymatic.domain.model.ApiContract
-import io.github.m1n1m1.easymatic.domain.model.ApiTokens
 import io.github.m1n1m1.easymatic.engine.api.ApiInputs
 import io.github.m1n1m1.easymatic.engine.api.ApiRateLimiter
 import io.github.m1n1m1.easymatic.engine.api.ApiRun
@@ -19,7 +18,7 @@ import kotlinx.coroutines.launch
  *
  * ```
  * adb shell am broadcast -a io.github.m1n1m1.easymatic.action.RUN_MACRO \
- *   -p io.github.m1n1m1.easymatic --es macroId <id> --es token <key> --es in.city Vienna
+ *   -p io.github.m1n1m1.easymatic --es token <token> --es in.city Vienna
  * ```
  *
  * ## A key is always required here
@@ -57,9 +56,9 @@ class ApiTriggerReceiver : BroadcastReceiver() {
     @Suppress("ReturnCount") // A door is a sequence of refusals; each one is its own sentence.
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != ApiContract.ACTION_RUN) return
-        val macroId = intent.getStringExtra(ApiContract.EXTRA_MACRO_ID)?.takeIf { it.isNotBlank() } ?: return
+        val macroId = intent.getStringExtra(ApiContract.EXTRA_MACRO_ID)?.takeIf { it.isNotBlank() }
         val nodeId = intent.getStringExtra(ApiContract.EXTRA_NODE_ID)
-        val token = intent.getStringExtra(ApiContract.EXTRA_TOKEN)
+        val token = intent.getStringExtra(ApiContract.EXTRA_TOKEN)?.takeIf { it.isNotBlank() } ?: return
         val inputs = inputsFrom(intent.extras)
         // Every anonymous caller shares one bucket, which is the right way round: the
         // door that cannot say who is knocking should be the more tightly bounded one.
@@ -83,18 +82,14 @@ class ApiTriggerReceiver : BroadcastReceiver() {
     @Suppress("ReturnCount") // As [onReceive]: each refusal is a distinct log line.
     private suspend fun dispatch(
         context: Context,
-        macroId: String,
+        macroId: String?,
         nodeId: String?,
-        token: String?,
+        token: String,
         inputs: Map<String, String>,
     ) {
-        val target = findApiTrigger(ServiceLocator.workflowRepository, macroId, nodeId)
+        val target = findApiTrigger(ServiceLocator.workflowRepository, macroId, nodeId, token)
         if (target == null) {
-            Log.w(TAG, "No API trigger for macro '$macroId'")
-            return
-        }
-        if (!ApiTokens.matches(target.token, token)) {
-            Log.w(TAG, "Refused an API broadcast for '$macroId': wrong or missing key")
+            Log.w(TAG, "Refused an API broadcast: no unique matching trigger")
             return
         }
         if (!target.workflow.enabled) {
