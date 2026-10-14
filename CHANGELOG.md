@@ -21,6 +21,18 @@ section of CLAUDE.md for why.
 
 ## [Unreleased]
 
+## [0.1.5-alpha] - 2026-10-14
+code: 105
+
+Play: Calling a macro from Tasker or another app is simpler: the trigger's token alone now picks and authorises it, with no macro ID or approval needed, even when a macro has several such triggers. "Key" is now called "Token" throughout, and the Intent nodes explain the extras format more clearly.
+
+### Changed
+- A "Called by Another App" trigger can now be run with its token alone. No macro ID, trigger ID or app approval is needed, even when a macro contains several such triggers.
+- Approved apps run a trigger by the ID that `list` returns, which stays unique when a macro is duplicated or imported. Calls that pass a macro ID still work.
+- The API trigger's "Key" is now called "Token" in the node and on the App access screens, with a hint showing how to send it from Tasker.
+- The Extras hint on Send Intent and Broadcast Intent now reads "One extra per line: name=value".
+- Updated Android, Kotlin and Gradle libraries.
+
 ## [0.1.4-alpha] - 2026-09-20
 code: 104
 
